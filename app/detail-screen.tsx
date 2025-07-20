@@ -1,12 +1,12 @@
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 type ListItemProps = {
   icon: React.ReactNode;
@@ -25,10 +25,16 @@ const ListItem = ({ icon, text, onPress }: ListItemProps) => (
 );
 
 import type { NavigationProp } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 export default function ReadyToGetOffers({ navigation }: { navigation: NavigationProp<any> }) {
   return (
     <View style={styles.container}>
+      {/* Back Arrow Button */}
+      <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="#000" />
+      </TouchableOpacity>
+
       <Text style={styles.title}>Ready to get offers?</Text>
       <Text style={styles.subtitle}>Post the task when you're ready</Text>
 
@@ -60,7 +66,7 @@ export default function ReadyToGetOffers({ navigation }: { navigation: Navigatio
         />
       </ScrollView>
 
-      <TouchableOpacity style={styles.continueBtn}>
+      <TouchableOpacity style={styles.continueBtn} onPress={() => router.push('/(tabs)')}>
         <Text style={styles.continueText}>Continue</Text>
       </TouchableOpacity>
     </View>
@@ -74,11 +80,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
   },
+  backBtn: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 1,
+  },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#0B1A33',
     marginBottom: 5,
+    marginTop: 40,
   },
   subtitle: {
     color: '#667085',
@@ -94,15 +107,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12, // Increased gap between items
   },
   itemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
   },
   itemText: {
     fontSize: 16,
     color: '#003366',
+    marginLeft: 16, // Increased margin to separate icon and text
   },
   continueBtn: {
     backgroundColor: '#0052CC',

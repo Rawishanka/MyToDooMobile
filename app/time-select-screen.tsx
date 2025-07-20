@@ -1,12 +1,13 @@
+import { AntDesign } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Platform,
-    StyleSheet,
-    Switch,
-    Text, TouchableOpacity,
-    View
+  Platform,
+  StyleSheet,
+  Switch,
+  Text, TouchableOpacity,
+  View
 } from 'react-native';
 
 const TimeSelectScreen = () => {
@@ -36,6 +37,10 @@ const handleDateChange = (
 
   return (
     <View style={styles.container}>
+      {/* Back Arrow Top Left */}
+      <TouchableOpacity style={styles.backButton}>
+        <AntDesign name="arrowleft" size={24} color="#333" />
+      </TouchableOpacity>
       <Text style={styles.title}>Choose a time</Text>
       <Text style={styles.subtitle}>When do you need this done?</Text>
 
@@ -123,6 +128,13 @@ const handleDateChange = (
 
 export default TimeSelectScreen;
 const styles = StyleSheet.create({
+  headerArrow: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+    padding: 6,
+  },
   container: {
     flex: 1,
     padding: 20,
@@ -134,6 +146,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 4,
     color: '#1C1C1E',
+    marginTop: 36,
   },
   subtitle: {
     fontSize: 14,
@@ -142,6 +155,11 @@ const styles = StyleSheet.create({
   },
   optionRow: {
     marginBottom: 16,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
   },
   radioBox: {
     flexDirection: 'row',

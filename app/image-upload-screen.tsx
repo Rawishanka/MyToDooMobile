@@ -70,7 +70,7 @@ export default function SnapPhotoScreen() {
         />
       </View>
 
-      <TouchableOpacity style={styles.skipButton} >
+      <TouchableOpacity onPress={() => router.push('/detail-screen')} style={styles.skipButton} >
         <Text style={styles.skipText}>{images.length > 0 ? 'Continue' : 'Skip for now'}</Text>
       </TouchableOpacity>
     </View>
