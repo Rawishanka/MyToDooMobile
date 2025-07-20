@@ -93,8 +93,9 @@ const styles = StyleSheet.create({
   },
   back: {
     position: 'absolute',
-    top: 60,
+    top: 50,
     left: 24,
+    zIndex: 1,
   },
   title: {
     fontSize: 22,

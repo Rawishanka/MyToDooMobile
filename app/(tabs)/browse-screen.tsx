@@ -1,14 +1,17 @@
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
   FlatList,
-  TouchableOpacity,
+  Image,
   Modal,
-  StyleSheet,
   Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const tasks = new Array(6).fill({
   title: 'window installation',
@@ -20,6 +23,9 @@ const tasks = new Array(6).fill({
 
 export default function BrowseTasksScreen() {
   const [sortVisible, setSortVisible] = useState(false);
+  const [selectedSort, setSelectedSort] = useState(0);
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const sortOptions = [
     'Recommended',
@@ -39,10 +45,25 @@ export default function BrowseTasksScreen() {
         <MaterialCommunityIcons name="map-outline" size={24} />
         <Text style={styles.headerTitle}>Browse Tasks</Text>
         <View style={styles.headerIcons}>
-          <MaterialCommunityIcons name="magnify" size={24} />
-          <MaterialCommunityIcons name="bell-outline" size={24} style={{ marginLeft: 10 }} />
+          <TouchableOpacity onPress={() => setSearchVisible(true)}>
+            <Ionicons name="search-outline" size={20} color="#000" />
+          </TouchableOpacity>
+          <Ionicons name="notifications-outline" size={20} color="#000" style={{ marginLeft: 10 }} />
         </View>
       </View>
+
+      {/* Search Bar */}
+      {searchVisible && (
+        <View style={styles.searchBarContainer}>
+          <TextInput
+            style={styles.searchBar}
+            placeholder="Search tasks..."
+            value={searchText}
+            onChangeText={setSearchText}
+            autoFocus
+          />
+        </View>
+      )}
 
       {/* Filter & Sort Row */}
       <View style={styles.filterSortRow}>
@@ -73,7 +94,13 @@ export default function BrowseTasksScreen() {
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <Text style={styles.taskPrice}>{item.price}</Text>
-              <MaterialCommunityIcons name="account-circle-outline" size={32} />
+              <View style={{ width: 32, height: 32, borderRadius: 16, overflow: 'hidden', backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center' }}>
+                <Image
+                  source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
+                  style={{ width: 32, height: 32 }}
+                  resizeMode="cover"
+                />
+              </View>
             </View>
           </View>
         )}
@@ -83,11 +110,12 @@ export default function BrowseTasksScreen() {
       <Modal
         visible={sortVisible}
         transparent
-        animationType="slide"
+        animationType="none"
+        statusBarTranslucent
         onRequestClose={() => setSortVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { transform: [{ translateY: sortVisible ? 0 : 400 }], opacity: sortVisible ? 1 : 0 }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Sort by</Text>
               <Pressable onPress={() => setSortVisible(false)}>
@@ -95,12 +123,40 @@ export default function BrowseTasksScreen() {
               </Pressable>
             </View>
             {sortOptions.map((option, i) => (
-              <TouchableOpacity key={i} style={styles.sortOption}>
-                <Text style={{ fontSize: 16 }}>{option}</Text>
+              <TouchableOpacity key={i} style={styles.sortOption} onPress={() => { setSelectedSort(i); setSortVisible(false); }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={{ fontSize: 16 }}>{option}</Text>
+                  {selectedSort === i && (
+                    <MaterialCommunityIcons name="check" size={20} color="#007bff" style={{ marginLeft: 8 }} />
+                  )}
+                </View>
               </TouchableOpacity>
             ))}
           </View>
         </View>
+      </Modal>
+
+      <Modal
+        visible={searchVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSearchVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setSearchVisible(false)}>
+          <View style={{ flex: 1, backgroundColor: '#00000055', justifyContent: 'flex-start', alignItems: 'center' }}>
+            <View style={[styles.searchBarContainer, { width: '95%', marginTop: 50 }]}> 
+              <TextInput
+                style={styles.searchBar}
+                placeholder="Search tasks..."
+                value={searchText}
+                onChangeText={setSearchText}
+                autoFocus
+                returnKeyType="search"
+                onSubmitEditing={() => setSearchVisible(false)}
+              />
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
@@ -198,5 +254,18 @@ const styles = StyleSheet.create({
   },
   sortOption: {
     paddingVertical: 10,
+  },
+  searchBarContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 10,
+  },
+  searchBar: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#eee',
   },
 });

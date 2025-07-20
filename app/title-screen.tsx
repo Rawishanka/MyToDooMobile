@@ -72,13 +72,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 50,
     left: 20,
+    zIndex: 1,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
     color: '#1C1C1E',
     marginBottom: 5,
-    paddingTop: 24,
+    marginTop: 40,
   },
   subtitle: {
     fontSize: 14,
