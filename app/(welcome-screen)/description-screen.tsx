@@ -1,18 +1,31 @@
+import { useCreateTaskStore } from '@/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function DescribeTaskScreen() {
   const [description, setDescription] = useState('');
   const navigation = useNavigation();
+  const { myTask, updateMyTask } = useCreateTaskStore();
+
+  // Helper to update zustand store with description
+  const handleContinue = () => {
+    if (description.trim() !== '') {
+      updateMyTask({
+        ...myTask,
+        description: description,
+      });
+      router.push('/image-upload-screen');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -38,7 +51,7 @@ export default function DescribeTaskScreen() {
       {/* Button */}
       <TouchableOpacity
         style={[styles.button, description.trim() === '' && { opacity: 0.5 }]}
-        onPress={() => router.push('/image-upload-screen')}
+        onPress={handleContinue}
         disabled={description.trim() === ''}
       >
         <Text style={styles.buttonText}>Continue</Text>

@@ -1,3 +1,4 @@
+import { useCreateTaskStore } from '@/store/create-task-store';
 import { AntDesign } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -7,7 +8,7 @@ export default function GoalSelectionScreen() {
   const [selectedGoal, setSelectedGoal] = useState('');
 
   const isContinueEnabled = selectedGoal !== '';
-
+  const { myTask, updateMyTask } = useCreateTaskStore();
   return (
     <View style={styles.container}>
       {/* Back button */}
@@ -60,7 +61,10 @@ export default function GoalSelectionScreen() {
           styles.continueButton,
           isContinueEnabled && styles.continueEnabled,
         ]}
-        onPress={() => router.push('/title-screen')}
+        onPress={() => {
+          updateMyTask({ ...myTask, mainGoal: selectedGoal });
+          router.push('/title-screen');
+        }}
       >
         <Text style={styles.continueText}>Continue</Text>
       </TouchableOpacity>

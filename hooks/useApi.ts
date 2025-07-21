@@ -1,5 +1,7 @@
 // External library imports
-import { useQuery } from "@tanstack/react-query";
+import { createTask, handleLogin } from "@/api/mytasks";
+import { CreateTask } from "@/store/create-task-type";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Internal application modules (API, constants, types)
 
@@ -29,6 +31,31 @@ export function useMyTasksQuery() {
     });
 }
 
+
+export const useCreateTask = (task: CreateTask) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => createTask(task),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] }); 
+    },
+  });
+};
+
+export function useCreateAuthToken() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ username, password }: { username: string; password: string }) => handleLogin(username, password),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['auth-token'], data);
+    },
+    onError: (error) => {
+      console.error("Login failed:", error);
+    },
+  });
+}
 
 // export function useMyTasksQuery() {
 //     return useQuery({

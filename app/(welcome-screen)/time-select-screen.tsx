@@ -1,3 +1,4 @@
+import { useCreateTaskStore } from '@/store/create-task-store';
 import { AntDesign } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
@@ -17,6 +18,7 @@ const TimeSelectScreen = () => {
   const [isTimeSwitchOn, setIsTimeSwitchOn] = useState(false);
   const [selectedTimeBlock, setSelectedTimeBlock] = useState('');
 
+  const { myTask, updateMyTask } = useCreateTaskStore();
 const handleDateChange = (
     event: DateTimePickerEvent,
     date?: Date | undefined
@@ -107,7 +109,14 @@ const handleDateChange = (
       <TouchableOpacity
         style={[styles.continueButton, selectedOption === '' && { backgroundColor: '#D1D1D6' }]}
         disabled={selectedOption === ''}
-        onPress={() => router.push('/location-screen')}
+        onPress={() => {
+          updateMyTask({
+            ...myTask,
+            date: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
+            time: isTimeSwitchOn && selectedTimeBlock ? selectedTimeBlock : '',
+          });
+          router.push('/location-screen');
+        }}
       >
         <Text style={styles.continueText}>Continue</Text>
       </TouchableOpacity>

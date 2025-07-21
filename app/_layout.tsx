@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/context/AuthProvider';
 
 
 export default function RootLayout() {
@@ -23,26 +24,20 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name='index' options={{ headerShown: false }} />
-          <Stack.Screen name="first-screen" options={{ headerShown: false }} />
-          <Stack.Screen name="second-screen" options={{ headerShown: false }} />
-          <Stack.Screen name="third-screen" options={{ headerShown: false }} />
-          <Stack.Screen name="goal-screen" options={{ headerShown: false }} />
-          <Stack.Screen name="title-screen" options={{ headerShown: false }} />
-          <Stack.Screen name="time-select-screen" options={{ headerShown: false }} />
-          <Stack.Screen name="location-screen" options={{ headerShown: false }} />
-          <Stack.Screen name="budget-screen" options={{ headerShown: false }} />
-          <Stack.Screen name="description-screen" options={{ headerShown: false }} />
-          <Stack.Screen name="image-upload-screen" options={{ headerShown: false }} />
-          <Stack.Screen name="detail-screen" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </QueryClientProvider>
+    <AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name='index' options={{ headerShown: false }} />
+            <Stack.Screen name='login-screen' options={{ headerShown: false }} />
+            <Stack.Screen name="(welcome-screen)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </AuthProvider>
+
   );
 }

@@ -1,14 +1,15 @@
 // BudgetScreen.tsx
 
+import { useCreateTaskStore } from '@/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 export default function BudgetScreen() {
@@ -22,6 +23,9 @@ export default function BudgetScreen() {
       setBudget(budget + value);
     }
   };
+
+  const { myTask, updateMyTask } = useCreateTaskStore();
+
 
   const renderKey = (value: string | number) => (
     <TouchableOpacity
@@ -45,6 +49,18 @@ export default function BudgetScreen() {
     [null, 0, 'delete'],
   ];
 
+  // Helper to update zustand store with budget
+  const handleContinue = () => {
+    // Only update if valid
+    if (budget && !/^0+$/.test(budget)) {
+      updateMyTask({
+        ...myTask,
+        budget: Number(budget),
+      });
+      router.push('/description-screen');
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Back Arrow */}
@@ -55,7 +71,7 @@ export default function BudgetScreen() {
       {/* Title */}
       <Text style={styles.title}>Enter Your budget</Text>
       <Text style={styles.subtitle}>
-        Don{'\u0027'}t worry, you can always negotiate the final price later
+        Don{'7'}t worry, you can always negotiate the final price later
       </Text>
 
       {/* Budget Display */}
@@ -75,7 +91,7 @@ export default function BudgetScreen() {
       {/* Get Start Button */}
       <TouchableOpacity
         style={[styles.button, (!budget || /^0+$/.test(budget)) && { backgroundColor: '#D1D1D6' }]}
-        onPress={() => router.push('/description-screen')}
+        onPress={handleContinue}
         disabled={!budget || /^0+$/.test(budget)}
       >
         <Text style={styles.buttonText}>Get Start</Text>
