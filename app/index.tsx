@@ -18,19 +18,20 @@ export default function WelcomeScreen() {
         />
       </View>
 
-    
       {/* Bottom Container */}
       <View style={styles.bottomContainer}>
-        <Link href={"/first-screen"} asChild>
+        <Link href={"/(welcome-screen)/first-screen"} asChild>
           <TouchableOpacity style={styles.buttonPrimary} activeOpacity={0.8}>
             <Text style={styles.buttonText}>Get Start</Text>
           </TouchableOpacity>
         </Link>
-        <Link href="/" asChild>
-          <TouchableOpacity style={styles.buttonSecondary} activeOpacity={0.8}>
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
-        </Link>
+        <TouchableOpacity
+          style={styles.buttonSecondary}
+          activeOpacity={0.8}
+          onPress={() => router.replace('/login-screen')}
+        >
+          <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

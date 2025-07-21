@@ -1,3 +1,4 @@
+import { useCreateTaskStore } from '@/store/create-task-store';
 import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -16,6 +17,47 @@ const LocationScreen = () => {
     const [dropoffCode, setDropoffCode] = useState('');
     const [selectedMode, setSelectedMode] = useState<'Online' | 'In Person' | null>(null);
     const [suburb, setSuburb] = useState('');
+
+    const { myTask, updateMyTask } = useCreateTaskStore();
+    console.log('Current Task:', myTask);
+    // Helper to update zustand store with correct type
+    const handleContinue = () => {
+        if (isRemoval) {
+            // RemovalTask
+            updateMyTask({
+                ...myTask,
+                isRemoval: true,
+                pickupLocation: pickupCode,
+                deliveryLocation: dropoffCode,
+                isOnline: undefined,
+                inPerson: undefined,
+                suburb: undefined,
+            });
+        } else if (selectedMode === 'Online') {
+            // OnlineTask
+            updateMyTask({
+                ...myTask,
+                isRemoval: false,
+                isOnline: true,
+                inPerson: false,
+                suburb: undefined,
+                pickupLocation: undefined,
+                deliveryLocation: undefined,
+            });
+        } else if (selectedMode === 'In Person') {
+            // InPersonTask
+            updateMyTask({
+                ...myTask,
+                isRemoval: false,
+                isOnline: false,
+                inPerson: true,
+                suburb: suburb,
+                pickupLocation: undefined,
+                deliveryLocation: undefined,
+            });
+        }
+        router.push('/budget-screen');
+    };
 
     return (
         <View style={styles.container}>
@@ -80,7 +122,7 @@ const LocationScreen = () => {
                             />
                             <View>
                                 <Text style={[styles.optionTitle, selectedMode === 'Online' && { color: '#fff' }]}>Online</Text>
-                                <Text style={[styles.optionSubtitle, selectedMode === 'Online' && { color: '#fff' }]}>
+                                <Text style={[styles.optionSubtitle, selectedMode === 'Online' && { color: '#fff' }]}> 
                                     They can do it from their home
                                 </Text>
                             </View>
@@ -100,10 +142,10 @@ const LocationScreen = () => {
                                 style={styles.icon}
                             />
                             <View>
-                                <Text style={[styles.optionTitle, selectedMode === 'In Person' && { color: '#fff' }]}>
+                                <Text style={[styles.optionTitle, selectedMode === 'In Person' && { color: '#fff' }]}> 
                                     In Person
                                 </Text>
-                                <Text style={[styles.optionSubtitle, selectedMode === 'In Person' && { color: '#fff' }]}>
+                                <Text style={[styles.optionSubtitle, selectedMode === 'In Person' && { color: '#fff' }]}> 
                                     They need to show up at a place
                                 </Text>
                             </View>
@@ -130,7 +172,7 @@ const LocationScreen = () => {
             )}
 
             {/* Continue */}
-            <TouchableOpacity style={styles.continueButton} onPress={() => router.push('/budget-screen')}>
+            <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
                 <Text style={styles.continueText}>Continue</Text>
             </TouchableOpacity>
         </View>

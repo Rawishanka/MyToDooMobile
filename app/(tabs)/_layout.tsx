@@ -1,5 +1,6 @@
 // App.js or App.tsx
 
+import { useAuthStore } from '@/store/auth-task-store';
 import { Entypo, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
@@ -7,8 +8,9 @@ import { Text, View } from 'react-native';
 import BrowseTasksScreen from './browse-screen';
 import PrivateMessagesScreen from './message-screen';
 import MyTasksScreen from './mytasks-screen';
-import GetItDoneScreen from './welcome-screen';
 import AccountScreen from './profile-screen';
+import GetItDoneScreen from './welcome-screen';
+import { router } from 'expo-router';
 
 const Tab = createBottomTabNavigator();
 
@@ -39,6 +41,19 @@ function Account() {
 }
 
 export default function App() {
+
+  const token = useAuthStore((state) => state.token);
+
+  // // Redirect to login screen if not authenticated
+  // React.useEffect(() => {
+  //   if (!token) {
+  //     // Use expo-router navigation to redirect
+  //     // @ts-ignore
+  //     router.push('/login');
+  //   }
+  // }, [token]);
+  // if (!token) return null;
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({

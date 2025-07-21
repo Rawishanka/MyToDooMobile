@@ -1,3 +1,4 @@
+import { useCreateTaskStore } from '@/store/create-task-store';
 import { AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -6,12 +7,14 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 export default function TitleInputScreen() {
   const [title, setTitle] = useState('');
   const router = useRouter();
+  const { myTask, updateMyTask } = useCreateTaskStore();
 
   const letterCount = title.trim().length;
   const handleContinue = () => {
     if (letterCount >= 50) {
       // Handle next step
       console.log('Title:', title);
+      updateMyTask({ ...myTask, title });
       router.push('/time-select-screen'); // Navigate to the next screen
     }
   };
