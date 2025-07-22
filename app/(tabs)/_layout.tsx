@@ -44,15 +44,15 @@ export default function App() {
 
   const token = useAuthStore((state) => state.token);
 
-  // // Redirect to login screen if not authenticated
-  // React.useEffect(() => {
-  //   if (!token) {
-  //     // Use expo-router navigation to redirect
-  //     // @ts-ignore
-  //     router.push('/login');
-  //   }
-  // }, [token]);
-  // if (!token) return null;
+  // Redirect to login screen if not authenticated
+  React.useEffect(() => {
+    if (!token) {
+      // Use expo-router navigation to redirect
+      // @ts-ignore
+      router.push('../login-screen');
+    }
+  }, [token]);
+  if (!token) return null;
 
   return (
     <Tab.Navigator
