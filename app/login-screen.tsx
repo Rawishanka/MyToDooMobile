@@ -1,6 +1,7 @@
 import { useCreateAuthToken } from '@/hooks/useApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -16,16 +17,18 @@ import {
 
 export default function LoginScreen() {
   const navigation = useNavigation();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { mutate } = useCreateAuthToken();
-  
+  const { mutateAsync } = useCreateAuthToken();
+
   const handleLogin = async () => {
     try {
       setLoading(true);
-      await mutate({ username: email, password });
-      // Call your auth logic here
+      await mutateAsync({ username: email, password });
+      // Navigate to protected page after successful login
+      router.replace('/(tabs)');
     } catch (error) {
       console.error('Login Error:', error);
     } finally {
@@ -33,9 +36,6 @@ export default function LoginScreen() {
     }
   };
 
-  // Import Ionicons for the cross icon
-  // Use expo-router for navigation to first page
-  const { router } = require('expo-router');
 
   return (
     <SafeAreaView style={styles.container}>

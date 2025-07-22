@@ -1,5 +1,5 @@
 // External library imports
-import { createTask, handleLogin } from "@/api/mytasks";
+import { useApiFunctions } from "@/api/mytasks";
 import { CreateTask } from "@/store/create-task-type";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -34,7 +34,7 @@ export function useMyTasksQuery() {
 
 export const useCreateTask = (task: CreateTask) => {
   const queryClient = useQueryClient();
-
+ const { createTask } = useApiFunctions();
   return useMutation({
     mutationFn: () => createTask(task),
     onSuccess: () => {
@@ -45,9 +45,9 @@ export const useCreateTask = (task: CreateTask) => {
 
 export function useCreateAuthToken() {
   const queryClient = useQueryClient();
-
+ const { handleLoginUser } = useApiFunctions();
   return useMutation({
-    mutationFn: ({ username, password }: { username: string; password: string }) => handleLogin(username, password),
+    mutationFn: ({ username, password }: { username: string; password: string }) => handleLoginUser(username, password),
     onSuccess: (data) => {
       queryClient.setQueryData(['auth-token'], data);
     },
