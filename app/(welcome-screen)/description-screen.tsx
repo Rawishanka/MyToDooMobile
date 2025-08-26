@@ -2,7 +2,7 @@ import { useCreateTaskStore } from '@/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -16,11 +16,17 @@ export default function DescribeTaskScreen() {
   const navigation = useNavigation();
   const { myTask, updateMyTask } = useCreateTaskStore();
 
+  // Initialize with existing data from store
+  useEffect(() => {
+    if (myTask.description) {
+      setDescription(myTask.description);
+    }
+  }, [myTask.description]);
+
   // Helper to update zustand store with description
   const handleContinue = () => {
     if (description.trim() !== '') {
       updateMyTask({
-        ...myTask,
         description: description,
       });
       router.push('/image-upload-screen');
@@ -35,8 +41,8 @@ export default function DescribeTaskScreen() {
       </TouchableOpacity>
 
       {/* Title */}
-      <Text style={styles.title}>Describe the tasks</Text>
-      <Text style={styles.subtitle}>Post the task when you're ready</Text>
+      <Text style={styles.title}>Describe the MyToDoo task</Text>
+      <Text style={styles.subtitle}>Give a detailed description of the MyToDoo tasks</Text>
 
       {/* Input */}
       <TextInput

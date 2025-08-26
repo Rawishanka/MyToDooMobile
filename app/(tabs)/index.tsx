@@ -1,14 +1,18 @@
-import React from 'react';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import LottieView from 'lottie-react-native';
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
+  FlatList,
   ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
-  StyleSheet,
+  View,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+// Import the local assets
+const LottieAnimation = require('@/assets/animations/lottie-animation.json');
 
 const tags = ['End of lease cleaning', 'Help me move', 'Fix lights'];
 const tasks = [
@@ -37,12 +41,38 @@ const categories: { title: string; icon: MaterialCommunityIconName }[] = [
 ];
 
 export default function GetItDoneScreen() {
+  const [lottieLoaded, setLottieLoaded] = useState(false);
+  const [lottieError, setLottieError] = useState(false);
+  
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#fff' }}>
-      {/* Top Section */}
+      {/* Top Section with Animation Logo */}
       <View style={styles.header}>
-        <Text style={styles.logo}>MyToDoo</Text>
-        <MaterialCommunityIcons name="bell-outline" size={24} color="#fff" />
+        <View style={styles.logoContainer}>
+          {!lottieError ? (
+            <LottieView
+              source={LottieAnimation}
+              style={styles.logoAnimation}
+              autoPlay={true}
+              loop={true}
+              speed={1}
+              onAnimationFinish={() => {
+                console.log('Logo animation finished');
+                setLottieLoaded(true);
+              }}
+              onAnimationFailure={(error) => {
+                console.log('Logo animation error:', error);
+                setLottieError(true);
+              }}
+            />
+          ) : (
+            // Fallback text logo if Lottie fails to load
+            <Text style={styles.fallbackLogo}>MyToDoo</Text>
+          )}
+        </View>
+        <View style={styles.rightIcons}>
+          <MaterialCommunityIcons name="bell-outline" size={24} color="#fff" />
+        </View>
       </View>
 
       {/* Greeting */}
@@ -114,6 +144,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  logoContainer: {
+    flex: 1,
+    alignItems: 'flex-start',
+  },
+  logoAnimation: {
+    width: 120,
+    height: 40,
+  },
+  fallbackLogo: { 
+    color: '#fff', 
+    fontSize: 20, 
+    fontWeight: 'bold' 
+  },
+  welcomeAnimation: {
+    width: '100%',
+    height: 200,
+  },
   logo: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
   greeting: { fontSize: 16, margin: 10, color: '#333' },
   taskCard: { backgroundColor: '#003399', padding: 16 },
@@ -125,6 +172,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 14,
     marginBottom: 10,
+  },
+  lottieAnimation: {
+    width: 40,
+    height: 40,
+  },
+  rightIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  lottieIcon: {
+    width: 24,
+    height: 24,
   },
   postButton: {
     flexDirection: 'row',

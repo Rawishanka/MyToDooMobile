@@ -5,7 +5,7 @@ import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'rea
 
 const { width, height } = Dimensions.get('window');
 
-const illustration = require('@/assets/images/illustration.png');
+const illustration = require('@/assets/images/second_screen.png');
 
 export default function OnboardingScreen() {
   return (
@@ -31,8 +31,8 @@ export default function OnboardingScreen() {
 
       {/* Text */}
       <View style={styles.textContainer}>
-        <Text style={styles.title}>Get anything done today</Text>
-        <Text style={styles.subtitle}>Whatever's on your to-do list, we'll get it done</Text>
+        <Text style={styles.title}>Select a local MyToDoo hero</Text>
+        <Text style={styles.subtitle}>Skilled MyToDoo heros are waiting to help tick off those tasks</Text>
       </View>
 
       {/* Buttons */}
@@ -54,7 +54,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0047AB', // Blue background
+    backgroundColor: '#103464', // Blue background
     padding: 20,
     justifyContent: 'space-between',
   },

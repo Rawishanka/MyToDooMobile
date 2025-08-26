@@ -3,6 +3,9 @@ import { BlurView } from 'expo-blur';
 import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, Image, Modal, Pressable, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
+// 🔥 IMPORT YOUR NOTIFICATION MODAL
+import NotificationModal from './notification-screen';
+
 const TASK_FILTERS = [
   'All tasks',
   'Posted tasks',
@@ -18,6 +21,19 @@ export default function MyTasksScreen() {
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchText, setSearchText] = useState("");
   const searchInputRef = useRef<TextInput>(null);
+
+  // 🔥 ADD NOTIFICATION STATE
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationCount = 5; // You can make this dynamic
+
+  // 🔥 ADD NOTIFICATION FUNCTIONS
+  const openNotifications = () => {
+    setShowNotifications(true);
+  };
+
+  const closeNotifications = () => {
+    setShowNotifications(false);
+  };
 
   useEffect(() => {
     if (searchVisible && searchInputRef.current) {
@@ -43,7 +59,17 @@ export default function MyTasksScreen() {
           <TouchableOpacity onPress={() => setSearchVisible(true)}>
             <Ionicons name="search-outline" size={20} color="#000" />
           </TouchableOpacity>
-          <Ionicons name="notifications-outline" size={20} color="#000" style={{ marginLeft: 10 }} />
+          {/* 🔥 UPDATE NOTIFICATION ICON TO BE CLICKABLE */}
+          <TouchableOpacity onPress={openNotifications} style={styles.notificationButton}>
+            <Ionicons name="notifications-outline" size={20} color="#000" />
+            {notificationCount > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.badgeText}>
+                  {notificationCount > 99 ? '99+' : notificationCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
       </View>
       <View style={styles.filterRow}>
@@ -81,31 +107,42 @@ export default function MyTasksScreen() {
         contentContainerStyle={{ paddingBottom: 80 }}
       />
 
-      {/* Modal Filter */}
+      {/* Modal Filter - 🔥 FIXED TO SHOW AT TOP */}
       <Modal
         visible={modalVisible}
         transparent
-        animationType="slide"
+        animationType="fade"
         statusBarTranslucent
         onRequestClose={() => setModalVisible(false)}
       >
-        <Pressable style={styles.modalContainer} onPress={() => setModalVisible(false)}>
-          <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+          <View style={styles.modalContainer}>
+            <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+            
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Filter Tasks</Text>
+                <Pressable onPress={() => setModalVisible(false)}>
+                  <Ionicons name="close" size={24} color="#333" />
+                </Pressable>
+              </View>
 
-          <View style={styles.modalContent} pointerEvents="box-none">
-            <View style={styles.modalHeader}>
-              <Pressable onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} />
-              </Pressable>
+              {TASK_FILTERS.map((filter, index) => (
+                <TouchableOpacity key={index} style={styles.option} onPress={() => handleFilterPress(filter)}>
+                  <Text style={[
+                    styles.optionText, 
+                    selectedFilter === filter && styles.selectedOptionText
+                  ]}>
+                    {filter}
+                  </Text>
+                  {selectedFilter === filter && (
+                    <Ionicons name="checkmark" size={20} color="#002A5C" />
+                  )}
+                </TouchableOpacity>
+              ))}
             </View>
-
-            {TASK_FILTERS.map((filter, index) => (
-              <TouchableOpacity key={index} style={styles.option} onPress={() => handleFilterPress(filter)}>
-                <Text style={{ fontSize: 16, color: '#002A5C' }}>{filter}</Text>
-              </TouchableOpacity>
-            ))}
           </View>
-        </Pressable>
+        </TouchableWithoutFeedback>
       </Modal>
 
       {/* Search Bar Modal */}
@@ -132,6 +169,12 @@ export default function MyTasksScreen() {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+      {/* 🔥 ADD NOTIFICATION MODAL */}
+      <NotificationModal
+        visible={showNotifications}
+        onClose={closeNotifications}
+      />
     </View>
   );
 }
@@ -157,6 +200,28 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  // 🔥 ADD NOTIFICATION BUTTON STYLES
+  notificationButton: {
+    position: 'relative',
+    marginLeft: 10,
+    padding: 4,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: '#ff4444',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
   },
   filterRow: {
     flexDirection: 'row',
@@ -200,23 +265,52 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     alignSelf: 'flex-end',
   },
+  // 🔥 FIXED MODAL STYLES TO SHOW AT TOP
   modalContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start', // Changed from 'flex-end' to 'flex-start'
+    paddingTop: 100, // Add some top padding to position it nicely below header
   },
   modalContent: {
     backgroundColor: 'white',
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    marginHorizontal: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
+    maxHeight: '60%', // Limit height to prevent it from taking full screen
   },
   modalHeader: {
-    alignItems: 'flex-end',
-    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#002A5C',
   },
   option: {
-    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 0.5,
-    borderColor: '#ddd',
+    borderBottomColor: '#f0f0f0',
+  },
+  optionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  selectedOptionText: {
+    color: '#002A5C',
+    fontWeight: '600',
   },
 });

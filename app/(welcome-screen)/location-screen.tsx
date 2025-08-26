@@ -1,7 +1,7 @@
 import { useCreateTaskStore } from '@/store/create-task-store';
 import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     StyleSheet,
     Switch,
@@ -20,12 +20,39 @@ const LocationScreen = () => {
 
     const { myTask, updateMyTask } = useCreateTaskStore();
     console.log('Current Task:', myTask);
+
+    // Initialize with existing data from store
+    useEffect(() => {
+        // Check if it's a removal task
+        if ('isRemoval' in myTask && myTask.isRemoval) {
+            setIsRemoval(true);
+            if (myTask.pickupLocation) {
+                setPickupCode(myTask.pickupLocation);
+            }
+            if (myTask.deliveryLocation) {
+                setDropoffCode(myTask.deliveryLocation);
+            }
+        } 
+        // Check if it's an online task
+        else if ('isOnline' in myTask && myTask.isOnline) {
+            setIsRemoval(false);
+            setSelectedMode('Online');
+        }
+        // Check if it's an in-person task
+        else if ('inPerson' in myTask && myTask.inPerson) {
+            setIsRemoval(false);
+            setSelectedMode('In Person');
+            if (myTask.suburb) {
+                setSuburb(myTask.suburb);
+            }
+        }
+    }, [myTask]);
+
     // Helper to update zustand store with correct type
     const handleContinue = () => {
         if (isRemoval) {
             // RemovalTask
             updateMyTask({
-                ...myTask,
                 isRemoval: true,
                 pickupLocation: pickupCode,
                 deliveryLocation: dropoffCode,
@@ -36,7 +63,6 @@ const LocationScreen = () => {
         } else if (selectedMode === 'Online') {
             // OnlineTask
             updateMyTask({
-                ...myTask,
                 isRemoval: false,
                 isOnline: true,
                 inPerson: false,
@@ -47,7 +73,6 @@ const LocationScreen = () => {
         } else if (selectedMode === 'In Person') {
             // InPersonTask
             updateMyTask({
-                ...myTask,
                 isRemoval: false,
                 isOnline: false,
                 inPerson: true,
@@ -62,17 +87,17 @@ const LocationScreen = () => {
     return (
         <View style={styles.container}>
             {/* Back Arrow */}
-            <TouchableOpacity style={styles.backArrow}>
+            <TouchableOpacity style={styles.backArrow} onPress={() => router.back()}>
                 <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
             </TouchableOpacity>
 
             {/* Title */}
-            <Text style={styles.title}>Say where</Text>
+            <Text style={styles.title}>Tell me more!</Text>
             <Text style={styles.subtitle}>Where do you need it done?</Text>
 
             {/* Toggle */}
             <View style={styles.switchBox}>
-                <Text style={styles.switchLabel}>Is this a removal task?</Text>
+                <Text style={styles.switchLabel}>Hey! are you moving?</Text>
                 <Switch value={isRemoval} onValueChange={setIsRemoval} />
             </View>
 
@@ -121,9 +146,9 @@ const LocationScreen = () => {
                                 style={styles.icon}
                             />
                             <View>
-                                <Text style={[styles.optionTitle, selectedMode === 'Online' && { color: '#fff' }]}>Online</Text>
+                                <Text style={[styles.optionTitle, selectedMode === 'Online' && { color: '#fff' }]}>Remote</Text>
                                 <Text style={[styles.optionSubtitle, selectedMode === 'Online' && { color: '#fff' }]}> 
-                                    They can do it from their home
+                                    Can be done remotely!
                                 </Text>
                             </View>
                         </TouchableOpacity>
@@ -146,7 +171,7 @@ const LocationScreen = () => {
                                     In Person
                                 </Text>
                                 <Text style={[styles.optionSubtitle, selectedMode === 'In Person' && { color: '#fff' }]}> 
-                                    They need to show up at a place
+                                    I need my MyToDoo Hero in person
                                 </Text>
                             </View>
                         </TouchableOpacity>
@@ -180,6 +205,7 @@ const LocationScreen = () => {
 };
 
 export default LocationScreen;
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,

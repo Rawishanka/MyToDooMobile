@@ -1,15 +1,25 @@
+// app/(tabs)/index.tsx (Welcome Screen with Modal)
+import { useCreateTaskStore } from '@/store/create-task-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React from 'react';
+import { useRouter } from 'expo-router';
+import LottieView from 'lottie-react-native';
+import React, { useState } from 'react';
 import {
-    FlatList,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+
+// 🔥 IMPORT YOUR NOTIFICATION MODAL
+import NotificationModal from './notification-screen';
+
+// Import the Lottie animation
+import LottieAnimation from '@/assets/animations/lottie-animation.json';
 
 const tags = ['End of lease cleaning', 'Help me move', 'Fix lights', 'Help me move', 'Help me move', 'Help me move', 'Help me move'];
 const tasks = [
@@ -21,6 +31,7 @@ const tasks = [
   { id: '6', name: 'Jane F.', task: 'Folding arm awning needs reset' },
   { id: '7', name: 'Jane F.', task: 'Folding arm awning needs reset' },
 ];
+
 type MaterialCommunityIconName =
   | "shovel"
   | "format-paint"
@@ -43,12 +54,69 @@ const categories: { title: string; icon: MaterialCommunityIconName }[] = [
 ];
 
 export default function GetItDoneScreen() {
+  // 🔥 ADD STATE FOR MODAL
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationCount = 5; // You can make this dynamic
+
+  // 🔥 ADD STATE FOR TASK INPUT AND NAVIGATION
+  const [taskInput, setTaskInput] = useState('');
+  const router = useRouter();
+  const { updateMyTask } = useCreateTaskStore();
+
+  // 🔥 ADD FUNCTIONS TO CONTROL MODAL
+  const openNotifications = () => {
+    setShowNotifications(true);
+  };
+
+  const closeNotifications = () => {
+    setShowNotifications(false);
+  };
+
+  // 🔥 ADD NAVIGATION FUNCTIONS
+  const handlePostTask = () => {
+    if (taskInput.trim()) {
+      // Save the task input to the store
+      updateMyTask({ title: taskInput.trim() });
+      // Navigate to title screen
+      router.push('/title-screen');
+    }
+  };
+
+  const handleTagPress = (tag: string) => {
+    // Save the tag as task title to the store
+    updateMyTask({ title: tag });
+    // Navigate to title screen
+    router.push('/title-screen');
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.headerWhite}>
-        <Text style={styles.logoBlue}>MyToDoo</Text>
-        <MaterialCommunityIcons name="bell-outline" size={24} color="#003399" />
+        {/* Invisible placeholder to maintain layout */}
+        <View style={styles.logoPlaceholder} />
+        
+        {/* Absolute positioned Lottie Animation */}
+        <LottieView
+          source={LottieAnimation}
+          style={styles.logoAnimation}
+          autoPlay={true}
+          loop={false}
+          speed={1}
+        />
+        
+        {/* 🔥 CLICKABLE NOTIFICATION BELL WITH BADGE */}
+        <TouchableOpacity onPress={openNotifications} style={styles.bellButton}>
+          <MaterialCommunityIcons name="bell-outline" size={24} color="#003399" />
+          {notificationCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.badgeText}>
+                {notificationCount > 99 ? '99+' : notificationCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
+      
       <ScrollView style={{ flex: 1 }}>
         {/* Post a Task Section: blue background, below greeting */}
         <View style={styles.taskCard}>
@@ -60,9 +128,11 @@ export default function GetItDoneScreen() {
             style={styles.input}
             placeholder="In a few words what do you need done?"
             placeholderTextColor="#999"
+            value={taskInput}
+            onChangeText={setTaskInput}
           />
           <View style={{ height: 24 }} />
-          <TouchableOpacity style={styles.postButton}>
+          <TouchableOpacity style={styles.postButton} onPress={handlePostTask}>
             <MaterialCommunityIcons name="plus" size={18} color="#fff" />
             <Text style={styles.postButtonText}>Post a Task</Text>
             <MaterialCommunityIcons name="arrow-right" size={18} color="#fff" />
@@ -77,49 +147,58 @@ export default function GetItDoneScreen() {
             snapToAlignment="center"
           >
             {tags.map((tag, index) => (
-              <TouchableOpacity key={index} style={styles.tag}>
+              <TouchableOpacity 
+                key={index} 
+                style={styles.tag}
+                onPress={() => handleTagPress(tag)}
+              >
                 <Text style={{ color: '#fff' }}>{tag}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
 
+        {/* Task Cards */}
+        <Text style={styles.sectionTitle}>Get more work now</Text>
+        <Text style={styles.subTitle}>Cut through the competition and earn more with customers you know</Text>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={tasks}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.taskBox}>
+              <Text style={styles.name}>{item.name}</Text>
+              <Text style={styles.desc}>{item.task}</Text>
+              <TouchableOpacity>
+                <Text style={styles.messageLink}>💬 Sent a message</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          style={{ marginBottom: 10, paddingHorizontal: 10 }}
+          decelerationRate={0.95}
+          snapToAlignment="center"
+        />
 
-      {/* Task Cards */}
-      <Text style={styles.sectionTitle}>Get more work now</Text>
-      <Text style={styles.subTitle}>Cut through the competition and earn more with customers you know</Text>
-      <FlatList
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        data={tasks}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.taskBox}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.desc}>{item.task}</Text>
-            <TouchableOpacity>
-              <Text style={styles.messageLink}>💬 Sent a message</Text>
+        {/* Category Grid */}
+        <Text style={styles.sectionTitle}>Need something done</Text>
+        <Text style={styles.subTitle}>Cut through the competition and earn more with customers you know</Text>
+
+        <View style={styles.gridContainer}>
+          {categories.map((cat, index) => (
+            <TouchableOpacity key={index} style={styles.gridItem}>
+              <MaterialCommunityIcons name={cat.icon} size={32} color="#000" />
+              <Text style={styles.gridLabel}>{cat.title}</Text>
             </TouchableOpacity>
-          </View>
-        )}
-        style={{ marginBottom: 10, paddingHorizontal: 10 }}
-        decelerationRate={0.95}
-        snapToAlignment="center"
-      />
-
-      {/* Category Grid */}
-      <Text style={styles.sectionTitle}>Need something done</Text>
-      <Text style={styles.subTitle}>Cut through the competition and earn more with customers you know</Text>
-
-      <View style={styles.gridContainer}>
-        {categories.map((cat, index) => (
-          <TouchableOpacity key={index} style={styles.gridItem}>
-            <MaterialCommunityIcons name={cat.icon} size={32} color="#000" />
-            <Text style={styles.gridLabel}>{cat.title}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+          ))}
+        </View>
       </ScrollView>
+
+      {/* 🔥 ADD NOTIFICATION MODAL */}
+      <NotificationModal
+        visible={showNotifications}
+        onClose={closeNotifications}
+      />
     </SafeAreaView>
   );
 }
@@ -137,22 +216,55 @@ const styles = StyleSheet.create({
     top: 0,
     zIndex: 10,
   },
-  logoBlue: { color: '#003399', fontSize: 20, fontWeight: 'bold' },
-  greetingSection: {
-    backgroundColor: '#003399',
-    paddingVertical: 40,
-    paddingHorizontal: 16,
-    marginBottom: 0,
+  logoAnimation: {
+    position: 'absolute',
+    top: '80%',
+    transform: [{ translateY: -20 }],
+    width: 120,
+    height: 80,
+    zIndex: 1,
+  }, 
+  logoPlaceholder: {
+    width: 120,
+    height: 40,
+  },
+  // 🔥 NOTIFICATION BELL STYLES
+  bellButton: {
+    position: 'relative',
+    padding: 8,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: '#ff4444',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   greetingText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '500',
   },
-  greeting: { fontSize: 16, margin: 10, color: '#333' },
-  taskCard: { backgroundColor: '#003399', paddingHorizontal: 16, paddingVertical: 36 },
-  postTitle: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
+  taskCard: { 
+    backgroundColor: '#003399', 
+    paddingHorizontal: 16, 
+    paddingVertical: 36 
+  },
+  postTitle: { 
+    color: '#fff', 
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    marginBottom: 10 
+  },
   input: {
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -170,7 +282,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  postButtonText: { color: '#fff', fontWeight: 'bold' },
+  postButtonText: { 
+    color: '#fff', 
+    fontWeight: 'bold' 
+  },
   tagRow: {
     flexDirection: 'row',
     paddingHorizontal: 10,
@@ -204,9 +319,18 @@ const styles = StyleSheet.create({
     marginRight: 10,
     width: 220,
   },
-  name: { fontWeight: 'bold', marginBottom: 4 },
-  desc: { fontSize: 13, color: '#333' },
-  messageLink: { color: '#007bff', marginTop: 6 },
+  name: { 
+    fontWeight: 'bold', 
+    marginBottom: 4 
+  },
+  desc: { 
+    fontSize: 13, 
+    color: '#333' 
+  },
+  messageLink: { 
+    color: '#007bff', 
+    marginTop: 6 
+  },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
