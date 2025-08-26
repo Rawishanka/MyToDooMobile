@@ -7,31 +7,67 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { router } from 'expo-router';
+import { useCreateTaskStore } from '../../store/create-task-store';
 
 type ListItemProps = {
   icon: React.ReactNode;
   text: string;
+  value: string;
   onPress: () => void;
 };
 
-const ListItem = ({ icon, text, onPress }: ListItemProps) => (
+const ListItem = ({ icon, text, value, onPress }: ListItemProps) => (
   <TouchableOpacity style={styles.item} onPress={onPress}>
     <View style={styles.itemLeft}>
       {icon}
-      <Text style={styles.itemText}>{text}</Text>
+      <View style={styles.textContainer}>
+        <Text style={styles.itemText}>{text}</Text>
+        {value && <Text style={styles.valueText}>{value}</Text>}
+      </View>
     </View>
     <Ionicons name="chevron-forward" size={20} color="#003366" />
   </TouchableOpacity>
 );
 
-import type { NavigationProp } from '@react-navigation/native';
-import { router } from 'expo-router';
+export default function DetailScreen() {
+  const { myTask } = useCreateTaskStore();
 
-export default function ReadyToGetOffers({ navigation }: { navigation: NavigationProp<any> }) {
+  // Helper function to get location text based on task type
+  const getLocationText = () => {
+    if ('isRemoval' in myTask && myTask.isRemoval) {
+      if (myTask.pickupLocation && myTask.deliveryLocation) {
+        return `${myTask.pickupLocation} → ${myTask.deliveryLocation}`;
+      }
+      return 'Set pickup & delivery locations';
+    }
+    
+    if ('isOnline' in myTask && myTask.isOnline) {
+      return 'Online';
+    }
+    
+    if ('inPerson' in myTask && myTask.inPerson && myTask.suburb) {
+      return myTask.suburb;
+    }
+    
+    return 'Set location';
+  };
+
+  // Helper function to get date/time text
+  const getDateTimeText = () => {
+    if (myTask.date && myTask.time) {
+      return `${myTask.date} at ${myTask.time}`;
+    }
+    if (myTask.date) {
+      return myTask.date;
+    }
+    return "I'm Flexible";
+  };
+
   return (
     <View style={styles.container}>
       {/* Back Arrow Button */}
-      <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={24} color="#000" />
       </TouchableOpacity>
 
@@ -41,28 +77,37 @@ export default function ReadyToGetOffers({ navigation }: { navigation: Navigatio
       <ScrollView contentContainerStyle={styles.list}>
         <ListItem
           icon={<MaterialIcons name="drive-file-rename-outline" size={20} color="#003366" />}
-          text="Move the car"
-          onPress={() => navigation.navigate('MoveCar')}
+          text="Task Title"
+          value={myTask.title || 'Move the car'}
+          onPress={() => router.push('/title-screen')}
         />
+        
         <ListItem
           icon={<MaterialIcons name="event-available" size={20} color="#003366" />}
-          text="I'm Flexible"
-          onPress={() => navigation.navigate('Flexible')}
+          text="When"
+          value={getDateTimeText()}
+          onPress={() => router.push('/time-select-screen')}
         />
+        
         <ListItem
           icon={<Ionicons name="location-outline" size={20} color="#003366" />}
-          text="Online"
-          onPress={() => navigation.navigate('Online')}
+          text="Location"
+          value={getLocationText()}
+          onPress={() => router.push('/location-screen')}
         />
+        
         <ListItem
           icon={<MaterialIcons name="description" size={20} color="#003366" />}
           text="Description"
-          onPress={() => navigation.navigate('Description')}
+          value={myTask.description || 'Add task description'}
+          onPress={() => router.push('/description-screen')}
         />
+        
         <ListItem
           icon={<MaterialIcons name="attach-money" size={20} color="#003366" />}
-          text="A$200"
-          onPress={() => navigation.navigate('Budget')}
+          text="Budget"
+          value={myTask.budget > 0 ? `A$${myTask.budget}` : 'A$200'}
+          onPress={() => router.push('/budget-screen')}
         />
       </ScrollView>
 
@@ -107,16 +152,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12, // Increased gap between items
+    marginBottom: 12,
   },
   itemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+  },
+  textContainer: {
+    marginLeft: 16,
+    flex: 1,
   },
   itemText: {
     fontSize: 16,
     color: '#003366',
-    marginLeft: 16, // Increased margin to separate icon and text
+    fontWeight: '600',
+  },
+  valueText: {
+    fontSize: 14,
+    color: '#667085',
+    marginTop: 2,
   },
   continueBtn: {
     backgroundColor: '#0052CC',

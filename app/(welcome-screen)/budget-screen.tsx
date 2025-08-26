@@ -4,7 +4,7 @@ import { useCreateTaskStore } from '@/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,6 +15,14 @@ import {
 export default function BudgetScreen() {
   const [budget, setBudget] = useState('');
   const navigation = useNavigation();
+  const { myTask, updateMyTask } = useCreateTaskStore();
+
+  // Initialize with existing data from store
+  useEffect(() => {
+    if (myTask.budget && myTask.budget > 0) {
+      setBudget(myTask.budget.toString());
+    }
+  }, [myTask.budget]);
 
   const handleKeyPress = (value: string) => {
     if (value === 'delete') {
@@ -23,9 +31,6 @@ export default function BudgetScreen() {
       setBudget(budget + value);
     }
   };
-
-  const { myTask, updateMyTask } = useCreateTaskStore();
-
 
   const renderKey = (value: string | number) => (
     <TouchableOpacity
@@ -41,7 +46,6 @@ export default function BudgetScreen() {
     </TouchableOpacity>
   );
 
-
   const numberPad = [
     [1, 2, 3],
     [4, 5, 6],
@@ -54,7 +58,6 @@ export default function BudgetScreen() {
     // Only update if valid
     if (budget && !/^0+$/.test(budget)) {
       updateMyTask({
-        ...myTask,
         budget: Number(budget),
       });
       router.push('/description-screen');
@@ -71,7 +74,7 @@ export default function BudgetScreen() {
       {/* Title */}
       <Text style={styles.title}>Enter Your budget</Text>
       <Text style={styles.subtitle}>
-        Don{'7'}t worry, you can always negotiate the final price later
+        Don't worry, you can always negotiate the final price later
       </Text>
 
       {/* Budget Display */}
@@ -99,6 +102,7 @@ export default function BudgetScreen() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

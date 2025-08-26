@@ -25,7 +25,7 @@ export function useApiFunctions() {
   async function handleLoginUser(email: string, password: string) {
     const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
       ? API_CONFIG.BASE_URL
-      : "http://192.168.132.218:5001/api";
+      : "http://192.168.8.135:5001/api";
     const api = createApi(baseUrl);
     console.log("Calling login API:", baseUrl + "/auth/login");
     console.log("With data:", { email: email, password });
