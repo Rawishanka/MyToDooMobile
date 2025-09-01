@@ -2,7 +2,7 @@ import { useCreateTaskStore } from '@/store/create-task-store';
 import { AntDesign } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function GoalSelectionScreen() {
   const [selectedGoal, setSelectedGoal] = useState('');
@@ -11,13 +11,12 @@ export default function GoalSelectionScreen() {
   const { myTask, updateMyTask } = useCreateTaskStore();
   return (
     <View style={styles.container}>
-      {/* Back button */}
-      <TouchableOpacity style={styles.backButton}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <AntDesign name="arrowleft" size={24} color="#333" />
       </TouchableOpacity>
 
       {/* Title and Subtitle */}
-      <Text style={styles.title}>What's your main goal?</Text>
+      <Text style={styles.title}>What to you want to do?</Text>
       <Text style={styles.subtitle}>You can change your option later</Text>
 
       {/* Option 1 */}
@@ -29,11 +28,11 @@ export default function GoalSelectionScreen() {
         onPress={() => setSelectedGoal('getThingsDone')}
       >
         <View style={styles.iconCircle}>
-          <AntDesign name="checkcircleo" size={20} color="#7D4AEA" />
+          <AntDesign name="profile" size={22} color="#FF7A00" />
         </View>
         <View>
-          <Text style={styles.cardTitle}>Get things done</Text>
-          <Text style={styles.cardSubtitle}>Find & Tackle</Text>
+          <Text style={styles.cardTitle}>Get MyToDoo tasks completed</Text>
+          <Text style={styles.cardSubtitle}>Add, assign, done!</Text>
         </View>
       </TouchableOpacity>
 
@@ -45,12 +44,15 @@ export default function GoalSelectionScreen() {
         ]}
         onPress={() => setSelectedGoal('earnMoney')}
       >
-        <View style={[styles.iconCircle, { backgroundColor: '#17C964' }]}>
-          <AntDesign name="wallet" size={20} color="#fff" />
+        <View style={[styles.iconCircle, { backgroundColor: '#e3e3f4ff' }]}>
+          <Image 
+            source={require('@/assets/images/goal_service.png')} // Make sure this path is correct
+            style={styles.iconImage}
+          />
         </View>
         <View>
-          <Text style={styles.cardTitle}>Earn Money</Text>
-          <Text style={styles.cardSubtitle}>Become a Trader</Text>
+          <Text style={styles.cardTitle}>Provide Services</Text>
+          <Text style={styles.cardSubtitle}>Become a MyToDoo Hero!</Text>
         </View>
       </TouchableOpacity>
 
@@ -71,6 +73,7 @@ export default function GoalSelectionScreen() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -126,6 +129,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#8E8E93',
   },
+  iconImage: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+  },
   continueButton: {
     position: 'absolute',
     left: 20,
@@ -137,7 +145,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   continueEnabled: {
-    backgroundColor: '#0052CC', // same as previous "Get Start" button color
+    backgroundColor: '#0052CC', 
   },
   continueText: {
     color: '#fff',

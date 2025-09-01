@@ -1,7 +1,7 @@
 import { useCreateTaskStore } from '@/store/create-task-store';
 import { AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function TitleInputScreen() {
@@ -9,12 +9,19 @@ export default function TitleInputScreen() {
   const router = useRouter();
   const { myTask, updateMyTask } = useCreateTaskStore();
 
+  // Initialize with existing data from store
+  useEffect(() => {
+    if (myTask.title) {
+      setTitle(myTask.title);
+    }
+  }, [myTask.title]);
+
   const letterCount = title.trim().length;
   const handleContinue = () => {
-    if (letterCount >= 50) {
+    if (letterCount >= 10) {
       // Handle next step
       console.log('Title:', title);
-      updateMyTask({ ...myTask, title });
+      updateMyTask({ title });
       router.push('/time-select-screen'); // Navigate to the next screen
     }
   };
@@ -22,13 +29,13 @@ export default function TitleInputScreen() {
   return (
     <View style={styles.container}>
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <AntDesign name="arrowleft" size={24} color="#333" />
       </TouchableOpacity>
 
       {/* Title & Subtitle */}
-      <Text style={styles.title}>Start with a title</Text>
-      <Text style={styles.subtitle}>In a few words, what do you need to done?</Text>
+      <Text style={styles.title}>MyToDo title for task</Text>
+      <Text style={styles.subtitle}>Tell MyToDoo hero's what you need done?</Text>
 
       {/* Input Field */}
       <TextInput
@@ -64,6 +71,7 @@ export default function TitleInputScreen() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

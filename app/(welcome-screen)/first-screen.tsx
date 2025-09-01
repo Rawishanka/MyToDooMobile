@@ -15,7 +15,7 @@ export default function OnboardingScreen() {
         <AntDesign name="arrowleft" size={24} color="white" />
       </TouchableOpacity>
 
-      {/* Progress dots */}
+      {/* Progress dots */} 
       <View style={styles.dots}>
         <View style={styles.dotFilled} />
         <View style={styles.dotEmpty} />
@@ -31,8 +31,8 @@ export default function OnboardingScreen() {
 
       {/* Text */}
       <View style={styles.textContainer}>
-        <Text style={styles.title}>Get anything done today</Text>
-        <Text style={styles.subtitle}>Whatever's on your to-do list, we'll get it done</Text>
+        <Text style={styles.title}>Add task to MyToDoo</Text>
+        <Text style={styles.subtitle}>and lets get it done!</Text>
       </View>
 
       {/* Buttons */}
@@ -54,7 +54,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0047AB', // Blue background
+    backgroundColor: '#103464', // Blue background
     padding: 20,
     justifyContent: 'space-between',
   },
