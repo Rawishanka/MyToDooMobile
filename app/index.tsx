@@ -120,8 +120,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   lottieAnimation: {
-    width: 150,
-    height: 150,
+    width: 250,
+    height: 250, 
     backgroundColor: 'rgba(255,255,255,0.1)', // Temporary background to see the container
   },
   fallbackText: {
