@@ -58,11 +58,11 @@ export default function WelcomeScreen() {
         {(!videoLoaded || videoError) && (
           <Image 
             style={styles.media}
-            resizeMode={ResizeMode.COVER}
+            resizeMode="contain"
           />
         )}
         
-        {/* Video Component with local asset - Full Width */}
+        {/* Video Component with local asset - Properly sized with rounded corners */}
         <Video
           source={WelcomeVideo}
           style={[
@@ -73,7 +73,7 @@ export default function WelcomeScreen() {
           isLooping={true}
           isMuted={true}
           useNativeControls={false}
-          resizeMode={ResizeMode.COVER}
+          resizeMode={ResizeMode.CONTAIN}
           onLoad={() => {
             console.log('Video loaded successfully');
             setVideoLoaded(true);
@@ -136,13 +136,13 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 0, // Remove horizontal padding
+    paddingHorizontal: 10, // Add horizontal padding
   },
   media: {
-    width: screenWidth, // Full screen width
-    height: 300,
-    maxWidth: '100%',
-    borderRadius:20
+    width: '95%', // Reduced width
+    height: 250, // Reduced height
+    borderRadius: 20,
+    overflow: 'hidden', // Ensures rounded corners work properly
   },
   bottomContainer: {
     flex: 2,
