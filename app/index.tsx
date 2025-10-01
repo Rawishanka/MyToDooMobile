@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
   },
-  lottieAnimation: {
+  lottieAnimation: { 
     width: 250,
     height: 250, 
     backgroundColor: 'rgba(255,255,255,0.1)', // Temporary background to see the container
