@@ -15,6 +15,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: true,
   },
   android: {
+    package: 'com.nowanya.mytodoomobile',
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#ffffff',
@@ -44,5 +45,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     apiUrl: process.env.API_URL,
     environment: process.env.ENVIRONMENT,
+    eas: {
+      projectId: "ffec6247-9f6a-48a3-8d88-1cc225c686f6"
+    }
   },
 });
