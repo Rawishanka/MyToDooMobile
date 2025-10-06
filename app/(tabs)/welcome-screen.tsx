@@ -3,16 +3,17 @@ import { useCreateTaskStore } from '@/store/create-task-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
+import { Bell, ChevronRight } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
-  FlatList,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    FlatList,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 // 🔥 IMPORT YOUR NOTIFICATION MODAL
@@ -106,7 +107,7 @@ export default function GetItDoneScreen() {
         
         {/* 🔥 CLICKABLE NOTIFICATION BELL WITH BADGE */}
         <TouchableOpacity onPress={openNotifications} style={styles.bellButton}>
-          <MaterialCommunityIcons name="bell-outline" size={24} color="#003399" />
+          <Bell size={24} color="#003399" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
               <Text style={styles.badgeText}>
@@ -135,7 +136,7 @@ export default function GetItDoneScreen() {
           <TouchableOpacity style={styles.postButton} onPress={handlePostTask}>
             <MaterialCommunityIcons name="plus" size={18} color="#fff" />
             <Text style={styles.postButtonText}>Post a Task</Text>
-            <MaterialCommunityIcons name="arrow-right" size={18} color="#fff" />
+            <ChevronRight size={18} color="#fff" />
           </TouchableOpacity>
           <View style={{ height: 18 }} />
           {/* Tags inside blue section */}

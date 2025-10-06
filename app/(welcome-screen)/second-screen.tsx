@@ -1,5 +1,5 @@
-import { AntDesign } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -12,7 +12,7 @@ export default function OnboardingScreen() {
     <View style={styles.container}>
       {/* Back arrow */}
       <TouchableOpacity style={styles.backIcon} onPress={() => router.push('/first-screen')}>
-        <AntDesign name="arrowleft" size={24} color="white" />
+        <ChevronLeft size={24} color="white" />
       </TouchableOpacity>
 
       {/* Progress dots */}
@@ -42,7 +42,7 @@ export default function OnboardingScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.arrowButton} onPress={() => router.push('/third-screen')}>
-          <AntDesign name="arrowright" size={24} color="#fff" />
+          <ChevronRight size={24} color="#fff" />
         </TouchableOpacity>
       </View>
     </View>
