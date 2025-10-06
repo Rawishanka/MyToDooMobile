@@ -1,6 +1,7 @@
 import { useCreateTaskStore } from '@/store/create-task-store';
 import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
     StyleSheet,
@@ -88,7 +89,7 @@ const LocationScreen = () => {
         <View style={styles.container}>
             {/* Back Arrow */}
             <TouchableOpacity style={styles.backArrow} onPress={() => router.back()}>
-                <Ionicons name="arrow-back" size={24} color="#1C1C1E" />
+                <ChevronLeft size={24} color="#1C1C1E" />
             </TouchableOpacity>
 
             {/* Title */}

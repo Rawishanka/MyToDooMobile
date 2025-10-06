@@ -1,8 +1,8 @@
 import { useCreateTaskStore } from '@/store/create-task-store';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import { ChevronLeft } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -37,7 +37,7 @@ export default function DescribeTaskScreen() {
     <View style={styles.container}>
       {/* Back Arrow */}
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-        <Ionicons name="arrow-back" size={24} color="black" />
+        <ChevronLeft size={24} color="black" />
       </TouchableOpacity>
 
       {/* Title */}

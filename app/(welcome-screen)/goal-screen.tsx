@@ -1,6 +1,7 @@
 import { useCreateTaskStore } from '@/store/create-task-store';
 import { AntDesign } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -12,7 +13,7 @@ export default function GoalSelectionScreen() {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <AntDesign name="arrowleft" size={24} color="#333" />
+        <ChevronLeft size={24} color="#333" />
       </TouchableOpacity>
 
       {/* Title and Subtitle */}

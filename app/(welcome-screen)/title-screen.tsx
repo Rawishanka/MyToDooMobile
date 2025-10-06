@@ -1,6 +1,6 @@
 import { useCreateTaskStore } from '@/store/create-task-store';
-import { AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -30,7 +30,7 @@ export default function TitleInputScreen() {
     <View style={styles.container}>
       {/* Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <AntDesign name="arrowleft" size={24} color="#333" />
+        <ChevronLeft size={24} color="#333" />
       </TouchableOpacity>
 
       {/* Title & Subtitle */}
@@ -41,29 +41,25 @@ export default function TitleInputScreen() {
       <TextInput
         style={[
           styles.input,
-          { maxHeight: 6 * 24 + 28 } // 6 lines, estimate line height
+          letterCount < 10 && letterCount > 0 && styles.inputError
         ]}
         placeholder="e.g. Move my couch"
         value={title}
         onChangeText={setTitle}
         placeholderTextColor="#999"
         multiline
-        numberOfLines={1}
+        numberOfLines={3}
         maxLength={200}
         textAlignVertical="top"
-        onContentSizeChange={e => {
-          const height = Math.min(e.nativeEvent.contentSize.height, 4 * 24 + 28);
-          e.target.setNativeProps({ style: { height } });
-        }}
       />
 
       {/* Continue Button */}
       <TouchableOpacity
         style={[
           styles.continueButton,
-          letterCount >= 50 && styles.continueButtonEnabled,
+          letterCount >= 10 && styles.continueButtonEnabled,
         ]}
-        disabled={letterCount < 50}
+        disabled={letterCount < 10}
         onPress={handleContinue}
       >
         <Text style={styles.continueText}>Continue</Text>
@@ -104,6 +100,32 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     fontSize: 16,
     color: '#000',
+    height: 100, // Reduced height - smaller input field
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  inputError: {
+    borderColor: '#FF3B30',
+  },
+  validationContainer: {
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  characterCount: {
+    fontSize: 12,
+    textAlign: 'right',
+    marginBottom: 5,
+  },
+  errorText: {
+    color: '#FF3B30',
+  },
+  successText: {
+    color: '#34C759',
+  },
+  errorMessage: {
+    fontSize: 12,
+    color: '#FF3B30',
+    textAlign: 'right',
   },
   continueButton: {
     marginTop: 'auto',

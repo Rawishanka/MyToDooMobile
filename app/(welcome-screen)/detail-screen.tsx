@@ -1,13 +1,14 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { router } from 'expo-router';
 import { useCreateTaskStore } from '../../store/create-task-store';
 
 type ListItemProps = {
@@ -26,7 +27,7 @@ const ListItem = ({ icon, text, value, onPress }: ListItemProps) => (
         {value && <Text style={styles.valueText}>{value}</Text>}
       </View>
     </View>
-    <Ionicons name="chevron-forward" size={20} color="#003366" />
+    <ChevronRight size={20} color="#003366" />
   </TouchableOpacity>
 );
 
@@ -68,7 +69,7 @@ export default function DetailScreen() {
     <View style={styles.container}>
       {/* Back Arrow Button */}
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color="#000" />
+        <ChevronLeft size={24} color="#000" />
       </TouchableOpacity>
 
       <Text style={styles.title}>Ready to get offers?</Text>
@@ -111,7 +112,7 @@ export default function DetailScreen() {
         />
       </ScrollView>
 
-      <TouchableOpacity style={styles.continueBtn} onPress={() => router.push('/(tabs)')}>
+      <TouchableOpacity style={styles.continueBtn} onPress={() => router.push('/login-screen')}>
         <Text style={styles.continueText}>Continue</Text>
       </TouchableOpacity>
     </View>

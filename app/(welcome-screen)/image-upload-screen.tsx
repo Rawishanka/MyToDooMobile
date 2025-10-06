@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
   Image,
@@ -85,7 +86,7 @@ export default function SnapPhotoScreen() {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color="#000" />
+        <ChevronLeft size={24} color="#000" />
       </TouchableOpacity>
 
       <Text style={styles.title}>Snap a photo</Text>
