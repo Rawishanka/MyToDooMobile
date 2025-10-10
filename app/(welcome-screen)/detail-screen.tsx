@@ -1,15 +1,21 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useCreateTaskStore } from '../../store/create-task-store';
+import { useStorageState } from '@/hooks/useStorageState';
+import { usePostTask } from '@/hooks/useTaskApi';
+import { CreateTaskRequest } from '@/api/types/tasks';
+import { debugAuthState, forceFreshLogin } from '@/utils/auth-utils';
 
 type ListItemProps = {
   icon: React.ReactNode;
@@ -33,6 +39,10 @@ const ListItem = ({ icon, text, value, onPress }: ListItemProps) => (
 
 export default function DetailScreen() {
   const { myTask } = useCreateTaskStore();
+  const [[isLoading, storedToken], setStoredToken] = useStorageState('token');
+  
+  // Use React Query mutation for posting task
+  const postTaskMutation = usePostTask();
 
   // Helper function to get location text based on task type
   const getLocationText = () => {
@@ -63,6 +73,158 @@ export default function DetailScreen() {
       return myTask.date;
     }
     return "I'm Flexible";
+  };
+
+  // Helper function to get location string from task
+  const getLocationFromTask = () => {
+    if ('isRemoval' in myTask && myTask.isRemoval) {
+      const pickup = myTask.pickupLocation || "Pickup Location";
+      const delivery = myTask.deliveryLocation || "Delivery Location";
+      return `${pickup} to ${delivery}`;
+    }
+    if ('isOnline' in myTask && myTask.isOnline) {
+      return "Remote/Online";
+    }
+    if ('inPerson' in myTask && myTask.inPerson) {
+      return myTask.suburb || "Location not specified";
+    }
+    return "Location not specified";
+  };
+
+  // Helper function to get coordinates from task
+  const getCoordinatesFromTask = () => {
+    // For now, return default Colombo coordinates
+    // TODO: Implement proper geocoding based on location
+    return { lat: 6.9271, lng: 79.8612 };
+  };
+
+  // Convert myTask to CreateTaskRequest format matching server expectations
+  const convertToTaskRequest = (): CreateTaskRequest => {
+    // Generate date range like existing successful tasks
+    const today = new Date();
+    const futureDate = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+    
+    return {
+      title: myTask.title || "Untitled Task",
+      category: ["General"], // Use array with default category like existing tasks
+      dateType: "Easy", // Use simple dateType like existing tasks 
+      dateRange: {
+        start: today.toISOString(),
+        end: futureDate.toISOString()
+      },
+      time: myTask.time || "morning", // Use specific time like existing tasks
+      location: getLocationFromTask(), // Keep as string like the logs show
+      details: myTask.description || "",
+      budget: myTask.budget || 0,
+      currency: "LKR",
+      images: [], // Empty array
+      coordinates: getCoordinatesFromTask()
+    };
+  };
+
+  // Handle task posting
+  const handlePostTask = async () => {
+    // Debug authentication state before posting
+    await debugAuthState();
+    
+    // Check if user is logged in
+    if (!storedToken) {
+      console.log("❌ No stored token found, redirecting to login");
+      router.push('/login-screen');
+      return;
+    }
+
+    try {
+      console.log("🚀 Starting task creation...");
+      const taskData = convertToTaskRequest();
+      console.log("📝 Task data to post:", taskData);
+      
+      // Use React Query mutation to post task
+      const response = await postTaskMutation.mutateAsync(taskData);
+      console.log("✅ Task posted successfully:", response);
+      
+      // Show success message
+      Alert.alert(
+        "Success!", 
+        "Your task has been posted successfully and will appear in My Tasks!",
+        [
+          {
+            text: "View My Tasks",
+            onPress: () => router.push('/(tabs)/mytasks-screen')
+          }
+        ]
+      );
+      
+    } catch (error: any) {
+      console.error('❌ Error posting task:', error);
+      
+      // Handle authentication errors specifically
+      if (error?.message?.includes("Authentication expired") || 
+          error?.message?.includes("Please login again") ||
+          error?.message?.includes("Authentication required")) {
+        Alert.alert(
+          "Authentication Required", 
+          "Your session has expired. Please login again to post your task.",
+          [
+            {
+              text: "Login",
+              onPress: () => router.push('/login-screen')
+            },
+            {
+              text: "Cancel",
+              style: "cancel"
+            }
+          ]
+        );
+      } else if (error?.message?.includes("Validation Error")) {
+        Alert.alert(
+          "Invalid Task Data", 
+          error.message || "Please check your task details and try again.",
+          [
+            {
+              text: "OK"
+            }
+          ]
+        );
+      } else {
+        // For any other errors, offer to retry
+        Alert.alert(
+          "Error", 
+          "Failed to post your task. Please try again.",
+          [
+            {
+              text: "Retry",
+              onPress: handlePostTask
+            },
+            {
+              text: "Cancel",
+              style: "cancel"
+            }
+          ]
+        );
+      }
+    }
+  };
+
+  // Temporary debug function for testing
+  const handleForceFreshLogin = async () => {
+    Alert.alert(
+      "Force Fresh Login", 
+      "This will clear all authentication data and require a fresh login. Continue?",
+      [
+        {
+          text: "Yes, Clear Auth",
+          onPress: async () => {
+            await forceFreshLogin();
+            router.push('/login-screen');
+          }
+        },
+        {
+          text: "Cancel",
+          style: "cancel"
+        }
+      ]
+    );
   };
 
   return (
@@ -112,8 +274,27 @@ export default function DetailScreen() {
         />
       </ScrollView>
 
-      <TouchableOpacity style={styles.continueBtn} onPress={() => router.push('/login-screen')}>
-        <Text style={styles.continueText}>Continue</Text>
+      {/* Temporary Debug Button - Remove in production */}
+      <TouchableOpacity 
+        style={[styles.debugBtn]} 
+        onPress={handleForceFreshLogin}
+      >
+        <Text style={styles.debugText}>🔧 Debug: Force Fresh Login</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={[styles.continueBtn, postTaskMutation.isPending && styles.continueButtonDisabled]} 
+        onPress={handlePostTask}
+        disabled={postTaskMutation.isPending}
+      >
+        {postTaskMutation.isPending ? (
+          <View style={styles.postingContainer}>
+            <ActivityIndicator size="small" color="#fff" />
+            <Text style={[styles.continueText, { marginLeft: 8 }]}>Posting Task...</Text>
+          </View>
+        ) : (
+          <Text style={styles.continueText}>Post Task</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -181,8 +362,27 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     alignItems: 'center',
   },
+  continueButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  postingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   continueText: {
     color: '#fff',
     fontWeight: '600',
+  },
+  debugBtn: {
+    backgroundColor: '#ff6b35',
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  debugText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
   },
 });

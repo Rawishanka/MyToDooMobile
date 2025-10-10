@@ -37,12 +37,19 @@ export default function OnboardingScreen() {
 
       {/* Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.signupButton}>
+        <TouchableOpacity style={styles.signupButton} onPress={() => router.push('../signup-screen')}>
           <Text style={styles.signupText}>Sign up now</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.arrowButton} onPress={() => router.push('/second-screen')}>
           <ChevronRight size={24} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      {/* API Test Button */}
+      <View style={styles.testButtonContainer}>
+        <TouchableOpacity style={styles.testButton} onPress={() => router.push('../auth-debug')}>
+          <Text style={styles.testButtonText}>🐛 Debug Auth</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -54,7 +61,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#103464', // Blue background
+    backgroundColor: '#004aad', // Blue background
     padding: 20,
     justifyContent: 'space-between',
   },
@@ -119,7 +126,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   signupText: {
-    color: '#0047AB',
+    color: '#004aad',
     fontWeight: '600',
     textAlign: 'center',
   },
@@ -127,5 +134,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF7A00',
     padding: 14,
     borderRadius: 50,
+  },
+  testButtonContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  testButton: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  testButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
   },
 });

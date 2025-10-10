@@ -1,70 +1,69 @@
-import { useCreateSignUpToken } from '@/hooks/useApi';
+import { useCreateSignUpToken, useVerifyOTP } from '@/hooks/useApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 export default function SignUpScreen() {
   const navigation = useNavigation();
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showOtpInput, setShowOtpInput] = useState(false);
   const { mutateAsync: signUp } = useCreateSignUpToken();
+  const { mutateAsync: verifyOTP } = useVerifyOTP();
 
   const handleSignUp = async () => {
     // Basic validation
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+    if (!firstName || !lastName || !email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    if (password !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
-    if (formData.password.length < 6) {
+    if (password.length < 6) {
       Alert.alert('Error', 'Password must be at least 6 characters long');
       return;
     }
 
     try {
       setLoading(true);
-      await signUp({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
+      const response = await signUp({
+        firstName,
+        lastName,
+        email,
+        password,
       });
       
+      console.log('Signup response:', response);
+      
+      // Show OTP input since signup was successful
+      setShowOtpInput(true);
       Alert.alert(
-        'Success!', 
-        'Account created successfully. Please log in.',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.replace('/login-screen')
-          }
-        ]
+        'Account Created!', 
+        'Please check your email for the verification code.',
+        [{ text: 'OK' }]
       );
     } catch (error: any) {
       console.error('Sign up Error:', error);
@@ -75,11 +74,35 @@ export default function SignUpScreen() {
     }
   };
 
-  const updateFormData = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleVerifyOTP = async () => {
+    if (!otp || otp.length !== 6) {
+      Alert.alert('Error', 'Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await verifyOTP({ email, otp });
+      
+      console.log('OTP verification response:', response);
+      
+      Alert.alert(
+        'Success!', 
+        'Account verified successfully! You can now log in.',
+        [
+          {
+            text: 'OK',
+            onPress: () => router.replace('./login-screen')
+          }
+        ]
+      );
+    } catch (error: any) {
+      console.error('OTP Verification Error:', error);
+      const errorMessage = error?.response?.data?.message || 'Invalid OTP. Please try again.';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -92,72 +115,90 @@ export default function SignUpScreen() {
       >
         <Ionicons name="close" size={28} color="#333" />
       </TouchableOpacity>
-
+      
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.innerContainer}
       >
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Sign up to get started</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Sign up to get started</Text>
+        </View>
+
+        <View style={styles.form}>
+          <View style={styles.nameRow}>
+            <View style={styles.nameField}>
+              <Text style={styles.label}>First Name</Text>
+              <TextInput
+                style={styles.input}
+                value={firstName}
+                onChangeText={setFirstName}
+                placeholder="Enter first name"
+                autoCapitalize="words"
+              />
+            </View>
+            
+            <View style={styles.nameField}>
+              <Text style={styles.label}>Last Name</Text>
+              <TextInput
+                style={styles.input}
+                value={lastName}
+                onChangeText={setLastName}
+                placeholder="Enter last name"
+                autoCapitalize="words"
+              />
+            </View>
           </View>
 
-          <View style={styles.form}>
-            <View style={styles.nameRow}>
-              <View style={styles.nameField}>
-                <Text style={styles.label}>First Name</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.firstName}
-                  onChangeText={(text) => updateFormData('firstName', text)}
-                  placeholder="Enter first name"
-                  autoCapitalize="words"
-                />
-              </View>
-              
-              <View style={styles.nameField}>
-                <Text style={styles.label}>Last Name</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.lastName}
-                  onChangeText={(text) => updateFormData('lastName', text)}
-                  placeholder="Enter last name"
-                  autoCapitalize="words"
-                />
-              </View>
-            </View>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Enter your email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.email}
-              onChangeText={(text) => updateFormData('email', text)}
-              placeholder="Enter your email"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Enter your password"
+            secureTextEntry
+          />
 
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.password}
-              onChangeText={(text) => updateFormData('password', text)}
-              placeholder="Enter your password"
-              secureTextEntry
-            />
+          <Text style={styles.label}>Confirm Password</Text>
+          <TextInput
+            style={styles.input}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="Confirm your password"
+            secureTextEntry
+          />
 
-            <Text style={styles.label}>Confirm Password</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.confirmPassword}
-              onChangeText={(text) => updateFormData('confirmPassword', text)}
-              placeholder="Confirm your password"
-              secureTextEntry
-            />
+          {showOtpInput && (
+            <>
+              <Text style={styles.label}>Verification Code</Text>
+              <TextInput
+                style={[styles.input, styles.otpInput]}
+                value={otp}
+                onChangeText={setOtp}
+                placeholder="Enter 6-digit code"
+                keyboardType="numeric"
+                maxLength={6}
+                textAlign="center"
+              />
+              <Text style={styles.otpHelperText}>
+                Check your email for the verification code
+              </Text>
+            </>
+          )}
 
+          {!showOtpInput ? (
             <TouchableOpacity 
-              style={[styles.signUpButton, loading && styles.disabledButton]} 
+              style={styles.signUpButton} 
               onPress={handleSignUp} 
               disabled={loading}
             >
@@ -167,15 +208,27 @@ export default function SignUpScreen() {
                 <Text style={styles.signUpButtonText}>Create Account</Text>
               )}
             </TouchableOpacity>
-          </View>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('/login-screen')}>
-              <Text style={styles.loginText}>Sign In</Text>
+          ) : (
+            <TouchableOpacity 
+              style={styles.signUpButton} 
+              onPress={handleVerifyOTP} 
+              disabled={loading || !otp}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.signUpButtonText}>Verify & Complete Signup</Text>
+              )}
             </TouchableOpacity>
-          </View>
-        </ScrollView>
+          )}
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Already have an account? </Text>
+          <TouchableOpacity onPress={() => router.push('./login-screen')}>
+            <Text style={styles.registerText}>Sign In</Text>
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -194,7 +247,6 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: 32,
-    marginTop: 20,
   },
   title: {
     fontSize: 28,
@@ -212,7 +264,7 @@ const styles = StyleSheet.create({
   nameRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 0,
   },
   nameField: {
     flex: 0.48,
@@ -235,25 +287,19 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 8,
-  },
-  disabledButton: {
-    backgroundColor: '#ccc',
   },
   signUpButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 16,
   },
   footerText: {
     color: '#666',
   },
-  loginText: {
+  registerText: {
     color: '#007BFF',
     fontWeight: 'bold',
   },
@@ -265,5 +311,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.7)',
     borderRadius: 16,
     padding: 4,
+  },
+  otpInput: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    letterSpacing: 4,
+    backgroundColor: '#f8f9fa',
+  },
+  otpHelperText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 16,
+    fontStyle: 'italic',
   },
 });

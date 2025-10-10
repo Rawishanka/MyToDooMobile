@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const KEYS = {
     myTasks: () => ["my-tasks"] as const,
+    allTasks: () => ["all-tasks"] as const,
     // location: (search: string) => ["location", search] as const,
     // hourlyData: (hourlyData: Cordinates) => ["hourly-data", hourlyData] as const
 }
@@ -22,6 +23,16 @@ const KEYS = {
 //     });
 // }
 
+
+export function useGetAllTasksQuery() {
+  const { getAllTasks } = useApiFunctions();
+  return useQuery({
+    queryKey: KEYS.allTasks(),
+    queryFn: getAllTasks,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+  });
+}
 
 export function useMyTasksQuery() {
     return useQuery({
@@ -53,6 +64,36 @@ export function useCreateAuthToken() {
     },
     onError: (error) => {
       console.error("Login failed:", error);
+    },
+  });
+}
+
+export function useCreateSignUpToken() {
+  const queryClient = useQueryClient();
+  const { handleSignUpUser } = useApiFunctions();
+  return useMutation({
+    mutationFn: (signUpData: { firstName: string; lastName: string; email: string; password: string }) => 
+      handleSignUpUser(signUpData),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['signup'], data);
+    },
+    onError: (error) => {
+      console.error("Sign up failed:", error);
+    },
+  });
+}
+
+export function useVerifyOTP() {
+  const queryClient = useQueryClient();
+  const { handleVerifyOTP } = useApiFunctions();
+  return useMutation({
+    mutationFn: ({ email, otp }: { email: string; otp: string }) => 
+      handleVerifyOTP(email, otp),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['otp-verification'], data);
+    },
+    onError: (error) => {
+      console.error("OTP verification failed:", error);
     },
   });
 }

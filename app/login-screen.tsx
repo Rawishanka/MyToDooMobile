@@ -4,15 +4,16 @@ import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 export default function LoginScreen() {
@@ -27,10 +28,31 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       await mutateAsync({ username: email, password });
-      // Navigate to protected page after successful login
-      router.replace('/(tabs)');
-    } catch (error) {
+      // Navigate back to detail screen after successful login
+      router.replace('/(welcome-screen)/detail-screen');
+    } catch (error: any) {
       console.error('Login Error:', error);
+      
+      // Show user-friendly error message
+      if (error?.response?.status === 400) {
+        Alert.alert(
+          'Login Failed', 
+          'Invalid email or password. Please check your credentials and try again.',
+          [{ text: 'OK' }]
+        );
+      } else if (error?.response?.status === 404) {
+        Alert.alert(
+          'Account Not Found', 
+          'No account found with this email. Please sign up first.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'Login Error', 
+          'Something went wrong. Please try again later.',
+          [{ text: 'OK' }]
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -91,7 +113,7 @@ export default function LoginScreen() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
+          <TouchableOpacity onPress={() => router.push('./signup-screen')}>
             <Text style={styles.registerText}>Sign Up</Text>
           </TouchableOpacity>
         </View>

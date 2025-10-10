@@ -1,5 +1,5 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   FlatList,
   Image,
@@ -13,137 +13,28 @@ import {
   View,
   Switch,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+
+// 🚀 **NEW: Import our API hooks**
+import { useGetAllTasks, useSearchTasks } from '@/hooks/useTaskApi';
+import { Task } from '@/api/types/tasks';
+import { useClearTaskCaches, useForceRefreshTasks } from '@/utils/cache-utils';
 
 // 🔥 IMPORT YOUR NOTIFICATION MODAL
 import NotificationModal from './notification-screen';
 
-// Type definitions
-interface Task {
-  id: number;
-  title: string;
-  location: string;
-  price: number;
-  priceDisplay: string;
-  status: string;
-  offers: number;
-  category: string;
-  type: 'in-person' | 'remote';
-  hasOffers: boolean;
-  isAssigned: boolean;
-  datePosted: Date;
-  dueDate: Date;
-  latitude?: number;
-  longitude?: number;
-}
+// 🚀 **UPDATED: Using real API types instead of hardcoded interface**
+// The Task interface is now imported from '@/api/types/tasks'
 
-// Mock data with coordinates for map display
-const allTasks: Task[] = [
-  {
-    id: 1,
-    title: 'Window installation',
-    location: 'Dingley village VIC 3172, Australia',
-    price: 400,
-    priceDisplay: 'A$400',
-    status: 'open',
-    offers: 1,
-    category: 'Home & Garden',
-    type: 'in-person',
-    hasOffers: true,
-    isAssigned: false,
-    datePosted: new Date('2024-01-15'),
-    dueDate: new Date('2024-02-01'),
-    latitude: -37.9857,
-    longitude: 145.1341,
-  },
-  {
-    id: 2,
-    title: 'Logo Design',
-    location: 'Remote',
-    price: 150,
-    priceDisplay: 'A$150',
-    status: 'open',
-    offers: 3,
-    category: 'Design & Creative',
-    type: 'remote',
-    hasOffers: true,
-    isAssigned: false,
-    datePosted: new Date('2024-01-20'),
-    dueDate: new Date('2024-01-30'),
-  },
-  {
-    id: 3,
-    title: 'Data Entry',
-    location: 'Melbourne VIC, Australia',
-    price: 75,
-    priceDisplay: 'A$75',
-    status: 'assigned',
-    offers: 0,
-    category: 'Admin & Data',
-    type: 'remote',
-    hasOffers: false,
-    isAssigned: true,
-    datePosted: new Date('2024-01-10'),
-    dueDate: new Date('2024-01-25'),
-    latitude: -37.8136,
-    longitude: 144.9631,
-  },
-  {
-    id: 4,
-    title: 'House Cleaning',
-    location: 'Sydney NSW 2000, Australia',
-    price: 120,
-    priceDisplay: 'A$120',
-    status: 'open',
-    offers: 2,
-    category: 'Cleaning',
-    type: 'in-person',
-    hasOffers: true,
-    isAssigned: false,
-    datePosted: new Date('2024-01-18'),
-    dueDate: new Date('2024-02-05'),
-    latitude: -33.8688,
-    longitude: 151.2093,
-  },
-  {
-    id: 5,
-    title: 'Website Development',
-    location: 'Remote',
-    price: 800,
-    priceDisplay: 'A$800',
-    status: 'open',
-    offers: 5,
-    category: 'Technology',
-    type: 'remote',
-    hasOffers: true,
-    isAssigned: false,
-    datePosted: new Date('2024-01-12'),
-    dueDate: new Date('2024-02-15'),
-  },
-  {
-    id: 6,
-    title: 'Garden Maintenance',
-    location: 'Brisbane QLD 4000, Australia',
-    price: 200,
-    priceDisplay: 'A$200',
-    status: 'open',
-    offers: 0,
-    category: 'Home & Garden',
-    type: 'in-person',
-    hasOffers: false,
-    isAssigned: false,
-    datePosted: new Date('2024-01-22'),
-    dueDate: new Date('2024-02-10'),
-    latitude: -27.4698,
-    longitude: 153.0251,
-  },
-];
+// 🔥 **REMOVED HARDCODED DATA - NOW USING REAL API!**
 
 const categories = [
   'All Categories',
-  'Home & Garden',
+  'Home & Garden', 
   'Design & Creative',
   'Technology',
   'Cleaning',
@@ -160,7 +51,56 @@ export default function BrowseTasksScreen() {
   const [searchText, setSearchText] = useState("");
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
-  // 🔥 ADD NOTIFICATION STATE AND ROUTER
+  // � **NEW: Real API data fetching**
+  const { 
+    data: tasksResponse, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useGetAllTasks();
+
+  const { 
+    data: searchResults 
+  } = useSearchTasks({ 
+    search: searchText 
+  }, searchText.length > 2);
+
+  // Use search results if searching, otherwise use all tasks
+  const apiTasks = searchText.length > 2 ? searchResults?.data : tasksResponse?.data;
+  const allTasks = apiTasks || [];
+
+  // 🔍 DEBUG: Log the data being received
+  useEffect(() => {
+    if (tasksResponse) {
+      console.log("🔍 Browse Tasks - Raw API Response:", {
+        success: tasksResponse.success,
+        total: tasksResponse.total,
+        count: tasksResponse.count,
+        pages: tasksResponse.pages,
+        currentPage: tasksResponse.currentPage,
+        dataLength: tasksResponse.data?.length,
+        taskTitles: tasksResponse.data?.map(t => t.title)
+      });
+    }
+    console.log("🔍 Browse Tasks - Final allTasks:", {
+      length: allTasks.length,
+      titles: allTasks.map(t => t.title)
+    });
+  }, [tasksResponse, allTasks]);
+
+  // 🔄 REFRESH DATA WHEN SCREEN IS FOCUSED (after task creation)
+  useFocusEffect(
+    useCallback(() => {
+      console.log("🔄 Browse Tasks screen focused, refreshing data...");
+      refetch();
+    }, [refetch])
+  );
+
+  // 🧹 Cache management utilities
+  const clearTaskCaches = useClearTaskCaches();
+  const forceRefreshTasks = useForceRefreshTasks();
+
+  // �🔥 ADD NOTIFICATION STATE AND ROUTER
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationCount = 3; // You can make this dynamic
   const router = useRouter();
@@ -168,7 +108,7 @@ export default function BrowseTasksScreen() {
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [taskType, setTaskType] = useState<'all' | 'in-person' | 'remote'>('all');
-  const [priceRange, setPriceRange] = useState<[number, number]>([5, 200]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([1, 5000]); // 🔧 FIXED: Increased range to show all tasks
   const [availableTasksOnly, setAvailableTasksOnly] = useState(false);
   const [showTasksWithNoOffers, setShowTasksWithNoOffers] = useState(false);
   const [categoryDropdownVisible, setCategoryDropdownVisible] = useState(false);
@@ -200,82 +140,135 @@ export default function BrowseTasksScreen() {
     'Closest to me',
   ];
 
-  // Filter and sort logic
+  // 🚀 **UPDATED: Filter and sort logic for real API data**
   const filteredAndSortedTasks = useMemo(() => {
     let filtered = allTasks;
 
-    // Apply search filter
+    console.log("🔍 Filtering tasks:", {
+      totalTasks: allTasks.length,
+      selectedFilter: selectedCategory,
+      priceRange,
+      taskType,
+      availableTasksOnly,
+      showTasksWithNoOffers,
+      searchText
+    });
+
+    // Apply search filter - updated for real API structure
     if (searchText.trim()) {
+      const beforeSearch = filtered.length;
       filtered = filtered.filter(task =>
         task.title.toLowerCase().includes(searchText.toLowerCase()) ||
-        task.location.toLowerCase().includes(searchText.toLowerCase())
+        task.location.address.toLowerCase().includes(searchText.toLowerCase())
       );
+      console.log(`📝 Search filter: ${beforeSearch} → ${filtered.length} tasks`);
     }
 
-    // Apply category filter
+    // Apply category filter - updated for real API structure
     if (selectedCategory !== 'All Categories') {
-      filtered = filtered.filter(task => task.category === selectedCategory);
+      const beforeCategory = filtered.length;
+      filtered = filtered.filter(task => 
+        task.categories.some(cat => cat.toLowerCase().includes(selectedCategory.toLowerCase()))
+      );
+      console.log(`📂 Category filter: ${beforeCategory} → ${filtered.length} tasks`);
     }
 
-    // Apply task type filter
-    if (taskType === 'in-person') {
-      filtered = filtered.filter(task => task.type === 'in-person');
-    } else if (taskType === 'remote') {
-      filtered = filtered.filter(task => task.type === 'remote');
+    // Apply task type filter - simplified since API doesn't have type field
+    if (taskType === 'remote') {
+      const beforeType = filtered.length;
+      filtered = filtered.filter(task => 
+        task.location.address.toLowerCase().includes('remote') ||
+        task.details.toLowerCase().includes('remote')
+      );
+      console.log(`🏠 Remote filter: ${beforeType} → ${filtered.length} tasks`);
+    } else if (taskType === 'in-person') {
+      const beforeType = filtered.length;
+      filtered = filtered.filter(task => 
+        !task.location.address.toLowerCase().includes('remote') &&
+        !task.details.toLowerCase().includes('remote')
+      );
+      console.log(`👥 In-person filter: ${beforeType} → ${filtered.length} tasks`);
     }
 
-    // Apply price range filter
+    // Apply price range filter - updated for real API structure
+    const beforePrice = filtered.length;
+    const taskBudgets = filtered.map(t => t.budget);
+    console.log(`💰 Task budgets range: ${Math.min(...taskBudgets)} - ${Math.max(...taskBudgets)}, Filter range: ${priceRange[0]} - ${priceRange[1]}`);
+    
     filtered = filtered.filter(task => 
-      task.price >= priceRange[0] && task.price <= priceRange[1]
+      task.budget >= priceRange[0] && task.budget <= priceRange[1]
     );
+    console.log(`💰 Price filter: ${beforePrice} → ${filtered.length} tasks`);
 
-    // Apply available tasks only filter
+    // Apply available tasks only filter - updated for real API structure
     if (availableTasksOnly) {
-      filtered = filtered.filter(task => !task.isAssigned);
+      const beforeAvailable = filtered.length;
+      filtered = filtered.filter(task => task.status === 'open');
+      console.log(`✅ Available only filter: ${beforeAvailable} → ${filtered.length} tasks`);
     }
 
-    // Apply show tasks with no offers filter
+    // Apply show tasks with no offers filter - updated for real API structure
     if (showTasksWithNoOffers) {
-      filtered = filtered.filter(task => !task.hasOffers);
+      const beforeNoOffers = filtered.length;
+      filtered = filtered.filter(task => (task.offerCount || 0) === 0);
+      console.log(`🎯 No offers filter: ${beforeNoOffers} → ${filtered.length} tasks`);
     }
 
-    // Apply sorting
+    // Apply sorting - updated for real API structure
     const sorted = [...filtered].sort((a, b) => {
       switch (selectedSort) {
         case 1: // Price: High to low
-          return b.price - a.price;
+          return b.budget - a.budget;
         case 2: // Price: Low to High
-          return a.price - b.price;
+          return a.budget - b.budget;
         case 3: // Due date: Earliest
-          return a.dueDate.getTime() - b.dueDate.getTime();
+          return new Date(a.dateRange?.end || a.createdAt).getTime() - 
+                 new Date(b.dateRange?.end || b.createdAt).getTime();
         case 4: // Due date: Latest
-          return b.dueDate.getTime() - a.dueDate.getTime();
+          return new Date(b.dateRange?.end || b.createdAt).getTime() - 
+                 new Date(a.dateRange?.end || a.createdAt).getTime();
         case 5: // Newest tasks
-          return b.datePosted.getTime() - a.datePosted.getTime();
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         case 6: // Oldest tasks
-          return a.datePosted.getTime() - b.datePosted.getTime();
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         default: // Recommended
           return 0;
       }
     });
 
-    return sorted;
-  }, [searchText, selectedCategory, taskType, priceRange, availableTasksOnly, showTasksWithNoOffers, selectedSort]);
+    console.log(`🔍 Filtering tasks: ${allTasks.length} → ${sorted.length} final tasks`, {
+      selectedFilter: selectedCategory,
+      tasks: sorted.map(t => ({ id: t._id, title: t.title, status: t.status })),
+      totalTasks: sorted.length
+    });
 
-  // Generate map HTML with markers
+    return sorted;
+  }, [allTasks, searchText, selectedCategory, taskType, priceRange, availableTasksOnly, showTasksWithNoOffers, selectedSort]);
+
+  // 🚀 **UPDATED: Generate map HTML with markers for real API data**
   const generateMapHTML = () => {
-    const tasksWithCoordinates = filteredAndSortedTasks.filter(task => task.latitude && task.longitude);
+    const tasksWithCoordinates = filteredAndSortedTasks.filter(task => {
+      const coords = task.location.coordinates;
+      return coords && 
+             typeof coords === 'object' && 
+             'coordinates' in coords &&
+             Array.isArray(coords.coordinates) &&
+             coords.coordinates.length === 2;
+    });
     
-    const markers = tasksWithCoordinates.map(task => ({
-      id: task.id,
-      lat: task.latitude,
-      lng: task.longitude,
-      title: task.title,
-      price: task.priceDisplay,
-      location: task.location,
-      status: task.status,
-      offers: task.offers,
-    }));
+    const markers = tasksWithCoordinates.map(task => {
+      const coords = task.location.coordinates as { type: string; coordinates: [number, number] };
+      return {
+        id: task._id,
+        lat: coords.coordinates[1],
+        lng: coords.coordinates[0],
+        title: task.title,
+        price: task.formattedBudget || `${task.currency} ${task.budget}`,
+        location: task.location.address,
+        status: task.status,
+        offers: task.offerCount || 0,
+      };
+    });
 
     return `
 <!DOCTYPE html>
@@ -429,30 +422,41 @@ export default function BrowseTasksScreen() {
     return count;
   };
 
+  // 🚀 **UPDATED: Task card renderer for real API data**
   const renderTaskCard = ({ item }: { item: Task }) => (
-    <View style={styles.taskCard}>
+    <TouchableOpacity 
+      style={styles.taskCard} 
+      activeOpacity={0.7}
+      onPress={() => router.push(`/(tabs)/task-detail?taskId=${item._id}`)}
+    >
       <View style={{ flex: 1 }}>
         <Text style={styles.taskTitle}>{item.title}</Text>
-        <Text style={styles.taskSub}>{item.location}</Text>
-        <Text style={styles.taskSub}>Flexible</Text>
+        <Text style={styles.taskSub}>{item.location.address}</Text>
+        <Text style={styles.taskSub}>
+          {item.dateType || 'Flexible'} • {item.time || 'Anytime'}
+        </Text>
         <Text style={styles.taskStatus}>
           <Text style={{ color: item.status === 'open' ? '#007bff' : '#666' }}>
             {item.status}
           </Text>
-          {' '}{item.offers} offer{item.offers !== 1 ? 's' : ''}
+          {' '}{item.offerCount || 0} offer{(item.offerCount || 0) !== 1 ? 's' : ''}
         </Text>
       </View>
       <View style={{ alignItems: 'flex-end' }}>
-        <Text style={styles.taskPrice}>{item.priceDisplay}</Text>
+        <Text style={styles.taskPrice}>
+          {item.formattedBudget || `${item.currency}$${item.budget}`}
+        </Text>
         <View style={styles.avatarContainer}>
           <Image
-            source={{ uri: `https://randomuser.me/api/portraits/men/${item.id}.jpg` }}
+            source={{ 
+              uri: `https://randomuser.me/api/portraits/men/${Math.abs(item._id.slice(-2).charCodeAt(0))}.jpg` 
+            }}
             style={styles.avatar}
             resizeMode="cover"
           />
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -470,6 +474,25 @@ export default function BrowseTasksScreen() {
           <TouchableOpacity onPress={() => setSearchVisible(true)}>
             <Ionicons name="search-outline" size={20} color="#000" />
           </TouchableOpacity>
+          
+          {/* 🔧 DEBUG: Cache Management Buttons
+          <TouchableOpacity 
+            onPress={() => {
+              clearTaskCaches();
+              setTimeout(() => refetch(), 100);
+            }}
+            style={{ marginLeft: 8, padding: 4, backgroundColor: '#ff6b35', borderRadius: 4 }}
+          >
+            <Text style={{ color: 'white', fontSize: 10 }}>Clear</Text>
+          </TouchableOpacity> */}
+          
+          {/* <TouchableOpacity 
+            onPress={() => forceRefreshTasks()}
+            style={{ marginLeft: 4, padding: 4, backgroundColor: '#007bff', borderRadius: 4 }}
+          >
+            <Text style={{ color: 'white', fontSize: 10 }}>Refresh</Text>
+          </TouchableOpacity> */}
+          
           {/* 🔥 UPDATED NOTIFICATION BELL WITH BADGE AND NAVIGATION */}
           <TouchableOpacity onPress={openNotifications} style={styles.notificationButton}>
             <Ionicons name="notifications-outline" size={20} color="#000" />
@@ -531,17 +554,41 @@ export default function BrowseTasksScreen() {
           />
         </View>
       ) : (
-        <FlatList
-          data={filteredAndSortedTasks}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          renderItem={renderTaskCard}
-          ListEmptyComponent={
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No tasks found matching your criteria</Text>
+        // 🚀 **UPDATED: List view with real API data and loading states**
+        <>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#007bff" />
+              <Text style={styles.loadingText}>Loading tasks...</Text>
             </View>
-          }
-        />
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>Failed to load tasks</Text>
+              <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredAndSortedTasks}
+              keyExtractor={(item) => item._id}
+              contentContainerStyle={{ paddingBottom: 100 }}
+              renderItem={renderTaskCard}
+              refreshing={isLoading}
+              onRefresh={() => {
+                console.log("🔄 Pull to refresh triggered in Browse Tasks");
+                refetch();
+              }}
+              ListEmptyComponent={
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyText}>
+                    {searchText ? 'No tasks found matching your search' : 'No tasks found matching your criteria'}
+                  </Text>
+                </View>
+              }
+            />
+          )}
+        </>
       )}
 
       {/* Filter Modal */}
@@ -1190,6 +1237,39 @@ const styles = StyleSheet.create({
   searchModalContent: {
     width: '95%',
     marginTop: 50,
+  },
+  // 🚀 **NEW: API-related styles**
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  loadingText: {
+    marginTop: 10,
+    color: '#666',
+    fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#007bff',
+    padding: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 
