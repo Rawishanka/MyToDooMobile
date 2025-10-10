@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  StatusBar,
-  Image,
-} from 'react-native';
+import { CreateTaskRequest } from '@/api/types/tasks';
+import { useCreateTask } from '@/hooks/useTaskApi';
+import { useCreateTaskStore } from '@/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useCreateTaskStore } from '@/store/create-task-store';
-import { useCreateTask } from '@/hooks/useTaskApi';
-import { CreateTaskRequest } from '@/api/types/tasks';
+import React, { useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    Image,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 
 export default function PostTaskScreen() {
   const router = useRouter();

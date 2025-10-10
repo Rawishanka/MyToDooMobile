@@ -1,19 +1,18 @@
+import { useAnswerTaskQuestion, useGetTaskById, useGetTaskQuestions } from '@/hooks/useTaskApi';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  StatusBar,
-  TextInput,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useGetTaskById, useGetTaskQuestions } from '@/hooks/useTaskApi';
-import { useAnswerTaskQuestion } from '@/hooks/useTaskApi';
 
 export default function AnswerQuestionScreen() {
   const router = useRouter();

@@ -5,21 +5,21 @@ import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'rea
 
 const { width, height } = Dimensions.get('window');
 
-const illustration = require('@/assets/images/third_screen.png');
+const illustration = require('@/assets/images/illustration.png');
 
 export default function OnboardingScreen() {
   return (
     <View style={styles.container}>
       {/* Back arrow */}
-      <TouchableOpacity style={styles.backIcon} onPress={() => router.push('/second-screen')}>
+      <TouchableOpacity style={styles.backIcon} onPress={() => router.push('/')}>
         <ChevronLeft size={24} color="white" />
       </TouchableOpacity>
 
-      {/* Progress dots */}
+      {/* Progress dots */} 
       <View style={styles.dots}>
-        <View style={styles.dotEmpty} />
-        <View style={styles.dotEmpty} />
         <View style={styles.dotFilled} />
+        <View style={styles.dotEmpty} />
+        <View style={styles.dotEmpty} />
       </View>
 
       {/* Illustration */}
@@ -31,18 +31,25 @@ export default function OnboardingScreen() {
 
       {/* Text */}
       <View style={styles.textContainer}>
-        <Text style={styles.title}>Release payment once the MyToDoo task is complete</Text>
-        <Text style={styles.subtitle}>Your funds are held till the MyToDoo task is complete and you release payment.</Text>
+        <Text style={styles.title}>A job awaits every hand</Text>
+        <Text style={styles.subtitle}>Whether you love building, designing, or problem-solving, there’s a job out there for you. Your next opportunity is waiting - don’t miss it!</Text>
       </View>
 
       {/* Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.signupButton}>
+        <TouchableOpacity style={styles.signupButton} onPress={() => router.push('../signup-screen')}>
           <Text style={styles.signupText}>Sign up now</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.arrowButton} onPress={() => router.push('/title-screen')}>
+        <TouchableOpacity style={styles.arrowButton} onPress={() => router.push('/second-screen')}>
           <ChevronRight size={24} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      {/* API Test Button */}
+      <View style={styles.testButtonContainer}>
+        <TouchableOpacity style={styles.testButton} onPress={() => router.push('../auth-debug')}>
+          <Text style={styles.testButtonText}>🐛 Debug Auth</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -119,7 +126,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   signupText: {
-    color: '#0047AB',
+    color: '#004aad',
     fontWeight: '600',
     textAlign: 'center',
   },
@@ -127,5 +134,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF7A00',
     padding: 14,
     borderRadius: 50,
+  },
+  testButtonContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  testButton: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  testButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
   },
 });

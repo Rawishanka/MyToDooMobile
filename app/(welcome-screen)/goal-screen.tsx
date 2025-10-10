@@ -66,7 +66,7 @@ export default function GoalSelectionScreen() {
         ]}
         onPress={() => {
           updateMyTask({ ...myTask, mainGoal: selectedGoal });
-          router.push('/title-screen');
+          router.push('/first-screen');
         }}
       >
         <Text style={styles.continueText}>Continue</Text>

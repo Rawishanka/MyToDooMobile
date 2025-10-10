@@ -1,18 +1,17 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  StatusBar,
-  FlatList,
-} from 'react-native';
+import { useGetPaymentStatus } from '@/hooks/useTaskApi';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useGetPaymentStatus } from '@/hooks/useTaskApi';
+import React from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
 interface PaymentItem {
   _id: string;

@@ -1,21 +1,21 @@
+import { CreateTaskRequest } from '@/api/types/tasks';
+import { useStorageState } from '@/hooks/useStorageState';
+import { usePostTask } from '@/hooks/useTaskApi';
+import { debugAuthState, forceFreshLogin } from '@/utils/auth-utils';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { useCreateTaskStore } from '../../store/create-task-store';
-import { useStorageState } from '@/hooks/useStorageState';
-import { usePostTask } from '@/hooks/useTaskApi';
-import { CreateTaskRequest } from '@/api/types/tasks';
-import { debugAuthState, forceFreshLogin } from '@/utils/auth-utils';
 
 type ListItemProps = {
   icon: React.ReactNode;

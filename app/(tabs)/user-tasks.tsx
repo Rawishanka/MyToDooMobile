@@ -1,20 +1,20 @@
+import { Task } from '@/api/types/tasks';
+import { useGetUserTasks } from '@/hooks/useTaskApi';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  StatusBar,
-  FlatList,
-  Image,
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Image,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useGetUserTasks } from '@/hooks/useTaskApi';
-import { Task } from '@/api/types/tasks';
 
 interface UserProfile {
   _id: string;
