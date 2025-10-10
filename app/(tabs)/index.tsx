@@ -1,22 +1,21 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   ScrollView,
-  StyleSheet, 
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  ActivityIndicator,
-  Alert,
+  View
 } from 'react-native';
-import { useRouter } from 'expo-router';
 
 // 🚀 **NEW: Import our comprehensive API hooks**
-import { useGetAllTasks, useSearchTasks } from '@/hooks/useTaskApi';
 import { Task } from '@/api/types/tasks';
+import { useGetAllTasks, useSearchTasks } from '@/hooks/useTaskApi';
 
 // Import the local assets
 const LottieAnimation = require('@/assets/animations/lottie-animation.json');

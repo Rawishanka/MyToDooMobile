@@ -1,19 +1,19 @@
+import { useGetTaskCompletionStatus } from '@/hooks/useTaskApi';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  StatusBar,
-  Modal,
-  TextInput,
+    ActivityIndicator,
+    Alert,
+    Modal,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useGetTaskCompletionStatus } from '@/hooks/useTaskApi';
 
 interface CompletionStatusData {
   _id: string;

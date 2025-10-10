@@ -1,19 +1,19 @@
+import { Task } from '@/api/types/tasks';
+import { useGetTaskById } from '@/hooks/useTaskApi';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  StatusBar,
+    ActivityIndicator,
+    Alert,
+    Image,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useGetTaskById } from '@/hooks/useTaskApi';
-import { Task } from '@/api/types/tasks';
 
 export default function TaskDetailScreen() {
   const router = useRouter();

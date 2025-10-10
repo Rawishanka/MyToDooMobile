@@ -87,7 +87,7 @@ export default function WelcomeScreen() {
         {/* Auth Test Component - Shows backend is working! */}
         <QuickAuthTest />
         
-        <Link href={"/(welcome-screen)/first-screen"} asChild>
+        <Link href={"/(welcome-screen)/goal-screen"} asChild>
           <TouchableOpacity style={styles.buttonPrimary} activeOpacity={0.8}>
             <Text style={styles.buttonText}>Get Start</Text>
           </TouchableOpacity>

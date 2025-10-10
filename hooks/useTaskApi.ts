@@ -1,16 +1,16 @@
 // 🎯 **REACT QUERY HOOKS FOR TASK API**
 // This file contains all React Query hooks for task operations
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TaskAPI } from '@/api/task-api';
 import {
-  TaskSearchParams,
-  MyTasksParams,
-  CreateTaskRequest,
-  UpdateTaskRequest,
-  CreateOfferRequest,
-  TaskOffer
+    CreateOfferRequest,
+    CreateTaskRequest,
+    MyTasksParams,
+    TaskOffer,
+    TaskSearchParams,
+    UpdateTaskRequest
 } from '@/api/types/tasks';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // 🔑 **QUERY KEYS**
 export const TASK_QUERY_KEYS = {

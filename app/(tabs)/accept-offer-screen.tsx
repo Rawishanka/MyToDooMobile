@@ -1,18 +1,17 @@
+import { useAcceptOffer, useGetTaskById, useGetTaskOffers } from '@/hooks/useTaskApi';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  StatusBar,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useGetTaskById, useGetTaskOffers } from '@/hooks/useTaskApi';
-import { useAcceptOffer } from '@/hooks/useTaskApi';
 
 export default function AcceptOfferScreen() {
   const router = useRouter();

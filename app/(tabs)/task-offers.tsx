@@ -1,19 +1,18 @@
+import { useGetTaskOffers } from '@/hooks/useTaskApi';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  StatusBar,
-  FlatList,
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Image,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useGetTaskOffers } from '@/hooks/useTaskApi';
 
 interface Offer {
   _id: string;

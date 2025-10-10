@@ -1,13 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import React, { useEffect, useRef, useState } from 'react';
-import { FlatList, Image, Modal, Pressable, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, ActivityIndicator, Alert } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, Image, Modal, Pressable, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 // 🔥 IMPORT API HOOKS
-import { useGetMyTasks, useGetMyOffers } from '@/hooks/useTaskApi';
 import { Task } from '@/api/types/tasks';
+import { useGetMyOffers, useGetMyTasks } from '@/hooks/useTaskApi';
 
 // 🔥 IMPORT YOUR NOTIFICATION MODAL
 import NotificationModal from './notification-screen';

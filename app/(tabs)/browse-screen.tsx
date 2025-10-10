@@ -1,27 +1,27 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
-  Switch,
-  ScrollView,
-  ActivityIndicator,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
 
 // 🚀 **NEW: Import our API hooks**
-import { useGetAllTasks, useSearchTasks } from '@/hooks/useTaskApi';
 import { Task } from '@/api/types/tasks';
+import { useGetAllTasks, useSearchTasks } from '@/hooks/useTaskApi';
 import { useClearTaskCaches, useForceRefreshTasks } from '@/utils/cache-utils';
 
 // 🔥 IMPORT YOUR NOTIFICATION MODAL
@@ -114,6 +114,10 @@ export default function BrowseTasksScreen() {
   const [categoryDropdownVisible, setCategoryDropdownVisible] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [sliderWidth, setSliderWidth] = useState(300);
+
+  // 🧭 Custom map marker icon (replace default blue circles)
+  // Resolve the bundled asset to a file/asset URI we can inject into the WebView HTML
+  const markerIconUri = Image.resolveAssetSource(require('../../assets/icons/map.png')).uri;
 
   // 🔥 ADD NOTIFICATION FUNCTIONS
   const openNotifications = () => {
@@ -246,7 +250,8 @@ export default function BrowseTasksScreen() {
   }, [allTasks, searchText, selectedCategory, taskType, priceRange, availableTasksOnly, showTasksWithNoOffers, selectedSort]);
 
   // 🚀 **UPDATED: Generate map HTML with markers for real API data**
-  const generateMapHTML = () => {
+  // Accept a marker icon URL so Leaflet can use our custom icon for markers
+  const generateMapHTML = (iconUrl?: string) => {
     const tasksWithCoordinates = filteredAndSortedTasks.filter(task => {
       const coords = task.location.coordinates;
       return coords && 
@@ -270,12 +275,12 @@ export default function BrowseTasksScreen() {
       };
     });
 
-    return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Task Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -314,8 +319,8 @@ export default function BrowseTasksScreen() {
             background-color: #007bff;
             border: 2px solid white;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+      width: 36px;
+      height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -324,6 +329,11 @@ export default function BrowseTasksScreen() {
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
+    /* Reinforce fixed-size marker images regardless of map zoom */
+    .my-custom-marker {
+      width: 44px !important;
+      height: 44px !important;
+    }
     </style>
 </head>
 <body>
@@ -341,16 +351,24 @@ export default function BrowseTasksScreen() {
         // Task markers
         const markers = ${JSON.stringify(markers)};
         
-        // Create custom icon
-        function createCustomIcon(taskId) {
-            return L.divIcon({
-                html: '<div class="marker-icon">' + taskId + '</div>',
-                className: 'custom-div-icon',
-                iconSize: [24, 24],
-                iconAnchor: [12, 12],
-                popupAnchor: [0, -12]
+        // Create custom image icon for markers
+        const markerIconUrl = ${JSON.stringify(iconUrl || '')};
+        const customIcon = markerIconUrl
+          ? L.icon({
+              iconUrl: markerIconUrl,
+              iconSize: [44, 44],
+              iconAnchor: [22, 44],
+              popupAnchor: [0, -40],
+              className: 'my-custom-marker'
+            })
+          : L.divIcon({
+              // Fallback to simple circle if icon cannot be resolved
+              html: '<div class="marker-icon"></div>',
+              className: 'custom-div-icon',
+              iconSize: [44, 44],
+              iconAnchor: [22, 44],
+              popupAnchor: [0, -40]
             });
-        }
         
         // Add markers to map
         markers.forEach(marker => {
@@ -363,9 +381,7 @@ export default function BrowseTasksScreen() {
                 </div>
             \`;
             
-            L.marker([marker.lat, marker.lng], {
-                icon: createCustomIcon(marker.id)
-            })
+      L.marker([marker.lat, marker.lng], { icon: customIcon })
             .bindPopup(popupContent)
             .addTo(map);
         });
@@ -541,12 +557,12 @@ export default function BrowseTasksScreen() {
       {viewMode === 'map' ? (
         <View style={styles.mapContainer}>
           <WebView
-            source={{ html: generateMapHTML() }}
+            source={{ html: generateMapHTML(markerIconUri) }}
             style={styles.webView}
             javaScriptEnabled={true}
             domStorageEnabled={true}
             startInLoadingState={true}
-            scalesPageToFit={true}
+            scalesPageToFit={false}
             scrollEnabled={false}
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
