@@ -1,6 +1,6 @@
+import QuickAuthTest from '@/components/QuickAuthTest';
 import { ResizeMode, Video } from 'expo-av';
 import { Link, useRouter } from 'expo-router';
-import LottieView from 'lottie-react-native';
 import React, { useState } from 'react';
 import { Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -9,45 +9,40 @@ const { width: screenWidth } = Dimensions.get('window');
 
 // Import the local assets
 const WelcomeVideo = require('@/assets/welcome-screen.mp4'); 
-const LottieAnimation = require('@/assets/animations/lottie-animation.json');
+const MyToDooLogo = require('@/assets/MyToDoo_logo.gif');
 // const WelcomeImage = require('@/assets/images/welcome.png'); // Keep as fallback
 
 export default function WelcomeScreen() { 
   const router = useRouter();
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
-  const [lottieLoaded, setLottieLoaded] = useState(false);
-  const [lottieError, setLottieError] = useState(false);
+  const [logoLoaded, setLogoLoaded] = useState(false);
+  const [logoError, setLogoError] = useState(false);
   
   return (
     <SafeAreaView style={styles.container}>
-      {/* Lottie Animation Logo replacing title */}
+      {/* MyToDoo Logo GIF */}
       <View style={styles.logoContainer}>
-        {/* Show Lottie animation if it loads successfully */}
-        {!lottieError && (
-          <LottieView
-            source={LottieAnimation}
-            style={styles.lottieAnimation}
-            autoPlay={true}
-            loop={false}
-            speed={1}
-            onAnimationFinish={() => {
-              console.log('Lottie animation finished');
-              setLottieLoaded(true);
-            }}
-            onAnimationFailure={(error) => {
-              console.log('Lottie animation error:', error);
-              setLottieError(true);
-            }}
-          />
-        )}
+        <Image
+          source={MyToDooLogo}
+          style={styles.logoImage}
+          resizeMode="contain"
+          onLoad={() => {
+            console.log('Logo loaded successfully');
+            setLogoLoaded(true);
+            setLogoError(false);
+          }}
+          onError={(error) => {
+            console.log('Logo error:', error);
+            setLogoError(true);
+            setLogoLoaded(false);
+          }}
+        />
         
-        {/* Fallback text - show if animation fails or hasn't loaded */}
-        {(lottieError || !lottieLoaded) && (
-          <Text style={[
-            styles.fallbackText,
-            { opacity: lottieError ? 1 : 0.7 }
-          ]}>
+        {/* Fallback text - show if logo fails to load */}
+        {logoError && (
+          <Text style={styles.fallbackText}>
+            MyToDoo
           </Text>
         )}
       </View>
@@ -58,11 +53,11 @@ export default function WelcomeScreen() {
         {(!videoLoaded || videoError) && (
           <Image 
             style={styles.media}
-            resizeMode={ResizeMode.COVER}
+            resizeMode="contain"
           />
         )}
         
-        {/* Video Component with local asset - Full Width */}
+        {/* Video Component with local asset - Properly sized with rounded corners */}
         <Video
           source={WelcomeVideo}
           style={[
@@ -73,7 +68,7 @@ export default function WelcomeScreen() {
           isLooping={true}
           isMuted={true}
           useNativeControls={false}
-          resizeMode={ResizeMode.COVER}
+          resizeMode={ResizeMode.CONTAIN}
           onLoad={() => {
             console.log('Video loaded successfully');
             setVideoLoaded(true);
@@ -89,7 +84,10 @@ export default function WelcomeScreen() {
 
       {/* Bottom Container */}
       <View style={styles.bottomContainer}>
-        <Link href={"/(welcome-screen)/first-screen"} asChild>
+        {/* Auth Test Component - Shows backend is working! */}
+        <QuickAuthTest />
+        
+        <Link href={"/(welcome-screen)/goal-screen"} asChild>
           <TouchableOpacity style={styles.buttonPrimary} activeOpacity={0.8}>
             <Text style={styles.buttonText}>Get Start</Text>
           </TouchableOpacity>
@@ -109,40 +107,41 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#004aad',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
+  }, 
   logoContainer: {
-    marginTop: 40,
+    marginTop: 60,
+    paddingRight: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
+    flex: 1.2,
+    marginBottom: -20,
   },
-  lottieAnimation: {
-    width: 150,
-    height: 150,
-    backgroundColor: 'rgba(255,255,255,0.1)', // Temporary background to see the container
+  logoImage: { 
+    width: 580,
+    height: 510, 
   },
   fallbackText: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#fff',
-    position: 'absolute',
+    color: '#0052CC',
     fontFamily: 'sans-serif-condensed',
   },
   mediaContainer: {
-    flex: 3,
+    flex: 2.8,
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 0, // Remove horizontal padding
+    paddingHorizontal: 10, // Add horizontal padding
+    marginTop: -40,
   },
   media: {
-    width: screenWidth, // Full screen width
-    height: 300,
-    maxWidth: '100%',
-    borderRadius:20
+    width: '95%', // Reduced width
+    height: 250, // Reduced height
+    borderRadius: 20,
+    overflow: 'hidden', // Ensures rounded corners work properly
   },
   bottomContainer: {
     flex: 2,
@@ -153,7 +152,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 0,
-    paddingBottom: 0,
+    paddingBottom: 20,
   },
   buttonPrimary: {
     backgroundColor: '#0052CC',
@@ -172,6 +171,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 30,
     marginTop: 0,
+    marginBottom: 10,
   },
   buttonText: {
     color: '#fff',

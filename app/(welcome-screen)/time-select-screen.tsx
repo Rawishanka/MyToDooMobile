@@ -1,17 +1,17 @@
 import { useCreateTaskStore } from '@/store/create-task-store';
-import { AntDesign } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import { ChevronLeft } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
 import {
-  Image,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View
+    Image,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Switch,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 const TimeSelectScreen = () => {
@@ -104,7 +104,7 @@ const TimeSelectScreen = () => {
     <View style={styles.container}>
       {/* Back Arrow Top Left */}
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <AntDesign name="arrowleft" size={24} color="#333" />
+        <ChevronLeft size={24} color="#333" />
       </TouchableOpacity>
       
       <ScrollView 

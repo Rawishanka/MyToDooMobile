@@ -4,16 +4,26 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
+import { AuthProvider } from '@/context/AuthProvider';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/context/AuthProvider';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
 
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
 
   // integrate tanstack query
   const queryClient = new QueryClient();
@@ -30,6 +40,11 @@ export default function RootLayout() {
           <Stack>
             <Stack.Screen name='index' options={{ headerShown: false }} />
             <Stack.Screen name='login-screen' options={{ headerShown: false }} />
+            <Stack.Screen name='signup-screen' options={{ headerShown: false }} />
+            <Stack.Screen name='test-api' options={{ headerShown: false }} />
+            <Stack.Screen name='auth-test' options={{ headerShown: false }} />
+            <Stack.Screen name='auth-debug' options={{ headerShown: false }} />
+            <Stack.Screen name='network-test' options={{ headerShown: false }} />
             <Stack.Screen name="(welcome-screen)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />

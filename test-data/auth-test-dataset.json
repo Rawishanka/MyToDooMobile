@@ -1,0 +1,131 @@
+{
+  "testUsers": [
+    {
+      "id": 1,
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "password": "JohnDoe123!",
+      "description": "Standard user with mixed case password"
+    },
+    {
+      "id": 2,
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "email": "jane.smith@example.com",
+      "password": "SecurePass456@",
+      "description": "User with special characters in password"
+    },
+    {
+      "id": 3,
+      "firstName": "Mike",
+      "lastName": "Johnson",
+      "email": "mike.johnson@test.com",
+      "password": "Password789#",
+      "description": "User with numeric and special chars"
+    },
+    {
+      "id": 4,
+      "firstName": "Sarah",
+      "lastName": "Wilson",
+      "email": "sarah.wilson@demo.com",
+      "password": "MyPassword2024$",
+      "description": "User with year in password"
+    },
+    {
+      "id": 5,
+      "firstName": "Test",
+      "lastName": "User",
+      "email": "test.user@example.com",
+      "password": "TestUser123!",
+      "description": "Generic test user"
+    },
+    {
+      "id": 6,
+      "firstName": "Admin",
+      "lastName": "Admin",
+      "email": "admin@example.com",
+      "password": "AdminPass999&",
+      "description": "Admin user for testing"
+    },
+    {
+      "id": 7,
+      "firstName": "Demo",
+      "lastName": "Account",
+      "email": "demo@mytodoo.com",
+      "password": "DemoAccount2024!",
+      "description": "Demo account for presentations"
+    },
+    {
+      "id": 8,
+      "firstName": "Guest",
+      "lastName": "User",
+      "email": "guest@example.com",
+      "password": "GuestUser123@",
+      "description": "Guest user with limited access"
+    }
+  ],
+  "passwordVariations": [
+    {
+      "type": "Simple",
+      "examples": ["password123", "user123", "test123"],
+      "description": "Basic passwords for testing"
+    },
+    {
+      "type": "Strong",
+      "examples": ["MySecurePass123!", "StrongPassword456@", "ComplexPass789#"],
+      "description": "Strong passwords with mixed characters"
+    },
+    {
+      "type": "WithSpecialChars",
+      "examples": ["Pass@word123", "User#2024", "Test$123"],
+      "description": "Passwords with special characters"
+    },
+    {
+      "type": "Longer",
+      "examples": ["ThisIsAVeryLongPassword123!", "SecurePasswordForTesting456@", "LongPasswordWithManyCharacters789#"],
+      "description": "Longer passwords for security testing"
+    }
+  ],
+  "commonTestCredentials": {
+    "default": {
+      "email": "test@example.com",
+      "password": "TestPassword123!"
+    },
+    "admin": {
+      "email": "admin@example.com",
+      "password": "AdminPassword456@"
+    },
+    "demo": {
+      "email": "demo@example.com",
+      "password": "DemoPassword789#"
+    },
+    "guest": {
+      "email": "guest@example.com",
+      "password": "GuestPassword123$"
+    }
+  },
+  "signupTestData": [
+    {
+      "firstName": "Alex",
+      "lastName": "Brown",
+      "email": "alex.brown@test.com",
+      "password": "AlexBrown123!",
+      "confirmPassword": "AlexBrown123!"
+    },
+    {
+      "firstName": "Emma",
+      "lastName": "Davis",
+      "email": "emma.davis@test.com",
+      "password": "EmmaDavis456@",
+      "confirmPassword": "EmmaDavis456@"
+    },
+    {
+      "firstName": "Chris",
+      "lastName": "Miller",
+      "email": "chris.miller@test.com",
+      "password": "ChrisMiller789#",
+      "confirmPassword": "ChrisMiller789#"
+    }
+  ]
+}
