@@ -1,3 +1,4 @@
+import QuickAuthTest from '@/components/QuickAuthTest';
 import { ResizeMode, Video } from 'expo-av';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -83,6 +84,9 @@ export default function WelcomeScreen() {
 
       {/* Bottom Container */}
       <View style={styles.bottomContainer}>
+        {/* Auth Test Component - Shows backend is working! */}
+        <QuickAuthTest />
+        
         <Link href={"/(welcome-screen)/first-screen"} asChild>
           <TouchableOpacity style={styles.buttonPrimary} activeOpacity={0.8}>
             <Text style={styles.buttonText}>Get Start</Text>
@@ -103,19 +107,21 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#004aad',
     alignItems: 'center',
     justifyContent: 'space-between',
   }, 
   logoContainer: {
-    marginTop: 40,
+    marginTop: 60,
+    paddingRight: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
+    flex: 1.2,
+    marginBottom: -20,
   },
   logoImage: { 
-    width: 200,
-    height: 150, 
+    width: 580,
+    height: 510, 
   },
   fallbackText: {
     fontSize: 32,
@@ -124,11 +130,12 @@ const styles = StyleSheet.create({
     fontFamily: 'sans-serif-condensed',
   },
   mediaContainer: {
-    flex: 3,
+    flex: 2.8,
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 10, // Add horizontal padding
+    marginTop: -40,
   },
   media: {
     width: '95%', // Reduced width
@@ -145,7 +152,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 0,
-    paddingBottom: 0,
+    paddingBottom: 20,
   },
   buttonPrimary: {
     backgroundColor: '#0052CC',
@@ -164,6 +171,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 30,
     marginTop: 0,
+    marginBottom: 10,
   },
   buttonText: {
     color: '#fff',

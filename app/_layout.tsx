@@ -40,6 +40,11 @@ export default function RootLayout() {
           <Stack>
             <Stack.Screen name='index' options={{ headerShown: false }} />
             <Stack.Screen name='login-screen' options={{ headerShown: false }} />
+            <Stack.Screen name='signup-screen' options={{ headerShown: false }} />
+            <Stack.Screen name='test-api' options={{ headerShown: false }} />
+            <Stack.Screen name='auth-test' options={{ headerShown: false }} />
+            <Stack.Screen name='auth-debug' options={{ headerShown: false }} />
+            <Stack.Screen name='network-test' options={{ headerShown: false }} />
             <Stack.Screen name="(welcome-screen)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />

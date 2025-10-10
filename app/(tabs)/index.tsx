@@ -9,16 +9,21 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
+import { useRouter } from 'expo-router';
+
+// 🚀 **NEW: Import our comprehensive API hooks**
+import { useGetAllTasks, useSearchTasks } from '@/hooks/useTaskApi';
+import { Task } from '@/api/types/tasks';
 
 // Import the local assets
 const LottieAnimation = require('@/assets/animations/lottie-animation.json');
 
 const tags = ['End of lease cleaning', 'Help me move', 'Fix lights'];
-const tasks = [
-  { id: '1', name: 'Jane F.', task: 'Folding arm awning needs reset' },
-  { id: '2', name: 'Jane F.', task: 'Folding arm awning needs reset' },
-];
+
+// 🔥 **REMOVED HARDCODED TASKS - NOW USING REAL API DATA!**
 type MaterialCommunityIconName =
   | "shovel"
   | "format-paint"
@@ -41,8 +46,71 @@ const categories: { title: string; icon: MaterialCommunityIconName }[] = [
 ];
 
 export default function GetItDoneScreen() {
+  const router = useRouter();
   const [lottieLoaded, setLottieLoaded] = useState(false);
   const [lottieError, setLottieError] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // 🚀 **NEW: Get real tasks from API**
+  const { 
+    data: tasksResponse, 
+    isLoading: isLoadingTasks, 
+    error: tasksError,
+    refetch: refetchTasks 
+  } = useGetAllTasks();
+
+  // 🔍 **NEW: Search functionality**
+  const { 
+    data: searchResults 
+  } = useSearchTasks({ 
+    search: searchQuery 
+  }, searchQuery.length > 2);
+
+  // Use search results if searching, otherwise use all tasks
+  const displayTasks = searchQuery.length > 2 ? searchResults?.data : tasksResponse?.data;
+  const tasks = displayTasks || [];
+
+  // 🎯 **NEW: Task card renderer with real data**
+  const renderTaskCard = ({ item }: { item: Task }) => (
+    <TouchableOpacity 
+      style={styles.taskBox}
+      activeOpacity={0.7}
+      onPress={() => router.push(`/(tabs)/task-detail?taskId=${item._id}`)}
+    >
+      <Text style={styles.name}>
+        {item.createdBy.firstName} {item.createdBy.lastName}
+      </Text>
+      <Text style={styles.desc} numberOfLines={2}>
+        {item.title}
+      </Text>
+      <Text style={styles.taskDetails} numberOfLines={1}>
+        📍 {item.location.address}
+      </Text>
+      <Text style={styles.budget}>
+        💰 {item.formattedBudget || `${item.currency} ${item.budget}`}
+      </Text>
+      <Text style={styles.messageLink}>💬 {item.offerCount || 0} offers</Text>
+    </TouchableOpacity>
+  );
+
+  // 🚨 **NEW: Error handling for API**
+  if (tasksError) {
+    return (
+      <ScrollView style={{ flex: 1, backgroundColor: '#fff' }}>
+        <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            <Text style={styles.fallbackLogo}>MyToDo</Text>
+          </View>
+        </View>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Failed to load tasks</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={() => refetchTasks()}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    );
+  }
   
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -78,15 +146,20 @@ export default function GetItDoneScreen() {
       {/* Greeting */}
       <Text style={styles.greeting}>Good evening. Prasanna</Text>
 
-      {/* Post a Task Section */}
+      {/* Post a Task Section - Now with Search */}
       <View style={styles.taskCard}>
         <Text style={styles.postTitle}>Post a Task. Get it Done.</Text>
         <TextInput
           style={styles.input}
-          placeholder="In a few words what do you need done?"
+          placeholder="Search for tasks or describe what you need done..."
           placeholderTextColor="#999"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
         />
-        <TouchableOpacity style={styles.postButton}>
+        <TouchableOpacity 
+          style={styles.postButton}
+          onPress={() => router.push('/(welcome-screen)/first-screen')}
+        >
           <MaterialCommunityIcons name="plus" size={18} color="#fff" />
           <Text style={styles.postButtonText}>Post a Task</Text>
           <MaterialCommunityIcons name="arrow-right" size={18} color="#fff" />
@@ -102,23 +175,37 @@ export default function GetItDoneScreen() {
         ))}
       </ScrollView>
 
-      {/* Task Cards */}
-      <Text style={styles.sectionTitle}>Get more work now</Text>
-      <Text style={styles.subTitle}>Cut through the competition and earn more with customers you know</Text>
-      <FlatList
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        data={tasks}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.taskBox}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.desc}>{item.task}</Text>
-            <Text style={styles.messageLink}>💬 Sent a message</Text>
-          </TouchableOpacity>
-        )}
-        style={{ marginBottom: 10, paddingHorizontal: 10 }}
-      />
+      {/* Real Tasks from API */}
+      <Text style={styles.sectionTitle}>Available Tasks</Text>
+      <Text style={styles.subTitle}>
+        {searchQuery.length > 2 
+          ? `Search results for "${searchQuery}"` 
+          : "Browse and bid on tasks posted by others"
+        }
+      </Text>
+      
+      {isLoadingTasks ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007bff" />
+          <Text style={styles.loadingText}>Loading tasks...</Text>
+        </View>
+      ) : (
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={tasks}
+          keyExtractor={(item) => item._id}
+          renderItem={renderTaskCard}
+          style={{ marginBottom: 10, paddingHorizontal: 10 }}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                {searchQuery.length > 2 ? 'No tasks found for your search' : 'No tasks available'}
+              </Text>
+            </View>
+          }
+        />
+      )}
 
       {/* Category Grid */}
       <Text style={styles.sectionTitle}>Need something done</Text>
@@ -231,7 +318,52 @@ const styles = StyleSheet.create({
   },
   name: { fontWeight: 'bold', marginBottom: 4 },
   desc: { fontSize: 13, color: '#333' },
-  messageLink: { color: '#007bff', marginTop: 6 },
+  taskDetails: { fontSize: 12, color: '#666', marginTop: 2 },
+  budget: { fontSize: 12, color: '#007bff', fontWeight: 'bold', marginTop: 2 },
+  messageLink: { color: '#007bff', marginTop: 6, fontSize: 12 },
+  
+  // 🚀 **NEW: API-related styles**
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#007bff',
+    padding: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginLeft: 10,
+    color: '#666',
+  },
+  emptyContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 200,
+  },
+  emptyText: {
+    color: '#666',
+    textAlign: 'center',
+  },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',

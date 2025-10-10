@@ -1,0 +1,118 @@
+[
+  {
+    "_id": "684a610ab1cb4111b3bdea10",
+    "firstName": "Sandewdi",
+    "lastName": "Nowanya", 
+    "email": "sandewdi@example.com",
+    "phone": "+61 412 345 678",
+    "profileImage": "https://ui-avatars.com/api/?name=Sandewdi+Nowanya&background=random",
+    "rating": 4.7,
+    "totalReviews": 23,
+    "verified": true,
+    "joinedDate": "2024-08-15T10:30:00.000Z",
+    "lastActive": "2025-10-06T08:15:00.000Z",
+    "completedTasks": 15,
+    "activeOffers": 3,
+    "location": {
+      "city": "Broadbeach",
+      "state": "Queensland", 
+      "country": "Australia"
+    },
+    "skills": ["Home Repairs", "Plumbing", "Electrical Work", "Furniture Assembly"],
+    "bio": "Experienced handyman with 8+ years in home repairs and maintenance. I take pride in quality workmanship and customer satisfaction. Available for most jobs around Gold Coast area.",
+    "stats": {
+      "totalTasksCreated": 8,
+      "totalTasksCompleted": 15,
+      "averageRating": 4.7,
+      "totalEarnings": 2350,
+      "responseTime": "2 hours"
+    }
+  },
+  {
+    "_id": "68c3c778993e55158d2a5b4b",
+    "firstName": "Nowanya",
+    "lastName": "Fonseka",
+    "email": "nowanya@example.com", 
+    "phone": "+61 423 567 890",
+    "profileImage": "https://lh3.googleusercontent.com/a/ACg8ocIBGZmJdETjDq1e0Iw-RWIfJ47laQiYNh_39pN65CfWlyPS3AJP=s96-c",
+    "rating": 4.2,
+    "totalReviews": 12,
+    "verified": true,
+    "joinedDate": "2024-11-20T14:45:00.000Z",
+    "lastActive": "2025-10-06T07:30:00.000Z",
+    "completedTasks": 8,
+    "activeOffers": 2,
+    "location": {
+      "city": "Perth",
+      "state": "Western Australia",
+      "country": "Australia"
+    },
+    "skills": ["Moving Services", "Cleaning", "Gardening", "Pet Care"],
+    "bio": "Reliable and friendly service provider. I love helping people with their daily tasks and making their lives easier. Always punctual and professional.",
+    "stats": {
+      "totalTasksCreated": 12,
+      "totalTasksCompleted": 8,
+      "averageRating": 4.2,
+      "totalEarnings": 1680,
+      "responseTime": "1.5 hours"
+    }
+  },
+  {
+    "_id": "670123456789012345678901",
+    "firstName": "David", 
+    "lastName": "Brown",
+    "email": "david.brown@example.com",
+    "phone": "+61 434 678 901",
+    "profileImage": "https://ui-avatars.com/api/?name=David+Brown&background=random",
+    "rating": 4.2,
+    "totalReviews": 12,
+    "verified": false,
+    "joinedDate": "2025-01-10T09:15:00.000Z",
+    "lastActive": "2025-10-05T16:20:00.000Z",
+    "completedTasks": 5,
+    "activeOffers": 1,
+    "location": {
+      "city": "Brisbane",
+      "state": "Queensland",
+      "country": "Australia"
+    },
+    "skills": ["Moving", "Delivery", "Heavy Lifting"],
+    "bio": "Strong and reliable. I have a truck and all the equipment needed for moving jobs. New to the platform but experienced in moving services.",
+    "stats": {
+      "totalTasksCreated": 2,
+      "totalTasksCompleted": 5,
+      "averageRating": 4.2,
+      "totalEarnings": 890,
+      "responseTime": "4 hours"
+    }
+  },
+  {
+    "_id": "670123456789012345678902",
+    "firstName": "Emma",
+    "lastName": "Davis",
+    "email": "emma.davis@example.com",
+    "phone": "+61 445 789 012",
+    "profileImage": "https://ui-avatars.com/api/?name=Emma+Davis&background=random",
+    "rating": 4.9,
+    "totalReviews": 35,
+    "verified": true,
+    "joinedDate": "2024-05-03T11:20:00.000Z",
+    "lastActive": "2025-10-06T06:45:00.000Z",
+    "completedTasks": 28,
+    "activeOffers": 4,
+    "location": {
+      "city": "Sydney",
+      "state": "New South Wales",
+      "country": "Australia"
+    },
+    "skills": ["Professional Moving", "Furniture Assembly", "Home Organization", "Packing Services"],
+    "bio": "Professional mover with 10+ years experience. Fully insured and equipped with all professional moving tools. Specializing in careful handling of furniture and fragile items.",
+    "stats": {
+      "totalTasksCreated": 5,
+      "totalTasksCompleted": 28,
+      "averageRating": 4.9,
+      "totalEarnings": 4250,
+      "responseTime": "30 minutes"
+    }
+  }
+]

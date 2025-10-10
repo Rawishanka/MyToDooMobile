@@ -1,0 +1,86 @@
+[
+  {
+    "_id": "67012345678901234567890a",
+    "taskId": "684bba3bb1cb4111b3bded24",
+    "tasker": {
+      "_id": "684a610ab1cb4111b3bdea10",
+      "firstName": "Mike",
+      "lastName": "Johnson",
+      "rating": 4.8,
+      "totalReviews": 25,
+      "verified": true,
+      "avatar": "https://ui-avatars.com/api/?name=Mike+Johnson&background=random"
+    },
+    "amount": 85,
+    "currency": "AUD",
+    "message": "I'm an experienced plumber with 10+ years of experience. I can fix your leaky faucet today and provide a 6-month warranty on the work.",
+    "status": "pending",
+    "estimatedDuration": "2 hours",
+    "availability": "Available today after 2 PM",
+    "createdAt": "2025-10-05T10:30:00.000Z",
+    "updatedAt": "2025-10-05T10:30:00.000Z"
+  },
+  {
+    "_id": "67012345678901234567890b",
+    "taskId": "684bba3bb1cb4111b3bded24", 
+    "tasker": {
+      "_id": "68c3c778993e55158d2a5b4b",
+      "firstName": "Sarah",
+      "lastName": "Williams",
+      "rating": 4.5,
+      "totalReviews": 18,
+      "verified": true,
+      "avatar": "https://ui-avatars.com/api/?name=Sarah+Williams&background=random"
+    },
+    "amount": 95,
+    "currency": "AUD",
+    "message": "Professional handyperson available. I have all the tools needed and can start immediately. Quick and clean work guaranteed!",
+    "status": "accepted",
+    "estimatedDuration": "1.5 hours",
+    "availability": "Available now",
+    "createdAt": "2025-10-05T11:15:00.000Z",
+    "updatedAt": "2025-10-05T14:30:00.000Z"
+  },
+  {
+    "_id": "67012345678901234567890c",
+    "taskId": "684faab290bb9960d7f09842",
+    "tasker": {
+      "_id": "670123456789012345678901",
+      "firstName": "David",
+      "lastName": "Brown",
+      "rating": 4.2,
+      "totalReviews": 12,
+      "verified": false,
+      "avatar": "https://ui-avatars.com/api/?name=David+Brown&background=random"
+    },
+    "amount": 120,
+    "currency": "AUD",
+    "message": "I have a truck and moving equipment. Can bring a helper if needed. Very careful with furniture.",
+    "status": "rejected",
+    "estimatedDuration": "3 hours",
+    "availability": "This weekend",
+    "createdAt": "2025-10-04T16:20:00.000Z",
+    "updatedAt": "2025-10-05T09:10:00.000Z"
+  },
+  {
+    "_id": "67012345678901234567890d",
+    "taskId": "684faab290bb9960d7f09842",
+    "tasker": {
+      "_id": "670123456789012345678902",
+      "firstName": "Emma",
+      "lastName": "Davis",
+      "rating": 4.9,
+      "totalReviews": 35,
+      "verified": true,
+      "avatar": "https://ui-avatars.com/api/?name=Emma+Davis&background=random"
+    },
+    "amount": 110,
+    "currency": "AUD",
+    "message": "Experienced furniture mover with protective equipment. I'll wrap everything properly to prevent damage.",
+    "status": "pending",
+    "estimatedDuration": "2.5 hours",
+    "availability": "Tomorrow morning",
+    "createdAt": "2025-10-05T08:45:00.000Z",
+    "updatedAt": "2025-10-05T08:45:00.000Z"
+  }
+]
