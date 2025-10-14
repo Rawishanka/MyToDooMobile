@@ -16,7 +16,7 @@ export default function NetworkTestScreen() {
     setTesting(true);
     setTestResults([]);
     
-    const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.4:5001/api';
+    const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.3:5001/api';
     addResult(`Testing connection to: ${baseUrl}`);
 
     // Helper function to create fetch with timeout
@@ -111,7 +111,7 @@ export default function NetworkTestScreen() {
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>Backend Connection Test</Text>
           <Text style={styles.infoText}>Testing connectivity to your backend server</Text>
-          <Text style={styles.infoText}>URL: {process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.4:5001/api'}</Text>
+          <Text style={styles.infoText}>URL: {process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.3:5001/api'}</Text>
         </View>
 
         <TouchableOpacity 

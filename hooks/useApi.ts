@@ -1,5 +1,6 @@
 // External library imports
 import { useApiFunctions } from "@/api/mytasks";
+import { TaskAPI } from '@/api/task-api'; // ✅ ADDED: Import new TaskAPI
 import { CreateTask } from "@/store/create-task-type";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -25,12 +26,12 @@ const KEYS = {
 
 
 export function useGetAllTasksQuery() {
-  const { getAllTasks } = useApiFunctions();
+  // ✅ FIXED: Using new TaskAPI with network error fallback instead of old mytasks.ts
   return useQuery({
     queryKey: KEYS.allTasks(),
-    queryFn: getAllTasks,
+    queryFn: () => TaskAPI.getAllTasks(),
     staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
+    retry: 1, // Reduced retries since TaskAPI has its own fallback handling
   });
 }
 

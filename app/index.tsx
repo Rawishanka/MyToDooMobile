@@ -1,4 +1,3 @@
-import QuickAuthTest from '@/components/QuickAuthTest';
 import { ResizeMode, Video } from 'expo-av';
 import { Link, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -84,9 +83,6 @@ export default function WelcomeScreen() {
 
       {/* Bottom Container */}
       <View style={styles.bottomContainer}>
-        {/* Auth Test Component - Shows backend is working! */}
-        <QuickAuthTest />
-        
         <Link href={"/(welcome-screen)/goal-screen"} asChild>
           <TouchableOpacity style={styles.buttonPrimary} activeOpacity={0.8}>
             <Text style={styles.buttonText}>Get Start</Text>

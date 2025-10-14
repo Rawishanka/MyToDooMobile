@@ -1,21 +1,57 @@
+import { useGetUserProfile } from '@/hooks/useUserApi';
+import { useAuthStore } from '@/store/auth-task-store';
 import { Entypo, Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import CommunityGuideLines from '../../components/custom_components/community-guidelines'; // Import the community guidelines screen
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import CommunityGuideLines from '../../components/custom_components/community-guidelines';
 import ContactUs from '../../components/custom_components/contact-us';
-import EditProfileScreen from '../../components/custom_components/editprofilescreen'; // Import the edit profile screen
+import EditProfileScreen from '../../components/custom_components/editprofilescreen';
 import FAQ from '../../components/custom_components/faq-screen';
 import LegalScreen from '../../components/custom_components/legal-screen';
 import Logout from '../../components/custom_components/Logout';
-import AccountInformation from './accountinformation'; // Import the account information screen
-import TaskerDashboard from './dashboard'; // Import the tasker dashboard screen
-import InsuranceProtection from './isuranceprotection'; // Import the insurance protection screen
-import NotificationPreferences from './notificationpreferences'; // Import the notification preferences screen (fixed typo)
-import PaymentScreensApp from './paymentscreens'; // Import the payment screens
-import TaskAlerts from './taskalerts'; // Import the task alerts screen
+import ProfileUpdateForm from '../../components/custom_components/profile-update-form';
+import AccountInformation from './accountinformation';
+import TaskerDashboard from './dashboard';
+import InsuranceProtection from './isuranceprotection';
+import NotificationPreferences from './notificationpreferences';
+import PaymentScreensApp from './paymentscreens';
+import TaskAlerts from './taskalerts';
 
 export default function AccountScreen() {
   const [currentScreen, setCurrentScreen] = useState('account');
+  
+  // 🚀 **NEW: Get real user data from API**
+  const { data: userProfileData, isLoading: isLoadingProfile, error: profileError, refetch } = useGetUserProfile();
+  const { user: authUser, isAuthenticated } = useAuthStore();
+  
+  // Use data from API response or fallback to auth store
+  const userData = userProfileData?.data || authUser;
+  
+  // Handle loading state
+  if (isLoadingProfile && !userData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0052A2" />
+        <Text style={styles.loadingText}>Loading profile...</Text>
+      </View>
+    );
+  }
+  
+  // Handle error state
+  if (profileError && !userData) {
+    return (
+      <View style={styles.errorContainer}>
+        <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
+        <Text style={styles.errorTitle}>Failed to load profile</Text>
+        <Text style={styles.errorSubtitle}>
+          Could not load your profile. Please check your connection and try again.
+        </Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+          <Text style={styles.retryButtonText}>Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const navigateToPayment = () => {
     setCurrentScreen('payment');
@@ -23,6 +59,8 @@ export default function AccountScreen() {
 
   const navigateToAccount = () => {
     setCurrentScreen('account');
+    // Refresh user profile when returning to account screen
+    refetch();
   };
 
   const navigateToAccountInfo = () => {
@@ -45,8 +83,8 @@ export default function AccountScreen() {
     setCurrentScreen('insurance-protection');
   };
 
-  const navigateToEditProfile = () => {
-    setCurrentScreen('edit-profile');
+  const navigateToProfileUpdate = () => {
+    setCurrentScreen('profile-update');
   };
 
   const navigateToFAQ = () => {
@@ -69,9 +107,20 @@ export default function AccountScreen() {
     setCurrentScreen('contact-us');
   };
 
+  // If profile update screen is selected, show profile update form
+  if (currentScreen === 'profile-update') {
+    return <ProfileUpdateForm 
+      onBack={navigateToAccount} 
+      userData={userData}
+    />;
+  }
+
   // If edit profile screen is selected, show edit profile
   if (currentScreen === 'edit-profile') {
-    return <EditProfileScreen onBack={navigateToAccount} onSave={undefined} />;
+    return <EditProfileScreen 
+      onBack={navigateToAccount} 
+      onSave={undefined}
+    />;
   }
 
   // If payment screen is selected, show payment screens
@@ -129,19 +178,46 @@ export default function AccountScreen() {
       {/* Header Section */}
       <View style={styles.header}>
         <Image
-          source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
+          source={{ 
+            uri: userData?.profilePicture || 
+                 `https://ui-avatars.com/api/?name=${userData?.firstName}+${userData?.lastName}&background=random&size=65` ||
+                 'https://randomuser.me/api/portraits/men/1.jpg'
+          }}
           style={styles.profileImage}
         />
-        <Text style={styles.name}>Prasanna J.</Text>
-        <Text style={styles.location}>Narre Warren VIC, Australia</Text>
+        <Text style={styles.name}>
+          {userData?.firstName} {userData?.lastName?.charAt(0)}.
+        </Text>
+        <Text style={styles.location}>
+          {userData?.location || 'Location not set'}
+        </Text>
         <View style={styles.row}>
           <Text style={styles.linkText}>See your public profile</Text>
         </View>
         
+        {/* Rating and Stats */}
+        {userData?.rating && (
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Ionicons name="star" size={16} color="#ffc107" />
+              <Text style={styles.statText}>{userData.rating}/5</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={styles.statText}>{userData.completedTasks || 0} tasks completed</Text>
+            </View>
+            {userData.isVerified && (
+              <View style={styles.verifiedBadge}>
+                <Ionicons name="checkmark-circle" size={16} color="#28a745" />
+                <Text style={styles.verifiedText}>Verified</Text>
+              </View>
+            )}
+          </View>
+        )}
+        
         {/* Edit Icon */}
         <TouchableOpacity 
           style={styles.editIconButton} 
-          onPress={navigateToEditProfile}
+          onPress={navigateToProfileUpdate}
         >
           <Ionicons name="create-outline" size={20} color="#fff" />
         </TouchableOpacity>
@@ -149,6 +225,14 @@ export default function AccountScreen() {
 
       {/* Settings List */}
       <View style={styles.card}>
+        <Text style={styles.sectionTitle}>PROFILE</Text>
+        <MenuItem 
+          icon={<Ionicons name="person-outline" size={20} color="#0052A2" />}
+          text="Edit Profile"
+          onPress={navigateToProfileUpdate} 
+          subtext="Update your personal information"        
+        />
+        
         <Text style={styles.sectionTitle}>ACCOUNT SETTINGS</Text>
         <MenuItem 
           icon={<MaterialIcons name="payment" size={20} color="#0052A2" />}
@@ -261,6 +345,50 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    backgroundColor: '#fff',
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  errorSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: '#0052A2',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   header: {
     backgroundColor: '#0052A2',
     alignItems: 'center',
@@ -294,6 +422,39 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#fff',
     textDecorationLine: 'underline',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 8,
+    marginVertical: 2,
+  },
+  statText: {
+    fontSize: 12,
+    color: '#fff',
+    marginLeft: 4,
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginHorizontal: 8,
+  },
+  verifiedText: {
+    fontSize: 10,
+    color: '#fff',
+    marginLeft: 4,
+    fontWeight: '600',
   },
   editText: {
     fontSize: 13,

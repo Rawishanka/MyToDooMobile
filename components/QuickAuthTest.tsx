@@ -7,7 +7,7 @@ export const QuickAuthTest = () => {
 
   const testAuthFlow = async () => {
     setTesting(true);
-    const baseUrl = 'http://192.168.1.4:5001/api';
+    const baseUrl = 'http://192.168.1.3:5001/api';
     
     try {
       // Test 1: Check if server is running

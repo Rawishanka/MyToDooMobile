@@ -66,7 +66,13 @@ export default function GoalSelectionScreen() {
         ]}
         onPress={() => {
           updateMyTask({ ...myTask, mainGoal: selectedGoal });
-          router.push('/first-screen');
+          if (selectedGoal === 'earnMoney') {
+            // Provide Services → show screen-first.tsx
+            router.push('/screen-first');
+          } else if (selectedGoal === 'getThingsDone') {
+            // Get MyToDoo tasks completed → show first-screen.tsx
+            router.push('/first-screen');
+          }
         }}
       >
         <Text style={styles.continueText}>Continue</Text>

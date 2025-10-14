@@ -37,7 +37,7 @@ export default function OnboardingScreen() {
 
       {/* Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.signupButton}>
+        <TouchableOpacity style={styles.signupButton} onPress={() => router.push('../signup-screen')}>
           <Text style={styles.signupText}>Sign up now</Text>
         </TouchableOpacity>
 
