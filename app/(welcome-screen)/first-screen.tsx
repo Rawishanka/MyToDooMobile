@@ -11,7 +11,7 @@ export default function OnboardingScreen() {
   return (
     <View style={styles.container}>
       {/* Back arrow */}
-      <TouchableOpacity style={styles.backIcon} onPress={() => router.push('/')}>
+      <TouchableOpacity style={styles.backIcon} onPress={() => router.push('/goal-screen')}>
         <ChevronLeft size={24} color="white" />
       </TouchableOpacity>
 
@@ -47,14 +47,14 @@ export default function OnboardingScreen() {
       </View>
 
       {/* API Test Button */}
-      <View style={styles.testButtonContainer}>
+      {/* <View style={styles.testButtonContainer}>
         <TouchableOpacity style={styles.testButton} onPress={() => router.push('../auth-debug')}>
           <Text style={styles.testButtonText}>🐛 Debug Auth</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
-  );
-}
+  ); 
+} 
 
 
 

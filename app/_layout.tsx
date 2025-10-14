@@ -25,8 +25,26 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  // integrate tanstack query
-  const queryClient = new QueryClient();
+  // integrate tanstack query with better error handling
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: (failureCount, error: any) => {
+          // Don't retry on network errors since we have mock fallback
+          if (error?.code === 'ERR_NETWORK' || error?.message === 'Network Error') {
+            return false;
+          }
+          // Retry other errors up to 2 times
+          return failureCount < 2;
+        },
+        refetchOnWindowFocus: false, // Prevent unnecessary refetches
+        staleTime: 5 * 60 * 1000, // 5 minutes - data considered fresh for 5 minutes
+      },
+      mutations: {
+        retry: false, // Don't retry mutations by default
+      },
+    },
+  });
 
   if (!loaded) {
     // Async font loading only occurs in development.
@@ -47,6 +65,7 @@ export default function RootLayout() {
             <Stack.Screen name='network-test' options={{ headerShown: false }} />
             <Stack.Screen name="(welcome-screen)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="task-detail" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style="auto" />

@@ -7,13 +7,13 @@ import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useCreateTaskStore } from '../../store/create-task-store';
 
@@ -38,7 +38,7 @@ const ListItem = ({ icon, text, value, onPress }: ListItemProps) => (
 );
 
 export default function DetailScreen() {
-  const { myTask } = useCreateTaskStore();
+  const { myTask, resetTask } = useCreateTaskStore();
   const [[isLoading, storedToken], setStoredToken] = useStorageState('token');
   
   // Use React Query mutation for posting task
@@ -143,6 +143,10 @@ export default function DetailScreen() {
       const response = await postTaskMutation.mutateAsync(taskData);
       console.log("✅ Task posted successfully:", response);
       
+      // Reset task store after successful posting
+      resetTask();
+      console.log("🔄 Task store reset after successful posting");
+      
       // Show success message
       Alert.alert(
         "Success!", 
@@ -229,6 +233,9 @@ export default function DetailScreen() {
 
   return (
     <View style={styles.container}>
+      {/* API Debug Panel */}
+      {/* <ApiDebugPanel /> */}
+      
       {/* Back Arrow Button */}
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
         <ChevronLeft size={24} color="#000" />
@@ -275,12 +282,12 @@ export default function DetailScreen() {
       </ScrollView>
 
       {/* Temporary Debug Button - Remove in production */}
-      <TouchableOpacity 
+      {/* <TouchableOpacity 
         style={[styles.debugBtn]} 
         onPress={handleForceFreshLogin}
       >
         <Text style={styles.debugText}>🔧 Debug: Force Fresh Login</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <TouchableOpacity 
         style={[styles.continueBtn, postTaskMutation.isPending && styles.continueButtonDisabled]} 

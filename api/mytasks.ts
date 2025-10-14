@@ -15,7 +15,7 @@ export function useApiFunctions() {
   async function createTask(task: CreateTask) {
     const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
       ? API_CONFIG.BASE_URL
-      : "http://192.168.8.135:5001/api";
+      : "http://192.168.1.3:5001/api";
     const api = createApi(baseUrl);
     
     // Convert CreateTask to the API format expected by /api/tasks/post-task
@@ -230,9 +230,35 @@ export function useApiFunctions() {
   }
 
   async function handleLoginUser(email: string, password: string) {
+    // Check if we should use mock API only
+    if (API_CONFIG.USE_MOCK_ONLY) {
+      console.log("🎭 Using Mock Login (development mode)");
+      // Create a mock token and user for development
+      const mockToken = "dev-mock-token-" + Date.now();
+      const mockUser = {
+        id: "dev-user-123",
+        _id: "dev-user-123",
+        email: email,
+        firstName: "Dev",
+        lastName: "User",
+        role: "user"
+      };
+      const mockExpiresIn = 3600; // 1 hour
+      
+      setAuthData(mockToken, mockUser, mockExpiresIn);
+      setStoredToken(mockToken);
+      
+      // Store credentials for development mode
+      await AsyncStorage.setItem('userEmail', email);
+      await AsyncStorage.setItem('userPassword', password);
+      
+      console.log("✅ Mock login successful for development");
+      return mockToken;
+    }
+    
     const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
       ? API_CONFIG.BASE_URL
-      : "http://192.168.8.135:5001/api";
+      : "http://192.168.1.3:5001/api";
     const api = createApi(baseUrl);
     console.log("Calling login API:", baseUrl + "/auth/login");
     console.log("With data:", { email: email, password });
@@ -289,9 +315,23 @@ export function useApiFunctions() {
   }
 
   async function handleSignUpUser(signUpData: SignUpRequest) {
+    // Check if we should use mock API only
+    if (API_CONFIG.USE_MOCK_ONLY) {
+      console.log("🎭 Using Mock Signup (development mode)");
+      console.log("✅ Mock signup successful for development");
+      // Create a mock signup response for development
+      const mockResponse = {
+        success: true,
+        message: "OTP sent to your email",
+        email: signUpData.email,
+        userId: "dev-user-" + Date.now()
+      };
+      return mockResponse;
+    }
+    
     const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
       ? API_CONFIG.BASE_URL
-      : "http://192.168.8.135:5001/api";
+      : "http://192.168.1.3:5001/api";
     const api = createApi(baseUrl);
     console.log("Calling signup API:", baseUrl + "/auth/signup");
     console.log("With data:", signUpData);
@@ -332,7 +372,7 @@ export function useApiFunctions() {
   async function handleVerifyOTP(email: string, otp: string) {
     const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
       ? API_CONFIG.BASE_URL
-      : "http://192.168.8.135:5001/api";
+      : "http://192.168.1.3:5001/api";
     const api = createApi(baseUrl);
     
     // Try different common OTP verification endpoints
@@ -400,18 +440,41 @@ export function useApiFunctions() {
   }
 
   async function getAllTasks() {
+    // Check if we should use mock API only
+    if (API_CONFIG.USE_MOCK_ONLY) {
+      console.log("🎭 Using Mock Tasks (development mode)");
+      const { MockApiService } = await import('./mock-api');
+      return await MockApiService.getAllTasks();
+    }
+
     const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
       ? API_CONFIG.BASE_URL
-      : "http://192.168.8.135:5001/api";
+      : "http://192.168.1.3:5001/api";
     const api = createApi(baseUrl);
+    console.log("🔧 API Configuration Debug:", {
+      baseUrl,
+      currentTime: new Date().toISOString(),
+      useMockOnly: API_CONFIG.USE_MOCK_ONLY
+    });
     console.log("Calling get all tasks API:", baseUrl + "/tasks");
 
     try {
       const response = await api.get('/tasks');
-      console.log("Get all tasks response:", response.data);
+      console.log("✅ Get all tasks response:", response.data);
       return response.data;
-    } catch (error) {
-      console.error("Get all tasks failed:", error);
+    } catch (error: any) {
+      console.error("❌ Get all tasks failed:", error);
+      
+      // Development fallback - if server is not available, use mock data
+      if (error.code === 'ECONNREFUSED' || 
+          error.message?.includes('Network Error') || 
+          error.code === 'ENOTFOUND' ||
+          error.code === 'ERR_NETWORK') {
+        console.warn("🎭 Server not available, using Mock Tasks for development");
+        const { MockApiService } = await import('./mock-api');
+        return await MockApiService.getAllTasks();
+      }
+      
       throw error;
     }
   }
@@ -419,7 +482,7 @@ export function useApiFunctions() {
   async function getMyTasks(section = 'all-tasks') {
     const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
       ? API_CONFIG.BASE_URL
-      : "http://192.168.8.135:5001/api";
+      : "http://192.168.1.3:5001/api";
     const api = createApi(baseUrl);
     const endpoint = `/tasks/my-tasks?section=${section}`;
     console.log("📋 Calling get my tasks API:", baseUrl + endpoint);
@@ -498,7 +561,7 @@ export function useApiFunctions() {
   async function checkAvailableEndpoints() {
     const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
       ? API_CONFIG.BASE_URL
-      : "http://192.168.8.135:5001/api";
+      : "http://192.168.1.3:5001/api";
     const api = createApi(baseUrl);
     
     const endpoints = [
@@ -529,6 +592,52 @@ export function useApiFunctions() {
     return results;
   }
 
+  async function getAllCategories() {
+    const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
+      ? API_CONFIG.BASE_URL
+      : "http://192.168.1.3:5001/api";
+    const api = createApi(baseUrl);
+
+    console.log("🏷️ Fetching categories from /api/categories endpoint...");
+
+    try {
+      const response = await api.get('/categories');
+      console.log("✅ Categories API response:", response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("❌ Get categories failed:", error);
+      
+      // If categories endpoint doesn't exist, try extracting from tasks
+      console.log("⚠️ Trying to extract categories from tasks...");
+      try {
+        const tasksResponse = await api.get('/tasks');
+        const tasks = tasksResponse.data?.data || [];
+        
+        // Extract unique categories
+        const categoriesSet = new Set<string>();
+        tasks.forEach((task: any) => {
+          if (task.categories && Array.isArray(task.categories)) {
+            task.categories.forEach((cat: string) => categoriesSet.add(cat));
+          } else if (task.category) {
+            categoriesSet.add(task.category);
+          }
+        });
+        
+        const categories = Array.from(categoriesSet).map(name => ({ name, count: 0 }));
+        console.log("✅ Categories extracted from tasks:", categories);
+        
+        return {
+          success: true,
+          data: categories,
+          total: categories.length
+        };
+      } catch (tasksError) {
+        console.error("❌ Failed to extract categories from tasks:", tasksError);
+        throw error;
+      }
+    }
+  }
+
   return {
     createTask,
     handleLoginUser,
@@ -537,6 +646,7 @@ export function useApiFunctions() {
     checkAvailableEndpoints,
     getAllTasks,
     getMyTasks,
+    getAllCategories,
     isLoading,
     storedToken,
   };

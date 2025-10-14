@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -9,9 +9,11 @@ const illustration = require('@/assets/images/illustration.png');
 
 export default function OnboardingScreen() {
   return (
-    <View style={styles.container}>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.container}>
       {/* Back arrow */}
-      <TouchableOpacity style={styles.backIcon} onPress={() => router.push('/')}>
+      <TouchableOpacity style={styles.backIcon} onPress={() => router.push('/goal-screen')}>
         <ChevronLeft size={24} color="white" />
       </TouchableOpacity>
 
@@ -41,18 +43,19 @@ export default function OnboardingScreen() {
           <Text style={styles.signupText}>Sign up now</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.arrowButton} onPress={() => router.push('/second-screen')}>
+        <TouchableOpacity style={styles.arrowButton} onPress={() => router.push('/screen-second')}>
           <ChevronRight size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 
-      {/* API Test Button */}
+      {/* API Test Button
       <View style={styles.testButtonContainer}>
         <TouchableOpacity style={styles.testButton} onPress={() => router.push('../auth-debug')}>
           <Text style={styles.testButtonText}>🐛 Debug Auth</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
+    </>
   );
 }
 

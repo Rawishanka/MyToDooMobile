@@ -1,5 +1,5 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -20,9 +20,14 @@ import {
 import { WebView } from 'react-native-webview';
 
 // 🚀 **NEW: Import our API hooks**
+// import { useApiFunctions } from '@/api/mytasks'; // ❌ REMOVED: Using old API that causes network errors
 import { Task } from '@/api/types/tasks';
 import { useGetAllTasks, useSearchTasks } from '@/hooks/useTaskApi';
-import { useClearTaskCaches, useForceRefreshTasks } from '@/utils/cache-utils';
+import { useClearAllCaches, useClearTaskCaches, useForceRefreshCategories, useForceRefreshTasks } from '@/utils/cache-utils';
+
+// 🏷️ **NEW: Import Categories API hooks**
+import { CategoriesAPI } from '@/api/categories-api'; // ✅ ADDED: Import categories API directly for testing
+import { useGetCategoriesWithAll } from '@/hooks/useCategoriesApi';
 
 // 🔥 IMPORT YOUR NOTIFICATION MODAL
 import NotificationModal from './notification-screen';
@@ -31,17 +36,7 @@ import NotificationModal from './notification-screen';
 // The Task interface is now imported from '@/api/types/tasks'
 
 // 🔥 **REMOVED HARDCODED DATA - NOW USING REAL API!**
-
-const categories = [
-  'All Categories',
-  'Home & Garden', 
-  'Design & Creative',
-  'Technology',
-  'Cleaning',
-  'Admin & Data',
-  'Business',
-  'Writing & Translation',
-];
+// Categories are now fetched dynamically from the database
 
 export default function BrowseTasksScreen() {
   const [sortVisible, setSortVisible] = useState(false);
@@ -50,6 +45,34 @@ export default function BrowseTasksScreen() {
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+
+  // 🏷️ **NEW: Dynamic categories from database**
+  const { 
+    data: categoriesWithAll, 
+    isLoading: categoriesLoading, 
+    error: categoriesError 
+  } = useGetCategoriesWithAll();
+  
+  // 🔍 Debug logging for categories
+  console.log("🏷️ Browse Screen Categories Debug:", {
+    categoriesWithAll,
+    categoriesLoading,
+    categoriesError: categoriesError?.message,
+    hasCategoriesData: !!categoriesWithAll,
+    categoriesLength: categoriesWithAll?.length
+  });
+  
+  // Use database categories or fallback to default
+  const categories = categoriesWithAll || [
+    'All Categories',
+    'Home & Garden', 
+    'Design & Creative',
+    'Technology',
+    'Cleaning',
+    'Admin & Data',
+    'Business',
+    'Writing & Translation',
+  ];
 
   // � **NEW: Real API data fetching**
   const { 
@@ -71,6 +94,21 @@ export default function BrowseTasksScreen() {
 
   // 🔍 DEBUG: Log the data being received
   useEffect(() => {
+    // 🔧 DEBUG: Log API configuration
+    console.log("🔧 API Configuration Debug:", {
+      useMockOnly: require('@/api/config').default.USE_MOCK_ONLY,
+      baseUrl: require('@/api/config').default.BASE_URL,
+      currentTime: new Date().toISOString()
+    });
+
+    // 🏷️ DEBUG: Log categories data
+    console.log("🏷️ Categories Debug:", {
+      categoriesLoading,
+      categoriesError: categoriesError?.message,
+      categoriesCount: categories.length,
+      categories: categories
+    });
+
     if (tasksResponse) {
       console.log("🔍 Browse Tasks - Raw API Response:", {
         success: tasksResponse.success,
@@ -82,11 +120,18 @@ export default function BrowseTasksScreen() {
         taskTitles: tasksResponse.data?.map(t => t.title)
       });
     }
+    
+    if (error) {
+      console.error("❌ Browse Tasks - API Error:", error);
+    }
+    
     console.log("🔍 Browse Tasks - Final allTasks:", {
       length: allTasks.length,
-      titles: allTasks.map(t => t.title)
+      titles: allTasks.map(t => t.title),
+      isLoading,
+      hasError: !!error
     });
-  }, [tasksResponse, allTasks]);
+  }, [tasksResponse, allTasks, error, isLoading, categories, categoriesLoading, categoriesError]);
 
   // 🔄 REFRESH DATA WHEN SCREEN IS FOCUSED (after task creation)
   useFocusEffect(
@@ -99,11 +144,14 @@ export default function BrowseTasksScreen() {
   // 🧹 Cache management utilities
   const clearTaskCaches = useClearTaskCaches();
   const forceRefreshTasks = useForceRefreshTasks();
+  const clearAllCaches = useClearAllCaches();
+  const forceRefreshCategories = useForceRefreshCategories();
 
   // �🔥 ADD NOTIFICATION STATE AND ROUTER
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationCount = 3; // You can make this dynamic
   const router = useRouter();
+  const navigation = useNavigation();
 
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -438,42 +486,93 @@ export default function BrowseTasksScreen() {
     return count;
   };
 
-  // 🚀 **UPDATED: Task card renderer for real API data**
-  const renderTaskCard = ({ item }: { item: Task }) => (
-    <TouchableOpacity 
-      style={styles.taskCard} 
-      activeOpacity={0.7}
-      onPress={() => router.push(`/(tabs)/task-detail?taskId=${item._id}`)}
-    >
-      <View style={{ flex: 1 }}>
-        <Text style={styles.taskTitle}>{item.title}</Text>
-        <Text style={styles.taskSub}>{item.location.address}</Text>
-        <Text style={styles.taskSub}>
-          {item.dateType || 'Flexible'} • {item.time || 'Anytime'}
+  // 🚀 **UPDATED: Task card renderer matching the new UI design**
+  const renderTaskCard = ({ item }: { item: Task }) => {
+    // Helper function to get location type with icon
+    const getLocationInfo = () => {
+      const address = item.location?.address || '';
+      if (address.toLowerCase().includes('online') || address.toLowerCase().includes('remote')) {
+        return { icon: '💻', text: 'Remote' };
+      }
+      if (address.includes(' → ') || address.includes(' to ')) {
+        return { icon: '🚚', text: 'Moving' };
+      }
+      return { icon: '📍', text: 'In Person' };
+    };
+
+    // Helper function to get time preference
+    const getTimePreference = () => {
+      if (item.dateType === 'before') return 'Before specific date';
+      if (item.dateType === 'no-rush') return 'No rush';
+      if (item.time && item.time !== 'Anytime') return item.time;
+      return 'Flexible';
+    };
+
+    const locationInfo = getLocationInfo();
+
+    return (
+      <TouchableOpacity 
+        style={styles.taskCard} 
+        activeOpacity={0.6} // Slightly more responsive feedback
+        onPress={() => {
+          console.log(`🔗 Navigating to task detail: ${item.title} (ID: ${item._id})`);
+          router.push(`/task-detail?taskId=${item._id}`);
+        }}
+        // Add haptic feedback for better user experience
+        onPressIn={() => {
+          // Optional: Add haptic feedback here if needed
+          console.log(`👆 Task card pressed: ${item.title}`);
+        }}
+      >
+        {/* Task Title */}
+        <Text style={styles.taskTitle} numberOfLines={2}>
+          {item.title}
         </Text>
-        <Text style={styles.taskStatus}>
-          <Text style={{ color: item.status === 'open' ? '#007bff' : '#666' }}>
-            {item.status}
+
+        {/* Location Type */}
+        <View style={styles.taskRow}>
+          <Ionicons name="location-outline" size={16} color="#666" />
+          <Text style={styles.taskRowText}>{locationInfo.text}</Text>
+        </View>
+
+        {/* Time Preference */}
+        <View style={styles.taskRow}>
+          <Ionicons name="time-outline" size={16} color="#666" />
+          <Text style={styles.taskRowText}>{getTimePreference()}</Text>
+        </View>
+
+        {/* Status and Offers Row */}
+        <View style={styles.bottomRow}>
+          <View style={styles.statusContainer}>
+            <Text style={styles.statusText}>Posted</Text>
+            <Text style={styles.offerText}>
+              {(item.offerCount || 0) > 0 ? `${item.offerCount} Offers` : 'Make the first offer'}
+            </Text>
+          </View>
+          
+          {/* Price */}
+          <Text style={styles.priceText}>
+            {item.formattedBudget || `SGD${item.budget}`}
           </Text>
-          {' '}{item.offerCount || 0} offer{(item.offerCount || 0) !== 1 ? 's' : ''}
-        </Text>
-      </View>
-      <View style={{ alignItems: 'flex-end' }}>
-        <Text style={styles.taskPrice}>
-          {item.formattedBudget || `${item.currency}$${item.budget}`}
-        </Text>
-        <View style={styles.avatarContainer}>
+        </View>
+
+        {/* User Avatar */}
+        <View style={styles.userAvatarContainer}>
           <Image
             source={{ 
-              uri: `https://randomuser.me/api/portraits/men/${Math.abs(item._id.slice(-2).charCodeAt(0))}.jpg` 
+              uri: `https://ui-avatars.com/api/?name=${item.createdBy?.firstName}+${item.createdBy?.lastName}&background=random&size=40` 
             }}
-            style={styles.avatar}
-            resizeMode="cover"
+            style={styles.userAvatar}
           />
         </View>
-      </View>
-    </TouchableOpacity>
-  );
+
+        {/* Navigation Indicator */}
+        <View style={styles.navigationIndicator}>
+          <Ionicons name="chevron-forward" size={16} color="#ccc" />
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -491,23 +590,48 @@ export default function BrowseTasksScreen() {
             <Ionicons name="search-outline" size={20} color="#000" />
           </TouchableOpacity>
           
-          {/* 🔧 DEBUG: Cache Management Buttons
+          {/* 🔧 DEBUG: Cache Management Buttons */}
           <TouchableOpacity 
             onPress={() => {
-              clearTaskCaches();
-              setTimeout(() => refetch(), 100);
+              console.log("🔄 Manual refresh triggered");
+              clearAllCaches();
+              setTimeout(() => {
+                refetch();
+                forceRefreshCategories();
+              }, 100);
             }}
             style={{ marginLeft: 8, padding: 4, backgroundColor: '#ff6b35', borderRadius: 4 }}
           >
-            <Text style={{ color: 'white', fontSize: 10 }}>Clear</Text>
-          </TouchableOpacity> */}
+            <Text style={{ color: 'white', fontSize: 10 }}>Clear All</Text>
+          </TouchableOpacity>
           
-          {/* <TouchableOpacity 
-            onPress={() => forceRefreshTasks()}
+          <TouchableOpacity 
+            onPress={() => {
+              console.log("🔄 Force refresh triggered");
+              forceRefreshTasks();
+              forceRefreshCategories();
+            }}
             style={{ marginLeft: 4, padding: 4, backgroundColor: '#007bff', borderRadius: 4 }}
           >
             <Text style={{ color: 'white', fontSize: 10 }}>Refresh</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            onPress={async () => {
+              console.log("🏷️ Testing Categories API directly...");
+              try {
+                const result = await CategoriesAPI.getAllCategories();
+                console.log("🏷️ Direct API Test Result:", result);
+                alert(`Categories API Test: ${JSON.stringify(result, null, 2)}`);
+              } catch (error) {
+                console.error("❌ Categories API Test Failed:", error);
+                alert(`Categories API Test Failed: ${error}`);
+              }
+            }}
+            style={{ marginLeft: 4, padding: 4, backgroundColor: '#28a745', borderRadius: 4 }}
+          >
+            <Text style={{ color: 'white', fontSize: 8 }}>Test Cat</Text>
+          </TouchableOpacity>
           
           {/* 🔥 UPDATED NOTIFICATION BELL WITH BADGE AND NAVIGATION */}
           <TouchableOpacity onPress={openNotifications} style={styles.notificationButton}>
@@ -631,14 +755,17 @@ export default function BrowseTasksScreen() {
               <TouchableOpacity
                 style={styles.dropdown}
                 onPress={() => setCategoryDropdownVisible(!categoryDropdownVisible)}
+                disabled={categoriesLoading}
               >
-                <Text style={styles.dropdownText}>{selectedCategory}</Text>
+                <Text style={styles.dropdownText}>
+                  {categoriesLoading ? 'Loading categories...' : selectedCategory}
+                </Text>
                 <MaterialCommunityIcons name="chevron-down" size={20} color="#666" />
               </TouchableOpacity>
               
-              {categoryDropdownVisible && (
+              {categoryDropdownVisible && !categoriesLoading && (
                 <View style={styles.dropdownList}>
-                  {categories.map((category, index) => (
+                  {categories.map((category: string, index: number) => (
                     <TouchableOpacity
                       key={index}
                       style={[styles.dropdownItem, index === categories.length - 1 && { borderBottomWidth: 0 }]}
@@ -656,6 +783,12 @@ export default function BrowseTasksScreen() {
                     </TouchableOpacity>
                   ))}
                 </View>
+              )}
+              
+              {categoriesError && (
+                <Text style={styles.categoryErrorText}>
+                  Failed to load categories. Using defaults.
+                </Text>
               )}
             </View>
 
@@ -876,7 +1009,7 @@ export default function BrowseTasksScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f8f9fa',
     paddingTop: 50,
   },
   header: {
@@ -950,49 +1083,83 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   taskCard: {
-    flexDirection: 'row',
     backgroundColor: '#fff',
-    padding: 14,
+    padding: 16,
     marginHorizontal: 16,
     marginBottom: 12,
     borderRadius: 12,
-    justifyContent: 'space-between',
-    elevation: 1,
+    elevation: 2, // Increased elevation for better visual feedback
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 }, // Enhanced shadow for clickable appearance
+    shadowOpacity: 0.15, // Slightly more prominent shadow
+    shadowRadius: 3,
+    position: 'relative',
+    minHeight: 120,
+    // Add a subtle border to make it look more interactive
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
   },
   taskTitle: {
-    fontWeight: 'bold',
     fontSize: 16,
-    marginBottom: 4,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 12,
+    lineHeight: 22,
   },
-  taskSub: {
-    fontSize: 13,
-    color: '#444',
+  taskRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
   },
-  taskStatus: {
-    marginTop: 4,
-    fontSize: 13,
+  taskRowText: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 6,
   },
-  taskPrice: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 4,
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginTop: 12,
+    paddingRight: 80, // Increased padding to make space for both avatar and navigation indicator
   },
-  avatarContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: '#eee',
+  statusContainer: {
+    flex: 1,
+  },
+  statusText: {
+    fontSize: 12,
+    color: '#2563eb',
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  offerText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  priceText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#000',
+  },
+  userAvatarContainer: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+  },
+  userAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+  },
+  navigationIndicator: {
+    position: 'absolute',
+    top: 16,
+    right: 60, // Position next to user avatar
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatar: {
-    width: 32,
-    height: 32,
+    width: 24,
+    height: 24,
   },
   emptyState: {
     padding: 40,
@@ -1286,6 +1453,13 @@ const styles = StyleSheet.create({
   retryButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  // 🏷️ **NEW: Categories-related styles**
+  categoryErrorText: {
+    fontSize: 12,
+    color: '#ff6b35',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
 });
 

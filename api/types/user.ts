@@ -4,7 +4,22 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  phone?: string;
+  password?: string; // Should not be exposed to frontend
+  skills?: string[];
+  rating?: number;
+  completedTasks?: number;
+  isVerified?: boolean;
+  verified?: boolean;
   role: string;
+  verification?: {
+    ratifyId?: {
+      status?: string | null;
+    };
+  };
+  profilePicture?: string;
+  location?: string;
+  bio?: string;
   createdAt?: string;
   updatedAt?: string;
 }

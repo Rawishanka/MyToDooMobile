@@ -3,6 +3,7 @@
 
 import { createApi } from "@/utils/api";
 import API_CONFIG from "./config";
+import { MockApiService } from "./mock-api";
 import {
     CreateOfferRequest,
     CreateOfferResponse,
@@ -23,7 +24,7 @@ import {
 function getApi() {
   const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
     ? API_CONFIG.BASE_URL
-    : "http://192.168.8.135:5001/api";
+    : "http://192.168.1.3:5001/api";
   return createApi(baseUrl);
 }
 
@@ -35,6 +36,12 @@ function getApi() {
  * Auth: No
  */
 export async function getAllTasks(): Promise<TasksResponse> {
+  // Check if we should use mock API only
+  if (API_CONFIG.USE_MOCK_ONLY) {
+    console.log("🎭 Using Mock API only (development mode)");
+    return await MockApiService.getAllTasks();
+  }
+  
   const api = getApi();
   try {
     console.log("🔍 Fetching all tasks with pagination support...");
@@ -82,8 +89,15 @@ export async function getAllTasks(): Promise<TasksResponse> {
     
     console.log(`✅ Single page response: ${allTasksData.length} tasks`);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Get all tasks failed:", error);
+    
+    // Check for network connection errors - use mock service as fallback
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      console.warn("🎭 Network failed - Using Mock API for getAllTasks");
+      return await MockApiService.getAllTasks();
+    }
+    
     throw error;
   }
 }
@@ -127,6 +141,13 @@ export async function postTask(taskData: CreateTaskRequest): Promise<CreateTaskR
     console.error("Request Data:", taskData);
     console.error("Request Headers:", error?.config?.headers);
     console.error("Full Error:", error);
+    
+    // Check for network connection errors - use mock service as fallback
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      console.error("❌ Network connection failed - Using mock service as fallback");
+      console.warn("🎭 Switching to Mock API for development");
+      return await MockApiService.postTask(taskData);
+    }
     
     // Check for authentication errors with special handling
     if (error?.response?.status === 401) {
@@ -178,8 +199,15 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
     const response = await api.get(`/tasks/search?${searchParams.toString()}`);
     console.log("✅ Search tasks success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Search tasks failed:", error);
+    
+    // Check for network connection errors - use mock service as fallback
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      console.warn("🎭 Network failed - Using Mock API for searchTasks");
+      return await MockApiService.searchTasks(params);
+    }
+    
     throw error;
   }
 }

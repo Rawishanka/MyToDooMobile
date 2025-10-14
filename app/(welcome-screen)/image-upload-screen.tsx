@@ -1,31 +1,124 @@
+import { useCreateTaskStore } from '@/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Alert,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 export default function SnapPhotoScreen() {
   const [images, setImages] = useState<string[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { myTask, updateMyTask } = useCreateTaskStore();
 
-  const pickImage = async () => {
+  // Initialize with existing photos from store
+  useEffect(() => {
+    if (myTask.photo) {
+      // Handle single photo or multiple photos
+      const existingPhotos = Array.isArray(myTask.photo) ? myTask.photo : [myTask.photo];
+      setImages(existingPhotos.filter(photo => photo)); // Filter out empty strings
+    }
+  }, [myTask.photo]);
+
+  // Update store when images change
+  useEffect(() => {
+    // Save the first image as the main photo for backwards compatibility
+    updateMyTask({ 
+      photo: images[0] || ''
+    });
+  }, [images, updateMyTask]);
+
+  const showImagePickerOptions = () => {
     if (images.length >= 10) return;
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: false,
-      quality: 1,
-    });
+    Alert.alert(
+      'Add Photo',
+      'Choose how you want to add a photo',
+      [
+        {
+          text: 'Take Photo',
+          onPress: () => openCamera(),
+        },
+        {
+          text: 'Choose from Gallery',
+          onPress: () => openImageLibrary(),
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ],
+    );
+  };
 
-    if (!result.canceled && result.assets?.[0]) {
-      setImages([...images, result.assets[0].uri]);
+  const openCamera = async () => {
+    // Request camera permissions
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert(
+        'Permission Required',
+        'Camera permission is required to take photos.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets?.[0]) {
+        setImages([...images, result.assets[0].uri]);
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      Alert.alert('Error', 'Failed to take photo. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const openImageLibrary = async () => {
+    // Request media library permissions
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert(
+        'Permission Required',
+        'Photo library permission is required to select photos.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: false,
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets?.[0]) {
+        setImages([...images, result.assets[0].uri]);
+      }
+    } catch (error) {
+      console.error('Error selecting image:', error);
+      Alert.alert('Error', 'Failed to select image. Please try again.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -54,10 +147,19 @@ export default function SnapPhotoScreen() {
             return (
               <TouchableOpacity 
                 key={`upload-${rowIndex}-${itemIndex}`}
-                onPress={pickImage} 
-                style={styles.uploadBox}
+                onPress={showImagePickerOptions} 
+                style={[styles.uploadBox, isProcessing && styles.uploadBoxDisabled]}
+                activeOpacity={0.7}
+                disabled={isProcessing}
               >
-                <Ionicons name="add" size={28} color="#467FFF" />
+                {isProcessing ? (
+                  <Ionicons name="hourglass" size={24} color="#999" />
+                ) : (
+                  <>
+                    <Ionicons name="camera" size={24} color="#467FFF" />
+                    <Ionicons name="add" size={16} color="#467FFF" style={styles.addIcon} />
+                  </>
+                )}
               </TouchableOpacity>
             );
           }
@@ -91,7 +193,7 @@ export default function SnapPhotoScreen() {
 
       <Text style={styles.title}>Snap a photo</Text>
       <Text style={styles.subtitle}>
-        Help taskers understand what needs doing. Add up to 10 photos ({images.length}/10)
+        Help taskers understand what needs doing. Take photos or choose from gallery. Add up to 10 photos ({images.length}/10)
       </Text>
 
       <ScrollView 
@@ -193,6 +295,18 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#E4E7EC',
     borderStyle: 'dashed',
+    position: 'relative',
+  },
+  uploadBoxDisabled: {
+    opacity: 0.5,
+    backgroundColor: '#F8F9FA',
+  },
+  addIcon: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    backgroundColor: '#F2F4F7',
+    borderRadius: 8,
   },
   emptySlot: {
     width: 70,

@@ -1,6 +1,7 @@
 // 🔄 **CACHE UTILITIES**
 // Utility functions for managing React Query cache
 
+import { CATEGORIES_QUERY_KEYS } from '@/hooks/useCategoriesApi';
 import { TASK_QUERY_KEYS } from '@/hooks/useTaskApi';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -32,6 +33,47 @@ export function useClearTaskCaches() {
 }
 
 /**
+ * 🏷️ Clear All Categories Caches
+ * Completely removes all categories-related data from React Query cache
+ */
+export function useClearCategoriesCaches() {
+  const queryClient = useQueryClient();
+  
+  return () => {
+    console.log("🧹 Clearing all categories caches...");
+    
+    // Remove all categories-related queries from cache
+    queryClient.removeQueries({ queryKey: CATEGORIES_QUERY_KEYS.all });
+    queryClient.removeQueries({ queryKey: CATEGORIES_QUERY_KEYS.lists() });
+    
+    // Also remove any other categories-related queries
+    queryClient.removeQueries({ 
+      predicate: (query) => {
+        return query.queryKey[0] === 'categories';
+      }
+    });
+    
+    console.log("✅ All categories caches cleared successfully");
+  };
+}
+
+/**
+ * 🧹 Clear All Caches (Tasks + Categories)
+ * Completely removes all data from React Query cache
+ */
+export function useClearAllCaches() {
+  const clearTaskCaches = useClearTaskCaches();
+  const clearCategoriesCaches = useClearCategoriesCaches();
+  
+  return () => {
+    console.log("🧹 Clearing ALL caches...");
+    clearTaskCaches();
+    clearCategoriesCaches();
+    console.log("✅ All caches cleared successfully");
+  };
+}
+
+/**
  * 🔄 Force Refresh All Tasks
  * Forces immediate refetch of all task data
  */
@@ -49,5 +91,26 @@ export function useForceRefreshTasks() {
     });
     
     console.log("✅ All task data refreshed");
+  };
+}
+
+/**
+ * 🏷️ Force Refresh Categories
+ * Forces immediate refetch of categories data
+ */
+export function useForceRefreshCategories() {
+  const queryClient = useQueryClient();
+  
+  return async () => {
+    console.log("🔄 Force refreshing categories data...");
+    
+    // Invalidate all categories queries and force immediate refetch
+    await queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.all });
+    await queryClient.refetchQueries({ 
+      queryKey: CATEGORIES_QUERY_KEYS.lists(),
+      type: 'all'
+    });
+    
+    console.log("✅ All categories data refreshed");
   };
 }

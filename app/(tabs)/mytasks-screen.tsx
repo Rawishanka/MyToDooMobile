@@ -168,67 +168,114 @@ export default function MyTasksScreen() {
     }, [selectedFilter])
   );
 
-  // 🔥 RENDER TASK ITEM
-  const renderTaskItem = ({ item }: { item: Task }) => (
-    <TouchableOpacity 
-      style={styles.taskCard} 
-      activeOpacity={0.7}
-      onPress={() => router.push(`/(tabs)/task-detail?taskId=${item._id}`)}
-    >
-      <View style={styles.taskHeader}>
-        <View style={styles.taskInfo}>
-          <Text style={styles.taskTitle}>{item.title}</Text>
-          <Text style={styles.taskLocation}>
-            {item.location?.address || 'Location not specified'}
-          </Text>
-          <View style={styles.taskMeta}>
-            <Text style={[styles.taskStatus, 
-              { color: item.status === 'completed' ? '#28a745' : 
-                       item.status === 'assigned' ? '#007bff' : 
-                       item.status === 'open' ? '#ffc107' : '#6c757d' }
-            ]}>
-              {item.status?.charAt(0).toUpperCase() + item.status?.slice(1)}
+  // 🔥 RENDER TASK ITEM WITH COMPREHENSIVE INFORMATION
+  const renderTaskItem = ({ item }: { item: Task }) => {
+    // Helper function to get time preference display
+    const getTimePreference = () => {
+      if (item.dateType === 'before') return '🕐 Before specific date';
+      if (item.dateType === 'no-rush') return '⏰ No rush';
+      if (item.time && item.time !== 'Anytime') return `🕒 ${item.time}`;
+      return '⏰ Flexible timing';
+    };
+
+    // Helper function to get location type
+    const getLocationType = () => {
+      const address = item.location?.address || '';
+      if (address.toLowerCase().includes('online') || address.toLowerCase().includes('remote')) {
+        return '💻 Online';
+      }
+      if (address.includes(' → ') || address.includes(' to ')) {
+        return '🚚 Moving/Delivery';
+      }
+      return '📍 In Person';
+    };
+
+    // Helper function to format location display
+    const formatLocation = () => {
+      const address = item.location?.address || 'Location not specified';
+      if (address.includes(' → ') || address.includes(' to ')) {
+        const parts = address.split(/\s*(?:→|to)\s*/);
+        return `${parts[0]} → ${parts[1]}`;
+      }
+      return address;
+    };
+
+    return (
+      <TouchableOpacity 
+        style={styles.taskCard} 
+        activeOpacity={0.7}
+        onPress={() => router.push(`/(tabs)/task-detail?taskId=${item._id}`)}
+      >
+        <View style={styles.taskHeader}>
+          <View style={styles.taskInfo}>
+            <Text style={styles.taskTitle}>{item.title}</Text>
+            
+            {/* Time and Date Information */}
+            <View style={styles.taskMetaRow}>
+              <Text style={styles.timePreference}>{getTimePreference()}</Text>
+            </View>
+            
+            {/* Location Information */}
+            <View style={styles.taskMetaRow}>
+              <Text style={styles.locationType}>{getLocationType()}</Text>
+              <Text style={styles.locationDivider}>•</Text>
+              <Text style={styles.locationText} numberOfLines={1}>
+                {formatLocation()}
+              </Text>
+            </View>
+            
+            {/* Task Status and Date */}
+            <View style={styles.taskMeta}>
+              <Text style={[styles.taskStatus, 
+                { color: item.status === 'completed' ? '#28a745' : 
+                         item.status === 'assigned' ? '#007bff' : 
+                         item.status === 'open' ? '#ffc107' : '#6c757d' }
+              ]}>
+                {item.status?.charAt(0).toUpperCase() + item.status?.slice(1)}
+              </Text>
+              <Text style={styles.taskDate}>
+                {new Date(item.createdAt).toLocaleDateString()}
+              </Text>
+            </View>
+
+            {/* Categories */}
+            {item.categories && item.categories.length > 0 && (
+              <View style={styles.categoriesContainer}>
+                {item.categories.slice(0, 3).map((category, index) => (
+                  <View key={index} style={styles.categoryTag}>
+                    <Text style={styles.categoryText}>{category}</Text>
+                  </View>
+                ))}
+                {item.categories.length > 3 && (
+                  <Text style={styles.moreCategoriesText}>+{item.categories.length - 3} more</Text>
+                )}
+              </View>
+            )}
+          </View>
+
+          {/* Price and User Info */}
+          <View style={styles.taskPrice}>
+            <Text style={styles.priceText}>
+              {item.formattedBudget || `${item.currency || 'A$'}${item.budget}`}
             </Text>
-            <Text style={styles.taskDate}>
-              {new Date(item.createdAt).toLocaleDateString()}
-            </Text>
+            {item.createdBy && (
+              <Image
+                source={{ uri: `https://ui-avatars.com/api/?name=${item.createdBy.firstName}+${item.createdBy.lastName}&background=random` }}
+                style={styles.userAvatar}
+              />
+            )}
           </View>
         </View>
-        <View style={styles.taskPrice}>
-          <Text style={styles.priceText}>
-            {item.formattedBudget || `${item.currency || 'A$'}${item.budget}`}
+        
+        {/* Task Details */}
+        {item.details && (
+          <Text style={styles.taskDescription} numberOfLines={2}>
+            {item.details}
           </Text>
-          {item.createdBy && (
-            <Image
-              source={{ uri: `https://ui-avatars.com/api/?name=${item.createdBy.firstName}+${item.createdBy.lastName}&background=random` }}
-              style={styles.userAvatar}
-            />
-          )}
-        </View>
-      </View>
-      
-      {/* Task Details */}
-      {item.details && (
-        <Text style={styles.taskDescription} numberOfLines={2}>
-          {item.details}
-        </Text>
-      )}
-      
-      {/* Categories */}
-      {item.categories && item.categories.length > 0 && (
-        <View style={styles.categoriesContainer}>
-          {item.categories.slice(0, 3).map((category, index) => (
-            <View key={index} style={styles.categoryTag}>
-              <Text style={styles.categoryText}>{category}</Text>
-            </View>
-          ))}
-          {item.categories.length > 3 && (
-            <Text style={styles.moreCategoriesText}>+{item.categories.length - 3} more</Text>
-          )}
-        </View>
-      )}
-    </TouchableOpacity>
-  );
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -442,13 +489,116 @@ const styles = StyleSheet.create({
   taskCard: {
     marginHorizontal: 16,
     backgroundColor: '#F9F9F9',
-    padding: 14,
+    padding: 16,
     borderRadius: 10,
     marginBottom: 12,
+  },
+  taskHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  taskInfo: {
+    flex: 1,
+    marginRight: 12,
   },
   taskTitle: {
     fontSize: 16,
     fontWeight: '600',
+    marginBottom: 8,
+    color: '#1a1a1a',
+  },
+  taskMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+    flexWrap: 'wrap',
+  },
+  timePreference: {
+    fontSize: 12,
+    color: '#007bff',
+    fontWeight: '500',
+  },
+  locationType: {
+    fontSize: 12,
+    color: '#28a745',
+    fontWeight: '500',
+  },
+  locationDivider: {
+    marginHorizontal: 6,
+    color: '#ccc',
+    fontSize: 12,
+  },
+  locationText: {
+    fontSize: 12,
+    color: '#666',
+    flex: 1,
+  },
+  taskLocation: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  taskMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  taskStatus: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
+  taskDate: {
+    fontSize: 12,
+    color: '#999',
+  },
+  taskPrice: {
+    alignItems: 'flex-end',
+  },
+  priceText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#007bff',
+    marginBottom: 8,
+  },
+  userAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f0f0f0',
+  },
+  taskDescription: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 20,
+    marginTop: 8,
+  },
+  categoriesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  categoryTag: {
+    backgroundColor: '#e3f2fd',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  categoryText: {
+    fontSize: 11,
+    color: '#1976d2',
+    fontWeight: '500',
+  },
+  moreCategoriesText: {
+    fontSize: 11,
+    color: '#666',
+    fontStyle: 'italic',
   },
   taskSub: {
     fontSize: 13,
@@ -557,78 +707,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  taskHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  taskInfo: {
-    flex: 1,
-    marginRight: 12,
-  },
-  taskLocation: {
-    fontSize: 13,
-    color: '#666',
-    marginTop: 4,
-    marginBottom: 8,
-  },
-  taskMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  taskStatus: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'capitalize',
-  },
-  taskDate: {
-    fontSize: 12,
-    color: '#999',
-  },
-  taskPrice: {
-    alignItems: 'flex-end',
-  },
-  priceText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#007bff',
-    marginBottom: 8,
-  },
-  userAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#f0f0f0',
-  },
-  taskDescription: {
-    fontSize: 14,
-    color: '#555',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  categoriesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 6,
-  },
-  categoryTag: {
-    backgroundColor: '#e3f2fd',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  categoryText: {
-    fontSize: 11,
-    color: '#1976d2',
-    fontWeight: '500',
-  },
-  moreCategoriesText: {
-    fontSize: 11,
-    color: '#666',
-    fontStyle: 'italic',
   },
 });

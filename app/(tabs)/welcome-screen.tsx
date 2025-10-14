@@ -1,12 +1,14 @@
 // app/(tabs)/index.tsx (Welcome Screen with Modal)
 import { useCreateTaskStore } from '@/store/create-task-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import { ResizeMode, Video } from 'expo-av';
 import { useRouter } from 'expo-router';
-import LottieView from 'lottie-react-native';
 import { Bell, ChevronRight } from 'lucide-react-native';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
     FlatList,
+    Image,
     SafeAreaView,
     ScrollView,
     StyleSheet,
@@ -19,8 +21,8 @@ import {
 // 🔥 IMPORT YOUR NOTIFICATION MODAL
 import NotificationModal from './notification-screen';
 
-// Import the Lottie animation
-import LottieAnimation from '@/assets/animations/lottie-animation.json';
+// Import the logo GIF
+const MyToDoLogo = require('@/assets/MyToDoo_logo.gif');
 
 const tags = ['End of lease cleaning', 'Help me move', 'Fix lights', 'Help me move', 'Help me move', 'Help me move', 'Help me move'];
 const tasks = [
@@ -43,6 +45,113 @@ type MaterialCommunityIconName =
   | "file-document-edit-outline"
   | "wrench-outline";
 
+// 🎬 **NEW: Video categories with 17 videos from assets**
+const videoCategories: { title: string; video: any }[] = [
+  { title: 'Appliance Repair', video: require('@/assets/appliance_installation_and_repair.mp4') },
+  { title: 'Auto Mechanic', video: require('@/assets/auto-mechanic.mp4') },
+  { title: 'Building Maintenance', video: require('@/assets/building_maintenance_and.mp4') },
+  { title: 'Business & Accounting', video: require('@/assets/business_and_accounting.mp4') },
+  { title: 'Carpentry', video: require('@/assets/carpentry.mp4') },
+  { title: 'Carpentry Services', video: require('@/assets/carpentry2.mp4') },
+  { title: 'Delivery', video: require('@/assets/delivery.mp4') },
+  { title: 'Education & Tutoring', video: require('@/assets/education_and_tutoring.mp4') },
+  { title: 'Electrical', video: require('@/assets/Electrical.mp4') },
+  { title: 'Event Planning', video: require('@/assets/Event_Planning.mp4') },
+  { title: 'Painting Services', video: require('@/assets/Painting_Services.mp4') },
+  { title: 'Personal Assistant', video: require('@/assets/personal_assistence.mp4') },
+  { title: 'Pet Care', video: require('@/assets/pet_care.mp4') },
+  { title: 'Photography', video: require('@/assets/photography.mp4') },
+  { title: 'Plumbing', video: require('@/assets/plumbing.mp4') },
+  { title: 'Real Estate', video: require('@/assets/Real-estate.mp4') },
+  { title: 'Something Else', video: require('@/assets/something_else.mp4') },
+];
+
+// Debug: Log video categories
+console.log(`🎬 Welcome Screen - Total video categories loaded: ${videoCategories.length}`);
+videoCategories.forEach((cat, index) => {
+  console.log(`${index + 1}. ${cat.title} - Video ID:`, cat.video);
+  
+  // Additional debugging to check if video source is valid
+  if (cat.video) {
+    console.log(`✅ Video source exists for: ${cat.title}`);
+  } else {
+    console.log(`❌ Missing video source for: ${cat.title}`);
+  }
+});
+
+// 🎬 **NEW: Video Category Component**
+const VideoCategory = ({ title, videoSource, onPress }: { 
+  title: string; 
+  videoSource: any; 
+  onPress: () => void;
+}) => {
+  const [videoError, setVideoError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [videoRef, setVideoRef] = useState<any>(null);
+  
+  // Try to start playback when video is loaded
+  const handleVideoLoad = async () => {
+    console.log(`✅ Video loaded for: ${title}`);
+    setIsLoading(false);
+    if (videoRef) {
+      try {
+        await videoRef.playAsync();
+        console.log(`🎬 Started playing: ${title}`);
+      } catch (error) {
+        console.log(`❌ Failed to play ${title}:`, error);
+      }
+    }
+  };
+  
+  return (
+    <TouchableOpacity style={styles.gridItem} onPress={onPress}>
+      <View style={styles.videoContainer}>
+        {!videoError ? (
+          <>
+            <Video
+              ref={setVideoRef}
+              source={videoSource}
+              style={styles.videoPlayer}
+              shouldPlay={true}
+              isLooping={true}
+              isMuted={true}
+              resizeMode={ResizeMode.COVER}
+              useNativeControls={false}
+              onError={(error) => {
+                console.log(`❌ Video error for ${title}:`, error);
+                setVideoError(true);
+                setIsLoading(false);
+              }}
+              onLoad={handleVideoLoad}
+              onLoadStart={() => {
+                // console.log(`📥 Loading video for: ${title}`);
+                setIsLoading(true);
+              }}
+              onPlaybackStatusUpdate={(status) => {
+                // if (status.isLoaded && !status.isPlaying && !status.didJustFinish) {
+                //   // console.log(`⏸️ Video paused for ${title}, attempting to resume...`);
+                // } 
+              }}
+            />
+            {isLoading && (
+              <View style={styles.loadingOverlay}>
+                <MaterialCommunityIcons name="loading" size={24} color="#666" />
+              </View>
+            )}
+          </>
+        ) : (
+          // Fallback to icon if video fails
+          <View style={styles.videoFallback}>
+            <MaterialCommunityIcons name="video-outline" size={32} color="#666" />
+            <Text style={styles.fallbackText}>Video</Text>
+          </View>
+        )}
+      </View>
+      <Text style={styles.gridLabel}>{title}</Text>
+    </TouchableOpacity>
+  );
+};
+
 const categories: { title: string; icon: MaterialCommunityIconName }[] = [
   { title: 'Gardening', icon: 'shovel' },
   { title: 'Painting', icon: 'format-paint' },
@@ -62,7 +171,18 @@ export default function GetItDoneScreen() {
   // 🔥 ADD STATE FOR TASK INPUT AND NAVIGATION
   const [taskInput, setTaskInput] = useState('');
   const router = useRouter();
-  const { updateMyTask } = useCreateTaskStore();
+  const { updateMyTask, myTask } = useCreateTaskStore();
+
+  // 🔄 RESET TASK INPUT WHEN TASK IS COMPLETED (STORE IS RESET)
+  useFocusEffect(
+    useCallback(() => {
+      // Check if the task store has been reset (title is empty)
+      if (!myTask.title || myTask.title === '') {
+        setTaskInput('');
+        console.log('🔄 Welcome screen input reset - task was completed');
+      }
+    }, [myTask.title])
+  );
 
   // 🔥 ADD FUNCTIONS TO CONTROL MODAL
   const openNotifications = () => {
@@ -91,23 +211,21 @@ export default function GetItDoneScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#003399' }}>
       <View style={styles.headerWhite}>
         {/* Invisible placeholder to maintain layout */}
         <View style={styles.logoPlaceholder} />
         
-        {/* Absolute positioned Lottie Animation */}
-        <LottieView
-          source={LottieAnimation}
+        {/* Logo GIF */}
+        <Image
+          source={MyToDoLogo}
           style={styles.logoAnimation}
-          autoPlay={true}
-          loop={false}
-          speed={1}
+          resizeMode="contain"
         />
         
         {/* 🔥 CLICKABLE NOTIFICATION BELL WITH BADGE */}
         <TouchableOpacity onPress={openNotifications} style={styles.bellButton}>
-          <Bell size={24} color="#003399" />
+          <Bell size={24} color="#fff" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
               <Text style={styles.badgeText}>
@@ -118,7 +236,7 @@ export default function GetItDoneScreen() {
         </TouchableOpacity>
       </View>
       
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1, backgroundColor: '#fff' }}>
         {/* Post a Task Section: blue background, below greeting */}
         <View style={styles.taskCard}>
           <Text style={styles.greetingText}>Good evening. Prasanna</Text>
@@ -181,17 +299,26 @@ export default function GetItDoneScreen() {
           snapToAlignment="center"
         />
 
-        {/* Category Grid */}
+        {/* Category Grid - NOW WITH VIDEOS! */}
         <Text style={styles.sectionTitle}>Need something done</Text>
         <Text style={styles.subTitle}>Cut through the competition and earn more with customers you know</Text>
 
         <View style={styles.gridContainer}>
-          {categories.map((cat, index) => (
-            <TouchableOpacity key={index} style={styles.gridItem}>
-              <MaterialCommunityIcons name={cat.icon} size={32} color="#000" />
-              <Text style={styles.gridLabel}>{cat.title}</Text>
-            </TouchableOpacity>
-          ))}
+          {videoCategories.map((cat, index) => {
+            console.log(`🎬 Rendering video category ${index + 1}: ${cat.title}`, cat.video);
+            return (
+              <VideoCategory
+                key={index}
+                title={cat.title}
+                videoSource={cat.video}
+                onPress={() => {
+                  // Handle category selection
+                  console.log(`Selected video category: ${cat.title}`);
+                  // You can add navigation here if needed
+                }}
+              />
+            );
+          })}
         </View>
       </ScrollView>
 
@@ -206,7 +333,7 @@ export default function GetItDoneScreen() {
 
 const styles = StyleSheet.create({
   headerWhite: {
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
     paddingHorizontal: 16,
     paddingTop: 32,
     paddingBottom: 8,
@@ -340,7 +467,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   gridItem: {
-    backgroundColor: '#e8f0fe',
+    backgroundColor: 'transparent',
     borderRadius: 12,
     width: '48%',
     paddingVertical: 20,
@@ -353,5 +480,46 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
+    color: '#333',
+  },
+  
+  // 🎬 **NEW: Video category styles**
+  videoContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#e8f0fe',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  videoPlayer: {
+    width: '100%',
+    height: '100%',
+  },
+  videoFallback: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(248, 249, 250, 0.8)',
+  },
+  fallbackText: {
+    fontSize: 10,
+    color: '#666',
+    marginTop: 4,
   },
 });
