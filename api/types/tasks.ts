@@ -7,7 +7,7 @@ export interface Task {
   dateRange: {
     start: string;
     end: string;
-  };
+    };
   time: string;
   location: {
     address: string;

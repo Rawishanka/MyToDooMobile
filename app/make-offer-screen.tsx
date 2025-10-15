@@ -1,8 +1,7 @@
 import { CreateOfferRequest } from '@/api/types/tasks';
 import { useCreateOffer, useGetTaskById } from '@/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
@@ -16,20 +15,9 @@ import {
     View
 } from 'react-native';
 
-// Define the navigation stack type
-type BrowseStackParamList = {
-  BrowseList: undefined;
-  'task-detail': { taskId: string };
-  'make-offer-screen': { taskId: string };
-};
-
-type MakeOfferScreenNavigationProp = StackNavigationProp<BrowseStackParamList, 'make-offer-screen'>;
-
 export default function MakeOfferScreen() {
-  const navigation = useNavigation<MakeOfferScreenNavigationProp>();
-  const route = useRoute();
-  // @ts-ignore
-  const { taskId } = route.params || {};
+  const router = useRouter();
+  const { taskId } = useLocalSearchParams<{ taskId: string }>();
   
   const [offerAmount, setOfferAmount] = useState('');
   const [offerMessage, setOfferMessage] = useState('');
@@ -81,11 +69,11 @@ export default function MakeOfferScreen() {
         [
           {
             text: 'View Task',
-            onPress: () => navigation.navigate('task-detail', { taskId })
+            onPress: () => router.push(`/task-detail?taskId=${taskId}`)
           },
           {
-            text: 'Go to My Offers',
-            onPress: () => navigation.navigate('BrowseList')
+            text: 'Go to Browse',
+            onPress: () => router.push('/(tabs)/browse-screen')
           }
         ]
       );
@@ -119,7 +107,7 @@ export default function MakeOfferScreen() {
         <Text style={styles.errorSubtitle}>Could not load task details.</Text>
         <TouchableOpacity 
           style={styles.backButton} 
-          onPress={() => navigation.goBack()}
+          onPress={() => router.back()}
         >
           <Text style={styles.backButtonText}>Go Back</Text>
         </TouchableOpacity>
@@ -133,7 +121,7 @@ export default function MakeOfferScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backIcon}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Make an Offer</Text>
