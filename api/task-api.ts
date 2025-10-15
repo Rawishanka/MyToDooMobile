@@ -28,6 +28,62 @@ function getApi() {
   return createApi(baseUrl);
 }
 
+/**
+ * 📁 Get Categories from Database
+ * Endpoint: GET /api/categories
+ * Fetches categories from the database category collection
+ */
+export async function getCategories(): Promise<{ success: boolean; data: string[] }> {
+  const api = getApi();
+  try {
+    console.log("📁 Fetching categories from database...");
+    const response = await api.get('/categories');
+    console.log("✅ Get categories success:", response.data);
+    
+    // Handle the actual API response format
+    if (response.data.success && Array.isArray(response.data.data)) {
+      // Extract category names from the objects
+      const categoryNames = response.data.data.map((category: any) => category.name);
+      return {
+        success: true,
+        data: categoryNames
+      };
+    } else if (Array.isArray(response.data)) {
+      // If direct array of categories
+      const categoryNames = response.data.map((category: any) => 
+        typeof category === 'string' ? category : category.name
+      );
+      return { success: true, data: categoryNames };
+    } else {
+      throw new Error('Invalid categories response format');
+    }
+  } catch (error: any) {
+    console.error("❌ Get categories failed:", error);
+    
+    // Fallback to predefined categories if API fails
+    console.warn("🔄 Using fallback categories due to API error");
+    const fallbackCategories = [
+      'Home & Garden', 
+      'Design & Creative',
+      'Technology',
+      'Cleaning',
+      'Admin & Data',
+      'Business',
+      'Writing & Translation',
+      'Repairs & Installation',
+      'Removals & Delivery',
+      'Personal Services',
+      'Events & Photography',
+      'Health & Wellness'
+    ];
+    
+    return {
+      success: true,
+      data: fallbackCategories
+    };
+  }
+}
+
 // 🌟 **PHASE 1: CORE TASK FEATURES**
 
 /**
@@ -711,6 +767,9 @@ export const TaskAPI = {
   searchTasks,
   getMyTasks,
   getMyOffers,
+  
+  // Categories
+  getCategories,
   
   // Phase 2: Task Management
   getTaskById,

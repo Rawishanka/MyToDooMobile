@@ -26,6 +26,7 @@ export const TASK_QUERY_KEYS = {
   paymentStatus: () => [...TASK_QUERY_KEYS.all, 'payment-status'] as const,
   questions: (taskId: string) => [...TASK_QUERY_KEYS.detail(taskId), 'questions'] as const,
   userTasks: (userId: string) => [...TASK_QUERY_KEYS.all, 'user', userId] as const,
+  categories: () => [...TASK_QUERY_KEYS.all, 'categories'] as const,
 };
 
 // 🌟 **PHASE 1: CORE TASK FEATURES - QUERY HOOKS**
@@ -46,7 +47,18 @@ export function useGetAllTasks() {
 }
 
 /**
- * 🔍 Search Tasks Hook
+ * � Get Categories Hook
+ */
+export function useGetCategories() {
+  return useQuery({
+    queryKey: TASK_QUERY_KEYS.categories(),
+    queryFn: () => TaskAPI.getCategories(),
+    staleTime: 10 * 60 * 1000, // 10 minutes - categories don't change often
+  });
+}
+
+/**
+ * �🔍 Search Tasks Hook
  */
 export function useSearchTasks(params: TaskSearchParams, enabled = true) {
   return useQuery({

@@ -21,7 +21,7 @@ export function useApiFunctions() {
     // Convert CreateTask to the API format expected by /api/tasks/post-task
     const taskData = {
       title: task.title,
-      category: [], // Will be populated based on task type
+      category: getTaskCategories(task), // Get categories based on task type
       dateType: "Easy", // Default for now
       time: task.time || "Anytime",
       location: getLocationFromTask(task),
@@ -208,16 +208,24 @@ export function useApiFunctions() {
     }
   }
 
+  // Helper function to get categories from task
+  function getTaskCategories(task: CreateTask): string[] {
+    if ('isRemoval' in task && task.isRemoval) {
+      return ["Removals & Delivery"];
+    }
+    if ('category' in task && task.category) {
+      return [task.category];
+    }
+    return ["General"];
+  }
+
   // Helper function to get location string from task
   function getLocationFromTask(task: CreateTask): string {
     if ('isRemoval' in task && task.isRemoval) {
       return `${task.pickupLocation} to ${task.deliveryLocation}`;
     }
-    if ('isOnline' in task && task.isOnline) {
-      return "Remote/Online";
-    }
-    if ('inPerson' in task && task.inPerson) {
-      return task.suburb;
+    if ('category' in task && task.category) {
+      return "General Location"; // You can make this more specific if needed
     }
     return "Location not specified";
   }

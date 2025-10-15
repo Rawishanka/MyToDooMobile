@@ -1,7 +1,7 @@
 import { Task } from '@/api/types/tasks';
 import { useGetTaskById } from '@/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,

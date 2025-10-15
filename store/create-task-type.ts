@@ -13,30 +13,16 @@ type RemovalTask = BaseTask & {
   isRemoval: true;
   pickupLocation: string;
   deliveryLocation: string;
-  isOnline?: never;
-  inPerson?: never;
-  suburb?: never;
+  category?: never;
 };
 
-// ✅ Case 2: isRemoval = false AND isOnline = true
-type OnlineTask = BaseTask & {
+// ✅ Case 2: isRemoval = false (with category)
+type CategoryTask = BaseTask & {
   isRemoval: false;
-  isOnline: true;
-  inPerson?: false;
-  suburb?: never;
-  pickupLocation?: never;
-  deliveryLocation?: never;
-};
-
-// ✅ Case 3: isRemoval = false AND inPerson = true
-type InPersonTask = BaseTask & {
-  isRemoval: false;
-  isOnline?: false;
-  inPerson: true;
-  suburb: string;
+  category: string;
   pickupLocation?: never;
   deliveryLocation?: never;
 };
 
 // ✅ Final Union Type
-export type CreateTask =BaseTask| RemovalTask | OnlineTask | InPersonTask;
+export type CreateTask = RemovalTask | CategoryTask;
