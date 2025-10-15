@@ -53,13 +53,13 @@ export default function DetailScreen() {
       return 'Set pickup & delivery locations';
     }
     
-    if ('isOnline' in myTask && myTask.isOnline) {
-      return 'Online';
-    }
+    // if ('isOnline' in myTask && myTask.isOnline) {
+    //   return 'Online';
+    // }
     
-    if ('inPerson' in myTask && myTask.inPerson && myTask.suburb) {
-      return myTask.suburb;
-    }
+    // if ('inPerson' in myTask && myTask.inPerson && myTask.suburb) {
+    //   return myTask.suburb;
+    // }
     
     return 'Set location';
   };
@@ -82,12 +82,12 @@ export default function DetailScreen() {
       const delivery = myTask.deliveryLocation || "Delivery Location";
       return `${pickup} to ${delivery}`;
     }
-    if ('isOnline' in myTask && myTask.isOnline) {
-      return "Remote/Online";
-    }
-    if ('inPerson' in myTask && myTask.inPerson) {
-      return myTask.suburb || "Location not specified";
-    }
+    // if ('isOnline' in myTask && myTask.isOnline) {
+    //   return "Remote/Online";
+    // }
+    // if ('inPerson' in myTask && myTask.inPerson) {
+    //   return myTask.suburb || "Location not specified";
+    // }
     return "Location not specified";
   };
 

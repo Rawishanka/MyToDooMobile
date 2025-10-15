@@ -1,9 +1,12 @@
+import { useGetCategories } from '@/hooks/useTaskApi';
 import { useCreateTaskStore } from '@/store/create-task-store';
-import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
+    ScrollView,
     StyleSheet,
     Switch,
     Text,
@@ -16,11 +19,15 @@ const LocationScreen = () => {
     const [isRemoval, setIsRemoval] = useState(true);
     const [pickupCode, setPickupCode] = useState('');
     const [dropoffCode, setDropoffCode] = useState('');
-    const [selectedMode, setSelectedMode] = useState<'Online' | 'In Person' | null>(null);
-    const [suburb, setSuburb] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
     const { myTask, updateMyTask } = useCreateTaskStore();
+    const { data: categoriesResponse, isLoading: loadingCategories, error: categoriesError, refetch: refetchCategories } = useGetCategories();
+
     console.log('Current Task:', myTask);
+    console.log('Categories Response:', categoriesResponse);
+    console.log('Categories Error:', categoriesError);
 
     // Initialize with existing data from store
     useEffect(() => {
@@ -34,18 +41,10 @@ const LocationScreen = () => {
                 setDropoffCode(myTask.deliveryLocation);
             }
         } 
-        // Check if it's an online task
-        else if ('isOnline' in myTask && myTask.isOnline) {
+        // Check if it's a category task
+        else if ('category' in myTask && myTask.category) {
             setIsRemoval(false);
-            setSelectedMode('Online');
-        }
-        // Check if it's an in-person task
-        else if ('inPerson' in myTask && myTask.inPerson) {
-            setIsRemoval(false);
-            setSelectedMode('In Person');
-            if (myTask.suburb) {
-                setSuburb(myTask.suburb);
-            }
+            setSelectedCategory(myTask.category);
         }
     }, [myTask]);
 
@@ -53,37 +52,30 @@ const LocationScreen = () => {
     const handleContinue = () => {
         if (isRemoval) {
             // RemovalTask
+            if (!pickupCode.trim() || !dropoffCode.trim()) {
+                alert('Please enter both pickup and drop-off locations');
+                return;
+            }
             updateMyTask({
                 isRemoval: true,
                 pickupLocation: pickupCode,
                 deliveryLocation: dropoffCode,
-                isOnline: undefined,
-                inPerson: undefined,
-                suburb: undefined,
             });
-        } else if (selectedMode === 'Online') {
-            // OnlineTask
+        } else {
+            // CategoryTask
+            if (!selectedCategory) {
+                alert('Please select a category for your task');
+                return;
+            }
             updateMyTask({
                 isRemoval: false,
-                isOnline: true,
-                inPerson: false,
-                suburb: undefined,
-                pickupLocation: undefined,
-                deliveryLocation: undefined,
-            });
-        } else if (selectedMode === 'In Person') {
-            // InPersonTask
-            updateMyTask({
-                isRemoval: false,
-                isOnline: false,
-                inPerson: true,
-                suburb: suburb,
-                pickupLocation: undefined,
-                deliveryLocation: undefined,
+                category: selectedCategory,
             });
         }
         router.push('/budget-screen');
     };
+
+    const categories = categoriesResponse?.data || [];
 
     return (
         <View style={styles.container}>
@@ -92,110 +84,113 @@ const LocationScreen = () => {
                 <ChevronLeft size={24} color="#1C1C1E" />
             </TouchableOpacity>
 
-            {/* Title */}
-            <Text style={styles.title}>Tell me more!</Text>
-            <Text style={styles.subtitle}>Where do you need it done?</Text>
+            <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                {/* Title */}
+                <Text style={styles.title}>Tell me more!</Text>
+                <Text style={styles.subtitle}>Where do you need it done?</Text>
 
-            {/* Toggle */}
-            <View style={styles.switchBox}>
-                <Text style={styles.switchLabel}>Hey! are you moving?</Text>
-                <Switch value={isRemoval} onValueChange={setIsRemoval} />
-            </View>
+                {/* Toggle */}
+                <View style={styles.switchBox}>
+                    <Text style={styles.switchLabel}>Hey! are you moving?</Text>
+                    <Switch value={isRemoval} onValueChange={setIsRemoval} />
+                </View>
 
-            {/* Conditional content */}
-            {isRemoval ? (
-                <>
-                    {/* Pickup */}
-                    <Text style={styles.label}>Pickup Location</Text>
-                    <View style={styles.inputBox}>
-                        <Ionicons name="location-outline" size={20} color="#aaa" style={styles.icon} />
-                        <TextInput
-                            placeholder="Enter postal code"
-                            value={pickupCode}
-                            onChangeText={setPickupCode}
-                            style={styles.input}
-                        />
-                    </View>
-
-                    {/* Drop-off */}
-                    <Text style={styles.label}>Drop-off Location</Text>
-                    <View style={styles.inputBox}>
-                        <Ionicons name="location-outline" size={20} color="#aaa" style={styles.icon} />
-                        <TextInput
-                            placeholder="Enter postal code"
-                            value={dropoffCode}
-                            onChangeText={setDropoffCode}
-                            style={styles.input}
-                        />
-                    </View>
-                </>
-            ) : (
-                <>
-                    {/* Selection cards */}
-                    <View style={styles.cardContainer}>
-                        <TouchableOpacity
-                            style={[
-                                styles.optionCard,
-                                selectedMode === 'Online' && styles.selectedCard,
-                            ]}
-                            onPress={() => setSelectedMode('Online')}
-                        >
-                            <MaterialIcons
-                                name="computer"
-                                size={20}
-                                color={selectedMode === 'Online' ? '#fff' : '#000'}
-                                style={styles.icon}
+                {/* Conditional content */}
+                {isRemoval ? (
+                    <>
+                        {/* Pickup */}
+                        <Text style={styles.label}>Pickup Location</Text>
+                        <View style={styles.inputBox}>
+                            <Ionicons name="location-outline" size={20} color="#aaa" style={styles.icon} />
+                            <TextInput
+                                placeholder="Enter postal code"
+                                value={pickupCode}
+                                onChangeText={setPickupCode}
+                                style={styles.input}
                             />
-                            <View>
-                                <Text style={[styles.optionTitle, selectedMode === 'Online' && { color: '#fff' }]}>Remote</Text>
-                                <Text style={[styles.optionSubtitle, selectedMode === 'Online' && { color: '#fff' }]}> 
-                                    Can be done remotely!
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
+                        </View>
 
-                        <TouchableOpacity
-                            style={[
-                                styles.optionCard,
-                                selectedMode === 'In Person' && styles.selectedCard,
-                            ]}
-                            onPress={() => setSelectedMode('In Person')}
-                        >
-                            <FontAwesome5
-                                name="home"
-                                size={20}
-                                color={selectedMode === 'In Person' ? '#fff' : '#000'}
-                                style={styles.icon}
+                        {/* Drop-off */}
+                        <Text style={styles.label}>Drop-off Location</Text>
+                        <View style={styles.inputBox}>
+                            <Ionicons name="location-outline" size={20} color="#aaa" style={styles.icon} />
+                            <TextInput
+                                placeholder="Enter postal code"
+                                value={dropoffCode}
+                                onChangeText={setDropoffCode}
+                                style={styles.input}
                             />
-                            <View>
-                                <Text style={[styles.optionTitle, selectedMode === 'In Person' && { color: '#fff' }]}> 
-                                    In Person
-                                </Text>
-                                <Text style={[styles.optionSubtitle, selectedMode === 'In Person' && { color: '#fff' }]}> 
-                                    I need my MyToDoo Hero in person
-                                </Text>
+                        </View>
+                    </>
+                ) : (
+                    <>
+                        {/* Category Selection */}
+                        <Text style={styles.label}>Category</Text>
+                        {loadingCategories ? (
+                            <View style={styles.loadingContainer}>
+                                <ActivityIndicator size="small" color="#0057FF" />
+                                <Text style={styles.loadingText}>Loading categories from database...</Text>
                             </View>
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Suburb */}
-                    {selectedMode === 'In Person' && (
-                        <>
-                            <Text style={styles.label}>Suburb</Text>
-                            <View style={styles.inputBox}>
-                                <Ionicons name="location-outline" size={20} color="#aaa" style={styles.icon} />
-                                <TextInput
-                                    placeholder="Enter postal code"
-                                    value={suburb}
-                                    onChangeText={setSuburb}
-                                    style={styles.input}
+                        ) : categoriesError ? (
+                            <View style={styles.errorContainer}>
+                                <Text style={styles.errorText}>Failed to load categories</Text>
+                                <TouchableOpacity style={styles.retryButton} onPress={() => refetchCategories()}>
+                                    <Text style={styles.retryText}>Retry</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <TouchableOpacity
+                                style={styles.dropdown}
+                                onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                            >
+                                <Text style={[
+                                    styles.dropdownText,
+                                    !selectedCategory && styles.placeholderText
+                                ]}>
+                                    {selectedCategory || 'Select a category'}
+                                </Text>
+                                <ChevronDown 
+                                    size={20} 
+                                    color="#666" 
+                                    style={{
+                                        transform: [{ rotate: showCategoryDropdown ? '180deg' : '0deg' }]
+                                    }}
                                 />
-                            </View>
-                        </>
-                    )}
+                            </TouchableOpacity>
+                        )}
 
-                </>
-            )}
+                        {/* Category Dropdown */}
+                        {showCategoryDropdown && (
+                            <View style={styles.dropdownList}>
+                                {categories.map((category, index) => (
+                                    <TouchableOpacity
+                                        key={category}
+                                        style={[
+                                            styles.dropdownItem,
+                                            index === categories.length - 1 && { borderBottomWidth: 0 },
+                                            selectedCategory === category && styles.selectedDropdownItem
+                                        ]}
+                                        onPress={() => {
+                                            setSelectedCategory(category);
+                                            setShowCategoryDropdown(false);
+                                        }}
+                                    >
+                                        <Text style={[
+                                            styles.dropdownItemText,
+                                            selectedCategory === category && styles.selectedDropdownItemText
+                                        ]}>
+                                            {category}
+                                        </Text>
+                                        {selectedCategory === category && (
+                                            <Ionicons name="checkmark" size={20} color="#0057FF" />
+                                        )}
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+                    </>
+                )}
+            </ScrollView>
 
             {/* Continue */}
             <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
@@ -211,8 +206,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
-        padding: 20,
-        paddingTop: 50,
     },
     backArrow: {
         position: 'absolute',
@@ -220,11 +213,16 @@ const styles = StyleSheet.create({
         left: 20,
         zIndex: 10,
     },
+    scrollContent: {
+        flex: 1,
+        padding: 20,
+        paddingTop: 90,
+    },
     title: {
         fontSize: 22,
         fontWeight: '700',
-        marginTop: 30,
         color: '#1C1C1E',
+        marginBottom: 5,
     },
     subtitle: {
         fontSize: 14,
@@ -267,37 +265,90 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#000',
     },
-    cardContainer: {
-        flexDirection: 'column',
-        gap: 12,
-        marginBottom: 20,
-    },
-    optionCard: {
+    loadingContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        padding: 12,
-        borderRadius: 10,
-        backgroundColor: '#fff',
+        padding: 16,
+        backgroundColor: '#F2F2F2',
+        borderRadius: 8,
+        marginBottom: 10,
     },
-    selectedCard: {
-        backgroundColor: '#0057FF',
-        borderColor: '#0057FF',
-    },
-    optionTitle: {
-        fontWeight: '600',
+    loadingText: {
+        marginLeft: 8,
         fontSize: 16,
+        color: '#666',
     },
-    optionSubtitle: {
-        fontSize: 13,
-        color: '#555',
+    errorContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#FFE6E6',
+        borderRadius: 8,
+        padding: 16,
+        marginBottom: 10,
+    },
+    errorText: {
+        fontSize: 14,
+        color: '#D32F2F',
+        flex: 1,
+    },
+    retryButton: {
+        backgroundColor: '#D32F2F',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 4,
+    },
+    retryText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    dropdown: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#F2F2F2',
+        borderRadius: 8,
+        padding: 16,
+        marginBottom: 10,
+    },
+    dropdownText: {
+        fontSize: 16,
+        color: '#000',
+    },
+    placeholderText: {
+        color: '#aaa',
+    },
+    dropdownList: {
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#E1E1E1',
+        marginBottom: 10,
+        maxHeight: 250,
+    },
+    dropdownItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E1E1E1',
+    },
+    selectedDropdownItem: {
+        backgroundColor: '#F0F8FF',
+    },
+    dropdownItemText: {
+        fontSize: 16,
+        color: '#333',
+    },
+    selectedDropdownItemText: {
+        color: '#0057FF',
+        fontWeight: '600',
     },
     continueButton: {
-        position: 'absolute',
-        left: 20,
-        right: 20,
-        bottom: 40,
+        marginHorizontal: 20,
+        marginBottom: 40,
         backgroundColor: '#0057FF',
         padding: 16,
         borderRadius: 25,

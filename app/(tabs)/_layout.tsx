@@ -4,16 +4,16 @@ import { useAuthStore } from '@/store/auth-task-store';
 import { Entypo, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import { router } from 'expo-router';
 import React from 'react';
 import { Text, View } from 'react-native';
 import BrowseTasksScreen from './browse-screen';
-import TaskDetailScreen from './task-detail';
 import MakeOfferScreen from './make-offer-screen';
 import PrivateMessagesScreen from './message-screen';
 import MyTasksScreen from './mytasks-screen';
 import AccountScreen from './profile-screen';
+import TaskDetailScreen from './task-detail';
 import GetItDoneScreen from './welcome-screen';
-import { router } from 'expo-router';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();

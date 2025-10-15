@@ -7,6 +7,7 @@ import {
     ActivityIndicator,
     Alert,
     KeyboardAvoidingView,
+    Modal,
     Platform,
     SafeAreaView,
     StyleSheet,
@@ -26,7 +27,8 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
   const { mutateAsync: signUp } = useCreateSignUpToken();
   const { mutateAsync: verifyOTP } = useVerifyOTP();
 
@@ -58,8 +60,8 @@ export default function SignUpScreen() {
       
       console.log('Signup response:', response);
       
-      // Show OTP input since signup was successful
-      setShowOtpInput(true);
+      // Show OTP modal since signup was successful
+      setShowOtpModal(true);
       Alert.alert(
         'Account Created!', 
         'Please check your email for the verification code.',
@@ -81,10 +83,14 @@ export default function SignUpScreen() {
     }
 
     try {
-      setLoading(true);
+      setOtpLoading(true);
       const response = await verifyOTP({ email, otp });
       
       console.log('OTP verification response:', response);
+      
+      // Close modal and show success
+      setShowOtpModal(false);
+      setOtp(''); // Clear OTP
       
       Alert.alert(
         'Success!', 
@@ -101,7 +107,7 @@ export default function SignUpScreen() {
       const errorMessage = error?.response?.data?.message || 'Invalid OTP. Please try again.';
       Alert.alert('Error', errorMessage);
     } finally {
-      setLoading(false);
+      setOtpLoading(false);
     }
   };
 
@@ -178,49 +184,17 @@ export default function SignUpScreen() {
             secureTextEntry
           />
 
-          {showOtpInput && (
-            <>
-              <Text style={styles.label}>Verification Code</Text>
-              <TextInput
-                style={[styles.input, styles.otpInput]}
-                value={otp}
-                onChangeText={setOtp}
-                placeholder="Enter 6-digit code"
-                keyboardType="numeric"
-                maxLength={6}
-                textAlign="center"
-              />
-              <Text style={styles.otpHelperText}>
-                Check your email for the verification code
-              </Text>
-            </>
-          )}
-
-          {!showOtpInput ? (
-            <TouchableOpacity 
-              style={styles.signUpButton} 
-              onPress={handleSignUp} 
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.signUpButtonText}>Create Account</Text>
-              )}
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity 
-              style={styles.signUpButton} 
-              onPress={handleVerifyOTP} 
-              disabled={loading || !otp}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.signUpButtonText}>Verify & Complete Signup</Text>
-              )}
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity 
+            style={styles.signUpButton} 
+            onPress={handleSignUp} 
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.signUpButtonText}>Create Account</Text>
+            )}
+          </TouchableOpacity>
         </View>
 
         <View style={styles.footer}>
@@ -230,6 +204,69 @@ export default function SignUpScreen() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      {/* OTP Verification Modal */}
+      <Modal
+        visible={showOtpModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => {
+          // Prevent closing modal by back button - user must verify OTP
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Verify Your Email</Text>
+              <Text style={styles.modalSubtitle}>
+                We've sent a 6-digit verification code to
+              </Text>
+              <Text style={styles.emailText}>{email}</Text>
+            </View>
+
+            <View style={styles.otpContainer}>
+              <Text style={styles.otpLabel}>Enter Verification Code</Text>
+              <TextInput
+                style={styles.otpInput}
+                value={otp}
+                onChangeText={setOtp}
+                placeholder="000000"
+                keyboardType="numeric"
+                maxLength={6}
+                textAlign="center"
+                autoFocus={true}
+              />
+              <Text style={styles.otpHelperText}>
+                Check your email for the verification code
+              </Text>
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity 
+                style={[styles.verifyButton, (!otp || otp.length !== 6) && styles.verifyButtonDisabled]} 
+                onPress={handleVerifyOTP} 
+                disabled={otpLoading || !otp || otp.length !== 6}
+              >
+                {otpLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.verifyButtonText}>Verify & Complete</Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.resendButton}
+                onPress={() => {
+                  // You can add resend OTP functionality here
+                  Alert.alert('Resend OTP', 'OTP resent to your email!');
+                }}
+              >
+                <Text style={styles.resendButtonText}>Didn't receive code? Resend</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -313,10 +350,15 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   otpInput: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold',
-    letterSpacing: 4,
+    letterSpacing: 8,
     backgroundColor: '#f8f9fa',
+    borderWidth: 2,
+    borderColor: '#007BFF',
+    borderRadius: 12,
+    paddingVertical: 16,
+    marginVertical: 16,
   },
   otpHelperText: {
     fontSize: 12,
@@ -324,5 +366,86 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     fontStyle: 'italic',
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    backgroundColor: '#fff',
+    margin: 20,
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    width: '90%',
+    maxWidth: 400,
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  emailText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#007BFF',
+    textAlign: 'center',
+  },
+  otpContainer: {
+    marginBottom: 24,
+  },
+  otpLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  modalActions: {
+    gap: 12,
+  },
+  verifyButton: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  verifyButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  verifyButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  resendButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  resendButtonText: {
+    color: '#007BFF',
+    fontSize: 14,
+    textDecorationLine: 'underline',
   },
 });

@@ -56,14 +56,18 @@ export default function BudgetScreen() {
 
   // Helper to update zustand store with budget
   const handleContinue = () => {
-    // Only update if valid
-    if (budget && !/^0+$/.test(budget)) {
+    const budgetNumber = Number(budget);
+    // Only update if valid and minimum 20
+    if (budget && budgetNumber >= 20) {
       updateMyTask({
-        budget: Number(budget),
+        budget: budgetNumber,
       });
       router.push('/description-screen');
     }
   };
+
+  // Check if budget is valid (not empty, not zero, and at least 20)
+  const isBudgetValid = budget && Number(budget) >= 20;
 
   return (
     <View style={styles.container}>
@@ -75,13 +79,26 @@ export default function BudgetScreen() {
       {/* Title */}
       <Text style={styles.title}>Enter Your budget</Text>
       <Text style={styles.subtitle}>
-        Don't worry, you can always negotiate the final price later
+        Minimum budget is $20. Don't worry, you can always negotiate the final price later
       </Text>
 
       {/* Budget Display */}
       <View style={styles.inputBox}>
-        <Text style={styles.budgetText}>{budget}</Text>
+        <Text style={styles.currencySymbol}>$</Text>
+        <Text style={[
+          styles.budgetText, 
+          budget && Number(budget) < 20 && Number(budget) > 0 && styles.invalidBudgetText
+        ]}>
+          {budget || '0'}
+        </Text>
       </View>
+      
+      {/* Validation Message */}
+      {budget && Number(budget) < 20 && Number(budget) > 0 && (
+        <Text style={styles.validationText}>
+          Minimum budget is $20
+        </Text>
+      )}
 
       {/* Keypad */}
       <View style={styles.keypad}>
@@ -94,11 +111,13 @@ export default function BudgetScreen() {
 
       {/* Get Start Button */}
       <TouchableOpacity
-        style={[styles.button, (!budget || /^0+$/.test(budget)) && { backgroundColor: '#D1D1D6' }]}
+        style={[styles.button, !isBudgetValid && styles.buttonDisabled]}
         onPress={handleContinue}
-        disabled={!budget || /^0+$/.test(budget)}
+        disabled={!isBudgetValid}
       >
-        <Text style={styles.buttonText}>Get Start</Text>
+        <Text style={[styles.buttonText, !isBudgetValid && styles.buttonTextDisabled]}>
+          Get Start
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -137,11 +156,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'row',
+  },
+  currencySymbol: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#002366',
+    marginRight: 5,
   },
   budgetText: {
     fontSize: 20,
     fontWeight: '600',
     color: '#002366',
+  },
+  invalidBudgetText: {
+    color: '#FF3B30',
+  },
+  validationText: {
+    fontSize: 14,
+    color: '#FF3B30',
+    textAlign: 'center',
+    marginTop: 8,
+    fontWeight: '500',
   },
   keypad: {
     marginVertical: 30,
@@ -174,10 +210,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 30,
   },
+  buttonDisabled: {
+    backgroundColor: '#D1D1D6',
+  },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
     textTransform: 'capitalize',
+  },
+  buttonTextDisabled: {
+    color: '#8E8E93',
   },
 });
