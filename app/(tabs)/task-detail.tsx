@@ -1,7 +1,7 @@
 import { Task } from '@/api/types/tasks';
 import { useGetTaskById } from '@/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -15,8 +15,10 @@ import {
 } from 'react-native';
 
 export default function TaskDetailScreen() {
-  const router = useRouter();
-  const { taskId } = useLocalSearchParams<{ taskId: string }>();
+  const navigation = useNavigation();
+  const route = useRoute();
+  // @ts-ignore
+  const { taskId } = route.params || {};
   const [activeTab, setActiveTab] = useState<'offers' | 'questions'>('offers');
 
   const {
@@ -51,7 +53,7 @@ export default function TaskDetailScreen() {
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.backButton} 
-          onPress={() => router.back()}
+          onPress={() => navigation.goBack()}
         >
           <Text style={styles.backButtonText}>Go Back</Text>
         </TouchableOpacity>
@@ -77,7 +79,8 @@ export default function TaskDetailScreen() {
   };
 
   const handleMakeOffer = () => {
-    router.push(`/(tabs)/make-offer-screen?taskId=${taskId}`);
+    // @ts-ignore
+    navigation.navigate('make-offer-screen', { taskId });
   };
 
   return (
@@ -86,7 +89,7 @@ export default function TaskDetailScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButtonHeader}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButtonHeader}>
           <Ionicons name="arrow-back" size={24} color="#000" />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>

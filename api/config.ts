@@ -12,7 +12,7 @@ const getApiUrl = () => {
     }
     
     // 🔧 Updated: Using consistent IP address for all platforms during development
-    return "http://192.168.1.3:5001/api"; // Your current machine IP
+    return "http://192.168.8.168:5001/api"; // Your current machine IP
 };
 
 const API_CONFIG = {

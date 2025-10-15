@@ -3,9 +3,12 @@
 import { useAuthStore } from '@/store/auth-task-store';
 import { Entypo, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
 import { Text, View } from 'react-native';
 import BrowseTasksScreen from './browse-screen';
+import TaskDetailScreen from './task-detail';
+import MakeOfferScreen from './make-offer-screen';
 import PrivateMessagesScreen from './message-screen';
 import MyTasksScreen from './mytasks-screen';
 import AccountScreen from './profile-screen';
@@ -13,6 +16,7 @@ import GetItDoneScreen from './welcome-screen';
 import { router } from 'expo-router';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
 type CenterTextProps = {
   text: string;
@@ -27,9 +31,18 @@ const CenterText = ({ text }: CenterTextProps) => (
 function GetItDone() {
   return <GetItDoneScreen  />;
 }
-function BrowseScreen() {
-  return <BrowseTasksScreen />;
+
+// Create a stack navigator for Browse tab to handle task details
+function BrowseStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="BrowseList" component={BrowseTasksScreen} />
+      <Stack.Screen name="task-detail" component={TaskDetailScreen} />
+      <Stack.Screen name="make-offer-screen" component={MakeOfferScreen} />
+    </Stack.Navigator>
+  );
 }
+
 function MyTasks() {
   return <MyTasksScreen />;
 }
@@ -90,7 +103,7 @@ export default function App() {
       })}
     >
       <Tab.Screen name="index" component={GetItDone} options={{ tabBarLabel: 'Get it done' }} />
-      <Tab.Screen name="browse" component={BrowseScreen} options={{ tabBarLabel: 'Browse' }} />
+      <Tab.Screen name="browse" component={BrowseStack} options={{ tabBarLabel: 'Browse' }} />
       <Tab.Screen name="my-tasks" component={MyTasks} options={{ tabBarLabel: 'My tasks' }} />
       <Tab.Screen name="message" component={MessageScreen} options={{ tabBarLabel: 'Messages' }} />
       <Tab.Screen name="account" component={Account} options={{ tabBarLabel: 'Account' }} />

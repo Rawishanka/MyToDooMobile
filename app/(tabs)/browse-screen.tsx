@@ -516,7 +516,29 @@ export default function BrowseTasksScreen() {
         activeOpacity={0.6} // Slightly more responsive feedback
         onPress={() => {
           console.log(`🔗 Navigating to task detail: ${item.title} (ID: ${item._id})`);
-          router.push(`/task-detail?taskId=${item._id}`);
+          
+          // Use React Navigation to navigate within the stack
+          console.log('🚀 Using React Navigation within stack...');
+          // @ts-ignore
+          navigation.navigate('task-detail', { taskId: item._id });
+          console.log('✅ Navigation executed');
+          try {
+            // Try navigation to the tabs version first
+            console.log('🚀 Attempting navigation to tabs task-detail...');
+            router.push(`/task-detail?taskId=${item._id}`);
+            
+            // Add debugging to see what's happening
+            console.log('� Navigation call completed, checking if it worked...');
+          } catch (error) {
+            console.error('❌ Navigation error:', error);
+            // Try root level as backup
+            try {
+              console.log('🔄 Trying root level navigation...');
+              router.push(`/task-detail?taskId=${item._id}`);
+            } catch (altError) {
+              console.error('❌ Root navigation also failed:', altError);
+            }
+          }
         }}
         // Add haptic feedback for better user experience
         onPressIn={() => {

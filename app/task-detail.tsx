@@ -77,7 +77,7 @@ export default function TaskDetailScreen() {
   };
 
   const handleMakeOffer = () => {
-    router.push(`/(tabs)/make-offer-screen?taskId=${taskId}`);
+    router.push(`/make-offer-screen?taskId=${taskId}`);
   };
 
   return (
