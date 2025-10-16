@@ -1,4 +1,5 @@
 // app/(tabs)/index.tsx (Welcome Screen with Modal)
+import { useGetCategories } from '@/hooks/useTaskApi';
 import { useCreateTaskStore } from '@/store/create-task-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -7,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { Bell, ChevronRight } from 'lucide-react-native';
 import React, { useCallback, useState } from 'react';
 import {
+    ActivityIndicator,
     FlatList,
     Image,
     SafeAreaView,
@@ -24,7 +26,6 @@ import NotificationModal from './notification-screen';
 // Import the logo GIF
 const MyToDoLogo = require('@/assets/MyToDoo_logo.gif');
 
-const tags = ['End of lease cleaning', 'Help me move', 'Fix lights', 'Help me move', 'Help me move', 'Help me move', 'Help me move'];
 const tasks = [
   { id: '1', name: 'Jane F.', task: 'Folding arm awning needs reset' },
   { id: '2', name: 'Jane F.', task: 'Folding arm awning needs reset' },
@@ -173,6 +174,10 @@ export default function GetItDoneScreen() {
   const router = useRouter();
   const { updateMyTask, myTask } = useCreateTaskStore();
 
+  // 🔥 FETCH CATEGORIES FROM DATABASE
+  const { data: categoriesResponse, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
+  const categories = categoriesResponse?.data || [];
+
   // 🔄 RESET TASK INPUT WHEN TASK IS COMPLETED (STORE IS RESET)
   useFocusEffect(
     useCallback(() => {
@@ -257,24 +262,35 @@ export default function GetItDoneScreen() {
             <ChevronRight size={18} color="#fff" />
           </TouchableOpacity>
           <View style={{ height: 18 }} />
-          {/* Tags inside blue section */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.tagRow}
-            decelerationRate={0.95}
-            snapToAlignment="center"
-          >
-            {tags.map((tag, index) => (
-              <TouchableOpacity 
-                key={index} 
-                style={styles.tag}
-                onPress={() => handleTagPress(tag)}
-              >
-                <Text style={{ color: '#fff' }}>{tag}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          {/* Tags inside blue section - NOW FROM DATABASE */}
+          {loadingCategories ? (
+            <View style={styles.tagsLoadingContainer}>
+              <ActivityIndicator size="small" color="#fff" />
+              <Text style={styles.tagsLoadingText}>Loading categories...</Text>
+            </View>
+          ) : categoriesError ? (
+            <View style={styles.tagsErrorContainer}>
+              <Text style={styles.tagsErrorText}>Failed to load categories</Text>
+            </View>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.tagRow}
+              decelerationRate={0.95}
+              snapToAlignment="center"
+            >
+              {categories.map((category, index) => (
+                <TouchableOpacity 
+                  key={index} 
+                  style={styles.tag}
+                  onPress={() => handleTagPress(category)}
+                >
+                  <Text style={{ color: '#fff' }}>{category}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
         </View>
 
         {/* Task Cards */}
@@ -426,6 +442,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     marginRight: 10,
+  },
+  tagsLoadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+  },
+  tagsLoadingText: {
+    color: '#fff',
+    marginLeft: 8,
+    fontSize: 14,
+  },
+  tagsErrorContainer: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  tagsErrorText: {
+    color: '#ffcccc',
+    fontSize: 14,
+    fontStyle: 'italic',
   },
   sectionTitle: {
     fontSize: 18,
