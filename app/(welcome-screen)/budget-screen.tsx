@@ -7,10 +7,10 @@ import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 export default function BudgetScreen() {
