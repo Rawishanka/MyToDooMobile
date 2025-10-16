@@ -15,14 +15,18 @@ const defaultTask: CreateTask = {
   date: '',
   time: '',
   photo: '',
-} as CreateTask;
+  photos: [], // Initialize with empty array
+  isRemoval: true, // Default to removal task to satisfy union type
+  pickupLocation: '',
+  deliveryLocation: '',
+};
 
 export const useCreateTaskStore = create<CreateTaskStore>((set) => ({
   myTask: defaultTask,
   
   updateMyTask: (newTask: Partial<CreateTask>) => 
     set((state) => ({ 
-      myTask: { ...state.myTask, ...newTask } 
+      myTask: { ...state.myTask, ...newTask } as CreateTask
     })),
     
   resetTask: () => set({ myTask: defaultTask }),

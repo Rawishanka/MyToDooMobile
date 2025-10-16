@@ -21,18 +21,21 @@ export default function SnapPhotoScreen() {
 
   // Initialize with existing photos from store
   useEffect(() => {
-    if (myTask.photo) {
-      // Handle single photo or multiple photos
-      const existingPhotos = Array.isArray(myTask.photo) ? myTask.photo : [myTask.photo];
-      setImages(existingPhotos.filter(photo => photo)); // Filter out empty strings
+    if (myTask.photos && myTask.photos.length > 0) {
+      // Use the new photos array
+      setImages(myTask.photos.filter(photo => photo)); // Filter out empty strings
+    } else if (myTask.photo) {
+      // Fallback to single photo for backwards compatibility
+      setImages([myTask.photo].filter(photo => photo));
     }
-  }, [myTask.photo]);
+  }, [myTask.photos, myTask.photo]);
 
   // Update store when images change
   useEffect(() => {
-    // Save the first image as the main photo for backwards compatibility
+    // Save images to the new photos array
     updateMyTask({ 
-      photo: images[0] || ''
+      photos: images,
+      photo: images[0] || '' // Keep backwards compatibility
     });
   }, [images, updateMyTask]);
 
