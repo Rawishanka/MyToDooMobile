@@ -1,5 +1,5 @@
 import { CreateTaskRequest } from '@/api/types/tasks';
-import { useCreateTask } from '@/hooks/useTaskApi';
+import { useCreateTask, usePostTaskWithImages } from '@/hooks/useTaskApi';
 import { useCreateTaskStore } from '@/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -20,12 +20,15 @@ export default function PostTaskScreen() {
   const router = useRouter();
   const { myTask, resetTask } = useCreateTaskStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
   
   const createTaskMutation = useCreateTask();
+  const postTaskWithImagesMutation = usePostTaskWithImages();
 
   const handlePostTask = async () => {
     try {
       setIsSubmitting(true);
+      setUploadProgress('Validating task data...');
       
       // Validate required fields
       if (!myTask.title || !myTask.description || !myTask.budget) {
@@ -43,15 +46,33 @@ export default function PostTaskScreen() {
         details: myTask.description,
         budget: myTask.budget,
         currency: 'AUD', // Default currency
-        images: [], // Will be populated from photo if available
         coordinates: undefined,
       };
 
-      console.log('🚀 Posting task:', taskData);
+      // Get image URIs from the store
+      const imageUris = myTask.photos || [];
+      
+      console.log('🚀 Posting task with images:', taskData);
+      console.log('📷 Images to upload:', imageUris.length, imageUris);
 
-      const result = await createTaskMutation.mutateAsync(taskData);
+      let result;
+      
+      if (imageUris.length > 0) {
+        setUploadProgress(`Converting ${imageUris.length} image(s) to binary data...`);
+        // Use the new binary image upload mutation
+        result = await postTaskWithImagesMutation.mutateAsync({ 
+          taskData, 
+          imageUris 
+        });
+      } else {
+        setUploadProgress('Creating task...');
+        // Use regular task creation without images
+        result = await createTaskMutation.mutateAsync(taskData);
+      }
       
       console.log('✅ Task created successfully:', result);
+      
+      setUploadProgress('Task posted successfully!');
       
       // Reset the task store
       resetTask();
@@ -59,7 +80,9 @@ export default function PostTaskScreen() {
       // Show success message
       Alert.alert(
         'Task Posted Successfully!',
-        'Your task has been posted and is now visible to other users.',
+        imageUris.length > 0 
+          ? `Your task has been posted with ${imageUris.length} image(s) and is now visible to other users.`
+          : 'Your task has been posted and is now visible to other users.',
         [
           {
             text: 'View Task',
@@ -74,13 +97,27 @@ export default function PostTaskScreen() {
       
     } catch (error: any) {
       console.error('❌ Failed to create task:', error);
+      
+      let errorMessage = 'Something went wrong. Please try again.';
+      
+      if (error?.message?.includes('Images are too large')) {
+        errorMessage = 'The selected images are too large. Please choose smaller images and try again.';
+      } else if (error?.message?.includes('Authentication expired')) {
+        errorMessage = 'Your session has expired. Please login again.';
+      } else if (error?.message?.includes('Validation Error')) {
+        errorMessage = error.message;
+      } else if (error?.message?.includes('Failed to read image')) {
+        errorMessage = 'Failed to process one or more images. Please try selecting different images.';
+      }
+      
       Alert.alert(
         'Failed to Post Task',
-        error?.message || 'Something went wrong. Please try again.',
+        errorMessage,
         [{ text: 'OK' }]
       );
     } finally {
       setIsSubmitting(false);
+      setUploadProgress('');
     }
   };
 
@@ -99,7 +136,14 @@ export default function PostTaskScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007bff" />
-        <Text style={styles.loadingText}>Posting your task...</Text>
+        <Text style={styles.loadingText}>
+          {uploadProgress || 'Posting your task...'}
+        </Text>
+        {uploadProgress.includes('Converting') && (
+          <Text style={styles.subLoadingText}>
+            This may take a moment for multiple images
+          </Text>
+        )}
       </View>
     );
   }
@@ -166,11 +210,17 @@ export default function PostTaskScreen() {
           </View>
 
           {/* Images */}
-          {myTask.photo && (
+          {(myTask.photos && myTask.photos.length > 0) && (
             <View style={styles.summaryItem}>
-              <Text style={styles.label}>Images</Text>
+              <Text style={styles.label}>Images ({myTask.photos.length})</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageContainer}>
-                <Image source={{ uri: myTask.photo }} style={styles.taskImage} />
+                {myTask.photos.map((uri, index) => (
+                  <Image 
+                    key={index} 
+                    source={{ uri }} 
+                    style={[styles.taskImage, index > 0 && { marginLeft: 8 }]} 
+                  />
+                ))}
               </ScrollView>
             </View>
           )}
@@ -223,6 +273,13 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: '#666',
+  },
+  subLoadingText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   header: {
     flexDirection: 'row',

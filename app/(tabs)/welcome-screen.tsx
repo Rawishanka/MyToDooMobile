@@ -8,16 +8,16 @@ import { useRouter } from 'expo-router';
 import { Bell, ChevronRight } from 'lucide-react-native';
 import React, { useCallback, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 // 🔥 IMPORT YOUR NOTIFICATION MODAL

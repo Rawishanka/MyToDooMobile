@@ -177,6 +177,134 @@ export async function createTask(taskData: CreateTaskRequest): Promise<CreateTas
 }
 
 /**
+ * ➕ Post Task with Binary Images
+ * Endpoint: POST /api/tasks/
+ * Auth: Required - Enhanced version that handles binary image data in JSON
+ */
+export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris: string[] = []): Promise<CreateTaskResponse> {
+  const api = getApi();
+  try {
+    console.log("📝 Posting task with binary images:", taskData);
+    console.log("📷 Image URIs:", imageUris);
+
+    if (imageUris.length > 0) {
+      // Import FileSystem here to avoid circular dependencies
+      const FileSystem = require('expo-file-system');
+      
+      // Convert images to binary data array
+      console.log("📷 Converting images to binary data...");
+      const binaryImages: string[] = [];
+      
+      for (let i = 0; i < imageUris.length; i++) {
+        const uri = imageUris[i];
+        const filename = uri.split('/').pop() || `image_${i}.jpg`;
+        console.log(`📷 Processing image ${i + 1}/${imageUris.length}: ${uri}`);
+        
+        try {
+          // Read the file as base64 binary data
+          const base64Data = await FileSystem.readAsStringAsync(uri, {
+            encoding: 'base64',
+          });
+          
+          const extension = filename.split('.').pop()?.toLowerCase() || 'jpg';
+          
+          let mimeType = 'image/jpeg';
+          switch (extension) {
+            case 'png':
+              mimeType = 'image/png';
+              break;
+            case 'gif':
+              mimeType = 'image/gif';
+              break;
+            case 'webp':
+              mimeType = 'image/webp';
+              break;
+            default:
+              mimeType = 'image/jpeg';
+              break;
+          }
+
+          // Create data URI with binary data
+          const dataUri = `data:${mimeType};base64,${base64Data}`;
+          binaryImages.push(dataUri);
+          
+          console.log(`✅ Image ${i + 1} converted to binary (${(base64Data.length * 0.75 / 1024).toFixed(2)}KB)`);
+        } catch (fileError) {
+          console.error(`❌ Failed to read image ${i + 1}:`, fileError);
+          throw new Error(`Failed to read image ${filename}: ${fileError}`);
+        }
+      }
+
+      // Create enhanced task data with binary images in JSON
+      const taskDataWithImages = {
+        ...taskData,
+        images: binaryImages // Add binary images array to JSON
+      };
+
+      console.log("📤 Uploading task with JSON containing binary images");
+      console.log("📋 Task data structure:", {
+        taskFields: Object.keys(taskDataWithImages),
+        imageCount: binaryImages.length,
+        totalDataSize: `${JSON.stringify(taskDataWithImages).length / 1024}KB`
+      });
+      
+      const response = await api.post('/tasks', taskDataWithImages, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log("✅ Post task with images success:", response.data);
+      return response.data;
+    } else {
+      // No images, use regular JSON upload
+      console.log("📤 Uploading task without images");
+      const response = await api.post('/tasks', taskData);
+      console.log("✅ Post task success:", response.data);
+      return response.data;
+    }
+  } catch (error: any) {
+    // Enhanced error logging for debugging
+    console.error("❌ Post task with images failed with detailed error:");
+    console.error("Status:", error?.response?.status);
+    console.error("Status Text:", error?.response?.statusText);
+    console.error("Response Data:", error?.response?.data);
+    console.error("Request Data:", taskData);
+    console.error("Image URIs:", imageUris);
+    console.error("Request Headers:", error?.config?.headers);
+    console.error("Full Error:", error);
+    
+    // Check for authentication errors with special handling
+    if (error?.response?.status === 401) {
+      console.error("❌ Post task failed - Authentication required (401)");
+      
+      // If this is an auth error from the interceptor, provide user-friendly message
+      if (error.isAuthError) {
+        throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      }
+      
+      // Otherwise, it's a regular 401 that should be handled by interceptor
+      throw error;
+    }
+    
+    // Check for validation errors  
+    if (error?.response?.status === 400) {
+      console.error("❌ Post task failed - Bad Request (400)");
+      const errorMessage = error?.response?.data?.message || error?.response?.data?.error || "Invalid task data";
+      throw new Error(`Validation Error: ${errorMessage}`);
+    }
+    
+    // Check for file upload errors
+    if (error?.response?.status === 413) {
+      console.error("❌ Post task failed - Payload too large (413)");
+      throw new Error("Images are too large. Please reduce image size and try again.");
+    }
+    
+    console.error("❌ Task posting failed:", error);
+    throw error;
+  }
+}
+
+/**
  * ➕ Post Task (Primary method)
  * Endpoint: POST /api/tasks/
  * Auth: Required - This is the main endpoint that stores tasks properly
@@ -764,6 +892,7 @@ export const TaskAPI = {
   getAllTasks,
   createTask,
   postTask,
+  postTaskWithImages, // New function for binary image upload
   searchTasks,
   getMyTasks,
   getMyOffers,

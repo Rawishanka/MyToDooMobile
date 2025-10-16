@@ -208,6 +208,63 @@ export function useCreateTask() {
 }
 
 /**
+ * ➕ Post Task with Images Mutation
+ */
+export function usePostTaskWithImages() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ taskData, imageUris }: { taskData: CreateTaskRequest; imageUris: string[] }) => 
+      TaskAPI.postTaskWithImages(taskData, imageUris),
+    onSuccess: (result, variables) => {
+      console.log("🎯 Task with images posted successfully, forcing UI refresh...");
+      
+      // Force immediate invalidation and refetch of ALL task-related data
+      queryClient.resetQueries({ queryKey: TASK_QUERY_KEYS.all }); // Reset all cached data
+      
+      // Force refetch specific queries with type 'all' to ensure fresh data
+      queryClient.refetchQueries({ 
+        queryKey: TASK_QUERY_KEYS.lists(),
+        type: 'all' // Refetch regardless of stale time
+      });
+      
+      queryClient.refetchQueries({ 
+        queryKey: TASK_QUERY_KEYS.myTasks(),
+        type: 'all' // Refetch regardless of stale time
+      });
+      
+      // Also reset and refetch My Offers
+      queryClient.resetQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
+      queryClient.refetchQueries({ 
+        queryKey: TASK_QUERY_KEYS.myOffers(),
+        type: 'all'
+      });
+      
+      // Invalidate any other task-related queries
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          return query.queryKey[0] === 'tasks';
+        }
+      });
+      
+      console.log("✅ All task queries refreshed - new task with images should appear immediately");
+    },
+    onError: (error: any) => {
+      console.error("❌ Error posting task with images:", error);
+      
+      // Check if it's an authentication error
+      if (error?.message?.includes("Authentication expired") || error?.message?.includes("Please login again")) {
+        console.error("❌ Authentication error detected - user needs to login");
+      } else if (error?.message?.includes("Images are too large")) {
+        console.error("❌ Image upload failed - files too large");
+      } else {
+        console.error("❌ Task posting with images failed with unknown error:", error);
+      }
+    }
+  });
+}
+
+/**
  * ➕ Post Task Mutation (Alternative)
  */
 export function usePostTask() {

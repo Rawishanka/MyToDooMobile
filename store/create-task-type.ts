@@ -5,7 +5,8 @@ type BaseTask = {
   budget: number;
   date: string;
   time: string;
-  photo: string;
+  photo: string; // Keep for backwards compatibility
+  photos: string[]; // New field for multiple images
 };
 
 // ✅ Case 1: isRemoval = true
