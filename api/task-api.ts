@@ -3,6 +3,7 @@
 
 import { createApi } from "@/utils/api";
 import API_CONFIG from "./config";
+import * as FileSystem from 'expo-file-system';
 import { MockApiService } from "./mock-api";
 import {
     CreateOfferRequest,
@@ -167,6 +168,12 @@ export async function createTask(taskData: CreateTaskRequest): Promise<CreateTas
   const api = getApi();
   try {
     console.log("📝 Creating task:", taskData);
+    
+    // 🚀 CONSOLE LOG THE COMPLETE REQUEST BODY (CREATE TASK)
+    console.log("🚀 === COMPLETE TASK CREATION REQUEST BODY (CREATE TASK) ===");
+    console.log(JSON.stringify(taskData, null, 2));
+    console.log("🚀 === END REQUEST BODY ===");
+    
     const response = await api.post('/tasks', taskData);
     console.log("✅ Create task success:", response.data);
     return response.data;
@@ -184,13 +191,11 @@ export async function createTask(taskData: CreateTaskRequest): Promise<CreateTas
 export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris: string[] = []): Promise<CreateTaskResponse> {
   const api = getApi();
   try {
-    console.log("📝 Posting task with binary images:", taskData);
-    console.log("📷 Image URIs:", imageUris);
+    console.log("� === POST TASK WITH BINARY IMAGES CALLED ===");
+    console.log("📝 Task data:", taskData);
+    console.log("📷 Image URIs received:", imageUris.length, imageUris.slice(0, 3));
 
     if (imageUris.length > 0) {
-      // Import FileSystem here to avoid circular dependencies
-      const FileSystem = require('expo-file-system');
-      
       // Convert images to binary data array
       console.log("📷 Converting images to binary data...");
       const binaryImages: string[] = [];
@@ -201,10 +206,27 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
         console.log(`📷 Processing image ${i + 1}/${imageUris.length}: ${uri}`);
         
         try {
+          // Validate the file exists and is accessible
+          const fileInfo = await FileSystem.getInfoAsync(uri);
+          if (!fileInfo.exists) {
+            throw new Error(`File does not exist: ${uri}`);
+          }
+          
+          console.log(`📷 File info for ${filename}:`, {
+            exists: fileInfo.exists,
+            size: fileInfo.size,
+            uri: uri.substring(0, 50) + '...'
+          });
+
           // Read the file as base64 binary data
           const base64Data = await FileSystem.readAsStringAsync(uri, {
             encoding: 'base64',
           });
+          
+          // Validate base64 data
+          if (!base64Data || base64Data.length === 0) {
+            throw new Error(`Failed to read file data: ${filename}`);
+          }
           
           const extension = filename.split('.').pop()?.toLowerCase() || 'jpg';
           
@@ -245,8 +267,21 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
       console.log("📋 Task data structure:", {
         taskFields: Object.keys(taskDataWithImages),
         imageCount: binaryImages.length,
-        totalDataSize: `${JSON.stringify(taskDataWithImages).length / 1024}KB`
+        totalDataSize: `${(JSON.stringify(taskDataWithImages).length / 1024).toFixed(2)}KB`,
+        sampleImageDataPreview: binaryImages.length > 0 ? binaryImages[0].substring(0, 100) + '...' : 'None'
       });
+      
+      console.log("📊 Binary images array details:", binaryImages.map((img, idx) => ({
+        index: idx,
+        mimeType: img.substring(5, img.indexOf(';')),
+        dataSize: `${((img.length - img.indexOf(',') - 1) * 0.75 / 1024).toFixed(2)}KB`,
+        dataPreview: img.substring(0, 50) + '...'
+      })));
+      
+      // 🚀 CONSOLE LOG THE COMPLETE REQUEST BODY
+      console.log("🚀 === COMPLETE TASK CREATION REQUEST BODY ===");
+      console.log(JSON.stringify(taskDataWithImages, null, 2));
+      console.log("🚀 === END REQUEST BODY ===");
       
       const response = await api.post('/tasks', taskDataWithImages, {
         headers: {
@@ -258,6 +293,12 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
     } else {
       // No images, use regular JSON upload
       console.log("📤 Uploading task without images");
+      
+      // 🚀 CONSOLE LOG THE COMPLETE REQUEST BODY (NO IMAGES)
+      console.log("🚀 === COMPLETE TASK CREATION REQUEST BODY (NO IMAGES) ===");
+      console.log(JSON.stringify(taskData, null, 2));
+      console.log("🚀 === END REQUEST BODY ===");
+      
       const response = await api.post('/tasks', taskData);
       console.log("✅ Post task success:", response.data);
       return response.data;
@@ -313,6 +354,12 @@ export async function postTask(taskData: CreateTaskRequest): Promise<CreateTaskR
   const api = getApi();
   try {
     console.log("📝 Posting task to main endpoint:", taskData);
+    
+    // 🚀 CONSOLE LOG THE COMPLETE REQUEST BODY (REGULAR POST TASK)
+    console.log("🚀 === COMPLETE TASK CREATION REQUEST BODY (REGULAR POST) ===");
+    console.log(JSON.stringify(taskData, null, 2));
+    console.log("🚀 === END REQUEST BODY ===");
+    
     const response = await api.post('/tasks', taskData);
     console.log("✅ Post task success:", response.data);
     return response.data;

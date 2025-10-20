@@ -73,7 +73,7 @@ export function useCreateSignUpToken() {
   const queryClient = useQueryClient();
   const { handleSignUpUser } = useApiFunctions();
   return useMutation({
-    mutationFn: (signUpData: { firstName: string; lastName: string; email: string; password: string }) => 
+    mutationFn: (signUpData: { firstName: string; lastName: string; email: string; password: string; phone: string }) => 
       handleSignUpUser(signUpData),
     onSuccess: (data) => {
       queryClient.setQueryData(['signup'], data);

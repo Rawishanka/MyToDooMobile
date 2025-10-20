@@ -1,4 +1,4 @@
-// app/(tabs)/index.tsx (Welcome Screen with Modal)
+// app/(tabs)/welcome-screen.tsx - Clean version with fixed recursive logging
 import { useGetCategories } from '@/hooks/useTaskApi';
 import { useCreateTaskStore } from '@/store/create-task-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -6,10 +6,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { ResizeMode, Video } from 'expo-av';
 import { useRouter } from 'expo-router';
 import { Bell, ChevronRight } from 'lucide-react-native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   Image,
   SafeAreaView,
   ScrollView,
@@ -19,68 +18,18 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-
-// 🔥 IMPORT YOUR NOTIFICATION MODAL
 import NotificationModal from './notification-screen';
 
-// Import the logo GIF
-const MyToDoLogo = require('@/assets/MyToDoo_logo.gif');
-
-const tasks = [
-  { id: '1', name: 'Jane F.', task: 'Folding arm awning needs reset' },
-  { id: '2', name: 'Jane F.', task: 'Folding arm awning needs reset' },
-  { id: '3', name: 'Jane F.', task: 'Folding arm awning needs reset' },
-  { id: '4', name: 'Jane F.', task: 'Folding arm awning needs reset' },
-  { id: '5', name: 'Jane F.', task: 'Folding arm awning needs reset' },
-  { id: '6', name: 'Jane F.', task: 'Folding arm awning needs reset' },
-  { id: '7', name: 'Jane F.', task: 'Folding arm awning needs reset' },
-];
-
-type MaterialCommunityIconName =
-  | "shovel"
-  | "format-paint"
-  | "broom"
-  | "truck-outline"
-  | "clipboard-text-outline"
-  | "tools"
-  | "file-document-edit-outline"
-  | "wrench-outline";
-
-// 🎬 **NEW: Video categories with 17 videos from assets**
+// 🎬 **NEW: Video Categories with proper sources**
 const videoCategories: { title: string; video: any }[] = [
-  { title: 'Appliance Repair', video: require('@/assets/appliance_installation_and_repair.mp4') },
-  { title: 'Auto Mechanic', video: require('@/assets/auto-mechanic.mp4') },
-  { title: 'Building Maintenance', video: require('@/assets/building_maintenance_and.mp4') },
-  { title: 'Business & Accounting', video: require('@/assets/business_and_accounting.mp4') },
   { title: 'Carpentry', video: require('@/assets/carpentry.mp4') },
-  { title: 'Carpentry Services', video: require('@/assets/carpentry2.mp4') },
-  { title: 'Delivery', video: require('@/assets/delivery.mp4') },
-  { title: 'Education & Tutoring', video: require('@/assets/education_and_tutoring.mp4') },
-  { title: 'Electrical', video: require('@/assets/Electrical.mp4') },
-  { title: 'Event Planning', video: require('@/assets/Event_Planning.mp4') },
-  { title: 'Painting Services', video: require('@/assets/Painting_Services.mp4') },
-  { title: 'Personal Assistant', video: require('@/assets/personal_assistence.mp4') },
-  { title: 'Pet Care', video: require('@/assets/pet_care.mp4') },
-  { title: 'Photography', video: require('@/assets/photography.mp4') },
+  { title: 'Auto Mechanic', video: require('@/assets/auto-mechanic.mp4') },
   { title: 'Plumbing', video: require('@/assets/plumbing.mp4') },
   { title: 'Real Estate', video: require('@/assets/Real-estate.mp4') },
   { title: 'Something Else', video: require('@/assets/something_else.mp4') },
 ];
 
-// Debug: Log video categories
-console.log(`🎬 Welcome Screen - Total video categories loaded: ${videoCategories.length}`);
-videoCategories.forEach((cat, index) => {
-  console.log(`${index + 1}. ${cat.title} - Video ID:`, cat.video);
-  
-  // Additional debugging to check if video source is valid
-  if (cat.video) {
-    console.log(`✅ Video source exists for: ${cat.title}`);
-  } else {
-    console.log(`❌ Missing video source for: ${cat.title}`);
-  }
-});
-
-// 🎬 **NEW: Video Category Component**
+// 🎬 **Video Category Component**
 const VideoCategory = ({ title, videoSource, onPress }: { 
   title: string; 
   videoSource: any; 
@@ -90,7 +39,6 @@ const VideoCategory = ({ title, videoSource, onPress }: {
   const [isLoading, setIsLoading] = useState(true);
   const [videoRef, setVideoRef] = useState<any>(null);
   
-  // Try to start playback when video is loaded
   const handleVideoLoad = async () => {
     console.log(`✅ Video loaded for: ${title}`);
     setIsLoading(false);
@@ -111,27 +59,28 @@ const VideoCategory = ({ title, videoSource, onPress }: {
           <>
             <Video
               ref={setVideoRef}
+              style={styles.video}
               source={videoSource}
-              style={styles.videoPlayer}
+              resizeMode={ResizeMode.COVER}
               shouldPlay={true}
               isLooping={true}
               isMuted={true}
-              resizeMode={ResizeMode.COVER}
-              useNativeControls={false}
+              onLoad={handleVideoLoad}
               onError={(error) => {
                 console.log(`❌ Video error for ${title}:`, error);
                 setVideoError(true);
                 setIsLoading(false);
               }}
-              onLoad={handleVideoLoad}
-              onLoadStart={() => {
-                // console.log(`📥 Loading video for: ${title}`);
-                setIsLoading(true);
-              }}
               onPlaybackStatusUpdate={(status) => {
-                // if (status.isLoaded && !status.isPlaying && !status.didJustFinish) {
-                //   // console.log(`⏸️ Video paused for ${title}, attempting to resume...`);
-                // } 
+                if (!status.isLoaded) {
+                  // console.log(`📥 Loading video for: ${title}`);
+                } else if (status.isLoaded && !status.isPlaying && !status.isBuffering) {
+                  // Video is loaded but not playing - try to resume
+                  // if (videoRef && !status.didJustFinish) {
+                  //   // console.log(`⏸️ Video paused for ${title}, attempting to resume...`);
+                  //   // videoRef.playAsync().catch(err => console.log(`Failed to resume ${title}:`, err));
+                  // }
+                }
               }}
             />
             {isLoading && (
@@ -141,7 +90,6 @@ const VideoCategory = ({ title, videoSource, onPress }: {
             )}
           </>
         ) : (
-          // Fallback to icon if video fails
           <View style={styles.videoFallback}>
             <MaterialCommunityIcons name="video-outline" size={32} color="#666" />
             <Text style={styles.fallbackText}>Video</Text>
@@ -153,35 +101,30 @@ const VideoCategory = ({ title, videoSource, onPress }: {
   );
 };
 
-const categories: { title: string; icon: MaterialCommunityIconName }[] = [
-  { title: 'Gardening', icon: 'shovel' },
-  { title: 'Painting', icon: 'format-paint' },
-  { title: 'Cleaning', icon: 'broom' },
-  { title: 'Removals', icon: 'truck-outline' },
-  { title: 'Data Entry', icon: 'clipboard-text-outline' },
-  { title: 'Furniture Assembly', icon: 'tools' },
-  { title: 'Copy Writing', icon: 'file-document-edit-outline' },
-  { title: 'Repairs & installations', icon: 'wrench-outline' },
-];
-
-export default function GetItDoneScreen() {
-  // 🔥 ADD STATE FOR MODAL
-  const [showNotifications, setShowNotifications] = useState(false);
-  const notificationCount = 5; // You can make this dynamic
-
-  // 🔥 ADD STATE FOR TASK INPUT AND NAVIGATION
-  const [taskInput, setTaskInput] = useState('');
+export default function WelcomeScreen() {
   const router = useRouter();
+  const [taskInput, setTaskInput] = useState('');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const { data: categories, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
   const { updateMyTask, myTask } = useCreateTaskStore();
 
-  // 🔥 FETCH CATEGORIES FROM DATABASE
-  const { data: categoriesResponse, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
-  const categories = categoriesResponse?.data || [];
+  // Debug: Log video categories - only once on mount
+  useEffect(() => {
+    console.log(`🎬 Welcome Screen - Total video categories loaded: ${videoCategories.length}`);
+    videoCategories.forEach((cat, index) => {
+      console.log(`${index + 1}. ${cat.title} - Video ID:`, cat.video);
+      
+      if (cat.video) {
+        console.log(`✅ Video source exists for: ${cat.title}`);
+      } else {
+        console.log(`❌ Missing video source for: ${cat.title}`);
+      }
+    });
+  }, []); // Empty dependency array - runs only once
 
-  // 🔄 RESET TASK INPUT WHEN TASK IS COMPLETED (STORE IS RESET)
+  // Reset task input when task is completed
   useFocusEffect(
     useCallback(() => {
-      // Check if the task store has been reset (title is empty)
       if (!myTask.title || myTask.title === '') {
         setTaskInput('');
         console.log('🔄 Welcome screen input reset - task was completed');
@@ -189,65 +132,59 @@ export default function GetItDoneScreen() {
     }, [myTask.title])
   );
 
-  // 🔥 ADD FUNCTIONS TO CONTROL MODAL
-  const openNotifications = () => {
-    setShowNotifications(true);
-  };
-
-  const closeNotifications = () => {
-    setShowNotifications(false);
-  };
-
-  // 🔥 ADD NAVIGATION FUNCTIONS
   const handlePostTask = () => {
     if (taskInput.trim()) {
-      // Save the task input to the store
-      updateMyTask({ title: taskInput.trim() });
-      // Navigate to title screen
+      updateMyTask({
+        mainGoal: taskInput,
+        title: taskInput
+      });
       router.push('/title-screen');
     }
   };
 
   const handleTagPress = (tag: string) => {
-    // Save the tag as task title to the store
-    updateMyTask({ title: tag });
-    // Navigate to title screen
+    setTaskInput(tag);
+    updateMyTask({
+      mainGoal: tag,
+      title: tag
+    });
     router.push('/title-screen');
   };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#003399' }}>
+      {/* Header */}
       <View style={styles.headerWhite}>
-        {/* Invisible placeholder to maintain layout */}
         <View style={styles.logoPlaceholder} />
         
-        {/* Logo GIF */}
         <Image
-          source={MyToDoLogo}
-          style={styles.logoAnimation}
+          source={require('@/assets/MyToDoo_logo.gif')}
+          style={styles.logoCenter} 
           resizeMode="contain"
         />
         
-        {/* 🔥 CLICKABLE NOTIFICATION BELL WITH BADGE */}
-        <TouchableOpacity onPress={openNotifications} style={styles.bellButton}>
+        <TouchableOpacity 
+          style={styles.notificationButton} 
+          onPress={() => setShowNotifications(true)}
+        >
           <Bell size={24} color="#fff" />
-          {notificationCount > 0 && (
-            <View style={styles.notificationBadge}>
-              <Text style={styles.badgeText}>
-                {notificationCount > 99 ? '99+' : notificationCount}
-              </Text>
-            </View>
-          )}
+          <View style={styles.notificationBadge}>
+            <Text style={styles.notificationCount}>5</Text>
+          </View>
         </TouchableOpacity>
       </View>
-      
-      <ScrollView style={{ flex: 1, backgroundColor: '#fff' }}>
-        {/* Post a Task Section: blue background, below greeting */}
-        <View style={styles.taskCard}>
-          <Text style={styles.greetingText}>Good evening. Prasanna</Text>
-          <View style={{ height: 28 }} />
-          <Text style={styles.postTitle}>Post a Task. Get it Done.</Text>
-          <View style={{ height: 24 }} />
+
+      <ScrollView 
+        style={{ flex: 1, backgroundColor: '#f8f9fa' }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Blue Section with Input */}
+        <View style={styles.blueSection}>
+          <Text style={styles.title}>Get it Done Now🔥</Text>
+          <Text style={styles.subtitle}>
+            Describe your job and get offers from mytoodoers
+          </Text>
+          
           <TextInput
             style={styles.input}
             placeholder="In a few words what do you need done?"
@@ -255,14 +192,14 @@ export default function GetItDoneScreen() {
             value={taskInput}
             onChangeText={setTaskInput}
           />
-          <View style={{ height: 24 }} />
+          
           <TouchableOpacity style={styles.postButton} onPress={handlePostTask}>
             <MaterialCommunityIcons name="plus" size={18} color="#fff" />
             <Text style={styles.postButtonText}>Post a Task</Text>
             <ChevronRight size={18} color="#fff" />
           </TouchableOpacity>
-          <View style={{ height: 18 }} />
-          {/* Tags inside blue section - NOW FROM DATABASE */}
+          
+          {/* Database Categories Tags */}
           {loadingCategories ? (
             <View style={styles.tagsLoadingContainer}>
               <ActivityIndicator size="small" color="#fff" />
@@ -277,10 +214,8 @@ export default function GetItDoneScreen() {
               horizontal
               showsHorizontalScrollIndicator={false}
               style={styles.tagRow}
-              decelerationRate={0.95}
-              snapToAlignment="center"
             >
-              {categories.map((category, index) => (
+              {((categories?.data as string[]) || []).map((category: string, index: number) => (
                 <TouchableOpacity 
                   key={index} 
                   style={styles.tag}
@@ -293,44 +228,20 @@ export default function GetItDoneScreen() {
           )}
         </View>
 
-        {/* Task Cards */}
-        <Text style={styles.sectionTitle}>Get more work now</Text>
-        <Text style={styles.subTitle}>Cut through the competition and earn more with customers you know</Text>
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={tasks}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.taskBox}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.desc}>{item.task}</Text>
-              <TouchableOpacity>
-                <Text style={styles.messageLink}>💬 Sent a message</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          style={{ marginBottom: 10, paddingHorizontal: 10 }}
-          decelerationRate={0.95}
-          snapToAlignment="center"
-        />
-
-        {/* Category Grid - NOW WITH VIDEOS! */}
+        {/* Video Categories Grid */}
         <Text style={styles.sectionTitle}>Need something done</Text>
         <Text style={styles.subTitle}>Cut through the competition and earn more with customers you know</Text>
 
         <View style={styles.gridContainer}>
           {videoCategories.map((cat, index) => {
-            console.log(`🎬 Rendering video category ${index + 1}: ${cat.title}`, cat.video);
             return (
               <VideoCategory
                 key={index}
                 title={cat.title}
                 videoSource={cat.video}
                 onPress={() => {
-                  // Handle category selection
                   console.log(`Selected video category: ${cat.title}`);
-                  // You can add navigation here if needed
+                  // Handle category selection
                 }}
               />
             );
@@ -338,10 +249,10 @@ export default function GetItDoneScreen() {
         </View>
       </ScrollView>
 
-      {/* 🔥 ADD NOTIFICATION MODAL */}
+      {/* Notification Modal */}
       <NotificationModal
         visible={showNotifications}
-        onClose={closeNotifications}
+        onClose={() => setShowNotifications(false)}
       />
     </SafeAreaView>
   );
@@ -352,35 +263,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#003399',
     paddingHorizontal: 16,
     paddingTop: 32,
-    paddingBottom: 8,
+    paddingBottom: 16,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    position: 'sticky',
-    top: 0,
-    zIndex: 10,
+    justifyContent: 'space-between',
   },
-  logoAnimation: {
-    position: 'absolute',
-    top: '80%',
-    transform: [{ translateY: -20 }],
-    width: 120,
-    height: 80,
-    zIndex: 1,
-  }, 
   logoPlaceholder: {
-    width: 120,
-    height: 40,
+    width: 24,
   },
-  // 🔥 NOTIFICATION BELL STYLES
-  bellButton: {
+  logoCenter: {
+    height: 40,
+    width: 120,
+  },
+  notificationButton: {
     position: 'relative',
-    padding: 8,
   },
   notificationBadge: {
     position: 'absolute',
-    top: 4,
-    right: 4,
+    top: -6,
+    right: -6,
     backgroundColor: '#ff4444',
     borderRadius: 10,
     minWidth: 20,
@@ -388,160 +289,119 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  badgeText: {
+  notificationCount: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
-  greetingText: {
+  blueSection: {
+    backgroundColor: '#003399',
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: '#fff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
     fontSize: 16,
-    fontWeight: '500',
-  },
-  taskCard: { 
-    backgroundColor: '#003399', 
-    paddingHorizontal: 16, 
-    paddingVertical: 36 
-  },
-  postTitle: { 
-    color: '#fff', 
-    fontSize: 22, 
-    fontWeight: 'bold', 
-    marginBottom: 10 
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 24,
   },
   input: {
     backgroundColor: '#fff',
     borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    fontSize: 14,
-    marginBottom: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    marginBottom: 24,
   },
   postButton: {
+    backgroundColor: '#ff6b35',
+    borderRadius: 8,
+    paddingVertical: 14,
     flexDirection: 'row',
-    backgroundColor: '#001f66',
-    padding: 12,
-    borderRadius: 20,
-    justifyContent: 'center',
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'center',
+    marginBottom: 18,
   },
-  postButtonText: { 
-    color: '#fff', 
-    fontWeight: 'bold' 
+  postButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginHorizontal: 8,
   },
   tagRow: {
     flexDirection: 'row',
-    paddingHorizontal: 10,
-    paddingTop: 10,
   },
   tag: {
-    borderWidth: 1,
-    borderColor: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 12,
   },
   tagsLoadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
   },
   tagsLoadingText: {
     color: '#fff',
     marginLeft: 8,
-    fontSize: 14,
   },
   tagsErrorContainer: {
-    paddingVertical: 12,
     alignItems: 'center',
   },
   tagsErrorText: {
-    color: '#ffcccc',
-    fontSize: 14,
-    fontStyle: 'italic',
+    color: '#ff6b35',
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    paddingHorizontal: 10,
-    marginTop: 20,
-    marginBottom: 4,
+    color: '#333',
+    textAlign: 'center',
+    marginTop: 30,
+    marginBottom: 8,
   },
   subTitle: {
     fontSize: 14,
-    color: '#444',
-    paddingHorizontal: 10,
-    marginBottom: 10,
-  },
-  taskBox: {
-    backgroundColor: '#e8f0fe',
-    borderRadius: 12,
-    padding: 14,
-    marginRight: 10,
-    width: 220,
-  },
-  name: { 
-    fontWeight: 'bold', 
-    marginBottom: 4 
-  },
-  desc: { 
-    fontSize: 13, 
-    color: '#333' 
-  },
-  messageLink: { 
-    color: '#007bff', 
-    marginTop: 6 
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+    paddingHorizontal: 20,
   },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 10,
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
     paddingBottom: 20,
   },
   gridItem: {
-    backgroundColor: 'transparent',
-    borderRadius: 12,
-    width: '48%',
-    paddingVertical: 20,
-    marginBottom: 12,
-    alignItems: 'center',
-    marginHorizontal: 0,
+    width: '45%',
+    marginBottom: 20,
   },
-  gridLabel: {
-    marginTop: 8,
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
-    color: '#333',
-  },
-  
-  // 🎬 **NEW: Video category styles**
   videoContainer: {
-    width: 80,
-    height: 80,
+    height: 120,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#e8f0fe',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
     position: 'relative',
   },
-  videoPlayer: {
+  video: {
     width: '100%',
     height: '100%',
   },
   videoFallback: {
-    width: '100%',
-    height: '100%',
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f0f0f0',
   },
   loadingOverlay: {
     position: 'absolute',
@@ -557,5 +417,12 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#666',
     marginTop: 4,
+  },
+  gridLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+    marginTop: 8,
   },
 });

@@ -3,19 +3,19 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    Modal,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Switch,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 
@@ -196,16 +196,6 @@ export default function BrowseTasksScreen() {
   const filteredAndSortedTasks = useMemo(() => {
     let filtered = allTasks;
 
-    console.log("🔍 Filtering tasks:", {
-      totalTasks: allTasks.length,
-      selectedFilter: selectedCategory,
-      priceRange,
-      taskType,
-      availableTasksOnly,
-      showTasksWithNoOffers,
-      searchText
-    });
-
     // Apply search filter - updated for real API structure
     if (searchText.trim()) {
       const beforeSearch = filtered.length;
@@ -213,7 +203,6 @@ export default function BrowseTasksScreen() {
         task.title.toLowerCase().includes(searchText.toLowerCase()) ||
         task.location.address.toLowerCase().includes(searchText.toLowerCase())
       );
-      console.log(`📝 Search filter: ${beforeSearch} → ${filtered.length} tasks`);
     }
 
     // Apply category filter - updated for real API structure
@@ -222,7 +211,6 @@ export default function BrowseTasksScreen() {
       filtered = filtered.filter(task => 
         task.categories.some(cat => cat.toLowerCase().includes(selectedCategory.toLowerCase()))
       );
-      console.log(`📂 Category filter: ${beforeCategory} → ${filtered.length} tasks`);
     }
 
     // Apply task type filter - simplified since API doesn't have type field
@@ -232,38 +220,32 @@ export default function BrowseTasksScreen() {
         task.location.address.toLowerCase().includes('remote') ||
         task.details.toLowerCase().includes('remote')
       );
-      console.log(`🏠 Remote filter: ${beforeType} → ${filtered.length} tasks`);
     } else if (taskType === 'in-person') {
       const beforeType = filtered.length;
       filtered = filtered.filter(task => 
         !task.location.address.toLowerCase().includes('remote') &&
         !task.details.toLowerCase().includes('remote')
       );
-      console.log(`👥 In-person filter: ${beforeType} → ${filtered.length} tasks`);
     }
 
     // Apply price range filter - updated for real API structure
     const beforePrice = filtered.length;
     const taskBudgets = filtered.map(t => t.budget);
-    console.log(`💰 Task budgets range: ${Math.min(...taskBudgets)} - ${Math.max(...taskBudgets)}, Filter range: ${priceRange[0]} - ${priceRange[1]}`);
     
     filtered = filtered.filter(task => 
       task.budget >= priceRange[0] && task.budget <= priceRange[1]
     );
-    console.log(`💰 Price filter: ${beforePrice} → ${filtered.length} tasks`);
 
     // Apply available tasks only filter - updated for real API structure
     if (availableTasksOnly) {
       const beforeAvailable = filtered.length;
       filtered = filtered.filter(task => task.status === 'open');
-      console.log(`✅ Available only filter: ${beforeAvailable} → ${filtered.length} tasks`);
     }
 
     // Apply show tasks with no offers filter - updated for real API structure
     if (showTasksWithNoOffers) {
       const beforeNoOffers = filtered.length;
       filtered = filtered.filter(task => (task.offerCount || 0) === 0);
-      console.log(`🎯 No offers filter: ${beforeNoOffers} → ${filtered.length} tasks`);
     }
 
     // Apply sorting - updated for real API structure
@@ -288,14 +270,22 @@ export default function BrowseTasksScreen() {
       }
     });
 
-    console.log(`🔍 Filtering tasks: ${allTasks.length} → ${sorted.length} final tasks`, {
-      selectedFilter: selectedCategory,
-      tasks: sorted.map(t => ({ id: t._id, title: t.title, status: t.status })),
-      totalTasks: sorted.length
-    });
-
     return sorted;
   }, [allTasks, searchText, selectedCategory, taskType, priceRange, availableTasksOnly, showTasksWithNoOffers, selectedSort]);
+
+  // Debug filtering results - only when results change
+  useEffect(() => {
+    console.log(`🔍 Browse Screen Filter Results: ${allTasks.length} → ${filteredAndSortedTasks.length} tasks`, {
+      selectedFilter: selectedCategory,
+      searchText,
+      taskType,
+      priceRange,
+      availableTasksOnly,
+      showTasksWithNoOffers,
+      selectedSort,
+      totalFiltered: filteredAndSortedTasks.length
+    });
+  }, [filteredAndSortedTasks.length, selectedCategory, searchText, taskType, priceRange, availableTasksOnly, showTasksWithNoOffers, selectedSort]);
 
   // 🚀 **UPDATED: Generate map HTML with markers for real API data**
   // Accept a marker icon URL so Leaflet can use our custom icon for markers

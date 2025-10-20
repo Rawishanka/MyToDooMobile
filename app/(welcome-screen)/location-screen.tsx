@@ -6,6 +6,8 @@ import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     StyleSheet,
     Switch,
@@ -14,20 +16,44 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { LocationAutocomplete } from '../../components/LocationAutocomplete';
+
+interface LocationData {
+    address: string;
+    coordinates: {
+        lat: number;
+        lng: number;
+    };
+}
 
 const LocationScreen = () => {
-    const [isRemoval, setIsRemoval] = useState(true);
+    const [isRemoval, setIsRemoval] = useState(false);
     const [pickupCode, setPickupCode] = useState('');
     const [dropoffCode, setDropoffCode] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
+    const [dropdownPosition, setDropdownPosition] = useState<'below' | 'above'>('below');
 
     const { myTask, updateMyTask } = useCreateTaskStore();
     const { data: categoriesResponse, isLoading: loadingCategories, error: categoriesError, refetch: refetchCategories } = useGetCategories();
 
-    console.log('Current Task:', myTask);
-    console.log('Categories Response:', categoriesResponse);
-    console.log('Categories Error:', categoriesError);
+    // Debug logs - only when data changes
+    useEffect(() => {
+        console.log('Current Task:', myTask);
+    }, [myTask]);
+
+    useEffect(() => {
+        if (categoriesResponse) {
+            console.log('Categories Response:', categoriesResponse);
+        }
+    }, [categoriesResponse]);
+
+    useEffect(() => {
+        if (categoriesError) {
+            console.log('Categories Error:', categoriesError);
+        }
+    }, [categoriesError]);
 
     // Initialize with existing data from store
     useEffect(() => {
@@ -48,6 +74,27 @@ const LocationScreen = () => {
         }
     }, [myTask]);
 
+    // Handle dropdown positioning
+    const handleDropdownToggle = (event: any) => {
+        const { pageY } = event.nativeEvent;
+        const screenHeight = 800; // Approximate screen height, can be made dynamic
+        const dropdownHeight = Math.min(categories.length * 50, 200); // Estimate dropdown height
+        
+        // If there's not enough space below, show above
+        if (pageY + dropdownHeight > screenHeight - 100) {
+            setDropdownPosition('above');
+        } else {
+            setDropdownPosition('below');
+        }
+        
+        setShowCategoryDropdown(!showCategoryDropdown);
+    };
+    // Location handler
+    const handleLocationSelect = (location: LocationData) => {
+        setSelectedLocation(location);
+        console.log('Selected location:', location);
+    };
+
     // Helper to update zustand store with correct type
     const handleContinue = () => {
         if (isRemoval) {
@@ -62,14 +109,20 @@ const LocationScreen = () => {
                 deliveryLocation: dropoffCode,
             });
         } else {
-            // CategoryTask
+            // CategoryTask - Both category and location are mandatory
             if (!selectedCategory) {
                 alert('Please select a category for your task');
+                return;
+            }
+            if (!selectedLocation) {
+                alert('Please select a location for your task');
                 return;
             }
             updateMyTask({
                 isRemoval: false,
                 category: selectedCategory,
+                location: selectedLocation.address,
+                coordinates: selectedLocation.coordinates,
             });
         }
         router.push('/budget-screen');
@@ -78,13 +131,16 @@ const LocationScreen = () => {
     const categories = categoriesResponse?.data || [];
 
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView 
+            style={styles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
             {/* Back Arrow */}
             <TouchableOpacity style={styles.backArrow} onPress={() => router.back()}>
                 <ChevronLeft size={24} color="#1C1C1E" />
             </TouchableOpacity>
 
-            <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.scrollContent}>
                 {/* Title */}
                 <Text style={styles.title}>Tell me more!</Text>
                 <Text style={styles.subtitle}>Where do you need it done?</Text>
@@ -141,7 +197,7 @@ const LocationScreen = () => {
                         ) : (
                             <TouchableOpacity
                                 style={styles.dropdown}
-                                onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                                onPress={handleDropdownToggle}
                             >
                                 <Text style={[
                                     styles.dropdownText,
@@ -161,42 +217,81 @@ const LocationScreen = () => {
 
                         {/* Category Dropdown */}
                         {showCategoryDropdown && (
-                            <View style={styles.dropdownList}>
-                                {categories.map((category, index) => (
-                                    <TouchableOpacity
-                                        key={category}
-                                        style={[
-                                            styles.dropdownItem,
-                                            index === categories.length - 1 && { borderBottomWidth: 0 },
-                                            selectedCategory === category && styles.selectedDropdownItem
-                                        ]}
-                                        onPress={() => {
-                                            setSelectedCategory(category);
-                                            setShowCategoryDropdown(false);
-                                        }}
+                            <>
+                                {/* Overlay to close dropdown when tapping outside */}
+                                <TouchableOpacity 
+                                    style={styles.dropdownOverlay}
+                                    activeOpacity={1}
+                                    onPress={() => setShowCategoryDropdown(false)}
+                                />
+                                <View style={[
+                                    styles.dropdownContainer,
+                                    dropdownPosition === 'above' && styles.dropdownContainerAbove
+                                ]}>
+                                    <ScrollView 
+                                        style={styles.dropdownList}
+                                        nestedScrollEnabled={true}
+                                        showsVerticalScrollIndicator={true}
+                                        keyboardShouldPersistTaps="handled"
+                                        bounces={false}
                                     >
-                                        <Text style={[
-                                            styles.dropdownItemText,
-                                            selectedCategory === category && styles.selectedDropdownItemText
-                                        ]}>
-                                            {category}
-                                        </Text>
-                                        {selectedCategory === category && (
-                                            <Ionicons name="checkmark" size={20} color="#0057FF" />
-                                        )}
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
+                                        {categories.map((category, index) => (
+                                            <TouchableOpacity
+                                                key={`${category}-${index}`}
+                                                style={[
+                                                    styles.dropdownItem,
+                                                    index === categories.length - 1 && { borderBottomWidth: 0 },
+                                                    selectedCategory === category && styles.selectedDropdownItem
+                                                ]}
+                                                onPress={() => {
+                                                    setSelectedCategory(category);
+                                                    setShowCategoryDropdown(false);
+                                                }}
+                                            >
+                                                <Text style={[
+                                                    styles.dropdownItemText,
+                                                    selectedCategory === category && styles.selectedDropdownItemText
+                                                ]}>
+                                                    {category}
+                                                </Text>
+                                                {selectedCategory === category && (
+                                                    <Ionicons name="checkmark" size={20} color="#0057FF" />
+                                                )}
+                                            </TouchableOpacity>
+                                        ))}
+                                        {/* Add a small footer to ensure last item is visible */}
+                                        <View style={{ height: 5 }} />
+                                    </ScrollView>
+                                </View>
+                            </>
                         )}
+
+                        {/* Location Search - Always show for category tasks */}
+                        <>
+                            <Text style={styles.label}>Location</Text>
+                            <LocationAutocomplete
+                                onSelect={handleLocationSelect}
+                                placeholder="Search for suburb, city or address..."
+                                style={styles.locationAutocomplete}
+                            />
+                            {selectedLocation && (
+                                <View style={styles.selectedLocationContainer}>
+                                    <Ionicons name="location" size={16} color="#0057FF" />
+                                    <Text style={styles.selectedLocationText}>
+                                        {selectedLocation.address}
+                                    </Text>
+                                </View>
+                            )}
+                        </>
                     </>
                 )}
-            </ScrollView>
+            </View>
 
             {/* Continue */}
             <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
                 <Text style={styles.continueText}>Continue</Text>
             </TouchableOpacity>
-        </View>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -217,6 +312,7 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 20,
         paddingTop: 90,
+        paddingBottom: 20,
     },
     title: {
         fontSize: 22,
@@ -319,21 +415,50 @@ const styles = StyleSheet.create({
     placeholderText: {
         color: '#aaa',
     },
+    dropdownOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 999,
+    },
+    dropdownContainer: {
+        position: 'relative',
+        zIndex: 1000,
+        marginBottom: 10,
+    },
+    dropdownContainerAbove: {
+        position: 'absolute',
+        bottom: 60, // Position above the dropdown trigger
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+    },
     dropdownList: {
         backgroundColor: '#fff',
         borderRadius: 8,
         borderWidth: 1,
         borderColor: '#E1E1E1',
-        marginBottom: 10,
-        maxHeight: 250,
+        maxHeight: 200,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 5,
     },
     dropdownItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
         borderBottomWidth: 1,
         borderBottomColor: '#E1E1E1',
+        minHeight: 50,
     },
     selectedDropdownItem: {
         backgroundColor: '#F0F8FF',
@@ -345,6 +470,23 @@ const styles = StyleSheet.create({
     selectedDropdownItemText: {
         color: '#0057FF',
         fontWeight: '600',
+    },
+    locationAutocomplete: {
+        marginBottom: 10,
+    },
+    selectedLocationContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F0F8FF',
+        borderRadius: 8,
+        padding: 12,
+        marginBottom: 10,
+    },
+    selectedLocationText: {
+        marginLeft: 8,
+        fontSize: 14,
+        color: '#0057FF',
+        flex: 1,
     },
     continueButton: {
         marginHorizontal: 20,

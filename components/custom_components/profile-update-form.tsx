@@ -1,6 +1,6 @@
 // components/custom_components/profile-update-form.tsx
 import { User } from '@/api/types/user';
-import { useUpdateUserProfile } from '@/hooks/useUserApi';
+import { updateUserProfile } from '@/hooks/useUserApi';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
@@ -25,18 +25,19 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
   const [location, setLocation] = useState(userData?.location || '');
   const [bio, setBio] = useState(userData?.bio || '');
   
-  const { mutateAsync: updateProfile, isPending } = useUpdateUserProfile();
-  
+  const [isPending, setIsPending] = useState(false);
+
   const handleSaveProfile = async () => {
+    setIsPending(true);
     try {
-      await updateProfile({
+      await updateUserProfile({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         phone: phone.trim(),
         location: location.trim(),
         bio: bio.trim(),
       });
-      
+
       Alert.alert(
         'Success',
         'Profile updated successfully!',
@@ -48,6 +49,8 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
         error?.message || 'Failed to update profile. Please try again.',
         [{ text: 'OK' }]
       );
+    } finally {
+      setIsPending(false);
     }
   };
   

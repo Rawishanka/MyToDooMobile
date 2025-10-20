@@ -11,14 +11,14 @@ async function testCategoriesEndpoint() {
     // Test 1: GET /api/categories
     console.log('\n📁 Testing GET /api/categories...');
     const response = await axios.get(`${BASE_URL}/categories`);
-    console.log('✅ Categories Response:', response.data);
+    // console.log('✅ Categories Response:', response.data);
     
     if (response.data && Array.isArray(response.data)) {
-      console.log(`✅ Found ${response.data.length} categories:`, response.data);
+      // console.log(`✅ Found ${response.data.length} categories:`, response.data);
     } else if (response.data.success && response.data.data) {
-      console.log(`✅ Found ${response.data.data.length} categories:`, response.data.data);
+      // console.log(`✅ Found ${response.data.data.length} categories:`, response.data.data);
     } else {
-      console.log('⚠️ Unexpected response format:', response.data);
+      // console.log('⚠️ Unexpected response format:', response.data);
     }
     
   } catch (error) {

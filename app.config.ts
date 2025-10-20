@@ -46,8 +46,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     apiUrl: process.env.API_URL,
     environment: process.env.ENVIRONMENT,
+    mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
     eas: {
       projectId: "ffec6247-9f6a-48a3-8d88-1cc225c686f6"
-    }
+    },
   },
 });

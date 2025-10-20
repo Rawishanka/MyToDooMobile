@@ -21,6 +21,11 @@ type RemovalTask = BaseTask & {
 type CategoryTask = BaseTask & {
   isRemoval: false;
   category: string;
+  location?: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
   pickupLocation?: never;
   deliveryLocation?: never;
 };

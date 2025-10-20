@@ -32,6 +32,7 @@ export default function AuthTestScreen() {
     lastName: 'User',
     email: 'testuser@example.com',
     password: 'password123',
+    phone: '',
   });
   const [signupLoading, setSignupLoading] = useState(false);
 
@@ -184,7 +185,17 @@ export default function AuthTestScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
             />
-            
+
+            <Text style={styles.label}>Phone Number</Text>
+            <TextInput
+              style={styles.input}
+              value={signupData.phone}
+              onChangeText={(text) => setSignupData(prev => ({ ...prev, phone: text }))}
+              placeholder="Enter phone number"
+              keyboardType="phone-pad"
+              autoCapitalize="none"
+            />
+
             <Text style={styles.label}>Password</Text>
             <TextInput
               style={styles.input}
