@@ -25,7 +25,7 @@ export default function AccountScreen() {
   const { user: authUser, isAuthenticated } = useAuthStore();
   
   // Use data from API response or fallback to auth store
-  const userData = userProfileData?.data || authUser;
+  const userData = userProfileData || authUser;
   
   // Handle loading state
   if (isLoadingProfile && !userData) {

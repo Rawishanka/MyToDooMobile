@@ -25,6 +25,31 @@ export default function PostTaskScreen() {
   const createTaskMutation = useCreateTask();
   const postTaskWithImagesMutation = usePostTaskWithImages();
 
+  // Helper functions to extract data from myTask
+  const getTaskCategory = (task: any): string[] => {
+    if (!task.isRemoval && task.category) {
+      return [task.category];
+    }
+    return task.isRemoval ? ['Removalist'] : ['General'];
+  };
+
+  const getTaskLocation = (task: any): string => {
+    if (!task.isRemoval && task.location) {
+      return task.location;
+    }
+    if (task.isRemoval && task.pickupLocation && task.deliveryLocation) {
+      return `From ${task.pickupLocation} to ${task.deliveryLocation}`;
+    }
+    return task.description || 'Location to be determined';
+  };
+
+  const getTaskCoordinates = (task: any): { lat: number; lng: number } | undefined => {
+    if (!task.isRemoval && task.coordinates) {
+      return task.coordinates;
+    }
+    return undefined;
+  };
+
   const handlePostTask = async () => {
     try {
       setIsSubmitting(true);
@@ -36,36 +61,47 @@ export default function PostTaskScreen() {
         return;
       }
 
-      // Prepare task data for API
+      // Prepare task data for API with proper location handling
       const taskData: CreateTaskRequest = {
         title: myTask.title,
-        category: [], // Will be populated from categories if available
-        dateType: 'Easy', // Default value
+        category: getTaskCategory(myTask), // Helper to extract category
+        dateType: myTask.date ? 'Specific Date' : 'Easy',
         time: myTask.time || 'Anytime',
-        location: myTask.description, // Using description as location for now
+        location: getTaskLocation(myTask), // Helper to extract location
         details: myTask.description,
         budget: myTask.budget,
-        currency: 'AUD', // Default currency
-        coordinates: undefined,
+        currency: 'LKR', // Default currency for Sri Lanka
+        coordinates: getTaskCoordinates(myTask), // Helper to extract coordinates
       };
 
       // Get image URIs from the store
       const imageUris = myTask.photos || [];
       
-      console.log('🚀 Posting task with images:', taskData);
-      console.log('📷 Images to upload:', imageUris.length, imageUris);
+      console.log('🚀 Posting task with enhanced data:', {
+        taskData,
+        imageCount: imageUris.length,
+        hasImages: imageUris.length > 0,
+        imageUris: imageUris.slice(0, 2), // Show first 2 URIs for debugging
+        taskType: myTask.isRemoval ? 'Removal Task' : 'Category Task'
+      });
 
       let result;
       
       if (imageUris.length > 0) {
         setUploadProgress(`Converting ${imageUris.length} image(s) to binary data...`);
+        console.log('📷 Using binary image upload with postTaskWithImages');
+        
         // Use the new binary image upload mutation
         result = await postTaskWithImagesMutation.mutateAsync({ 
           taskData, 
           imageUris 
         });
+        
+        console.log('✅ Binary image upload completed successfully');
       } else {
         setUploadProgress('Creating task...');
+        console.log('📝 No images, using regular task creation');
+        
         // Use regular task creation without images
         result = await createTaskMutation.mutateAsync(taskData);
       }

@@ -1,6 +1,6 @@
 import { useGetAllTasksQuery } from '@/hooks/useApi';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -15,9 +15,20 @@ export default function TestApiScreen() {
   const router = useRouter();
   const { data, isLoading, error, refetch } = useGetAllTasksQuery();
 
-  console.log('API Test - Data:', data);
-  console.log('API Test - Loading:', isLoading);
-  console.log('API Test - Error:', error);
+  // Debug logs - only when data changes
+  useEffect(() => {
+    console.log('API Test - Data:', data);
+  }, [data]);
+
+  useEffect(() => {
+    console.log('API Test - Loading:', isLoading);
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (error) {
+      console.log('API Test - Error:', error);
+    }
+  }, [error]);
 
   if (isLoading) {
     return (
