@@ -72,15 +72,30 @@ export default function App() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: '#007bff',
-        tabBarInactiveTintColor: '#000',
+        tabBarInactiveTintColor: '#666',
         tabBarLabelPosition: 'below-icon',
-        tabBarStyle: { height: 60 },
-        tabBarItemStyle: { flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%' },
+        tabBarStyle: { 
+          height: 80, 
+          paddingBottom: 20, 
+          paddingTop: 5 
+        },
+        tabBarItemStyle: { 
+          flexDirection: 'column', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          paddingVertical: 5 
+        },
+        tabBarLabelStyle: { 
+          fontSize: 11, 
+          fontWeight: '500',
+          textAlign: 'center',
+          marginTop: 2
+        },
         tabBarIcon: ({ color, focused }) => {
-          const iconSize = 19;
-          const iconColor = focused ? '#3399ff' : '#bbb';
+          const iconSize = 20;
+          const iconColor = focused ? '#007bff' : '#666';
           return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+            <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: 2 }}>
               {route.name === 'index' && (
                 <FontAwesome name="check" size={iconSize} color={iconColor} />
               )}
@@ -99,7 +114,6 @@ export default function App() {
             </View>
           );
         },
-        tabBarLabelStyle: { textAlign: 'center', width: '100%' },
       })}
     >
       <Tab.Screen name="index" component={GetItDone} options={{ tabBarLabel: 'Get it done' }} />

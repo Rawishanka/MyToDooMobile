@@ -25,7 +25,7 @@ export async function sendSmsCode(data: SendSmsRequest): Promise<ApiResponse> {
       body: JSON.stringify(data),
     });
 
-    const json = await res.json();
+    const json = await res.json() as any;
     if (json?.success) {
       console.log(`✅ SMS send success to ${data.phone}:`, json.message || json);
     } else {
@@ -45,5 +45,5 @@ export async function verifySmsCode(data: SmsVerificationRequest): Promise<ApiRe
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return res.json();
+  return res.json() as Promise<ApiResponse>;
 }

@@ -6,6 +6,11 @@ import axios from 'axios';
 export function createApi(baseURL: string) {
     const axiosInstance = axios.create({
         baseURL: baseURL,
+        timeout: 30000, // 30 seconds timeout
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
     });
 
     axiosInstance.interceptors.request.use(async (config) => {

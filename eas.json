@@ -9,9 +9,22 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://134.199.172.167:5001/api"
+      }
     },
     "production": {
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "_comment": "This URL is set specifically for production builds. For local development, change the .env file instead.",
+        "EXPO_PUBLIC_API_URL": "http://134.199.172.167:5001/api"
+      },
       "autoIncrement": true
     }
   },

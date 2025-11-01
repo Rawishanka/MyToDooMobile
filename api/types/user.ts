@@ -43,6 +43,14 @@ export interface SignUpRequest {
   email: string;
   password: string;
   phone: string;
+  dateOfBirth?: string; // YYYY-MM-DD format
+  location: {
+    country: string;
+    countryCode: string;
+    suburb?: string; // "Frankston 3199, VIC" format
+    region?: string;
+    city?: string;
+  };
 }
 
 export interface ApiError {

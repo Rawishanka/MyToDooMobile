@@ -6,10 +6,8 @@ import API_CONFIG from "./config";
 
 // 🔧 **API HELPER FUNCTION**
 function getApi() {
-  const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
-    ? API_CONFIG.BASE_URL
-    : "http://192.168.1.3:5001/api";
-  return createApi(baseUrl);
+  // API_CONFIG.BASE_URL already handles the env variable and fallback
+  return createApi(API_CONFIG.BASE_URL);
 }
 
 // 🏷️ **CATEGORY TYPES**
@@ -109,18 +107,22 @@ export async function getAllCategories(): Promise<CategoriesResponse> {
     return getDefaultCategories();
     
   } catch (error: any) {
-    console.error("❌ Get categories failed:", error);
+    console.error("❌ Get categories failed:", error?.message || error);
     
-    // Check for network connection errors - use mock service as fallback
+    // Check for network connection errors or timeouts - use mock service as fallback
     if (error.code === 'ERR_NETWORK' || 
+        error.code === 'ECONNABORTED' ||
+        error.code === 'ETIMEDOUT' ||
         error.message === 'Network Error' || 
+        error.message?.includes('timeout') ||
         error.code === 'ECONNREFUSED' || 
         error.code === 'ENOTFOUND') {
-      console.warn("🎭 Network failed - Using Mock Categories");
+      console.warn("🎭 Network/Timeout issue - Using Mock Categories");
       return getMockCategories();
     }
     
     // Return default categories on other errors
+    console.warn("🔄 Using default categories as fallback");
     return getDefaultCategories();
   }
 }
@@ -130,15 +132,35 @@ export async function getAllCategories(): Promise<CategoriesResponse> {
  */
 function getMockCategories(): CategoriesResponse {
   const mockCategories: Category[] = [
-    { name: 'Home & Garden', count: 15 },
-    { name: 'Cleaning', count: 12 },
-    { name: 'Technology', count: 8 },
-    { name: 'Design & Creative', count: 6 },
-    { name: 'Business', count: 5 },
-    { name: 'Admin & Data', count: 4 },
-    { name: 'Writing & Translation', count: 3 },
-    { name: 'Delivery', count: 3 },
-    { name: 'Tutoring', count: 2 }
+    { name: 'Appliance installation and repair', count: 0 },
+    { name: 'Auto Michanic and Electrician', count: 0 },
+    { name: 'Buliding Maintatance and Renovations', count: 0 },
+    { name: 'Business and Accounting', count: 0 },
+    { name: 'Carpentry', count: 0 },
+    { name: 'Cleaning and Organising', count: 0 },
+    { name: 'Removalist', count: 0 },
+    { name: 'Education and Tutoring', count: 0 },
+    { name: 'Electrical', count: 0 },
+    { name: 'Event Planning', count: 0 },
+    { name: 'Furniture repair and Flatpack Assemply', count: 0 },
+    { name: 'Gardening and Landscaping', count: 0 },
+    { name: 'Graphic Design', count: 0 },
+    { name: 'Handyman and Handywomen', count: 0 },
+    { name: 'Health & Fitness', count: 0 },
+    { name: 'IT & Tech', count: 0 },
+    { name: 'Legal Services', count: 0 },
+    { name: 'Marketting and Advertising', count: 0 },
+    { name: 'Music and Entertainment', count: 0 },
+    { name: 'Painting', count: 0 },
+    { name: 'Pet Care', count: 0 },
+    { name: 'Photography', count: 0 },
+    { name: 'Plumbing', count: 0 },
+    { name: 'Something Else', count: 0 },
+    { name: 'Web & App Development', count: 0 },
+    { name: 'Personal Assistance', count: 0 },
+    { name: 'Tours and Transport', count: 0 },
+    { name: 'Delivery', count: 0 },
+    { name: 'Realestate', count: 0 },
   ];
 
   return {
@@ -153,13 +175,35 @@ function getMockCategories(): CategoriesResponse {
  */
 function getDefaultCategories(): CategoriesResponse {
   const defaultCategories: Category[] = [
-    { name: 'Home & Garden', count: 0 },
-    { name: 'Design & Creative', count: 0 },
-    { name: 'Technology', count: 0 },
-    { name: 'Cleaning', count: 0 },
-    { name: 'Admin & Data', count: 0 },
-    { name: 'Business', count: 0 },
-    { name: 'Writing & Translation', count: 0 }
+    { name: 'Appliance installation and repair', count: 0 },
+    { name: 'Auto Michanic and Electrician', count: 0 },
+    { name: 'Buliding Maintatance and Renovations', count: 0 },
+    { name: 'Business and Accounting', count: 0 },
+    { name: 'Carpentry', count: 0 },
+    { name: 'Cleaning and Organising', count: 0 },
+    { name: 'Removalist', count: 0 },
+    { name: 'Education and Tutoring', count: 0 },
+    { name: 'Electrical', count: 0 },
+    { name: 'Event Planning', count: 0 },
+    { name: 'Furniture repair and Flatpack Assemply', count: 0 },
+    { name: 'Gardening and Landscaping', count: 0 },
+    { name: 'Graphic Design', count: 0 },
+    { name: 'Handyman and Handywomen', count: 0 },
+    { name: 'Health & Fitness', count: 0 },
+    { name: 'IT & Tech', count: 0 },
+    { name: 'Legal Services', count: 0 },
+    { name: 'Marketting and Advertising', count: 0 },
+    { name: 'Music and Entertainment', count: 0 },
+    { name: 'Painting', count: 0 },
+    { name: 'Pet Care', count: 0 },
+    { name: 'Photography', count: 0 },
+    { name: 'Plumbing', count: 0 },
+    { name: 'Something Else', count: 0 },
+    { name: 'Web & App Development', count: 0 },
+    { name: 'Personal Assistance', count: 0 },
+    { name: 'Tours and Transport', count: 0 },
+    { name: 'Delivery', count: 0 },
+    { name: 'Realestate', count: 0 },
   ];
 
   return {

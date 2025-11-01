@@ -26,11 +26,11 @@ export default function PostTaskScreen() {
   const postTaskWithImagesMutation = usePostTaskWithImages();
 
   // Helper functions to extract data from myTask
-  const getTaskCategory = (task: any): string[] => {
+  const getTaskCategory = (task: any): string => {
     if (!task.isRemoval && task.category) {
-      return [task.category];
+      return task.category; // ✅ Return as string, not array
     }
-    return task.isRemoval ? ['Removalist'] : ['General'];
+    return task.isRemoval ? 'Removalist' : 'General';
   };
 
   const getTaskLocation = (task: any): string => {
@@ -43,10 +43,23 @@ export default function PostTaskScreen() {
     return task.description || 'Location to be determined';
   };
 
-  const getTaskCoordinates = (task: any): { lat: number; lng: number } | undefined => {
-    if (!task.isRemoval && task.coordinates) {
-      return task.coordinates;
+  // ✅ NEW: Format location for backend (string format with separate coordinates)
+  const formatLocationForBackend = (task: any): string => {
+    if (task.isRemoval) {
+      return `From ${task.pickupLocation || 'Unknown'} to ${task.deliveryLocation || 'Unknown'}`;
     }
+    return task.location || 'Location not specified';
+  };
+
+  const getTaskCoordinates = (task: any): { latitude: number; longitude: number } | undefined => {
+    // Only return coordinates if we have valid location data from the user
+    if (!task.isRemoval && task.coordinates && task.coordinates.lat && task.coordinates.lng) {
+      return {
+        latitude: task.coordinates.lat,
+        longitude: task.coordinates.lng
+      };
+    }
+    // Don't send coordinates if we don't have real location data
     return undefined;
   };
 
@@ -61,18 +74,33 @@ export default function PostTaskScreen() {
         return;
       }
 
-      // Prepare task data for API with proper location handling
+      // Prepare task data for API with proper backend format
+      const coordinates = getTaskCoordinates(myTask);
       const taskData: CreateTaskRequest = {
         title: myTask.title,
-        category: getTaskCategory(myTask), // Helper to extract category
-        dateType: myTask.date ? 'Specific Date' : 'Easy',
+        category: getTaskCategory(myTask), // ✅ Backend expects singular string
+        details: myTask.description, // ✅ Backend expects 'details' not 'description'
+        dateType: 'DoneBy', // ✅ Use default date type
+        date: myTask.date 
+          ? new Date(myTask.date).toISOString().split('T')[0] 
+          : undefined,
         time: myTask.time || 'Anytime',
-        location: getTaskLocation(myTask), // Helper to extract location
-        details: myTask.description,
+        locationType: myTask.locationType || 'In-person', // ✅ Added locationType
+        location: formatLocationForBackend(myTask), // ✅ Format location as string
         budget: myTask.budget,
-        currency: 'LKR', // Default currency for Sri Lanka
-        coordinates: getTaskCoordinates(myTask), // Helper to extract coordinates
+        currency: 'LKR', // ✅ Default currency for Sri Lanka
       };
+
+      // Only add coordinates if we have valid location data
+      if (coordinates) {
+        taskData.coordinates = coordinates;
+      }
+
+      console.log('📍 Coordinates check:', {
+        hasCoordinates: !!coordinates,
+        coordinates: coordinates,
+        locationType: myTask.locationType
+      });
 
       // Get image URIs from the store
       const imageUris = myTask.photos || [];

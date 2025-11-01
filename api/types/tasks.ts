@@ -326,40 +326,57 @@ export interface TaskOffer {
 // 📝 *CREATE TASK REQUEST*
 export interface CreateTaskRequest {
   title: string;
-  category: string[];
+  category: string; // ✅ Backend expects singular 'category' as string
   dateType: string;
+  date?: string; // ✅ Added date field for backend
   dateRange?: {
     start: string;
     end: string;
   };
   time: string;
-  location: string;
-  details: string;
+  location: string; // ✅ MUST be string - backend expects location.trim()
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  }; // ✅ Separate coordinates field
+  locationType?: 'In-person' | 'Online' | 'Both'; // ✅ Added locationType field
+  details: string; // ✅ Backend expects 'details' not 'description'
   budget: number;
   currency: string;
   images?: string[];
-  coordinates?: {
-    lat: number;
-    lng: number;
+  
+  // ✅ Moving task specific fields
+  isMovingTask?: boolean;
+  movingDetails?: {
+    pickupLocation: {
+      address: string;
+      postalCode?: string;
+    };
+    dropoffLocation: {
+      address: string;
+      postalCode?: string;
+    };
   };
 }
 
 // 🔄 *UPDATE TASK REQUEST*
 export interface UpdateTaskRequest {
   title?: string;
-  details?: string;
+  details?: string; // ✅ Backend expects 'details'
   budget?: number;
   status?: string;
-  category?: string[];
+  category?: string; // ✅ Backend expects singular 'category' as string
   dateType?: string;
+  date?: string; // ✅ Added date field
   time?: string;
-  location?: string;
+  location?: string; // ✅ MUST be string - backend expects location.trim()
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  }; // ✅ Separate coordinates field
+  locationType?: 'In-person' | 'Online' | 'Both'; // ✅ Added locationType field
   currency?: string;
   images?: string[];
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
 }
 
 // 💫 *CREATE OFFER REQUEST*

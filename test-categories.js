@@ -1,7 +1,8 @@
 // Simple test to check if categories API endpoint works
 const axios = require('axios');
+require('dotenv').config();
 
-const BASE_URL = 'http://192.168.8.168:5001/api';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://134.199.172.167:5001/api';
 
 async function testCategoriesEndpoint() {
   console.log('🧪 Testing Categories API Endpoint...');

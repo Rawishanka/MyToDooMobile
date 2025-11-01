@@ -23,7 +23,8 @@ export function useGetAllCategories() {
     refetchOnMount: false, // Don't refetch on every mount
     refetchOnWindowFocus: false, // Don't refetch when user returns to app
     refetchOnReconnect: true, // Refetch when network reconnects
-    retry: 2, // Retry failed requests 2 times
+    retry: 1, // Reduced to 1 retry to fail faster
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000), // Exponential backoff
   });
 }
 
@@ -43,13 +44,35 @@ export function useGetCategoriesWithAll() {
       // Fallback to default categories
       return [
         'All Categories',
-        'Home & Garden', 
-        'Design & Creative',
-        'Technology',
-        'Cleaning',
-        'Admin & Data',
-        'Business',
-        'Writing & Translation',
+        'Appliance installation and repair',
+        'Auto Michanic and Electrician',
+        'Buliding Maintatance and Renovations',
+        'Business and Accounting',
+        'Carpentry',
+        'Cleaning and Organising',
+        'Removalist',
+        'Education and Tutoring',
+        'Electrical',
+        'Event Planning',
+        'Furniture repair and Flatpack Assemply',
+        'Gardening and Landscaping',
+        'Graphic Design',
+        'Handyman and Handywomen',
+        'Health & Fitness',
+        'IT & Tech',
+        'Legal Services',
+        'Marketting and Advertising',
+        'Music and Entertainment',
+        'Painting',
+        'Pet Care',
+        'Photography',
+        'Plumbing',
+        'Something Else',
+        'Web & App Development',
+        'Personal Assistance',
+        'Tours and Transport',
+        'Delivery',
+        'Realestate',
       ];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -74,13 +97,35 @@ export function useGetCategoryNames() {
       }
       // Fallback to default categories
       return [
-        'Home & Garden', 
-        'Design & Creative',
-        'Technology',
-        'Cleaning',
-        'Admin & Data',
-        'Business',
-        'Writing & Translation',
+        'Appliance installation and repair',
+        'Auto Michanic and Electrician',
+        'Buliding Maintatance and Renovations',
+        'Business and Accounting',
+        'Carpentry',
+        'Cleaning and Organising',
+        'Removalist',
+        'Education and Tutoring',
+        'Electrical',
+        'Event Planning',
+        'Furniture repair and Flatpack Assemply',
+        'Gardening and Landscaping',
+        'Graphic Design',
+        'Handyman and Handywomen',
+        'Health & Fitness',
+        'IT & Tech',
+        'Legal Services',
+        'Marketting and Advertising',
+        'Music and Entertainment',
+        'Painting',
+        'Pet Care',
+        'Photography',
+        'Plumbing',
+        'Something Else',
+        'Web & App Development',
+        'Personal Assistance',
+        'Tours and Transport',
+        'Delivery',
+        'Realestate',
       ];
     },
     staleTime: 5 * 60 * 1000,

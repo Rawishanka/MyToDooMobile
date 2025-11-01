@@ -11,8 +11,8 @@ const getApiUrl = () => {
         return process.env.EXPO_PUBLIC_API_URL;
     }
     
-    // 🔧 Updated: Using consistent IP address for all platforms during development
-    return "http://192.168.8.168:5001/api"; // Your current machine IP
+    // 🔧 Fallback: Using IP address from .env file
+    return "http://134.199.172.167:5001/api";
 };
 
 const API_CONFIG = {

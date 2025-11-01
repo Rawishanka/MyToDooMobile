@@ -73,7 +73,21 @@ export function useCreateSignUpToken() {
   const queryClient = useQueryClient();
   const { handleSignUpUser } = useApiFunctions();
   return useMutation({
-    mutationFn: (signUpData: { firstName: string; lastName: string; email: string; password: string; phone: string }) => 
+    mutationFn: (signUpData: { 
+      firstName: string; 
+      lastName: string; 
+      email: string; 
+      password: string; 
+      phone: string;
+      dateOfBirth?: string; // YYYY-MM-DD format
+      location: {
+        country: string;
+        countryCode: string;
+        suburb?: string; // "Frankston 3199, VIC" format
+        region?: string;
+        city?: string;
+      };
+    }) => 
       handleSignUpUser(signUpData),
     onSuccess: (data) => {
       queryClient.setQueryData(['signup'], data);

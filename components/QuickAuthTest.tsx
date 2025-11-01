@@ -1,3 +1,4 @@
+import API_CONFIG from '@/api/config';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -7,7 +8,7 @@ export const QuickAuthTest = () => {
 
   const testAuthFlow = async () => {
     setTesting(true);
-    const baseUrl = 'http://192.168.1.3:5001/api';
+    const baseUrl = API_CONFIG.BASE_URL; // Use centralized API configuration
     
     try {
       // Test 1: Check if server is running

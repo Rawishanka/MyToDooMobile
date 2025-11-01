@@ -7,6 +7,9 @@
 
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://134.199.172.167:5001/api';
 
 console.log('🔧 MyToDoo Network Debug Tool');
 console.log('================================');
@@ -57,8 +60,8 @@ console.log('  • Categories will load from mock categories (9 categories)');
 console.log('  • App will continue functioning for development');
 
 console.log('\n🌐 To test with real backend:');
-console.log('  1. Make sure your backend server is running on: http://192.168.8.168:5001');
-console.log('  2. Test connectivity: curl http://192.168.8.168:5001/api/tasks');
+console.log(`  1. Make sure your backend server is running on: ${API_URL.replace('/api', '')}`);
+console.log(`  2. Test connectivity: curl ${API_URL}/tasks`);
 console.log('  3. Check if tasks and categories endpoints respond correctly');
 
 console.log('\n✅ Network error handling should now work properly!');

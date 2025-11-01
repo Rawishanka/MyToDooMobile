@@ -182,11 +182,8 @@ import { createApi } from '@/utils/api';
 import { useMutation } from '@tanstack/react-query';
 import { User } from './types/user';
 
-const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
-  ? API_CONFIG.BASE_URL
-  : "http://192.168.8.168:5001/api";
-
-const api = createApi(baseUrl);
+// Always use API_CONFIG.BASE_URL which reads from environment variables
+const api = createApi(API_CONFIG.BASE_URL);
 
 // ==========================================
 // SIGNUP & VERIFICATION HOOKS
@@ -198,9 +195,14 @@ interface SignUpRequest {
   email: string;
   password: string;
   phone: string;
-  country?: string;
-  stateRegion?: string;
-  city?: string;
+  dateOfBirth?: string;
+  location: {
+    country: string;
+    countryCode: string;
+    suburb?: string; // "Frankston 3199, VIC" format
+    region?: string;
+    city?: string;
+  };
 }
 
 interface SignUpResponse {
@@ -288,7 +290,11 @@ export function useVerifyOTP() {
       console.log('🔐 Verifying email OTP:', verifyData);
       
       try {
-        const response = await api.post('/two-factor-auth/otp-verification', verifyData);
+        // Use the original endpoint: /two-factor-auth/otp-verification
+        const response = await api.post('/two-factor-auth/otp-verification', {
+          email: verifyData.email,
+          otp: verifyData.otp
+        });
         console.log('✅ Email OTP verification response:', response.data);
         return response.data;
       } catch (error: any) {
@@ -515,7 +521,46 @@ export function useCreateAuthToken() {
 export function updateUserProfile(profileData: Partial<User>) {
   throw new Error('Function not implemented.');
 }
-export function getUserProfile() {
-  throw new Error('Function not implemented.');
+
+export async function getUserProfile(): Promise<User> {
+  console.log('📥 Getting user profile...');
+  
+  try {
+    // Try to get user from auth store first
+    const authState = useAuthStore.getState();
+    if (authState.user && authState.isAuthenticated) {
+      console.log('✅ Returning user from auth store');
+      return authState.user;
+    }
+    
+    // If no user in store, try API call
+    const response = await api.get('/auth/profile');
+    console.log('✅ User profile fetched from API:', response.data);
+    return response.data.user;
+    
+  } catch (error: any) {
+    console.error('❌ Get user profile error:', error);
+    
+    // Network error fallback - return mock user
+    if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
+      console.warn('🎭 Network failed - Using Mock Profile');
+      
+      const mockUser: User = {
+        id: 'dev-user-123',
+        _id: 'dev-user-123',
+        email: 'dev@example.com',
+        firstName: 'Dev',
+        lastName: 'User',
+        role: 'user',
+        isVerified: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      return mockUser;
+    }
+    
+    throw error;
+  }
 }
 

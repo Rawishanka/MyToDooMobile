@@ -3,19 +3,19 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    Image,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 
@@ -45,6 +45,7 @@ export default function BrowseTasksScreen() {
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null); // For focusing on specific task on map
 
   // 🏷️ **NEW: Dynamic categories from database**
   const { 
@@ -156,7 +157,7 @@ export default function BrowseTasksScreen() {
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [taskType, setTaskType] = useState<'all' | 'in-person' | 'remote'>('all');
-  const [priceRange, setPriceRange] = useState<[number, number]>([1, 5000]); // 🔧 FIXED: Increased range to show all tasks
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]); // 🔧 FIXED: Start at 0 to include all budgets, max 10000
   const [availableTasksOnly, setAvailableTasksOnly] = useState(false);
   const [showTasksWithNoOffers, setShowTasksWithNoOffers] = useState(false);
   const [categoryDropdownVisible, setCategoryDropdownVisible] = useState(false);
@@ -232,9 +233,14 @@ export default function BrowseTasksScreen() {
     const beforePrice = filtered.length;
     const taskBudgets = filtered.map(t => t.budget);
     
-    filtered = filtered.filter(task => 
-      task.budget >= priceRange[0] && task.budget <= priceRange[1]
-    );
+    // 🔧 FIX: Only apply price filter if user has adjusted it from default [0, 10000]
+    // This ensures all newly posted tasks appear by default
+    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === 10000;
+    if (!isDefaultPriceRange) {
+      filtered = filtered.filter(task => 
+        task.budget >= priceRange[0] && task.budget <= priceRange[1]
+      );
+    }
 
     // Apply available tasks only filter - updated for real API structure
     if (availableTasksOnly) {
@@ -289,7 +295,8 @@ export default function BrowseTasksScreen() {
 
   // 🚀 **UPDATED: Generate map HTML with markers for real API data**
   // Accept a marker icon URL so Leaflet can use our custom icon for markers
-  const generateMapHTML = (iconUrl?: string) => {
+  // Also accept optional focusTaskId to zoom to a specific task
+  const generateMapHTML = (iconUrl?: string, focusTaskId?: string | null) => {
     const tasksWithCoordinates = filteredAndSortedTasks.filter(task => {
       const coords = task.location.coordinates;
       return coords && 
@@ -312,6 +319,9 @@ export default function BrowseTasksScreen() {
         offers: task.offerCount || 0,
       };
     });
+
+    // Find the focused task marker if focusTaskId is provided
+    const focusedMarker = focusTaskId ? markers.find(m => m.id === focusTaskId) : null;
 
   return `
 <!DOCTYPE html>
@@ -357,20 +367,20 @@ export default function BrowseTasksScreen() {
             background-color: #007bff;
             border: 2px solid white;
             border-radius: 50%;
-      width: 36px;
-      height: 36px;
+      width: 60px;
+      height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 12px;
+            font-size: 16px;
             font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
     /* Reinforce fixed-size marker images regardless of map zoom */
     .my-custom-marker {
-      width: 44px !important;
-      height: 44px !important;
+      width: 60px !important;
+      height: 60px !important;
     }
     </style>
 </head>
@@ -394,21 +404,24 @@ export default function BrowseTasksScreen() {
         const customIcon = markerIconUrl
           ? L.icon({
               iconUrl: markerIconUrl,
-              iconSize: [44, 44],
-              iconAnchor: [22, 44],
-              popupAnchor: [0, -40],
+              iconSize: [60, 60],
+              iconAnchor: [30, 60],
+              popupAnchor: [0, -60],
               className: 'my-custom-marker'
             })
           : L.divIcon({
               // Fallback to simple circle if icon cannot be resolved
               html: '<div class="marker-icon"></div>',
               className: 'custom-div-icon',
-              iconSize: [44, 44],
-              iconAnchor: [22, 44],
-              popupAnchor: [0, -40]
+              iconSize: [60, 60],
+              iconAnchor: [30, 60],
+              popupAnchor: [0, -60]
             });
         
         // Add markers to map
+        const focusedTaskId = ${JSON.stringify(focusTaskId)};
+        const focusedMarker = ${JSON.stringify(focusedMarker)};
+        
         markers.forEach(marker => {
             const popupContent = \`
                 <div class="custom-popup">
@@ -419,13 +432,21 @@ export default function BrowseTasksScreen() {
                 </div>
             \`;
             
-      L.marker([marker.lat, marker.lng], { icon: customIcon })
-            .bindPopup(popupContent)
-            .addTo(map);
+            const markerInstance = L.marker([marker.lat, marker.lng], { icon: customIcon })
+                .bindPopup(popupContent)
+                .addTo(map);
+            
+            // If this is the focused marker, open its popup
+            if (focusedTaskId && marker.id === focusedTaskId) {
+                markerInstance.openPopup();
+            }
         });
         
-        // Fit map to markers if there are any
-        if (markers.length > 0) {
+        // Fit map to markers or focus on specific task
+        if (focusedMarker) {
+            // Zoom to the specific task location
+            map.setView([focusedMarker.lat, focusedMarker.lng], 14);
+        } else if (markers.length > 0) {
             const group = new L.featureGroup(map.eachLayer(layer => {
                 if (layer instanceof L.Marker) {
                     return layer;
@@ -448,7 +469,7 @@ export default function BrowseTasksScreen() {
   const resetFilters = () => {
     setSelectedCategory('All Categories');
     setTaskType('all');
-    setPriceRange([5, 200]);
+    setPriceRange([0, 10000]); // 🔧 FIXED: Reset to default range that shows all tasks
     setAvailableTasksOnly(false);
     setShowTasksWithNoOffers(false);
   };
@@ -456,7 +477,7 @@ export default function BrowseTasksScreen() {
   const handleSliderTouch = (event: any) => {
     const { locationX } = event.nativeEvent;
     const percentage = Math.max(0, Math.min(1, locationX / sliderWidth));
-    const value = Math.round(5 + (percentage * 195)); // 5 to 200 range
+    const value = Math.round(0 + (percentage * 10000)); // 🔧 FIXED: 0 to 10000 range
     
     // For simplicity, we'll just update the max value
     if (percentage > 0.5) {
@@ -470,7 +491,7 @@ export default function BrowseTasksScreen() {
     let count = 0;
     if (selectedCategory !== 'All Categories') count++;
     if (taskType !== 'all') count++;
-    if (priceRange[0] !== 5 || priceRange[1] !== 200) count++;
+    if (priceRange[0] !== 0 || priceRange[1] !== 10000) count++; // 🔧 FIXED: Updated default range check
     if (availableTasksOnly) count++;
     if (showTasksWithNoOffers) count++;
     return count;
@@ -567,6 +588,20 @@ export default function BrowseTasksScreen() {
             {item.formattedBudget || `SGD${item.budget}`}
           </Text>
         </View>
+
+        {/* View Map Button */}
+        <TouchableOpacity 
+          style={styles.viewMapButton}
+          onPress={(e) => {
+            e.stopPropagation(); // Prevent triggering the card's onPress
+            setSelectedTaskId(item._id);
+            setViewMode('map');
+          }}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="map-outline" size={11} color="#007bff" />
+          <Text style={styles.viewMapButtonText}>View Map</Text>
+        </TouchableOpacity>
 
         {/* User Avatar */}
         <View style={styles.userAvatarContainer}>
@@ -693,7 +728,7 @@ export default function BrowseTasksScreen() {
       {viewMode === 'map' ? (
         <View style={styles.mapContainer}>
           <WebView
-            source={{ html: generateMapHTML(markerIconUri) }}
+            source={{ html: generateMapHTML(markerIconUri, selectedTaskId) }}
             style={styles.webView}
             javaScriptEnabled={true}
             domStorageEnabled={true}
@@ -703,6 +738,12 @@ export default function BrowseTasksScreen() {
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
             originWhitelist={['*']}
+            onLoadEnd={() => {
+              // Clear the selected task after map loads so subsequent map views show all tasks
+              if (selectedTaskId) {
+                setTimeout(() => setSelectedTaskId(null), 1000);
+              }
+            }}
           />
         </View>
       ) : (
@@ -872,8 +913,8 @@ export default function BrowseTasksScreen() {
                     style={[
                       styles.sliderFill,
                       {
-                        left: `${((priceRange[0] - 5) / 195) * 100}%`,
-                        width: `${((priceRange[1] - priceRange[0]) / 195) * 100}%`
+                        left: `${(priceRange[0] / 10000) * 100}%`,
+                        width: `${((priceRange[1] - priceRange[0]) / 10000) * 100}%`
                       }
                     ]}
                   />
@@ -881,7 +922,7 @@ export default function BrowseTasksScreen() {
                     style={[
                       styles.sliderThumb,
                       {
-                        left: `${((priceRange[0] - 5) / 195) * 100}%`,
+                        left: `${(priceRange[0] / 10000) * 100}%`,
                       }
                     ]}
                   />
@@ -889,14 +930,14 @@ export default function BrowseTasksScreen() {
                     style={[
                       styles.sliderThumb,
                       {
-                        left: `${((priceRange[1] - 5) / 195) * 100}%`,
+                        left: `${(priceRange[1] / 10000) * 100}%`,
                       }
                     ]}
                   />
                 </TouchableOpacity>
                 <View style={styles.sliderLabels}>
-                  <Text style={styles.sliderLabel}>A$5</Text>
-                  <Text style={styles.sliderLabel}>A$200+</Text>
+                  <Text style={styles.sliderLabel}>A$0</Text>
+                  <Text style={styles.sliderLabel}>A$10,000+</Text>
                 </View>
               </View>
             </View>
@@ -1172,6 +1213,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 24,
     height: 24,
+  },
+  viewMapButton: {
+    position: 'absolute',
+    bottom: 14,
+    right: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    gap: 3,
+    borderWidth: 1,
+    borderColor: '#007bff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  viewMapButtonText: {
+    fontSize: 10,
+    color: '#007bff',
+    fontWeight: '600',
   },
   emptyState: {
     padding: 40,

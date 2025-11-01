@@ -1,8 +1,9 @@
 // hooks/useUserApi.ts
+import API_CONFIG from '@/api/config';
 import { User } from '@/api/types/user';
 import * as UserAPI from '@/api/user-api';
 import { useAuthStore } from '@/store/auth-task-store';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 // ==========================================
@@ -10,7 +11,7 @@ import axios from 'axios';
 // ==========================================
 
 const api = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL || 'http://192.168.8.168:5001/api',
+  baseURL: API_CONFIG.BASE_URL, // Use centralized API configuration
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

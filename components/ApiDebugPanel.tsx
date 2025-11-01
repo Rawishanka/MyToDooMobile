@@ -14,7 +14,7 @@ export default function ApiDebugPanel() {
       console.log('✅ API Connection test - Status:', response.status);
       
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json() as any;
         setTestResult(`✅ Real API Success! Found ${data.total || 'unknown'} tasks`);
       } else {
         setTestResult(`❌ Real API Failed: HTTP ${response.status}`);

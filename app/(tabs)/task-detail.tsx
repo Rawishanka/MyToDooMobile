@@ -1,10 +1,11 @@
 import { Task } from '@/api/types/tasks';
-import { useGetTaskById } from '@/hooks/useTaskApi';
+import { useGetTaskById, useGetTaskOffers } from '@/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   Image,
   ScrollView,
   StatusBar,
@@ -28,8 +29,15 @@ export default function TaskDetailScreen() {
     refetch
   } = useGetTaskById(taskId || '', !!taskId);
 
+  // Fetch offers for this task
+  const {
+    data: offersData,
+    isLoading: isLoadingOffers,
+  } = useGetTaskOffers(taskId || '', !!taskId);
+
   const task = taskData?.data as Task;
   const user = taskData?.user;
+  const offers = offersData?.data?.offers || [];
 
   if (isLoading) {
     return (
@@ -172,6 +180,109 @@ export default function TaskDetailScreen() {
             Note: It is equity share not the 10 dollar listed above
           </Text>
         </View>
+
+        {/* Offers/Questions Section */}
+        {activeTab === 'offers' && (
+          <View style={styles.offersSection}>
+            <Text style={styles.sectionTitle}>Offers ({offers.length})</Text>
+            
+            {isLoadingOffers ? (
+              <View style={styles.loadingOffersContainer}>
+                <ActivityIndicator size="small" color="#007bff" />
+                <Text style={styles.loadingOffersText}>Loading offers...</Text>
+              </View>
+            ) : offers.length === 0 ? (
+              <View style={styles.emptyOffersContainer}>
+                <Ionicons name="document-outline" size={48} color="#ccc" />
+                <Text style={styles.emptyOffersText}>No offers yet</Text>
+                <Text style={styles.emptyOffersSubtext}>Be the first to make an offer!</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={offers}
+                scrollEnabled={false}
+                keyExtractor={(item: any) => item._id}
+                renderItem={({ item: offer }: { item: any }) => (
+                  <View style={styles.offerCard}>
+                    {/* Offer User Info */}
+                    <View style={styles.offerHeader}>
+                      <View style={styles.offerUserInfo}>
+                        <Image
+                          source={{ 
+                            uri: `https://ui-avatars.com/api/?name=${offer.taskTakerId?.firstName || 'User'}+${offer.taskTakerId?.lastName || ''}&background=007bff&color=fff&size=40` 
+                          }}
+                          style={styles.offerUserAvatar}
+                        />
+                        <View>
+                          <Text style={styles.offerUserName}>
+                            {offer.taskTakerId?.firstName || 'User'} {offer.taskTakerId?.lastName || ''}
+                          </Text>
+                          {offer.taskTakerId?.rating && (
+                            <View style={styles.offerRating}>
+                              <Ionicons name="star" size={14} color="#FFB800" />
+                              <Text style={styles.offerRatingText}>
+                                {offer.taskTakerId.rating.toFixed(1)} ({offer.taskTakerId.completedTasks || 0} jobs)
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                      {offer.status && (
+                        <View style={[
+                          styles.offerStatusBadge,
+                          offer.status === 'accepted' && styles.offerStatusAccepted,
+                          offer.status === 'rejected' && styles.offerStatusRejected,
+                        ]}>
+                          <Text style={styles.offerStatusText}>
+                            {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Offer Amount */}
+                    <View style={styles.offerAmountContainer}>
+                      <Text style={styles.offerAmountLabel}>Offer Amount:</Text>
+                      <Text style={styles.offerAmount}>
+                        ${offer.offer?.amount || offer.amount || 0} {offer.offer?.currency || 'SGD'}
+                      </Text>
+                    </View>
+
+                    {/* Offer Message */}
+                    {(offer.offer?.message || offer.message) && (
+                      <View style={styles.offerMessageContainer}>
+                        <Text style={styles.offerMessageLabel}>Message:</Text>
+                        <Text style={styles.offerMessage}>
+                          {offer.offer?.message || offer.message}
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* Offer Date */}
+                    <Text style={styles.offerDate}>
+                      Offered {new Date(offer.createdAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </Text>
+                  </View>
+                )}
+              />
+            )}
+          </View>
+        )}
+
+        {activeTab === 'questions' && (
+          <View style={styles.questionsSection}>
+            <Text style={styles.sectionTitle}>Questions</Text>
+            <View style={styles.emptyQuestionsContainer}>
+              <Ionicons name="help-circle-outline" size={48} color="#ccc" />
+              <Text style={styles.emptyQuestionsText}>No questions yet</Text>
+              <Text style={styles.emptyQuestionsSubtext}>Ask a question about this task</Text>
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       {/* Bottom Tabs */}
@@ -419,5 +530,156 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: '#4CAF50',
     fontWeight: '600',
+  },
+  // Offers Section Styles
+  offersSection: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 30,
+  },
+  questionsSection: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 30,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 16,
+  },
+  loadingOffersContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  loadingOffersText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#666',
+  },
+  emptyOffersContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyOffersText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#999',
+    marginTop: 12,
+  },
+  emptyOffersSubtext: {
+    fontSize: 14,
+    color: '#bbb',
+    marginTop: 4,
+  },
+  emptyQuestionsContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyQuestionsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#999',
+    marginTop: 12,
+  },
+  emptyQuestionsSubtext: {
+    fontSize: 14,
+    color: '#bbb',
+    marginTop: 4,
+  },
+  offerCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  offerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  offerUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  offerUserAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  offerUserName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 4,
+  },
+  offerRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  offerRatingText: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 4,
+  },
+  offerStatusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: '#FFC107',
+  },
+  offerStatusAccepted: {
+    backgroundColor: '#4CAF50',
+  },
+  offerStatusRejected: {
+    backgroundColor: '#F44336',
+  },
+  offerStatusText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  offerAmountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  offerAmountLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginRight: 8,
+  },
+  offerAmount: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#007bff',
+  },
+  offerMessageContainer: {
+    marginBottom: 12,
+  },
+  offerMessageLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#666',
+    marginBottom: 4,
+  },
+  offerMessage: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 20,
+  },
+  offerDate: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 4,
   },
 });

@@ -57,6 +57,15 @@ export function useGetCategories() {
   });
 }
 
+export function useGetCategoriesByLocation(locationType: string, enabled = true) {
+  return useQuery({
+    queryKey: [...TASK_QUERY_KEYS.categories(), 'by-location', locationType],
+    queryFn: () => TaskAPI.getCategoriesByLocation(locationType),
+    enabled: enabled && !!locationType,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
 /**
  * �🔍 Search Tasks Hook
  */

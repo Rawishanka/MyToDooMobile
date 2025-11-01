@@ -100,26 +100,34 @@ export default function DetailScreen() {
 
   // Convert myTask to CreateTaskRequest format matching server expectations
   const convertToTaskRequest = (): CreateTaskRequest => {
-    // Generate date range like existing successful tasks
+    // Generate date like existing successful tasks
     const today = new Date();
     const futureDate = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
     
-    return {
+    const taskRequest: CreateTaskRequest = {
       title: myTask.title || "Untitled Task",
-      category: ["General"], // Use array with default category like existing tasks
-      dateType: "Easy", // Use simple dateType like existing tasks 
-      dateRange: {
-        start: today.toISOString(),
-        end: futureDate.toISOString()
-      },
-      time: myTask.time || "morning", // Use specific time like existing tasks
-      location: getLocationFromTask(), // Keep as string like the logs show
-      details: myTask.description || "",
+      category: "General", // ✅ Backend expects singular string
+      details: myTask.description || "", // ✅ Backend expects 'details'
+      dateType: "DoneBy", // Use simple dateType
+      date: futureDate.toISOString().split('T')[0], // ✅ Added date field (YYYY-MM-DD format)
+      time: myTask.time || "Anytime",
+      location: getLocationFromTask(), // ✅ String format
+      locationType: myTask.locationType || 'In-person', // ✅ Added locationType
       budget: myTask.budget || 0,
       currency: "LKR",
       images: [], // Empty array
-      coordinates: getCoordinatesFromTask()
     };
+    
+    // Only add coordinates if locationType is In-person and we have valid location
+    // Don't send dummy coordinates - backend will fail with null values
+    // if (myTask.locationType === 'In-person' && myTask.location) {
+    //   taskRequest.coordinates = {
+    //     latitude: 6.9271,
+    //     longitude: 79.8612
+    //   };
+    // }
+    
+    return taskRequest;
   };
 
   // Handle task posting

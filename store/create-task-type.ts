@@ -7,6 +7,7 @@ type BaseTask = {
   time: string;
   photo: string; // Keep for backwards compatibility
   photos: string[]; // New field for multiple images
+  locationType?: 'In-person' | 'Online' | 'Both'; // Added location type
 };
 
 // ✅ Case 1: isRemoval = true

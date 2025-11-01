@@ -1,4 +1,4 @@
-import { useGetCategories } from '@/hooks/useTaskApi';
+import { useGetCategories, useGetCategoriesByLocation } from '@/hooks/useTaskApi';
 import { useCreateTaskStore } from '@/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -26,16 +26,36 @@ interface LocationData {
     };
 }
 
+interface Category {
+    _id: string;
+    name: string;
+    description?: string;
+    icon?: string;
+    iconUrl?: string;
+    locationType?: 'physical' | 'online' | 'both';
+    isActive?: boolean;
+}
+
+type LocationType = 'In-person' | 'Online' | 'Both';
+
 const LocationScreen = () => {
     const [isRemoval, setIsRemoval] = useState(false);
     const [pickupCode, setPickupCode] = useState('');
     const [dropoffCode, setDropoffCode] = useState('');
+    const [locationType, setLocationType] = useState<LocationType>('In-person');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
     const [dropdownPosition, setDropdownPosition] = useState<'below' | 'above'>('below');
+    const [categorySearchQuery, setCategorySearchQuery] = useState('');
 
     const { myTask, updateMyTask } = useCreateTaskStore();
+    
+    // Fetch categories based on location type (only for In-person and Online, not Both)
+    const shouldUseFilteredCategories = !isRemoval && locationType !== 'Both';
+    const { data: categoriesByLocation, isLoading: loadingCategoriesByLocation, error: categoriesByLocationError, refetch: refetchCategoriesByLocation } = useGetCategoriesByLocation(locationType, shouldUseFilteredCategories);
+    
+    // Always fetch regular categories (used for Both option and as fallback)
     const { data: categoriesResponse, isLoading: loadingCategories, error: categoriesError, refetch: refetchCategories } = useGetCategories();
 
     // Debug logs - only when data changes
@@ -74,6 +94,33 @@ const LocationScreen = () => {
         }
     }, [myTask]);
 
+    // Get all categories (we'll show all categories and auto-select location type based on category)
+    const categoriesData = !isRemoval ? (categoriesResponse?.data || []) : [];
+    
+    // Handle both string arrays (fallback) and object arrays (from backend)
+    const fullCategories: Category[] = categoriesData.map((cat: any) => {
+        if (typeof cat === 'string') {
+            return { _id: cat, name: cat, locationType: undefined };
+        }
+        return cat;
+    });
+    
+    // Extract category names for display
+    const allCategories: string[] = fullCategories.map((cat: Category) => cat.name);
+    
+    // Filter categories based on search query
+    const categories: string[] = categorySearchQuery.trim()
+        ? allCategories.filter(cat => 
+            cat.toLowerCase().includes(categorySearchQuery.toLowerCase())
+          )
+        : allCategories;
+
+    // Loading state
+    const isLoadingCategories = !isRemoval && loadingCategories;
+
+    // Error state
+    const hasErrorCategories = !isRemoval && categoriesError;
+
     // Handle dropdown positioning
     const handleDropdownToggle = (event: any) => {
         const { pageY } = event.nativeEvent;
@@ -109,26 +156,25 @@ const LocationScreen = () => {
                 deliveryLocation: dropoffCode,
             });
         } else {
-            // CategoryTask - Both category and location are mandatory
+            // CategoryTask - Both category and location are mandatory for In Person
             if (!selectedCategory) {
                 alert('Please select a category for your task');
                 return;
             }
-            if (!selectedLocation) {
+            if (locationType === 'In-person' && !selectedLocation) {
                 alert('Please select a location for your task');
                 return;
             }
             updateMyTask({
                 isRemoval: false,
                 category: selectedCategory,
-                location: selectedLocation.address,
-                coordinates: selectedLocation.coordinates,
+                location: locationType === 'In-person' && selectedLocation ? selectedLocation.address : 'Online',
+                coordinates: locationType === 'In-person' && selectedLocation ? selectedLocation.coordinates : undefined,
+                locationType: locationType, // Store the location type
             });
         }
         router.push('/budget-screen');
     };
-
-    const categories = categoriesResponse?.data || [];
 
     return (
         <KeyboardAvoidingView 
@@ -140,12 +186,17 @@ const LocationScreen = () => {
                 <ChevronLeft size={24} color="#1C1C1E" />
             </TouchableOpacity>
 
-            <View style={styles.scrollContent}>
+            <ScrollView 
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+            >
                 {/* Title */}
                 <Text style={styles.title}>Tell me more!</Text>
                 <Text style={styles.subtitle}>Where do you need it done?</Text>
 
-                {/* Toggle */}
+                {/* Toggle for Moving */}
                 <View style={styles.switchBox}>
                     <Text style={styles.switchLabel}>Hey! are you moving?</Text>
                     <Switch value={isRemoval} onValueChange={setIsRemoval} />
@@ -180,17 +231,104 @@ const LocationScreen = () => {
                     </>
                 ) : (
                     <>
+                        {/* Location Type Selection: In Person / Online / Both */}
+                        <Text style={styles.sectionTitle}>Say where</Text>
+                        <Text style={styles.sectionSubtitle}>Where do you need it done?</Text>
+                        
+                        <View style={styles.locationTypeContainer}>
+                            <TouchableOpacity
+                                style={[
+                                    styles.locationTypeOption,
+                                    locationType === 'In-person' && styles.locationTypeOptionSelected
+                                ]}
+                                onPress={() => {
+                                    setLocationType('In-person');
+                                    setSelectedCategory(null); // Reset category when changing location type
+                                }}
+                            >
+                                <View style={styles.locationIcon}>
+                                    <Ionicons 
+                                        name="person-outline" 
+                                        size={28} 
+                                        color={locationType === 'In-person' ? '#fff' : '#2c3e50'} 
+                                    />
+                                </View>
+                                <Text style={[
+                                    styles.locationTypeTitle,
+                                    locationType === 'In-person' && styles.locationTypeTitleSelected
+                                ]}>
+                                    In Person
+                                </Text>
+                                <Text style={[
+                                    styles.locationTypeDescription,
+                                    locationType === 'In-person' && styles.locationTypeDescriptionSelected
+                                ]}>
+                                    They need to show up at a place
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[
+                                    styles.locationTypeOption,
+                                    locationType === 'Online' && styles.locationTypeOptionSelected
+                                ]}
+                                onPress={() => {
+                                    setLocationType('Online');
+                                    setSelectedCategory(null); // Reset category when changing location type
+                                    setSelectedLocation(null); // Clear location for online tasks
+                                }}
+                            >
+                                <View style={styles.locationIcon}>
+                                    <Ionicons 
+                                        name="laptop-outline" 
+                                        size={28} 
+                                        color={locationType === 'Online' ? '#fff' : '#2c3e50'} 
+                                    />
+                                </View>
+                                <Text style={[
+                                    styles.locationTypeTitle,
+                                    locationType === 'Online' && styles.locationTypeTitleSelected
+                                ]}>
+                                    Online
+                                </Text>
+                                <Text style={[
+                                    styles.locationTypeDescription,
+                                    locationType === 'Online' && styles.locationTypeDescriptionSelected
+                                ]}>
+                                    They can do it from their home
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <TouchableOpacity
+                            style={[
+                                styles.locationTypeBothOption,
+                                locationType === 'Both' && styles.locationTypeBothOptionSelected
+                            ]}
+                            onPress={() => {
+                                setLocationType('Both');
+                                setSelectedCategory(null); // Reset category when changing location type
+                            }}
+                        >
+                            <Text style={[
+                                styles.locationTypeBothText,
+                                locationType === 'Both' && styles.locationTypeBothTextSelected
+                            ]}>
+                                Both (In Person & Online)
+                            </Text>
+                        </TouchableOpacity>
+
                         {/* Category Selection */}
                         <Text style={styles.label}>Category</Text>
-                        {loadingCategories ? (
+                        {isLoadingCategories ? (
                             <View style={styles.loadingContainer}>
                                 <ActivityIndicator size="small" color="#0057FF" />
                                 <Text style={styles.loadingText}>Loading categories from database...</Text>
                             </View>
-                        ) : categoriesError ? (
+                        ) : hasErrorCategories ? (
                             <View style={styles.errorContainer}>
                                 <Text style={styles.errorText}>Failed to load categories</Text>
-                                <TouchableOpacity style={styles.retryButton} onPress={() => refetchCategories()}>
+                                <TouchableOpacity style={styles.retryButton} onPress={() => refetchCategoriesByLocation()}>
                                     <Text style={styles.retryText}>Retry</Text>
                                 </TouchableOpacity>
                             </View>
@@ -222,12 +360,36 @@ const LocationScreen = () => {
                                 <TouchableOpacity 
                                     style={styles.dropdownOverlay}
                                     activeOpacity={1}
-                                    onPress={() => setShowCategoryDropdown(false)}
+                                    onPress={() => {
+                                        setShowCategoryDropdown(false);
+                                        setCategorySearchQuery('');
+                                    }}
                                 />
                                 <View style={[
                                     styles.dropdownContainer,
                                     dropdownPosition === 'above' && styles.dropdownContainerAbove
                                 ]}>
+                                    {/* Search Input */}
+                                    <View style={styles.categorySearchContainer}>
+                                        <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
+                                        <TextInput
+                                            style={styles.categorySearchInput}
+                                            placeholder="Search categories..."
+                                            placeholderTextColor="#999"
+                                            value={categorySearchQuery}
+                                            onChangeText={setCategorySearchQuery}
+                                            autoFocus={false}
+                                        />
+                                        {categorySearchQuery.length > 0 && (
+                                            <TouchableOpacity 
+                                                onPress={() => setCategorySearchQuery('')}
+                                                style={styles.clearSearchButton}
+                                            >
+                                                <Ionicons name="close-circle" size={18} color="#999" />
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                    
                                     <ScrollView 
                                         style={styles.dropdownList}
                                         nestedScrollEnabled={true}
@@ -235,30 +397,65 @@ const LocationScreen = () => {
                                         keyboardShouldPersistTaps="handled"
                                         bounces={false}
                                     >
-                                        {categories.map((category, index) => (
-                                            <TouchableOpacity
-                                                key={`${category}-${index}`}
-                                                style={[
-                                                    styles.dropdownItem,
-                                                    index === categories.length - 1 && { borderBottomWidth: 0 },
-                                                    selectedCategory === category && styles.selectedDropdownItem
-                                                ]}
-                                                onPress={() => {
-                                                    setSelectedCategory(category);
-                                                    setShowCategoryDropdown(false);
-                                                }}
-                                            >
-                                                <Text style={[
-                                                    styles.dropdownItemText,
-                                                    selectedCategory === category && styles.selectedDropdownItemText
-                                                ]}>
-                                                    {category}
-                                                </Text>
-                                                {selectedCategory === category && (
-                                                    <Ionicons name="checkmark" size={20} color="#0057FF" />
-                                                )}
-                                            </TouchableOpacity>
-                                        ))}
+                                        {categories.length === 0 ? (
+                                            <View style={styles.noResultsContainer}>
+                                                <Text style={styles.noResultsText}>No categories found</Text>
+                                            </View>
+                                        ) : (
+                                            categories.map((category, index) => (
+                                                <TouchableOpacity
+                                                    key={`${category}-${index}`}
+                                                    style={[
+                                                        styles.dropdownItem,
+                                                        index === categories.length - 1 && { borderBottomWidth: 0 },
+                                                        selectedCategory === category && styles.selectedDropdownItem
+                                                    ]}
+                                                    onPress={() => {
+                                                        // Find the full category object to get its locationType
+                                                        const categoryObj = fullCategories.find((cat: Category) => cat.name === category);
+                                                        
+                                                        console.log('Selected category:', category);
+                                                        console.log('Selected category object:', categoryObj);
+                                                        
+                                                        // Auto-select location type based on category's locationType
+                                                        if (categoryObj && categoryObj.locationType) {
+                                                            const categoryLocationType = categoryObj.locationType;
+                                                            
+                                                            console.log('Category locationType:', categoryLocationType);
+                                                            
+                                                            if (categoryLocationType === 'physical') {
+                                                                setLocationType('In-person');
+                                                                console.log('✅ Auto-selected: In-person');
+                                                            } else if (categoryLocationType === 'online') {
+                                                                setLocationType('Online');
+                                                                setSelectedLocation(null); // Clear location for online tasks
+                                                                console.log('✅ Auto-selected: Online');
+                                                            } else if (categoryLocationType === 'both') {
+                                                                setLocationType('Both');
+                                                                console.log('✅ Auto-selected: Both');
+                                                            }
+                                                        } else {
+                                                            console.log('⚠️ No locationType found for category, keeping current selection');
+                                                        }
+                                                        
+                                                        // Set the selected category (already a string)
+                                                        setSelectedCategory(category);
+                                                        setShowCategoryDropdown(false);
+                                                        setCategorySearchQuery('');
+                                                    }}
+                                                >
+                                                    <Text style={[
+                                                        styles.dropdownItemText,
+                                                        selectedCategory === category && styles.selectedDropdownItemText
+                                                    ]}>
+                                                        {category}
+                                                    </Text>
+                                                    {selectedCategory === category && (
+                                                        <Ionicons name="checkmark" size={20} color="#0057FF" />
+                                                    )}
+                                                </TouchableOpacity>
+                                            ))
+                                        )}
                                         {/* Add a small footer to ensure last item is visible */}
                                         <View style={{ height: 5 }} />
                                     </ScrollView>
@@ -266,26 +463,28 @@ const LocationScreen = () => {
                             </>
                         )}
 
-                        {/* Location Search - Always show for category tasks */}
-                        <>
-                            <Text style={styles.label}>Location</Text>
-                            <LocationAutocomplete
-                                onSelect={handleLocationSelect}
-                                placeholder="Search for suburb, city or address..."
-                                style={styles.locationAutocomplete}
-                            />
-                            {selectedLocation && (
-                                <View style={styles.selectedLocationContainer}>
-                                    <Ionicons name="location" size={16} color="#0057FF" />
-                                    <Text style={styles.selectedLocationText}>
-                                        {selectedLocation.address}
-                                    </Text>
-                                </View>
-                            )}
-                        </>
+                        {/* Location Search - Only show for In Person tasks AND when category dropdown is closed */}
+                        {locationType === 'In-person' && !showCategoryDropdown && (
+                            <>
+                                <Text style={styles.label}>Location</Text>
+                                <LocationAutocomplete
+                                    onSelect={handleLocationSelect}
+                                    placeholder="Search for suburb, city or address..."
+                                    style={styles.locationAutocomplete}
+                                />
+                                {selectedLocation && (
+                                    <View style={styles.selectedLocationContainer}>
+                                        <Ionicons name="location" size={16} color="#0057FF" />
+                                        <Text style={styles.selectedLocationText}>
+                                            {selectedLocation.address}
+                                        </Text>
+                                    </View>
+                                )}
+                            </>
+                        )}
                     </>
                 )}
-            </View>
+            </ScrollView>
 
             {/* Continue */}
             <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
@@ -308,11 +507,13 @@ const styles = StyleSheet.create({
         left: 20,
         zIndex: 10,
     },
-    scrollContent: {
+    scrollView: {
         flex: 1,
+    },
+    scrollContent: {
         padding: 20,
         paddingTop: 90,
-        paddingBottom: 20,
+        paddingBottom: 100,
     },
     title: {
         fontSize: 22,
@@ -421,51 +622,93 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 999,
+        zIndex: 998,
+        backgroundColor: 'rgba(0,0,0,0.1)',
     },
     dropdownContainer: {
         position: 'relative',
-        zIndex: 1000,
+        zIndex: 999,
         marginBottom: 10,
+        marginTop: -10,
     },
     dropdownContainerAbove: {
         position: 'absolute',
-        bottom: 60, // Position above the dropdown trigger
+        bottom: 60,
         left: 0,
         right: 0,
-        zIndex: 1000,
+        zIndex: 999,
+        marginBottom: 0,
+        marginTop: 0,
     },
     dropdownList: {
         backgroundColor: '#fff',
         borderRadius: 8,
         borderWidth: 1,
         borderColor: '#E1E1E1',
-        maxHeight: 200,
+        maxHeight: 250,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
-            height: 2,
+            height: 4,
         },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 5,
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 8,
+    },
+    categorySearchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F9F9F9',
+        borderTopLeftRadius: 8,
+        borderTopRightRadius: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E1E1E1',
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+    },
+    searchIcon: {
+        marginRight: 8,
+    },
+    categorySearchInput: {
+        flex: 1,
+        fontSize: 15,
+        color: '#333',
+        paddingVertical: 6,
+    },
+    clearSearchButton: {
+        padding: 4,
+    },
+    noResultsContainer: {
+        padding: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    noResultsText: {
+        fontSize: 14,
+        color: '#999',
+        textAlign: 'center',
     },
     dropdownItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 16,
-        paddingVertical: 14,
+        paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#E1E1E1',
-        minHeight: 50,
+        borderBottomColor: '#F0F0F0',
+        minHeight: 54,
+        backgroundColor: '#fff',
     },
     selectedDropdownItem: {
         backgroundColor: '#F0F8FF',
+        borderLeftWidth: 3,
+        borderLeftColor: '#0057FF',
     },
     dropdownItemText: {
-        fontSize: 16,
+        fontSize: 15,
         color: '#333',
+        flex: 1,
+        lineHeight: 20,
     },
     selectedDropdownItemText: {
         color: '#0057FF',
@@ -490,7 +733,7 @@ const styles = StyleSheet.create({
     },
     continueButton: {
         marginHorizontal: 20,
-        marginBottom: 40,
+        marginVertical: 20,
         backgroundColor: '#0057FF',
         padding: 16,
         borderRadius: 25,
@@ -500,5 +743,84 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
+    },
+    // Location Type Styles
+    sectionTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1C1C1E',
+        marginTop: 4,
+        marginBottom: 4,
+    },
+    sectionSubtitle: {
+        fontSize: 13,
+        color: '#666',
+        marginBottom: 16,
+    },
+    locationTypeContainer: {
+        flexDirection: 'row',
+        gap: 10,
+        marginBottom: 12,
+    },
+    locationTypeOption: {
+        flex: 1,
+        backgroundColor: '#f8f9fa',
+        paddingVertical: 14,
+        paddingHorizontal: 12,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 110,
+        borderWidth: 2,
+        borderColor: '#f8f9fa',
+    },
+    locationTypeOptionSelected: {
+        backgroundColor: '#0057FF',
+        borderColor: '#0057FF',
+    },
+    locationIcon: {
+        marginBottom: 8,
+    },
+    locationTypeTitle: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#2c3e50',
+        marginBottom: 6,
+        textAlign: 'center',
+    },
+    locationTypeTitleSelected: {
+        color: '#fff',
+    },
+    locationTypeDescription: {
+        fontSize: 11,
+        color: '#7f8c8d',
+        textAlign: 'center',
+        lineHeight: 14,
+        paddingHorizontal: 4,
+    },
+    locationTypeDescriptionSelected: {
+        color: '#e0e0e0',
+    },
+    locationTypeBothOption: {
+        backgroundColor: '#f8f9fa',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginBottom: 16,
+        borderWidth: 2,
+        borderColor: '#f8f9fa',
+    },
+    locationTypeBothOptionSelected: {
+        backgroundColor: '#0057FF',
+        borderColor: '#0057FF',
+    },
+    locationTypeBothText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#2c3e50',
+    },
+    locationTypeBothTextSelected: {
+        color: '#fff',
     },
 });

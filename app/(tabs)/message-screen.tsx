@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   messageListContainer: {
-    paddingBottom: 20,
+    paddingBottom: 100,
   },
   noResultsContainer: {
     flex: 1,

@@ -23,10 +23,8 @@ import {
 
 // 🔧 **API HELPER FUNCTION**
 function getApi() {
-  const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
-    ? API_CONFIG.BASE_URL
-    : "http://192.168.1.3:5001/api";
-  return createApi(baseUrl);
+  // API_CONFIG.BASE_URL already handles the env variable and fallback
+  return createApi(API_CONFIG.BASE_URL);
 }
 
 /**
@@ -34,7 +32,7 @@ function getApi() {
  * Endpoint: GET /api/categories
  * Fetches categories from the database category collection
  */
-export async function getCategories(): Promise<{ success: boolean; data: string[] }> {
+export async function getCategories(): Promise<{ success: boolean; data: any[] }> {
   const api = getApi();
   try {
     console.log("📁 Fetching categories from database...");
@@ -43,18 +41,14 @@ export async function getCategories(): Promise<{ success: boolean; data: string[
     
     // Handle the actual API response format
     if (response.data.success && Array.isArray(response.data.data)) {
-      // Extract category names from the objects
-      const categoryNames = response.data.data.map((category: any) => category.name);
+      // Return full category objects with locationType
       return {
         success: true,
-        data: categoryNames
+        data: response.data.data
       };
     } else if (Array.isArray(response.data)) {
       // If direct array of categories
-      const categoryNames = response.data.map((category: any) => 
-        typeof category === 'string' ? category : category.name
-      );
-      return { success: true, data: categoryNames };
+      return { success: true, data: response.data };
     } else {
       throw new Error('Invalid categories response format');
     }
@@ -64,24 +58,60 @@ export async function getCategories(): Promise<{ success: boolean; data: string[
     // Fallback to predefined categories if API fails
     console.warn("🔄 Using fallback categories due to API error");
     const fallbackCategories = [
-      'Home & Garden', 
-      'Design & Creative',
-      'Technology',
-      'Cleaning',
-      'Admin & Data',
-      'Business',
-      'Writing & Translation',
-      'Repairs & Installation',
-      'Removals & Delivery',
-      'Personal Services',
-      'Events & Photography',
-      'Health & Wellness'
+      'Appliance installation and repair',
+      'Auto Michanic and Electrician',
+      'Buliding Maintatance and Renovations',
+      'Business and Accounting',
+      'Carpentry',
+      'Cleaning and Organising',
+      'Removalist',
+      'Education and Tutoring',
+      'Electrical',
+      'Event Planning',
+      'Furniture repair and Flatpack Assemply',
+      'Gardening and Landscaping',
+      'Graphic Design',
+      'Handyman and Handywomen',
+      'Health & Fitness',
+      'IT & Tech',
+      'Legal Services',
+      'Marketting and Advertising',
+      'Music and Entertainment',
+      'Painting',
+      'Pet Care',
+      'Photography',
+      'Plumbing',
+      'Something Else',
+      'Web & App Development',
+      'Personal Assistance',
+      'Tours and Transport',
+      'Delivery',
+      'Realestate',
     ];
     
     return {
       success: true,
       data: fallbackCategories
     };
+  }
+}
+
+/**
+ * 📁 Get Categories by Location Type
+ * Endpoint: GET /api/categories/by-location?type={locationType}
+ * Fetches categories filtered by location type (In-person, Online, or Both)
+ */
+export async function getCategoriesByLocation(locationType: string): Promise<{ success: boolean; locationType: string; data: any[] }> {
+  const api = getApi();
+  try {
+    console.log(`📁 Fetching categories for location type: ${locationType}`);
+    const response = await api.get(`/categories/by-location?type=${locationType}`);
+    console.log("✅ Get categories by location success:", response.data);
+    
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Get categories by location failed:", error);
+    throw error;
   }
 }
 
@@ -946,6 +976,7 @@ export const TaskAPI = {
   
   // Categories
   getCategories,
+  getCategoriesByLocation,
   
   // Phase 2: Task Management
   getTaskById,

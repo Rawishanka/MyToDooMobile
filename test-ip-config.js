@@ -45,7 +45,7 @@ console.log('');
 // Test if server is reachable
 const testConnection = async () => {
   console.log('🌐 Testing API connectivity...');
-  const testUrl = 'http://192.168.8.168:5001/api/tasks';
+  const testUrl = 'http://134.199.172.167:5001/api/tasks';
   
   try {
     const controller = new AbortController();

@@ -344,7 +344,7 @@ export default function MyTasksScreen() {
           data={filteredTasks}
           keyExtractor={(item) => item._id}
           renderItem={renderTaskItem}
-          contentContainerStyle={{ paddingBottom: 80 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
           refreshing={isLoading}
           onRefresh={handleRefresh}

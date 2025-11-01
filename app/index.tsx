@@ -1,91 +1,93 @@
+import FallingStars from '@/components/FallingStars';
 import { ResizeMode, Video } from 'expo-av';
 import { Link, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-// Get screen dimensions
 const { width: screenWidth } = Dimensions.get('window');
-
-// Import the local assets
-const WelcomeVideo = require('@/assets/welcome-screen.mp4'); 
 const MyToDooLogo = require('@/assets/MyToDoo_logo.gif');
-// const WelcomeImage = require('@/assets/images/welcome.png'); // Keep as fallback
+// TODO: Replace with actual cartoon/graphic asset for overlay
+const CartoonShears = null; // e.g. require('@/assets/gardening_shears.png')
 
-export default function WelcomeScreen() { 
+import { categoryVideos, getCategoryVideo } from '@/utils/videoLoader';
+
+export default function WelcomeScreen() {
   const router = useRouter();
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentTitle, setCurrentTitle] = useState(categoryVideos[0].title);
   const [videoLoaded, setVideoLoaded] = useState(false);
-  const [videoError, setVideoError] = useState(false);
-  const [logoLoaded, setLogoLoaded] = useState(false);
-  const [logoError, setLogoError] = useState(false);
   
+  useEffect(() => {
+    console.log('🚀 WelcomeScreen: Component mounted, starting video timer...');
+    
+    // Start video rotation after a small delay to allow initial render
+    const startTimer = setTimeout(() => {
+      console.log('🎬 Starting video rotation...');
+      const interval = setInterval(() => {
+        setCurrentIndex((prev) => {
+          const nextIndex = (prev + 1) % categoryVideos.length;
+          setCurrentTitle(categoryVideos[nextIndex].title);
+          return nextIndex;
+        });
+      }, 3500);
+      return () => clearInterval(interval);
+    }, 1000); // 1 second delay
+    
+    return () => {
+      console.log('🛑 WelcomeScreen: Cleaning up timers...');
+      clearTimeout(startTimer);
+    };
+  }, []);
+
+  const currentCategory = categoryVideos[currentIndex];
+  const currentVideo = getCategoryVideo(currentCategory.id);
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* MyToDoo Logo GIF */}
-      <View style={styles.logoContainer}>
-        <Image
-          source={MyToDooLogo}
-          style={styles.logoImage}
-          resizeMode="contain"
-          onLoad={() => {
-            console.log('Logo loaded successfully');
-            setLogoLoaded(true);
-            setLogoError(false);
-          }}
-          onError={(error) => {
-            console.log('Logo error:', error);
-            setLogoError(true);
-            setLogoLoaded(false);
-          }}
-        />
-        
-        {/* Fallback text - show if logo fails to load */}
-        {logoError && (
-          <Text style={styles.fallbackText}>
-            MyToDoo
-          </Text>
-        )}
-      </View>
+      {/* Falling Stars Animation */}
+      <FallingStars />
       
-      {/* Video/Image Section - Full Width */}
-      <View style={styles.mediaContainer}>
-        {/* Show fallback image while video is loading or if video fails */}
-        {(!videoLoaded || videoError) && (
-          <Image 
-            style={styles.media}
-            resizeMode="contain"
-          />
-        )}
-        
-        {/* Video Component with local asset - Properly sized with rounded corners */}
-        <Video
-          source={WelcomeVideo}
-          style={[
-            styles.media, 
-            { opacity: videoLoaded && !videoError ? 1 : 0 }
-          ]}
-          shouldPlay={true}
-          isLooping={true}
-          isMuted={true}
-          useNativeControls={false}
-          resizeMode={ResizeMode.CONTAIN}
-          onLoad={() => {
-            console.log('Video loaded successfully');
-            setVideoLoaded(true);
-            setVideoError(false);
-          }}
-          onError={(error: any) => {
-            console.log('Video error:', error);
-            setVideoError(true);
-            setVideoLoaded(false);
-          }}
-        />
+      {/* Logo */}
+      <View style={styles.logoContainer}>
+        <Image source={MyToDooLogo} style={styles.logoImage} resizeMode="contain" />
+      </View>
+
+      {/* Hero Category Video Card */}
+      <View style={styles.heroContainer}>
+        <View style={styles.heroVideoWrapper}>
+          {currentVideo ? (
+            <Video
+              key={currentIndex}
+              source={currentVideo}
+              style={styles.heroVideo}
+              shouldPlay
+              isLooping
+              isMuted
+              useNativeControls={false}
+              resizeMode={ResizeMode.CONTAIN}
+              onError={(error) => {
+                console.warn('Video error for', currentCategory.title, ':', error);
+              }}
+              onLoad={() => {
+                setVideoLoaded(true);
+              }}
+            />
+          ) : (
+            <View style={styles.videoPlaceholder}>
+              <Text style={styles.placeholderText}>{currentCategory.title}</Text>
+            </View>
+          )}
+        </View>
+        {/* Show full category title below video */}
+        <Text style={styles.fullCategoryTitle}>{currentTitle}</Text>
       </View>
 
       {/* Bottom Container */}
       <View style={styles.bottomContainer}>
+        <Text style={styles.welcomeText}>Welcome to MyToDoo</Text>
         <Link href={"/(welcome-screen)/goal-screen"} asChild>
           <TouchableOpacity style={styles.buttonPrimary} activeOpacity={0.8}>
-            <Text style={styles.buttonText}>Get Start</Text>
+            <Text style={styles.buttonText}>Get Started</Text>
           </TouchableOpacity>
         </Link>
         <TouchableOpacity
@@ -106,61 +108,101 @@ const styles = StyleSheet.create({
     backgroundColor: '#004aad',
     alignItems: 'center',
     justifyContent: 'space-between',
-  }, 
+  },
   logoContainer: {
-    marginTop: 60,
-    paddingRight: 40,
+    marginTop: 40,
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1.2,
-    marginBottom: -20,
+    marginBottom: -10,
   },
-  logoImage: { 
-    width: 580,
-    height: 510, 
+  logoImage: {
+    width: 480,
+    height: 420,
   },
-  fallbackText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#0052CC',
-    fontFamily: 'sans-serif-condensed',
+  welcomeText: {
+    fontSize: 18,
+    color: '#888',
+    textAlign: 'center',
+    marginBottom: 12,
+    fontWeight: '500',
   },
-  mediaContainer: {
-    flex: 2.8,
+  heroContainer: {
     width: '100%',
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 10, // Add horizontal padding
-    marginTop: -40,
+    marginTop: 10,
+    marginBottom: 10,
   },
-  media: {
-    width: '95%', // Reduced width
-    height: 250, // Reduced height
-    borderRadius: 20,
-    overflow: 'hidden', // Ensures rounded corners work properly
+  heroVideoWrapper: {
+    width: '80%', // Reduced width for better balance
+    aspectRatio: 16 / 9, // Landscape aspect ratio to show full video content
+    borderRadius: 28,
+    overflow: 'hidden',
+    backgroundColor: '#0052CC',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    marginBottom: 10,
+    position: 'relative',
+  },
+  heroVideo: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    backgroundColor: '#0052CC',
+  },
+  videoPlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#0052CC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
+  fullCategoryTitle: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 12,
+    marginBottom: 0,
+    letterSpacing: 1,
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 4,
   },
   bottomContainer: {
-    flex: 2,
+    flex: 1.3,
     width: '100%',
     backgroundColor: '#F0F0F0',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 0,
-    paddingBottom: 20,
+    paddingTop: 10,
+    paddingBottom: 15,
   },
   buttonPrimary: {
-    backgroundColor: '#0052CC',
+    backgroundColor: '#FF6B35',
     paddingVertical: 12,
     paddingHorizontal: 24,
     width: '90%',
     alignItems: 'center',
     borderRadius: 30,
-    marginBottom: 32,
+    marginBottom: 16,
   },
   buttonSecondary: {
-    backgroundColor: '#103464',
+    backgroundColor: '#4CAF50',
     paddingVertical: 12,
     paddingHorizontal: 24,
     width: '90%',

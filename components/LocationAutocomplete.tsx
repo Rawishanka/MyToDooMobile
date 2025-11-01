@@ -35,6 +35,7 @@ interface LocationAutocompleteProps {
   initialValue?: string;
   placeholder?: string;
   style?: any;
+  country?: string; // ISO country code (e.g., 'AU', 'LK', 'US')
 }
 
 // Mapbox Access Token Configuration
@@ -52,6 +53,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   initialValue = "",
   placeholder = "Enter suburb, city or address",
   style,
+  country = 'AU', // Default to Australia if not specified
 }) => {
   const [query, setQuery] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<LocationResult[]>([]);
@@ -101,7 +103,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         {
           params: {
             access_token: MAPBOX_ACCESS_TOKEN,
-            country: 'AU,NZ,LK', // Support Australia, New Zealand, and Sri Lanka (like web version)
+            country: country, // Use the country prop passed from parent component
             types: 'address,place,postcode,region', // Match web version types
             autocomplete: true,
             limit: 5, // Match web version limit

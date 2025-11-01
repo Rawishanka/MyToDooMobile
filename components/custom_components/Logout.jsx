@@ -1,8 +1,13 @@
+import { useAuthStore } from '@/store/auth-task-store';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function LogoutPopup({ onBack }) {
   const [showPopup, setShowPopup] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { clearAuth } = useAuthStore();
+  const router = useRouter();
 
   const handleCancel = () => {
     setShowPopup(false);
@@ -11,12 +16,33 @@ export default function LogoutPopup({ onBack }) {
     }
   };
 
-  const handleLogout = () => {
-    // In a real app, this would handle the logout logic
-    Alert.alert('Success', 'Logged out successfully!');
-    setShowPopup(false);
-    if (onBack) {
-      onBack(); // Navigate back to account screen
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      console.log("🔐 Starting logout process...");
+      
+      // Clear all authentication data
+      await clearAuth();
+      
+      console.log("✅ Logout successful, redirecting to login...");
+      
+      // Close popup first
+      setShowPopup(false);
+      
+      // Redirect to login screen
+      router.replace('/login-screen');
+      
+      // Show success message
+      Alert.alert('Success', 'You have been logged out successfully!');
+      
+    } catch (error) {
+      console.error("❌ Logout error:", error);
+      Alert.alert('Error', 'Failed to logout. Please try again.');
+    } finally {
+      setIsLoggingOut(false);
+      if (onBack) {
+        onBack(); // Navigate back to account screen
+      }
     }
   };
 
@@ -60,6 +86,7 @@ export default function LogoutPopup({ onBack }) {
               <TouchableOpacity
                 onPress={handleCancel}
                 style={[styles.button, styles.leftButton]}
+                disabled={isLoggingOut}
               >
                 <Text style={styles.buttonText}>Cancel</Text>
               </TouchableOpacity>
@@ -69,8 +96,11 @@ export default function LogoutPopup({ onBack }) {
               <TouchableOpacity
                 onPress={handleLogout}
                 style={[styles.button, styles.rightButton]}
+                disabled={isLoggingOut}
               >
-                <Text style={styles.buttonText}>Log out</Text>
+                <Text style={styles.buttonText}>
+                  {isLoggingOut ? 'Logging out...' : 'Log out'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

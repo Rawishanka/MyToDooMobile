@@ -13,10 +13,8 @@ export function useApiFunctions() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
 
   async function createTask(task: CreateTask) {
-    const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
-      ? API_CONFIG.BASE_URL
-      : "http://192.168.1.3:5001/api";
-    const api = createApi(baseUrl);
+    // API_CONFIG.BASE_URL already handles the env variable and fallback
+    const api = createApi(API_CONFIG.BASE_URL);
     
     // Convert CreateTask to the API format expected by /api/tasks/post-task
     const taskData = {
@@ -238,45 +236,24 @@ export function useApiFunctions() {
   }
 
   async function handleLoginUser(email: string, password: string) {
-    // Check if we should use mock API only
-    if (API_CONFIG.USE_MOCK_ONLY) {
-      console.log("🎭 Using Mock Login (development mode)");
-      // Create a mock token and user for development
-      const mockToken = "dev-mock-token-" + Date.now();
-      const mockUser = {
-        id: "dev-user-123",
-        _id: "dev-user-123",
-        email: email,
-        firstName: "Dev",
-        lastName: "User",
-        role: "user"
-      };
-      const mockExpiresIn = 3600; // 1 hour
-      
-      setAuthData(mockToken, mockUser, mockExpiresIn);
-      setStoredToken(mockToken);
-      
-      // Store credentials for development mode
-      await AsyncStorage.setItem('userEmail', email);
-      await AsyncStorage.setItem('userPassword', password);
-      
-      console.log("✅ Mock login successful for development");
-      return mockToken;
-    }
-    
-    const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
-      ? API_CONFIG.BASE_URL
-      : "http://192.168.1.3:5001/api";
-    const api = createApi(baseUrl);
-    console.log("Calling login API:", baseUrl + "/auth/login");
+    // API_CONFIG.BASE_URL already handles the env variable and fallback
+    const api = createApi(API_CONFIG.BASE_URL);
+    console.log("Calling login API:", API_CONFIG.BASE_URL + "/auth/login");
     console.log("With data:", { email: email, password });
 
     try {
       const response = await api.post('/auth/login', { email, password });
       console.log("✅ Login Success Response:", response.data);
       const { token, user, expiresIn } = response.data;
+      
+      // Validate that we received a valid token and user from backend
+      if (!token || !user) {
+        console.error("❌ Invalid response from server - missing token or user");
+        throw new Error('Invalid response from server');
+      }
+      
       setAuthData(token, user, expiresIn);
-      setStoredToken(token);  // ✅ Calling returned setter function — safe
+      setStoredToken(token);
       
       // Store credentials for automatic re-authentication
       await AsyncStorage.setItem('userEmail', email);
@@ -284,76 +261,14 @@ export function useApiFunctions() {
       
       return token;
     } catch (error: any) {
-      // Check for Invalid credentials error - might be due to mock signup
-      if (error?.response?.status === 400 && error?.response?.data?.message === 'Invalid credentials') {
-        console.warn("⚠️ Invalid credentials - checking if user was created in development mode");
-        
-        // Check if we have stored credentials that suggest this is a development mode user
-        try {
-          const storedEmail = await AsyncStorage.getItem('userEmail');
-          if (storedEmail === email) {
-            console.warn("🔄 User was likely created in development mode, using mock login");
-            // Create a mock token and user for development
-            const mockToken = "dev-mock-login-" + Date.now();
-            const mockUser = {
-              id: "dev-user-" + Date.now(),
-              _id: "dev-user-" + Date.now(),
-              email: email,
-              firstName: email.split('@')[0], // Use email prefix as first name
-              lastName: "User",
-              role: "user"
-            };
-            const mockExpiresIn = 3600; // 1 hour
-            
-            setAuthData(mockToken, mockUser, mockExpiresIn);
-            setStoredToken(mockToken);
-            
-            // Store credentials for development mode
-            await AsyncStorage.setItem('userEmail', email);
-            await AsyncStorage.setItem('userPassword', password);
-            
-            console.log("✅ Mock login successful for development mode user");
-            return mockToken;
-          }
-        } catch (storageError) {
-          console.error("Error checking stored email:", storageError);
-        }
-      }
-      
-      // Development fallback - if server is not available, use mock data
-      if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.code === 'ENOTFOUND') {
-        console.warn("🔄 Server not available, using development mode with mock login");
-        // Create a mock token and user for development
-        const mockToken = "dev-mock-token-" + Date.now();
-        const mockUser = {
-          id: "dev-user-123",
-          _id: "dev-user-123",
-          email: email,
-          firstName: "Dev",
-          lastName: "User",
-          role: "user"
-        };
-        const mockExpiresIn = 3600; // 1 hour
-        
-        setAuthData(mockToken, mockUser, mockExpiresIn);
-        setStoredToken(mockToken);
-        
-        // Store credentials for development mode too
-        await AsyncStorage.setItem('userEmail', email);
-        await AsyncStorage.setItem('userPassword', password);
-        
-        console.log("✅ Mock login successful for development");
-        return mockToken;
-      }
-      
-      // Only log detailed errors for non-network issues
-      console.error("❌ Login failed with detailed error:");
+      // Log detailed error information
+      console.error("❌ Login failed:");
       console.error("Status:", error?.response?.status);
       console.error("Status Text:", error?.response?.statusText);
       console.error("Response Data:", error?.response?.data);
-      console.error("Request Config:", error?.config);
-      console.error("Full Error:", error);
+      console.error("Error Message:", error?.message);
       
+      // Re-throw the error to be handled by the UI layer
       throw error;
     }
   }
@@ -373,11 +288,9 @@ export function useApiFunctions() {
       return mockResponse;
     }
     
-    const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
-      ? API_CONFIG.BASE_URL
-      : "http://192.168.1.3:5001/api";
-    const api = createApi(baseUrl);
-    console.log("Calling signup API:", baseUrl + "/auth/signup");
+    // API_CONFIG.BASE_URL already handles the env variable and fallback
+    const api = createApi(API_CONFIG.BASE_URL);
+    console.log("Calling signup API:", API_CONFIG.BASE_URL + "/auth/signup");
     console.log("With data:", signUpData);
 
     try {
@@ -414,27 +327,18 @@ export function useApiFunctions() {
   }
 
   async function handleVerifyOTP(email: string, otp: string) {
-    const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
-      ? API_CONFIG.BASE_URL
-      : "http://192.168.1.3:5001/api";
-    const api = createApi(baseUrl);
+    // API_CONFIG.BASE_URL already handles the env variable and fallback
+    const api = createApi(API_CONFIG.BASE_URL);
     
     console.log("Attempting email OTP verification with:", email, "OTP:", otp);
     
     try {
-      // Use the correct endpoint from your backend: /two-factor-auth/otp-verification
+      // Use the original endpoint: /two-factor-auth/otp-verification
       const endpoint = '/two-factor-auth/otp-verification';
-      console.log(`Trying OTP verification endpoint: ${baseUrl}${endpoint}`);
+      console.log(`Trying OTP verification endpoint: ${API_CONFIG.BASE_URL}${endpoint}`);
       
-      // Include userId in the request if available from auth store
-      const authState = useAuthStore.getState();
-      const requestData: any = { email, otp };
-      
-      // If we have a user ID from auth store, include it
-      if (authState.user?.id) {
-        requestData.userId = authState.user.id;
-        console.log("🔐 Including userId in OTP verification:", authState.user.id);
-      }
+      // Backend expects { email, otp }
+      const requestData = { email, otp };
       
       const response = await api.post(endpoint, requestData);
       console.log(`✅ Email OTP Verification Success:`, response.data);
@@ -556,16 +460,14 @@ export function useApiFunctions() {
       return await MockApiService.getAllTasks();
     }
 
-    const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
-      ? API_CONFIG.BASE_URL
-      : "http://192.168.1.3:5001/api";
-    const api = createApi(baseUrl);
+    // API_CONFIG.BASE_URL already handles the env variable and fallback
+    const api = createApi(API_CONFIG.BASE_URL);
     console.log("🔧 API Configuration Debug:", {
-      baseUrl,
+      baseUrl: API_CONFIG.BASE_URL,
       currentTime: new Date().toISOString(),
       useMockOnly: API_CONFIG.USE_MOCK_ONLY
     });
-    console.log("Calling get all tasks API:", baseUrl + "/tasks");
+    console.log("Calling get all tasks API:", API_CONFIG.BASE_URL + "/tasks");
 
     try {
       const response = await api.get('/tasks');
@@ -589,12 +491,10 @@ export function useApiFunctions() {
   }
 
   async function getMyTasks(section = 'all-tasks') {
-    const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
-      ? API_CONFIG.BASE_URL
-      : "http://192.168.1.3:5001/api";
-    const api = createApi(baseUrl);
+    // API_CONFIG.BASE_URL already handles the env variable and fallback
+    const api = createApi(API_CONFIG.BASE_URL);
     const endpoint = `/tasks/my-tasks?section=${section}`;
-    console.log("📋 Calling get my tasks API:", baseUrl + endpoint);
+    console.log("📋 Calling get my tasks API:", API_CONFIG.BASE_URL + endpoint);
 
     try {
       const response = await api.get(endpoint);
@@ -668,10 +568,8 @@ export function useApiFunctions() {
   }
 
   async function checkAvailableEndpoints() {
-    const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
-      ? API_CONFIG.BASE_URL
-      : "http://192.168.1.3:5001/api";
-    const api = createApi(baseUrl);
+    // API_CONFIG.BASE_URL already handles the env variable and fallback
+    const api = createApi(API_CONFIG.BASE_URL);
     
     const endpoints = [
       '/auth',
@@ -702,10 +600,8 @@ export function useApiFunctions() {
   }
 
   async function getAllCategories() {
-    const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
-      ? API_CONFIG.BASE_URL
-      : "http://192.168.1.3:5001/api";
-    const api = createApi(baseUrl);
+    // API_CONFIG.BASE_URL already handles the env variable and fallback
+    const api = createApi(API_CONFIG.BASE_URL);
 
     console.log("🏷️ Fetching categories from /api/categories endpoint...");
 

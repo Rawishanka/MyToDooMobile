@@ -22,9 +22,20 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { mutateAsync } = useCreateAuthToken();
 
   const handleLogin = async () => {
+    // Validate inputs
+    if (!email || !password) {
+      Alert.alert(
+        'Missing Information', 
+        'Please enter both email and password.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     try {
       setLoading(true);
       await mutateAsync({ username: email, password });
@@ -33,8 +44,8 @@ export default function LoginScreen() {
     } catch (error: any) {
       console.error('Login Error:', error);
       
-      // Show user-friendly error message
-      if (error?.response?.status === 400) {
+      // Show user-friendly error messages based on status code
+      if (error?.response?.status === 400 || error?.response?.status === 401) {
         Alert.alert(
           'Login Failed', 
           'Invalid email or password. Please check your credentials and try again.',
@@ -44,6 +55,12 @@ export default function LoginScreen() {
         Alert.alert(
           'Account Not Found', 
           'No account found with this email. Please sign up first.',
+          [{ text: 'OK' }]
+        );
+      } else if (error?.message?.includes('Network Error') || error?.code === 'ECONNREFUSED') {
+        Alert.alert(
+          'Connection Error', 
+          'Unable to connect to the server. Please check your internet connection and try again.',
           [{ text: 'OK' }]
         );
       } else {
@@ -90,13 +107,26 @@ export default function LoginScreen() {
           />
 
           <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Enter your password"
-            secureTextEntry
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Enter your password"
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity 
+              style={styles.passwordToggle}
+              onPress={() => setShowPassword(!showPassword)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons 
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'} 
+                size={22} 
+                color="#666" 
+              />
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword' as never)}>
             <Text style={styles.forgotPassword}>Forgot Password?</Text>
@@ -161,6 +191,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 16,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginBottom: 16,
+    paddingRight: 8,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  passwordToggle: {
+    padding: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   forgotPassword: {
     color: '#007BFF',

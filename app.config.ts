@@ -7,7 +7,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: 'MyToDooMobile',
   version: '1.0.0',
   orientation: 'portrait',
-  icon: './assets/images/icon.png',
+  icon: './assets/images/mytodoo-icon.png',
   scheme: 'mytodoomobile',
   userInterfaceStyle: 'automatic',
   newArchEnabled: true,
@@ -17,7 +17,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     package: 'com.nowanya.mytodoomobile',
     adaptiveIcon: {
-      foregroundImage: './assets/images/adaptive-icon.png',
+      foregroundImage: './assets/images/mytodoo-adaptive-icon.png',
       backgroundColor: '#ffffff',
     },
     edgeToEdgeEnabled: true,
@@ -33,7 +33,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-splash-screen',
       {
-        image: './assets/images/splash-icon.png',
+        image: './assets/images/mytodoo-icon.png',
         imageWidth: 200,
         resizeMode: 'contain',
         backgroundColor: '#ffffff',
@@ -45,10 +45,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     apiUrl: process.env.API_URL,
+    easApiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://134.199.172.167:5001/api',
     environment: process.env.ENVIRONMENT,
     mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
     eas: {
-      projectId: "ffec6247-9f6a-48a3-8d88-1cc225c686f6"
+      projectId: "b9eb76c3-56d8-4ce9-9ea0-bae0908a0d4c"
     },
   },
 });

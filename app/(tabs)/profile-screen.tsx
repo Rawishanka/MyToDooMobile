@@ -174,7 +174,11 @@ export default function AccountScreen() {
 
   // Otherwise show account screen
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 100 }}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Header Section */}
       <View style={styles.header}>
         <Image

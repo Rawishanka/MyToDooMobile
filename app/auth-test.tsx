@@ -16,6 +16,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import API_CONFIG from '@/api/config';
 
 export default function AuthTestScreen() {
   const router = useRouter();
@@ -32,7 +33,15 @@ export default function AuthTestScreen() {
     lastName: 'User',
     email: 'testuser@example.com',
     password: 'password123',
-    phone: '',
+    phone: '+61412345678',
+    dateOfBirth: '1995-06-15',
+    location: {
+      country: 'AU',
+      countryCode: 'AU',
+      suburb: 'Frankston 3199, VIC',
+      region: 'VIC',
+      city: 'Melbourne',
+    },
   });
   const [signupLoading, setSignupLoading] = useState(false);
 
@@ -223,7 +232,7 @@ export default function AuthTestScreen() {
             <Text style={styles.infoTitle}>📡 API Endpoints Being Tested</Text>
             <Text style={styles.infoText}>• POST /api/auth/login</Text>
             <Text style={styles.infoText}>• POST /api/auth/signup</Text>
-            <Text style={styles.infoText}>• Base URL: {process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5001/api'}</Text>
+            <Text style={styles.infoText}>• Base URL: {API_CONFIG.BASE_URL}</Text>
           </View>
 
         </ScrollView>

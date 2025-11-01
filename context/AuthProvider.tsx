@@ -2,24 +2,22 @@
 import { useStorageState } from '@/hooks/useStorageState';
 import { useAuthStore } from '@/store/auth-task-store';
 import { PropsWithChildren, useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [[isLoading, storedToken], setStoredToken] = useStorageState('token');
   const { user, expiresIn, setAuthData } = useAuthStore();
+  
   useEffect(() => {
+    // Don't block the UI, let auth load in background
     if (!isLoading && storedToken) {
-      setAuthData(storedToken, user!, expiresIn!);
+      // Use setTimeout to avoid blocking render
+      setTimeout(() => {
+        setAuthData(storedToken, user!, expiresIn!);
+      }, 0);
     }
-  }, [isLoading, storedToken]);
+  }, [isLoading, storedToken, user, expiresIn, setAuthData]);
 
-  if (isLoading) {
-    return (
-      <View>
-        <ActivityIndicator />
-      </View>
-    );
-  }
-
-  return children;
+  // Don't show loading screen - let app render while auth loads in background
+  // Auth status will be checked by individual screens that need it
+  return <>{children}</>;
 }

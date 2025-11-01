@@ -1,14 +1,16 @@
-// app/(tabs)/welcome-screen.tsx - Clean version with fixed recursive logging
+// app/(tabs)/welcome-screen.tsx - Updated with category images
 import { useGetCategories } from '@/hooks/useTaskApi';
 import { useCreateTaskStore } from '@/store/create-task-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { ResizeMode, Video } from 'expo-av';
 import { useRouter } from 'expo-router';
 import { Bell, ChevronRight } from 'lucide-react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
+  Dimensions,
+  FlatList,
   Image,
   SafeAreaView,
   ScrollView,
@@ -20,84 +22,52 @@ import {
 } from 'react-native';
 import NotificationModal from './notification-screen';
 
-// 🎬 **NEW: Video Categories with proper sources**
-const videoCategories: { title: string; video: any }[] = [
-  { title: 'Carpentry', video: require('@/assets/carpentry.mp4') },
-  { title: 'Auto Mechanic', video: require('@/assets/auto-mechanic.mp4') },
-  { title: 'Plumbing', video: require('@/assets/plumbing.mp4') },
-  { title: 'Real Estate', video: require('@/assets/Real-estate.mp4') },
-  { title: 'Something Else', video: require('@/assets/something_else.mp4') },
+// Get screen dimensions
+const { width: screenWidth } = Dimensions.get('window');
+
+// � **ALL Category Images with proper sources**
+const categoryImages: { id: string; title: string; image: string }[] = [
+  { id: '1', title: 'Appliance Installation & Repair', image: 'https://i.ibb.co/W49F1KXP/Appliance-Instolation.png' },
+  { id: '2', title: 'Auto Mechanic & Electrician', image: 'https://i.ibb.co/RGGCd2BP/Auto-mechanicle-and-Electrician.png' },
+  { id: '3', title: 'Building Maintenance', image: 'https://i.ibb.co/k2yvpj3x/Building-Maintences-and-Renovations.png' },
+  { id: '4', title: 'Business & Accounting', image: 'https://i.ibb.co/xtRGxgSy/Business-and-accounting.png' },
+  { id: '5', title: 'Carpentry', image: 'https://i.ibb.co/W40cZb10/carpentry.png' },
+  { id: '6', title: 'Delivery', image: 'https://i.ibb.co/6Rfyg45C/Delivery.png' },
+  { id: '7', title: 'Education & Tutoring', image: 'https://i.ibb.co/7N2KYVg8/Education-and-Tutoring.png' },
+  { id: '8', title: 'Electrical', image: 'https://i.ibb.co/tpB3FBRZ/Electrical.png' },
+  { id: '9', title: 'Event Planning', image: 'https://i.ibb.co/3YPP7TRg/Event-Planning.png' },
+  { id: '10', title: 'Furniture Repair', image: 'https://i.ibb.co/TMDZLQnw/furniture-repair-and-fl.png' },
+  { id: '11', title: 'Graphic Design', image: 'https://i.ibb.co/s9zXGDBM/Graphic-Design.png' },
+  { id: '12', title: 'Handyman & Handywomen', image: 'https://i.ibb.co/qMJDNCSy/Handyman-and-handywomen.png' },
+  { id: '13', title: 'Health & Fitness', image: 'https://i.ibb.co/1J2Z4Vg5/health-and-fitness.png' },
+  { id: '14', title: 'IT & Tech', image: 'https://i.ibb.co/WpHmsKRR/IT-and-Tech.png' },
+  { id: '15', title: 'Legal Services', image: 'https://i.ibb.co/DfC74zpp/Legal-services.png' },
+  { id: '16', title: 'Marketing', image: 'https://i.ibb.co/S4HF67H9/Marketing.png' },
+  { id: '17', title: 'Music', image: 'https://i.ibb.co/YBwCYf8S/Music.png' },
+  { id: '18', title: 'Painting', image: 'https://i.ibb.co/B58CyKLF/Painting-Services.png' },
+  { id: '19', title: 'Personal Assistance', image: 'https://i.ibb.co/cScgX7jF/Personal-Assist.png' },
+  { id: '20', title: 'Pet Care', image: 'https://i.ibb.co/TDSZJTq0/pet-care.png' },
+  { id: '21', title: 'Photography', image: 'https://i.ibb.co/mrjdhnYG/Photography.png' },
+  { id: '22', title: 'Plumbing', image: 'https://i.ibb.co/1G5rz4Yb/Plumbing.png' },
+  { id: '23', title: 'Real Estate', image: 'https://i.ibb.co/dsrjsRJQ/Realestate.png' },
+  { id: '24', title: 'Something Else', image: 'https://i.ibb.co/8LH3kKMD/somthing-else.png' },
+  { id: '25', title: 'Tours & Transport', image: 'https://i.ibb.co/XrX1FRwV/Tours-and.png' },
+  { id: '26', title: 'Web & App Development', image: 'https://i.ibb.co/9kPKTPzy/web-App-development.png' },
 ];
 
-// 🎬 **Video Category Component**
-const VideoCategory = ({ title, videoSource, onPress }: { 
-  title: string; 
-  videoSource: any; 
-  onPress: () => void;
-}) => {
-  const [videoError, setVideoError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [videoRef, setVideoRef] = useState<any>(null);
-  
-  const handleVideoLoad = async () => {
-    console.log(`✅ Video loaded for: ${title}`);
-    setIsLoading(false);
-    if (videoRef) {
-      try {
-        await videoRef.playAsync();
-        console.log(`🎬 Started playing: ${title}`);
-      } catch (error) {
-        console.log(`❌ Failed to play ${title}:`, error);
-      }
-    }
-  };
-  
+// � **Image Category Component for Carousel**
+const ImageCategory = ({ item }: { item: typeof categoryImages[0] }) => {
   return (
-    <TouchableOpacity style={styles.gridItem} onPress={onPress}>
-      <View style={styles.videoContainer}>
-        {!videoError ? (
-          <>
-            <Video
-              ref={setVideoRef}
-              style={styles.video}
-              source={videoSource}
-              resizeMode={ResizeMode.COVER}
-              shouldPlay={true}
-              isLooping={true}
-              isMuted={true}
-              onLoad={handleVideoLoad}
-              onError={(error) => {
-                console.log(`❌ Video error for ${title}:`, error);
-                setVideoError(true);
-                setIsLoading(false);
-              }}
-              onPlaybackStatusUpdate={(status) => {
-                if (!status.isLoaded) {
-                  // console.log(`📥 Loading video for: ${title}`);
-                } else if (status.isLoaded && !status.isPlaying && !status.isBuffering) {
-                  // Video is loaded but not playing - try to resume
-                  // if (videoRef && !status.didJustFinish) {
-                  //   // console.log(`⏸️ Video paused for ${title}, attempting to resume...`);
-                  //   // videoRef.playAsync().catch(err => console.log(`Failed to resume ${title}:`, err));
-                  // }
-                }
-              }}
-            />
-            {isLoading && (
-              <View style={styles.loadingOverlay}>
-                <MaterialCommunityIcons name="loading" size={24} color="#666" />
-              </View>
-            )}
-          </>
-        ) : (
-          <View style={styles.videoFallback}>
-            <MaterialCommunityIcons name="video-outline" size={32} color="#666" />
-            <Text style={styles.fallbackText}>Video</Text>
-          </View>
-        )}
+    <View style={styles.carouselItem}>
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: item.image }}
+          style={styles.categoryImage}
+          resizeMode="contain"
+        />
       </View>
-      <Text style={styles.gridLabel}>{title}</Text>
-    </TouchableOpacity>
+      <Text style={styles.carouselLabel} numberOfLines={2}>{item.title}</Text>
+    </View>
   );
 };
 
@@ -108,26 +78,32 @@ export default function WelcomeScreen() {
   const { data: categories, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
   const { updateMyTask, myTask } = useCreateTaskStore();
 
-  // Debug: Log video categories - only once on mount
+  // Auto-scroll carousel refs and state
+  const flatListRef = useRef<FlatList>(null);
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Auto-scroll every 3 seconds
   useEffect(() => {
-    console.log(`🎬 Welcome Screen - Total video categories loaded: ${videoCategories.length}`);
-    videoCategories.forEach((cat, index) => {
-      console.log(`${index + 1}. ${cat.title} - Video ID:`, cat.video);
-      
-      if (cat.video) {
-        console.log(`✅ Video source exists for: ${cat.title}`);
-      } else {
-        console.log(`❌ Missing video source for: ${cat.title}`);
-      }
-    });
-  }, []); // Empty dependency array - runs only once
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % categoryImages.length;
+        flatListRef.current?.scrollToIndex({
+          index: nextIndex,
+          animated: true,
+        });
+        return nextIndex;
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Reset task input when task is completed
   useFocusEffect(
     useCallback(() => {
       if (!myTask.title || myTask.title === '') {
         setTaskInput('');
-        console.log('🔄 Welcome screen input reset - task was completed');
       }
     }, [myTask.title])
   );
@@ -176,13 +152,14 @@ export default function WelcomeScreen() {
 
       <ScrollView 
         style={{ flex: 1, backgroundColor: '#f8f9fa' }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Blue Section with Input */}
         <View style={styles.blueSection}>
           <Text style={styles.title}>Get it Done Now🔥</Text>
           <Text style={styles.subtitle}>
-            Describe your job and get offers from mytoodoers
+            Describe your job and get offers from mytoodoo
           </Text>
           
           <TextInput
@@ -215,37 +192,63 @@ export default function WelcomeScreen() {
               showsHorizontalScrollIndicator={false}
               style={styles.tagRow}
             >
-              {((categories?.data as string[]) || []).map((category: string, index: number) => (
+              {((categories?.data || []).map((cat: any) => typeof cat === 'string' ? cat : cat.name) || []).map((categoryName: string, index: number) => (
                 <TouchableOpacity 
                   key={index} 
                   style={styles.tag}
-                  onPress={() => handleTagPress(category)}
+                  onPress={() => handleTagPress(categoryName)}
                 >
-                  <Text style={{ color: '#fff' }}>{category}</Text>
+                  <Text style={{ color: '#fff' }}>{categoryName}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           )}
         </View>
 
-        {/* Video Categories Grid */}
+        {/* Auto-Scrolling Video Categories Carousel */}
         <Text style={styles.sectionTitle}>Need something done</Text>
         <Text style={styles.subTitle}>Cut through the competition and earn more with customers you know</Text>
 
-        <View style={styles.gridContainer}>
-          {videoCategories.map((cat, index) => {
-            return (
-              <VideoCategory
+        <View style={styles.carouselContainer}>
+          <FlatList
+            ref={flatListRef}
+            data={categoryImages}
+            renderItem={({ item }) => <ImageCategory item={item} />}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            snapToInterval={screenWidth * 0.38 + 12} // Updated to match new item width + margins
+            decelerationRate="fast"
+            contentContainerStyle={styles.carouselContent}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: false }
+            )}
+            getItemLayout={(data, index) => ({
+              length: screenWidth * 0.38 + 12, // Updated to match new item width + margins
+              offset: (screenWidth * 0.38 + 12) * index,
+              index,
+            })}
+            onScrollToIndexFailed={(info) => {
+              const wait = new Promise(resolve => setTimeout(resolve, 500));
+              wait.then(() => {
+                flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+              });
+            }}
+          />
+          
+          {/* Pagination Dots */}
+          <View style={styles.paginationContainer}>
+            {Array.from({ length: Math.min(10, categoryImages.length) }).map((_, index) => (
+              <View
                 key={index}
-                title={cat.title}
-                videoSource={cat.video}
-                onPress={() => {
-                  console.log(`Selected video category: ${cat.title}`);
-                  // Handle category selection
-                }}
+                style={[
+                  styles.paginationDot,
+                  Math.floor(currentIndex / 3) === index && styles.paginationDotActive,
+                ]}
               />
-            );
-          })}
+            ))}
+          </View>
         </View>
       </ScrollView>
 
@@ -263,20 +266,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#003399',
     paddingHorizontal: 16,
     paddingTop: 32,
-    paddingBottom: 16,
+    paddingBottom: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minHeight: 100, // Ensure enough space for bigger logo
   },
   logoPlaceholder: {
     width: 24,
+    flexShrink: 0, // Prevent shrinking
   },
   logoCenter: {
-    height: 40,
-    width: 120,
+    height: 150, // Bigger logo - optimized for header space
+    width: 240, // Bigger logo - fits perfectly without breaking layout
+    flexShrink: 0, // Prevent shrinking when space is tight
   },
   notificationButton: {
     position: 'relative',
+    width: 24,
+    flexShrink: 0, // Prevent disappearing
   },
   notificationBadge: {
     position: 'absolute',
@@ -297,7 +305,8 @@ const styles = StyleSheet.create({
   blueSection: {
     backgroundColor: '#003399',
     paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingTop: 5,
+    paddingBottom: 24,
   },
   title: {
     fontSize: 24,
@@ -372,57 +381,72 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
     paddingHorizontal: 20,
   },
-  gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  gridItem: {
-    width: '45%',
+  // NEW: Auto-scrolling Carousel Styles (show 5 at a time)
+  carouselContainer: {
+    paddingVertical: 10,
+    paddingBottom: 40,
     marginBottom: 20,
   },
-  videoContainer: {
-    height: 120,
+  carouselContent: {
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  carouselItem: {
+    width: screenWidth * 0.38, // Increased from 0.28 to make boxes bigger
+    marginHorizontal: 6, // Increased spacing
+    alignItems: 'center',
+  },
+  imageContainer: {
+    width: screenWidth * 0.38, // Square box - same as item width
+    height: screenWidth * 0.38, // Square box - same as width
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#E3F2FD',
     position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3.84,
+    elevation: 5,
+    justifyContent: 'center', // Center the image
+    alignItems: 'center', // Center the image
   },
-  video: {
-    width: '100%',
-    height: '100%',
+  categoryImage: {
+    width: '90%', // Slightly smaller than container to show full image
+    height: '90%', // Slightly smaller than container to show full image
+    backgroundColor: '#E3F2FD',
   },
-  videoFallback: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(248, 249, 250, 0.8)',
-  },
-  fallbackText: {
-    fontSize: 10,
-    color: '#666',
-    marginTop: 4,
-  },
-  gridLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+  carouselLabel: {
+    fontSize: 11, // Increased from 10 to match bigger boxes
+    fontWeight: '700',
+    color: '#1A237E',
     textAlign: 'center',
     marginTop: 8,
+    lineHeight: 14, // Increased from 13
+    paddingHorizontal: 2,
+  },
+  // Pagination Dots
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 12,
+    gap: 5,
+  },
+  paginationDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(0, 51, 153, 0.3)',
+  },
+  paginationDotActive: {
+    backgroundColor: '#003399',
+    width: 18,
   },
 });
