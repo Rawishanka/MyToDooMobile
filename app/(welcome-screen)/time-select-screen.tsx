@@ -1,4 +1,5 @@
 import { useCreateTaskStore } from '@/store/create-task-store';
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
@@ -22,6 +23,7 @@ const TimeSelectScreen = () => {
   const [beforeDate, setBeforeDate] = useState<Date | null>(null);
   const [selectedTimeBlock, setSelectedTimeBlock] = useState('');
   const [needSpecificTime, setNeedSpecificTime] = useState(false);
+  const [budget, setBudget] = useState('');
 
   const { myTask, updateMyTask } = useCreateTaskStore();
 
@@ -32,8 +34,7 @@ const TimeSelectScreen = () => {
       const existingDate = new Date(myTask.date);
       setOnTimeDate(existingDate);
       setBeforeDate(existingDate);
-      // Try to determine which option was selected based on existing data
-      setSelectedOption('on_time'); // Default assumption
+      setSelectedOption('on_time');
     } else {
       const today = new Date();
       const todayDate = new Date(today);
@@ -49,7 +50,12 @@ const TimeSelectScreen = () => {
       setSelectedTimeBlock(myTask.time);
       setNeedSpecificTime(true);
     }
-  }, [myTask.date, myTask.time]);
+
+    // Initialize budget
+    if (myTask.budget && myTask.budget > 0) {
+      setBudget(myTask.budget.toString());
+    }
+  }, [myTask.date, myTask.time, myTask.budget]);
 
   const handleDateChange = (
     event: DateTimePickerEvent,
@@ -65,6 +71,35 @@ const TimeSelectScreen = () => {
     }
     setActivePickerOption('');
   };
+
+  const handleKeyPress = (value: string) => {
+    if (value === 'delete') {
+      setBudget(budget.slice(0, -1));
+    } else {
+      setBudget(budget + value);
+    }
+  };
+
+  const renderKey = (value: string | number) => (
+    <TouchableOpacity
+      key={value}
+      style={styles.key}
+      onPress={() => handleKeyPress(value.toString())}
+    >
+      {value === 'delete' ? (
+        <Ionicons name="backspace-outline" size={24} color="#002366" />
+      ) : (
+        <Text style={styles.keyText}>{value}</Text>
+      )}
+    </TouchableOpacity>
+  );
+
+  const numberPad = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
+    [null, 0, 'delete'],
+  ];
 
   const timeBlocks = [
     { 
@@ -93,16 +128,17 @@ const TimeSelectScreen = () => {
     },
   ];
 
-  // Define the options array
   const options = [
     { label: 'On Time', value: 'on_time' },
     { label: 'Before', value: 'before' },
-    { label: 'No rush', value: 'no_rush' }
+    { label: 'Flexible', value: 'no_rush' }
   ];
+
+  const isBudgetValid = budget && Number(budget) >= 20;
+  const isFormValid = selectedOption !== '' && isBudgetValid;
 
   return (
     <View style={styles.container}>
-      {/* Back Arrow Top Left */}
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <ChevronLeft size={24} color="#333" />
       </TouchableOpacity>
@@ -112,59 +148,63 @@ const TimeSelectScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>When do you want this done</Text>
+        <Text style={styles.title}>When & Budget</Text>
+        <Text style={styles.subtitle}>When do you need this done and what's your budget?</Text>
 
         {/* Date/Time Options */}
-        {options.map((option) => (
-          <View key={option.value}>
-            <TouchableOpacity
-              style={styles.optionRow}
-              onPress={() => {
-                setSelectedOption(option.value);
-              }}
-            >
-              <Text style={styles.optionText}>{option.label}</Text>
-              <View style={[
-                styles.radioOuter,
-                selectedOption === option.value && styles.radioOuterSelected,
-              ]}>
-                {selectedOption === option.value && <View style={styles.radioInner} />}
-              </View>
-            </TouchableOpacity>
-
-            {/* Show date selector for On Time - only when selected */}
-            {option.value === 'on_time' && selectedOption === 'on_time' && (
-              <TouchableOpacity 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Date</Text>
+          {options.map((option) => (
+            <View key={option.value}>
+              <TouchableOpacity
+                style={styles.optionRow}
                 onPress={() => {
-                  setActivePickerOption('on_time');
-                  setShowDatePicker(true);
-                }} 
-                style={styles.dateSelector}
+                  setSelectedOption(option.value);
+                }}
               >
-                <Text style={styles.dateText}>
-                  📅 {onTimeDate ? onTimeDate.toDateString() : 'Select date'} (Tap to change)
-                </Text>
+                <Text style={styles.optionText}>{option.label}</Text>
+                <View style={[
+                  styles.radioOuter,
+                  selectedOption === option.value && styles.radioOuterSelected,
+                ]}>
+                  {selectedOption === option.value && <View style={styles.radioInner} />}
+                </View>
               </TouchableOpacity>
-            )}
 
-            {/* Show date selector for Before - always visible */}
-            {option.value === 'before' && (
-              <TouchableOpacity 
-                onPress={() => {
-                  setActivePickerOption('before');
-                  setShowDatePicker(true);
-                }} 
-                style={styles.dateSelector}
-              >
-                <Text style={styles.dateText}>
-                  📅 {beforeDate ? beforeDate.toDateString() : 'Select date'} (Tap to change)
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        ))}
+              {/* Show date selector for On Time */}
+              {option.value === 'on_time' && selectedOption === 'on_time' && (
+                <TouchableOpacity 
+                  onPress={() => {
+                    setActivePickerOption('on_time');
+                    setShowDatePicker(true);
+                  }} 
+                  style={styles.dateSelector}
+                >
+                  <Text style={styles.dateText}>
+                    📅 {onTimeDate ? onTimeDate.toDateString() : 'Select date'} (Tap to change)
+                  </Text>
+                </TouchableOpacity>
+              )}
 
-        {/* I need certain time of day toggle */}
+              {/* Show date selector for Before */}
+              {option.value === 'before' && selectedOption === 'before' && (
+                <TouchableOpacity 
+                  onPress={() => {
+                    setActivePickerOption('before');
+                    setShowDatePicker(true);
+                  }} 
+                  style={styles.dateSelector}
+                >
+                  <Text style={styles.dateText}>
+                    📅 {beforeDate ? beforeDate.toDateString() : 'Select date'} (Tap to change)
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
+        </View>
+
+        {/* Time Toggle */}
         <View style={styles.toggleRow}>
           <Text style={styles.toggleText}>I need certain time of day</Text>
           <Switch
@@ -176,7 +216,7 @@ const TimeSelectScreen = () => {
           />
         </View>
 
-        {/* Time of Day Grid - show only when toggle is on */}
+        {/* Time of Day Grid */}
         {needSpecificTime && (
           <View style={styles.gridContainer}>
             {timeBlocks.map(block => (
@@ -197,12 +237,47 @@ const TimeSelectScreen = () => {
             ))}
           </View>
         )}
+
+        {/* Budget Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Budget</Text>
+          <Text style={styles.sectionSubtitle}>
+            Minimum budget is $20. You can negotiate the final price later
+          </Text>
+
+          {/* Budget Display */}
+          <View style={styles.inputBox}>
+            <Text style={styles.currencySymbol}>$</Text>
+            <Text style={[
+              styles.budgetText, 
+              budget && Number(budget) < 20 && Number(budget) > 0 && styles.invalidBudgetText
+            ]}>
+              {budget || '0'}
+            </Text>
+          </View>
+          
+          {/* Validation Message */}
+          {budget && Number(budget) < 20 && Number(budget) > 0 && (
+            <Text style={styles.validationText}>
+              Minimum budget is $20
+            </Text>
+          )}
+
+          {/* Keypad */}
+          <View style={styles.keypad}>
+            {numberPad.map((row, rowIndex) => (
+              <View key={rowIndex} style={styles.row}>
+                {row.map((value) => value !== null ? renderKey(value) : <View key="empty" style={{ width: 70, height: 70, marginHorizontal: 10 }} />)}
+              </View>
+            ))}
+          </View>
+        </View>
       </ScrollView>
 
       {/* Continue Button */}
       <TouchableOpacity
-        style={[styles.continueButton, selectedOption === '' && styles.continueButtonDisabled]}
-        disabled={selectedOption === ''}
+        style={[styles.continueButton, !isFormValid && styles.continueButtonDisabled]}
+        disabled={!isFormValid}
         onPress={() => {
           const selectedDate = selectedOption === 'on_time' ? onTimeDate : 
                               selectedOption === 'before' ? beforeDate : null;
@@ -210,8 +285,9 @@ const TimeSelectScreen = () => {
           updateMyTask({
             date: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
             time: selectedTimeBlock ? selectedTimeBlock : '',
+            budget: Number(budget),
           });
-          router.push('/location-screen');
+          router.push('/detail-screen');
         }}
       >
         <Text style={styles.continueText}>Continue</Text>
@@ -250,7 +326,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 120, // Extra padding to ensure content is not hidden behind continue button
+    paddingBottom: 120,
   },
   backButton: {
     position: 'absolute',
@@ -259,16 +335,30 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: 4,
     color: '#1C1C1E',
     marginTop: 36,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 40,
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 24,
+  },
+  section: {
+    marginBottom: 30,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1C1C1E',
+    marginBottom: 12,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 16,
   },
   optionRow: {
     flexDirection: 'row',
@@ -322,7 +412,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
     borderRadius: 12,
     marginBottom: 20,
-    marginTop: 20,
   },
   toggleText: {
     fontSize: 16,
@@ -368,6 +457,63 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     textAlign: 'center',
+  },
+  inputBox: {
+    marginTop: 10,
+    height: 50,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginBottom: 10,
+  },
+  currencySymbol: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#002366',
+    marginRight: 5,
+  },
+  budgetText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#002366',
+  },
+  invalidBudgetText: {
+    color: '#FF3B30',
+  },
+  validationText: {
+    fontSize: 14,
+    color: '#FF3B30',
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  keypad: {
+    marginTop: 10,
+    marginBottom: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  row: {
+    flexDirection: 'row',
+    marginBottom: 15,
+  },
+  key: {
+    width: 70,
+    height: 70,
+    backgroundColor: '#fff',
+    borderRadius: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  keyText: {
+    fontSize: 22,
+    color: '#002366',
   },
   continueButton: {
     position: 'absolute',

@@ -7,35 +7,52 @@ import React, { useEffect, useState } from 'react';
 import {
     Alert,
     Image,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
     View
 } from 'react-native';
+import { LocationAutocomplete } from '../../components/LocationAutocomplete';
+
+interface LocationData {
+    address: string;
+    coordinates: {
+        lat: number;
+        lng: number;
+    };
+}
 
 export default function SnapPhotoScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const { myTask, updateMyTask } = useCreateTaskStore();
 
   // Initialize with existing photos from store
   useEffect(() => {
     if (myTask.photos && myTask.photos.length > 0) {
-      // Use the new photos array
-      setImages(myTask.photos.filter(photo => photo)); // Filter out empty strings
+      setImages(myTask.photos.filter(photo => photo));
     } else if (myTask.photo) {
-      // Fallback to single photo for backwards compatibility
       setImages([myTask.photo].filter(photo => photo));
+    }
+    
+    // Initialize location if exists (only for CategoryTask)
+    if (!myTask.isRemoval && myTask.location && myTask.coordinates) {
+      setSelectedLocation({
+        address: myTask.location,
+        coordinates: myTask.coordinates
+      });
     }
   }, [myTask.photos, myTask.photo]);
 
   // Update store when images change
   useEffect(() => {
-    // Save images to the new photos array
     updateMyTask({ 
       photos: images,
-      photo: images[0] || '' // Keep backwards compatibility
+      photo: images[0] || ''
     });
   }, [images, updateMyTask]);
 
@@ -129,6 +146,23 @@ export default function SnapPhotoScreen() {
     setImages(images.filter(img => img !== uri));
   };
 
+  // Location handler
+  const handleLocationSelect = (location: LocationData) => {
+    setSelectedLocation(location);
+    console.log('Selected location:', location);
+  };
+
+  const handleContinue = () => {
+    // Update store with location data
+    if (selectedLocation) {
+      updateMyTask({
+        location: selectedLocation.address,
+        coordinates: selectedLocation.coordinates,
+      });
+    }
+    router.push('/time-select-screen');
+  };
+
   const renderGridItems = () => {
     const items = [...images];
     
@@ -189,69 +223,99 @@ export default function SnapPhotoScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
         <ChevronLeft size={24} color="#000" />
       </TouchableOpacity>
 
-      <Text style={styles.title}>Snap a photo</Text>
-      <Text style={styles.subtitle}>
-        Help taskers understand what needs doing. Take photos or choose from gallery. Add up to 10 photos ({images.length}/10)
-      </Text>
-
       <ScrollView 
-        style={styles.imageSection}
-        contentContainerStyle={styles.imageContainer}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        {renderGridItems()}
+        <Text style={styles.title}>Add photos & location</Text>
+        <Text style={styles.subtitle}>
+          Help taskers understand what needs doing. Add up to 10 photos ({images.length}/10)
+        </Text>
+
+        <View style={styles.imageSection}>
+          {renderGridItems()}
+        </View>
+
+        {/* Location Section */}
+        <View style={styles.locationSection}>
+          <Text style={styles.sectionTitle}>Location</Text>
+          <Text style={styles.sectionSubtitle}>Where do you need this done?</Text>
+          
+          <LocationAutocomplete
+            onSelect={handleLocationSelect}
+            placeholder="Enter address or suburb"
+            initialValue={selectedLocation?.address}
+          />
+          
+          {selectedLocation && (
+            <View style={styles.selectedLocationContainer}>
+              <Ionicons name="location" size={20} color="#0057FF" />
+              <Text style={styles.selectedLocationText} numberOfLines={2}>
+                {selectedLocation.address}
+              </Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
 
       <TouchableOpacity 
-        onPress={() => router.push('/detail-screen')} 
+        onPress={handleContinue} 
         style={[
-          styles.skipButton,
-          images.length > 0 && styles.continueButton
+          styles.continueButton,
+          selectedLocation && styles.continueButtonEnabled
         ]}
+        disabled={!selectedLocation}
       >
-        <Text style={[
-          styles.skipText,
-          images.length > 0 && styles.continueText
-        ]}>
-          {images.length > 0 ? 'Continue' : 'Skip for now'}
+        <Text style={styles.continueText}>
+          Continue
         </Text>
       </TouchableOpacity>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 50,
     backgroundColor: '#fff',
   },
   backBtn: {
     position: 'absolute',
     top: 50,
     left: 20,
-    zIndex: 1,
+    zIndex: 10,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 100,
+    paddingBottom: 100,
   },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#0B1A33',
-    marginTop: 40,
   },
   subtitle: {
     color: '#667085',
     fontSize: 14,
     marginTop: 5,
+    marginBottom: 20,
   },
   imageSection: {
-    flex: 1,
-    marginTop: 20,
+    marginBottom: 30,
   },
   imageContainer: {
     paddingBottom: 20,
@@ -315,6 +379,52 @@ const styles = StyleSheet.create({
     width: 70,
     marginRight: 10,
   },
+  locationSection: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1C1C1E',
+    marginBottom: 5,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 15,
+  },
+  selectedLocationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F5FF',
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  selectedLocationText: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#0057FF',
+  },
+  continueButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: '#D1D1D6',
+    paddingVertical: 16,
+    borderRadius: 25,
+    alignItems: 'center',
+  },
+  continueButtonEnabled: {
+    backgroundColor: '#0057FF',
+  },
+  continueText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
   skipButton: {
     marginBottom: 30,
     alignItems: 'center',
@@ -322,14 +432,8 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 20,
   },
-  continueButton: {
-    backgroundColor: '#0052CC',
-  },
   skipText: {
     color: '#2671FF',
     fontWeight: '600',
-  },
-  continueText: {
-    color: '#FFFFFF',
   },
 });

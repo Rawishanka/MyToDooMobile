@@ -70,8 +70,8 @@ export default function GoalSelectionScreen() {
             // Provide Services → show screen-first.tsx
             router.push('/screen-first');
           } else if (selectedGoal === 'getThingsDone') {
-            // Get MyToDoo tasks completed → show first-screen.tsx
-            router.push('/first-screen');
+            // Get MyToDoo tasks completed → go directly to new title screen
+            router.push('/title-screen');
           }
         }}
       >

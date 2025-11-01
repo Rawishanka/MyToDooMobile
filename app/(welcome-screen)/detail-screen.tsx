@@ -7,13 +7,13 @@ import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useCreateTaskStore } from '../../store/create-task-store';
 
@@ -53,13 +53,10 @@ export default function DetailScreen() {
       return 'Set pickup & delivery locations';
     }
     
-    // if ('isOnline' in myTask && myTask.isOnline) {
-    //   return 'Online';
-    // }
-    
-    // if ('inPerson' in myTask && myTask.inPerson && myTask.suburb) {
-    //   return myTask.suburb;
-    // }
+    // For category tasks
+    if (!myTask.isRemoval && myTask.location) {
+      return myTask.location;
+    }
     
     return 'Set location';
   };
@@ -82,12 +79,10 @@ export default function DetailScreen() {
       const delivery = myTask.deliveryLocation || "Delivery Location";
       return `${pickup} to ${delivery}`;
     }
-    // if ('isOnline' in myTask && myTask.isOnline) {
-    //   return "Remote/Online";
-    // }
-    // if ('inPerson' in myTask && myTask.inPerson) {
-    //   return myTask.suburb || "Location not specified";
-    // }
+    // For category tasks
+    if (!myTask.isRemoval && myTask.location) {
+      return myTask.location;
+    }
     return "Location not specified";
   };
 
@@ -100,32 +95,25 @@ export default function DetailScreen() {
 
   // Convert myTask to CreateTaskRequest format matching server expectations
   const convertToTaskRequest = (): CreateTaskRequest => {
-    // Generate date like existing successful tasks
-    const today = new Date();
-    const futureDate = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+    // Use the actual date from the task or generate a future date
+    const taskDate = myTask.date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    // Get the category from the task
+    const category = !myTask.isRemoval && myTask.category ? myTask.category : "General";
     
     const taskRequest: CreateTaskRequest = {
       title: myTask.title || "Untitled Task",
-      category: "General", // ✅ Backend expects singular string
-      details: myTask.description || "", // ✅ Backend expects 'details'
-      dateType: "DoneBy", // Use simple dateType
-      date: futureDate.toISOString().split('T')[0], // ✅ Added date field (YYYY-MM-DD format)
+      category: category,
+      details: myTask.description || "",
+      dateType: "DoneBy",
+      date: taskDate,
       time: myTask.time || "Anytime",
-      location: getLocationFromTask(), // ✅ String format
-      locationType: myTask.locationType || 'In-person', // ✅ Added locationType
+      location: getLocationFromTask(),
+      locationType: !myTask.isRemoval ? (myTask.locationType || 'In-person') : 'In-person',
       budget: myTask.budget || 0,
       currency: "LKR",
-      images: [], // Empty array
+      images: [],
     };
-    
-    // Only add coordinates if locationType is In-person and we have valid location
-    // Don't send dummy coordinates - backend will fail with null values
-    // if (myTask.locationType === 'In-person' && myTask.location) {
-    //   taskRequest.coordinates = {
-    //     latitude: 6.9271,
-    //     longitude: 79.8612
-    //   };
-    // }
     
     return taskRequest;
   };
