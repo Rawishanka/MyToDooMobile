@@ -1,0 +1,192 @@
+// Refactored Signup Screen - Main Orchestrator
+
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  SafeAreaView,
+  Platform,
+  StyleSheet,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useSignup } from '../components/useSignup';
+import { SignupForm } from '../components/SignupForm';
+import { OTPModal } from '../components/OTPModal';
+
+export default function SignUpScreen() {
+  const router = useRouter();
+  const signup = useSignup();
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      signup.setShowDatePicker(false);
+    }
+    
+    if (event.type === 'set' && selectedDate) {
+      signup.setDateOfBirth(selectedDate);
+      if (Platform.OS === 'ios') {
+        signup.setShowDatePicker(false);
+      }
+    } else if (event.type === 'dismissed') {
+      signup.setShowDatePicker(false);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {!signup.verificationStep && (
+        <TouchableOpacity
+          style={styles.closeIcon}
+          onPress={() => router.replace('/')}
+          hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+        >
+          <Ionicons name="close" size={28} color="#333" />
+        </TouchableOpacity>
+      )}
+      
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.innerContainer}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.header}>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Sign up to get started</Text>
+          </View>
+
+          <SignupForm
+            firstName={signup.firstName}
+            lastName={signup.lastName}
+            email={signup.email}
+            password={signup.password}
+            confirmPassword={signup.confirmPassword}
+            phone={signup.phone}
+            dateOfBirth={signup.dateOfBirth}
+            showPassword={signup.showPassword}
+            showConfirmPassword={signup.showConfirmPassword}
+            selectedCountry={signup.selectedCountry}
+            selectedLocation={signup.selectedLocation}
+            showCountryPicker={signup.showCountryPicker}
+            showDatePicker={signup.showDatePicker}
+            loading={signup.loading}
+            setFirstName={signup.setFirstName}
+            setLastName={signup.setLastName}
+            setEmail={signup.setEmail}
+            setPassword={signup.setPassword}
+            setConfirmPassword={signup.setConfirmPassword}
+            setPhone={signup.setPhone}
+            setShowPassword={signup.setShowPassword}
+            setShowConfirmPassword={signup.setShowConfirmPassword}
+            setSelectedCountry={signup.setSelectedCountry}
+            setSelectedLocation={signup.setSelectedLocation}
+            setShowCountryPicker={signup.setShowCountryPicker}
+            setShowDatePicker={signup.setShowDatePicker}
+            setDateOfBirth={signup.setDateOfBirth}
+            handleSignUp={signup.handleSignUp}
+            handleDateChange={handleDateChange}
+          />
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Already have an account? </Text>
+            <TouchableOpacity 
+              onPress={() => router.push('/(auth)/login')}
+              disabled={!!signup.verificationStep}
+            >
+              <Text style={[styles.registerText, signup.verificationStep && styles.disabledText]}>
+                Sign In
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+
+      <OTPModal
+        verificationStep={signup.verificationStep}
+        email={signup.email}
+        phone={signup.phone}
+        phoneCode={signup.selectedCountry.phoneCode}
+        emailOtp={signup.emailOtp}
+        smsOtp={signup.smsOtp}
+        emailVerified={signup.emailVerified}
+        smsVerified={signup.smsVerified}
+        emailTimer={signup.emailTimer}
+        smsTimer={signup.smsTimer}
+        verifyLoading={signup.verifyLoading}
+        emailOtpRefs={signup.emailOtpRefs}
+        smsOtpRefs={signup.smsOtpRefs}
+        handleEmailOtpChange={signup.handleEmailOtpChange}
+        handleSmsOtpChange={signup.handleSmsOtpChange}
+        handleVerifyEmail={signup.handleVerifyEmail}
+        handleVerifySms={signup.handleVerifySms}
+        handleResendEmail={signup.handleResendEmail}
+        handleResendSms={signup.handleResendSms}
+      />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  closeIcon: {
+    position: 'absolute',
+    top: 48,
+    right: 20,
+    zIndex: 10,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  innerContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#333',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  footerText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  registerText: {
+    color: '#0057FF',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  disabledText: {
+    color: '#999',
+  },
+});

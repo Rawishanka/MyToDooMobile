@@ -4,8 +4,8 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
-import { AuthProvider } from '@/context/AuthProvider';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { AuthProvider } from '@/src/shared/AuthProvider';
+import { useColorScheme } from '@/src/shared/hooks/useColorScheme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
@@ -18,6 +18,10 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error: any) => {
+        // Don't retry on auth errors - they need user intervention
+        if (error?.isAuthError || error?.status === 401) {
+          return false;
+        }
         // Don't retry on network errors since we have mock fallback
         if (error?.code === 'ERR_NETWORK' || error?.message === 'Network Error') {
           return false;
@@ -91,12 +95,7 @@ export default function RootLayout() {
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack>
             <Stack.Screen name='index' options={{ headerShown: false }} />
-            <Stack.Screen name='login-screen' options={{ headerShown: false }} />
-            <Stack.Screen name='signup-screen' options={{ headerShown: false }} />
-            <Stack.Screen name='test-api' options={{ headerShown: false }} />
-            <Stack.Screen name='auth-test' options={{ headerShown: false }} />
-            <Stack.Screen name='auth-debug' options={{ headerShown: false }} />
-            <Stack.Screen name='network-test' options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(welcome-screen)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="task-detail" options={{ headerShown: false }} />

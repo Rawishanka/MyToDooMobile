@@ -48,6 +48,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     easApiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://134.199.172.167:5001/api',
     environment: process.env.ENVIRONMENT,
     mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
+    googleClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
     eas: {
       projectId: "b9eb76c3-56d8-4ce9-9ea0-bae0908a0d4c"
     },

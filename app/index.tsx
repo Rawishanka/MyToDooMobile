@@ -1,4 +1,4 @@
-import FallingStars from '@/components/FallingStars';
+import FallingStars from '@/src/shared/components/FallingStars';
 import { ResizeMode, Video } from 'expo-av';
 import { Link, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -9,7 +9,7 @@ const MyToDooLogo = require('@/assets/MyToDoo_logo.gif');
 // TODO: Replace with actual cartoon/graphic asset for overlay
 const CartoonShears = null; // e.g. require('@/assets/gardening_shears.png')
 
-import { categoryVideos, getCategoryVideo } from '@/utils/videoLoader';
+import { categoryVideos, getCategoryVideo } from '@/src/shared/utils/videoLoader';
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -85,7 +85,7 @@ export default function WelcomeScreen() {
       {/* Bottom Container */}
       <View style={styles.bottomContainer}>
         <Text style={styles.welcomeText}>Welcome to MyToDoo</Text>
-        <Link href={"/(welcome-screen)/goal-screen"} asChild>
+        <Link href={"/(welcome-screen)/first-screen" as any} asChild>
           <TouchableOpacity style={styles.buttonPrimary} activeOpacity={0.8}>
             <Text style={styles.buttonText}>Get Started</Text>
           </TouchableOpacity>
@@ -93,7 +93,7 @@ export default function WelcomeScreen() {
         <TouchableOpacity
           style={styles.buttonSecondary}
           activeOpacity={0.8}
-          onPress={() => router.replace('/login-screen')}
+          onPress={() => router.replace('/(auth)/login')}
         >
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
