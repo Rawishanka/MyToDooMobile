@@ -1,19 +1,23 @@
 // Chat Window Component
 
 import { Ionicons } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import {
-    FlatList,
-    Image,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActionSheetIOS,
+  Alert,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import type { ChatMessage, Message } from './message-types';
 import { SAMPLE_CHAT_MESSAGES } from './message-types';
@@ -38,6 +42,78 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
       };
       setChatMessages([...chatMessages, newMsg]);
       setNewMessage('');
+    }
+  };
+
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const newMsg: ChatMessage = {
+          id: Date.now().toString(),
+          text: `📷 Image: ${result.assets[0].fileName || 'image.jpg'}`,
+          sender: 'me',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setChatMessages([...chatMessages, newMsg]);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to pick image');
+    }
+  };
+
+  const pickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: '*/*',
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const newMsg: ChatMessage = {
+          id: Date.now().toString(),
+          text: `📎 File: ${result.assets[0].name}`,
+          sender: 'me',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setChatMessages([...chatMessages, newMsg]);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to pick document');
+    }
+  };
+
+  const handleAttachment = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Choose Photo', 'Choose File'],
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            pickImage();
+          } else if (buttonIndex === 2) {
+            pickDocument();
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        'Add Attachment',
+        'Choose an option',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Choose Photo', onPress: pickImage },
+          { text: 'Choose File', onPress: pickDocument },
+        ]
+      );
     }
   };
 
@@ -125,6 +201,9 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
         >
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
+              <TouchableOpacity onPress={handleAttachment} style={styles.attachButton}>
+                <Ionicons name="attach" size={22} color="#666" />
+              </TouchableOpacity>
               <TextInput
                 style={styles.messageInput}
                 placeholder="Type a message..."
@@ -258,21 +337,31 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     backgroundColor: '#f5f5f5',
     borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    minHeight: 40,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    minHeight: 44,
   },
   messageInput: {
     flex: 1,
     fontSize: 15,
     maxHeight: 100,
     color: '#000',
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+  },
+  attachButton: {
+    padding: 6,
+    marginRight: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sendButton: {
-    paddingLeft: 8,
-    paddingBottom: 2,
+    padding: 6,
+    marginLeft: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

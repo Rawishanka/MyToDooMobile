@@ -122,8 +122,9 @@ export default function MapView({ tasks, iconUrl, focusTaskId }: MapViewProps) {
     <script>
         const map = L.map('map').setView([-25.2744, 133.7751], 4);
         
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            maxZoom: 20
         }).addTo(map);
 
         const markers = ${JSON.stringify(markers)};

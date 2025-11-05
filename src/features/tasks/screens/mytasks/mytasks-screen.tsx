@@ -1,6 +1,6 @@
 import { Task } from '@/src/api/types/tasks';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { sampleTasks } from './sample-tasks-new';
@@ -69,7 +69,15 @@ const TabScreen: React.FC<TabScreenProps & { status?: string }> = ({ isLoading, 
       <FlatList
         data={tasks}
         keyExtractor={(item) => item._id}
-        renderItem={({ item }) => <TaskCard task={item} />}
+        renderItem={({ item }) => (
+          <TaskCard 
+            task={item} 
+            onPress={(taskId: string) => {
+              console.log('Navigating to edit-task with taskId:', taskId);
+              router.push(`/edit-task?taskId=${taskId}` as any);
+            }}
+          />
+        )}
         contentContainerStyle={[
           styles.flatListContent,
           tasks.length === 0 && styles.emptyListContent

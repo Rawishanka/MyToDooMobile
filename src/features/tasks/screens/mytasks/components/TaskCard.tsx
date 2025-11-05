@@ -6,9 +6,10 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface TaskCardProps {
   task: Task;
+  onPress?: (taskId: string) => void;
 }
 
-export default function TaskCard({ task }: TaskCardProps) {
+export default function TaskCard({ task, onPress }: TaskCardProps) {
   const router = useRouter();
 
   // Helper function to get time preference display
@@ -131,7 +132,10 @@ export default function TaskCard({ task }: TaskCardProps) {
 
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.actionButton} onPress={() => router.push(`/task-detail?taskId=${task._id}`)}>
+        <TouchableOpacity 
+          style={styles.actionButton} 
+          onPress={() => onPress ? onPress(task._id) : router.push(`/edit-task?taskId=${task._id}` as any)}
+        >
           <MaterialIcons name="edit" size={20} color="#007bff" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={() => console.log('Approve task')}>

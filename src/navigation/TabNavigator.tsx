@@ -2,7 +2,12 @@ import { Entypo, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
+<<<<<<< HEAD
 import { Dimensions, Platform, View } from 'react-native';
+=======
+import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+>>>>>>> origin/dev-rusith
 
 // Import screens from features
 import GetItDoneScreen from '@/src/features/dashboard/screens/welcome-screen';
@@ -53,7 +58,7 @@ function Account() {
 export default function TabNavigator() {
   // Don't check auth here - let individual screens handle auth if needed
   // This prevents unwanted redirects during navigation
-  
+  const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -61,11 +66,18 @@ export default function TabNavigator() {
         tabBarActiveTintColor: '#007bff',
         tabBarInactiveTintColor: '#666',
         tabBarLabelPosition: 'below-icon',
+        tabBarHideOnKeyboard: true,
         tabBarStyle: { 
+<<<<<<< HEAD
           height: TAB_BAR_HEIGHT, 
           paddingBottom: Platform.OS === 'ios' ? 25 : 10, 
           paddingTop: 5,
           paddingHorizontal: isSmallDevice ? 2 : 5,
+=======
+          height: 60 + insets.bottom, 
+          paddingBottom: Math.max(insets.bottom, 8), 
+          paddingTop: 6 
+>>>>>>> origin/dev-rusith
         },
         tabBarItemStyle: { 
           flexDirection: 'column', 
