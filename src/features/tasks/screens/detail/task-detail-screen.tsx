@@ -7,6 +7,7 @@ import {
     ErrorState,
     LoadingState,
     MakeOfferSection,
+    MyOfferCard,
     OffersList,
     QuestionsList,
     TabsSection,
@@ -19,12 +20,15 @@ export default function TaskDetailScreen() {
 
   const {
     task,
-    offers,
+    taskOffers,
+    allOffers,
+    myOffer,
     questions,
     isLoading,
     error,
     refetch,
-    isLoadingOffers,
+    isLoadingTaskOffers,
+    isLoadingAllOffers,
     isLoadingQuestions,
     activeTab,
     setActiveTab,
@@ -33,10 +37,12 @@ export default function TaskDetailScreen() {
     questionText,
     setQuestionText,
     handleMakeOffer,
+    handleAcceptOffer,
     handleAskQuestion,
     getLocationIcon,
     getTimeDisplay,
     postQuestionMutation,
+    currentUser,
   } = useTaskDetail({ taskId: taskId! });
 
   if (isLoading) {
@@ -62,11 +68,28 @@ export default function TaskDetailScreen() {
           getTimeDisplay={getTimeDisplay}
         />
 
+        {/* Show user's own offer if they made one */}
+        {/* OR show the first offer if user is the task poster (to review/accept) */}
+        {(myOffer || (task?.createdBy?._id === currentUser?._id && taskOffers.length > 0)) && (
+          <MyOfferCard 
+            offer={myOffer || taskOffers[0]} 
+            isTaskPoster={task?.createdBy?._id === currentUser?._id}
+            onAcceptOffer={handleAcceptOffer}
+          />
+        )}
+
         <TabsSection activeTab={activeTab} onTabChange={setActiveTab} />
 
         <View style={styles.tabContent}>
           {activeTab === 'offers' ? (
-            <OffersList offers={offers} isLoading={isLoadingOffers} />
+            <OffersList 
+              offers={allOffers} 
+              isLoading={isLoadingAllOffers}
+              taskCreatorId={task?.createdBy?._id}
+              currentUserId={currentUser?._id}
+              onAcceptOffer={handleAcceptOffer}
+              excludeOfferId={myOffer?._id || (task?.createdBy?._id === currentUser?._id && taskOffers.length > 0 ? taskOffers[0]._id : undefined)}
+            />
           ) : (
             <QuestionsList
               questions={questions}

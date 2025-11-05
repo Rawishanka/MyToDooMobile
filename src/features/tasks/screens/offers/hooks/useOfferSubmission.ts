@@ -1,4 +1,5 @@
-import { useCreateOffer } from '@/src/shared/hooks/useTaskApi';
+import { useCreateOffer, useGetAllOffers } from '@/src/shared/hooks/useTaskApi';
+import { useAuthStore } from '@/src/store/auth-task-store';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert } from 'react-native';
@@ -9,7 +10,29 @@ interface UseOfferSubmissionProps {
 
 export const useOfferSubmission = ({ taskId }: UseOfferSubmissionProps) => {
   const router = useRouter();
+  const currentUser = useAuthStore((state) => state.user);
   const createOfferMutation = useCreateOffer();
+
+  // Fetch offers for this task to check if user already made an offer
+  const {
+    data: offersData,
+    isLoading: isLoadingOffers,
+  } = useGetAllOffers(
+    { 
+      taskId: taskId || '',
+      limit: 50, 
+      sortBy: 'createdAt', 
+      order: 'desc' 
+    }, 
+    !!taskId
+  );
+
+  const offers = offersData?.data || [];
+  
+  // Check if current user has already made an offer on this task
+  const userHasExistingOffer = offers.some(
+    (offer: any) => offer.taskTakerId?._id === currentUser?._id
+  );
 
   const [offerAmount, setOfferAmount] = useState('');
   const [message, setMessage] = useState('');
@@ -48,6 +71,15 @@ export const useOfferSubmission = ({ taskId }: UseOfferSubmissionProps) => {
   };
 
   const handleSubmitOffer = async () => {
+    // Check if user already has an offer on this task
+    if (userHasExistingOffer) {
+      Alert.alert(
+        'Offer Already Submitted',
+        'You have already made an offer on this task. You can only submit one offer per task.'
+      );
+      return;
+    }
+
     if (!validateOfferAmount(offerAmount)) return;
     if (!validateMessage(message)) return;
 
@@ -56,6 +88,7 @@ export const useOfferSubmission = ({ taskId }: UseOfferSubmissionProps) => {
     try {
       const offerData = {
         amount: parseFloat(offerAmount),
+        currency: 'SGD',
         message: message.trim(),
       };
 
@@ -100,6 +133,8 @@ export const useOfferSubmission = ({ taskId }: UseOfferSubmissionProps) => {
     offerAmount,
     message,
     isSubmitting,
+    isLoadingOffers,
+    userHasExistingOffer,
     setMessage,
     handleOfferAmountChange,
     handleSubmitOffer,

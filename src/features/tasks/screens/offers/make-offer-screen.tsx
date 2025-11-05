@@ -35,6 +35,8 @@ export default function MakeOfferScreen() {
     offerAmount,
     message,
     isSubmitting,
+    isLoadingOffers,
+    userHasExistingOffer,
     setMessage,
     handleOfferAmountChange,
     handleSubmitOffer,
@@ -69,18 +71,32 @@ export default function MakeOfferScreen() {
         />
 
         <TipsSection />
+        
+        {/* Show message if user already has an offer */}
+        {userHasExistingOffer && (
+          <View style={styles.warningContainer}>
+            <Text style={styles.warningText}>
+              ⚠️ You have already submitted an offer for this task. Only one offer per task is allowed.
+            </Text>
+          </View>
+        )}
       </ScrollView>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={[styles.submitButton, isSubmitting && styles.submittingButton]}
+          style={[
+            styles.submitButton, 
+            (isSubmitting || userHasExistingOffer) && styles.disabledButton
+          ]}
           onPress={handleSubmitOffer}
-          disabled={isSubmitting}
+          disabled={isSubmitting || userHasExistingOffer}
         >
           {isSubmitting ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text style={styles.submitButtonText}>Submit Offer</Text>
+            <Text style={styles.submitButtonText}>
+              {userHasExistingOffer ? 'Offer Already Submitted' : 'Submit Offer'}
+            </Text>
           )}
         </TouchableOpacity>
       </View>
@@ -97,6 +113,21 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
+  warningContainer: {
+    backgroundColor: '#FFF3CD',
+    borderWidth: 1,
+    borderColor: '#FFC107',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  warningText: {
+    color: '#856404',
+    fontSize: 14,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
   buttonContainer: {
     paddingHorizontal: 20,
     paddingVertical: 15,
@@ -110,8 +141,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-  submittingButton: {
-    opacity: 0.7,
+  disabledButton: {
+    backgroundColor: '#cccccc',
+    opacity: 0.6,
   },
   submitButtonText: {
     color: '#fff',

@@ -12,7 +12,7 @@ const getApiUrl = () => {
     }
     
     // 🔧 Fallback: Using IP address from .env file
-    return "http://192.168.8.152:5001/api";
+    return "http://192.168.1.168:5001/api";
 };
 
 const API_CONFIG = {

@@ -22,6 +22,9 @@ export const TASK_QUERY_KEYS = {
   myTasks: (params?: MyTasksParams) => [...TASK_QUERY_KEYS.all, 'my-tasks', params] as const,
   myOffers: (params?: MyTasksParams) => [...TASK_QUERY_KEYS.all, 'my-offers', params] as const,
   offers: (taskId: string) => [...TASK_QUERY_KEYS.detail(taskId), 'offers'] as const,
+  allOffers: (taskId?: string) => taskId 
+    ? [...TASK_QUERY_KEYS.all, 'all-offers', taskId] as const
+    : [...TASK_QUERY_KEYS.all, 'all-offers'] as const,
   completionStatus: (taskId: string) => [...TASK_QUERY_KEYS.detail(taskId), 'completion-status'] as const,
   paymentStatus: () => [...TASK_QUERY_KEYS.all, 'payment-status'] as const,
   questions: (taskId: string) => [...TASK_QUERY_KEYS.detail(taskId), 'questions'] as const,
@@ -125,6 +128,27 @@ export function useGetTaskOffers(taskId: string, enabled = true) {
     queryFn: () => TaskAPI.getTaskOffers(taskId),
     enabled: enabled && !!taskId,
     staleTime: 30 * 1000, // 30 seconds
+  });
+}
+
+/**
+ * 🌍 Get All Offers Hook
+ * Fetches all offers from /api/offers/all endpoint with optional taskId filter
+ */
+export function useGetAllOffers(params?: {
+  taskId?: string;
+  limit?: number;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+  page?: number;
+}, enabled = true) {
+  return useQuery({
+    queryKey: TASK_QUERY_KEYS.allOffers(params?.taskId),
+    queryFn: () => TaskAPI.getAllOffers(params),
+    enabled: enabled,
+    staleTime: 30 * 1000, // 30 seconds - keep fresh for real-time updates
+    refetchOnMount: true, // Always refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when user returns to app
   });
 }
 
@@ -321,6 +345,8 @@ export function useCreateOffer() {
     onSuccess: (data, variables) => {
       // Refetch offers for this task
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.offers(variables.taskId) });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.allOffers(variables.taskId) });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.allOffers() }); // Invalidate global offers
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
     },
   });
@@ -339,6 +365,8 @@ export function useAcceptOffer() {
       // Refetch task details and offers
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.offers(variables.taskId) });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.allOffers(variables.taskId) });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.allOffers() }); // Invalidate global offers
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
     },
@@ -356,6 +384,8 @@ export function useUpdateOffer() {
       TaskAPI.updateOffer(taskId, offerId, updates),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.offers(variables.taskId) });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.allOffers(variables.taskId) });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.allOffers() }); // Invalidate global offers
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
     },
   });
@@ -482,6 +512,7 @@ export const TaskHooks = {
   useGetMyOffers,
   useGetTaskById,
   useGetTaskOffers,
+  useGetAllOffers,
   useGetAcceptedOffer,
   useGetTaskCompletionStatus,
   useGetPaymentStatus,

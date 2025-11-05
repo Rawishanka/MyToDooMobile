@@ -6,6 +6,7 @@ import * as FileSystem from 'expo-file-system';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
+    AllOffersResponse,
     CreateOfferRequest,
     CreateOfferResponse,
     CreateTaskRequest,
@@ -626,7 +627,13 @@ export async function getTaskOffers(taskId: string): Promise<TaskOffersResponse>
   try {
     console.log("👀 Fetching offers for task:", taskId);
     const response = await api.get(`/tasks/${taskId}/offers`);
-    console.log("✅ Get task offers success:", response.data);
+    console.log("✅ Get task offers success:", JSON.stringify(response.data, null, 2));
+    
+    // Log specific offer structure for debugging
+    if (response.data?.data?.offers?.length > 0) {
+      console.log("🔍 First offer structure:", JSON.stringify(response.data.data.offers[0], null, 2));
+    }
+    
     return response.data;
   } catch (error) {
     console.error("❌ Get task offers failed:", error);
@@ -684,6 +691,48 @@ export async function updateOffer(taskId: string, offerId: string, updates: Part
     return response.data;
   } catch (error) {
     console.error("❌ Update offer failed:", error);
+    throw error;
+  }
+}
+
+/**
+ * 🌍 Get All Offers
+ * Endpoint: GET /api/offers/all
+ * Auth: Required
+ * Description: Get all offers with pagination and sorting, optionally filtered by taskId
+ */
+export async function getAllOffers(params?: {
+  taskId?: string;
+  limit?: number;
+  sortBy?: string;
+  order?: 'asc' | 'desc';
+  page?: number;
+}): Promise<AllOffersResponse> {
+  const api = getApi();
+  try {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.taskId) queryParams.append('taskId', params.taskId);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+    if (params?.order) queryParams.append('order', params.order);
+    if (params?.page) queryParams.append('page', params.page.toString());
+
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/offers/all?${queryString}` : '/offers/all';
+    
+    console.log("🌍 Fetching all offers:", endpoint);
+    const response = await api.get(endpoint);
+    console.log("✅ Get all offers success:", JSON.stringify(response.data, null, 2));
+    
+    // Log specific offer structure for debugging
+    if (response.data?.data?.length > 0) {
+      console.log("🔍 First offer from /offers/all structure:", JSON.stringify(response.data.data[0], null, 2));
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error("❌ Get all offers failed:", error);
     throw error;
   }
 }
@@ -930,6 +979,7 @@ export const TaskAPI = {
   
   // Phase 3: Offer System
   getTaskOffers,
+  getAllOffers,
   createOffer,
   acceptOffer,
   updateOffer,

@@ -2,7 +2,7 @@ import { Entypo, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
-import { View } from 'react-native';
+import { Dimensions, Platform, View } from 'react-native';
 
 // Import screens from features
 import GetItDoneScreen from '@/src/features/dashboard/screens/welcome-screen';
@@ -15,6 +15,13 @@ import MakeOfferScreen from '@/src/features/tasks/screens/offers/make-offer-scre
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+// Get screen width for responsive sizing
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const isSmallDevice = SCREEN_WIDTH < 375; // iPhone SE and smaller
+const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 85 : 70;
+const ICON_SIZE = isSmallDevice ? 18 : 22;
+const FONT_SIZE = isSmallDevice ? 8 : 10;
 
 // Create a stack navigator for Browse tab to handle task details
 function BrowseStack() {
@@ -55,24 +62,29 @@ export default function TabNavigator() {
         tabBarInactiveTintColor: '#666',
         tabBarLabelPosition: 'below-icon',
         tabBarStyle: { 
-          height: 80, 
-          paddingBottom: 20, 
-          paddingTop: 5 
+          height: TAB_BAR_HEIGHT, 
+          paddingBottom: Platform.OS === 'ios' ? 25 : 10, 
+          paddingTop: 5,
+          paddingHorizontal: isSmallDevice ? 2 : 5,
         },
         tabBarItemStyle: { 
           flexDirection: 'column', 
           justifyContent: 'center', 
           alignItems: 'center', 
-          paddingVertical: 5 
+          paddingVertical: isSmallDevice ? 3 : 5,
+          minWidth: isSmallDevice ? 60 : 70,
         },
         tabBarLabelStyle: { 
-          fontSize: 11, 
+          fontSize: FONT_SIZE, 
           fontWeight: '500',
           textAlign: 'center',
-          marginTop: 2
+          marginTop: 2,
+          includeFontPadding: false,
+          paddingHorizontal: 0,
         },
+        tabBarAllowFontScaling: false,
         tabBarIcon: ({ color, focused }) => {
-          const iconSize = 20;
+          const iconSize = ICON_SIZE;
           const iconColor = focused ? '#007bff' : '#666';
           return (
             <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: 2 }}>
@@ -96,9 +108,9 @@ export default function TabNavigator() {
         },
       })}
     >
-      <Tab.Screen name="index" component={GetItDone} options={{ tabBarLabel: 'Get it done' }} />
+      <Tab.Screen name="index" component={GetItDone} options={{ tabBarLabel: 'Get Done' }} />
       <Tab.Screen name="browse" component={BrowseStack} options={{ tabBarLabel: 'Browse' }} />
-      <Tab.Screen name="my-tasks" component={MyTasks} options={{ tabBarLabel: 'My tasks' }} />
+      <Tab.Screen name="my-tasks" component={MyTasks} options={{ tabBarLabel: 'My Tasks' }} />
       <Tab.Screen name="message" component={MessageScreen} options={{ tabBarLabel: 'Messages' }} />
       <Tab.Screen name="account" component={Account} options={{ tabBarLabel: 'Account' }} />
     </Tab.Navigator>

@@ -48,32 +48,11 @@ export default function RootLayout() {
   useEffect(() => {
     const prepareApp = async () => {
       try {
-        // Set maximum loading time to avoid infinite loading
-        const maxLoadTime = 3000; // 3 seconds max
-        const startTime = Date.now();
-        
-        // Wait for fonts to load or timeout
-        const fontLoadPromise = new Promise<void>((resolve) => {
-          if (loaded) {
-            resolve();
-          } else {
-            const checkInterval = setInterval(() => {
-              if (loaded || Date.now() - startTime > maxLoadTime) {
-                clearInterval(checkInterval);
-                resolve();
-              }
-            }, 100);
-          }
-        });
-        
-        await fontLoadPromise;
-        
-        // Small delay to ensure UI is ready
-        await new Promise(resolve => setTimeout(resolve, 50));
-        
-        setAppReady(true);
-        await SplashScreen.hideAsync();
-        
+        // Wait for fonts to load
+        if (loaded) {
+          setAppReady(true);
+          await SplashScreen.hideAsync();
+        }
       } catch (e) {
         console.warn('Error preparing app:', e);
         setAppReady(true);
@@ -81,7 +60,9 @@ export default function RootLayout() {
       }
     };
 
-    prepareApp();
+    if (loaded) {
+      prepareApp();
+    }
   }, [loaded]);
 
   if (!loaded || !appReady) {

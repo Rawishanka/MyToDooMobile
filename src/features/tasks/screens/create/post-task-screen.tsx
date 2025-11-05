@@ -5,15 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 export default function PostTaskScreen() {
@@ -135,7 +135,7 @@ export default function PostTaskScreen() {
             text: 'OK',
             onPress: () => {
               // Navigate to tabs - same as login screen does
-              router.replace('/(tabs)');
+              router.replace('/(tabs)' as any);
             }
           }
         ]

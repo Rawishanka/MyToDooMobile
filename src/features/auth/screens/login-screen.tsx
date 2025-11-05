@@ -1,7 +1,6 @@
 import { useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { makeRedirectUri } from 'expo-auth-session';
 import * as Google from 'expo-auth-session/providers/google';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
@@ -36,14 +35,22 @@ export default function LoginScreen() {
   // Get Google Client ID from environment
   const googleClientId = Constants.expoConfig?.extra?.googleClientId || process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
 
-  // Create redirect URI using Expo's proxy for development
-  const redirectUri = makeRedirectUri({
-    native: `${Constants.expoConfig?.scheme || 'mytodoomobile'}:/`,
-    preferLocalhost: false,
-  });
+  // FORCE use of Expo auth proxy - manually construct the URL
+  // For Expo Go, we MUST use the auth proxy to avoid local IP issues
+  const owner = Constants.expoConfig?.owner || 'nowanya';
+  const slug = Constants.expoConfig?.slug || 'MyToDooMobile';
+  const redirectUri = `https://auth.expo.io/@${owner}/${slug}`;
   
   console.log('📱 Redirect URI for Google OAuth:', redirectUri);
+  console.log('🔐 Google Client ID:', googleClientId ? 'Configured' : 'Not configured');
+  console.log('🔐 Google Sign-In Configuration:', {
+    'Client ID': googleClientId,
+    'Redirect URI': redirectUri,
+    'Owner': owner,
+    'Slug': slug,
+  });
   
+  // Configure Google Sign-In - Use Web Client ID for mobile
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId: googleClientId,
     redirectUri: redirectUri,
@@ -51,31 +58,52 @@ export default function LoginScreen() {
 
   // Handle Google Sign-In response
   useEffect(() => {
+    if (!response) return;
+
+    console.log('🔍 Google OAuth Response:', {
+      type: response.type,
+      params: (response as any).params,
+      error: (response as any).error,
+    });
+
     if (response?.type === 'success') {
-      const { id_token } = response.params;
-      handleGoogleSignInSuccess(id_token);
+      const { id_token, authentication } = (response as any).params;
+      const token = id_token || authentication?.idToken;
+      
+      if (token) {
+        handleGoogleSignInSuccess(token);
+      } else {
+        console.error('❌ No ID token in response:', (response as any).params);
+        Alert.alert(
+          'Authentication Error',
+          'Unable to retrieve authentication token. Please try again.',
+          [{ text: 'OK' }]
+        );
+        setGoogleLoading(false);
+      }
     } else if (response?.type === 'error') {
-      console.error('❌ Google Sign-In error:', response.error);
+      console.error('❌ Google Sign-In error:', (response as any).error);
       setGoogleLoading(false);
       
       // Check for specific error
-      if (response.error?.message?.includes('invalid_request') || response.error?.message?.includes('400')) {
+      const errorMsg = (response as any).error?.message || '';
+      if (errorMsg.includes('invalid_request') || errorMsg.includes('400')) {
         Alert.alert(
           'Google Sign-In Setup Required',
           'Please add this redirect URI to your Google Cloud Console:\n\n' + 
-          (response.params?.redirect_uri || redirectUri || 'https://auth.expo.io/@...') +
-          '\n\nOr enable "Use Proxy" in the configuration.',
+          redirectUri +
+          '\n\nAlso add https://auth.expo.io to Authorized JavaScript origins.',
           [{ text: 'OK' }]
         );
       } else {
         Alert.alert(
           'Google Sign-In Failed',
-          response.error?.message || 'An error occurred during Google Sign-In',
+          errorMsg || 'An error occurred during Google Sign-In. Please check your Google Cloud Console configuration.',
           [{ text: 'OK' }]
         );
       }
-    } else if (response?.type === 'cancel') {
-      console.log('User cancelled Google Sign-In');
+    } else if (response?.type === 'dismiss' || response?.type === 'cancel') {
+      console.log('ℹ️ User dismissed/cancelled Google Sign-In');
       setGoogleLoading(false);
     }
   }, [response]);
@@ -84,20 +112,29 @@ export default function LoginScreen() {
     try {
       setGoogleLoading(true);
       
-      console.log('✅ Google Sign-In successful, sending token to backend');
+      console.log('✅ Google Sign-In successful, ID token received');
+      console.log('📤 Sending token to backend...');
       
       // Send the ID token to backend
-      await googleSignIn({ credential: idToken });
+      const result = await googleSignIn({ credential: idToken });
       
-      // Navigate to tabs after successful login
+      console.log('✅ Backend authentication successful:', result);
+      console.log('🚀 Navigating to welcome screen...');
+      
+      // Navigate to tabs (which shows welcome screen as default) after successful login
       router.replace('/(tabs)' as any);
       
     } catch (error: any) {
       console.error('❌ Google Sign-In backend error:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
       
       Alert.alert(
         'Sign-In Failed',
-        'Unable to complete Google Sign-In. Please try again or use email/password.',
+        error.response?.data?.message || error.message || 'Unable to complete Google Sign-In. Please try again or use email/password.',
         [{ text: 'OK' }]
       );
     } finally {

@@ -3,12 +3,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 // API and Hooks
@@ -22,14 +22,14 @@ import NotificationModal from '@/src/features/messages/screens/notification-scre
 import { TaskCard } from '@/src/features/tasks/components';
 import { LoadingState } from '../../components/shared';
 import {
-  DebugTools,
-  FilterButton,
-  FilterModal,
-  MapView,
-  SearchBar,
-  SortButton,
-  SortModal,
-  ViewModeToggle
+    DebugTools,
+    FilterButton,
+    FilterModal,
+    MapView,
+    SearchBar,
+    SortButton,
+    SortModal,
+    ViewModeToggle
 } from './components';
 
 // Custom Hooks
@@ -320,18 +320,23 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
+    minHeight: 50,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: 8,
   },
   headerIcons: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
   notificationButton: {
     position: 'relative',

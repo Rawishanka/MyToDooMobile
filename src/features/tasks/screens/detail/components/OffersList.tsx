@@ -5,9 +5,29 @@ import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-nativ
 interface OffersListProps {
   offers: any[];
   isLoading: boolean;
+  taskCreatorId?: string;
+  currentUserId?: string;
+  onAcceptOffer?: (offerId: string) => void;
+  excludeOfferId?: string; // Offer ID to exclude (shown in MyOfferCard)
 }
 
-export const OffersList: React.FC<OffersListProps> = ({ offers, isLoading }) => {
+export const OffersList: React.FC<OffersListProps> = ({ 
+  offers, 
+  isLoading, 
+  taskCreatorId, 
+  currentUserId,
+  onAcceptOffer,
+  excludeOfferId
+}) => {
+  // Filter out:
+  // 1. The current user's offer (shown separately in MyOfferCard)
+  // 2. The offer being displayed in MyOfferCard (if task poster is viewing)
+  const otherOffers = offers.filter(
+    (offer: any) => 
+      offer.taskTakerId?._id !== currentUserId && 
+      offer._id !== excludeOfferId
+  );
+
   if (isLoading) {
     return (
       <View style={styles.loadingState}>
@@ -17,67 +37,100 @@ export const OffersList: React.FC<OffersListProps> = ({ offers, isLoading }) => 
     );
   }
 
-  if (offers.length === 0) {
+  if (otherOffers.length === 0) {
     return (
       <View style={styles.emptyState}>
         <Ionicons name="document-outline" size={48} color="#ccc" />
-        <Text style={styles.emptyStateText}>No offers yet</Text>
-        <Text style={styles.emptyStateSubtext}>Be the first to make an offer!</Text>
+        <Text style={styles.emptyStateText}>No other offers yet</Text>
+        <Text style={styles.emptyStateSubtext}>
+          {offers.length > 0 ? 'Only your offer has been submitted.' : 'Be the first to make an offer!'}
+        </Text>
       </View>
     );
   }
 
   return (
     <FlatList
-      data={offers}
+      data={otherOffers}
       scrollEnabled={false}
       keyExtractor={(item: any) => item._id}
-      renderItem={({ item: offer }: { item: any }) => (
-        <View style={styles.offerCard}>
-          <View style={styles.offerHeader}>
-            <View style={styles.offerUserSection}>
-              <View style={styles.offerAvatar}>
-                <Ionicons name="person" size={24} color="#666" />
-              </View>
-              <View style={styles.offerUserInfo}>
-                <View style={styles.offerNameRow}>
-                  <Text style={styles.offerUserName}>
-                    {offer.taskTakerId?.firstName || 'Prasanna'}{' '}
-                    {offer.taskTakerId?.lastName || 'Fernando'}
-                  </Text>
-                  <Ionicons name="star" size={14} color="#007AFF" style={styles.verifiedIcon} />
+      renderItem={({ item: offer }: { item: any }) => {
+        // Handle both nested and flat offer structures
+        const offerAmount = offer.offer?.amount || offer.amount || 0;
+        const offerCurrency = offer.offer?.currency || offer.currency || 'SGD';
+        const taskTitle = offer.taskId?.title || 'Task';
+        
+        // Debug logging
+        console.log('OffersList - Raw offer data:', JSON.stringify(offer, null, 2));
+        console.log('OffersList - Extracted amount:', offerAmount);
+        
+        return (
+          <View style={styles.offerCard}>
+            {/* Task Title - Show which task this offer is for */}
+            <View style={styles.taskTitleContainer}>
+              <Ionicons name="briefcase-outline" size={14} color="#666" />
+              <Text style={styles.taskTitle} numberOfLines={1}>
+                {taskTitle}
+              </Text>
+            </View>
+
+            <View style={styles.offerHeader}>
+              <View style={styles.offerUserSection}>
+                <View style={styles.offerAvatar}>
+                  <Ionicons name="person" size={24} color="#666" />
                 </View>
+                <View style={styles.offerUserInfo}>
+                  <View style={styles.offerNameRow}>
+                    <Text style={styles.offerUserName}>
+                      {offer.taskTakerId?.firstName || 'Tasker'}{' '}
+                      {offer.taskTakerId?.lastName || ''}
+                    </Text>
+                    <Ionicons name="star" size={14} color="#007AFF" style={styles.verifiedIcon} />
+                  </View>
 
-                <View style={styles.offerRating}>
-                  <Ionicons name="star" size={14} color="#FFB800" />
-                  <Text style={styles.offerRatingText}>
-                    {offer.taskTakerId?.rating?.toFixed(1) || '4.4'}
+                  <View style={styles.offerRating}>
+                    <Ionicons name="star" size={14} color="#FFB800" />
+                    <Text style={styles.offerRatingText}>
+                      {offer.taskTakerId?.rating?.toFixed(1) || '4.4'}
+                    </Text>
+                    <Text style={styles.offerRatingCount}>
+                      ({offer.taskTakerId?.completedTasks || 352})
+                    </Text>
+                  </View>
+
+                  <Text style={styles.offerCompletionRate}>
+                    {offer.taskTakerId?.completionRate || '98%'} Completion Rate
                   </Text>
-                  <Text style={styles.offerRatingCount}>
-                    ({offer.taskTakerId?.completedTasks || 352})
-                  </Text>
-                </View>
 
-                <Text style={styles.offerCompletionRate}>
-                  {offer.taskTakerId?.completionRate || '98%'} Completion Rate
-                </Text>
+                  {/* Offer Amount - Prominent Display */}
+                  <View style={styles.offerAmountContainer}>
+                    <Text style={styles.offerAmountLabel}>Offer Amount:</Text>
+                    <Text style={styles.offerAmount}>
+                      ${offerAmount} {offerCurrency}
+                    </Text>
+                  </View>
 
-                <View style={styles.offerMessageRow}>
-                  <Ionicons name="chatbubble-outline" size={12} color="#666" />
-                  <Text style={styles.offerMessage}>
-                    {offer.offer?.message || offer.message || 'HHHHHHH'}
-                  </Text>
-                </View>
+                  {/* Message */}
+                  <View style={styles.offerMessageRow}>
+                    <Ionicons name="chatbubble-outline" size={12} color="#666" />
+                    <Text style={styles.offerMessage}>
+                      {offer.offer?.message || offer.message || 'No message provided'}
+                    </Text>
+                  </View>
 
-                <View style={styles.offerDateRow}>
-                  <Ionicons name="time-outline" size={12} color="#666" />
-                  <Text style={styles.offerDate}>Relocated 17+ times in 2025</Text>
+                  {/* Show accepted status badge if offer is accepted */}
+                  {offer.status === 'accepted' && (
+                    <View style={styles.acceptedBadge}>
+                      <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
+                      <Text style={styles.acceptedText}>Accepted</Text>
+                    </View>
+                  )}
                 </View>
               </View>
             </View>
           </View>
-        </View>
-      )}
+        );
+      }}
     />
   );
 };
@@ -114,6 +167,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+  },
+  taskTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: 8,
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  taskTitle: {
+    fontSize: 13,
+    color: '#666',
+    marginLeft: 6,
+    flex: 1,
+    fontWeight: '500',
   },
   offerHeader: {
     marginBottom: 12,
@@ -167,16 +235,62 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     marginBottom: 8,
   },
+  offerAmountContainer: {
+    backgroundColor: '#F0F8FF',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#004aad',
+  },
+  offerAmountLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+  },
+  offerAmount: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#004aad',
+  },
   offerMessageRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 6,
+    marginBottom: 12,
   },
   offerMessage: {
     fontSize: 13,
     color: '#333',
     marginLeft: 6,
     flex: 1,
+  },
+  acceptOfferButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  acceptOfferButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  acceptedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  acceptedText: {
+    color: '#4CAF50',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
   },
   offerDateRow: {
     flexDirection: 'row',

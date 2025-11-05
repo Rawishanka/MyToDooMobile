@@ -382,6 +382,7 @@ export interface UpdateTaskRequest {
 // 💫 *CREATE OFFER REQUEST*
 export interface CreateOfferRequest {
   amount: number;
+  currency?: string;
   message: string;
 }
 
@@ -445,6 +446,47 @@ export interface CreateTaskResponse {
 export interface CreateOfferResponse {
   success: boolean;
   data: TaskOffer;
+}
+
+export interface AllOffersResponse {
+  success: boolean;
+  data: Array<{
+    _id: string;
+    taskId: {
+      _id: string;
+      title: string;
+      categories: string[];
+    };
+    taskCreatorId: {
+      _id: string;
+      firstName: string;
+      lastName: string;
+      avatar?: string;
+    };
+    taskTakerId: {
+      _id: string;
+      firstName: string;
+      lastName: string;
+      avatar?: string;
+      rating?: number;
+      completedTasks?: number;
+      completionRate?: string;
+    };
+    offer: {
+      amount: number;
+      currency: string;
+      message: string;
+    };
+    status: string;
+    createdAt: string;
+    updatedAt?: string;
+  }>;
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
 }
 
 export interface TaskCompletionStatusResponse {
