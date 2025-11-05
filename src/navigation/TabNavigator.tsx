@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import screens from features
 import GetItDoneScreen from '@/src/features/dashboard/screens/welcome-screen';
@@ -46,7 +47,7 @@ function Account() {
 export default function TabNavigator() {
   // Don't check auth here - let individual screens handle auth if needed
   // This prevents unwanted redirects during navigation
-  
+  const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -54,10 +55,11 @@ export default function TabNavigator() {
         tabBarActiveTintColor: '#007bff',
         tabBarInactiveTintColor: '#666',
         tabBarLabelPosition: 'below-icon',
+        tabBarHideOnKeyboard: true,
         tabBarStyle: { 
-          height: 80, 
-          paddingBottom: 20, 
-          paddingTop: 5 
+          height: 60 + insets.bottom, 
+          paddingBottom: Math.max(insets.bottom, 8), 
+          paddingTop: 6 
         },
         tabBarItemStyle: { 
           flexDirection: 'column', 

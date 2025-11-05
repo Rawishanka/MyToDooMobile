@@ -1,10 +1,12 @@
 // Chat Window Component
 
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import {
+  ActionSheetIOS,
+  Alert,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -16,8 +18,6 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
-  ActionSheetIOS,
 } from 'react-native';
 import type { ChatMessage, Message } from './message-types';
 import { SAMPLE_CHAT_MESSAGES } from './message-types';
