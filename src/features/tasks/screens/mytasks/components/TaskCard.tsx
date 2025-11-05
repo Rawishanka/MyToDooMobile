@@ -1,4 +1,5 @@
 import { Task } from '@/src/api/types/tasks';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -127,6 +128,19 @@ export default function TaskCard({ task }: TaskCardProps) {
           {task.details}
         </Text>
       )}
+
+      {/* Action Buttons */}
+      <View style={styles.actionButtons}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => router.push(`/task-detail?taskId=${task._id}`)}>
+          <MaterialIcons name="edit" size={20} color="#007bff" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton} onPress={() => console.log('Approve task')}>
+          <MaterialIcons name="check-circle" size={20} color="#28a745" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton} onPress={() => console.log('Cancel task')}>
+          <MaterialIcons name="cancel" size={20} color="#dc3545" />
+        </TouchableOpacity>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -138,6 +152,33 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 12,
+    gap: 8,
+  },
+  actionButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  actionIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#666',
   },
   header: {
     flexDirection: 'row',

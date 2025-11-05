@@ -239,10 +239,17 @@ export function useApiFunctions() {
     // API_CONFIG.BASE_URL already handles the env variable and fallback
     const api = createApi(API_CONFIG.BASE_URL);
     console.log("Calling login API:", API_CONFIG.BASE_URL + "/auth/login");
-    console.log("With data:", { email: email, password });
+    console.log("With data:", { email: email, password: "********" });
 
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/auth/login', { email, password }, {
+        timeout: API_CONFIG.TIMEOUT,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
       console.log("✅ Login Success Response:", response.data);
       const { token, user, expiresIn } = response.data;
       
@@ -261,6 +268,46 @@ export function useApiFunctions() {
       
       return token;
     } catch (error: any) {
+      // Development fallback - if server is not available, use mock data
+      if (error.code === 'ECONNREFUSED' || 
+          error.message?.includes('Network Error') || 
+          error.code === 'ENOTFOUND' ||
+          error.code === 'ERR_NETWORK') {
+        console.warn("🔄 Server not available - attempting development fallback");
+        
+        // Development mode fallback
+        if (API_CONFIG.DEVELOPMENT_MODE) {
+            console.log("💡 Using development mode fallback...");
+            // Create mock user session for development
+            const mockToken = "dev-token-" + Date.now();
+            const mockUser = {
+                id: "dev-user-123",
+                _id: "dev-user-123",
+                email: email,
+                firstName: "Dev",
+                lastName: "User",
+                role: "user"
+            };
+            const mockExpiresIn = 3600;
+
+            // Set up development session
+            setAuthData(mockToken, mockUser, mockExpiresIn);
+            setStoredToken(mockToken);
+            await AsyncStorage.setItem('userEmail', email);
+            
+            return mockToken;
+        }
+        
+        // Production mode - throw network error
+        console.error("Network Error Details:", {
+            code: error.code,
+            message: error.message,
+            config: error?.config,
+            url: API_CONFIG.BASE_URL
+        });
+        throw new Error('Server connection failed. Please check your internet connection or try again later.');
+      }
+      
       // Log detailed error information
       console.error("❌ Login failed:");
       console.error("Status:", error?.response?.status);
@@ -268,8 +315,17 @@ export function useApiFunctions() {
       console.error("Response Data:", error?.response?.data);
       console.error("Error Message:", error?.message);
       
-      // Re-throw the error to be handled by the UI layer
-      throw error;
+      // Handle specific error cases
+      if (error?.response?.status === 401) {
+        throw new Error('Invalid email or password');
+      } else if (error?.response?.status === 404) {
+        throw new Error('Login service not available');
+      } else if (error?.response?.status >= 500) {
+        throw new Error('Server error. Please try again later');
+      }
+      
+      // Generic error
+      throw new Error(error?.response?.data?.message || 'Login failed. Please try again.');
     }
   }
 
