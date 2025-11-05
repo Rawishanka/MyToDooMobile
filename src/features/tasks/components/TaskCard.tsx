@@ -188,7 +188,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       <View style={styles.userAvatarContainer}>
         <Image
           source={{
-            uri: `https://ui-avatars.com/api/?name=${task.createdBy?.firstName}+${task.createdBy?.lastName}&background=random&size=40`,
+            uri: task.createdBy?.avatar || 
+                 task.createdBy?.profilePicture ||
+                 `https://ui-avatars.com/api/?name=${task.createdBy?.firstName}+${task.createdBy?.lastName}&background=0052A2&color=fff&size=80`,
           }}
           style={styles.userAvatar}
         />

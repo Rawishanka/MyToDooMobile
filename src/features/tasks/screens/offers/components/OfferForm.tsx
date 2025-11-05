@@ -4,6 +4,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 interface OfferFormProps {
   offerAmount: string;
   message: string;
+  currencySymbol: string;
   onAmountChange: (text: string) => void;
   onMessageChange: (text: string) => void;
 }
@@ -11,6 +12,7 @@ interface OfferFormProps {
 export const OfferForm: React.FC<OfferFormProps> = ({
   offerAmount,
   message,
+  currencySymbol,
   onAmountChange,
   onMessageChange,
 }) => {
@@ -21,7 +23,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
       <View style={styles.inputContainer}>
         <Text style={styles.inputLabel}>Offer Amount *</Text>
         <View style={styles.amountInputContainer}>
-          <Text style={styles.currencySymbol}>₹</Text>
+          <Text style={styles.currencySymbol}>{currencySymbol}</Text>
           <TextInput
             style={styles.amountInput}
             placeholder="Enter your offer amount"

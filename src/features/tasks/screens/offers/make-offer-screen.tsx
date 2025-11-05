@@ -37,10 +37,15 @@ export default function MakeOfferScreen() {
     isSubmitting,
     isLoadingOffers,
     userHasExistingOffer,
+    currencySymbol,
     setMessage,
     handleOfferAmountChange,
     handleSubmitOffer,
-  } = useOfferSubmission({ taskId: taskId! });
+  } = useOfferSubmission({ 
+    taskId: taskId!,
+    taskBudget: task?.budget,
+    taskLocation: task?.location
+  });
 
   if (isLoading) {
     return <LoadingState />;
@@ -66,6 +71,7 @@ export default function MakeOfferScreen() {
         <OfferForm
           offerAmount={offerAmount}
           message={message}
+          currencySymbol={currencySymbol}
           onAmountChange={handleOfferAmountChange}
           onMessageChange={setMessage}
         />

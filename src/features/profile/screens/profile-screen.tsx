@@ -6,11 +6,12 @@ import FAQ from '@/src/shared/components/custom_components/faq-screen';
 import LegalScreen from '@/src/shared/components/custom_components/legal-screen';
 import Logout from '@/src/shared/components/custom_components/Logout';
 import ProfileUpdateForm from '@/src/shared/components/custom_components/profile-update-form';
-import { useGetUserProfile } from '@/src/shared/hooks/useUserApi';
+import { useGetUserProfile, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { Entypo, Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AccountInformation from './accountinformation';
 import InsuranceProtection from './isuranceprotection';
 import NotificationPreferences from './notificationpreferences';
@@ -22,10 +23,83 @@ export default function AccountScreen() {
   
   // 🚀 **NEW: Get real user data from API**
   const { data: userProfileData, isLoading: isLoadingProfile, error: profileError, refetch } = useGetUserProfile();
+  const { mutate: uploadAvatar, isPending: isUploadingAvatar } = useUploadUserAvatar();
   const { user: authUser, isAuthenticated } = useAuthStore();
   
   // Use data from API response or fallback to auth store
+  // Convert UserProfile to User format for compatibility
   const userData = userProfileData || authUser;
+  
+  // Handle avatar change
+  const handleChangeAvatar = async () => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Authentication Required',
+        'Please login to change your profile picture.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+    
+    // Request permission
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'We need permission to access your photos to change your profile picture.');
+      return;
+    }
+    
+    // Launch image picker
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const imageUri = result.assets[0].uri;
+      
+      // Create FormData
+      const formData = new FormData();
+      const filename = imageUri.split('/').pop() || 'avatar.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : 'image/jpeg';
+      
+      formData.append('avatar', {
+        uri: imageUri,
+        name: filename,
+        type: type,
+      } as any);
+      
+      // Upload avatar
+      uploadAvatar(formData, {
+        onSuccess: () => {
+          Alert.alert('Success', 'Profile picture updated successfully!');
+          refetch(); // Refresh profile data
+        },
+        onError: (error: any) => {
+          console.error('Avatar upload error:', error);
+          
+          // Check if it's an auth error
+          if (error?.message?.includes('login') || error?.message?.includes('Authentication')) {
+            Alert.alert(
+              'Authentication Required', 
+              'Please login to upload your profile picture.',
+              [{ text: 'OK' }]
+            );
+          } else {
+            Alert.alert(
+              'Upload Failed', 
+              error?.message || 'Failed to upload profile picture. Please try again.',
+              [{ text: 'OK' }]
+            );
+          }
+        }
+      });
+    }
+  };
   
   // Handle loading state
   if (isLoadingProfile && !userData) {
@@ -181,23 +255,35 @@ export default function AccountScreen() {
     >
       {/* Header Section */}
       <View style={styles.header}>
-        <Image
-          source={{ 
-            uri: userData?.profilePicture || 
-                 `https://ui-avatars.com/api/?name=${userData?.firstName}+${userData?.lastName}&background=random&size=65` ||
-                 'https://randomuser.me/api/portraits/men/1.jpg'
-          }}
-          style={styles.profileImage}
-        />
+        <TouchableOpacity onPress={handleChangeAvatar} disabled={isUploadingAvatar}>
+          <View>
+            <Image
+              source={{ 
+                uri: userData?.avatar || 
+                     userData?.profilePicture || 
+                     `https://ui-avatars.com/api/?name=${userData?.firstName}+${userData?.lastName}&background=0052A2&color=fff&size=120`
+              }}
+              style={styles.profileImage}
+            />
+            {isUploadingAvatar && (
+              <View style={styles.uploadingOverlay}>
+                <ActivityIndicator size="large" color="#fff" />
+              </View>
+            )}
+            <View style={styles.cameraIconContainer}>
+              <Ionicons name="camera" size={18} color="#fff" />
+            </View>
+          </View>
+        </TouchableOpacity>
         <Text style={styles.name}>
           {userData?.firstName} {userData?.lastName?.charAt(0)}.
         </Text>
         <Text style={styles.location}>
           {userData?.location || 'Location not set'}
         </Text>
-        <View style={styles.row}>
+        <TouchableOpacity style={styles.row}>
           <Text style={styles.linkText}>See your public profile</Text>
-        </View>
+        </TouchableOpacity>
         
         {/* Rating and Stats */}
         {userData?.rating && (
@@ -403,10 +489,36 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   profileImage: {
-    width: 65,
-    height: 65,
-    borderRadius: 50,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     marginBottom: 12,
+    borderWidth: 3,
+    borderColor: '#fff',
+  },
+  cameraIconContainer: {
+    position: 'absolute',
+    bottom: 12,
+    right: 0,
+    backgroundColor: '#0052A2',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#fff',
+  },
+  uploadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   name: {
     fontSize: 20,

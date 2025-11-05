@@ -1,14 +1,17 @@
 import { useCreateOffer, useGetAllOffers } from '@/src/shared/hooks/useTaskApi';
+import { getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert } from 'react-native';
 
 interface UseOfferSubmissionProps {
   taskId: string;
+  taskBudget?: number;
+  taskLocation?: { address?: string };
 }
 
-export const useOfferSubmission = ({ taskId }: UseOfferSubmissionProps) => {
+export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOfferSubmissionProps) => {
   const router = useRouter();
   const currentUser = useAuthStore((state) => state.user);
   const createOfferMutation = useCreateOffer();
@@ -38,6 +41,19 @@ export const useOfferSubmission = ({ taskId }: UseOfferSubmissionProps) => {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Get currency info based on task location
+  const currencyInfo = useMemo(
+    () => getCurrencyFromLocation(taskLocation),
+    [taskLocation]
+  );
+
+  // Set default offer amount to task budget when available
+  useEffect(() => {
+    if (taskBudget && !offerAmount) {
+      setOfferAmount(taskBudget.toString());
+    }
+  }, [taskBudget]);
+
   const validateOfferAmount = (amount: string): boolean => {
     if (!amount || amount.trim() === '') {
       Alert.alert('Validation Error', 'Please enter an offer amount.');
@@ -47,6 +63,15 @@ export const useOfferSubmission = ({ taskId }: UseOfferSubmissionProps) => {
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) {
       Alert.alert('Validation Error', 'Please enter a valid positive amount.');
+      return false;
+    }
+
+    // Validate minimum amount against task budget
+    if (taskBudget && numericAmount < taskBudget) {
+      Alert.alert(
+        'Amount Too Low',
+        `Your offer amount cannot be less than the task budget of ${currencyInfo.symbol}${taskBudget}.`
+      );
       return false;
     }
 
@@ -88,7 +113,7 @@ export const useOfferSubmission = ({ taskId }: UseOfferSubmissionProps) => {
     try {
       const offerData = {
         amount: parseFloat(offerAmount),
-        currency: 'SGD',
+        currency: currencyInfo.code,
         message: message.trim(),
       };
 
@@ -135,6 +160,7 @@ export const useOfferSubmission = ({ taskId }: UseOfferSubmissionProps) => {
     isSubmitting,
     isLoadingOffers,
     userHasExistingOffer,
+    currencySymbol: currencyInfo.symbol,
     setMessage,
     handleOfferAmountChange,
     handleSubmitOffer,

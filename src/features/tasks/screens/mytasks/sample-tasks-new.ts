@@ -1,9 +1,43 @@
 import { Task } from '@/src/api/types/tasks';
 
-const defaultCoordinates = {
+// GeoJSON format: [longitude, latitude]
+// Sydney, Australia coordinates
+const sydneyCoordinates = {
   type: 'Point',
-  coordinates: [-33.8688, 151.2093] // Default Sydney coordinates
+  coordinates: [151.2093, -33.8688] // [lng, lat]
 };
+
+const melbourneCoordinates = {
+  type: 'Point',
+  coordinates: [144.9631, -37.8136] // [lng, lat]
+};
+
+const brisbaneCoordinates = {
+  type: 'Point',
+  coordinates: [153.0251, -27.4698] // [lng, lat]
+};
+
+const perthCoordinates = {
+  type: 'Point',
+  coordinates: [115.8613, -31.9505] // [lng, lat]
+};
+
+const adelaideCoordinates = {
+  type: 'Point',
+  coordinates: [138.6007, -34.9285] // [lng, lat]
+};
+
+const darwinCoordinates = {
+  type: 'Point',
+  coordinates: [130.8456, -12.4634] // [lng, lat]
+};
+
+const hobartCoordinates = {
+  type: 'Point',
+  coordinates: [147.3272, -42.8821] // [lng, lat]
+};
+
+const defaultCoordinates = sydneyCoordinates; // Default to Sydney
 
 const defaultDateRange = {
   start: new Date().toISOString(),
@@ -35,7 +69,7 @@ export const sampleTasks: { [key: string]: Task[] } = {
       categories: ['Moving', 'Heavy Lifting'],
       location: {
         address: '123 Sydney Road, Melbourne',
-        coordinates: defaultCoordinates
+        coordinates: melbourneCoordinates
       },
       createdBy: {
         _id: 'user1',
@@ -59,7 +93,7 @@ export const sampleTasks: { [key: string]: Task[] } = {
       categories: ['Gardening', 'Maintenance'],
       location: {
         address: '456 Brisbane St, Brisbane',
-        coordinates: defaultCoordinates
+        coordinates: brisbaneCoordinates
       },
       createdBy: {
         _id: 'user2',
@@ -86,7 +120,7 @@ export const sampleTasks: { [key: string]: Task[] } = {
       categories: ['Cleaning', 'House Work'],
       location: {
         address: '789 Perth Road, Perth',
-        coordinates: defaultCoordinates
+        coordinates: perthCoordinates
       },
       createdBy: {
         _id: 'user3',
@@ -114,7 +148,7 @@ export const sampleTasks: { [key: string]: Task[] } = {
       categories: ['Web Development', 'IT'],
       location: {
         address: 'Online',
-        coordinates: defaultCoordinates
+        coordinates: sydneyCoordinates
       },
       createdBy: {
         _id: 'user4',
@@ -141,7 +175,7 @@ export const sampleTasks: { [key: string]: Task[] } = {
       categories: ['Pet Care', 'Dog Walking'],
       location: {
         address: '321 Adelaide Ave, Adelaide',
-        coordinates: defaultCoordinates
+        coordinates: adelaideCoordinates
       },
       createdBy: {
         _id: 'user5',
@@ -168,7 +202,7 @@ export const sampleTasks: { [key: string]: Task[] } = {
       categories: ['Phone Repair', 'Electronics'],
       location: {
         address: '654 Hobart Place, Hobart',
-        coordinates: defaultCoordinates
+        coordinates: hobartCoordinates
       },
       createdBy: {
         _id: 'user6',
@@ -195,7 +229,7 @@ export const sampleTasks: { [key: string]: Task[] } = {
       categories: ['Tutoring', 'Education'],
       location: {
         address: 'Online',
-        coordinates: defaultCoordinates
+        coordinates: sydneyCoordinates
       },
       createdBy: {
         _id: 'user7',
@@ -222,7 +256,7 @@ export const sampleTasks: { [key: string]: Task[] } = {
       categories: ['Photography', 'Events'],
       location: {
         address: '987 Darwin Drive, Darwin',
-        coordinates: defaultCoordinates
+        coordinates: darwinCoordinates
       },
       createdBy: {
         _id: 'user8',

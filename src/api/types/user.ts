@@ -6,7 +6,13 @@ export interface User {
   lastName: string;
   phone?: string;
   password?: string; // Should not be exposed to frontend
-  skills?: string[];
+  skills?: string[] | {
+    goodAt?: string[];
+    transport?: string[];
+    languages?: string[];
+    qualifications?: string[];
+    experience?: string[];
+  };
   rating?: number;
   completedTasks?: number;
   isVerified?: boolean;
@@ -18,6 +24,7 @@ export interface User {
     };
   };
   profilePicture?: string;
+  avatar?: string; // Base64 image data from /api/users/profile
   location?: string;
   bio?: string;
   createdAt?: string;

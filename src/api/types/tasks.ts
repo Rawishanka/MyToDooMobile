@@ -256,6 +256,8 @@ export interface Task {
     email?: string;
     name?: string;
     verified?: boolean;
+    avatar?: string; // Base64 image data
+    profilePicture?: string;
   };
   statusHistory: any[];
   createdAt: string;

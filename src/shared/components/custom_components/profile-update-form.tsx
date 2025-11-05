@@ -1,5 +1,6 @@
 // components/custom_components/profile-update-form.tsx
 import { User } from '@/src/api/types/user';
+import { UserProfile } from '@/src/api/user-profile-api';
 import { updateUserProfile } from '@/src/shared/hooks/useUserApi';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
@@ -15,7 +16,7 @@ import {
 
 interface ProfileUpdateFormProps {
   onBack: () => void;
-  userData: User | null;
+  userData: User | UserProfile | null;
 }
 
 export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFormProps) {

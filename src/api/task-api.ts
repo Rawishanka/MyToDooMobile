@@ -6,20 +6,20 @@ import * as FileSystem from 'expo-file-system';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-    AllOffersResponse,
-    CreateOfferRequest,
-    CreateOfferResponse,
-    CreateTaskRequest,
-    CreateTaskResponse,
-    MyTasksParams,
-    PaymentStatusResponse,
-    SingleTaskResponse,
-    Task,
-    TaskCompletionStatusResponse,
-    TaskOffersResponse,
-    TaskSearchParams,
-    TasksResponse,
-    UpdateTaskRequest
+  AllOffersResponse,
+  CreateOfferRequest,
+  CreateOfferResponse,
+  CreateTaskRequest,
+  CreateTaskResponse,
+  MyTasksParams,
+  PaymentStatusResponse,
+  SingleTaskResponse,
+  Task,
+  TaskCompletionStatusResponse,
+  TaskOffersResponse,
+  TaskSearchParams,
+  TasksResponse,
+  UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **API HELPER FUNCTION**
@@ -112,6 +112,13 @@ export async function getCategoriesByLocation(locationType: string): Promise<{ s
     return response.data;
   } catch (error: any) {
     console.error("❌ Get categories by location failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Get categories by location failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -573,8 +580,15 @@ export async function getTaskById(taskId: string): Promise<SingleTaskResponse> {
     const response = await api.get(`/tasks/${taskId}`);
     console.log("✅ Get task details success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Get task details failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Get task details failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -591,8 +605,15 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     const response = await api.put(`/tasks/${taskId}`, updates);
     console.log("✅ Update task success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Update task failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Update task failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -609,8 +630,15 @@ export async function deleteTask(taskId: string): Promise<{ success: boolean; me
     const response = await api.delete(`/tasks/${taskId}`);
     console.log("✅ Delete task success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Delete task failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Delete task failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -635,8 +663,37 @@ export async function getTaskOffers(taskId: string): Promise<TaskOffersResponse>
     }
     
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Get task offers failed:", error);
+    
+    // Handle authentication errors - return empty offers instead of throwing
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.warn("⚠️ Get task offers failed - Authentication required, returning empty offers");
+      console.warn("💡 Please login again to view offers");
+      return {
+        success: false,
+        data: {
+          _id: taskId,
+          offers: [],
+          offerCount: 0
+        } as any
+      };
+    }
+    
+    // Handle network errors - return empty offers
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      console.warn("⚠️ Network error while fetching task offers, returning empty offers");
+      return {
+        success: false,
+        data: {
+          _id: taskId,
+          offers: [],
+          offerCount: 0
+        } as any
+      };
+    }
+    
+    // For other errors, still throw to maintain existing behavior for real errors
     throw error;
   }
 }
@@ -653,8 +710,15 @@ export async function createOffer(taskId: string, offerData: CreateOfferRequest)
     const response = await api.post(`/tasks/${taskId}/offers`, offerData);
     console.log("✅ Create offer success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Create offer failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Create offer failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -671,8 +735,15 @@ export async function acceptOffer(taskId: string, offerId: string): Promise<{ su
     const response = await api.post(`/tasks/${taskId}/offers/${offerId}/accept`);
     console.log("✅ Accept offer success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Accept offer failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Accept offer failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -689,17 +760,24 @@ export async function updateOffer(taskId: string, offerId: string, updates: Part
     const response = await api.put(`/tasks/${taskId}/offers/${offerId}`, updates);
     console.log("✅ Update offer success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Update offer failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Update offer failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
 
 /**
  * 🌍 Get All Offers
- * Endpoint: GET /api/offers/all
+ * Since /api/offers/all endpoint doesn't exist, we aggregate offers from all tasks
  * Auth: Required
- * Description: Get all offers with pagination and sorting, optionally filtered by taskId
+ * Description: Fetches all tasks and extracts their offers
  */
 export async function getAllOffers(params?: {
   taskId?: string;
@@ -710,30 +788,137 @@ export async function getAllOffers(params?: {
 }): Promise<AllOffersResponse> {
   const api = getApi();
   try {
-    const queryParams = new URLSearchParams();
+    console.log("🌍 Fetching all offers by aggregating from tasks...");
     
-    if (params?.taskId) queryParams.append('taskId', params.taskId);
-    if (params?.limit) queryParams.append('limit', params.limit.toString());
-    if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
-    if (params?.order) queryParams.append('order', params.order);
-    if (params?.page) queryParams.append('page', params.page.toString());
-
-    const queryString = queryParams.toString();
-    const endpoint = queryString ? `/offers/all?${queryString}` : '/offers/all';
+    // Since /api/offers/all doesn't exist, we'll fetch all tasks and extract their offers
+    const tasksResponse = await api.get('/tasks?limit=100&page=1');
+    const tasks = tasksResponse.data?.data || [];
     
-    console.log("🌍 Fetching all offers:", endpoint);
-    const response = await api.get(endpoint);
-    console.log("✅ Get all offers success:", JSON.stringify(response.data, null, 2));
+    console.log(`📊 Fetched ${tasks.length} tasks to extract offers`);
     
-    // Log specific offer structure for debugging
-    if (response.data?.data?.length > 0) {
-      console.log("🔍 First offer from /offers/all structure:", JSON.stringify(response.data.data[0], null, 2));
+    // Aggregate all offers from all tasks
+    const allOffers: any[] = [];
+    
+    for (const task of tasks) {
+      // If task has offers, fetch them individually
+      if (task.offerCount && task.offerCount > 0) {
+        try {
+          const taskOffersResponse = await api.get(`/tasks/${task._id}/offers`);
+          const taskOffers = taskOffersResponse.data?.data?.offers || [];
+          
+          // Transform offers to include task information
+          const enrichedOffers = taskOffers.map((offer: any) => ({
+            _id: offer._id,
+            taskId: {
+              _id: task._id,
+              title: task.title,
+              categories: task.categories || []
+            },
+            taskCreatorId: task.createdBy || offer.taskCreatorId,
+            taskTakerId: offer.taskTakerId,
+            offer: {
+              amount: offer.amount || offer.offer?.amount || 0,
+              currency: offer.currency || offer.offer?.currency || 'SGD',
+              message: offer.message || offer.offer?.message || ''
+            },
+            amount: offer.amount || offer.offer?.amount || 0,
+            currency: offer.currency || offer.offer?.currency || 'SGD',
+            message: offer.message || offer.offer?.message || '',
+            status: offer.status || 'pending',
+            createdAt: offer.createdAt,
+            updatedAt: offer.updatedAt
+          }));
+          
+          allOffers.push(...enrichedOffers);
+        } catch (offerError) {
+          console.warn(`⚠️ Could not fetch offers for task ${task._id}:`, offerError);
+        }
+      }
     }
     
-    return response.data;
-  } catch (error) {
+    console.log(`✅ Successfully aggregated ${allOffers.length} offers from ${tasks.length} tasks`);
+    
+    // Apply filtering if taskId parameter is provided
+    let filteredOffers = allOffers;
+    if (params?.taskId) {
+      filteredOffers = allOffers.filter(offer => offer.taskId._id === params.taskId);
+      console.log(`🔍 Filtered to ${filteredOffers.length} offers for task ${params.taskId}`);
+    }
+    
+    // Apply sorting
+    if (params?.sortBy) {
+      filteredOffers.sort((a, b) => {
+        const aValue = a[params.sortBy!];
+        const bValue = b[params.sortBy!];
+        const order = params.order === 'asc' ? 1 : -1;
+        return aValue > bValue ? order : -order;
+      });
+    }
+    
+    // Apply pagination
+    const page = params?.page || 1;
+    const limit = params?.limit || 50;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedOffers = filteredOffers.slice(startIndex, endIndex);
+    
+    return {
+      success: true,
+      data: paginatedOffers,
+      pagination: {
+        total: filteredOffers.length,
+        page: page,
+        limit: limit,
+        pages: Math.ceil(filteredOffers.length / limit)
+      }
+    };
+    
+  } catch (error: any) {
     console.error("❌ Get all offers failed:", error);
-    throw error;
+    
+    // Handle authentication errors - return empty data instead of throwing
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.warn("⚠️ Get all offers failed - Authentication required, returning empty data");
+      console.warn("💡 Please login again to view offers");
+      return {
+        success: false,
+        data: [],
+        pagination: {
+          total: 0,
+          page: 1,
+          limit: params?.limit || 50,
+          pages: 0
+        }
+      };
+    }
+    
+    // Handle network errors - return empty data
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      console.warn("⚠️ Network error while fetching offers, returning empty data");
+      return {
+        success: false,
+        data: [],
+        pagination: {
+          total: 0,
+          page: 1,
+          limit: params?.limit || 50,
+          pages: 0
+        }
+      };
+    }
+    
+    // For other errors, return empty data instead of crashing
+    console.warn("⚠️ Unexpected error fetching offers, returning empty data");
+    return {
+      success: false,
+      data: [],
+      pagination: {
+        total: 0,
+        page: 1,
+        limit: params?.limit || 50,
+        pages: 0
+      }
+    };
   }
 }
 
@@ -751,8 +936,15 @@ export async function getTaskCompletionStatus(taskId: string): Promise<TaskCompl
     const response = await api.get(`/tasks/${taskId}/completion-status`);
     console.log("✅ Get completion status success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Get completion status failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Get completion status failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -769,8 +961,15 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
     const response = await api.patch(`/tasks/${taskId}/complete`);
     console.log("✅ Complete task success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Complete task failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Complete task failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -787,8 +986,15 @@ export async function completeTaskAlt(taskId: string): Promise<{ success: boolea
     const response = await api.put(`/tasks/${taskId}/complete`);
     console.log("✅ Complete task (alt) success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Complete task (alt) failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Complete task (alt) failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -805,8 +1011,15 @@ export async function cancelTask(taskId: string): Promise<{ success: boolean; da
     const response = await api.put(`/tasks/${taskId}/cancel`);
     console.log("✅ Cancel task success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Cancel task failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Cancel task failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -823,8 +1036,15 @@ export async function updateTaskStatus(taskId: string, status: string): Promise<
     const response = await api.put(`/tasks/${taskId}/status`, { status });
     console.log("✅ Update task status success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Update task status failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Update task status failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -841,8 +1061,15 @@ export async function acceptTask(taskId: string): Promise<{ success: boolean; da
     const response = await api.post(`/tasks/${taskId}/accept`);
     console.log("✅ Accept task success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Accept task failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Accept task failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -861,8 +1088,15 @@ export async function completePayment(taskId: string, paymentData?: any): Promis
     const response = await api.post(`/tasks/${taskId}/complete-payment`, paymentData || {});
     console.log("✅ Complete payment success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Complete payment failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Complete payment failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
@@ -879,8 +1113,15 @@ export async function getPaymentStatus(): Promise<PaymentStatusResponse> {
     const response = await api.get('/tasks/my-tasks/payment-status');
     console.log("✅ Get payment status success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Get payment status failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Get payment status failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
     throw error;
   }
 }
