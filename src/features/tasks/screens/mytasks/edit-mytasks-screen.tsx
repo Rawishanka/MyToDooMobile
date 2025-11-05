@@ -228,9 +228,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    paddingTop: Platform.OS === 'ios' ? 60 : 50,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
+    backgroundColor: '#fff',
   },
   headerTitle: {
     fontSize: 18,
