@@ -7,6 +7,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ActivityIndicator,
   Alert,
@@ -40,6 +41,7 @@ const ListItem = ({ icon, text, value, onPress }: ListItemProps) => (
 export default function DetailScreen() {
   const { myTask, resetTask } = useCreateTaskStore();
   const [[isLoading, storedToken], setStoredToken] = useStorageState('token');
+  const insets = useSafeAreaInsets();
   
   // Use React Query mutation for posting task
   const postTaskMutation = usePostTask();
@@ -286,7 +288,11 @@ export default function DetailScreen() {
       </TouchableOpacity> */}
 
       <TouchableOpacity 
-        style={[styles.continueBtn, postTaskMutation.isPending && styles.continueButtonDisabled]} 
+        style={[
+          styles.continueBtn, 
+          postTaskMutation.isPending && styles.continueButtonDisabled,
+          { marginBottom: Math.max(insets.bottom, 30) }
+        ]} 
         onPress={handlePostTask}
         disabled={postTaskMutation.isPending}
       >

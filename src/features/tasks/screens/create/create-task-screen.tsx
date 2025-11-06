@@ -7,6 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ActivityIndicator,
   Alert,
@@ -48,6 +49,7 @@ export default function CreateTaskScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { myTask, updateMyTask } = useCreateTaskStore();
+  const insets = useSafeAreaInsets();
 
   // Refs for sections
   const scrollViewRef = useRef<ScrollView>(null);
@@ -358,23 +360,34 @@ export default function CreateTaskScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <ChevronLeft size={24} color="#333" />
-      </TouchableOpacity>
-
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+    <View style={styles.container}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
+        {/* Fixed Header */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <ChevronLeft size={24} color="#333" />
+          </TouchableOpacity>
+          
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>Task Details</Text>
+            <Text style={styles.headerSubtitle}>Tell us what you need done</Text>
+          </View>
+        </View>
+
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
         {/* SECTION 1: TASK DETAILS */}
         <View ref={section1Ref} style={styles.section}>
-          <Text style={styles.sectionTitle}>Task Details</Text>
-          <Text style={styles.sectionSubtitle}>Tell us what you need done</Text>
-
           {/* Category Selection */}
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>Category</Text>
@@ -530,34 +543,39 @@ export default function CreateTaskScreen() {
             />
           )}
         </View>
-      </ScrollView>
+        </ScrollView>
 
-      {/* Continue Button */}
-      <TouchableOpacity
-        style={[styles.continueButton, isFormValid && styles.continueButtonEnabled]}
-        disabled={!isFormValid}
-        onPress={handleContinue}
-      >
-        <Text style={styles.continueText}>Continue</Text>
-      </TouchableOpacity>
+        {/* Continue Button */}
+        <TouchableOpacity
+          style={[
+            styles.continueButton, 
+            isFormValid && styles.continueButtonEnabled,
+            { bottom: Math.max(insets.bottom, 20) }
+          ]}
+          disabled={!isFormValid}
+          onPress={handleContinue}
+        >
+          <Text style={styles.continueText}>Continue</Text>
+        </TouchableOpacity>
 
-      {/* Date Picker */}
-      {showDatePicker && (
-        <DateTimePicker
-          value={
-            activePickerOption === 'on_time'
-              ? onTimeDate || new Date()
-              : activePickerOption === 'before'
-              ? beforeDate || new Date()
-              : new Date()
-          }
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleDateChange}
-          minimumDate={new Date()}
-        />
-      )}
-    </KeyboardAvoidingView>
+        {/* Date Picker */}
+        {showDatePicker && (
+          <DateTimePicker
+            value={
+              activePickerOption === 'on_time'
+                ? onTimeDate || new Date()
+                : activePickerOption === 'before'
+                ? beforeDate || new Date()
+                : new Date()
+            }
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={handleDateChange}
+            minimumDate={new Date()}
+          />
+        )}
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -566,18 +584,38 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  header: {
+    paddingTop: 50,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
   backButton: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    zIndex: 10,
+    marginBottom: 15,
+  },
+  headerContent: {
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1C1C1E',
+    marginBottom: 5,
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#8E8E93',
+    textAlign: 'center',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 100,
+    paddingTop: 20,
     paddingBottom: 120,
   },
   section: {

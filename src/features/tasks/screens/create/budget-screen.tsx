@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   StyleSheet,
   Text,
@@ -17,6 +18,7 @@ export default function BudgetScreen() {
   const [budget, setBudget] = useState('');
   const navigation = useNavigation();
   const { myTask, updateMyTask } = useCreateTaskStore();
+  const insets = useSafeAreaInsets();
 
   // Initialize with existing data from store
   useEffect(() => {
@@ -111,7 +113,11 @@ export default function BudgetScreen() {
 
       {/* Create Task Button */}
       <TouchableOpacity
-        style={[styles.button, !isBudgetValid && styles.buttonDisabled]}
+        style={[
+          styles.button, 
+          !isBudgetValid && styles.buttonDisabled,
+          { marginBottom: Math.max(insets.bottom, 30) }
+        ]}
         onPress={handleCreateTask}
         disabled={!isBudgetValid}
       >
