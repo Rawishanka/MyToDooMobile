@@ -245,35 +245,35 @@ export default function DetailScreen() {
           icon={<MaterialIcons name="drive-file-rename-outline" size={20} color="#003366" />}
           text="Task Title"
           value={myTask.title || 'Move the car'}
-          onPress={() => router.push('/title-screen' as any)}
+          onPress={() => router.push('/(welcome-screen)/title-screen?section=title' as any)}
         />
         
         <ListItem
           icon={<MaterialIcons name="event-available" size={20} color="#003366" />}
           text="When"
           value={getDateTimeText()}
-          onPress={() => router.push('/time-select-screen' as any)}
+          onPress={() => router.push('/(welcome-screen)/title-screen?section=when' as any)}
         />
         
         <ListItem
           icon={<Ionicons name="location-outline" size={20} color="#003366" />}
           text="Location"
           value={getLocationText()}
-          onPress={() => router.push('/location-screen' as any)}
+          onPress={() => router.push('/(welcome-screen)/title-screen?section=location' as any)}
         />
         
         <ListItem
           icon={<MaterialIcons name="description" size={20} color="#003366" />}
           text="Description"
           value={myTask.description || 'Add task description'}
-          onPress={() => router.push('/description-screen' as any)}
+          onPress={() => router.push('/(welcome-screen)/title-screen?section=description' as any)}
         />
         
         <ListItem
           icon={<MaterialIcons name="attach-money" size={20} color="#003366" />}
           text="Budget"
-          value={myTask.budget > 0 ? `A$${myTask.budget}` : 'A$200'}
-          onPress={() => router.push('/budget-screen' as any)}
+          value={myTask.budget > 0 ? `$${myTask.budget}` : 'Set budget'}
+          onPress={() => router.push('/(welcome-screen)/budget-screen' as any)}
         />
       </ScrollView>
 

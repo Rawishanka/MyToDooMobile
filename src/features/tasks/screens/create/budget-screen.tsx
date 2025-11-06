@@ -55,14 +55,14 @@ export default function BudgetScreen() {
   ];
 
   // Helper to update zustand store with budget
-  const handleContinue = () => {
+  const handleCreateTask = () => {
     const budgetNumber = Number(budget);
     // Only update if valid and minimum 20
     if (budget && budgetNumber >= 20) {
       updateMyTask({
         budget: budgetNumber,
       });
-      router.push('/description-screen');
+      router.push('/detail-screen');
     }
   };
 
@@ -109,14 +109,14 @@ export default function BudgetScreen() {
         ))}
       </View>
 
-      {/* Get Start Button */}
+      {/* Create Task Button */}
       <TouchableOpacity
         style={[styles.button, !isBudgetValid && styles.buttonDisabled]}
-        onPress={handleContinue}
+        onPress={handleCreateTask}
         disabled={!isBudgetValid}
       >
         <Text style={[styles.buttonText, !isBudgetValid && styles.buttonTextDisabled]}>
-          Get Start
+          Create Task
         </Text>
       </TouchableOpacity>
     </View>
