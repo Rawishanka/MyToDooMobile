@@ -1,9 +1,9 @@
 import { Task } from '@/src/api/types/tasks';
+import { useGetMyOffers, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { sampleTasks } from './sample-tasks-new';
 
 // Components
 import {
@@ -25,25 +25,7 @@ interface TabScreenProps {
 }
 
 // Tab screen components
-const TabScreen: React.FC<TabScreenProps & { status?: string }> = ({ isLoading, onRefresh, status }) => {
-  const tasks = React.useMemo(() => {
-    switch (status) {
-      case 'open':
-        return sampleTasks.openTasks;
-      case 'assigned':
-        return sampleTasks.todoTasks;
-      case 'completed':
-        return sampleTasks.completedTasks;
-      case 'overdue':
-        return sampleTasks.overdueTasks;
-      case 'cancelled':
-        return sampleTasks.cancelledTasks;
-      case 'accepted':
-        return sampleTasks.acceptedTasks;
-      default:
-        return sampleTasks.postedTasks;
-    }
-  }, [status]);
+const TabScreen: React.FC<TabScreenProps & { status?: string }> = ({ tasks, isLoading, onRefresh, status }) => {
   
   const getEmptyMessage = () => {
     switch (status) {
@@ -107,18 +89,85 @@ export default function MyTasksScreen() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [userRole, setUserRole] = useState('Tasker'); // 'Tasker' or 'Poster'
   const notificationCount = 5; // You can make this dynamic
-
-  // Use dummy data for now
-  const [isLoading, setIsLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
 
+  // Fetch real data from API
+  const {
+    data: myTasksData,
+    isLoading: isLoadingTasks,
+    refetch: refetchTasks,
+  } = useGetMyTasks({
+    section: 'all-tasks'
+  });
+
+  const {
+    data: myOffersData,
+    isLoading: isLoadingOffers,
+    refetch: refetchOffers,
+  } = useGetMyOffers({
+    section: 'all-tasks'
+  });
+
+  const allTasks = myTasksData?.data || [];
+  const allOffers = myOffersData?.data || [];
+  const isLoading = isLoadingTasks || isLoadingOffers;
+
+  // Debug logging for API data
+  console.log('📊 My Tasks Screen Data:', {
+    totalTasks: allTasks.length,
+    totalOffers: allOffers.length,
+    isLoadingTasks,
+    isLoadingOffers,
+    userRole
+  });
+
+  // Categorize tasks and offers based on status
+  const categorizedData = useMemo(() => {
+    const openTasks = allTasks.filter((task: Task) => 
+      task.status === 'open' || task.status === 'active'
+    );
+    
+    const todoTasks = allTasks.filter((task: Task) => 
+      task.status === 'assigned' || task.status === 'in_progress'
+    );
+    
+    const completedTasks = allTasks.filter((task: Task) => 
+      task.status === 'completed'
+    );
+    
+    const overdueTasks = allTasks.filter((task: Task) => 
+      task.status === 'overdue'
+    );
+    
+    const cancelledTasks = allTasks.filter((task: Task) => 
+      task.status === 'cancelled'
+    );
+
+    // For Poster role - tasks they've posted
+    const postedTasks = allTasks.filter((task: Task) => 
+      task.status === 'open' || task.status === 'active' || task.status === 'assigned'
+    );
+
+    // For accepted offers - offers that have been accepted
+    const acceptedTasks = allOffers.filter((offer: any) => 
+      offer.status === 'accepted'
+    );
+
+    return {
+      openTasks,
+      todoTasks,
+      completedTasks,
+      overdueTasks,
+      cancelledTasks,
+      postedTasks,
+      acceptedTasks,
+    };
+  }, [allTasks, allOffers]);
+
   const handleRefresh = useCallback(() => {
-    setIsLoading(true);
-    // Simulate refresh
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+    refetchTasks();
+    refetchOffers();
+  }, [refetchTasks, refetchOffers]);
 
   // Refresh data when screen is focused
   useFocusEffect(
@@ -191,7 +240,7 @@ export default function MyTasksScreen() {
             >
               {() => (
                 <TabScreen
-                  tasks={sampleTasks.openTasks}
+                  tasks={categorizedData.openTasks}
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="open"
@@ -204,7 +253,7 @@ export default function MyTasksScreen() {
             >
               {() => (
                 <TabScreen
-                  tasks={sampleTasks.todoTasks}
+                  tasks={categorizedData.todoTasks}
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="assigned"
@@ -217,7 +266,7 @@ export default function MyTasksScreen() {
             >
               {() => (
                 <TabScreen
-                  tasks={sampleTasks.completedTasks}
+                  tasks={categorizedData.completedTasks}
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="completed"
@@ -230,7 +279,7 @@ export default function MyTasksScreen() {
             >
               {() => (
                 <TabScreen
-                  tasks={sampleTasks.overdueTasks}
+                  tasks={categorizedData.overdueTasks}
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="overdue"
@@ -243,7 +292,7 @@ export default function MyTasksScreen() {
             >
               {() => (
                 <TabScreen
-                  tasks={sampleTasks.cancelledTasks}
+                  tasks={categorizedData.cancelledTasks}
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="cancelled"
@@ -259,7 +308,7 @@ export default function MyTasksScreen() {
             >
               {() => (
                 <TabScreen
-                  tasks={sampleTasks.postedTasks}
+                  tasks={categorizedData.postedTasks}
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                 />
@@ -271,7 +320,7 @@ export default function MyTasksScreen() {
             >
               {() => (
                 <TabScreen
-                  tasks={sampleTasks.acceptedTasks}
+                  tasks={categorizedData.acceptedTasks}
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="accepted"
@@ -284,7 +333,7 @@ export default function MyTasksScreen() {
             >
               {() => (
                 <TabScreen
-                  tasks={sampleTasks.completedTasks}
+                  tasks={categorizedData.completedTasks}
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="completed"
@@ -297,7 +346,7 @@ export default function MyTasksScreen() {
             >
               {() => (
                 <TabScreen
-                  tasks={sampleTasks.cancelledTasks}
+                  tasks={categorizedData.cancelledTasks}
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="cancelled"

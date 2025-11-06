@@ -27,6 +27,15 @@ export function useGetUserProfile() {
     queryFn: () => UserProfileAPI.getUserProfile(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     select: (response) => response.data, // Extract data from response
+    retry: (failureCount, error: any) => {
+      // Don't retry on 401 authentication errors
+      if (error?.response?.status === 401 || error?.isAuthError) {
+        console.log("❌ Authentication error - not retrying profile fetch");
+        return false;
+      }
+      // Retry network errors only once
+      return failureCount < 1;
+    },
   });
 }
 

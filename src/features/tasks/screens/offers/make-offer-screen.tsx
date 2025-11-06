@@ -47,6 +47,15 @@ export default function MakeOfferScreen() {
     taskLocation: task?.location
   });
 
+  // Debug logging for button state
+  console.log('🔧 [MakeOfferScreen] Button State:', {
+    isSubmitting,
+    isLoadingOffers,
+    userHasExistingOffer,
+    buttonDisabled: isSubmitting || userHasExistingOffer || isLoadingOffers,
+    taskId: taskId
+  });
+
   if (isLoading) {
     return <LoadingState />;
   }
@@ -92,16 +101,21 @@ export default function MakeOfferScreen() {
         <TouchableOpacity
           style={[
             styles.submitButton, 
-            (isSubmitting || userHasExistingOffer) && styles.disabledButton
+            (isSubmitting || userHasExistingOffer || isLoadingOffers) && styles.disabledButton
           ]}
-          onPress={handleSubmitOffer}
-          disabled={isSubmitting || userHasExistingOffer}
+          onPress={userHasExistingOffer ? undefined : handleSubmitOffer}
+          disabled={isSubmitting || userHasExistingOffer || isLoadingOffers}
         >
-          {isSubmitting ? (
+          {isSubmitting || isLoadingOffers ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
             <Text style={styles.submitButtonText}>
-              {userHasExistingOffer ? 'Offer Already Submitted' : 'Submit Offer'}
+              {userHasExistingOffer 
+                ? 'Already Offer Submitted' 
+                : isLoadingOffers 
+                  ? 'Checking Previous Offers...' 
+                  : 'Submit Offer'
+              }
             </Text>
           )}
         </TouchableOpacity>
@@ -121,18 +135,24 @@ const styles = StyleSheet.create({
   },
   warningContainer: {
     backgroundColor: '#FFF3CD',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#FFC107',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 16,
-    marginBottom: 16,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 20,
+    marginBottom: 20,
+    shadowColor: '#FFC107',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   warningText: {
     color: '#856404',
-    fontSize: 14,
+    fontSize: 15,
     textAlign: 'center',
-    fontWeight: '500',
+    fontWeight: '600',
+    lineHeight: 22,
   },
   buttonContainer: {
     paddingHorizontal: 20,

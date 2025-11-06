@@ -1,4 +1,4 @@
-import { useCreateOffer, useGetAllOffers } from '@/src/shared/hooks/useTaskApi';
+import { useCreateOffer, useGetTaskOffers } from '@/src/shared/hooks/useTaskApi';
 import { getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useRouter } from 'expo-router';
@@ -16,26 +16,56 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
   const currentUser = useAuthStore((state) => state.user);
   const createOfferMutation = useCreateOffer();
 
-  // Fetch offers for this task to check if user already made an offer
+  // Fetch offers for this specific task to check if user already made an offer
   const {
-    data: offersData,
+    data: taskOffersData,
     isLoading: isLoadingOffers,
-  } = useGetAllOffers(
-    { 
-      taskId: taskId || '',
-      limit: 50, 
-      sortBy: 'createdAt', 
-      order: 'desc' 
-    }, 
-    !!taskId
-  );
+  } = useGetTaskOffers(taskId || '', !!taskId);
 
-  const offers = offersData?.data || [];
+  const offers = taskOffersData?.data?.offers || [];
+  
+  // Debug logging to check offer structure and user matching
+  console.log('🔍 [useOfferSubmission] Checking existing offers:');
+  console.log('📊 Current user ID:', currentUser?._id);
+  console.log('📝 Total offers found:', offers.length);
+  offers.forEach((offer: any, index: number) => {
+    console.log(`📋 Offer ${index + 1}:`, {
+      offerId: offer._id,
+      taskTakerId: offer.taskTakerId?._id,
+      status: offer.status,
+      isMatch: offer.taskTakerId?._id === currentUser?._id
+    });
+  });
   
   // Check if current user has already made an offer on this task
+  // Handle multiple possible data structures for robustness
   const userHasExistingOffer = offers.some(
-    (offer: any) => offer.taskTakerId?._id === currentUser?._id
+    (offer: any) => {
+      // Check multiple possible field structures
+      const takerId = offer.taskTakerId?._id || offer.taskTaker?._id || offer.userId?._id || offer.user?._id;
+      const currentUserId = currentUser?._id;
+      
+      const isMatch = takerId && currentUserId && takerId === currentUserId;
+      
+      if (isMatch) {
+        console.log('✅ Found existing offer from current user:', {
+          offerId: offer._id,
+          status: offer.status,
+          amount: offer.offer?.amount || offer.amount,
+          takerId: takerId,
+          currentUserId: currentUserId
+        });
+      }
+      return isMatch;
+    }
   );
+  
+  console.log('🚫 User has existing offer:', userHasExistingOffer);
+  
+  // Additional safety check - if we can't determine user ID, assume no existing offer to allow functionality
+  if (!currentUser?._id) {
+    console.log('⚠️ No current user ID found, allowing offer submission');
+  }
 
   const [offerAmount, setOfferAmount] = useState('');
   const [message, setMessage] = useState('');
@@ -96,11 +126,22 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
   };
 
   const handleSubmitOffer = async () => {
-    // Check if user already has an offer on this task
+    // Double-check if user already has an offer on this task (safety check)
     if (userHasExistingOffer) {
       Alert.alert(
         'Offer Already Submitted',
-        'You have already made an offer on this task. You can only submit one offer per task.'
+        'You have already made an offer on this task. You can only submit one offer per task.',
+        [{ text: 'OK', style: 'default' }]
+      );
+      return;
+    }
+
+    // Prevent submission while offers are still loading
+    if (isLoadingOffers) {
+      Alert.alert(
+        'Please Wait',
+        'Still checking your previous offers. Please wait a moment and try again.',
+        [{ text: 'OK', style: 'default' }]
       );
       return;
     }

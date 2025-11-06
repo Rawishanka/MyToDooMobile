@@ -102,14 +102,6 @@ export const OffersList: React.FC<OffersListProps> = ({
                     {offer.taskTakerId?.completionRate || '98%'} Completion Rate
                   </Text>
 
-                  {/* Offer Amount - Prominent Display */}
-                  <View style={styles.offerAmountContainer}>
-                    <Text style={styles.offerAmountLabel}>Offer Amount:</Text>
-                    <Text style={styles.offerAmount}>
-                      ${offerAmount} {offerCurrency}
-                    </Text>
-                  </View>
-
                   {/* Message */}
                   <View style={styles.offerMessageRow}>
                     <Ionicons name="chatbubble-outline" size={12} color="#666" />

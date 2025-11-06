@@ -163,7 +163,6 @@ export default function AcceptOfferScreen() {
                   </View>
                 </View>
                 <View style={styles.offerAmount}>
-                  <Text style={styles.offerPrice}>${offer.offer.amount}</Text>
                   {selectedOfferId === offer._id && (
                     <Ionicons name="checkmark-circle" size={24} color="#28a745" />
                   )}

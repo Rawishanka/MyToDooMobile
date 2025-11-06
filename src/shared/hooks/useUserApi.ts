@@ -30,7 +30,7 @@ const fallbackGetUserProfile = async (): Promise<User> => ({
   lastName: 'User',
   phone: '0000000000',
   role: 'user',
-  isVerified: true,
+  isVerified: false,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 });
@@ -40,7 +40,7 @@ const fallbackUpdateUserProfile = async (profileData: Partial<User>): Promise<Us
   id: 'dev-user',
   email: 'dev@example.com',
   role: 'user',
-  isVerified: true,
+  isVerified: false,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...profileData,

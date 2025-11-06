@@ -50,7 +50,7 @@ export default function OfferCard({ offer, onAccept, onReject, onMessage }: Offe
   const handleAccept = () => {
     Alert.alert(
       'Accept Offer',
-      `Accept offer from ${offer.taskTakerId.firstName} for ${offer.offer.currency}$${offer.offer.amount}?`,
+      `Accept offer from ${offer.taskTakerId.firstName}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         { 
@@ -123,9 +123,6 @@ export default function OfferCard({ offer, onAccept, onReject, onMessage }: Offe
         </View>
         
         <View style={styles.offerPriceContainer}>
-          <Text style={styles.offerPrice}>
-            {offer.offer.currency}${offer.offer.amount}
-          </Text>
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(offer.status) }]}>
             <Text style={styles.statusText}>
               {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
