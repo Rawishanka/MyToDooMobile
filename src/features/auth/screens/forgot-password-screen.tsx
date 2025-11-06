@@ -113,7 +113,7 @@ export default function ForgotPasswordScreen() {
           <Ionicons name="lock-closed-outline" size={64} color="#007BFF" style={styles.lockIcon} />
           <Text style={styles.title}>Forgot Password?</Text>
           <Text style={styles.subtitle}>
-            Enter your email address and we'll send you instructions to reset your password.
+            Enter your email address and we&apos;ll send you instructions to reset your password.
           </Text>
         </View>
 
