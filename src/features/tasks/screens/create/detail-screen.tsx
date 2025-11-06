@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ListItemProps = {
   icon: React.ReactNode;
@@ -40,6 +41,7 @@ const ListItem = ({ icon, text, value, onPress }: ListItemProps) => (
 export default function DetailScreen() {
   const { myTask, resetTask } = useCreateTaskStore();
   const [[isLoading, storedToken], setStoredToken] = useStorageState('token');
+  const insets = useSafeAreaInsets();
   
   // Use React Query mutation for posting task
   const postTaskMutation = usePostTask();
@@ -150,7 +152,10 @@ export default function DetailScreen() {
         [
           {
             text: "View My Tasks",
-            onPress: () => router.push('./mytasks-screen')
+            onPress: () => {
+              // Navigate back to tabs and then to my-tasks tab
+              router.replace('/(tabs)/my-tasks');
+            }
           }
         ]
       );
@@ -238,7 +243,7 @@ export default function DetailScreen() {
       </TouchableOpacity>
 
       <Text style={styles.title}>Ready to get offers?</Text>
-      <Text style={styles.subtitle}>Post the task when you're ready</Text>
+      <Text style={styles.subtitle}>Post the task when you&apos;re ready</Text>
 
       <ScrollView contentContainerStyle={styles.list}>
         <ListItem
@@ -286,7 +291,11 @@ export default function DetailScreen() {
       </TouchableOpacity> */}
 
       <TouchableOpacity 
-        style={[styles.continueBtn, postTaskMutation.isPending && styles.continueButtonDisabled]} 
+        style={[
+          styles.continueBtn, 
+          postTaskMutation.isPending && styles.continueButtonDisabled,
+          { marginBottom: Math.max(insets.bottom, 30) }
+        ]} 
         onPress={handlePostTask}
         disabled={postTaskMutation.isPending}
       >

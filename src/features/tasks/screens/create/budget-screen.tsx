@@ -12,11 +12,13 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BudgetScreen() {
   const [budget, setBudget] = useState('');
   const navigation = useNavigation();
   const { myTask, updateMyTask } = useCreateTaskStore();
+  const insets = useSafeAreaInsets();
 
   // Initialize with existing data from store
   useEffect(() => {
@@ -79,7 +81,7 @@ export default function BudgetScreen() {
       {/* Title */}
       <Text style={styles.title}>Enter Your budget</Text>
       <Text style={styles.subtitle}>
-        Minimum budget is $20. Don't worry, you can always negotiate the final price later
+        Minimum budget is $20. Don&apos;t worry, you can always negotiate the final price later
       </Text>
 
       {/* Budget Display */}
@@ -111,7 +113,11 @@ export default function BudgetScreen() {
 
       {/* Create Task Button */}
       <TouchableOpacity
-        style={[styles.button, !isBudgetValid && styles.buttonDisabled]}
+        style={[
+          styles.button, 
+          !isBudgetValid && styles.buttonDisabled,
+          { marginBottom: Math.max(insets.bottom, 30) }
+        ]}
         onPress={handleCreateTask}
         disabled={!isBudgetValid}
       >
