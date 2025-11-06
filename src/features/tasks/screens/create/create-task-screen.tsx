@@ -7,7 +7,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ActivityIndicator,
   Alert,
@@ -21,6 +20,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   DateOptionSelector,
   TimeOfDayGrid,
@@ -579,6 +579,7 @@ export default function CreateTaskScreen() {
   );
 }
 
+// Styles for create task screen
 const styles = StyleSheet.create({
   container: {
     flex: 1,

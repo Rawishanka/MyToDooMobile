@@ -6,13 +6,13 @@ import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BudgetScreen() {
   const [budget, setBudget] = useState('');
@@ -81,7 +81,7 @@ export default function BudgetScreen() {
       {/* Title */}
       <Text style={styles.title}>Enter Your budget</Text>
       <Text style={styles.subtitle}>
-        Minimum budget is $20. Don't worry, you can always negotiate the final price later
+        Minimum budget is $20. Don&apos;t worry, you can always negotiate the final price later
       </Text>
 
       {/* Budget Display */}

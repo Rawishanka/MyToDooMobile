@@ -7,7 +7,6 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ActivityIndicator,
   Alert,
@@ -17,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ListItemProps = {
   icon: React.ReactNode;
@@ -152,7 +152,10 @@ export default function DetailScreen() {
         [
           {
             text: "View My Tasks",
-            onPress: () => router.push('./mytasks-screen')
+            onPress: () => {
+              // Navigate back to tabs and then to my-tasks tab
+              router.replace('/(tabs)/my-tasks');
+            }
           }
         ]
       );
@@ -240,7 +243,7 @@ export default function DetailScreen() {
       </TouchableOpacity>
 
       <Text style={styles.title}>Ready to get offers?</Text>
-      <Text style={styles.subtitle}>Post the task when you're ready</Text>
+      <Text style={styles.subtitle}>Post the task when you&apos;re ready</Text>
 
       <ScrollView contentContainerStyle={styles.list}>
         <ListItem
