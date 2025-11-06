@@ -150,11 +150,7 @@ export default function WelcomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
-        style={{ flex: 1, backgroundColor: '#f8f9fa' }}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
         {/* Blue Section with Input */}
         <View style={styles.blueSection}>
           <Text style={styles.title}>Get it Done Now🔥</Text>
@@ -217,7 +213,7 @@ export default function WelcomeScreen() {
             keyExtractor={(item) => item.id}
             horizontal
             showsHorizontalScrollIndicator={false}
-            snapToInterval={screenWidth * 0.38 + 12} // Updated to match new item width + margins
+            snapToInterval={screenWidth * 0.35 + 12}
             decelerationRate="fast"
             contentContainerStyle={styles.carouselContent}
             onScroll={Animated.event(
@@ -225,8 +221,8 @@ export default function WelcomeScreen() {
               { useNativeDriver: false }
             )}
             getItemLayout={(data, index) => ({
-              length: screenWidth * 0.38 + 12, // Updated to match new item width + margins
-              offset: (screenWidth * 0.38 + 12) * index,
+              length: screenWidth * 0.35 + 12,
+              offset: (screenWidth * 0.35 + 12) * index,
               index,
             })}
             onScrollToIndexFailed={(info) => {
@@ -250,7 +246,7 @@ export default function WelcomeScreen() {
             ))}
           </View>
         </View>
-      </ScrollView>
+      </View>
 
       {/* Notification Modal */}
       <NotificationModal
@@ -265,21 +261,21 @@ const styles = StyleSheet.create({
   headerWhite: {
     backgroundColor: '#003399',
     paddingHorizontal: 16,
-    paddingTop: 32,
+    paddingTop: 8,
     paddingBottom: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 100, // Ensure enough space for bigger logo
+    minHeight: 80,
   },
   logoPlaceholder: {
     width: 24,
     flexShrink: 0, // Prevent shrinking
   },
   logoCenter: {
-    height: 150, // Bigger logo - optimized for header space
-    width: 240, // Bigger logo - fits perfectly without breaking layout
-    flexShrink: 0, // Prevent shrinking when space is tight
+    height: 150,
+    width: 240,
+    flexShrink: 0,
   },
   notificationButton: {
     position: 'relative',
@@ -305,38 +301,38 @@ const styles = StyleSheet.create({
   blueSection: {
     backgroundColor: '#003399',
     paddingHorizontal: 20,
-    paddingTop: 5,
-    paddingBottom: 24,
+    paddingTop: 8,
+    paddingBottom: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   subtitle: {
     fontSize: 16,
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   input: {
     backgroundColor: '#fff',
     borderRadius: 8,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     fontSize: 16,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   postButton: {
     backgroundColor: '#ff6b35',
     borderRadius: 8,
-    paddingVertical: 14,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 18,
+    marginBottom: 12,
   },
   postButtonText: {
     color: '#fff',
@@ -374,34 +370,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
-    marginTop: 30,
-    marginBottom: 8,
+    marginTop: 16,
+    marginBottom: 6,
   },
   subTitle: {
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 12,
     paddingHorizontal: 20,
   },
   // NEW: Auto-scrolling Carousel Styles (show 5 at a time)
   carouselContainer: {
-    paddingVertical: 10,
-    paddingBottom: 40,
-    marginBottom: 20,
+    paddingVertical: 8,
+    paddingBottom: 20,
+    marginBottom: 0,
   },
   carouselContent: {
     paddingHorizontal: 12,
     gap: 8,
   },
   carouselItem: {
-    width: screenWidth * 0.38, // Increased from 0.28 to make boxes bigger
-    marginHorizontal: 6, // Increased spacing
+    width: screenWidth * 0.35,
+    marginHorizontal: 6,
     alignItems: 'center',
   },
   imageContainer: {
-    width: screenWidth * 0.38, // Square box - same as item width
-    height: screenWidth * 0.38, // Square box - same as width
+    width: screenWidth * 0.35,
+    height: screenWidth * 0.35,
     borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: '#E3F2FD',
@@ -414,8 +410,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 3.84,
     elevation: 5,
-    justifyContent: 'center', // Center the image
-    alignItems: 'center', // Center the image
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   categoryImage: {
     width: '90%', // Slightly smaller than container to show full image
@@ -423,12 +419,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#E3F2FD',
   },
   carouselLabel: {
-    fontSize: 11, // Increased from 10 to match bigger boxes
+    fontSize: 11,
     fontWeight: '700',
     color: '#1A237E',
     textAlign: 'center',
-    marginTop: 8,
-    lineHeight: 14, // Increased from 13
+    marginTop: 6,
+    lineHeight: 14,
     paddingHorizontal: 2,
   },
   // Pagination Dots
@@ -436,7 +432,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 8,
     gap: 5,
   },
   paginationDot: {
