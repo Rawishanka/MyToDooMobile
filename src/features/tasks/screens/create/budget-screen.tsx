@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BudgetScreen() {
   const [budget, setBudget] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const navigation = useNavigation();
   const { myTask, updateMyTask } = useCreateTaskStore();
   const insets = useSafeAreaInsets();
@@ -30,7 +31,16 @@ export default function BudgetScreen() {
   const handleKeyPress = (value: string) => {
     if (value === 'delete') {
       setBudget(budget.slice(0, -1));
+      setErrorMessage(''); // Clear error when deleting
     } else {
+      // Prevent leading zero (e.g., 0250)
+      if (budget === '0' || (budget === '' && value === '0')) {
+        setErrorMessage('Budget cannot start with zero');
+        return;
+      }
+      
+      // Clear error and add digit
+      setErrorMessage('');
       setBudget(budget + value);
     }
   };
@@ -96,11 +106,15 @@ export default function BudgetScreen() {
       </View>
       
       {/* Validation Message */}
-      {budget && Number(budget) < 20 && Number(budget) > 0 && (
+      {errorMessage ? (
+        <Text style={styles.errorText}>
+          {errorMessage}
+        </Text>
+      ) : budget && Number(budget) < 20 && Number(budget) > 0 ? (
         <Text style={styles.validationText}>
           Minimum budget is $20
         </Text>
-      )}
+      ) : null}
 
       {/* Keypad */}
       <View style={styles.keypad}>
@@ -177,6 +191,13 @@ const styles = StyleSheet.create({
   },
   invalidBudgetText: {
     color: '#FF3B30',
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#FF3B30',
+    textAlign: 'center',
+    marginTop: 8,
+    fontWeight: '600',
   },
   validationText: {
     fontSize: 14,
