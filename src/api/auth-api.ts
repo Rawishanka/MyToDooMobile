@@ -33,7 +33,7 @@ interface ResetPasswordResponse {
 export async function forgotPassword(data: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
   const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
     ? API_CONFIG.BASE_URL
-    : "http://134.199.172.167:5001/api";
+    : "http://192.168.1.168:5001/api";
   const api = createApi(baseUrl);
   
   try {
@@ -84,7 +84,7 @@ export async function forgotPassword(data: ForgotPasswordRequest): Promise<Forgo
 export async function resetPassword(data: ResetPasswordRequest): Promise<ResetPasswordResponse> {
   const baseUrl = API_CONFIG.BASE_URL && API_CONFIG.BASE_URL !== 'undefined'
     ? API_CONFIG.BASE_URL
-    : "http://134.199.172.167:5001/api";
+    : "http://192.168.1.168:5001/api";
   const api = createApi(baseUrl);
   
   try {

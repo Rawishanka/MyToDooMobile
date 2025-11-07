@@ -20,13 +20,18 @@ import { MESSAGES_DATA } from '@/src/features/messages/components/message-types'
 import type { Message } from '@/src/features/messages/components/message-types';
 
 // Import notification modal
-import NotificationModal from './notification-screen';
+import NotificationModal from './notification-screen-api';
+import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 
 const MessageScreen: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showChat, setShowChat] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+
+  // Get real notification count from API
+  const { data: unreadCountData } = useUnreadCount();
+  const notificationCount = (unreadCountData as any)?.unreadCount || 0;
 
   // Filter messages based on search
   const filteredMessages = useMemo(() => {
@@ -62,6 +67,13 @@ const MessageScreen: React.FC = () => {
           style={styles.notificationButton}
         >
           <Ionicons name="notifications-outline" size={24} color="#000" />
+          {notificationCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.badgeText}>
+                {notificationCount > 99 ? '99+' : notificationCount}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -130,6 +142,24 @@ const styles = StyleSheet.create({
   },
   notificationButton: {
     padding: 8,
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: '#FF0000',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   listContent: {
     flexGrow: 1,

@@ -14,7 +14,8 @@ import {
 } from './components';
 
 // Notification Modal
-import NotificationModal from '@/src/features/messages/screens/notification-screen';
+import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
+import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -88,8 +89,11 @@ export default function MyTasksScreen() {
   const [searchVisible, setSearchVisible] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [userRole, setUserRole] = useState('Tasker'); // 'Tasker' or 'Poster'
-  const notificationCount = 5; // You can make this dynamic
   const [searchText, setSearchText] = useState('');
+
+  // Get real notification count from API
+  const { data: unreadCountData } = useUnreadCount();
+  const notificationCount = (unreadCountData as any)?.unreadCount || 0;
 
   // Fetch real data from API
   const {

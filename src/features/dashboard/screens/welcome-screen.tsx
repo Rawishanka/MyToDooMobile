@@ -196,6 +196,8 @@ export default function WelcomeScreen() {
             maxLength={100}
             returnKeyType="done"
             onSubmitEditing={handlePostTask}
+            multiline={false}
+            numberOfLines={1}
           />
           
           {errorMessage ? (
@@ -339,37 +341,53 @@ const styles = StyleSheet.create({
   },
   blueSection: {
     backgroundColor: '#003399',
-    paddingHorizontal: 20,
+    paddingHorizontal: Math.max(16, screenWidth * 0.05),
     paddingTop: 8,
     paddingBottom: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: Math.min(24, screenWidth * 0.063),
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
     marginBottom: 6,
+    paddingHorizontal: 10,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: Math.min(16, screenWidth * 0.042),
     color: '#fff',
     textAlign: 'center',
     marginBottom: 16,
+    paddingHorizontal: 10,
+    lineHeight: Math.min(22, screenWidth * 0.058),
   },
   input: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 16,
+    borderRadius: 12,
+    paddingHorizontal: Math.max(12, screenWidth * 0.04),
+    paddingVertical: 14,
+    fontSize: Math.min(16, screenWidth * 0.042),
     marginBottom: 16,
+    minHeight: Math.max(50, screenWidth * 0.13),
+    width: '100%',
+    textAlignVertical: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 3,
+    flexShrink: 1,
   },
   errorText: {
     color: '#ff4444',
-    fontSize: 12,
+    fontSize: Math.max(11, screenWidth * 0.03),
     marginTop: -8,
     marginBottom: 8,
     paddingLeft: 4,
+    flexWrap: 'wrap',
   },
   postButton: {
     backgroundColor: '#ff6b35',

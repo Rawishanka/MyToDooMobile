@@ -18,7 +18,8 @@ import { useGetAllTasks } from '@/src/shared/hooks/useTaskApi';
 import { useClearAllCaches, useForceRefreshCategories, useForceRefreshTasks } from '@/src/shared/utils/cache-utils';
 
 // Components
-import NotificationModal from '@/src/features/messages/screens/notification-screen';
+import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
+import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { TaskCard } from '@/src/features/tasks/components';
 import { LoadingState } from '../../components/shared';
 import {
@@ -43,9 +44,12 @@ export default function BrowseTasksScreen() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
-  const notificationCount = 3;
   
   const router = useRouter();
+
+  // Get real notification count
+  const { data: unreadCountData } = useUnreadCount();
+  const notificationCount = (unreadCountData as any)?.unreadCount || 0;
 
   // API data fetching
   const { 
