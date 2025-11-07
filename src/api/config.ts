@@ -15,7 +15,7 @@ const getApiUrl = () => {
     }
     
     // 🔧 Fallback: Using IP address from .env file
-    const fallbackUrl = "http://192.168.8.152:5001/api";
+    const fallbackUrl = "http://134.199.172.167:5001/api";
     console.log('⚠️ Using fallback API URL:', fallbackUrl);
     return fallbackUrl;
 };
@@ -26,7 +26,15 @@ const API_CONFIG = {
     TIMEOUT: 15000, // Increased timeout to 15 seconds
     RETRY_ATTEMPTS: 3, // Number of retry attempts
     RETRY_DELAY: 1000, // Delay between retries in milliseconds
-    DEVELOPMENT_MODE: __DEV__
+    DEVELOPMENT_MODE: __DEV__,
+    ENDPOINTS: {
+        NOTIFICATIONS: '/notifications',
+        TASKS: '/tasks',
+        AUTH: '/auth',
+        USERS: '/users',
+        OFFERS: '/offers',
+        MESSAGES: '/messages'
+    }
 }
 
 // Log the final configuration on app start

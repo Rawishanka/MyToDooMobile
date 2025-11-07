@@ -238,8 +238,14 @@ export function useApiFunctions() {
   async function handleLoginUser(email: string, password: string) {
     // API_CONFIG.BASE_URL already handles the env variable and fallback
     const api = createApi(API_CONFIG.BASE_URL);
-    console.log("Calling login API:", API_CONFIG.BASE_URL + "/auth/login");
-    console.log("With data:", { email: email, password: "********" });
+    console.log("========================================");
+    console.log("🔐 LOGIN ATTEMPT");
+    console.log("========================================");
+    console.log("📍 API URL:", API_CONFIG.BASE_URL + "/auth/login");
+    console.log("📧 Email:", email);
+    console.log("🌐 BASE_URL from config:", API_CONFIG.BASE_URL);
+    console.log("⏱️ Timeout:", API_CONFIG.TIMEOUT);
+    console.log("========================================");
 
     try {
       const response = await api.post('/auth/login', { email, password }, {
@@ -250,12 +256,21 @@ export function useApiFunctions() {
         }
       });
 
-      console.log("✅ Login Success Response:", response.data);
+      console.log("========================================");
+      console.log("✅ LOGIN SUCCESS");
+      console.log("========================================");
+      console.log("Response status:", response.status);
+      console.log("Response data keys:", Object.keys(response.data || {}));
+      console.log("Has token:", !!response.data?.token);
+      console.log("Has user:", !!response.data?.user);
+      console.log("========================================");
+      
       const { token, user, expiresIn } = response.data;
       
       // Validate that we received a valid token and user from backend
       if (!token || !user) {
         console.error("❌ Invalid response from server - missing token or user");
+        console.error("Response data:", JSON.stringify(response.data, null, 2));
         throw new Error('Invalid response from server');
       }
       
@@ -268,6 +283,18 @@ export function useApiFunctions() {
       
       return token;
     } catch (error: any) {
+      console.log("========================================");
+      console.log("❌ LOGIN FAILED");
+      console.log("========================================");
+      console.error("Error type:", error.constructor.name);
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
+      console.error("Response status:", error.response?.status);
+      console.error("Response data:", error.response?.data);
+      console.error("Request URL:", error.config?.url);
+      console.error("Request method:", error.config?.method);
+      console.log("========================================");
+      
       // Development fallback - if server is not available, use mock data
       if (error.code === 'ECONNREFUSED' || 
           error.message?.includes('Network Error') || 

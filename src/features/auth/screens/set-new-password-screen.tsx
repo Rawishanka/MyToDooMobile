@@ -1,6 +1,7 @@
+import { resetPassword } from '@/src/api/auth-api';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -18,12 +19,37 @@ export default function SetNewPasswordScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const resetToken = params.token as string; // Token from email link
+  const emailParam = params.email as string; // Email from URL params
   
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Initialize email from params if available
+  useEffect(() => {
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, [emailParam]);
+
+  // Check if token is present
+  useEffect(() => {
+    if (!resetToken) {
+      Alert.alert(
+        'Invalid Link',
+        'This password reset link is invalid. Please request a new one.',
+        [
+          {
+            text: 'OK',
+            onPress: () => router.replace('/(auth)/forgot-password'),
+          },
+        ]
+      );
+    }
+  }, [resetToken]);
 
   const validatePassword = (password: string) => {
     // Password must be at least 8 characters
@@ -51,6 +77,15 @@ export default function SetNewPasswordScreen() {
 
   const handleSetNewPassword = async () => {
     // Validate inputs
+    if (!email) {
+      Alert.alert(
+        'Missing Information',
+        'Email address is required.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     if (!password || !confirmPassword) {
       Alert.alert(
         'Missing Information',
@@ -74,7 +109,7 @@ export default function SetNewPasswordScreen() {
     // Check if passwords match
     if (password !== confirmPassword) {
       Alert.alert(
-        'Passwords Don&apos;t Match',
+        'Passwords Don\'t Match',
         'Please make sure both passwords are the same.',
         [{ text: 'OK' }]
       );
@@ -84,15 +119,16 @@ export default function SetNewPasswordScreen() {
     try {
       setLoading(true);
 
-      // TODO: Replace with actual API call to your backend
-      // Example: await resetPasswordConfirm({ token: resetToken, password });
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the actual API
+      const response = await resetPassword({
+        token: resetToken,
+        email: email,
+        newPassword: password
+      });
 
       Alert.alert(
         'Password Reset Successful',
-        'Your password has been reset successfully. You can now log in with your new password.',
+        response.message || 'Your password has been reset successfully. You can now log in with your new password.',
         [
           {
             text: 'OK',
@@ -104,28 +140,46 @@ export default function SetNewPasswordScreen() {
       console.error('Set Password Error:', error);
 
       // Show user-friendly error messages
-      if (error?.response?.status === 400) {
+      if (error?.code === 'NETWORK_ERROR') {
         Alert.alert(
-          'Invalid Request',
-          'The password reset link is invalid or has expired. Please request a new one.',
+          'Connection Error',
+          error.message || 'Unable to connect to the server. Please check your internet connection and try again.',
           [{ text: 'OK' }]
         );
-      } else if (error?.response?.status === 404) {
+      } else if (error?.status === 400) {
+        Alert.alert(
+          'Invalid Request',
+          error.message || 'The password reset link is invalid or has expired. Please request a new one.',
+          [
+            {
+              text: 'Request New Link',
+              onPress: () => router.replace('/(auth)/forgot-password'),
+            },
+            {
+              text: 'OK',
+              style: 'cancel'
+            }
+          ]
+        );
+      } else if (error?.status === 404) {
         Alert.alert(
           'Link Expired',
           'This password reset link has expired. Please request a new one.',
-          [{ text: 'OK' }]
-        );
-      } else if (error?.message?.includes('Network Error') || error?.code === 'ECONNREFUSED') {
-        Alert.alert(
-          'Connection Error',
-          'Unable to connect to the server. Please check your internet connection and try again.',
-          [{ text: 'OK' }]
+          [
+            {
+              text: 'Request New Link',
+              onPress: () => router.replace('/(auth)/forgot-password'),
+            },
+            {
+              text: 'OK',
+              style: 'cancel'
+            }
+          ]
         );
       } else {
         Alert.alert(
           'Reset Failed',
-          'Something went wrong. Please try again later.',
+          error.message || 'Something went wrong. Please try again later.',
           [{ text: 'OK' }]
         );
       }
@@ -158,6 +212,17 @@ export default function SetNewPasswordScreen() {
         </View>
 
         <View style={styles.form}>
+          <Text style={styles.label}>Email Address</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Enter your email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            editable={!emailParam} // If email comes from URL, make it read-only
+          />
+
           <Text style={styles.label}>New Password</Text>
           <View style={styles.passwordContainer}>
             <TextInput
@@ -314,6 +379,15 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 8,
     fontWeight: '500',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    marginBottom: 16,
   },
   passwordContainer: {
     flexDirection: 'row',

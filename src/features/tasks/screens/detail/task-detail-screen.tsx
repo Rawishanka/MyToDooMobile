@@ -60,7 +60,10 @@ export default function TaskDetailScreen() {
       <DetailHeader />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <MakeOfferSection onMakeOffer={handleMakeOffer} />
+        {/* Only show Make Offer section to taskers (not the task creator) */}
+        {task?.createdBy?._id !== currentUser?._id && (
+          <MakeOfferSection onMakeOffer={handleMakeOffer} />
+        )}
 
         <TaskInfoCard
           task={task}

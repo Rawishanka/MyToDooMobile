@@ -120,26 +120,14 @@ export default function PostTaskScreen() {
       // Reset the task store immediately
       resetTask();
       
-      // Hide loading state before showing alert
+      // Hide loading state
       setIsSubmitting(false);
       setUploadProgress('');
       
-      // Show success message immediately
-      Alert.alert(
-        'Task Posted Successfully!',
-        imageUris.length > 0 
-          ? `Your task has been posted with ${imageUris.length} image(s) and is now visible to other users. You can view it in the "My Tasks" tab.`
-          : 'Your task has been posted and is now visible to other users. You can view it in the "My Tasks" tab.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Navigate to tabs - same as login screen does
-              router.replace('/(tabs)' as any);
-            }
-          }
-        ]
-      );
+      // Navigate to the welcome/dashboard screen (Get Done tab)
+      // Use router.push to index which is the Get Done screen
+      router.dismissAll();
+      router.push('/' as any);
       
     } catch (error: any) {
       console.error('❌ Failed to create task:', error);

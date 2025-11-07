@@ -1,17 +1,18 @@
+import { forgotPassword } from '@/src/api/auth-api';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 export default function ForgotPasswordScreen() {
@@ -48,17 +49,14 @@ export default function ForgotPasswordScreen() {
     try {
       setLoading(true);
 
-      // TODO: Replace with actual API call to your backend
-      // Example: await resetPassword({ email });
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the actual API
+      const response = await forgotPassword({ email });
 
       setEmailSent(true);
       
       Alert.alert(
         'Email Sent',
-        'If an account exists with this email, you will receive password reset instructions shortly.',
+        response.message || 'If your email is registered, you will receive a password reset link',
         [
           {
             text: 'OK',
@@ -70,22 +68,22 @@ export default function ForgotPasswordScreen() {
       console.error('Password Reset Error:', error);
 
       // Show user-friendly error messages
-      if (error?.response?.status === 404) {
-        Alert.alert(
-          'Account Not Found',
-          'No account found with this email address.',
-          [{ text: 'OK' }]
-        );
-      } else if (error?.message?.includes('Network Error') || error?.code === 'ECONNREFUSED') {
+      if (error?.code === 'NETWORK_ERROR') {
         Alert.alert(
           'Connection Error',
-          'Unable to connect to the server. Please check your internet connection and try again.',
+          error.message || 'Unable to connect to the server. Please check your internet connection and try again.',
+          [{ text: 'OK' }]
+        );
+      } else if (error?.status === 404) {
+        Alert.alert(
+          'Email Sent',
+          'If your email is registered, you will receive a password reset link',
           [{ text: 'OK' }]
         );
       } else {
         Alert.alert(
-          'Reset Failed',
-          'Something went wrong. Please try again later.',
+          'Error',
+          error.message || 'Something went wrong. Please try again later.',
           [{ text: 'OK' }]
         );
       }

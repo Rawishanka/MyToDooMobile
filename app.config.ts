@@ -14,6 +14,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   newArchEnabled: true,
   ios: {
     supportsTablet: true,
+    bundleIdentifier: 'com.nowanya.mytodoomobile',
+    associatedDomains: ['applinks:mytodoomobile.com'],
   },
   android: {
     package: 'com.nowanya.mytodoomobile',
@@ -21,6 +23,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: './assets/images/mytodoo-adaptive-icon.png',
       backgroundColor: '#004aad',
     },
+    intentFilters: [
+      {
+        action: 'VIEW',
+        autoVerify: true,
+        data: [
+          {
+            scheme: 'mytodoomobile',
+            host: '*',
+          },
+        ],
+        category: ['BROWSABLE', 'DEFAULT'],
+      },
+    ],
     edgeToEdgeEnabled: true,
   },
   web: {

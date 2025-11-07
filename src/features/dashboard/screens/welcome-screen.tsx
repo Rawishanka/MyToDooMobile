@@ -1,6 +1,7 @@
 // app/(tabs)/welcome-screen.tsx - Updated with category images
-import NotificationModal from '@/src/features/messages/screens/notification-screen';
+import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
 import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
+import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -76,7 +77,10 @@ export default function WelcomeScreen() {
   const [taskInput, setTaskInput] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const { data: categories, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
+  const { data: unreadCountData } = useUnreadCount();
   const { updateMyTask, myTask } = useCreateTaskStore();
+
+  const unreadCount = (unreadCountData as any)?.unreadCount || 0;
 
   // Auto-scroll carousel refs and state
   const flatListRef = useRef<FlatList>(null);
@@ -144,9 +148,11 @@ export default function WelcomeScreen() {
           onPress={() => setShowNotifications(true)}
         >
           <Bell size={24} color="#fff" />
-          <View style={styles.notificationBadge}>
-            <Text style={styles.notificationCount}>5</Text>
-          </View>
+          {unreadCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationCount}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 

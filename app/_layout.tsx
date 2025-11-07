@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from '@/src/shared/AuthProvider';
+import { DeepLinkHandler } from '@/src/shared/components/DeepLinkHandler';
 import { useColorScheme } from '@/src/shared/hooks/useColorScheme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
@@ -76,6 +77,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <SafeAreaProvider>
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <DeepLinkHandler />
             <Stack>
               <Stack.Screen name='index' options={{ headerShown: false }} />
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />

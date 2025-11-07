@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface OffersListProps {
   offers: any[];
@@ -109,17 +109,41 @@ export const OffersList: React.FC<OffersListProps> = ({
                       {offer.offer?.message || offer.message || 'No message provided'}
                     </Text>
                   </View>
-
-                  {/* Show accepted status badge if offer is accepted */}
-                  {offer.status === 'accepted' && (
-                    <View style={styles.acceptedBadge}>
-                      <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
-                      <Text style={styles.acceptedText}>Accepted</Text>
-                    </View>
-                  )}
                 </View>
               </View>
             </View>
+
+            {/* Offer Amount - Always visible for task posters viewing offers */}
+            <View style={styles.offerAmountContainer}>
+              <Text style={styles.offerAmountLabel}>Offer Amount</Text>
+              <Text style={styles.offerAmount}>
+                {offerCurrency} ${offerAmount.toFixed(2)}
+              </Text>
+            </View>
+
+            {/* Accept Offer Button - Only show if:
+                1. Current user is the task creator
+                2. Offer is not already accepted
+                3. onAcceptOffer callback is provided
+            */}
+            {currentUserId === taskCreatorId && 
+             offer.status !== 'accepted' && 
+             onAcceptOffer && (
+              <TouchableOpacity 
+                style={styles.acceptOfferButton}
+                onPress={() => onAcceptOffer(offer._id)}
+              >
+                <Text style={styles.acceptOfferButtonText}>Accept Offer</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Show accepted status badge if offer is accepted */}
+            {offer.status === 'accepted' && (
+              <View style={styles.acceptedBadge}>
+                <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
+                <Text style={styles.acceptedText}>Accepted</Text>
+              </View>
+            )}
           </View>
         );
       }}
