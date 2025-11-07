@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -309,7 +310,10 @@ export default function LoginScreen() {
               <ActivityIndicator color="#666" />
             ) : (
               <>
-                <Ionicons name="logo-google" size={20} color="#DB4437" style={styles.googleIcon} />
+                <Image 
+                  source={require('@/assets/icons/google.png')}
+                  style={styles.googleIcon}
+                />
                 <Text style={styles.googleButtonText}>Continue with Google</Text>
               </>
             )}
@@ -429,6 +433,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   googleIcon: {
+    width: 20,
+    height: 20,
     marginRight: 10,
   },
   googleButtonText: {

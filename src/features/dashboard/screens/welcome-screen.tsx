@@ -10,6 +10,7 @@ import { Bell, ChevronRight } from 'lucide-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   Dimensions,
   FlatList,
@@ -76,6 +77,7 @@ export default function WelcomeScreen() {
   const router = useRouter();
   const [taskInput, setTaskInput] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const { data: categories, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
   const { data: unreadCountData } = useUnreadCount();
   const { updateMyTask, myTask } = useCreateTaskStore();
@@ -113,13 +115,31 @@ export default function WelcomeScreen() {
   );
 
   const handlePostTask = () => {
-    if (taskInput.trim()) {
-      updateMyTask({
-        mainGoal: taskInput,
-        title: taskInput
-      });
-      router.push('/(welcome-screen)/title-screen' as any);
+    const trimmedInput = taskInput.trim();
+    
+    // Validation checks
+    if (!trimmedInput) {
+      setErrorMessage('Please fill in what you need done');
+      return;
     }
+    
+    if (trimmedInput.length < 5) {
+      setErrorMessage('Please provide more details (at least 5 characters)');
+      return;
+    }
+    
+    if (trimmedInput.length > 100) {
+      setErrorMessage('Task description is too long (max 100 characters)');
+      return;
+    }
+    
+    // Clear error and proceed
+    setErrorMessage('');
+    updateMyTask({
+      mainGoal: trimmedInput,
+      title: trimmedInput
+    });
+    router.push('/(welcome-screen)/title-screen' as any);
   };
 
   const handleTagPress = (tag: string) => {
@@ -169,10 +189,23 @@ export default function WelcomeScreen() {
             placeholder="In a few words what do you need done?"
             placeholderTextColor="#999"
             value={taskInput}
-            onChangeText={setTaskInput}
+            onChangeText={(text) => {
+              setTaskInput(text);
+              if (errorMessage) setErrorMessage(''); // Clear error on typing
+            }}
+            maxLength={100}
+            returnKeyType="done"
+            onSubmitEditing={handlePostTask}
           />
           
-          <TouchableOpacity style={styles.postButton} onPress={handlePostTask}>
+          {errorMessage ? (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          ) : null}
+          
+          <TouchableOpacity 
+            style={styles.postButton} 
+            onPress={handlePostTask}
+          >
             <MaterialCommunityIcons name="plus" size={18} color="#fff" />
             <Text style={styles.postButtonText}>Post a Task</Text>
             <ChevronRight size={18} color="#fff" />
@@ -330,6 +363,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 16,
     marginBottom: 16,
+  },
+  errorText: {
+    color: '#ff4444',
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 8,
+    paddingLeft: 4,
   },
   postButton: {
     backgroundColor: '#ff6b35',

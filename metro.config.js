@@ -20,8 +20,13 @@ config.transformer.minifierConfig = {
 config.transformer.enableBabelRCLookup = false;
 config.transformer.cacheVersion = '1.0';
 
-// Optimize asset loading
-config.resolver.assetExts = [...config.resolver.assetExts, 'mp4', 'mov'];
+// Optimize asset loading and configure SVG support
+const assetExts = config.resolver.assetExts.filter((ext) => ext !== 'svg');
+config.resolver.assetExts = [...assetExts, 'mp4', 'mov'];
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'svg'];
+
+// Configure SVG transformer
+config.transformer.babelTransformerPath = require.resolve('react-native-svg-transformer');
 
 // Enable faster refresh
 config.server = {
