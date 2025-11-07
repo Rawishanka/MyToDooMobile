@@ -4,15 +4,17 @@ import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Image,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Image,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface EditTaskScreenProps {
   route?: {
@@ -23,6 +25,7 @@ interface EditTaskScreenProps {
 }
 
 export default function EditTaskScreen({ route }: EditTaskScreenProps) {
+  const insets = useSafeAreaInsets();
   const [category, setCategory] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -56,8 +59,8 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
+    <SafeAreaView style={styles.container}>
+      {/* Fixed Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#000" />
@@ -68,8 +71,9 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
         </TouchableOpacity>
       </View>
 
-      {/* Form */}
-      <View style={styles.form}>
+      {/* Scrollable Form */}
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.form}>
         {/* Category */}
         <View style={styles.formGroup}>
           <Text style={styles.label}>Category* (Select one)</Text>
@@ -180,11 +184,17 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
           </View>
         </View>
 
-        {/* Save Button */}
-        <TouchableOpacity style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
-      </View>
+          {/* Save Button */}
+          <TouchableOpacity 
+            style={[
+              styles.saveButton,
+              { marginBottom: Math.max(insets.bottom, 20) }
+            ]}
+          >
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
       {/* Date Picker Modal */}
       {showDatePicker && (
@@ -215,7 +225,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
           }}
         />
       )}
-    </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -229,11 +239,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'ios' ? 16 : 50,
     paddingBottom: 16,
-    paddingTop: Platform.OS === 'ios' ? 60 : 50,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
     backgroundColor: '#fff',
+  },
+  scrollView: {
+    flex: 1,
   },
   headerTitle: {
     fontSize: 18,

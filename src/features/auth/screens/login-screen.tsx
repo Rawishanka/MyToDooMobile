@@ -272,7 +272,7 @@ export default function LoginScreen() {
               <ActivityIndicator color="#666" />
             ) : (
               <>
-                <Ionicons name="logo-google" size={20} color="#DB4437" style={styles.googleIcon} />
+                <Ionicons name="logo-google" size={20} color="#4285F4" style={styles.googleIcon} />
                 <Text style={styles.googleButtonText}>Continue with Google</Text>
               </>
             )}
