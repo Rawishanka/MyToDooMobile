@@ -91,7 +91,7 @@ export default function TaskCard({ task, onPress }: TaskCardProps) {
           </View>
 
           {/* Categories */}
-          {task.categories && task.categories.length > 0 && (
+          {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
             <View style={styles.categoriesContainer}>
               {task.categories.slice(0, 3).map((category, index) => (
                 <View key={index} style={styles.categoryTag}>
