@@ -55,6 +55,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string }> = ({ tasks, isLo
         renderItem={({ item }) => (
           <TaskCard 
             task={item} 
+            status={status}
             onPress={(taskId: string) => {
               console.log('Navigating to edit-task with taskId:', taskId);
               router.push(`/edit-task?taskId=${taskId}` as any);
@@ -112,6 +113,74 @@ export default function MyTasksScreen() {
     section: 'all-tasks'
   });
 
+  // Dummy data for Accepted Offers tab
+  const dummyAcceptedOffers: Task[] = [
+    {
+      _id: 'dummy-1',
+      title: 'Good Task 1',
+      categories: ['General'],
+      dateType: 'specific',
+      dateRange: {
+        start: '2025-10-25T00:00:00.000Z',
+        end: '2025-10-25T23:59:59.999Z',
+      },
+      time: 'Afternoon',
+      location: {
+        address: 'Colombo to Negombo',
+        coordinates: {},
+      },
+      details: 'Need help with moving items from Colombo to Negombo',
+      budget: 1200,
+      currency: 'LKR',
+      images: [],
+      status: 'In Progress',
+      createdBy: {
+        _id: 'user-1',
+        firstName: 'John',
+        lastName: 'Doe',
+        rating: 4.5,
+        email: 'john@example.com',
+      },
+      statusHistory: [],
+      createdAt: '2025-10-20T10:00:00.000Z',
+      updatedAt: '2025-10-25T10:00:00.000Z',
+      __v: 0,
+      formattedBudget: 'LKR 1200',
+    },
+    {
+      _id: 'dummy-2',
+      title: 'Good Task 2',
+      categories: ['Appliance Installation & Repair'],
+      dateType: 'specific',
+      dateRange: {
+        start: '2025-10-22T00:00:00.000Z',
+        end: '2025-10-22T23:59:59.999Z',
+      },
+      time: 'Evening',
+      location: {
+        address: 'Colombo',
+        coordinates: {},
+      },
+      details: 'Need to install and repair washing machine',
+      budget: 5600,
+      currency: 'LKR',
+      images: [],
+      status: 'Open',
+      createdBy: {
+        _id: 'user-2',
+        firstName: 'Jane',
+        lastName: 'Smith',
+        rating: 4.8,
+        email: 'jane@example.com',
+      },
+      statusHistory: [],
+      createdAt: '2025-10-15T10:00:00.000Z',
+      updatedAt: '2025-10-22T10:00:00.000Z',
+      __v: 0,
+      formattedBudget: 'LKR 5600',
+    },
+  ];
+
   const allTasks = myTasksData?.data || [];
   const allOffers = myOffersData?.data || [];
   const isLoading = isLoadingTasks || isLoadingOffers;
@@ -156,6 +225,9 @@ export default function MyTasksScreen() {
     const acceptedTasks = allOffers.filter((offer: any) => 
       offer.status === 'accepted'
     );
+    
+    // If no accepted offers from API, use dummy data
+    const finalAcceptedTasks = acceptedTasks.length > 0 ? acceptedTasks : dummyAcceptedOffers;
 
     return {
       openTasks,
@@ -164,9 +236,9 @@ export default function MyTasksScreen() {
       overdueTasks,
       cancelledTasks,
       postedTasks,
-      acceptedTasks,
+      acceptedTasks: finalAcceptedTasks,
     };
-  }, [allTasks, allOffers]);
+  }, [allTasks, allOffers, dummyAcceptedOffers]);
 
   const handleRefresh = useCallback(() => {
     refetchTasks();
