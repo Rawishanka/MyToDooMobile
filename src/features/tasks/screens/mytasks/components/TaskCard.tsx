@@ -7,10 +7,21 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 interface TaskCardProps {
   task: Task;
   onPress?: (taskId: string) => void;
+  status?: string;
 }
 
-export default function TaskCard({ task, onPress }: TaskCardProps) {
+export default function TaskCard({ task, onPress, status }: TaskCardProps) {
   const router = useRouter();
+
+  const handleMarkAsCompleted = () => {
+    console.log('Mark as completed:', task._id);
+    // TODO: API call to mark task as completed
+  };
+
+  const handleCancelTask = () => {
+    console.log('Cancel task:', task._id);
+    // TODO: API call to cancel task
+  };
 
   // Helper function to get time preference display
   const getTimePreference = () => {
@@ -91,7 +102,7 @@ export default function TaskCard({ task, onPress }: TaskCardProps) {
           </View>
 
           {/* Categories */}
-          {task.categories && task.categories.length > 0 && (
+          {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
             <View style={styles.categoriesContainer}>
               {task.categories.slice(0, 3).map((category, index) => (
                 <View key={index} style={styles.categoryTag}>
@@ -132,18 +143,39 @@ export default function TaskCard({ task, onPress }: TaskCardProps) {
 
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
-        <TouchableOpacity 
-          style={styles.actionButton} 
-          onPress={() => onPress ? onPress(task._id) : router.push(`/edit-task?taskId=${task._id}` as any)}
-        >
-          <MaterialIcons name="edit" size={20} color="#007bff" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={() => console.log('Approve task')}>
-          <MaterialIcons name="check-circle" size={20} color="#28a745" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={() => console.log('Cancel task')}>
-          <MaterialIcons name="cancel" size={20} color="#dc3545" />
-        </TouchableOpacity>
+        {status === 'accepted' ? (
+          // Accepted Offers tab: Mark as Completed + Cancel
+          <>
+            <TouchableOpacity 
+              style={styles.completedButton}
+              onPress={handleMarkAsCompleted}
+            >
+              <Text style={styles.completedButtonText}>Mark as Completed</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.cancelButton}
+              onPress={handleCancelTask}
+            >
+              <MaterialIcons name="close" size={20} color="#fff" />
+            </TouchableOpacity>
+          </>
+        ) : (
+          // Posted tab: Edit + Cancel (removed Approve button)
+          <>
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={() => onPress ? onPress(task._id) : router.push(`/edit-task?taskId=${task._id}` as any)}
+            >
+              <MaterialIcons name="edit" size={20} color="#007bff" />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={handleCancelTask}
+            >
+              <MaterialIcons name="cancel" size={20} color="#dc3545" />
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -178,6 +210,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
+  },
+  completedButton: {
+    flex: 1,
+    backgroundColor: '#FFA500',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  completedButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  cancelButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#dc3545',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   actionIcon: {
     width: 20,

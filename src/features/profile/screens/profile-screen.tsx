@@ -12,7 +12,7 @@ import { useAuthStore } from '@/src/store/auth-task-store';
 import { Entypo, Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AccountInformation from './accountinformation';
 import IDVerificationScreen from './id-verification-screen';
 import InsuranceProtection from './isuranceprotection';
@@ -22,20 +22,23 @@ import TaskAlerts from './taskalerts';
 
 export default function AccountScreen() {
   const [currentScreen, setCurrentScreen] = useState('account');
-  
+  const [editAccessStatus, setEditAccessStatus] = useState<'locked' | 'pending' | 'approved'>('locked');
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [showPendingModal, setShowPendingModal] = useState(false);
+
   // � **AUTO-LOGIN for development**
   React.useEffect(() => {
     autoLoginForDevelopment();
   }, []);
-  
+
   // �🚀 **NEW: Get real user data from API**
   const { data: userProfileData, isLoading: isLoadingProfile, error: profileError, refetch } = useGetUserProfile();
   const { mutate: uploadAvatar, isPending: isUploadingAvatar } = useUploadUserAvatar();
   const { user: authUser, isAuthenticated, token } = useAuthStore();
-  
+
   // 🔧 **FIX: Better fallback logic for user data**
   let userData = userProfileData || authUser;
-  
+
   // If API fails due to auth error, use mock data that reflects unverified status
   if (profileError && !userData) {
     console.log("⚠️ Profile API failed, using mock data with correct verification status");
@@ -61,7 +64,7 @@ export default function AccountScreen() {
       avatar: undefined
     };
   }
-  
+
   // 🚨 **DEBUG: Log authentication state**
   console.log("🔍 Profile Screen Debug:", {
     isAuthenticated,
@@ -71,7 +74,7 @@ export default function AccountScreen() {
     profileError: profileError?.message,
     isVerified: userData?.isVerified
   });
-  
+
   // Handle avatar change
   const handleChangeAvatar = async () => {
     // Request permission
@@ -122,7 +125,7 @@ export default function AccountScreen() {
       });
     }
   };
-  
+
   // Handle loading state
   if (isLoadingProfile && !userData) {
     return (
@@ -132,7 +135,7 @@ export default function AccountScreen() {
       </View>
     );
   }
-  
+
   // Handle error state
   if (profileError && !userData) {
     return (
@@ -180,7 +183,31 @@ export default function AccountScreen() {
   };
 
   const navigateToProfileUpdate = () => {
+    // Check if profile editing is locked
+    if (editAccessStatus === 'locked') {
+      setShowRequestModal(true);
+      return;
+    }
+    
+    if (editAccessStatus === 'pending') {
+      setShowPendingModal(true);
+      return;
+    }
+    
+    // If approved, allow editing
     setCurrentScreen('profile-update');
+  };
+
+  const handleSendRequest = () => {
+    setShowRequestModal(false);
+    // TODO: Send request to backend API
+    // For now, just update the status to pending
+    setEditAccessStatus('pending');
+    
+    // Show pending modal
+    setTimeout(() => {
+      setShowPendingModal(true);
+    }, 300);
   };
 
   const navigateToFAQ = () => {
@@ -347,10 +374,11 @@ export default function AccountScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>PROFILE</Text>
         <MenuItem 
-          icon={<Ionicons name="person-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="person-outline" size={20} color={editAccessStatus === 'approved' ? "#0052A2" : "#999"} />}
           text="Edit Profile"
           onPress={navigateToProfileUpdate} 
-          subtext="Update your personal information"        
+          subtext={editAccessStatus === 'locked' ? "Editing is disabled until approved by admin" : editAccessStatus === 'pending' ? "Request pending approval" : "Update your personal information"}
+          disabled={editAccessStatus !== 'approved'}
         />
         <MenuItem 
           icon={<Ionicons name="shield-checkmark-outline" size={20} color="#0052A2" />}
@@ -443,6 +471,79 @@ export default function AccountScreen() {
         />
       </View>
 
+      {/* Request Edit Access Modal */}
+      <Modal
+        visible={showRequestModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowRequestModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Request Edit Access</Text>
+            <Text style={styles.modalMessage}>
+              Your profile is locked. Send a request to admin to enable editing?
+            </Text>
+            <Text style={styles.modalSubMessage}>
+              Admin will review your request.
+            </Text>
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={styles.modalCancelButton}
+                onPress={() => setShowRequestModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.modalSendButton}
+                onPress={handleSendRequest}
+              >
+                <Text style={styles.modalSendText}>Send Request</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Pending Approval Modal */}
+      <Modal
+        visible={showPendingModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowPendingModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.pendingIconContainer}>
+              <Ionicons name="hourglass-outline" size={48} color="#9b59b6" />
+            </View>
+            
+            <Text style={styles.modalTitle}>Request Sent!</Text>
+            <Text style={styles.modalMessage}>
+              Waiting for admin approval to unlock your profile.
+            </Text>
+            
+            <View style={styles.pendingBadge}>
+              <View style={styles.pendingDot} />
+              <Text style={styles.pendingText}>Pending Approval</Text>
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.backToProfileButton}
+              onPress={() => setShowPendingModal(false)}
+            >
+              <Text style={styles.backToProfileText}>Back to Profile</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.modalFooterText}>
+              Usually takes 24-48 hours
+            </Text>
+          </View>
+        </View>
+      </Modal>
+
     </ScrollView>
   );
 }
@@ -452,16 +553,25 @@ type MenuItemProps = {
   text: string;
   subtext?: string;
   onPress?: () => void;
+  disabled?: boolean;
 };
 
-const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress }) => (
-  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disabled }) => (
+  <TouchableOpacity 
+    style={[styles.menuItem, disabled && styles.menuItemDisabled]} 
+    onPress={onPress}
+    disabled={disabled && !onPress}
+  >
     <View style={styles.iconWrapper}>{icon}</View>
     <View style={{ flex: 1 }}>
-      <Text style={styles.menuText}>{text}</Text>
-      {subtext && <Text style={styles.subtext}>{subtext}</Text>}
+      <Text style={[styles.menuText, disabled && styles.menuTextDisabled]}>{text}</Text>
+      {subtext && <Text style={[styles.subtext, disabled && styles.subtextDisabled]}>{subtext}</Text>}
     </View>
-    <Ionicons name="chevron-forward" size={18} color="#888" />
+    {disabled ? (
+      <Ionicons name="lock-closed" size={18} color="#999" />
+    ) : (
+      <Ionicons name="chevron-forward" size={18} color="#888" />
+    )}
   </TouchableOpacity>
 );
 
@@ -651,6 +761,124 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#666',
     marginTop: 2,
+  },
+  menuItemDisabled: {
+    opacity: 0.6,
+  },
+  menuTextDisabled: {
+    color: '#999',
+  },
+  subtextDisabled: {
+    color: '#999',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 8,
+    lineHeight: 22,
+  },
+  modalSubMessage: {
+    fontSize: 14,
+    color: '#3498db',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalCancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: 16,
+    color: '#666',
+    fontWeight: '600',
+  },
+  modalSendButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    backgroundColor: '#3498db',
+    alignItems: 'center',
+  },
+  modalSendText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  pendingIconContainer: {
+    marginBottom: 16,
+  },
+  pendingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginVertical: 20,
+    borderWidth: 1,
+    borderColor: '#3498db',
+  },
+  pendingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#999',
+    marginRight: 8,
+  },
+  pendingText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  backToProfileButton: {
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#3498db',
+    marginBottom: 12,
+  },
+  backToProfileText: {
+    fontSize: 16,
+    color: '#3498db',
+    fontWeight: '600',
+  },
+  modalFooterText: {
+    fontSize: 13,
+    color: '#999',
+    textAlign: 'center',
   },
   bottomNav: {
     flexDirection: 'row',

@@ -255,9 +255,71 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
       {expandedSections.taskerResponsibilities && (
         <View style={styles.expandedContent}>
-          <Text style={styles.bodyText}>
-            As a Tasker, you are responsible for communicating professionally and completing tasks as agreed. Any cancellations should be done with appropriate notice and valid reasons.
-          </Text>
+          {/* Understanding the task */}
+          <View style={styles.responsibilityItem}>
+            <Ionicons name="checkmark-circle" size={24} color="#007AFF" style={styles.checkIcon} />
+            <View style={styles.responsibilityTextContainer}>
+              <Text style={styles.responsibilityTitle}>Understanding the task</Text>
+              <Text style={styles.responsibilityDescription}>
+                Accurately scope out the work at the time of making an offer
+              </Text>
+            </View>
+          </View>
+
+          {/* Task start date & time */}
+          <View style={styles.responsibilityItem}>
+            <Ionicons name="checkmark-circle" size={24} color="#007AFF" style={styles.checkIcon} />
+            <View style={styles.responsibilityTextContainer}>
+              <Text style={styles.responsibilityTitle}>Task start date & time</Text>
+              <Text style={styles.responsibilityDescription}>
+                Confirming and agree on a task date & time at the time of making an offer
+              </Text>
+            </View>
+          </View>
+
+          {/* Availability */}
+          <View style={styles.responsibilityItem}>
+            <Ionicons name="checkmark-circle" size={24} color="#007AFF" style={styles.checkIcon} />
+            <View style={styles.responsibilityTextContainer}>
+              <Text style={styles.responsibilityTitle}>Availability</Text>
+              <Text style={styles.responsibilityDescription}>
+                Managing your availability and arriving on time at the agreed location
+              </Text>
+            </View>
+          </View>
+
+          {/* Communication */}
+          <View style={styles.responsibilityItem}>
+            <Ionicons name="checkmark-circle" size={24} color="#007AFF" style={styles.checkIcon} />
+            <View style={styles.responsibilityTextContainer}>
+              <Text style={styles.responsibilityTitle}>Communication</Text>
+              <Text style={styles.responsibilityDescription}>
+                Being responsive to messages, within 12 hours of message receipt
+              </Text>
+            </View>
+          </View>
+
+          {/* Skills & Qualifications */}
+          <View style={styles.responsibilityItem}>
+            <Ionicons name="checkmark-circle" size={24} color="#007AFF" style={styles.checkIcon} />
+            <View style={styles.responsibilityTextContainer}>
+              <Text style={styles.responsibilityTitle}>Skills & Qualifications</Text>
+              <Text style={styles.responsibilityDescription}>
+                Ensuring you have the required skills and qualifications necessary
+              </Text>
+            </View>
+          </View>
+
+          {/* Equipment */}
+          <View style={styles.responsibilityItem}>
+            <Ionicons name="checkmark-circle" size={24} color="#007AFF" style={styles.checkIcon} />
+            <View style={styles.responsibilityTextContainer}>
+              <Text style={styles.responsibilityTitle}>Equipment</Text>
+              <Text style={styles.responsibilityDescription}>
+                Having access to the required equipment to complete the task
+              </Text>
+            </View>
+          </View>
         </View>
       )}
     </>
@@ -522,6 +584,30 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  responsibilityItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+  checkIcon: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  responsibilityTextContainer: {
+    flex: 1,
+  },
+  responsibilityTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  responsibilityDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#666',
   },
 });
 
