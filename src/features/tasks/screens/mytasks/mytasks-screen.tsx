@@ -26,7 +26,7 @@ interface TabScreenProps {
 }
 
 // Tab screen components
-const TabScreen: React.FC<TabScreenProps & { status?: string }> = ({ tasks, isLoading, onRefresh, status }) => {
+const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string }> = ({ tasks, isLoading, onRefresh, status, userRole }) => {
   
   const getEmptyMessage = () => {
     switch (status) {
@@ -56,6 +56,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string }> = ({ tasks, isLo
           <TaskCard 
             task={item} 
             status={status}
+            userRole={userRole}
             onPress={(taskId: string) => {
               console.log('Navigating to edit-task with taskId:', taskId);
               router.push(`/edit-task?taskId=${taskId}` as any);
@@ -112,6 +113,74 @@ export default function MyTasksScreen() {
   } = useGetMyOffers({
     section: 'all-tasks'
   });
+
+  // Dummy data for Cancelled tab (Tasker role)
+  const dummyCancelledTasks: Task[] = [
+    {
+      _id: 'cancelled-1',
+      title: 'House Cleaning Service',
+      categories: ['Cleaning'],
+      dateType: 'specific',
+      dateRange: {
+        start: '2025-11-05T00:00:00.000Z',
+        end: '2025-11-05T23:59:59.999Z',
+      },
+      time: 'Morning',
+      location: {
+        address: 'Kandy',
+        coordinates: {},
+      },
+      details: 'Deep cleaning required for 3 bedroom house',
+      budget: 3500,
+      currency: 'LKR',
+      images: [],
+      status: 'cancelled',
+      createdBy: {
+        _id: 'poster-1',
+        firstName: 'Sarah',
+        lastName: 'Johnson',
+        rating: 4.2,
+        email: 'sarah@example.com',
+      },
+      statusHistory: [],
+      createdAt: '2025-11-01T10:00:00.000Z',
+      updatedAt: '2025-11-04T10:00:00.000Z',
+      __v: 0,
+      formattedBudget: 'LKR 3500',
+    },
+    {
+      _id: 'cancelled-2',
+      title: 'Furniture Assembly',
+      categories: ['Handyman'],
+      dateType: 'specific',
+      dateRange: {
+        start: '2025-11-08T00:00:00.000Z',
+        end: '2025-11-08T23:59:59.999Z',
+      },
+      time: 'Afternoon',
+      location: {
+        address: 'Galle',
+        coordinates: {},
+      },
+      details: 'Need help assembling IKEA furniture - wardrobe and bed frame',
+      budget: 2800,
+      currency: 'LKR',
+      images: [],
+      status: 'cancelled',
+      createdBy: {
+        _id: 'poster-2',
+        firstName: 'Michael',
+        lastName: 'Brown',
+        rating: 4.6,
+        email: 'michael@example.com',
+      },
+      statusHistory: [],
+      createdAt: '2025-11-02T10:00:00.000Z',
+      updatedAt: '2025-11-06T10:00:00.000Z',
+      __v: 0,
+      formattedBudget: 'LKR 2800',
+    },
+  ];
 
   // Dummy data for Accepted Offers tab
   const dummyAcceptedOffers: Task[] = [
@@ -215,6 +284,9 @@ export default function MyTasksScreen() {
     const cancelledTasks = allTasks.filter((task: Task) => 
       task.status === 'cancelled'
     );
+    
+    // If no cancelled tasks from API, use dummy data
+    const finalCancelledTasks = cancelledTasks.length > 0 ? cancelledTasks : dummyCancelledTasks;
 
     // For Poster role - tasks they've posted
     const postedTasks = allTasks.filter((task: Task) => 
@@ -234,11 +306,11 @@ export default function MyTasksScreen() {
       todoTasks,
       completedTasks,
       overdueTasks,
-      cancelledTasks,
+      cancelledTasks: finalCancelledTasks,
       postedTasks,
       acceptedTasks: finalAcceptedTasks,
     };
-  }, [allTasks, allOffers, dummyAcceptedOffers]);
+  }, [allTasks, allOffers, dummyAcceptedOffers, dummyCancelledTasks]);
 
   const handleRefresh = useCallback(() => {
     refetchTasks();
@@ -320,6 +392,7 @@ export default function MyTasksScreen() {
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="open"
+                  userRole={userRole}
                 />
               )}
             </Tab.Screen>
@@ -333,6 +406,7 @@ export default function MyTasksScreen() {
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="assigned"
+                  userRole={userRole}
                 />
               )}
             </Tab.Screen>
@@ -346,6 +420,7 @@ export default function MyTasksScreen() {
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="completed"
+                  userRole={userRole}
                 />
               )}
             </Tab.Screen>
@@ -359,6 +434,7 @@ export default function MyTasksScreen() {
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="overdue"
+                  userRole={userRole}
                 />
               )}
             </Tab.Screen>
@@ -372,6 +448,7 @@ export default function MyTasksScreen() {
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="cancelled"
+                  userRole={userRole}
                 />
               )}
             </Tab.Screen>
@@ -387,6 +464,7 @@ export default function MyTasksScreen() {
                   tasks={categorizedData.postedTasks}
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
+                  userRole={userRole}
                 />
               )}
             </Tab.Screen>
@@ -400,6 +478,7 @@ export default function MyTasksScreen() {
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="accepted"
+                  userRole={userRole}
                 />
               )}
             </Tab.Screen>
@@ -413,6 +492,7 @@ export default function MyTasksScreen() {
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="completed"
+                  userRole={userRole}
                 />
               )}
             </Tab.Screen>
@@ -426,6 +506,7 @@ export default function MyTasksScreen() {
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="cancelled"
+                  userRole={userRole}
                 />
               )}
             </Tab.Screen>

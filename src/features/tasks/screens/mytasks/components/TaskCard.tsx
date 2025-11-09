@@ -1,17 +1,19 @@
 import { Task } from '@/src/api/types/tasks';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface TaskCardProps {
   task: Task;
   onPress?: (taskId: string) => void;
   status?: string;
+  userRole?: string;
 }
 
-export default function TaskCard({ task, onPress, status }: TaskCardProps) {
+export default function TaskCard({ task, onPress, status, userRole }: TaskCardProps) {
   const router = useRouter();
+  const [showCancellationModal, setShowCancellationModal] = useState(false);
 
   const handleMarkAsCompleted = () => {
     console.log('Mark as completed:', task._id);
@@ -21,6 +23,18 @@ export default function TaskCard({ task, onPress, status }: TaskCardProps) {
   const handleCancelTask = () => {
     console.log('Cancel task:', task._id);
     // TODO: API call to cancel task
+  };
+
+  const handleAcceptCancellation = () => {
+    console.log('Accept cancellation:', task._id);
+    // TODO: API call to accept cancellation
+    setShowCancellationModal(false);
+  };
+
+  const handleRejectCancellation = () => {
+    console.log('Reject cancellation:', task._id);
+    // TODO: API call to reject cancellation
+    setShowCancellationModal(false);
   };
 
   // Helper function to get time preference display
@@ -177,6 +191,55 @@ export default function TaskCard({ task, onPress, status }: TaskCardProps) {
           </>
         )}
       </View>
+
+      {/* Cancellation Notice for Cancelled Tab - Only for Tasker role */}
+      {status === 'cancelled' && userRole === 'Tasker' && (
+        <TouchableOpacity 
+          style={styles.cancellationNotice}
+          onPress={() => setShowCancellationModal(true)}
+        >
+          <MaterialIcons name="info-outline" size={16} color="#dc3545" />
+          <Text style={styles.cancellationText}>Poster cancelled the task</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Cancellation Confirmation Modal */}
+      <Modal
+        visible={showCancellationModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowCancellationModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <MaterialIcons name="cancel" size={48} color="#dc3545" style={styles.modalIcon} />
+            
+            <Text style={styles.modalTitle}>Task Cancelled</Text>
+            <Text style={styles.modalMessage}>
+              Poster has cancelled the task.
+            </Text>
+            <Text style={styles.modalQuestion}>
+              Do you accept the cancellation?
+            </Text>
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={styles.modalNoButton}
+                onPress={handleRejectCancellation}
+              >
+                <Text style={styles.modalNoText}>No</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.modalYesButton}
+                onPress={handleAcceptCancellation}
+              >
+                <Text style={styles.modalYesText}>Yes</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </TouchableOpacity>
   );
 }
@@ -233,6 +296,94 @@ const styles = StyleSheet.create({
     backgroundColor: '#dc3545',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  cancellationNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#fff5f5',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#ffcccc',
+  },
+  cancellationText: {
+    fontSize: 13,
+    color: '#dc3545',
+    marginLeft: 6,
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    alignItems: 'center',
+  },
+  modalIcon: {
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 8,
+    lineHeight: 22,
+  },
+  modalQuestion: {
+    fontSize: 15,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 24,
+    fontWeight: '500',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalNoButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  modalNoText: {
+    fontSize: 16,
+    color: '#666',
+    fontWeight: '600',
+  },
+  modalYesButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    backgroundColor: '#dc3545',
+    alignItems: 'center',
+  },
+  modalYesText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '600',
   },
   actionIcon: {
     width: 20,
