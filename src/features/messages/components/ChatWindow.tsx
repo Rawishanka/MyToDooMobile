@@ -1,9 +1,11 @@
-// Chat Window Component
+// Simplified ChatWindow without Firebase (temporary fix)
 
+import { useGetGroupChatMessages, useSendGroupChatMessage } from '@/src/shared/hooks/useChatApi';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActionSheetIOS,
   Alert,
@@ -26,14 +28,98 @@ interface ChatScreenProps {
   visible: boolean;
   onClose: () => void;
   message: Message | null;
+  taskId?: string | null;
 }
 
-export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, message }) => {
+export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, message, taskId }) => {
   const [newMessage, setNewMessage] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(SAMPLE_CHAT_MESSAGES);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [currentUserName, setCurrentUserName] = useState<string>('');
 
-  const sendMessage = () => {
-    if (newMessage.trim()) {
+  // Get real chat messages from API
+  const { 
+    data: groupChatData, 
+    isLoading: isLoadingMessages 
+  } = useGetGroupChatMessages(taskId || '', 50, !!taskId && visible);
+
+  // Mutation for sending messages
+  const sendGroupMessageMutation = useSendGroupChatMessage();
+
+  // Load user info on component mount
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      try {
+        const userId = await AsyncStorage.getItem('userId') || 'unknown';
+        const userName = await AsyncStorage.getItem('userName') || 'User';
+        setCurrentUserId(userId);
+        setCurrentUserName(userName);
+      } catch (error) {
+        console.error('Failed to load user info:', error);
+      }
+    };
+    
+    if (visible) {
+      loadUserInfo();
+    }
+  }, [visible]);
+
+  // Load API messages when available
+  useEffect(() => {
+    if (groupChatData?.messages && visible) {
+      console.log(`📡 Loading ${groupChatData.messages.length} messages from API`);
+      
+      const convertedMessages: ChatMessage[] = groupChatData.messages.map(msg => ({
+        id: msg.id,
+        text: msg.text,
+        sender: msg.senderId === currentUserId ? 'me' : 'other',
+        timestamp: new Date(msg.timestamp).toLocaleTimeString([], { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        senderName: msg.senderName,
+      }));
+      setChatMessages(convertedMessages);
+    } else if (visible && !isLoadingMessages) {
+      // Fallback to sample messages
+      console.log('📱 Using sample chat messages');
+      setChatMessages(SAMPLE_CHAT_MESSAGES);
+    }
+  }, [groupChatData, visible, currentUserId, isLoadingMessages]);
+
+  const sendMessage = async () => {
+    if (newMessage.trim() && taskId) {
+      try {
+        setIsLoading(true);
+        
+        // Send via API
+        await sendGroupMessageMutation.mutateAsync({
+          taskId,
+          message: {
+            text: newMessage.trim(),
+            messageType: 'text',
+            metadata: {}
+          }
+        });
+
+        // Add to local state immediately for UI feedback
+        const newMsg: ChatMessage = {
+          id: Date.now().toString(),
+          text: newMessage.trim(),
+          sender: 'me',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setChatMessages(prev => [...prev, newMsg]);
+        setNewMessage('');
+      } catch (error) {
+        console.error('❌ Failed to send message:', error);
+        Alert.alert('Error', 'Failed to send message. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    } else if (newMessage.trim()) {
+      // Fallback for demo mode
       const newMsg: ChatMessage = {
         id: Date.now().toString(),
         text: newMessage.trim(),
@@ -142,7 +228,9 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
             />
             <View style={styles.chatHeaderText}>
               <Text style={styles.chatTitle} numberOfLines={1}>{message.title}</Text>
-              <Text style={styles.chatStatus}>Online</Text>
+              <Text style={styles.chatStatus}>
+                {taskId ? (isLoadingMessages ? 'Loading...' : 'Online') : 'Demo Mode'}
+              </Text>
             </View>
           </View>
           
@@ -212,8 +300,12 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
                 multiline
                 maxLength={500}
               />
-              <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-                <Ionicons name="send" size={20} color="#007AFF" />
+              <TouchableOpacity 
+                onPress={sendMessage} 
+                style={[styles.sendButton, isLoading && styles.sendButtonDisabled]}
+                disabled={isLoading}
+              >
+                <Ionicons name="send" size={20} color={isLoading ? "#ccc" : "#007AFF"} />
               </TouchableOpacity>
             </View>
           </View>
@@ -350,18 +442,16 @@ const styles = StyleSheet.create({
     maxHeight: 100,
     color: '#000',
     paddingVertical: 6,
-    paddingHorizontal: 4,
   },
   attachButton: {
     padding: 6,
-    marginRight: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginRight: 8,
   },
   sendButton: {
     padding: 6,
-    marginLeft: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginLeft: 8,
+  },
+  sendButtonDisabled: {
+    opacity: 0.5,
   },
 });

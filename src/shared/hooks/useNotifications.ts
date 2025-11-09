@@ -1,17 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  deleteNotification,
-  getNotificationPreferences,
-  getNotifications,
-  getNotificationsByType,
-  getNotificationStats,
-  getUnreadCount,
-  markAllNotificationsAsRead,
-  markNotificationAsRead,
-  Notification,
-  updateNotificationPreferences,
-  NotificationResponse,
+    deleteNotification,
+    getNotificationPreferences,
+    getNotifications,
+    getNotificationsByType,
+    getNotificationStats,
+    getUnreadCount,
+    markAllNotificationsAsRead,
+    markNotificationAsRead,
+    Notification,
+    NotificationResponse,
+    updateNotificationPreferences,
 } from '@/src/api/notification-api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 
 // Query keys

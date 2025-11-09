@@ -1,7 +1,7 @@
 // app/(tabs)/welcome-screen.tsx - Updated with category images
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
-import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
+import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -10,7 +10,6 @@ import { Bell, ChevronRight } from 'lucide-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Animated,
   Dimensions,
   FlatList,
@@ -21,7 +20,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 
 // Get screen dimensions

@@ -14,8 +14,8 @@ const getApiUrl = () => {
         return process.env.EXPO_PUBLIC_API_URL;
     }
     
-    // 🔧 Fallback: Using IP address from .env file
-    const fallbackUrl = "http://192.168.1.168:5001/api";
+    // 🔧 Fallback: Using IP address from error logs
+    const fallbackUrl = "http://192.168.8.152:5001/api";
     console.log('⚠️ Using fallback API URL:', fallbackUrl);
     return fallbackUrl;
 };
@@ -23,7 +23,7 @@ const getApiUrl = () => {
 const API_CONFIG = {
     BASE_URL: getApiUrl(),
     USE_MOCK_ONLY: USE_MOCK_API_ONLY,
-    TIMEOUT: 15000, // Increased timeout to 15 seconds
+    TIMEOUT: 30000, // Increased timeout to 30 seconds for chat endpoints
     RETRY_ATTEMPTS: 3, // Number of retry attempts
     RETRY_DELAY: 1000, // Delay between retries in milliseconds
     DEVELOPMENT_MODE: __DEV__,
@@ -33,7 +33,8 @@ const API_CONFIG = {
         AUTH: '/auth',
         USERS: '/users',
         OFFERS: '/offers',
-        MESSAGES: '/messages'
+        MESSAGES: '/messages',
+        CHAT: '/ChatApp' // Add chat endpoint
     }
 }
 

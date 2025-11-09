@@ -1,26 +1,26 @@
 // Updated Notification Screen with Real API Integration
-import React, { useEffect } from 'react';
+import { Notification } from '@/src/api/notification-api';
 import {
-  View,
-  Text,
-  FlatList,
-  Modal,
-  StatusBar,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  RefreshControl,
-  Alert,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import {
-  useNotifications,
-  useUnreadCount,
-  useMarkAsRead,
   useDeleteNotification,
   useMarkAllAsRead,
+  useMarkAsRead,
+  useNotifications,
+  useUnreadCount,
 } from '@/src/shared/hooks/useNotifications';
-import { Notification } from '@/src/api/notification-api';
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  RefreshControl,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 interface NotificationModalProps {
   visible: boolean;

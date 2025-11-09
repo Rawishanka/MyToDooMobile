@@ -1,6 +1,6 @@
-// Message List Item Component
+// Message List Item Component - Optimized for Performance
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { Message } from './message-types';
 
@@ -9,37 +9,58 @@ interface MessageListItemProps {
   onPress: (message: Message) => void;
 }
 
-export const MessageListItem: React.FC<MessageListItemProps> = ({ message, onPress }) => (
-  <TouchableOpacity 
-    style={styles.messageItem} 
-    onPress={() => onPress(message)}
-    activeOpacity={0.7}
-  >
-    <Image 
-      source={{ uri: message.avatar || 'https://randomuser.me/api/portraits/men/1.jpg' }} 
-      style={styles.avatar} 
-    />
-    
-    <View style={styles.messageContent}>
-      <View style={styles.messageTitleRow}>
-        <Text style={styles.messageTitle} numberOfLines={1}>
-          {message.title}
+const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onPress }) => {
+  // Memoize the onPress handler to prevent unnecessary re-renders
+  const handlePress = useCallback(() => {
+    onPress(message);
+  }, [message, onPress]);
+
+  return (
+    <TouchableOpacity 
+      style={styles.messageItem} 
+      onPress={handlePress}
+      activeOpacity={0.7}
+    >
+      <Image 
+        source={{ uri: message.avatar || 'https://randomuser.me/api/portraits/men/1.jpg' }} 
+        style={styles.avatar} 
+        defaultSource={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
+      />
+      
+      <View style={styles.messageContent}>
+        <View style={styles.messageTitleRow}>
+          <Text style={styles.messageTitle} numberOfLines={1}>
+            {message.title}
+          </Text>
+          <Text style={styles.messageDate}>{message.date}</Text>
+        </View>
+        
+        <Text style={styles.messagePreview} numberOfLines={1}>
+          {message.preview}
         </Text>
-        <Text style={styles.messageDate}>{message.date}</Text>
       </View>
       
-      <Text style={styles.messagePreview} numberOfLines={1}>
-        {message.preview}
-      </Text>
-    </View>
-    
-    {message.unreadCount && message.unreadCount > 0 && (
-      <View style={styles.unreadBadge}>
-        <Text style={styles.unreadText}>{message.unreadCount}</Text>
-      </View>
-    )}
-  </TouchableOpacity>
-);
+      {message.unreadCount && message.unreadCount > 0 && (
+        <View style={styles.unreadBadge}>
+          <Text style={styles.unreadText}>{message.unreadCount}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+};
+
+// Optimize with React.memo and custom comparison function
+export const MessageListItem = React.memo(MessageListItemComponent, (prevProps, nextProps) => {
+  // Custom comparison to prevent unnecessary re-renders
+  return (
+    prevProps.message.id === nextProps.message.id &&
+    prevProps.message.title === nextProps.message.title &&
+    prevProps.message.preview === nextProps.message.preview &&
+    prevProps.message.date === nextProps.message.date &&
+    prevProps.message.unreadCount === nextProps.message.unreadCount &&
+    prevProps.message.avatar === nextProps.message.avatar
+  );
+});
 
 const styles = StyleSheet.create({
   messageItem: {
@@ -91,8 +112,8 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   unreadText: {
-    color: '#fff',
     fontSize: 12,
+    color: '#fff',
     fontWeight: '600',
   },
 });

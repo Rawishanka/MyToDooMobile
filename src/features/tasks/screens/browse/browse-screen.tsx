@@ -19,8 +19,8 @@ import { useClearAllCaches, useForceRefreshCategories, useForceRefreshTasks } fr
 
 // Components
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
-import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { TaskCard } from '@/src/features/tasks/components';
+import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { LoadingState } from '../../components/shared';
 import {
     DebugTools,

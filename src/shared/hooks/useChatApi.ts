@@ -1,0 +1,162 @@
+// Chat API React Query Hooks
+
+import { ChatAPI } from '@/src/api/chat-api';
+import {
+    CreateOrUpdateChatRequest,
+    SendGroupMessageRequest,
+    SendMessageRequest,
+    SendSystemMessageRequest
+} from '@/src/api/types/chat';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+// 🔑 Query Keys
+export const CHAT_QUERY_KEYS = {
+  all: ['chats'] as const,
+  lists: () => [...CHAT_QUERY_KEYS.all, 'list'] as const,
+  messages: (taskId: string) => [...CHAT_QUERY_KEYS.all, 'messages', taskId] as const,
+  groupMessages: (taskId: string) => [...CHAT_QUERY_KEYS.all, 'group-messages', taskId] as const,
+  participants: (taskId: string) => [...CHAT_QUERY_KEYS.all, 'participants', taskId] as const,
+};
+
+// 📋 Get All Chats Hook
+export function useGetAllChats() {
+  return useQuery({
+    queryKey: CHAT_QUERY_KEYS.lists(),
+    queryFn: () => ChatAPI.getAllChats(),
+    staleTime: 30000, // 30 seconds
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    retry: (failureCount, error) => {
+      // Don't retry on client errors (4xx) or auth errors
+      if (error?.message?.includes('404') || 
+          error?.message?.includes('401') || 
+          error?.message?.includes('Authentication failed') ||
+          error?.message?.includes('please log in again')) {
+        console.log('🚫 Not retrying chat list due to client error');
+        return false;
+      }
+      console.error('❌ Failed to load chat list:', error);
+      return failureCount < 2;
+    },
+  });
+}
+
+// 💬 Get Individual Chat Messages Hook (Legacy)
+export function useGetChatMessages(taskId: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: CHAT_QUERY_KEYS.messages(taskId),
+    queryFn: () => ChatAPI.getChatMessages(taskId),
+    enabled: enabled && !!taskId,
+    staleTime: 10000, // 10 seconds
+    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
+    retry: (failureCount, error) => {
+      if (error?.message?.includes('404')) return false;
+      return failureCount < 2;
+    },
+  });
+}
+
+// 👥 Get Group Chat Messages Hook
+export function useGetGroupChatMessages(taskId: string, limit: number = 50, enabled: boolean = true) {
+  return useQuery({
+    queryKey: [...CHAT_QUERY_KEYS.groupMessages(taskId), { limit }],
+    queryFn: () => ChatAPI.getGroupChatMessages(taskId, limit),
+    enabled: enabled && !!taskId,
+    staleTime: 10000, // 10 seconds
+    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
+    retry: (failureCount, error) => {
+      if (error?.message?.includes('404') || 
+          error?.message?.includes('Authentication failed') ||
+          error?.message?.includes('No valid endpoint found')) {
+        console.log('🚫 Not retrying group messages due to client error');
+        return false;
+      }
+      return failureCount < 2;
+    },
+  });
+}
+
+// 👤 Get Chat Participants Hook
+export function useGetChatParticipants(taskId: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: CHAT_QUERY_KEYS.participants(taskId),
+    queryFn: () => ChatAPI.getChatParticipants(taskId),
+    enabled: enabled && !!taskId,
+    staleTime: 60000, // 1 minute
+    retry: (failureCount, error) => {
+      if (error?.message?.includes('404')) return false;
+      return failureCount < 2;
+    },
+  });
+}
+
+// 📤 Send Individual Chat Message Hook
+export function useSendChatMessage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ taskId, message }: { taskId: string; message: SendMessageRequest }) =>
+      ChatAPI.sendChatMessage(taskId, message),
+    onSuccess: (_, { taskId }) => {
+      // Invalidate chat messages to refresh the list
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.messages(taskId) });
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.lists() });
+    },
+    onError: (error) => {
+      console.error('❌ Failed to send chat message:', error);
+    },
+  });
+}
+
+// 👥 Send Group Chat Message Hook
+export function useSendGroupChatMessage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ taskId, message }: { taskId: string; message: SendGroupMessageRequest }) =>
+      ChatAPI.sendGroupChatMessage(taskId, message),
+    onSuccess: (_, { taskId }) => {
+      // Invalidate group chat messages to refresh the list
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.groupMessages(taskId) });
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.lists() });
+    },
+    onError: (error) => {
+      console.error('❌ Failed to send group chat message:', error);
+    },
+  });
+}
+
+// 🤖 Send System Message Hook
+export function useSendSystemMessage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ taskId, message }: { taskId: string; message: SendSystemMessageRequest }) =>
+      ChatAPI.sendSystemMessage(taskId, message),
+    onSuccess: (_, { taskId }) => {
+      // Invalidate group chat messages to refresh the list
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.groupMessages(taskId) });
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.lists() });
+    },
+    onError: (error) => {
+      console.error('❌ Failed to send system message:', error);
+    },
+  });
+}
+
+// 🔄 Create or Update Chat Hook
+export function useCreateOrUpdateChat() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: CreateOrUpdateChatRequest) =>
+      ChatAPI.createOrUpdateChat(request),
+    onSuccess: () => {
+      // Invalidate chat lists to refresh
+      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.lists() });
+    },
+    onError: (error) => {
+      console.error('❌ Failed to create/update chat:', error);
+    },
+  });
+}

@@ -30,6 +30,7 @@ const videoAssets = {
   '27': require('@/assets/services/Web and App Dev.mp4'),
   '28': require('@/assets/services/Gardening and Landscaping.mp4'),
   '29': require('@/assets/services/Cleaning and Organising.mp4'),
+  '30': require('@/assets/services/Removalist.mp4')
 };
 
 export const getCategoryVideo = (id: string) => {
@@ -66,4 +67,5 @@ export const categoryVideos = [
   { id: '27', title: 'Web & App Development' },
   { id: '28', title: 'Gardening and Landscaping' },
   { id: '29', title: 'Cleaning and Organising' },
+  { id: '30',title: 'Removalist'}
 ];
