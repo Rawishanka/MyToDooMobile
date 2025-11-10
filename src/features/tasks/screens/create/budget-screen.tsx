@@ -1,6 +1,7 @@
 // BudgetScreen.tsx
 
 import { useCreateTaskStore } from '@/src/store/create-task-store';
+import { getCurrencyFromLocation, getDefaultBudget, getMinimumBudget } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
@@ -15,18 +16,28 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BudgetScreen() {
-  const [budget, setBudget] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
   const navigation = useNavigation();
   const { myTask, updateMyTask } = useCreateTaskStore();
   const insets = useSafeAreaInsets();
 
-  // Initialize with existing data from store
+  // Get currency based on task location
+  const location = 'location' in myTask ? myTask.location : undefined;
+  const currencyInfo = getCurrencyFromLocation(location ? { address: location } : undefined);
+  const minimumBudget = getMinimumBudget(currencyInfo.code);
+  const defaultBudgetAmount = getDefaultBudget(currencyInfo.code);
+
+  const [budget, setBudget] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Initialize with existing data from store or default amount
   useEffect(() => {
     if (myTask.budget && myTask.budget > 0) {
       setBudget(myTask.budget.toString());
+    } else {
+      // Set default budget based on currency
+      setBudget(defaultBudgetAmount.toString());
     }
-  }, [myTask.budget]);
+  }, [myTask.budget, defaultBudgetAmount]);
 
   const handleKeyPress = (value: string) => {
     if (value === 'delete') {
@@ -69,8 +80,8 @@ export default function BudgetScreen() {
   // Helper to update zustand store with budget
   const handleCreateTask = () => {
     const budgetNumber = Number(budget);
-    // Only update if valid and minimum 20
-    if (budget && budgetNumber >= 20) {
+    // Only update if valid and meets minimum for currency
+    if (budget && budgetNumber >= minimumBudget) {
       updateMyTask({
         budget: budgetNumber,
       });
@@ -78,8 +89,8 @@ export default function BudgetScreen() {
     }
   };
 
-  // Check if budget is valid (not empty, not zero, and at least 20)
-  const isBudgetValid = budget && Number(budget) >= 20;
+  // Check if budget is valid (not empty, not zero, and meets minimum)
+  const isBudgetValid = budget && Number(budget) >= minimumBudget;
 
   return (
     <View style={styles.container}>
@@ -91,15 +102,15 @@ export default function BudgetScreen() {
       {/* Title */}
       <Text style={styles.title}>Enter Your budget</Text>
       <Text style={styles.subtitle}>
-        Minimum budget is $20. Don&apos;t worry, you can always negotiate the final price later
+        Minimum budget is {currencyInfo.symbol}{minimumBudget}. Don&apos;t worry, you can always negotiate the final price later
       </Text>
 
       {/* Budget Display */}
       <View style={styles.inputBox}>
-        <Text style={styles.currencySymbol}>$</Text>
+        <Text style={styles.currencySymbol}>{currencyInfo.symbol}</Text>
         <Text style={[
           styles.budgetText, 
-          budget && Number(budget) < 20 && Number(budget) > 0 && styles.invalidBudgetText
+          budget && Number(budget) < minimumBudget && Number(budget) > 0 && styles.invalidBudgetText
         ]}>
           {budget || '0'}
         </Text>
@@ -110,9 +121,9 @@ export default function BudgetScreen() {
         <Text style={styles.errorText}>
           {errorMessage}
         </Text>
-      ) : budget && Number(budget) < 20 && Number(budget) > 0 ? (
+      ) : budget && Number(budget) < minimumBudget && Number(budget) > 0 ? (
         <Text style={styles.validationText}>
-          Minimum budget is $20
+          Minimum budget is {currencyInfo.symbol}{minimumBudget}
         </Text>
       ) : null}
 
