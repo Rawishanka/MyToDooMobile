@@ -11,6 +11,7 @@ import {
     NotificationResponse,
     updateNotificationPreferences,
 } from '@/src/api/notification-api';
+import { handleAuthenticationError, isAuthError } from '@/src/shared/utils/auth-utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 
@@ -129,6 +130,13 @@ export const useMarkAsRead = () => {
     onError: (error: any) => {
       console.error('Failed to mark notification as read:', error);
       
+      // Check if it's an authentication error and handle automatically
+      if (isAuthError(error)) {
+        console.error("❌ Authentication error in mark as read - handling automatically");
+        handleAuthenticationError(error);
+        return;
+      }
+      
       if (error?.response?.status === 404) {
         console.log('⚠️ Notification mark-as-read endpoint not implemented yet');
         // Don't show alert for mark as read - it's not critical
@@ -154,6 +162,13 @@ export const useMarkAllAsRead = () => {
     },
     onError: (error: any) => {
       console.error('Failed to mark all as read:', error);
+      
+      // Check if it's an authentication error and handle automatically
+      if (isAuthError(error)) {
+        console.error("❌ Authentication error in notifications - handling automatically");
+        handleAuthenticationError(error);
+        return;
+      }
       
       if (error?.response?.status === 404) {
         Alert.alert(
@@ -202,6 +217,13 @@ export const useDeleteNotification = () => {
     onError: (error: any) => {
       console.error('Failed to delete notification:', error);
       
+      // Check if it's an authentication error and handle automatically
+      if (isAuthError(error)) {
+        console.error("❌ Authentication error in delete notification - handling automatically");
+        handleAuthenticationError(error);
+        return;
+      }
+      
       if (error?.response?.status === 404) {
         Alert.alert(
           'Feature Not Available',
@@ -229,6 +251,14 @@ export const useUpdateNotificationPreferences = () => {
     },
     onError: (error: any) => {
       console.error('Failed to update preferences:', error);
+      
+      // Check if it's an authentication error and handle automatically
+      if (isAuthError(error)) {
+        console.error("❌ Authentication error in update preferences - handling automatically");
+        handleAuthenticationError(error);
+        return;
+      }
+      
       Alert.alert('Error', 'Failed to update notification preferences');
     },
   });

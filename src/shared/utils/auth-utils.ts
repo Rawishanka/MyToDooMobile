@@ -3,6 +3,8 @@
 
 import { useAuthStore } from '@/src/store/auth-task-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+import { Alert } from 'react-native';
 
 /**
  * 🧹 Clear All Authentication Data
@@ -71,4 +73,72 @@ export async function debugAuthState() {
 export async function forceFreshLogin() {
   await clearAllAuthData();
   console.log("🔄 Authentication cleared. Please login again for a fresh session.");
+}
+
+/**
+ * 🚨 Handle Authentication Error Globally
+ * Called when authentication errors (401) are detected in API calls
+ * Automatically clears auth data and redirects to login screen
+ */
+export async function handleAuthenticationError(error: any, showAlert = true) {
+  try {
+    console.log("🚨 Authentication error detected:", error?.message || "Token expired");
+    
+    // Clear all authentication data
+    await clearAllAuthData();
+    
+    // Show user-friendly alert (optional)
+    if (showAlert) {
+      Alert.alert(
+        "Session Expired",
+        "Your session has expired. Please log in again to continue.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              // Redirect to login screen
+              console.log("🔄 Redirecting to login screen...");
+              try {
+                router.replace('/(auth)/login');
+              } catch (routerError) {
+                console.error("❌ Error redirecting to login:", routerError);
+                // Fallback: try to navigate to root and then login
+                router.dismissAll();
+                router.replace('/');
+              }
+            }
+          }
+        ]
+      );
+    } else {
+      // Just redirect without alert
+      console.log("🔄 Redirecting to login screen...");
+      try {
+        router.replace('/(auth)/login');
+      } catch (routerError) {
+        console.error("❌ Error redirecting to login:", routerError);
+        // Fallback: try to navigate to root and then login
+        router.dismissAll();
+        router.replace('/');
+      }
+    }
+    
+    console.log("✅ Authentication error handled successfully");
+  } catch (error) {
+    console.error("❌ Error handling authentication error:", error);
+  }
+}
+
+/**
+ * 🔍 Check if an error is an authentication error
+ * Utility function to identify auth errors from API responses
+ */
+export function isAuthError(error: any): boolean {
+  return (
+    error?.isAuthError === true ||
+    error?.status === 401 ||
+    error?.response?.status === 401 ||
+    error?.message?.includes("Authentication expired") ||
+    error?.message?.includes("Please login again")
+  );
 }

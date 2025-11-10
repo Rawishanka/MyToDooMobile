@@ -7,6 +7,7 @@ import {
     SendMessageRequest,
     SendSystemMessageRequest
 } from '@/src/api/types/chat';
+import { handleAuthenticationError, isAuthError } from '@/src/shared/utils/auth-utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // 🔑 Query Keys
@@ -104,6 +105,12 @@ export function useSendChatMessage() {
     },
     onError: (error) => {
       console.error('❌ Failed to send chat message:', error);
+      
+      // Check if it's an authentication error and handle automatically
+      if (isAuthError(error)) {
+        console.error("❌ Authentication error in send chat message - handling automatically");
+        handleAuthenticationError(error);
+      }
     },
   });
 }
@@ -122,6 +129,12 @@ export function useSendGroupChatMessage() {
     },
     onError: (error) => {
       console.error('❌ Failed to send group chat message:', error);
+      
+      // Check if it's an authentication error and handle automatically
+      if (isAuthError(error)) {
+        console.error("❌ Authentication error in send group chat message - handling automatically");
+        handleAuthenticationError(error);
+      }
     },
   });
 }
@@ -140,6 +153,12 @@ export function useSendSystemMessage() {
     },
     onError: (error) => {
       console.error('❌ Failed to send system message:', error);
+      
+      // Check if it's an authentication error and handle automatically
+      if (isAuthError(error)) {
+        console.error("❌ Authentication error in send system message - handling automatically");
+        handleAuthenticationError(error);
+      }
     },
   });
 }
@@ -157,6 +176,12 @@ export function useCreateOrUpdateChat() {
     },
     onError: (error) => {
       console.error('❌ Failed to create/update chat:', error);
+      
+      // Check if it's an authentication error and handle automatically
+      if (isAuthError(error)) {
+        console.error("❌ Authentication error in create/update chat - handling automatically");
+        handleAuthenticationError(error);
+      }
     },
   });
 }

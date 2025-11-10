@@ -10,6 +10,7 @@ import {
     TaskSearchParams,
     UpdateTaskRequest
 } from '@/src/api/types/tasks';
+import { handleAuthenticationError, isAuthError } from '@/src/shared/utils/auth-utils';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // 🔑 **QUERY KEYS**
@@ -257,9 +258,10 @@ export function usePostTaskWithImages() {
     onError: (error: any) => {
       console.error("❌ Error posting task with images:", error);
       
-      // Check if it's an authentication error
-      if (error?.message?.includes("Authentication expired") || error?.message?.includes("Please login again")) {
-        console.error("❌ Authentication error detected - user needs to login");
+      // Check if it's an authentication error and handle automatically
+      if (isAuthError(error)) {
+        console.error("❌ Authentication error detected - handling automatically");
+        handleAuthenticationError(error);
       } else if (error?.message?.includes("Images are too large")) {
         console.error("❌ Image upload failed - files too large");
       } else {
@@ -285,10 +287,10 @@ export function usePostTask() {
     onError: (error: any) => {
       console.error("❌ Error posting task:", error);
       
-      // Check if it's an authentication error
-      if (error?.message?.includes("Authentication expired") || error?.message?.includes("Please login again")) {
-        console.error("❌ Authentication error detected - user needs to login");
-        // The error message will be displayed by the UI component
+      // Check if it's an authentication error and handle automatically
+      if (isAuthError(error)) {
+        console.error("❌ Authentication error detected - handling automatically");
+        handleAuthenticationError(error);
       } else {
         console.error("❌ Task posting failed with unknown error:", error);
       }
