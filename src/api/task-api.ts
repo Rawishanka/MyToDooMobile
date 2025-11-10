@@ -6,20 +6,20 @@ import * as FileSystem from 'expo-file-system';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-  AllOffersResponse,
-  CreateOfferRequest,
-  CreateOfferResponse,
-  CreateTaskRequest,
-  CreateTaskResponse,
-  MyTasksParams,
-  PaymentStatusResponse,
-  SingleTaskResponse,
-  Task,
-  TaskCompletionStatusResponse,
-  TaskOffersResponse,
-  TaskSearchParams,
-  TasksResponse,
-  UpdateTaskRequest
+    AllOffersResponse,
+    CreateOfferRequest,
+    CreateOfferResponse,
+    CreateTaskRequest,
+    CreateTaskResponse,
+    MyTasksParams,
+    PaymentStatusResponse,
+    SingleTaskResponse,
+    Task,
+    TaskCompletionStatusResponse,
+    TaskOffersResponse,
+    TaskSearchParams,
+    TasksResponse,
+    UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **API HELPER FUNCTION**
@@ -1138,8 +1138,22 @@ export async function getTaskQuestions(taskId: string): Promise<{ success: boole
     const response = await api.get(`/tasks/${taskId}/questions`);
     console.log("✅ Get task questions success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Get task questions failed:", error);
+    
+    // Handle authentication errors (even though this endpoint doesn't require auth)
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Get questions failed - Authentication issue (401)");
+      // Don't throw auth error for GET endpoint, just return empty array
+      return { success: false, data: [] };
+    }
+    
+    // Handle not found errors
+    if (error?.response?.status === 404) {
+      console.log("ℹ️ No questions found for task:", taskId);
+      return { success: true, data: [] };
+    }
+    
     throw error;
   }
 }
@@ -1156,8 +1170,22 @@ export async function postTaskQuestion(taskId: string, question: string): Promis
     const response = await api.post(`/tasks/${taskId}/questions`, { question });
     console.log("✅ Post task question success:", response.data);
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Post task question failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Post question failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    // Handle validation errors  
+    if (error?.response?.status === 400) {
+      console.error("❌ Post question failed - Bad Request (400)");
+      const errorMessage = error?.response?.data?.message || error?.response?.data?.error || "Invalid question data";
+      throw new Error(`Validation Error: ${errorMessage}`);
+    }
+    
     throw error;
   }
 }

@@ -1,10 +1,9 @@
 import {
-  useAcceptOffer,
-  useGetAllOffers,
-  useGetTaskById,
-  useGetTaskOffers,
-  useGetTaskQuestions,
-  usePostTaskQuestion,
+    useAcceptOffer,
+    useGetTaskById,
+    useGetTaskOffers,
+    useGetTaskQuestions,
+    usePostTaskQuestion,
 } from '@/src/shared/hooks/useTaskApi';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useRouter } from 'expo-router';
@@ -29,31 +28,20 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     refetch,
   } = useGetTaskById(taskId || '', !!taskId);
 
-  // Fetch offers for THIS task using /api/tasks/:id/offers (for MyOfferCard)
+  // Fetch offers for THIS task using /api/tasks/:id/offers
   const {
     data: taskOffersData,
     isLoading: isLoadingTaskOffers,
     error: taskOffersError,
   } = useGetTaskOffers(taskId || '', !!taskId);
 
-  // Fetch ALL offers using /api/offers/all (for Offers tab - shows all offers from all tasks)
-  const {
-    data: allOffersData,
-    isLoading: isLoadingAllOffers,
-  } = useGetAllOffers(
-    { 
-      limit: 100, 
-      sortBy: 'createdAt', 
-      order: 'desc' 
-    }, 
-    true // Always enabled
-  );
-
-  // Fetch questions (make it optional to avoid blocking)
+  // Fetch questions for this specific task
   const {
     data: questionsData,
     isLoading: isLoadingQuestions,
-  } = useGetTaskQuestions(taskId || '', false); // Disabled to avoid network error
+    error: questionsError,
+    refetch: refetchQuestions,
+  } = useGetTaskQuestions(taskId || '', !!taskId); // Enabled when we have a taskId
 
   // Post question mutation
   const postQuestionMutation = usePostTaskQuestion();
@@ -64,11 +52,8 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
   const task = taskData?.data;
   const user = taskData?.user;
   
-  // Get offers for THIS specific task (for MyOfferCard)
+  // Get offers for THIS specific task (for both MyOfferCard and Offers tab)
   const taskOffers = taskOffersData?.data?.offers || [];
-  
-  // Get ALL offers from ALL tasks (for Offers tab)
-  const allOffers = allOffersData?.data || [];
   
   // Questions
   const questions = questionsData?.data || [];
@@ -97,14 +82,21 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     if (!questionText.trim()) return;
 
     try {
+      console.log('📝 Submitting question:', questionText);
       await postQuestionMutation.mutateAsync({
         taskId: taskId || '',
         question: questionText,
       });
+      
+      console.log('✅ Question posted successfully');
       setQuestionText('');
       setShowAskQuestion(false);
-    } catch (error) {
-      console.error('Failed to post question:', error);
+      
+      // Refresh questions list
+      refetchQuestions();
+    } catch (error: any) {
+      console.error('❌ Failed to post question:', error);
+      // The error will be handled by the mutation's onError callback
     }
   };
 
@@ -128,16 +120,16 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
   return {
     task,
     user,
-    taskOffers, // Offers for this specific task
-    allOffers,  // All offers from all tasks
+    taskOffers, // Offers for this specific task only
     myOffer,
     questions,
     isLoading,
     error,
     refetch,
     isLoadingTaskOffers,
-    isLoadingAllOffers,
     isLoadingQuestions,
+    questionsError,
+    refetchQuestions,
     activeTab,
     setActiveTab,
     showAskQuestion,

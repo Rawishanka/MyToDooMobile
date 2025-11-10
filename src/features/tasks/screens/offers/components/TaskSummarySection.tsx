@@ -1,3 +1,4 @@
+import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -14,13 +15,20 @@ interface TaskSummarySectionProps {
 }
 
 export const TaskSummarySection: React.FC<TaskSummarySectionProps> = ({ task }) => {
+  // Get the appropriate currency based on task location
+  const currencyInfo = getCurrencyFromLocation(task.location);
+  
+  // Format the budget with location-appropriate currency
+  const displayBudget = task.formattedBudget || 
+    (task.budget ? formatCurrency(task.budget, currencyInfo) : 'Budget not specified');
+
   return (
     <View style={styles.taskSummary}>
       <Text style={styles.taskTitle} numberOfLines={2}>
         {task.title || 'Untitled Task'}
       </Text>
       <Text style={styles.taskBudget}>
-        Budget: {task.formattedBudget || `${task.currency || 'A$'}${task.budget}`}
+        Budget: {displayBudget}
       </Text>
       <Text style={styles.taskLocation}>
         {task.location?.address || 'Location not specified'}

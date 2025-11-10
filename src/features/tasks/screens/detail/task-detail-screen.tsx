@@ -21,14 +21,12 @@ export default function TaskDetailScreen() {
   const {
     task,
     taskOffers,
-    allOffers,
     myOffer,
     questions,
     isLoading,
     error,
     refetch,
     isLoadingTaskOffers,
-    isLoadingAllOffers,
     isLoadingQuestions,
     activeTab,
     setActiveTab,
@@ -62,7 +60,10 @@ export default function TaskDetailScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Only show Make Offer section to taskers (not the task creator) */}
         {task?.createdBy?._id !== currentUser?._id && (
-          <MakeOfferSection onMakeOffer={handleMakeOffer} />
+          <MakeOfferSection 
+            onMakeOffer={handleMakeOffer} 
+            offerCount={task?.offerCount || taskOffers.length}
+          />
         )}
 
         <TaskInfoCard
@@ -78,6 +79,7 @@ export default function TaskDetailScreen() {
             offer={myOffer || taskOffers[0]} 
             isTaskPoster={task?.createdBy?._id === currentUser?._id}
             onAcceptOffer={handleAcceptOffer}
+            taskLocation={task?.location}
           />
         )}
 
@@ -86,12 +88,13 @@ export default function TaskDetailScreen() {
         <View style={styles.tabContent}>
           {activeTab === 'offers' ? (
             <OffersList 
-              offers={allOffers} 
-              isLoading={isLoadingAllOffers}
+              offers={taskOffers} 
+              isLoading={isLoadingTaskOffers}
               taskCreatorId={task?.createdBy?._id}
               currentUserId={currentUser?._id}
               onAcceptOffer={handleAcceptOffer}
               excludeOfferId={myOffer?._id || (task?.createdBy?._id === currentUser?._id && taskOffers.length > 0 ? taskOffers[0]._id : undefined)}
+              taskLocation={task?.location}
             />
           ) : (
             <QuestionsList
