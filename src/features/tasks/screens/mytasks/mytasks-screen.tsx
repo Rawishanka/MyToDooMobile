@@ -288,10 +288,17 @@ export default function MyTasksScreen() {
     // If no cancelled tasks from API, use dummy data
     const finalCancelledTasks = cancelledTasks.length > 0 ? cancelledTasks : dummyCancelledTasks;
 
-    // For Poster role - tasks they've posted
-    const postedTasks = allTasks.filter((task: Task) => 
-      task.status === 'open' || task.status === 'active' || task.status === 'assigned'
-    );
+    // For Poster role - tasks they've posted (sorted by creation date, newest first)
+    const postedTasks = allTasks
+      .filter((task: Task) => 
+        task.status === 'open' || task.status === 'active' || task.status === 'assigned'
+      )
+      .sort((a: Task, b: Task) => {
+        // Sort by creation date in descending order (newest first)
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      });
 
     // For accepted offers - offers that have been accepted
     const acceptedTasks = allOffers.filter((offer: any) => 

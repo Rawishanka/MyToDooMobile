@@ -1,21 +1,22 @@
 // Refactored Signup Screen - Main Orchestrator
 
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-  View,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  ScrollView,
-  KeyboardAvoidingView,
-  SafeAreaView,
-  Platform,
-  StyleSheet,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useSignup } from '../components/useSignup';
-import { SignupForm } from '../components/SignupForm';
 import { OTPModal } from '../components/OTPModal';
+import { SignupForm } from '../components/SignupForm';
+import { useSignup } from '../components/useSignup';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -38,16 +39,25 @@ export default function SignUpScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {!signup.verificationStep && (
-        <TouchableOpacity
-          style={styles.closeIcon}
-          onPress={() => router.replace('/')}
-          hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
-        >
-          <Ionicons name="close" size={28} color="#333" />
-        </TouchableOpacity>
-      )}
-      
+      {/* Fixed Header Section */}
+      <View style={styles.fixedHeader}>
+        {!signup.verificationStep && (
+          <TouchableOpacity
+            style={styles.closeIcon}
+            onPress={() => router.replace('/')}
+            hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+          >
+            <Ionicons name="close" size={28} color="#333" />
+          </TouchableOpacity>
+        )}
+        
+        <View style={styles.header}>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Sign up to get started</Text>
+        </View>
+      </View>
+
+      {/* Scrollable Form Section */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.innerContainer}
@@ -57,11 +67,6 @@ export default function SignUpScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.header}>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Sign up to get started</Text>
-          </View>
-
           <SignupForm
             firstName={signup.firstName}
             lastName={signup.lastName}
@@ -138,9 +143,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  fixedHeader: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : 8,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
   closeIcon: {
     position: 'absolute',
-    top: 48,
+    top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : 8,
     right: 20,
     zIndex: 10,
     width: 40,
@@ -148,18 +161,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  header: {
+    alignItems: 'center',
+    paddingTop: 8,
+  },
   innerContainer: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 20,
+    paddingTop: 24,
     paddingBottom: 40,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
   },
   title: {
     fontSize: 28,

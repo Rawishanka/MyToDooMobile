@@ -2,31 +2,29 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { CountryPicker } from './CountryPicker';
 import { DatePickerInput } from './DatePickerInput';
 import { LocationInput } from './LocationInput';
 import type { CountryData, LocationData } from './signup-types';
 
-// Validation error interface
 interface ValidationErrors {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  phone: string;
-  dateOfBirth: string;
-  country: string;
-  location: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  phone?: string;
+  dateOfBirth?: string;
+  location?: string;
 }
 
 interface SignupFormProps {
@@ -101,323 +99,304 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   handleSignUp,
   handleDateChange,
 }) => {
-  // State for validation errors
-  const [errors, setErrors] = useState<ValidationErrors>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phone: '',
-    dateOfBirth: '',
-    country: '',
-    location: '',
-  });
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  // State to track which fields have been touched
-  const [touched, setTouched] = useState<{[key: string]: boolean}>({});
+  const validateField = (field: string, value: any) => {
+    const newErrors = { ...errors };
 
-  // Validation functions
-  const validateFirstName = (value: string): string => {
-    if (!value.trim()) return 'First name is required';
-    if (value.trim().length < 2) return 'First name must be at least 2 characters';
-    if (!/^[a-zA-Z\s]+$/.test(value)) return 'First name can only contain letters and spaces';
-    if (value.trim().length > 50) return 'First name cannot exceed 50 characters';
-    return '';
-  };
+    switch (field) {
+      case 'firstName':
+        if (!value || value.trim() === '') {
+          newErrors.firstName = 'First name is required';
+        } else if (value.trim().length < 2) {
+          newErrors.firstName = 'First name must be at least 2 characters';
+        } else {
+          delete newErrors.firstName;
+        }
+        break;
 
-  const validateLastName = (value: string): string => {
-    if (!value.trim()) return 'Last name is required';
-    if (value.trim().length < 2) return 'Last name must be at least 2 characters';
-    if (!/^[a-zA-Z\s]+$/.test(value)) return 'Last name can only contain letters and spaces';
-    if (value.trim().length > 50) return 'Last name cannot exceed 50 characters';
-    return '';
-  };
+      case 'lastName':
+        if (!value || value.trim() === '') {
+          newErrors.lastName = 'Last name is required';
+        } else if (value.trim().length < 2) {
+          newErrors.lastName = 'Last name must be at least 2 characters';
+        } else {
+          delete newErrors.lastName;
+        }
+        break;
 
-  const validateEmail = (value: string): string => {
-    if (!value.trim()) return 'Email address is required';
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(value)) return 'Please enter a valid email address';
-    if (value.length > 100) return 'Email address cannot exceed 100 characters';
-    return '';
-  };
+      case 'email':
+        if (!value || value.trim() === '') {
+          newErrors.email = 'Email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          newErrors.email = 'Please enter a valid email address';
+        } else {
+          delete newErrors.email;
+        }
+        break;
 
-  const validatePassword = (value: string): string => {
-    if (!value) return 'Password is required';
-    if (value.length < 8) return 'Password must be at least 8 characters long';
-    if (value.length > 128) return 'Password cannot exceed 128 characters';
-    if (!/(?=.*[a-z])/.test(value)) return 'Password must contain at least one lowercase letter';
-    if (!/(?=.*[A-Z])/.test(value)) return 'Password must contain at least one uppercase letter';
-    if (!/(?=.*\d)/.test(value)) return 'Password must contain at least one number';
-    if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(value)) return 'Password must contain at least one special character';
-    return '';
-  };
+      case 'phone':
+        if (!value || value.trim() === '') {
+          newErrors.phone = 'Mobile number is required';
+        } else if (!/^[0-9]{7,15}$/.test(value.replace(/[\s-]/g, ''))) {
+          newErrors.phone = 'Please enter a valid phone number';
+        } else {
+          delete newErrors.phone;
+        }
+        break;
 
-  const validateConfirmPassword = (value: string, originalPassword: string): string => {
-    if (!value) return 'Please confirm your password';
-    if (value !== originalPassword) return 'Passwords do not match';
-    return '';
-  };
+      case 'password':
+        if (!value) {
+          newErrors.password = 'Password is required';
+        } else if (value.length < 8) {
+          newErrors.password = 'Password must be at least 8 characters';
+        } else if (!/(?=.*[a-z])/.test(value)) {
+          newErrors.password = 'Password must contain at least one lowercase letter';
+        } else if (!/(?=.*[A-Z])/.test(value)) {
+          newErrors.password = 'Password must contain at least one uppercase letter';
+        } else if (!/(?=.*\d)/.test(value)) {
+          newErrors.password = 'Password must contain at least one number';
+        } else {
+          delete newErrors.password;
+        }
+        break;
 
-  const validatePhone = (value: string): string => {
-    if (!value.trim()) return 'Mobile number is required';
-    // Remove any spaces, dashes, or parentheses for validation
-    const cleanPhone = value.replace(/[\s\-()]/g, '');
-    if (!/^\d{8,15}$/.test(cleanPhone)) return 'Please enter a valid mobile number (8-15 digits)';
-    return '';
-  };
+      case 'confirmPassword':
+        if (!value) {
+          newErrors.confirmPassword = 'Please confirm your password';
+        } else if (value !== password) {
+          newErrors.confirmPassword = 'Passwords do not match';
+        } else {
+          delete newErrors.confirmPassword;
+        }
+        break;
 
-  const validateDateOfBirth = (value: Date | null): string => {
-    if (!value) return 'Date of birth is required';
-    const today = new Date();
-    const age = today.getFullYear() - value.getFullYear();
-    const monthDiff = today.getMonth() - value.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < value.getDate())) {
-      const adjustedAge = age - 1;
-      if (adjustedAge < 13) return 'You must be at least 13 years old';
-      if (adjustedAge > 120) return 'Please enter a valid date of birth';
-    } else {
-      if (age < 13) return 'You must be at least 13 years old';
-      if (age > 120) return 'Please enter a valid date of birth';
+      case 'dateOfBirth':
+        if (!value) {
+          newErrors.dateOfBirth = 'Date of birth is required';
+        } else {
+          const age = new Date().getFullYear() - value.getFullYear();
+          if (age < 18) {
+            newErrors.dateOfBirth = 'You must be at least 18 years old';
+          } else {
+            delete newErrors.dateOfBirth;
+          }
+        }
+        break;
+
+      case 'location':
+        if (!selectedLocation) {
+          newErrors.location = 'Location is required';
+        } else {
+          delete newErrors.location;
+        }
+        break;
     }
+
+    setErrors(newErrors);
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched({ ...touched, [field]: true });
     
-    if (value > today) return 'Date of birth cannot be in the future';
-    return '';
-  };
-
-  const validateCountry = (): string => {
-    if (!selectedCountry || !selectedCountry.name) return 'Please select your country';
-    return '';
-  };
-
-  const validateLocation = (): string => {
-    if (!selectedLocation || !selectedLocation.address) return 'Please select your location';
-    return '';
-  };
-
-  // Update validation errors when fields change
-  useEffect(() => {
-    setErrors(prev => ({
-      ...prev,
-      firstName: touched.firstName ? validateFirstName(firstName) : '',
-      lastName: touched.lastName ? validateLastName(lastName) : '',
-      email: touched.email ? validateEmail(email) : '',
-      password: touched.password ? validatePassword(password) : '',
-      confirmPassword: touched.confirmPassword ? validateConfirmPassword(confirmPassword, password) : '',
-      phone: touched.phone ? validatePhone(phone) : '',
-      dateOfBirth: touched.dateOfBirth ? validateDateOfBirth(dateOfBirth) : '',
-      country: touched.country ? validateCountry() : '',
-      location: touched.location ? validateLocation() : '',
-    }));
-  }, [firstName, lastName, email, password, confirmPassword, phone, dateOfBirth, selectedCountry, selectedLocation, touched]);
-
-  // Mark field as touched when user interacts with it
-  const handleFieldTouch = (fieldName: string) => {
-    setTouched(prev => ({ ...prev, [fieldName]: true }));
-  };
-
-  // Enhanced input handlers with validation
-  const handleFirstNameChange = (value: string) => {
-    // Only allow letters and spaces
-    const filteredValue = value.replace(/[^a-zA-Z\s]/g, '');
-    setFirstName(filteredValue);
-    handleFieldTouch('firstName');
-  };
-
-  const handleLastNameChange = (value: string) => {
-    // Only allow letters and spaces
-    const filteredValue = value.replace(/[^a-zA-Z\s]/g, '');
-    setLastName(filteredValue);
-    handleFieldTouch('lastName');
-  };
-
-  const handleEmailChange = (value: string) => {
-    // Convert to lowercase and remove any spaces
-    const filteredValue = value.toLowerCase().replace(/\s/g, '');
-    setEmail(filteredValue);
-    handleFieldTouch('email');
-  };
-
-  const handlePasswordChange = (value: string) => {
-    setPassword(value);
-    handleFieldTouch('password');
-    // Also validate confirm password if it's been touched
-    if (touched.confirmPassword) {
-      handleFieldTouch('confirmPassword');
+    switch (field) {
+      case 'firstName':
+        validateField('firstName', firstName);
+        break;
+      case 'lastName':
+        validateField('lastName', lastName);
+        break;
+      case 'email':
+        validateField('email', email);
+        break;
+      case 'phone':
+        validateField('phone', phone);
+        break;
+      case 'password':
+        validateField('password', password);
+        break;
+      case 'confirmPassword':
+        validateField('confirmPassword', confirmPassword);
+        break;
+      case 'dateOfBirth':
+        validateField('dateOfBirth', dateOfBirth);
+        break;
+      case 'location':
+        validateField('location', selectedLocation);
+        break;
     }
   };
 
-  const handleConfirmPasswordChange = (value: string) => {
-    setConfirmPassword(value);
-    handleFieldTouch('confirmPassword');
-  };
-
-  const handlePhoneChange = (value: string) => {
-    // Only allow numbers, spaces, dashes, and parentheses
-    const filteredValue = value.replace(/[^0-9\s\-()]/g, '');
-    setPhone(filteredValue);
-    handleFieldTouch('phone');
-  };
   const handleCountrySelect = (country: CountryData) => {
     setSelectedCountry(country);
     setSelectedLocation(null);
     setShowCountryPicker(false);
-    handleFieldTouch('country');
-    // Reset location validation since location changed
-    if (touched.location) {
-      handleFieldTouch('location');
+  };
+
+  const wrappedHandleSignUp = () => {
+    // Mark all fields as touched
+    const allFields = ['firstName', 'lastName', 'email', 'phone', 'password', 'confirmPassword', 'dateOfBirth', 'location'];
+    const newTouched: Record<string, boolean> = {};
+    allFields.forEach(field => {
+      newTouched[field] = true;
+    });
+    setTouched(newTouched);
+
+    // Validate all fields
+    validateField('firstName', firstName);
+    validateField('lastName', lastName);
+    validateField('email', email);
+    validateField('phone', phone);
+    validateField('password', password);
+    validateField('confirmPassword', confirmPassword);
+    validateField('dateOfBirth', dateOfBirth);
+    validateField('location', selectedLocation);
+
+    // If no errors, proceed with signup
+    if (Object.keys(errors).length === 0) {
+      handleSignUp();
     }
   };
-
-  const handleLocationSelect = (location: LocationData | null) => {
-    setSelectedLocation(location);
-    handleFieldTouch('location');
-  };
-
-  const handleDateSelect = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    handleDateChange(event, selectedDate);
-    handleFieldTouch('dateOfBirth');
-  };
-
-  // Helper function to get input style based on error state
-  const getInputStyle = (hasError: boolean) => [
-    styles.input,
-    hasError && styles.inputError
-  ];
-
-  const getPasswordContainerStyle = (hasError: boolean) => [
-    styles.passwordContainer,
-    hasError && styles.passwordContainerError
-  ];
-
-  const getPhoneInputStyle = (hasError: boolean) => [
-    styles.phoneInput,
-    hasError && styles.inputError
-  ];
-
-  // Helper to render error message
-  const renderErrorMessage = (error: string) => (
-    error ? <Text style={styles.errorText}>{error}</Text> : null
-  );
-
-  // Helper to render required label with red asterisk
-  const renderLabel = (text: string, isRequired = true) => (
-    <Text style={styles.label}>
-      {text}
-      {isRequired && <Text style={styles.requiredMark}> *</Text>}
-    </Text>
-  );
 
   return (
     <View style={styles.form}>
       {/* Name Row */}
       <View style={styles.nameRow}>
         <View style={styles.nameField}>
-          {renderLabel('First Name')}
+          <Text style={styles.label}>
+            First Name <Text style={styles.required}>*</Text>
+          </Text>
           <TextInput
-            style={getInputStyle(!!errors.firstName)}
+            style={[styles.input, touched.firstName && errors.firstName && styles.inputError]}
             value={firstName}
-            onChangeText={handleFirstNameChange}
-            onBlur={() => handleFieldTouch('firstName')}
+            onChangeText={(text) => {
+              setFirstName(text);
+              if (touched.firstName) validateField('firstName', text);
+            }}
+            onBlur={() => handleBlur('firstName')}
             placeholder="Enter first name"
             autoCapitalize="words"
-            maxLength={50}
           />
-          {renderErrorMessage(errors.firstName)}
+          {touched.firstName && errors.firstName && (
+            <Text style={styles.errorText}>{errors.firstName}</Text>
+          )}
         </View>
         
         <View style={styles.nameField}>
-          {renderLabel('Last Name')}
+          <Text style={styles.label}>
+            Last Name <Text style={styles.required}>*</Text>
+          </Text>
           <TextInput
-            style={getInputStyle(!!errors.lastName)}
+            style={[styles.input, touched.lastName && errors.lastName && styles.inputError]}
             value={lastName}
-            onChangeText={handleLastNameChange}
-            onBlur={() => handleFieldTouch('lastName')}
+            onChangeText={(text) => {
+              setLastName(text);
+              if (touched.lastName) validateField('lastName', text);
+            }}
+            onBlur={() => handleBlur('lastName')}
             placeholder="Enter last name"
             autoCapitalize="words"
-            maxLength={50}
           />
-          {renderErrorMessage(errors.lastName)}
+          {touched.lastName && errors.lastName && (
+            <Text style={styles.errorText}>{errors.lastName}</Text>
+          )}
         </View>
       </View>
 
       {/* Email */}
-      {renderLabel('Email Address')}
+      <Text style={styles.label}>
+        Email <Text style={styles.required}>*</Text>
+      </Text>
       <TextInput
-        style={getInputStyle(!!errors.email)}
+        style={[styles.input, touched.email && errors.email && styles.inputError]}
         value={email}
-        onChangeText={handleEmailChange}
-        onBlur={() => handleFieldTouch('email')}
+        onChangeText={(text) => {
+          setEmail(text);
+          if (touched.email) validateField('email', text);
+        }}
+        onBlur={() => handleBlur('email')}
         placeholder="Enter your email"
         keyboardType="email-address"
         autoCapitalize="none"
-        autoComplete="email"
-        maxLength={100}
       />
-      {renderErrorMessage(errors.email)}
+      {touched.email && errors.email && (
+        <Text style={styles.errorText}>{errors.email}</Text>
+      )}
 
       {/* Country Picker */}
-      {renderLabel('Country')}
+      <Text style={styles.label}>Country</Text>
       <CountryPicker
         selectedCountry={selectedCountry}
         showPicker={showCountryPicker}
         onTogglePicker={() => setShowCountryPicker(!showCountryPicker)}
         onSelectCountry={handleCountrySelect}
-        hasError={!!errors.country}
       />
-      {renderErrorMessage(errors.country)}
 
       {/* Location Input */}
-      {renderLabel('Location')}
+      <Text style={styles.label}>
+        Location <Text style={styles.required}>*</Text>
+      </Text>
       <LocationInput
         selectedLocation={selectedLocation}
         countryCode={selectedCountry.code}
-        onLocationSelect={handleLocationSelect}
-        hasError={!!errors.location}
+        onLocationSelect={(location) => {
+          setSelectedLocation(location);
+          if (touched.location) validateField('location', location);
+        }}
       />
-      {renderErrorMessage(errors.location)}
+      {touched.location && errors.location && (
+        <Text style={styles.errorText}>{errors.location}</Text>
+      )}
 
       {/* Date of Birth */}
-      {renderLabel('Date of Birth')}
       <DatePickerInput
         dateOfBirth={dateOfBirth}
         showDatePicker={showDatePicker}
         onTogglePicker={setShowDatePicker}
-        onDateChange={handleDateSelect}
-        hasError={!!errors.dateOfBirth}
+        onDateChange={handleDateChange}
       />
-      {renderErrorMessage(errors.dateOfBirth)}
 
       {/* Mobile Number */}
-      {renderLabel('Mobile Number')}
+      <Text style={styles.label}>
+        Mobile Number <Text style={styles.required}>*</Text>
+      </Text>
       <View style={styles.phoneContainer}>
         <View style={styles.phonePrefix}>
           <Text style={styles.phonePrefixText}>{selectedCountry.phoneCode}</Text>
         </View>
         <TextInput
-          style={getPhoneInputStyle(!!errors.phone)}
+          style={[styles.phoneInput, touched.phone && errors.phone && styles.inputError]}
           value={phone}
-          onChangeText={handlePhoneChange}
-          onBlur={() => handleFieldTouch('phone')}
+          onChangeText={(text) => {
+            setPhone(text);
+            if (touched.phone) validateField('phone', text);
+          }}
+          onBlur={() => handleBlur('phone')}
           placeholder="754640658"
           keyboardType="phone-pad"
-          maxLength={15}
         />
       </View>
-      {renderErrorMessage(errors.phone)}
+      {touched.phone && errors.phone && (
+        <Text style={styles.errorText}>{errors.phone}</Text>
+      )}
 
       {/* Password */}
-      {renderLabel('Password')}
-      <View style={getPasswordContainerStyle(!!errors.password)}>
+      <Text style={styles.label}>
+        Password <Text style={styles.required}>*</Text>
+      </Text>
+      <View style={[styles.passwordContainer, touched.password && errors.password && styles.inputError]}>
         <TextInput
           style={styles.passwordInput}
           value={password}
-          onChangeText={handlePasswordChange}
-          onBlur={() => handleFieldTouch('password')}
+          onChangeText={(text) => {
+            setPassword(text);
+            if (touched.password) validateField('password', text);
+            if (touched.confirmPassword && confirmPassword) validateField('confirmPassword', confirmPassword);
+          }}
+          onBlur={() => handleBlur('password')}
           placeholder="Enter your password"
           secureTextEntry={!showPassword}
-          maxLength={128}
         />
         <TouchableOpacity 
           style={styles.passwordToggle}
@@ -431,22 +410,25 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           />
         </TouchableOpacity>
       </View>
-      {renderErrorMessage(errors.password)}
-      <Text style={styles.passwordHint}>
-        Password must contain at least 8 characters with uppercase, lowercase, number and special character
-      </Text>
+      {touched.password && errors.password && (
+        <Text style={styles.errorText}>{errors.password}</Text>
+      )}
 
       {/* Confirm Password */}
-      {renderLabel('Confirm Password')}
-      <View style={getPasswordContainerStyle(!!errors.confirmPassword)}>
+      <Text style={styles.label}>
+        Confirm Password <Text style={styles.required}>*</Text>
+      </Text>
+      <View style={[styles.passwordContainer, touched.confirmPassword && errors.confirmPassword && styles.inputError]}>
         <TextInput
           style={styles.passwordInput}
           value={confirmPassword}
-          onChangeText={handleConfirmPasswordChange}
-          onBlur={() => handleFieldTouch('confirmPassword')}
+          onChangeText={(text) => {
+            setConfirmPassword(text);
+            if (touched.confirmPassword) validateField('confirmPassword', text);
+          }}
+          onBlur={() => handleBlur('confirmPassword')}
           placeholder="Confirm your password"
           secureTextEntry={!showConfirmPassword}
-          maxLength={128}
         />
         <TouchableOpacity 
           style={styles.passwordToggle}
@@ -460,12 +442,14 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           />
         </TouchableOpacity>
       </View>
-      {renderErrorMessage(errors.confirmPassword)}
+      {touched.confirmPassword && errors.confirmPassword && (
+        <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+      )}
 
       {/* Submit Button */}
       <TouchableOpacity 
         style={styles.signUpButton} 
-        onPress={handleSignUp} 
+        onPress={wrappedHandleSignUp} 
         disabled={loading}
       >
         {loading ? (
@@ -497,10 +481,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: '#333',
   },
-  requiredMark: {
+  required: {
     color: '#FF3B30',
     fontSize: 14,
-    fontWeight: '600',
   },
   input: {
     borderWidth: 1.5,
@@ -514,25 +497,18 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: '#FF3B30',
-    backgroundColor: '#FFF5F5',
+    borderWidth: 1.5,
   },
   errorText: {
     color: '#FF3B30',
     fontSize: 12,
+    marginTop: 4,
     marginBottom: 12,
     marginLeft: 4,
-    fontWeight: '500',
-  },
-  passwordHint: {
-    color: '#666',
-    fontSize: 11,
-    marginBottom: 12,
-    marginLeft: 4,
-    lineHeight: 16,
   },
   phoneContainer: {
     flexDirection: 'row',
-    marginBottom: 4,
+    marginBottom: 16,
     gap: 10,
   },
   phonePrefix: {
@@ -565,12 +541,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#E0E0E0',
     borderRadius: 10,
-    marginBottom: 4,
+    marginBottom: 16,
     backgroundColor: '#FAFAFA',
-  },
-  passwordContainerError: {
-    borderColor: '#FF3B30',
-    backgroundColor: '#FFF5F5',
   },
   passwordInput: {
     flex: 1,
@@ -586,7 +558,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 8,
   },
   signUpButtonText: {
     color: '#fff',

@@ -8,6 +8,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     SafeAreaView,
+    ScrollView,
     StyleSheet,
     Text,
     TextInput,
@@ -104,52 +105,63 @@ export default function ForgotPasswordScreen() {
       </TouchableOpacity>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.innerContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoidingView}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <View style={styles.header}>
-          <Ionicons name="lock-closed-outline" size={64} color="#007BFF" style={styles.lockIcon} />
-          <Text style={styles.title}>Forgot Password?</Text>
-          <Text style={styles.subtitle}>
-            Enter your email address and we&apos;ll send you instructions to reset your password.
-          </Text>
-        </View>
-
-        <View style={styles.form}>
-          <Text style={styles.label}>Email Address</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Enter your email"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoFocus
-            editable={!emailSent}
-          />
-
-          <TouchableOpacity
-            style={[styles.resetButton, (loading || emailSent) && styles.resetButtonDisabled]}
-            onPress={handleResetPassword}
-            disabled={loading || emailSent}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.resetButtonText}>
-                {emailSent ? 'Email Sent' : 'Send Reset Link'}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+          scrollEnabled={false}
+        >
+          <View style={styles.innerContainer}>
+            <View style={styles.header}>
+              <Ionicons name="lock-closed-outline" size={64} color="#007BFF" style={styles.lockIcon} />
+              <Text style={styles.title}>Forgot Password?</Text>
+              <Text style={styles.subtitle}>
+                Enter your email address and we&apos;ll send you instructions to reset your password.
               </Text>
-            )}
-          </TouchableOpacity>
+            </View>
 
-          <TouchableOpacity
-            style={styles.backToLoginButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={16} color="#007BFF" style={styles.backIcon} />
-            <Text style={styles.backToLoginText}>Back to Login</Text>
-          </TouchableOpacity>
-        </View>
+            <View style={styles.form}>
+              <Text style={styles.label}>Email Address</Text>
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Enter your email"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoFocus
+                editable={!emailSent}
+              />
+
+              <TouchableOpacity
+                style={[styles.resetButton, (loading || emailSent) && styles.resetButtonDisabled]}
+                onPress={handleResetPassword}
+                disabled={loading || emailSent}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.resetButtonText}>
+                    {emailSent ? 'Email Sent' : 'Send Reset Link'}
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.backToLoginButton}
+                onPress={() => router.back()}
+              >
+                <Ionicons name="arrow-back" size={16} color="#007BFF" style={styles.backIcon} />
+                <Text style={styles.backToLoginText}>Back to Login</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -160,10 +172,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  innerContainer: {
+  keyboardAvoidingView: {
     flex: 1,
-    justifyContent: 'center',
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  innerContainer: {
     paddingHorizontal: 24,
+    paddingTop: 100,
   },
   backButton: {
     position: 'absolute',

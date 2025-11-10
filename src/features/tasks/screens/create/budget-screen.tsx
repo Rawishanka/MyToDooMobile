@@ -1,5 +1,7 @@
 // BudgetScreen.tsx
 
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { getCurrencyFromLocation, getCurrencySymbol, getDefaultBudget, getMinimumBudget } from '@/src/shared/utils/currency';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -7,26 +9,57 @@ import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BudgetScreen() {
-  const [budget, setBudget] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
   const navigation = useNavigation();
   const { myTask, updateMyTask } = useCreateTaskStore();
   const insets = useSafeAreaInsets();
 
-  // Initialize with existing data from store
+  // Auto-detect country for currency if no location set yet
+  const { countryInfo } = useLocationCountry();
+
+  // Get currency based on task location or detected country
+  const location = 'location' in myTask ? myTask.location : undefined;
+  // Handle both string location and object location formats
+  const locationForCurrency = typeof location === 'string' 
+    ? { address: location }
+    : location && typeof location === 'object' && 'address' in location 
+    ? location 
+    : undefined;
+  
+  // If no location set, use detected country's currency
+  const currencyInfo = locationForCurrency 
+    ? getCurrencyFromLocation(locationForCurrency)
+    : { code: countryInfo.currency, symbol: getCurrencySymbol(countryInfo.currency) };
+
+  const minimumBudget = getMinimumBudget(currencyInfo.code);
+  const defaultBudgetAmount = getDefaultBudget(currencyInfo.code);
+
+  console.log('💰 Budget screen currency info:', {
+    hasLocation: !!locationForCurrency,
+    detectedCountry: countryInfo.countryName,
+    detectedCurrency: countryInfo.currency,
+    finalCurrency: currencyInfo.code
+  });
+
+  const [budget, setBudget] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Initialize with existing data from store or default amount
   useEffect(() => {
     if (myTask.budget && myTask.budget > 0) {
       setBudget(myTask.budget.toString());
+    } else {
+      // Set default budget based on currency
+      setBudget(defaultBudgetAmount.toString());
     }
-  }, [myTask.budget]);
+  }, [myTask.budget, defaultBudgetAmount]);
 
   const handleKeyPress = (value: string) => {
     if (value === 'delete') {
@@ -69,8 +102,8 @@ export default function BudgetScreen() {
   // Helper to update zustand store with budget
   const handleCreateTask = () => {
     const budgetNumber = Number(budget);
-    // Only update if valid and minimum 20
-    if (budget && budgetNumber >= 20) {
+    // Only update if valid and meets minimum for currency
+    if (budget && budgetNumber >= minimumBudget) {
       updateMyTask({
         budget: budgetNumber,
       });
@@ -78,8 +111,8 @@ export default function BudgetScreen() {
     }
   };
 
-  // Check if budget is valid (not empty, not zero, and at least 20)
-  const isBudgetValid = budget && Number(budget) >= 20;
+  // Check if budget is valid (not empty, not zero, and meets minimum)
+  const isBudgetValid = budget && Number(budget) >= minimumBudget;
 
   return (
     <View style={styles.container}>
@@ -91,15 +124,15 @@ export default function BudgetScreen() {
       {/* Title */}
       <Text style={styles.title}>Enter Your budget</Text>
       <Text style={styles.subtitle}>
-        Minimum budget is $20. Don&apos;t worry, you can always negotiate the final price later
+        Minimum budget is {currencyInfo.symbol}{minimumBudget}. Don&apos;t worry, you can always negotiate the final price later
       </Text>
 
       {/* Budget Display */}
       <View style={styles.inputBox}>
-        <Text style={styles.currencySymbol}>$</Text>
+        <Text style={styles.currencySymbol}>{currencyInfo.symbol}</Text>
         <Text style={[
           styles.budgetText, 
-          budget && Number(budget) < 20 && Number(budget) > 0 && styles.invalidBudgetText
+          budget && Number(budget) < minimumBudget && Number(budget) > 0 && styles.invalidBudgetText
         ]}>
           {budget || '0'}
         </Text>
@@ -110,9 +143,9 @@ export default function BudgetScreen() {
         <Text style={styles.errorText}>
           {errorMessage}
         </Text>
-      ) : budget && Number(budget) < 20 && Number(budget) > 0 ? (
+      ) : budget && Number(budget) < minimumBudget && Number(budget) > 0 ? (
         <Text style={styles.validationText}>
-          Minimum budget is $20
+          Minimum budget is {currencyInfo.symbol}{minimumBudget}
         </Text>
       ) : null}
 

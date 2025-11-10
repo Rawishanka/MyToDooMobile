@@ -47,6 +47,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     'expo-font',
     [
+      'expo-location',
+      {
+        locationAlwaysAndWhenInUsePermission: 'Allow MyToDoo to use your location to show nearby tasks and provide location-based services.',
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         image: './assets/images/mytodoo-icon.png',

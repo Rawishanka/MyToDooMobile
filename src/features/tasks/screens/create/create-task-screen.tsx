@@ -63,6 +63,11 @@ export default function CreateTaskScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
+  
+  // Validation errors
+  const [titleError, setTitleError] = useState('');
+  const [descriptionError, setDescriptionError] = useState('');
+  const [touched, setTouched] = useState({ title: false, description: false });
 
   // Section 2: Images & Location
   const [images, setImages] = useState<string[]>([]);
@@ -114,6 +119,85 @@ export default function CreateTaskScreen() {
       }, 300);
     }
   }, [params.section]);
+
+  // Validation functions
+  const validateText = (text: string, fieldName: string): string => {
+    // Check for numbers
+    if (/\d/.test(text)) {
+      return `${fieldName} cannot contain numbers`;
+    }
+    
+    // Check for special characters (allow only letters, spaces, apostrophes, hyphens, commas, periods)
+    if (/[^a-zA-Z\s'\-,.]/.test(text)) {
+      return `${fieldName} cannot contain special characters`;
+    }
+    
+    return '';
+  };
+
+  const handleTitleChange = (text: string) => {
+    // Remove numbers and special characters as user types
+    const cleanedText = text.replace(/[^a-zA-Z\s'\-,.]/g, '');
+    setTitle(cleanedText);
+    
+    if (touched.title) {
+      const error = validateText(cleanedText, 'Title');
+      if (error) {
+        setTitleError(error);
+      } else if (cleanedText.trim().length > 0 && cleanedText.trim().length < 10) {
+        setTitleError('Minimum 10 characters required');
+      } else {
+        setTitleError('');
+      }
+    }
+  };
+
+  const handleDescriptionChange = (text: string) => {
+    // Remove numbers and special characters as user types
+    const cleanedText = text.replace(/[^a-zA-Z\s'\-,.]/g, '');
+    setDescription(cleanedText);
+    
+    if (touched.description) {
+      const error = validateText(cleanedText, 'Description');
+      if (error) {
+        setDescriptionError(error);
+      } else if (cleanedText.trim().length === 0) {
+        setDescriptionError('Description is required');
+      } else if (cleanedText.trim().length < 20) {
+        setDescriptionError('Minimum 20 characters required');
+      } else {
+        setDescriptionError('');
+      }
+    }
+  };
+
+  const handleTitleBlur = () => {
+    setTouched({ ...touched, title: true });
+    const error = validateText(title, 'Title');
+    if (error) {
+      setTitleError(error);
+    } else if (title.trim().length > 0 && title.trim().length < 10) {
+      setTitleError('Minimum 10 characters required');
+    } else if (title.trim().length === 0) {
+      setTitleError('Title is required');
+    } else {
+      setTitleError('');
+    }
+  };
+
+  const handleDescriptionBlur = () => {
+    setTouched({ ...touched, description: true });
+    const error = validateText(description, 'Description');
+    if (error) {
+      setDescriptionError(error);
+    } else if (description.trim().length === 0) {
+      setDescriptionError('Description is required');
+    } else if (description.trim().length < 20) {
+      setDescriptionError('Minimum 20 characters required');
+    } else {
+      setDescriptionError('');
+    }
+  };
 
   // Initialize with existing data from store
   useEffect(() => {
@@ -331,10 +415,13 @@ export default function CreateTaskScreen() {
 
   // Validation
   const titleLength = title.trim().length;
+  const descriptionLength = description.trim().length;
   const isFormValid =
     selectedCategory &&
     titleLength >= 10 &&
-    description.trim().length > 0 &&
+    descriptionLength >= 20 &&
+    !titleError &&
+    !descriptionError &&
     selectedLocation &&
     selectedOption !== '';
 
@@ -451,33 +538,59 @@ export default function CreateTaskScreen() {
 
           {/* Title Input */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Title</Text>
+            <Text style={styles.label}>
+              Title <Text style={styles.required}>*</Text>
+            </Text>
             <TextInput
-              style={[styles.input, titleLength < 10 && titleLength > 0 && styles.inputError]}
+              style={[
+                styles.input,
+                touched.title && (titleError || (titleLength > 0 && titleLength < 10)) && styles.inputError
+              ]}
               placeholder="e.g. Move my couch"
               value={title}
-              onChangeText={setTitle}
+              onChangeText={handleTitleChange}
+              onBlur={handleTitleBlur}
               placeholderTextColor="#999"
               maxLength={200}
             />
-            {titleLength > 0 && titleLength < 10 && (
-              <Text style={styles.validationText}>Minimum 10 characters required</Text>
+            <Text style={styles.charCount}>{titleLength}/200</Text>
+            {touched.title && titleError && (
+              <Text style={styles.errorText}>{titleError}</Text>
             )}
+            {touched.title && !titleError && titleLength > 0 && titleLength < 10 && (
+              <Text style={styles.errorText}>Minimum 10 characters required</Text>
+            )}
+            <Text style={styles.helperText}>Only letters, spaces, and basic punctuation allowed</Text>
           </View>
 
           {/* Description Input */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Description</Text>
+            <Text style={styles.label}>
+              Description <Text style={styles.required}>*</Text>
+            </Text>
             <TextInput
-              style={[styles.textArea]}
+              style={[
+                styles.textArea,
+                touched.description && (descriptionError || (descriptionLength > 0 && descriptionLength < 20)) && styles.inputError
+              ]}
               multiline
               placeholder="Give a detailed description of your task..."
               value={description}
-              onChangeText={setDescription}
+              onChangeText={handleDescriptionChange}
+              onBlur={handleDescriptionBlur}
               placeholderTextColor="#999"
               textAlignVertical="top"
               numberOfLines={4}
+              maxLength={1000}
             />
+            <Text style={styles.charCount}>{descriptionLength}/1000</Text>
+            {touched.description && descriptionError && (
+              <Text style={styles.errorText}>{descriptionError}</Text>
+            )}
+            {touched.description && !descriptionError && descriptionLength > 0 && descriptionLength < 20 && (
+              <Text style={styles.errorText}>Minimum 20 characters required</Text>
+            )}
+            <Text style={styles.helperText}>Only letters, spaces, and basic punctuation allowed</Text>
           </View>
         </View>
 
@@ -646,6 +759,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1C1C1E',
     marginBottom: 8,
+  },
+  required: {
+    color: '#FF3B30',
+    fontSize: 16,
+  },
+  charCount: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginTop: 4,
+    textAlign: 'right',
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   locationSubtitle: {
     fontSize: 13,
