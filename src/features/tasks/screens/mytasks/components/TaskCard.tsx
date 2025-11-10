@@ -14,6 +14,8 @@ interface TaskCardProps {
 export default function TaskCard({ task, onPress, status, userRole }: TaskCardProps) {
   const router = useRouter();
   const [showCancellationModal, setShowCancellationModal] = useState(false);
+  const [showPosterCancelModal, setShowPosterCancelModal] = useState(false);
+  const [selectedCancelReason, setSelectedCancelReason] = useState<number | null>(null);
 
   const handleMarkAsCompleted = () => {
     console.log('Mark as completed:', task._id);
@@ -21,9 +23,32 @@ export default function TaskCard({ task, onPress, status, userRole }: TaskCardPr
   };
 
   const handleCancelTask = () => {
-    console.log('Cancel task:', task._id);
-    // TODO: API call to cancel task
+    // Check if this is a Poster cancelling their own posted task
+    if (userRole === 'Poster' && (status === 'open' || !status)) {
+      setShowPosterCancelModal(true);
+    } else {
+      console.log('Cancel task:', task._id);
+      // TODO: API call to cancel task
+    }
   };
+
+  const handleConfirmPosterCancel = () => {
+    if (selectedCancelReason === null) {
+      return; // Don't proceed without a reason
+    }
+    console.log('Poster cancel task:', task._id, 'Reason:', selectedCancelReason);
+    // TODO: API call to cancel task with reason
+    setShowPosterCancelModal(false);
+    setSelectedCancelReason(null);
+  };
+
+  const cancelReasons = [
+    'The MyToDoo task is not longer needed',
+    'The Tasker did not communicate in a timely manner.',
+    'The tasker did not show up.',
+    'The tasker did not have the right tools or the right skills for the job.',
+    'Could not agree on a date and time that was convenient to complete the job.',
+  ];
 
   const handleAcceptCancellation = () => {
     console.log('Accept cancellation:', task._id);
@@ -237,6 +262,74 @@ export default function TaskCard({ task, onPress, status, userRole }: TaskCardPr
                 <Text style={styles.modalYesText}>Yes</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Poster Cancellation Reason Modal */}
+      <Modal
+        visible={showPosterCancelModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => {
+          setShowPosterCancelModal(false);
+          setSelectedCancelReason(null);
+        }}
+      >
+        <View style={styles.posterCancelOverlay}>
+          <View style={styles.posterCancelContent}>
+            <View style={styles.posterCancelHeader}>
+              <Text style={styles.posterCancelTitle}>Choose a reason</Text>
+              <TouchableOpacity 
+                onPress={() => {
+                  setShowPosterCancelModal(false);
+                  setSelectedCancelReason(null);
+                }}
+                style={styles.closeButton}
+              >
+                <MaterialIcons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.warningContainer}>
+              <MaterialIcons name="info-outline" size={20} color="#ff8c00" />
+              <Text style={styles.warningText}>
+                Cancelling tasks will incur fees.{' '}
+                <Text style={styles.warningLink}>
+                  Learn more about our Cancellation Policy
+                </Text>
+                .
+              </Text>
+            </View>
+
+            <View style={styles.reasonsList}>
+              {cancelReasons.map((reason, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.reasonItem,
+                    selectedCancelReason === index && styles.reasonItemSelected
+                  ]}
+                  onPress={() => setSelectedCancelReason(index)}
+                >
+                  <Text style={styles.reasonNumber}>{index + 1}.</Text>
+                  <Text style={styles.reasonText}>{reason}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.confirmCancelButton,
+                selectedCancelReason === null && styles.confirmCancelButtonDisabled
+              ]}
+              onPress={handleConfirmPosterCancel}
+              disabled={selectedCancelReason === null}
+            >
+              <Text style={styles.confirmCancelButtonText}>
+                Confirm Cancellation
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -490,5 +583,109 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#666',
     fontStyle: 'italic',
+  },
+  posterCancelOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  posterCancelContent: {
+    backgroundColor: '#f5f5f9',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 40,
+    maxHeight: '96%',
+  },
+  posterCancelHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  posterCancelTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  warningContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fff8e1',
+    padding: 16,
+    marginHorizontal: 20,
+    marginTop: 16,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#ff8c00',
+  },
+  warningText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#333',
+    marginLeft: 12,
+    lineHeight: 20,
+  },
+  warningLink: {
+    color: '#2563eb',
+    textDecorationLine: 'underline',
+    fontWeight: '500',
+  },
+  reasonsList: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  reasonItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: '#2563eb',
+  },
+  reasonItemSelected: {
+    backgroundColor: '#e3f2fd',
+    borderColor: '#2563eb',
+    borderWidth: 2,
+  },
+  reasonNumber: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginRight: 8,
+    minWidth: 24,
+  },
+  reasonText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#333',
+    lineHeight: 22,
+  },
+  confirmCancelButton: {
+    backgroundColor: '#dc3545',
+    marginHorizontal: 20,
+    marginTop: 20,
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  confirmCancelButtonDisabled: {
+    backgroundColor: '#ccc',
+    opacity: 0.6,
+  },
+  confirmCancelButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
