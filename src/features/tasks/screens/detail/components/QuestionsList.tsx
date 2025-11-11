@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnswerQuestionModal } from './AnswerQuestionModal';
 
 interface QuestionsListProps {
@@ -22,6 +23,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   taskCreatorId,
   onRefreshQuestions,
 }) => {
+  const insets = useSafeAreaInsets();
   const [showAnswerModal, setShowAnswerModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<any>(null);
   
@@ -209,15 +211,17 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
         />
       )}
 
-      {/* Fixed Ask Question Button */}
-      <View style={styles.fixedButtonContainer}>
-        <View style={styles.askQuestionButtonContainer}>
-          <TouchableOpacity style={styles.askQuestionButton} onPress={onAskQuestion}>
-            <Ionicons name="add-circle" size={24} color="#4CAF50" />
-            <Text style={styles.askQuestionButtonText}>ASK QUESTION</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      {/* Ask Question Button with Safe Area */}
+      <TouchableOpacity 
+        style={[
+          styles.askQuestionButton, 
+          { marginBottom: Math.max(insets.bottom, 20) }
+        ]} 
+        onPress={onAskQuestion}
+      >
+        <Ionicons name="add-circle" size={24} color="#4CAF50" />
+        <Text style={styles.askQuestionButtonText}>ASK QUESTION</Text>
+      </TouchableOpacity>
 
       {/* Answer Question Modal */}
       {selectedQuestion && (
@@ -356,6 +360,7 @@ const styles = StyleSheet.create({
     borderColor: '#4CAF50',
     borderStyle: 'dashed',
     marginTop: 16,
+    marginHorizontal: 16,
   },
   askQuestionButtonText: {
     fontSize: 16,
@@ -420,20 +425,6 @@ const styles = StyleSheet.create({
     color: '#666',
     fontStyle: 'italic',
     textAlign: 'center',
-  },
-  fixedButtonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'transparent',
-  },
-  askQuestionButtonContainer: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
   },
   taskContextHeader: {
     flexDirection: 'row',

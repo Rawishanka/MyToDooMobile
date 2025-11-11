@@ -12,7 +12,7 @@ import {
   View
 } from 'react-native';
 
-interface Coordinates {
+export interface Coordinates {
   lat: number;
   lng: number;
 }
@@ -26,7 +26,7 @@ interface LocationResult {
   place_type?: string[];
 }
 
-interface LocationData {
+export interface LocationData {
   address: string;
   coordinates: Coordinates;
 }
@@ -95,18 +95,20 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const getCurrentLocation = async () => {
     try {
       setDetectingLocation(true);
+      console.log('📍 Getting current location...');
       
       // Request permissions
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         console.log('❌ Location permission denied');
+        setError('Location permission denied. Please enable location access.');
         return;
       }
 
       // Get current location
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
-        timeInterval: 5000, // 5 seconds timeout
+        timeInterval: 10000, // 10 seconds timeout
       });
 
       const coords: Coordinates = {
@@ -115,6 +117,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       };
 
       setCurrentLocation(coords);
+      console.log('📍 Coordinates:', coords);
       
       // Reverse geocode to get readable address
       const reverseGeocodeResult = await Location.reverseGeocodeAsync({
@@ -124,18 +127,37 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       
       if (reverseGeocodeResult.length > 0) {
         const address = reverseGeocodeResult[0];
-        const readableAddress = `${address.street || ''} ${address.city || address.subregion || ''}, ${address.region || ''}, ${address.country || ''}`.trim();
+        const addressParts = [
+          address.street,
+          address.streetNumber,
+          address.city || address.subregion,
+          address.region,
+          address.country
+        ].filter(Boolean);
+        
+        const readableAddress = addressParts.join(', ');
         
         console.log('📍 Current location detected:', readableAddress);
         
-        // Auto-fill the input with current location if no initial value
-        if (!initialValue) {
-          setQuery(readableAddress);
-        }
+        // Auto-fill and auto-select the current location
+        setQuery(readableAddress);
+        
+        // Automatically trigger onSelect with current location
+        const locationData: LocationData = {
+          address: readableAddress,
+          coordinates: coords,
+        };
+        
+        console.log('✅ Auto-selecting current location');
+        onSelect(locationData);
+        setSuggestions([]);
+        setShowSuggestions(false);
+        setError(null);
       }
       
     } catch (error) {
       console.error('❌ Error getting current location:', error);
+      setError('Failed to get current location. Please try again.');
     } finally {
       setDetectingLocation(false);
     }
@@ -304,8 +326,25 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
   return (
     <View style={[styles.container, style]}>
+      {/* Use Current Location Button */}
+      <TouchableOpacity
+        onPress={getCurrentLocation}
+        style={styles.currentLocationButton}
+        disabled={detectingLocation || isDetectingCountry}
+      >
+        {detectingLocation ? (
+          <ActivityIndicator size="small" color="#4285F4" />
+        ) : (
+          <Ionicons name="locate" size={20} color="#4285F4" />
+        )}
+        <Text style={styles.currentLocationText}>
+          {detectingLocation ? 'Detecting location...' : 'Use Current Location'}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Manual Input */}
       <View style={styles.inputContainer}>
-        <Ionicons name="location-outline" size={20} color="#999" style={styles.inputIcon} />
+        <Ionicons name="search-outline" size={20} color="#999" style={styles.inputIcon} />
         <TextInput
           style={styles.input}
           value={query}
@@ -328,17 +367,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
             setTimeout(() => setShowSuggestions(false), 200);
           }}
         />
-        {(loading || detectingLocation || isDetectingCountry) && (
-          <ActivityIndicator size="small" color="#4285F4" style={styles.loadingIcon} />
-        )}
-        {!detectingLocation && (
-          <TouchableOpacity
-            onPress={getCurrentLocation}
-            style={styles.locationButton}
-          >
-            <Ionicons name="locate" size={18} color="#4285F4" />
-          </TouchableOpacity>
-        )}
         {loading && (
           <ActivityIndicator size="small" color="#4285F4" style={styles.loadingIcon} />
         )}
@@ -366,6 +394,24 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
     zIndex: 1000,
+  },
+  currentLocationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E8F4FF',
+    borderWidth: 1,
+    borderColor: '#4285F4',
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    gap: 8,
+  },
+  currentLocationText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#4285F4',
   },
   inputContainer: {
     flexDirection: 'row',
