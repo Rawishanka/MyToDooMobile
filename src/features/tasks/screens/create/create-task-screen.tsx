@@ -61,7 +61,9 @@ export default function CreateTaskScreen() {
   // Section 1: Title & Description
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    params.selectedCategory ? String(params.selectedCategory) : null
+  );
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
   
@@ -98,6 +100,24 @@ export default function CreateTaskScreen() {
 
   // Fetch categories
   const { data: categoriesResponse, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
+
+  // Handle pre-selected category from params
+  useEffect(() => {
+    if (params.selectedCategory) {
+      const categoryName = String(params.selectedCategory);
+      console.log('📌 Pre-selected category from params:', categoryName);
+      console.log('   Current selectedCategory state:', selectedCategory);
+      console.log('   Setting category to:', categoryName);
+      setSelectedCategory(categoryName);
+      setTouched(prev => ({ ...prev, category: true }));
+      console.log('   ✅ Category state updated to:', categoryName);
+    }
+  }, [params.selectedCategory]);
+
+  // Debug: Log when selectedCategory changes
+  useEffect(() => {
+    console.log('🔄 selectedCategory state changed to:', selectedCategory);
+  }, [selectedCategory]);
 
   // Keyboard listeners
   useEffect(() => {
