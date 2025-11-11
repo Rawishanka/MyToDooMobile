@@ -10,20 +10,21 @@ interface LocationInputProps {
   selectedLocation: LocationData | null;
   countryCode: string;
   onLocationSelect: (location: LocationData) => void;
+  hasError?: boolean;
 }
 
 export const LocationInput: React.FC<LocationInputProps> = ({
   selectedLocation,
   countryCode,
   onLocationSelect,
+  hasError = false,
 }) => {
   return (
     <>
-      <Text style={styles.label}>Location (Suburb/Address)</Text>
       <LocationAutocomplete
         onSelect={onLocationSelect}
         placeholder="Search for suburb, city or address..."
-        style={{ marginBottom: 16 }}
+        style={{ marginBottom: 4 }}
         country={countryCode}
       />
       {selectedLocation && (

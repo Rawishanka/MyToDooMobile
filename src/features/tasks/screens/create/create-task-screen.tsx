@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -60,14 +61,25 @@ export default function CreateTaskScreen() {
   // Section 1: Title & Description
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    params.selectedCategory ? String(params.selectedCategory) : null
+  );
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
   
   // Validation errors
   const [titleError, setTitleError] = useState('');
   const [descriptionError, setDescriptionError] = useState('');
-  const [touched, setTouched] = useState({ title: false, description: false });
+  const [categoryError, setCategoryError] = useState('');
+  const [locationError, setLocationError] = useState('');
+  const [whenError, setWhenError] = useState('');
+  const [touched, setTouched] = useState({ 
+    title: false, 
+    description: false, 
+    category: false, 
+    location: false,
+    when: false 
+  });
 
   // Section 2: Images & Location
   const [images, setImages] = useState<string[]>([]);
@@ -83,8 +95,55 @@ export default function CreateTaskScreen() {
   const [selectedTimeBlock, setSelectedTimeBlock] = useState('');
   const [needSpecificTime, setNeedSpecificTime] = useState(false);
 
+  // Keyboard visibility state
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
   // Fetch categories
   const { data: categoriesResponse, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
+
+  // Handle pre-selected category from params
+  useEffect(() => {
+    if (params.selectedCategory) {
+      const categoryName = String(params.selectedCategory);
+      console.log('📌 Pre-selected category from params:', categoryName);
+      console.log('   Current selectedCategory state:', selectedCategory);
+      console.log('   Setting category to:', categoryName);
+      setSelectedCategory(categoryName);
+      setTouched(prev => ({ ...prev, category: true }));
+      console.log('   ✅ Category state updated to:', categoryName);
+    }
+  }, [params.selectedCategory]);
+
+  // Debug: Log when selectedCategory changes
+  useEffect(() => {
+    console.log('🔄 selectedCategory state changed to:', selectedCategory);
+  }, [selectedCategory]);
+
+  // Keyboard listeners
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        console.log('⌨️ Keyboard shown');
+        setIsKeyboardVisible(true);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        console.log('⌨️ Keyboard hidden');
+        // Small delay to ensure smooth transition
+        setTimeout(() => {
+          setIsKeyboardVisible(false);
+        }, 100);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   // Scroll to specific section if requested
   useEffect(() => {
@@ -121,30 +180,15 @@ export default function CreateTaskScreen() {
   }, [params.section]);
 
   // Validation functions
-  const validateText = (text: string, fieldName: string): string => {
-    // Check for numbers
-    if (/\d/.test(text)) {
-      return `${fieldName} cannot contain numbers`;
-    }
-    
-    // Check for special characters (allow only letters, spaces, apostrophes, hyphens, commas, periods)
-    if (/[^a-zA-Z\s'\-,.]/.test(text)) {
-      return `${fieldName} cannot contain special characters`;
-    }
-    
-    return '';
-  };
-
   const handleTitleChange = (text: string) => {
     // Remove numbers and special characters as user types
     const cleanedText = text.replace(/[^a-zA-Z\s'\-,.]/g, '');
     setTitle(cleanedText);
     
     if (touched.title) {
-      const error = validateText(cleanedText, 'Title');
-      if (error) {
-        setTitleError(error);
-      } else if (cleanedText.trim().length > 0 && cleanedText.trim().length < 10) {
+      if (cleanedText.trim().length === 0) {
+        setTitleError('Title is required');
+      } else if (cleanedText.trim().length < 10) {
         setTitleError('Minimum 10 characters required');
       } else {
         setTitleError('');
@@ -158,10 +202,7 @@ export default function CreateTaskScreen() {
     setDescription(cleanedText);
     
     if (touched.description) {
-      const error = validateText(cleanedText, 'Description');
-      if (error) {
-        setDescriptionError(error);
-      } else if (cleanedText.trim().length === 0) {
+      if (cleanedText.trim().length === 0) {
         setDescriptionError('Description is required');
       } else if (cleanedText.trim().length < 20) {
         setDescriptionError('Minimum 20 characters required');
@@ -173,13 +214,10 @@ export default function CreateTaskScreen() {
 
   const handleTitleBlur = () => {
     setTouched({ ...touched, title: true });
-    const error = validateText(title, 'Title');
-    if (error) {
-      setTitleError(error);
-    } else if (title.trim().length > 0 && title.trim().length < 10) {
-      setTitleError('Minimum 10 characters required');
-    } else if (title.trim().length === 0) {
+    if (title.trim().length === 0) {
       setTitleError('Title is required');
+    } else if (title.trim().length < 10) {
+      setTitleError('Minimum 10 characters required');
     } else {
       setTitleError('');
     }
@@ -187,10 +225,7 @@ export default function CreateTaskScreen() {
 
   const handleDescriptionBlur = () => {
     setTouched({ ...touched, description: true });
-    const error = validateText(description, 'Description');
-    if (error) {
-      setDescriptionError(error);
-    } else if (description.trim().length === 0) {
+    if (description.trim().length === 0) {
       setDescriptionError('Description is required');
     } else if (description.trim().length < 20) {
       setDescriptionError('Minimum 20 characters required');
@@ -326,7 +361,33 @@ export default function CreateTaskScreen() {
   };
 
   const handleLocationSelect = (location: LocationData) => {
+    console.log('📍 Location selected:', location);
+    console.log('   Address:', location?.address);
+    console.log('   Coordinates:', location?.coordinates);
     setSelectedLocation(location);
+    console.log('   Location state updated');
+  };
+
+  const handleLocationFocus = () => {
+    console.log('📍 Location field focused - scrolling into view');
+    // Scroll to location section when focused
+    if (section2Ref.current && scrollViewRef.current) {
+      setTimeout(() => {
+        section2Ref.current?.measureLayout(
+          scrollViewRef.current as any,
+          (x, y) => {
+            console.log('   Scrolling to location field at y:', y);
+            // Scroll with more offset to ensure field is visible above keyboard
+            // Add extra space (200px) to account for keyboard height
+            scrollViewRef.current?.scrollTo({ 
+              y: y + 100, 
+              animated: true 
+            });
+          },
+          () => console.log('   Failed to measure location field')
+        );
+      }, 150);
+    }
   };
 
   // Time handlers
@@ -416,19 +477,95 @@ export default function CreateTaskScreen() {
   // Validation
   const titleLength = title.trim().length;
   const descriptionLength = description.trim().length;
+  
+  // Debug: Log validation state
+  console.log('=== VALIDATION STATE ===');
+  console.log('selectedCategory:', selectedCategory);
+  console.log('titleLength:', titleLength, '(min: 10)');
+  console.log('descriptionLength:', descriptionLength, '(min: 20)');
+  console.log('titleError:', titleError);
+  console.log('descriptionError:', descriptionError);
+  console.log('selectedLocation:', selectedLocation);
+  console.log('selectedOption:', selectedOption);
+  
   const isFormValid =
-    selectedCategory &&
+    !!selectedCategory &&
     titleLength >= 10 &&
     descriptionLength >= 20 &&
     !titleError &&
     !descriptionError &&
-    selectedLocation &&
+    !!selectedLocation &&
     selectedOption !== '';
+  
+  console.log('isFormValid:', isFormValid);
+  console.log('========================');
 
   const handleContinue = () => {
+    console.log('\n🔵 ===== CONTINUE BUTTON CLICKED =====');
+    console.log('📋 Current Form State:');
+    console.log('  - Category:', selectedCategory || 'NOT SELECTED');
+    console.log('  - Title:', `"${title}" (${titleLength} chars)`);
+    console.log('  - Description:', `"${description}" (${descriptionLength} chars)`);
+    console.log('  - Location:', selectedLocation ? selectedLocation.address : 'NOT SELECTED');
+    console.log('  - When:', selectedOption || 'NOT SELECTED');
+    console.log('  - Images:', images.length);
+    
+    // Mark all fields as touched to show validation errors
+    console.log('🔍 Marking all fields as touched...');
+    setTouched({
+      title: true,
+      description: true,
+      category: true,
+      location: true,
+      when: true,
+    });
+
+    // Validate all fields
+    console.log('✅ Running validation checks...');
+    if (title.trim().length === 0) {
+      console.log('  ❌ Title is empty');
+      setTitleError('Title is required');
+    } else if (title.trim().length < 10) {
+      console.log('  ❌ Title too short:', titleLength, '< 10');
+      setTitleError('Minimum 10 characters required');
+    } else {
+      console.log('  ✅ Title valid');
+    }
+
+    if (description.trim().length === 0) {
+      console.log('  ❌ Description is empty');
+      setDescriptionError('Description is required');
+    } else if (description.trim().length < 20) {
+      console.log('  ❌ Description too short:', descriptionLength, '< 20');
+      setDescriptionError('Minimum 20 characters required');
+    } else {
+      console.log('  ✅ Description valid');
+    }
+
+    console.log('\n📊 Validation Results:');
+    console.log('  - selectedCategory:', !!selectedCategory);
+    console.log('  - titleLength >= 10:', titleLength >= 10);
+    console.log('  - descriptionLength >= 20:', descriptionLength >= 20);
+    console.log('  - !titleError:', !titleError);
+    console.log('  - !descriptionError:', !descriptionError);
+    console.log('  - selectedLocation:', !!selectedLocation);
+    console.log('  - selectedOption !== "":', selectedOption !== '');
+    console.log('  - isFormValid:', isFormValid);
+
     if (isFormValid) {
+      console.log('\n✅ Form is VALID - Proceeding to budget screen...');
       const selectedDate =
         selectedOption === 'on_time' ? onTimeDate : selectedOption === 'before' ? beforeDate : null;
+
+      console.log('💾 Saving task data:', {
+        title,
+        description,
+        category: selectedCategory,
+        location: selectedLocation?.address,
+        date: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
+        time: selectedTimeBlock || '',
+        photos: images.length,
+      });
 
       updateMyTask({
         title,
@@ -442,29 +579,52 @@ export default function CreateTaskScreen() {
         date: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
         time: selectedTimeBlock ? selectedTimeBlock : '',
       });
+      
+      console.log('🚀 Navigating to budget screen...');
       router.push('/budget-screen' as any);
+    } else {
+      console.log('\n❌ Form is INVALID - Showing alert...');
+      const missingFields = [];
+      if (!selectedCategory) missingFields.push('Category');
+      if (titleLength < 10) missingFields.push('Title (min 10 chars)');
+      if (descriptionLength < 20) missingFields.push('Description (min 20 chars)');
+      if (!selectedLocation) missingFields.push('Location');
+      if (selectedOption === '') missingFields.push('When');
+      
+      console.log('  Missing fields:', missingFields);
+      
+      Alert.alert(
+        'Incomplete Form',
+        'Please fill in all required fields:\n' +
+        (!selectedCategory ? '• Select a category\n' : '') +
+        (titleLength < 10 ? '• Title must be at least 10 characters\n' : '') +
+        (descriptionLength < 20 ? '• Description must be at least 20 characters\n' : '') +
+        (!selectedLocation ? '• Select a location\n' : '') +
+        (selectedOption === '' ? '• Select when you need this done' : '')
+      );
     }
+    console.log('🔵 ===== END CONTINUE BUTTON =====\n');
   };
 
   return (
     <View style={styles.container}>
+      {/* Fixed Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <ChevronLeft size={24} color="#333" />
+        </TouchableOpacity>
+        
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>Task Details</Text>
+          <Text style={styles.headerSubtitle}>Tell us what you need done</Text>
+        </View>
+      </View>
+
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        {/* Fixed Header */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <ChevronLeft size={24} color="#333" />
-          </TouchableOpacity>
-          
-          <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Task Details</Text>
-            <Text style={styles.headerSubtitle}>Tell us what you need done</Text>
-          </View>
-        </View>
-
         <ScrollView
           ref={scrollViewRef}
           style={styles.scrollView}
@@ -472,21 +632,33 @@ export default function CreateTaskScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
+          nestedScrollEnabled={true}
         >
         {/* SECTION 1: TASK DETAILS */}
         <View ref={section1Ref} style={styles.section}>
           {/* Category Selection */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Category</Text>
+            <Text style={styles.label}>
+              Category <Text style={styles.required}>*</Text>
+            </Text>
             <TouchableOpacity
-              style={styles.categorySelector}
-              onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+              style={[
+                styles.categorySelector,
+                touched.category && !selectedCategory && styles.inputError
+              ]}
+              onPress={() => {
+                setShowCategoryDropdown(!showCategoryDropdown);
+                setTouched({ ...touched, category: true });
+              }}
             >
               <Text style={[styles.categorySelectorText, !selectedCategory && styles.placeholder]}>
                 {selectedCategory || 'Select a category'}
               </Text>
               <ChevronDown size={20} color="#666" />
             </TouchableOpacity>
+            {touched.category && !selectedCategory && (
+              <Text style={styles.validationText}>Category is required</Text>
+            )}
 
             {showCategoryDropdown && (
               <View style={styles.categoryDropdown}>
@@ -517,6 +689,7 @@ export default function CreateTaskScreen() {
                           setSelectedCategory(category);
                           setShowCategoryDropdown(false);
                           setCategorySearchQuery('');
+                          setCategoryError('');
                         }}
                       >
                         <Text
@@ -606,14 +779,32 @@ export default function CreateTaskScreen() {
 
           {/* Location */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Location</Text>
-            <Text style={styles.locationSubtitle}>Where do you need this done?</Text>
+            <Text style={styles.label}>
+              Location <Text style={styles.required}>*</Text>
+            </Text>
+            <Text style={styles.locationSubtitle}>
+              Where do you need this done? Type and select from suggestions.
+            </Text>
 
             <LocationAutocomplete
-              onSelect={handleLocationSelect}
+              onSelect={(location) => {
+                console.log('🗺️ LocationAutocomplete onSelect triggered');
+                console.log('   Received location:', location);
+                handleLocationSelect(location);
+                setTouched({ ...touched, location: true });
+                setLocationError('');
+                console.log('   Location touched and error cleared');
+              }}
+              onFocus={handleLocationFocus}
               placeholder="Enter address or suburb"
               initialValue={selectedLocation?.address}
             />
+
+            {!selectedLocation && touched.location && (
+              <Text style={styles.helperText}>
+                💡 Tip: Type your address and tap on a suggestion from the dropdown list
+              </Text>
+            )}
 
             {selectedLocation && (
               <View style={styles.selectedLocationContainer}>
@@ -623,6 +814,11 @@ export default function CreateTaskScreen() {
                 </Text>
               </View>
             )}
+            {touched.location && !selectedLocation && (
+              <Text style={styles.validationText}>
+                Location is required - Please select from dropdown
+              </Text>
+            )}
           </View>
         </View>
 
@@ -631,18 +827,27 @@ export default function CreateTaskScreen() {
 
         {/* SECTION 3: TIME */}
         <View ref={section3Ref} style={styles.section}>
-          <Text style={styles.sectionTitle}>When</Text>
+          <Text style={styles.sectionTitle}>
+            When <Text style={styles.required}>*</Text>
+          </Text>
           <Text style={styles.sectionSubtitle}>When do you need this done?</Text>
 
           {/* Date/Time Options */}
           <DateOptionSelector
             options={options}
             selectedOption={selectedOption}
-            onSelectOption={setSelectedOption}
+            onSelectOption={(option) => {
+              setSelectedOption(option);
+              setTouched({ ...touched, when: true });
+              setWhenError('');
+            }}
             onTimeDate={onTimeDate}
             beforeDate={beforeDate}
             onOpenPicker={handleOpenPicker}
           />
+          {touched.when && selectedOption === '' && (
+            <Text style={styles.validationText}>Please select when you need this done</Text>
+          )}
 
           {/* Time Toggle */}
           <TimeToggle needSpecificTime={needSpecificTime} onToggle={setNeedSpecificTime} />
@@ -657,19 +862,6 @@ export default function CreateTaskScreen() {
           )}
         </View>
         </ScrollView>
-
-        {/* Continue Button */}
-        <TouchableOpacity
-          style={[
-            styles.continueButton, 
-            isFormValid && styles.continueButtonEnabled,
-            { bottom: Math.max(insets.bottom, 20) }
-          ]}
-          disabled={!isFormValid}
-          onPress={handleContinue}
-        >
-          <Text style={styles.continueText}>Continue</Text>
-        </TouchableOpacity>
 
         {/* Date Picker */}
         {showDatePicker && (
@@ -688,6 +880,26 @@ export default function CreateTaskScreen() {
           />
         )}
       </KeyboardAvoidingView>
+
+      {/* Continue Button - Outside KeyboardAvoidingView, Hidden when keyboard is visible */}
+      {!isKeyboardVisible && (
+        <TouchableOpacity
+          style={[
+            styles.continueButton, 
+            isFormValid && styles.continueButtonEnabled,
+            { bottom: Math.max(insets.bottom, 20) }
+          ]}
+          disabled={!isFormValid}
+          onPress={() => {
+            console.log('🔘 Continue button PRESSED!');
+            console.log('   Button disabled:', !isFormValid);
+            console.log('   isFormValid:', isFormValid);
+            handleContinue();
+          }}
+        >
+          <Text style={styles.continueText}>Continue</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -730,7 +942,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 120,
+    paddingBottom: 300, // Increased padding for keyboard space
   },
   section: {
     marginBottom: 20,

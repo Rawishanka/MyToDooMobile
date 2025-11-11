@@ -1,4 +1,5 @@
 import { useAcceptOffer, useGetTaskById, useGetTaskOffers } from '@/src/shared/hooks/useTaskApi';
+import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -32,6 +33,9 @@ export default function AcceptOfferScreen() {
   const offers = offersData?.data?.offers || [];
   const selectedOffer = offers.find((offer: any) => offer._id === selectedOfferId);
   const isLoading = isTaskLoading || isOffersLoading;
+
+  // Get currency info based on task location
+  const currencyInfo = getCurrencyFromLocation(task?.location);
 
   const handleAcceptOffer = async () => {
     try {
@@ -205,7 +209,9 @@ export default function AcceptOfferScreen() {
               </View>
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Offer Amount:</Text>
-                <Text style={styles.summaryAmount}>${selectedOffer.offer.amount}</Text>
+                <Text style={styles.summaryAmount}>
+                  {formatCurrency(selectedOffer.offer.amount, currencyInfo)}
+                </Text>
               </View>
               {selectedOffer.offer.message && (
                 <View style={styles.summaryRow}>
@@ -240,7 +246,7 @@ export default function AcceptOfferScreen() {
             <>
               <Ionicons name="checkmark-circle" size={20} color="#fff" />
               <Text style={styles.acceptButtonText}>
-                Accept Offer {selectedOffer ? `($${selectedOffer.offer.amount})` : ''}
+                Accept Offer {selectedOffer ? `(${formatCurrency(selectedOffer.offer.amount, currencyInfo)})` : ''}
               </Text>
             </>
           )}

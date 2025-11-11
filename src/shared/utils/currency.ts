@@ -8,8 +8,37 @@ export interface CurrencyInfo {
 }
 
 /**
- * Map of countries to their currency information
+ * Get currency symbol by currency code
  */
+export const getCurrencySymbol = (currencyCode: string): string => {
+  // Map common currency codes to symbols
+  const currencySymbols: Record<string, string> = {
+    'AUD': '$',
+    'LKR': 'Rs',
+    'USD': '$',
+    'EUR': '€',
+    'GBP': '£',
+    'NZD': '$',
+    'CAD': '$',
+    'SGD': '$',
+    'MYR': 'RM',
+    'IDR': 'Rp',
+    'THB': '฿',
+    'PHP': '₱',
+    'VND': '₫',
+    'INR': '₹',
+    'PKR': '₨',
+    'BDT': '৳',
+    'JPY': '¥',
+    'CNY': '¥',
+    'KRW': '₩',
+    'HKD': '$',
+    'MXN': '$',
+    'BRL': 'R$',
+  };
+  
+  return currencySymbols[currencyCode] || '$';
+};
 const COUNTRY_CURRENCY_MAP: Record<string, CurrencyInfo> = {
   // Asia-Pacific
   'Australia': { code: 'AUD', symbol: '$' },

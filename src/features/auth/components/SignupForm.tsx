@@ -334,11 +334,20 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       />
 
       {/* Location Input */}
+      <Text style={styles.label}>
+        Location <Text style={styles.required}>*</Text>
+      </Text>
       <LocationInput
         selectedLocation={selectedLocation}
         countryCode={selectedCountry.code}
-        onLocationSelect={setSelectedLocation}
+        onLocationSelect={(location) => {
+          setSelectedLocation(location);
+          if (touched.location) validateField('location', location);
+        }}
       />
+      {touched.location && errors.location && (
+        <Text style={styles.errorText}>{errors.location}</Text>
+      )}
 
       {/* Date of Birth */}
       <DatePickerInput

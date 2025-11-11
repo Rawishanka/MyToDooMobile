@@ -1,17 +1,18 @@
 // BudgetScreen.tsx
 
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { getCurrencyFromLocation, getCurrencySymbol, getDefaultBudget, getMinimumBudget } from '@/src/shared/utils/currency';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
-import { getCurrencyFromLocation, getDefaultBudget, getMinimumBudget } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -20,11 +21,32 @@ export default function BudgetScreen() {
   const { myTask, updateMyTask } = useCreateTaskStore();
   const insets = useSafeAreaInsets();
 
-  // Get currency based on task location
+  // Auto-detect country for currency if no location set yet
+  const { countryInfo } = useLocationCountry();
+
+  // Get currency based on task location or detected country
   const location = 'location' in myTask ? myTask.location : undefined;
-  const currencyInfo = getCurrencyFromLocation(location ? { address: location } : undefined);
+  // Handle both string location and object location formats
+  const locationForCurrency = typeof location === 'string' 
+    ? { address: location }
+    : location && typeof location === 'object' && 'address' in location 
+    ? location 
+    : undefined;
+  
+  // If no location set, use detected country's currency
+  const currencyInfo = locationForCurrency 
+    ? getCurrencyFromLocation(locationForCurrency)
+    : { code: countryInfo.currency, symbol: getCurrencySymbol(countryInfo.currency) };
+
   const minimumBudget = getMinimumBudget(currencyInfo.code);
   const defaultBudgetAmount = getDefaultBudget(currencyInfo.code);
+
+  console.log('💰 Budget screen currency info:', {
+    hasLocation: !!locationForCurrency,
+    detectedCountry: countryInfo.countryName,
+    detectedCurrency: countryInfo.currency,
+    finalCurrency: currencyInfo.code
+  });
 
   const [budget, setBudget] = useState('');
   const [errorMessage, setErrorMessage] = useState('');

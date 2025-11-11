@@ -485,8 +485,22 @@ export function usePostTaskQuestion() {
     mutationFn: ({ taskId, question }: { taskId: string; question: string }) => 
       TaskAPI.postTaskQuestion(taskId, question),
     onSuccess: (data, variables) => {
+      console.log('✅ Question posted successfully, invalidating queries');
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.questions(variables.taskId) });
+      // Also refresh task detail to update question count
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
     },
+    onError: (error: any) => {
+      console.error("❌ Error posting question:", error);
+      
+      // Check if it's an authentication error and handle automatically
+      if (isAuthError(error)) {
+        console.error("❌ Authentication error detected - handling automatically");
+        handleAuthenticationError(error);
+      } else {
+        console.error("❌ Question posting failed with unknown error:", error);
+      }
+    }
   });
 }
 
