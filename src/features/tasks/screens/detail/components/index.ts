@@ -1,3 +1,4 @@
+export { AnswerQuestionModal } from './AnswerQuestionModal';
 export { AskQuestionModal } from './AskQuestionModal';
 export { DetailHeader } from './DetailHeader';
 export { ErrorState, LoadingState } from './DetailStates';

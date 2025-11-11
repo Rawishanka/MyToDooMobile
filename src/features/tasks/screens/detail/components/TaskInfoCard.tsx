@@ -409,7 +409,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
       {/* Budget */}
       <View style={styles.budgetRow}>
-        <Ionicons name="logo-usd" size={20} color="#000" />
+        <Ionicons name="cash-outline" size={20} color="#000" />
         <View style={styles.budgetInfo}>
           <Text style={styles.budgetAmount}>
             {(() => {

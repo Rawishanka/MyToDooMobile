@@ -1,5 +1,6 @@
 import {
     useAcceptOffer,
+    useGetAllPublicQuestions,
     useGetTaskById,
     useGetTaskOffers,
     useGetTaskQuestions,
@@ -43,6 +44,13 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     refetch: refetchQuestions,
   } = useGetTaskQuestions(taskId || '', !!taskId); // Enabled when we have a taskId
 
+  // Fetch ALL public questions from ALL tasks
+  const {
+    data: publicQuestionsData,
+    isLoading: isLoadingPublicQuestions,
+    error: publicQuestionsError,
+  } = useGetAllPublicQuestions();
+
   // Post question mutation
   const postQuestionMutation = usePostTaskQuestion();
 
@@ -55,8 +63,22 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
   // Get offers for THIS specific task (for both MyOfferCard and Offers tab)
   const taskOffers = taskOffersData?.data?.offers || [];
   
-  // Questions
-  const questions = questionsData?.data || [];
+  // Combine task-specific questions with public questions from all tasks
+  const taskQuestions = questionsData?.data || [];
+  const publicQuestions = publicQuestionsData?.data || [];
+  
+  // Combine and deduplicate questions (task questions + public questions from other tasks)
+  const allQuestions = [
+    ...taskQuestions,
+    ...publicQuestions.filter((pq: any) => 
+      !taskQuestions.some((tq: any) => tq._id === pq._id)
+    )
+  ];
+  
+  // Sort questions by creation date (newest first)
+  const questions = allQuestions.sort((a: any, b: any) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 
   // Find the current user's offer on THIS task (if they made one)
   const myOffer = taskOffers.find(
@@ -127,8 +149,8 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     error,
     refetch,
     isLoadingTaskOffers,
-    isLoadingQuestions,
-    questionsError,
+    isLoadingQuestions: isLoadingQuestions || isLoadingPublicQuestions,
+    questionsError: questionsError || publicQuestionsError,
     refetchQuestions,
     activeTab,
     setActiveTab,
