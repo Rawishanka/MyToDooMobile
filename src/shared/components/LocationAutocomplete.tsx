@@ -33,6 +33,7 @@ interface LocationData {
 
 interface LocationAutocompleteProps {
   onSelect: (location: LocationData) => void;
+  onFocus?: () => void;
   initialValue?: string;
   placeholder?: string;
   style?: any;
@@ -51,6 +52,7 @@ const COUNTRIES = 'AU'; // Focus on Australia as shown in your image
 
 export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   onSelect,
+  onFocus,
   initialValue = "",
   placeholder = "Enter suburb, city or address",
   style,
@@ -197,10 +199,14 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       console.log('🗺️ Mapbox response:', response.data);
 
       const features = response.data.features || [];
+      console.log(`   Found ${features.length} suggestions`);
       setSuggestions(features);
       
       if (features.length === 0) {
+        console.log('   No locations found');
         setError("No locations found. Try a different search term.");
+      } else {
+        console.log('   Suggestions:', features.map((f: LocationResult) => f.place_name));
       }
       
     } catch (error: any) {
@@ -221,6 +227,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   };
 
   const handleInputChange = (value: string) => {
+    console.log('🔍 Location input changed:', value);
     setQuery(value);
     
     // Clear previous timeout
@@ -228,8 +235,17 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       clearTimeout(searchTimeout.current);
     }
     
+    if (value.length < 2) {
+      console.log('   Input too short, clearing suggestions');
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    
     // Debounce search requests
+    console.log('   Scheduling search in 300ms...');
     searchTimeout.current = setTimeout(() => {
+      console.log('   Executing search for:', value);
       searchMapboxPlaces(value);
     }, 300); // Wait 300ms after user stops typing
   };
@@ -299,10 +315,17 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           autoCapitalize="words"
           returnKeyType="search"
           editable={!detectingLocation && !isDetectingCountry}
-          onFocus={() => query.length >= 2 && setShowSuggestions(true)}
+          onFocus={() => {
+            console.log('📍 Location input focused');
+            if (query.length >= 2) {
+              setShowSuggestions(true);
+            }
+            onFocus?.();
+          }}
           onBlur={() => {
+            console.log('📍 Location input blurred');
             // Delay hiding suggestions to allow tap
-            setTimeout(() => setShowSuggestions(false), 150);
+            setTimeout(() => setShowSuggestions(false), 200);
           }}
         />
         {(loading || detectingLocation || isDetectingCountry) && (
