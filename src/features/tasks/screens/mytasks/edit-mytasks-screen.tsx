@@ -328,7 +328,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
               onPress={() => setSelectedOption('flexible')}
             >
               <Text style={[styles.whenOptionText, selectedOption === 'flexible' && styles.whenOptionTextSelected]}>
-                I'm Flexible
+                I&apos;m Flexible
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
