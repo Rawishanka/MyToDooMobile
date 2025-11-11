@@ -219,6 +219,7 @@ export default function WelcomeScreen() {
             <ChevronRight size={18} color="#fff" />
           </TouchableOpacity>
           
+          
           {/* Database Categories Tags */}
           {loadingCategories ? (
             <View style={styles.tagsLoadingContainer}>

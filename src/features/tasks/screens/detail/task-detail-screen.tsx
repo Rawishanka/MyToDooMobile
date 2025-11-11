@@ -2,16 +2,16 @@ import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import {
-  AskQuestionModal,
-  DetailHeader,
-  ErrorState,
-  LoadingState,
-  MakeOfferSection,
-  MyOfferCard,
-  OffersList,
-  QuestionsList,
-  TabsSection,
-  TaskInfoCard,
+    AskQuestionModal,
+    DetailHeader,
+    ErrorState,
+    LoadingState,
+    MakeOfferSection,
+    MyOfferCard,
+    OffersList,
+    QuestionsList,
+    TabsSection,
+    TaskInfoCard,
 } from './components';
 import { useTaskDetail } from './hooks/useTaskDetail';
 
@@ -26,6 +26,7 @@ export default function TaskDetailScreen() {
     isLoading,
     error,
     refetch,
+    refetchQuestions,
     isLoadingTaskOffers,
     isLoadingQuestions,
     activeTab,
@@ -101,6 +102,10 @@ export default function TaskDetailScreen() {
               questions={questions}
               isLoading={isLoadingQuestions}
               onAskQuestion={() => setShowAskQuestion(true)}
+              taskId={taskId}
+              currentUserId={currentUser?._id}
+              taskCreatorId={task?.createdBy?._id}
+              onRefreshQuestions={refetchQuestions}
             />
           )}
         </View>

@@ -1199,12 +1199,124 @@ export async function answerTaskQuestion(taskId: string, questionId: string, ans
   const api = getApi();
   try {
     console.log("💬 Answering question:", { taskId, questionId, answer });
-    const response = await api.post(`/tasks/${taskId}/questions/${questionId}/answer`, { answer });
-    console.log("✅ Answer task question success:", response.data);
-    return response.data;
-  } catch (error) {
+    
+    // Try the primary answer endpoint first
+    try {
+      const response = await api.post(`/tasks/${taskId}/questions/${questionId}/answer`, { answer });
+      console.log("✅ Answer task question success:", response.data);
+      return response.data;
+    } catch (primaryError: any) {
+      console.warn("⚠️ Primary answer endpoint failed, trying alternative:", primaryError?.response?.status);
+      
+      // If 404, try alternative endpoint patterns
+      if (primaryError?.response?.status === 404) {
+        console.log("🔄 Trying alternative endpoint: PUT /tasks/:taskId/questions/:questionId");
+        
+        try {
+          // Try updating the question directly with answer
+          const altResponse = await api.put(`/tasks/${taskId}/questions/${questionId}`, { 
+            answer,
+            status: 'answered',
+            answeredAt: new Date().toISOString()
+          });
+          console.log("✅ Answer task question success (alt method):", altResponse.data);
+          return altResponse.data;
+        } catch (altError: any) {
+          console.warn("⚠️ Alternative endpoint also failed, trying PATCH method");
+          
+          // Try PATCH method as final fallback
+          const patchResponse = await api.patch(`/tasks/${taskId}/questions/${questionId}`, { 
+            answer,
+            status: 'answered',
+            answeredAt: new Date().toISOString()
+          });
+          console.log("✅ Answer task question success (patch method):", patchResponse.data);
+          return patchResponse.data;
+        }
+      } else {
+        throw primaryError;
+      }
+    }
+  } catch (error: any) {
     console.error("❌ Answer task question failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Answer task question failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    // Handle not found errors
+    if (error?.response?.status === 404) {
+      console.error("❌ Answer endpoint not found - Question or task may not exist");
+      throw new Error("Could not find the question to answer. Please refresh and try again.");
+    }
+    
     throw error;
+  }
+}
+
+/**
+ * 🌍 Get All Public Questions
+ * Endpoint: GET /api/questions/public (aggregated from all tasks)
+ * Auth: No - Public questions visible to all users
+ */
+export async function getAllPublicQuestions(): Promise<{ success: boolean; data: any[] }> {
+  const api = getApi();
+  try {
+    console.log("🌍 Getting all public questions...");
+    
+    // Try the public questions endpoint first
+    try {
+      const response = await api.get('/questions/public');
+      console.log("✅ Get public questions success:", response.data);
+      return response.data;
+    } catch (endpointError: any) {
+      // If public endpoint doesn't exist, aggregate from tasks
+      if (endpointError?.response?.status === 404) {
+        console.log("📝 Public questions endpoint not available, aggregating from tasks...");
+        
+        const tasksResponse = await api.get('/tasks?limit=50');
+        const tasks = tasksResponse.data?.data || [];
+        
+        const allQuestions: any[] = [];
+        
+        for (const task of tasks) {
+          try {
+            const questionsResponse = await api.get(`/tasks/${task._id}/questions`);
+            const taskQuestions = questionsResponse.data?.data || [];
+            
+            // Add task context to each question
+            const questionsWithContext = taskQuestions.map((q: any) => ({
+              ...q,
+              taskId: task._id,
+              taskTitle: task.title,
+              taskLocation: task.location?.address || 'Location not specified',
+              taskBudget: task.formattedBudget || `${task.currency} ${task.budget}`,
+              taskCategory: task.categories?.[0] || 'General',
+              taskCreatedBy: task.createdBy, // Add task creator info
+              isPublic: true
+            }));
+            
+            allQuestions.push(...questionsWithContext);
+          } catch (taskQuestionError) {
+            console.log(`Failed to get questions for task ${task._id}, skipping...`);
+          }
+        }
+        
+        // Sort by creation date (newest first)
+        allQuestions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        
+        console.log(`✅ Aggregated ${allQuestions.length} public questions from ${tasks.length} tasks`);
+        return { success: true, data: allQuestions };
+      }
+      throw endpointError;
+    }
+  } catch (error: any) {
+    console.error("❌ Get public questions failed:", error);
+    
+    // Return empty array on failure rather than throwing
+    return { success: false, data: [] };
   }
 }
 
@@ -1265,6 +1377,7 @@ export const TaskAPI = {
   completePayment,
   getPaymentStatus,
   getTaskQuestions,
+  getAllPublicQuestions,
   postTaskQuestion,
   answerTaskQuestion,
   getUserTasks,

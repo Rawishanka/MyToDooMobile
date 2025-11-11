@@ -3,18 +3,19 @@ import { useStorageState } from '@/src/shared/hooks/useStorageState';
 import { usePostTask } from '@/src/shared/hooks/useTaskApi';
 import { debugAuthState, forceFreshLogin } from '@/src/shared/utils/auth-utils';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
+import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -41,6 +42,7 @@ const ListItem = ({ icon, text, value, onPress }: ListItemProps) => (
 export default function DetailScreen() {
   const { myTask, resetTask } = useCreateTaskStore();
   const [[isLoading, storedToken], setStoredToken] = useStorageState('token');
+  const { setPendingAction } = usePendingActionStore();
   const insets = useSafeAreaInsets();
   
   // Use React Query mutation for posting task
@@ -127,7 +129,15 @@ export default function DetailScreen() {
     
     // Check if user is logged in
     if (!storedToken) {
-      console.log("❌ No stored token found, redirecting to login");
+      console.log("❌ No stored token found, setting pending action and redirecting to login");
+      
+      // Set pending action to continue task posting after login
+      setPendingAction({
+        type: 'post-task',
+        data: convertToTaskRequest(),
+        returnPath: '/(tabs)/my-tasks'
+      });
+      
       router.push('/(auth)/login');
       return;
     }
