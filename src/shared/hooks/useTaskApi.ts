@@ -209,6 +209,19 @@ export function useGetTaskQuestions(taskId: string, enabled = true) {
 }
 
 /**
+ * 🌍 Get All Public Questions Hook
+ */
+export function useGetAllPublicQuestions(enabled = true) {
+  return useQuery({
+    queryKey: [...TASK_QUERY_KEYS.all, 'public-questions'],
+    queryFn: () => TaskAPI.getAllPublicQuestions(),
+    enabled: enabled,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchOnMount: true,
+  });
+}
+
+/**
  * 👤 Get User Tasks Hook
  */
 export function useGetUserTasks(userId: string, enabled = true) {

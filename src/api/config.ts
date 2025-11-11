@@ -15,7 +15,7 @@ const getApiUrl = () => {
     }
     
     // 🔧 Fallback: Using IP address from error logs
-    const fallbackUrl = "http://192.168.1.168:5001/api";
+    const fallbackUrl = "http://192.168.1.8:5001/api";
     console.log('⚠️ Using fallback API URL:', fallbackUrl);
     return fallbackUrl;
 };
@@ -34,7 +34,16 @@ const API_CONFIG = {
         USERS: '/users',
         OFFERS: '/offers',
         MESSAGES: '/messages',
-        CHAT: '/ChatApp' // Add chat endpoint
+        CHAT: '/ChatApp', // Add chat endpoint
+        PAYMENTS: '/payments', // Stripe payment endpoints
+        SERVICE_FEE: '/service-fee', // Service fee calculation
+    },
+    // Stripe Configuration
+    STRIPE: {
+        PUBLISHABLE_KEY: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+        SECRET_KEY: process.env.EXPO_PUBLIC_STRIPE_SECRET_KEY,
+        CURRENCY: 'USD',
+        SUPPORTED_CURRENCIES: ['USD', 'EUR', 'LKR', 'SGD'],
     }
 }
 
@@ -45,5 +54,8 @@ console.log('🔧 API Configuration Loaded:', {
     timeout: API_CONFIG.TIMEOUT,
     currentTime: new Date().toISOString()
 });
+
+// Re-export createApi function for convenience
+export { createApi } from '@/src/shared/utils/api';
 
 export default API_CONFIG;

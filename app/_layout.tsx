@@ -85,6 +85,8 @@ export default function RootLayout() {
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="task-detail" options={{ headerShown: false }} />
               <Stack.Screen name="make-offer-screen" options={{ headerShown: false }} />
+              <Stack.Screen name="questions" options={{ headerShown: false }} />
+              <Stack.Screen name="public-questions" options={{ headerShown: false }} />
               <Stack.Screen name="+not-found" />
             </Stack>
             <StatusBar style="auto" />
