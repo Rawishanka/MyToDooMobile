@@ -58,8 +58,16 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             status={status}
             userRole={userRole}
             onPress={(taskId: string) => {
-              console.log('Navigating to edit-task with taskId:', taskId);
-              router.push(`/edit-task?taskId=${taskId}` as any);
+              console.log('✏️ Navigating to edit-task with taskId:', taskId);
+              console.log('   Task data:', item);
+              // Pass full task data to edit screen
+              router.push({
+                pathname: '/edit-task',
+                params: {
+                  taskId: taskId,
+                  task: JSON.stringify(item)
+                }
+              } as any);
             }}
           />
         )}

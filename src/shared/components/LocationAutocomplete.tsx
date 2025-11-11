@@ -12,7 +12,7 @@ import {
   View
 } from 'react-native';
 
-interface Coordinates {
+export interface Coordinates {
   lat: number;
   lng: number;
 }
@@ -26,7 +26,7 @@ interface LocationResult {
   place_type?: string[];
 }
 
-interface LocationData {
+export interface LocationData {
   address: string;
   coordinates: Coordinates;
 }

@@ -181,19 +181,25 @@ export default function TaskCard({ task, onPress, status, userRole }: TaskCardPr
       )}
 
       {/* Action Buttons */}
-      <View style={styles.actionButtons}>
+      <View 
+        style={styles.actionButtons}
+        onStartShouldSetResponder={() => true}
+        onTouchEnd={(e) => e.stopPropagation()}
+      >
         {status === 'accepted' ? (
           // Accepted Offers tab: Mark as Completed + Cancel
           <>
             <TouchableOpacity 
               style={styles.completedButton}
               onPress={handleMarkAsCompleted}
+              activeOpacity={0.7}
             >
               <Text style={styles.completedButtonText}>Mark as Completed</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.cancelButton}
               onPress={handleCancelTask}
+              activeOpacity={0.7}
             >
               <MaterialIcons name="close" size={20} color="#fff" />
             </TouchableOpacity>
@@ -203,12 +209,31 @@ export default function TaskCard({ task, onPress, status, userRole }: TaskCardPr
           <>
             <TouchableOpacity 
               style={styles.actionButton} 
-              onPress={() => onPress ? onPress(task._id) : router.push(`/edit-task?taskId=${task._id}` as any)}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              onPress={() => {
+                console.log('✏️ Edit button pressed for task:', task._id);
+                console.log('   Task data:', task);
+                if (onPress) {
+                  onPress(task._id);
+                } else {
+                  // Pass full task data to edit screen
+                  router.push({
+                    pathname: '/edit-task',
+                    params: {
+                      taskId: task._id,
+                      task: JSON.stringify(task)
+                    }
+                  } as any);
+                }
+              }}
             >
               <MaterialIcons name="edit" size={20} color="#007bff" />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.actionButton} 
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               onPress={handleCancelTask}
             >
               <MaterialIcons name="cancel" size={20} color="#dc3545" />
