@@ -25,17 +25,16 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   const [showAnswerModal, setShowAnswerModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<any>(null);
   
-  // Debug logging
+  // Debug logging - simplified
   React.useEffect(() => {
-    console.log('🔍 QuestionsList Debug:', {
-      questionsCount: questions.length,
-      taskId,
-      currentUserId,
-      taskCreatorId,
-      canAnswer: currentUserId === taskCreatorId,
-      questions: questions.map(q => ({ id: q._id, hasAnswer: !!q.answer, status: q.status }))
+    console.log('🔍 QuestionsList Debug Info:', {
+      totalQuestions: questions.length,
+      currentUserId: currentUserId,
+      taskCreatorId: taskCreatorId,
+      isTaskCreator: currentUserId === taskCreatorId,
+      pendingQuestions: questions.filter(q => !q.answer || q.status === 'pending').length
     });
-  }, [questions, taskId, currentUserId, taskCreatorId]);
+  }, [questions, currentUserId, taskCreatorId]);
   
   const handleAnswerQuestion = (question: any) => {
     console.log('🔘 Answer button pressed for question:', question._id);
@@ -47,6 +46,38 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
     });
     setShowAnswerModal(true);
   };
+
+  // Helper function to check if user can answer a specific question
+  const canUserAnswerQuestion = (question: any): boolean => {
+    // Only task creators can answer questions
+    if (!currentUserId || !taskCreatorId) {
+      console.log('❌ Missing user IDs - currentUserId:', currentUserId, 'taskCreatorId:', taskCreatorId);
+      return false;
+    }
+    
+    // Check if current user is the task creator
+    const isTaskCreator = currentUserId === taskCreatorId;
+    console.log('✅ Permission check - isTaskCreator:', isTaskCreator, 'for question:', question._id);
+    
+    return isTaskCreator;
+  };
+
+  // Helper function to check if question has an answer
+  const hasValidAnswer = (question: any): boolean => {
+    if (!question.answer) return false;
+    
+    // Handle both string and object answer formats
+    if (typeof question.answer === 'string') {
+      return question.answer.trim().length > 0;
+    }
+    
+    if (typeof question.answer === 'object' && question.answer.text) {
+      return question.answer.text.trim().length > 0;
+    }
+    
+    return false;
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.questionsHeader}>
@@ -126,7 +157,8 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                   : question.question?.text || 'No question text'}
               </Text>
 
-              {question.answer ? (
+              {/* Answer Section or Action Button */}
+              {hasValidAnswer(question) ? (
                 <View style={styles.answerSection}>
                   <Text style={styles.answerLabel}>
                     Answer from {question.answeredBy?.firstName || question.posterId?.firstName || 'poster'}:
@@ -142,61 +174,36 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                     </Text>
                   )}
                 </View>
-              ) : (() => {
-                // For current task questions: allow task creator to answer
-                // For public questions: allow the original task creator to answer
-                const questionTaskId = question.taskId || taskId;
-                const isCurrentTaskQuestion = !question.taskId || question.taskId === taskId;
-                const canAnswer = isCurrentTaskQuestion 
-                  ? (currentUserId === taskCreatorId)
-                  : (currentUserId === question.taskCreatedBy?._id || currentUserId === question.createdBy?._id);
-                
-                // Check if question already has an answer
-                const hasAnswer = question.answer && 
-                  (typeof question.answer === 'string' ? question.answer.trim() !== '' : 
-                   question.answer.text && question.answer.text.trim() !== '');
-                
-                console.log('🔍 Answer permission check:', {
-                  questionId: question._id,
-                  questionTaskId,
-                  isCurrentTaskQuestion,
-                  currentUserId,
-                  taskCreatorId,
-                  questionTaskCreatedBy: question.taskCreatedBy?._id,
-                  questionCreatedBy: question.createdBy?._id,
-                  canAnswer,
-                  hasAnswer,
-                  questionStatus: question.status,
-                  answerData: question.answer,
-                  showButton: canAnswer && !hasAnswer
-                });
-                
-                // Show answer button only if user can answer AND question doesn't have an answer yet
-                return canAnswer && !hasAnswer ? (
-                  <TouchableOpacity 
-                    style={styles.answerButton} 
-                    onPress={() => {
-                      console.log('🔘 Answer button pressed for question:', question._id);
-                      console.log('🔘 Using taskId:', questionTaskId);
-                      handleAnswerQuestion(question);
-                    }}
-                  >
-                    <Ionicons name="chatbubble-ellipses-outline" size={16} color="#007AFF" />
-                    <Text style={styles.answerButtonText}>Answer this question</Text>
-                  </TouchableOpacity>
-                ) : hasAnswer ? (
-                  // Question already has an answer, don't show anything
-                  null
-                ) : canAnswer ? (
-                  // User can answer but question already has answer - shouldn't happen with above logic
-                  null
-                ) : (
-                  // User cannot answer this question
-                  <View style={styles.noAnswerYet}>
-                    <Text style={styles.noAnswerText}>Waiting for answer from task creator...</Text>
-                  </View>
-                );
-              })()}
+              ) : (
+                // Question has no answer yet - show appropriate button/message
+                (() => {
+                  const canAnswer = canUserAnswerQuestion(question);
+                  
+                  console.log('🎯 Final render decision for question', question._id, ':', {
+                    canAnswer,
+                    hasAnswer: hasValidAnswer(question),
+                    shouldShowButton: canAnswer && !hasValidAnswer(question)
+                  });
+
+                  if (canAnswer) {
+                    return (
+                      <TouchableOpacity 
+                        style={styles.answerButton} 
+                        onPress={() => handleAnswerQuestion(question)}
+                      >
+                        <Ionicons name="chatbubble-ellipses-outline" size={16} color="#007AFF" />
+                        <Text style={styles.answerButtonText}>Answer this question</Text>
+                      </TouchableOpacity>
+                    );
+                  } else {
+                    return (
+                      <View style={styles.noAnswerYet}>
+                        <Text style={styles.noAnswerText}>Waiting for answer from task creator...</Text>
+                      </View>
+                    );
+                  }
+                })()
+              )}
             </View>
           )}
         />
@@ -432,9 +439,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F0F8FF',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
     marginBottom: 8,
   },
   taskContextText: {
@@ -444,3 +451,5 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
+export default QuestionsList;
