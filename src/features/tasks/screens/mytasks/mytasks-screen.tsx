@@ -1,8 +1,8 @@
 import { Task } from '@/src/api/types/tasks';
 import { useGetMyOffers, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // Components
@@ -112,10 +112,19 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
 };
 
 export default function MyTasksScreen() {
+  const params = useLocalSearchParams();
   const [searchVisible, setSearchVisible] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [userRole, setUserRole] = useState('Tasker'); // 'Tasker' or 'Poster'
   const [searchText, setSearchText] = useState('');
+
+  // Handle route parameters to set initial role
+  useEffect(() => {
+    if (params.role === 'Poster') {
+      console.log('📋 Setting user role to Poster from route params');
+      setUserRole('Poster');
+    }
+  }, [params.role]);
 
   // Get real notification count from API
   const { data: unreadCountData } = useUnreadCount();
