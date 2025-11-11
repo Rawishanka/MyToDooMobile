@@ -47,6 +47,20 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
     }
   };
 
+  const handleTaskCancelled = (taskId: string) => {
+    console.log('📋 Task cancelled:', taskId);
+    console.log('   Refreshing task list to move task to Cancelled tab');
+    // Refresh the task list to update the UI
+    onRefresh();
+  };
+
+  const handleTaskDeleted = (taskId: string) => {
+    console.log('🗑️ Task deleted:', taskId);
+    console.log('   Refreshing task list to remove task');
+    // Refresh the task list to update the UI
+    onRefresh();
+  };
+
   return (
     <View style={styles.tabContent}>
       <FlatList
@@ -69,6 +83,8 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
                 }
               } as any);
             }}
+            onTaskCancelled={handleTaskCancelled}
+            onTaskDeleted={handleTaskDeleted}
           />
         )}
         contentContainerStyle={[
