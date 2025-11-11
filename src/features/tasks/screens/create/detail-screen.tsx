@@ -128,6 +128,9 @@ export default function DetailScreen() {
     // Check if user is logged in
     if (!storedToken) {
       console.log("❌ No stored token found, redirecting to login");
+      console.log("📋 Task data will be saved and posted after login/signup");
+      // Redirect to login - task data is already saved in Zustand store
+      // After successful login/signup, the task will be automatically posted
       router.push('/(auth)/login');
       return;
     }
