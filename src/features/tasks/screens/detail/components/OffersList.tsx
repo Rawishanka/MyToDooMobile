@@ -2,6 +2,7 @@ import { getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface OffersListProps {
   offers: any[];
@@ -22,6 +23,7 @@ export const OffersList: React.FC<OffersListProps> = ({
   excludeOfferId,
   taskLocation
 }) => {
+  const insets = useSafeAreaInsets();
   // Get location-based currency info
   const currencyInfo = getCurrencyFromLocation(taskLocation);
   
@@ -45,7 +47,7 @@ export const OffersList: React.FC<OffersListProps> = ({
 
   if (otherOffers.length === 0) {
     return (
-      <View style={styles.emptyState}>
+      <View style={[styles.emptyState, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <Ionicons name="document-outline" size={48} color="#ccc" />
         <Text style={styles.emptyStateText}>No other offers yet</Text>
         <Text style={styles.emptyStateSubtext}>
@@ -60,6 +62,7 @@ export const OffersList: React.FC<OffersListProps> = ({
       data={otherOffers}
       scrollEnabled={false}
       keyExtractor={(item: any) => item._id}
+      contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) }}
       renderItem={({ item: offer }: { item: any }) => {
         // Handle both nested and flat offer structures
         const offerAmount = offer.offer?.amount || offer.amount || 0;

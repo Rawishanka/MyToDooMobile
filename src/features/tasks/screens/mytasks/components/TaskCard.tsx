@@ -9,12 +9,15 @@ interface TaskCardProps {
   onPress?: (taskId: string) => void;
   status?: string;
   userRole?: string;
+  onTaskCancelled?: (taskId: string) => void;
+  onTaskDeleted?: (taskId: string) => void;
 }
 
-export default function TaskCard({ task, onPress, status, userRole }: TaskCardProps) {
+export default function TaskCard({ task, onPress, status, userRole, onTaskCancelled, onTaskDeleted }: TaskCardProps) {
   const router = useRouter();
   const [showCancellationModal, setShowCancellationModal] = useState(false);
   const [showPosterCancelModal, setShowPosterCancelModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCancelReason, setSelectedCancelReason] = useState<number | null>(null);
 
   const handleMarkAsCompleted = () => {
@@ -24,22 +27,99 @@ export default function TaskCard({ task, onPress, status, userRole }: TaskCardPr
 
   const handleCancelTask = () => {
     // Check if this is a Poster cancelling their own posted task
-    if (userRole === 'Poster' && (status === 'open' || !status)) {
+    if (userRole === 'Poster' && (status === 'open' || status === 'posted' || !status)) {
       setShowPosterCancelModal(true);
     } else {
-      console.log('Cancel task:', task._id);
+      // For Tasker role or other cases
+      console.log('❌ Cancel task:', task._id);
       // TODO: API call to cancel task
+      if (onTaskCancelled) {
+        onTaskCancelled(task._id);
+      }
     }
   };
 
-  const handleConfirmPosterCancel = () => {
+  const handleDeleteTask = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteTask = async () => {
+    try {
+      console.log('🗑️ Deleting task:', task._id);
+      
+      // TODO: Replace with actual API call
+      // const response = await fetch(`/api/tasks/${task._id}`, {
+      //   method: 'DELETE',
+      //   headers: {
+      //     'Authorization': `Bearer ${token}`,
+      //     'Content-Type': 'application/json',
+      //   },
+      // });
+      
+      // if (response.ok) {
+      //   console.log('✅ Task deleted successfully');
+      //   if (onTaskDeleted) {
+      //     onTaskDeleted(task._id);
+      //   }
+      // }
+      
+      // For now, just close modal and notify parent
+      setShowDeleteModal(false);
+      if (onTaskDeleted) {
+        onTaskDeleted(task._id);
+      }
+      
+      console.log('✅ Task deleted successfully');
+    } catch (error) {
+      console.error('❌ Error deleting task:', error);
+      // Show error message to user
+    }
+  };
+
+  const handleConfirmPosterCancel = async () => {
     if (selectedCancelReason === null) {
       return; // Don't proceed without a reason
     }
-    console.log('Poster cancel task:', task._id, 'Reason:', selectedCancelReason);
-    // TODO: API call to cancel task with reason
-    setShowPosterCancelModal(false);
-    setSelectedCancelReason(null);
+    
+    try {
+      const reasonText = cancelReasons[selectedCancelReason];
+      console.log('❌ Poster cancelling task:', task._id);
+      console.log('   Reason:', reasonText);
+      
+      // TODO: Replace with actual API call
+      // const response = await fetch(`/api/tasks/${task._id}/cancel`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Authorization': `Bearer ${token}`,
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     reason: reasonText,
+      //     reasonIndex: selectedCancelReason,
+      //   }),
+      // });
+      
+      // if (response.ok) {
+      //   console.log('✅ Task cancelled successfully');
+      //   // Task will move to cancelled tab
+      //   if (onTaskCancelled) {
+      //     onTaskCancelled(task._id);
+      //   }
+      // }
+      
+      // For now, just close modal and notify parent
+      setShowPosterCancelModal(false);
+      setSelectedCancelReason(null);
+      
+      if (onTaskCancelled) {
+        onTaskCancelled(task._id);
+      }
+      
+      console.log('✅ Task cancelled successfully - moved to Cancelled tab');
+    } catch (error) {
+      console.error('❌ Error cancelling task:', error);
+      // Show error message to user
+    }
   };
 
   const cancelReasons = [
@@ -110,6 +190,7 @@ export default function TaskCard({ task, onPress, status, userRole }: TaskCardPr
     <TouchableOpacity
       style={styles.card}
       activeOpacity={0.7}
+      delayPressIn={0}
       onPress={() => router.push(`/task-detail?taskId=${task._id}`)}
     >
       <View style={styles.header}>
@@ -181,34 +262,68 @@ export default function TaskCard({ task, onPress, status, userRole }: TaskCardPr
       )}
 
       {/* Action Buttons */}
-      <View style={styles.actionButtons}>
+      <View style={styles.actionButtons} pointerEvents="box-none">
         {status === 'accepted' ? (
           // Accepted Offers tab: Mark as Completed + Cancel
           <>
             <TouchableOpacity 
               style={styles.completedButton}
               onPress={handleMarkAsCompleted}
+              activeOpacity={0.7}
+              delayPressIn={0}
             >
               <Text style={styles.completedButtonText}>Mark as Completed</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.cancelButton}
               onPress={handleCancelTask}
+              activeOpacity={0.7}
+              delayPressIn={0}
             >
               <MaterialIcons name="close" size={20} color="#fff" />
             </TouchableOpacity>
           </>
         ) : (
-          // Posted tab: Edit + Cancel (removed Approve button)
+          // Posted tab: Edit + Delete + Cancel
           <>
             <TouchableOpacity 
               style={styles.actionButton} 
-              onPress={() => onPress ? onPress(task._id) : router.push(`/edit-task?taskId=${task._id}` as any)}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              delayPressIn={0}
+              onPress={() => {
+                console.log('✏️ Edit button pressed for task:', task._id);
+                console.log('   Task data:', task);
+                if (onPress) {
+                  onPress(task._id);
+                } else {
+                  // Pass full task data to edit screen
+                  router.push({
+                    pathname: '/edit-task',
+                    params: {
+                      taskId: task._id,
+                      task: JSON.stringify(task)
+                    }
+                  } as any);
+                }
+              }}
             >
               <MaterialIcons name="edit" size={20} color="#007bff" />
             </TouchableOpacity>
             <TouchableOpacity 
+              style={[styles.actionButton, styles.deleteButton]} 
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              delayPressIn={0}
+              onPress={handleDeleteTask}
+            >
+              <MaterialIcons name="delete" size={20} color="#dc3545" />
+            </TouchableOpacity>
+            <TouchableOpacity 
               style={styles.actionButton} 
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              delayPressIn={0}
               onPress={handleCancelTask}
             >
               <MaterialIcons name="cancel" size={20} color="#dc3545" />
@@ -333,6 +448,43 @@ export default function TaskCard({ task, onPress, status, userRole }: TaskCardPr
           </View>
         </View>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowDeleteModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.deleteModalContent}>
+            <View style={styles.deleteIconContainer}>
+              <MaterialIcons name="delete-forever" size={48} color="#dc3545" />
+            </View>
+            
+            <Text style={styles.deleteModalTitle}>Delete Task?</Text>
+            <Text style={styles.deleteModalMessage}>
+              Are you sure you want to delete this task? This action cannot be undone.
+            </Text>
+            
+            <View style={styles.deleteModalButtons}>
+              <TouchableOpacity
+                style={styles.deleteCancelButton}
+                onPress={() => setShowDeleteModal(false)}
+              >
+                <Text style={styles.deleteCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.deleteConfirmButton}
+                onPress={confirmDeleteTask}
+              >
+                <Text style={styles.deleteConfirmButtonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </TouchableOpacity>
   );
 }
@@ -350,6 +502,8 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     marginTop: 12,
     gap: 8,
+    zIndex: 10,
+    elevation: 10,
   },
   actionButton: {
     width: 36,
@@ -365,7 +519,8 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 3,
-    elevation: 3,
+    elevation: 5,
+    zIndex: 20,
   },
   completedButton: {
     flex: 1,
@@ -687,5 +842,68 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  deleteButton: {
+    // Additional styles for delete button if needed
+  },
+  deleteModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '85%',
+    maxWidth: 400,
+    alignItems: 'center',
+  },
+  deleteIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#fee',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  deleteModalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  deleteModalMessage: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  deleteModalButtons: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 12,
+  },
+  deleteCancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+    alignItems: 'center',
+  },
+  deleteCancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  deleteConfirmButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    backgroundColor: '#dc3545',
+    alignItems: 'center',
+  },
+  deleteConfirmButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
 });

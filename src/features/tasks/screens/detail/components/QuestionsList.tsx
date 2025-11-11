@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface QuestionsListProps {
   questions: any[];
@@ -13,6 +14,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   isLoading,
   onAskQuestion,
 }) => {
+  const insets = useSafeAreaInsets();
   return (
     <View style={styles.container}>
       <View style={styles.questionsHeader}>
@@ -84,7 +86,13 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
         />
       )}
 
-      <TouchableOpacity style={styles.askQuestionButton} onPress={onAskQuestion}>
+      <TouchableOpacity 
+        style={[
+          styles.askQuestionButton, 
+          { marginBottom: Math.max(insets.bottom, 20) }
+        ]} 
+        onPress={onAskQuestion}
+      >
         <Ionicons name="add-circle" size={24} color="#4CAF50" />
         <Text style={styles.askQuestionButtonText}>ASK QUESTION</Text>
       </TouchableOpacity>

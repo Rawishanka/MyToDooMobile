@@ -47,6 +47,20 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
     }
   };
 
+  const handleTaskCancelled = (taskId: string) => {
+    console.log('📋 Task cancelled:', taskId);
+    console.log('   Refreshing task list to move task to Cancelled tab');
+    // Refresh the task list to update the UI
+    onRefresh();
+  };
+
+  const handleTaskDeleted = (taskId: string) => {
+    console.log('🗑️ Task deleted:', taskId);
+    console.log('   Refreshing task list to remove task');
+    // Refresh the task list to update the UI
+    onRefresh();
+  };
+
   return (
     <View style={styles.tabContent}>
       <FlatList
@@ -58,9 +72,19 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             status={status}
             userRole={userRole}
             onPress={(taskId: string) => {
-              console.log('Navigating to edit-task with taskId:', taskId);
-              router.push(`/edit-task?taskId=${taskId}` as any);
+              console.log('✏️ Navigating to edit-task with taskId:', taskId);
+              console.log('   Task data:', item);
+              // Pass full task data to edit screen
+              router.push({
+                pathname: '/edit-task',
+                params: {
+                  taskId: taskId,
+                  task: JSON.stringify(item)
+                }
+              } as any);
             }}
+            onTaskCancelled={handleTaskCancelled}
+            onTaskDeleted={handleTaskDeleted}
           />
         )}
         contentContainerStyle={[
