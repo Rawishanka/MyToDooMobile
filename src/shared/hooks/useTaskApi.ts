@@ -1,7 +1,8 @@
 // 🎯 **REACT QUERY HOOKS FOR TASK API**
 // This file contains all React Query hooks for task operations
 
-import { TaskAPI } from '@/src/api/task-api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { TaskAPI } from '../../api/task-api';
 import {
     CreateOfferRequest,
     CreateTaskRequest,
@@ -9,9 +10,8 @@ import {
     TaskOffer,
     TaskSearchParams,
     UpdateTaskRequest
-} from '@/src/api/types/tasks';
-import { handleAuthenticationError, isAuthError } from '@/src/shared/utils/auth-utils';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+} from '../../api/types/tasks';
+import { handleAuthenticationError, isAuthError } from '../utils/auth-utils';
 
 // 🔑 **QUERY KEYS**
 export const TASK_QUERY_KEYS = {
@@ -47,6 +47,21 @@ export function useGetAllTasks() {
     refetchOnWindowFocus: true, // Refetch when user returns to app
     refetchOnReconnect: true, // Refetch when network reconnects
     refetchInterval: 30000, // Refetch every 30 seconds to ensure fresh data
+  });
+}
+
+/**
+ * 🎯 Get Filtered Tasks Hook (Advanced filtering and sorting)
+ */
+export function useGetFilteredTasks(params?: import('@/src/api/types/tasks').TaskFilterParams, enabled = true) {
+  return useQuery({
+    queryKey: [...TASK_QUERY_KEYS.lists(), 'filtered', params],
+    queryFn: () => TaskAPI.getFilteredTasks(params),
+    enabled,
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
 
@@ -218,6 +233,15 @@ export function useGetAllPublicQuestions(enabled = true) {
     enabled: enabled,
     staleTime: 2 * 60 * 1000, // 2 minutes
     refetchOnMount: true,
+    retry: (failureCount, error: any) => {
+      // Don't retry if it's a 404 or 500 error
+      if (error?.response?.status === 404 || error?.response?.status === 500) {
+        console.log('📝 Public questions endpoint not available, skipping retries');
+        return false;
+      }
+      return failureCount < 1; // Only retry once for other errors
+    },
+    retryDelay: 2000, // Wait 2 seconds before retry
   });
 }
 
@@ -374,8 +398,8 @@ export function useAcceptOffer() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ taskId, offerId }: { taskId: string; offerId: string }) => 
-      TaskAPI.acceptOffer(taskId, offerId),
+    mutationFn: ({ taskId, offerId, userId, taskCategory }: { taskId: string; offerId: string; userId?: string; taskCategory?: string }) => 
+      TaskAPI.acceptOffer(taskId, offerId, userId, taskCategory),
     onSuccess: (data, variables) => {
       // Refetch task details and offers
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });

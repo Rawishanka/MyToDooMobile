@@ -20,9 +20,10 @@ interface MapViewProps {
   tasks: Task[];
   iconUrl?: string;
   focusTaskId?: string | null;
+  onMapAction?: (action: string, taskId: string) => void;
 }
 
-export default function MapView({ tasks, iconUrl, focusTaskId }: MapViewProps) {
+export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: MapViewProps) {
   const generateMapHTML = () => {
     const tasksWithCoordinates = tasks.filter((task) => {
       const coords = task.location.coordinates;

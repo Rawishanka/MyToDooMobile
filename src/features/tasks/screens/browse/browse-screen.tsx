@@ -3,18 +3,17 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 // API and Hooks
 import { Task } from '@/src/api/types/tasks';
 import { useGetCategoriesWithAll } from '@/src/shared/hooks/useCategoriesApi';
-import { useGetAllTasks } from '@/src/shared/hooks/useTaskApi';
 import { useClearAllCaches, useForceRefreshCategories, useForceRefreshTasks } from '@/src/shared/utils/cache-utils';
 
 // Components
@@ -23,18 +22,19 @@ import { TaskCard } from '@/src/features/tasks/components';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { LoadingState } from '../../components/shared';
 import {
-    DebugTools,
-    FilterButton,
-    FilterModal,
-    MapView,
-    SearchBar,
-    SortButton,
-    SortModal,
-    ViewModeToggle
+  DebugTools,
+  FilterButton,
+  FilterModal,
+  MapView,
+  SearchBar,
+  SortButton,
+  SortModal,
+  ViewModeToggle
 } from './components';
 
 // Custom Hooks
-import { useBrowseFilters } from './hooks/useBrowseFilters';
+import { useBrowseFiltersAPI } from './hooks/useBrowseFiltersAPI';
+
 
 export default function BrowseTasksScreen() {
   // Modal visibility states
@@ -69,16 +69,7 @@ export default function BrowseTasksScreen() {
     'Writing & Translation',
   ];
 
-  const { 
-    data: tasksResponse, 
-    isLoading, 
-    error, 
-    refetch 
-  } = useGetAllTasks();
-
-  const allTasks = tasksResponse?.data || [];
-
-  // Use custom filter hook
+  // Use combined API-based hook (intelligently uses search OR filter API)
   const {
     selectedCategory,
     taskType,
@@ -97,7 +88,13 @@ export default function BrowseTasksScreen() {
     filteredAndSortedTasks,
     activeFiltersCount,
     resetFilters,
-  } = useBrowseFilters(allTasks);
+    isLoading,
+    error,
+    refetch,
+    totalItems,
+    useSearchAPI,
+    activeAPI,
+  } = useBrowseFiltersAPI();
 
   // Cache management utilities
   const clearAllCaches = useClearAllCaches();
@@ -133,15 +130,18 @@ export default function BrowseTasksScreen() {
       categories: categories
     });
 
-    if (tasksResponse) {
-      console.log("🔍 Browse Tasks - Raw API Response:", {
-        success: tasksResponse.success,
-        total: tasksResponse.total,
-        count: tasksResponse.count,
-        dataLength: tasksResponse.data?.length,
-      });
-    }
-  }, [tasksResponse, categoriesLoading, categoriesError, categories]);
+    console.log("🔍 Browse Tasks - Combined API Debug:", {
+      activeAPI,
+      useSearchAPI,
+      searchText: searchText.trim(),
+      hasSearchText: searchText.trim().length > 0,
+      isLoading,
+      error: error?.message,
+      totalItems,
+      dataLength: filteredAndSortedTasks.length,
+      activeFiltersCount,
+    });
+  }, [categoriesLoading, categoriesError, categories, isLoading, error, totalItems, filteredAndSortedTasks.length, activeFiltersCount]);
 
   // Refresh on screen focus
   useFocusEffect(
@@ -242,6 +242,18 @@ export default function BrowseTasksScreen() {
             tasks={filteredAndSortedTasks}
             iconUrl={markerIconUri}
             focusTaskId={selectedTaskId}
+            onMapAction={(action, taskId) => {
+              if (action === 'viewDetails') {
+                // Navigate to task details
+                router.push({
+                  pathname: '/task-detail',
+                  params: { taskId }
+                });
+              } else if (action === 'openInMaps') {
+                // Open in device maps app - could implement later
+                console.log('Open in Maps for task:', taskId);
+              }
+            }}
           />
         </View>
       ) : (

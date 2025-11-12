@@ -15,7 +15,7 @@ const getApiUrl = () => {
     }
     
     // 🔧 Fallback: Using IP address from error logs
-    const fallbackUrl = "http://192.168.1.8:5001/api";
+    const fallbackUrl = "http://192.168.1.168:5001/api";
     console.log('⚠️ Using fallback API URL:', fallbackUrl);
     return fallbackUrl;
 };

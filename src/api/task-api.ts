@@ -6,20 +6,22 @@ import * as FileSystem from 'expo-file-system';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-    AllOffersResponse,
-    CreateOfferRequest,
-    CreateOfferResponse,
-    CreateTaskRequest,
-    CreateTaskResponse,
-    MyTasksParams,
-    PaymentStatusResponse,
-    SingleTaskResponse,
-    Task,
-    TaskCompletionStatusResponse,
-    TaskOffersResponse,
-    TaskSearchParams,
-    TasksResponse,
-    UpdateTaskRequest
+  AllOffersResponse,
+  CreateOfferRequest,
+  CreateOfferResponse,
+  CreateTaskRequest,
+  CreateTaskResponse,
+  MyTasksParams,
+  PaymentStatusResponse,
+  SingleTaskResponse,
+  Task,
+  TaskCompletionStatusResponse,
+  TaskFilterParams,
+  TaskFilterResponse,
+  TaskOffersResponse,
+  TaskSearchParams,
+  TasksResponse,
+  UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **API HELPER FUNCTION**
@@ -191,6 +193,202 @@ export async function getAllTasks(): Promise<TasksResponse> {
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
       console.warn("🎭 Network failed - Using Mock API for getAllTasks");
       return await MockApiService.getAllTasks();
+    }
+    
+    throw error;
+  }
+}
+
+/**
+ * 🎯 Filter Tasks with Advanced Options
+ * Endpoint: GET /api/tasks/filter
+ * Auth: No - Supports comprehensive filtering and sorting
+ * Fallback: Uses /api/tasks/ if filter endpoint fails
+ */
+export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskFilterResponse> {
+  // Check if we should use mock API only
+  if (API_CONFIG.USE_MOCK_ONLY) {
+    console.log("🎭 Using Mock API only (development mode) - falling back to getAllTasks");
+    const mockResponse = await MockApiService.getAllTasks();
+    // Convert to filter response format
+    return {
+      success: mockResponse.success,
+      data: mockResponse.data || [],
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: mockResponse.data?.length || 0,
+        itemsPerPage: mockResponse.data?.length || 20,
+        hasNextPage: false,
+        hasPreviousPage: false
+      }
+    };
+  }
+  
+  const api = getApi();
+  
+  try {
+    // Build query string from params
+    const queryParams = new URLSearchParams();
+    
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+    if (params?.lat !== undefined) queryParams.append('lat', params.lat.toString());
+    if (params?.lng !== undefined) queryParams.append('lng', params.lng.toString());
+    if (params?.radius !== undefined) queryParams.append('radius', params.radius.toString());
+    if (params?.categories) queryParams.append('categories', params.categories);
+    if (params?.minBudget !== undefined) queryParams.append('minBudget', params.minBudget.toString());
+    if (params?.maxBudget !== undefined) queryParams.append('maxBudget', params.maxBudget.toString());
+    if (params?.status) queryParams.append('status', params.status);
+    if (params?.locationType) queryParams.append('locationType', params.locationType);
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+    if (params?.limit !== undefined) queryParams.append('limit', params.limit.toString());
+    
+    const queryString = queryParams.toString();
+    const url = `/tasks/filter${queryString ? `?${queryString}` : ''}`;
+    
+    console.log("🎯 Filtering tasks with params:", params);
+    console.log("🔍 Filter URL:", url);
+    
+    const response = await api.get(url);
+    console.log("✅ Filter tasks response:", {
+      success: response.data.success,
+      dataLength: response.data.data?.length,
+      pagination: response.data.pagination
+    });
+    
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Filter endpoint failed:", error);
+    
+    // If filter endpoint fails (500 error or not found), fallback to getAllTasks with client-side filtering
+    if (error.response?.status === 500 || error.response?.status === 404 || error.code === 'ERR_NETWORK') {
+      console.log("🔄 Filter endpoint not available, falling back to getAllTasks with client-side filtering");
+      
+      try {
+        // Use the working getAllTasks endpoint
+        const fallbackResponse = await getAllTasks();
+        let filteredTasks = fallbackResponse.data || [];
+        
+        // Apply client-side filters based on params
+        if (params) {
+          // Search filter
+          if (params.search) {
+            const searchLower = params.search.toLowerCase();
+            filteredTasks = filteredTasks.filter((task: any) =>
+              task.title.toLowerCase().includes(searchLower) ||
+              task.details.toLowerCase().includes(searchLower)
+            );
+          }
+          
+          // Category filter
+          if (params.categories) {
+            const categoryLower = params.categories.toLowerCase();
+            filteredTasks = filteredTasks.filter((task: any) =>
+              task.categories.some((cat: string) => cat.toLowerCase().includes(categoryLower))
+            );
+          }
+          
+          // Price range filters
+          if (params.minBudget !== undefined) {
+            filteredTasks = filteredTasks.filter((task: any) => task.budget >= params.minBudget!);
+          }
+          if (params.maxBudget !== undefined) {
+            filteredTasks = filteredTasks.filter((task: any) => task.budget <= params.maxBudget!);
+          }
+          
+          // Status filter
+          if (params.status) {
+            filteredTasks = filteredTasks.filter((task: any) => task.status === params.status);
+          }
+          
+          // Location type filter
+          if (params.locationType) {
+            if (params.locationType === 'Online') {
+              filteredTasks = filteredTasks.filter((task: any) =>
+                task.location?.address?.toLowerCase().includes('online') ||
+                task.location?.address?.toLowerCase().includes('remote')
+              );
+            } else if (params.locationType === 'In-person') {
+              filteredTasks = filteredTasks.filter((task: any) =>
+                !task.location?.address?.toLowerCase().includes('online') &&
+                !task.location?.address?.toLowerCase().includes('remote')
+              );
+            }
+          }
+          
+          // Basic sorting (client-side)
+          if (params.sortBy) {
+            switch (params.sortBy) {
+              case 'highest-budget':
+              case 'price-high':
+                filteredTasks.sort((a: any, b: any) => b.budget - a.budget);
+                break;
+              case 'lowest-budget':
+              case 'price-low':
+                filteredTasks.sort((a: any, b: any) => a.budget - b.budget);
+                break;
+              case 'newest':
+              case 'latest':
+                filteredTasks.sort((a: any, b: any) => 
+                  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                );
+                break;
+              case 'oldest':
+                filteredTasks.sort((a: any, b: any) => 
+                  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                );
+                break;
+              // Note: 'closest' sorting would require GPS coordinates and distance calculation
+              // For now, we'll leave these unsorted or sort by date as fallback
+              default:
+                filteredTasks.sort((a: any, b: any) => 
+                  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                );
+                break;
+            }
+          }
+        }
+        
+        console.log("✅ Fallback filter complete:", {
+          originalCount: fallbackResponse.data?.length,
+          filteredCount: filteredTasks.length,
+          filters: params
+        });
+        
+        // Convert to filter response format
+        return {
+          success: true,
+          data: filteredTasks,
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            totalItems: filteredTasks.length,
+            itemsPerPage: filteredTasks.length,
+            hasNextPage: false,
+            hasPreviousPage: false
+          }
+        };
+        
+      } catch (fallbackError) {
+        console.error("❌ Fallback getAllTasks also failed:", fallbackError);
+        
+        // Last resort: use mock data
+        console.warn("🎭 Using Mock API as final fallback");
+        const mockResponse = await MockApiService.getAllTasks();
+        return {
+          success: mockResponse.success,
+          data: mockResponse.data || [],
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            totalItems: mockResponse.data?.length || 0,
+            itemsPerPage: mockResponse.data?.length || 20,
+            hasNextPage: false,
+            hasPreviousPage: false
+          }
+        };
+      }
     }
     
     throw error;
@@ -398,17 +596,33 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
   try {
     console.log("🔍 Searching tasks with params:", params);
     
-    // Build query string
+    // Build query string using the correct API parameter names
     const searchParams = new URLSearchParams();
-    if (params.search) searchParams.append('search', params.search);
-    if (params.categories) searchParams.append('categories', params.categories.join(','));
-    if (params.location) searchParams.append('location', params.location);
-    if (params.minPrice) searchParams.append('minPrice', params.minPrice.toString());
-    if (params.maxPrice) searchParams.append('maxPrice', params.maxPrice.toString());
-    if (params.filters) {
-      params.filters.forEach(filter => searchParams.append('filters', filter));
+    
+    // Map to correct API parameter names as per specification
+    if (params.search || params.q) {
+      searchParams.append('q', params.search || params.q!);
     }
-    if (params.sort) searchParams.append('sort', params.sort);
+    if (params.category) {
+      searchParams.append('category', params.category);
+    }
+    if (params.categories && params.categories.length > 0) {
+      searchParams.append('category', params.categories[0]); // Take first category
+    }
+    if (params.location) {
+      searchParams.append('location', params.location);
+    }
+    if (params.minBudget !== undefined || params.minPrice !== undefined) {
+      const minVal = params.minBudget !== undefined ? params.minBudget : params.minPrice!;
+      searchParams.append('minBudget', minVal.toString());
+    }
+    if (params.maxBudget !== undefined || params.maxPrice !== undefined) {
+      const maxVal = params.maxBudget !== undefined ? params.maxBudget : params.maxPrice!;
+      searchParams.append('maxBudget', maxVal.toString());
+    }
+    if (params.sort) {
+      searchParams.append('sort', params.sort);
+    }
     
     const response = await api.get(`/tasks/search?${searchParams.toString()}`);
     console.log("✅ Search tasks success:", response.data);
@@ -724,24 +938,101 @@ export async function createOffer(taskId: string, offerData: CreateOfferRequest)
 }
 
 /**
+ * 🔄 Map Category Display Name to ServiceType Enum
+ * Maps user-friendly category names to backend enum values
+ */
+function mapCategoryToServiceType(categoryName: string): string {
+  // Create mapping for common variations and typos
+  const categoryMappings: { [key: string]: string } = {
+    // Handle typos and variations in category names
+    'Building Maintenance and Renovations': 'building-maintenance-and-renovations',
+    'Buliding Maintatance and Renovations': 'building-maintenance-and-renovations', // Handle typos
+    'Appliance installation and repair': 'appliance-installation-and-repair',
+    'Auto Michanic and Electrician': 'auto-mechanic-and-electrician',
+    'Auto Mechanic and Electrician': 'auto-mechanic-and-electrician',
+    'Business and Accounting': 'business-and-accounting',
+    'Carpentry': 'carpentry',
+    'Cleaning and Organising': 'cleaning-and-organising',
+    'Removalist': 'removalist',
+    'Education and Tutoring': 'education-and-tutoring',
+    'Electrical': 'electrical',
+    'Event Planning': 'event-planning',
+    'Furniture repair and Flatpack Assemply': 'furniture-repair-and-flatpack-assembly',
+    'Gardening and Landscaping': 'gardening-and-landscaping',
+    'Graphic Design': 'graphic-design',
+    'Handyman and Handywomen': 'handyman-and-handywomen',
+    'Health & Fitness': 'health-and-fitness',
+    'IT & Tech': 'it-and-tech',
+    'Legal Services': 'legal-services',
+    'Marketting and Advertising': 'marketing-and-advertising',
+    'Marketing and Advertising': 'marketing-and-advertising',
+    'Music and Entertainment': 'music-and-entertainment',
+    'Painting': 'painting',
+    'Pet Care': 'pet-care',
+    'Photography': 'photography',
+    'Plumbing': 'plumbing',
+    'Something Else': 'something-else',
+    'Web & App Development': 'web-and-app-development',
+    'Personal Assistance': 'personal-assistance',
+  };
+  
+  // Return mapped value or fallback to slug format
+  return categoryMappings[categoryName] || categoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+/**
  * ✅ Accept Offer
  * Endpoint: POST /api/tasks/:taskId/offers/:offerId/accept
  * Auth: Required
  */
-export async function acceptOffer(taskId: string, offerId: string): Promise<{ success: boolean; data: any }> {
+export async function acceptOffer(taskId: string, offerId: string, userId?: string, taskCategory?: string): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("✅ Accepting offer:", { taskId, offerId });
-    const response = await api.post(`/tasks/${taskId}/offers/${offerId}/accept`);
+    console.log("✅ Accepting offer:", { taskId, offerId, userId, taskCategory });
+    
+    // Map category to serviceType enum format
+    const serviceType = taskCategory ? mapCategoryToServiceType(taskCategory) : undefined;
+    
+    // Send the required payload according to API spec: role + userId + serviceType
+    const requestBody: any = {
+      role: "poster", // Required by backend API
+      userId: userId || "" // Include userId (required field)
+    };
+    
+    // Add serviceType if available
+    if (serviceType) {
+      requestBody.serviceType = serviceType;
+      console.log("📋 Mapped serviceType:", { original: taskCategory, mapped: serviceType });
+    }
+    
+    console.log("📤 Accept offer request body:", requestBody);
+    
+    const response = await api.put(`/tasks/${taskId}/offers/${offerId}/accept`, requestBody);
     console.log("✅ Accept offer success:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Accept offer failed:", error);
+    console.log("❌ Accept offer failed:", {
+      message: error.message,
+      status: error?.response?.status,
+      data: error?.response?.data,
+      requestBody: {
+        role: "poster",
+        userId: userId || "",
+        serviceType: taskCategory ? mapCategoryToServiceType(taskCategory) : undefined
+      }
+    });
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Accept offer failed - Authentication required (401)");
+      console.log("❌ Accept offer failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    // Handle 400 errors with more specific messages
+    if (error?.response?.status === 400) {
+      const errorMessage = error?.response?.data?.message || "Bad request - invalid offer data";
+      console.log("❌ Accept offer failed - Bad request (400):", errorMessage);
+      throw new Error(errorMessage);
     }
     
     throw error;
@@ -1342,6 +1633,7 @@ export async function getUserTasks(userId: string): Promise<{ success: boolean; 
 export const TaskAPI = {
   // Phase 1: Core Features
   getAllTasks,
+  getFilteredTasks,
   createTask,
   postTask,
   postTaskWithImages, // New function for binary image upload

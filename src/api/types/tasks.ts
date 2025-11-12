@@ -388,16 +388,37 @@ export interface CreateOfferRequest {
   message: string;
 }
 
-// 🔍 *SEARCH PARAMS*
+// 🔍 *SEARCH PARAMS* (for /tasks/search endpoint)
 export interface TaskSearchParams {
-  search?: string;
-  categories?: string[];
+  q?: string;              // Search query parameter as per API spec
+  category?: string;       // Single category parameter as per API spec  
   location?: string;
-  minPrice?: number;
-  maxPrice?: number;
+  minBudget?: number;      // minBudget parameter as per API spec
+  maxBudget?: number;      // maxBudget parameter as per API spec
   filters?: string[];
   sort?: string;
   status?: string | string[];
+  // Legacy support for existing code
+  search?: string;         // Will be mapped to 'q'
+  categories?: string[];   // Will be mapped to 'category'
+  minPrice?: number;       // Will be mapped to 'minBudget'
+  maxPrice?: number;       // Will be mapped to 'maxBudget'
+}
+
+// 🎯 *TASK FILTER PARAMS* (for /tasks/filter endpoint)
+export interface TaskFilterParams {
+  sortBy?: 'price-high' | 'price-low' | 'price-high-to-low' | 'price-low-to-high' | 'highest-budget' | 'lowest-budget' | 'earliest' | 'latest' | 'newest' | 'oldest' | 'nearest' | 'closest';
+  lat?: number;
+  lng?: number;
+  radius?: number;
+  categories?: string; // Comma-separated category names
+  minBudget?: number;
+  maxBudget?: number;
+  status?: 'open' | 'todo' | 'done' | 'completed' | 'cancelled' | 'expired' | 'overdue';
+  locationType?: 'In-person' | 'Online';
+  search?: string;
+  page?: number;
+  limit?: number;
 }
 
 // 📊 *API RESPONSES*
@@ -408,6 +429,20 @@ export interface TasksResponse {
   pages: number;
   currentPage: number;
   data: Task[];
+}
+
+// 🎯 *TASK FILTER RESPONSE* (for /tasks/filter endpoint)
+export interface TaskFilterResponse {
+  success: boolean;
+  data: Task[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 
 export interface SingleTaskResponse {

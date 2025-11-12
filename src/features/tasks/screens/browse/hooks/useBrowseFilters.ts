@@ -81,10 +81,11 @@ export const useBrowseFilters = (allTasks: Task[]) => {
       );
     }
 
-    // Apply available tasks only filter
+    // Apply available tasks only filter - only filter if explicitly enabled
     if (availableTasksOnly) {
       filtered = filtered.filter(task => task.status === 'open');
     }
+    // Note: By default, we show ALL tasks (open, assigned, completed, etc.)
 
     // Apply show tasks with no offers filter
     if (showTasksWithNoOffers) {
