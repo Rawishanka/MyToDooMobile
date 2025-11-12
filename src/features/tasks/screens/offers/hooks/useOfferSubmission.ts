@@ -70,6 +70,8 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
   const [offerAmount, setOfferAmount] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationError, setValidationError] = useState<string>('');
+  const [hasUserEditedAmount, setHasUserEditedAmount] = useState(false);
 
   // Get currency info based on task location
   const currencyInfo = useMemo(
@@ -79,10 +81,10 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
 
   // Set default offer amount to task budget when available
   useEffect(() => {
-    if (taskBudget && !offerAmount) {
+    if (taskBudget && !hasUserEditedAmount) {
       setOfferAmount(taskBudget.toString());
     }
-  }, [taskBudget]);
+  }, [taskBudget, hasUserEditedAmount]);
 
   const validateOfferAmount = (amount: string): boolean => {
     if (!amount || amount.trim() === '') {
@@ -96,11 +98,11 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
       return false;
     }
 
-    // Validate minimum amount against task budget
-    if (taskBudget && numericAmount < taskBudget) {
+    // Validate maximum amount against task budget (offer should be <= budget)
+    if (taskBudget && numericAmount > taskBudget) {
       Alert.alert(
-        'Amount Too Low',
-        `Your offer amount cannot be less than the task budget of ${currencyInfo.symbol}${taskBudget}.`
+        'Amount Too High',
+        `Your offer amount cannot exceed the task budget of ${currencyInfo.symbol}${taskBudget}.`
       );
       return false;
     }
@@ -184,6 +186,15 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
     }
   };
 
+  const handleOfferAmountFocus = () => {
+    // Clear the field when user focuses for the first time
+    if (!hasUserEditedAmount) {
+      setHasUserEditedAmount(true);
+      setOfferAmount('');
+      setValidationError('');
+    }
+  };
+
   const handleOfferAmountChange = (text: string) => {
     // Only allow numbers and decimal point
     const cleanedText = text.replace(/[^0-9.]/g, '');
@@ -192,7 +203,26 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
     if (parts.length > 2) {
       return;
     }
+    
+    // Mark that user has started editing (this will prevent auto-population)
+    if (!hasUserEditedAmount) {
+      setHasUserEditedAmount(true);
+    }
+    
+    // Set the cleaned text as the new value
     setOfferAmount(cleanedText);
+    
+    // Real-time validation
+    if (cleanedText && taskBudget) {
+      const numericAmount = parseFloat(cleanedText);
+      if (!isNaN(numericAmount) && numericAmount > taskBudget) {
+        setValidationError(`Amount cannot exceed budget of ${currencyInfo.symbol}${taskBudget}`);
+      } else {
+        setValidationError('');
+      }
+    } else {
+      setValidationError('');
+    }
   };
 
   return {
@@ -202,8 +232,11 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
     isLoadingOffers,
     userHasExistingOffer,
     currencySymbol: currencyInfo.symbol,
+    validationError,
+    taskBudget,
     setMessage,
     handleOfferAmountChange,
+    handleOfferAmountFocus,
     handleSubmitOffer,
   };
 };

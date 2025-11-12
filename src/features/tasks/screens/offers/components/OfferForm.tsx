@@ -5,37 +5,52 @@ interface OfferFormProps {
   offerAmount: string;
   message: string;
   currencySymbol: string;
+  budget?: number;
+  validationError?: string;
   onAmountChange: (text: string) => void;
   onMessageChange: (text: string) => void;
+  onAmountFocus?: () => void;
+  onMessageFocus?: () => void;
 }
 
 export const OfferForm: React.FC<OfferFormProps> = ({
   offerAmount,
   message,
   currencySymbol,
+  budget,
+  validationError,
   onAmountChange,
   onMessageChange,
+  onAmountFocus,
+  onMessageFocus,
 }) => {
   return (
     <View style={styles.formContainer}>
       <Text style={styles.sectionTitle}>Your Offer</Text>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Offer Amount *</Text>
-        <View style={styles.amountInputContainer}>
+        <Text style={styles.inputLabel}>
+          Offer Amount * {budget && `(Budget: ${currencySymbol}${budget})`}
+        </Text>
+        <View style={[styles.amountInputContainer, validationError ? styles.errorBorder : undefined]}>
           <Text style={styles.currencySymbol}>{currencySymbol}</Text>
           <TextInput
             style={styles.amountInput}
-            placeholder="Enter your offer amount"
+            placeholder={budget ? budget.toString() : "Enter your offer amount"}
             keyboardType="decimal-pad"
             value={offerAmount}
             onChangeText={onAmountChange}
+            onFocus={onAmountFocus}
             placeholderTextColor="#999"
           />
         </View>
-        <Text style={styles.inputHint}>
-          Enter a competitive amount based on the task budget
-        </Text>
+        {validationError ? (
+          <Text style={styles.errorText}>{validationError}</Text>
+        ) : (
+          <Text style={styles.inputHint}>
+            Enter amount up to the task budget ({currencySymbol}{budget || '0'})
+          </Text>
+        )}
       </View>
 
       <View style={styles.inputContainer}>
@@ -47,6 +62,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
           numberOfLines={5}
           value={message}
           onChangeText={onMessageChange}
+          onFocus={onMessageFocus}
           placeholderTextColor="#999"
           textAlignVertical="top"
         />
@@ -116,5 +132,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginTop: 4,
+  },
+  errorBorder: {
+    borderColor: '#dc3545',
+    borderWidth: 2,
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#dc3545',
+    marginTop: 4,
+    fontWeight: '500',
   },
 });

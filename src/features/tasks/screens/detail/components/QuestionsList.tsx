@@ -1,6 +1,7 @@
+import { useAuthStore } from '@/src/store/auth-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface QuestionsListProps {
@@ -15,6 +16,22 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   onAskQuestion,
 }) => {
   const insets = useSafeAreaInsets();
+  const currentUser = useAuthStore((state) => state.user);
+  const [failedImages, setFailedImages] = React.useState<Set<string>>(new Set());
+
+  // Helper function to get user profile picture
+  const getUserAvatar = (question: any) => {
+    const user = question.askedBy || question.user || question.questioner;
+    
+    // If no user data in question, use current user's avatar
+    if (!user && currentUser) {
+      return currentUser.profilePicture || currentUser.avatar;
+    }
+    
+    if (!user) return null;
+    
+    return user.profilePicture || user.avatar || user.profile_picture || user.image;
+  };
   return (
     <View style={styles.container}>
       <View style={styles.questionsHeader}>
@@ -42,18 +59,61 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           data={questions}
           scrollEnabled={false}
           keyExtractor={(item: any) => item._id}
-          renderItem={({ item: question }: { item: any }) => (
+          renderItem={({ item: question }: { item: any }) => {
+            // Debug log to see the actual question structure
+            console.log('🔍 Question data structure:', JSON.stringify(question, null, 2));
+            return (
             <View style={styles.questionCard}>
               <View style={styles.questionHeader}>
                 <View style={styles.questionUserSection}>
                   <View style={styles.questionAvatar}>
-                    <Ionicons name="person" size={20} color="#666" />
+                    {(() => {
+                      const avatarUri = getUserAvatar(question);
+                      if (avatarUri && typeof avatarUri === 'string' && avatarUri.trim() && !failedImages.has(avatarUri)) {
+                        return (
+                          <Image
+                            source={{ uri: avatarUri }}
+                            style={styles.avatarImage}
+                            onError={(error) => {
+                              console.log('Failed to load avatar:', avatarUri, error);
+                              setFailedImages(prev => new Set(prev).add(avatarUri));
+                            }}
+                          />
+                        );
+                      }
+                      return <Ionicons name="person" size={20} color="#666" />;
+                    })()}
                   </View>
                   <View style={styles.questionUserInfo}>
                     <Text style={styles.questionUserName}>
                       {question.isAnonymous
                         ? 'Anonymous User'
-                        : `${question.askedBy?.firstName} ${question.askedBy?.lastName}`}
+                        : (() => {
+                            // Handle different possible user data structures
+                            const user = question.askedBy || question.user || question.questioner;
+                            
+                            // If no user data in question, check if it might be current user's question
+                            if (!user && currentUser) {
+                              const currentUserFullName = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim();
+                              return currentUserFullName || currentUser.email?.split('@')[0] || 'You';
+                            }
+                            
+                            if (!user) return 'Unknown User';
+                            
+                            const firstName = user.firstName || user.first_name || '';
+                            const lastName = user.lastName || user.last_name || '';
+                            const fullName = `${firstName} ${lastName}`.trim();
+                            
+                            // If we have a full name, use it
+                            if (fullName) return fullName;
+                            
+                            // Fallback to email or username if available
+                            if (user.email) return user.email.split('@')[0];
+                            if (user.username) return user.username;
+                            if (user.name) return user.name;
+                            
+                            return 'Unknown User';
+                          })()}
                     </Text>
                     <Text style={styles.questionTime}>
                       {new Date(question.createdAt).toLocaleTimeString('en-US', {
@@ -82,7 +142,8 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                 </View>
               )}
             </View>
-          )}
+            );
+          }}
         />
       )}
 
@@ -164,6 +225,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
   },
   questionUserInfo: {
     flex: 1,
