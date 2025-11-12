@@ -9,10 +9,10 @@ import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -50,6 +50,7 @@ export default function BudgetScreen() {
 
   const [budget, setBudget] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
   // Initialize with existing data from store or default amount
   useEffect(() => {
@@ -62,6 +63,11 @@ export default function BudgetScreen() {
   }, [myTask.budget, defaultBudgetAmount]);
 
   const handleKeyPress = (value: string) => {
+    // Mark that user has interacted with the field
+    if (!hasUserInteracted) {
+      setHasUserInteracted(true);
+    }
+
     if (value === 'delete') {
       setBudget(budget.slice(0, -1));
       setErrorMessage(''); // Clear error when deleting
@@ -76,6 +82,13 @@ export default function BudgetScreen() {
       setErrorMessage('');
       setBudget(budget + value);
     }
+  };
+
+  // Handle tapping on the budget display area to clear it
+  const handleBudgetFieldTap = () => {
+    setBudget('');
+    setErrorMessage('');
+    setHasUserInteracted(true);
   };
 
   const renderKey = (value: string | number) => (
@@ -128,7 +141,7 @@ export default function BudgetScreen() {
       </Text>
 
       {/* Budget Display */}
-      <View style={styles.inputBox}>
+      <TouchableOpacity style={styles.inputBox} onPress={handleBudgetFieldTap} activeOpacity={0.7}>
         <Text style={styles.currencySymbol}>{currencyInfo.symbol}</Text>
         <Text style={[
           styles.budgetText, 
@@ -136,7 +149,7 @@ export default function BudgetScreen() {
         ]}>
           {budget || '0'}
         </Text>
-      </View>
+      </TouchableOpacity>
       
       {/* Validation Message */}
       {errorMessage ? (
