@@ -112,6 +112,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
 };
 
 export default function MyTasksScreen() {
+  const params = useLocalSearchParams();
   const [searchVisible, setSearchVisible] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [userRole, setUserRole] = useState('Tasker'); // 'Tasker' or 'Poster'
@@ -131,6 +132,14 @@ export default function MyTasksScreen() {
       // The tab will be handled by the Tab.Navigator's initialRouteName if needed
     }
   }, [params.role, params.tab]);
+
+  // Handle route parameters to set initial role
+  useEffect(() => {
+    if (params.role === 'Poster') {
+      console.log('📋 Setting user role to Poster from route params');
+      setUserRole('Poster');
+    }
+  }, [params.role]);
 
   // Get real notification count from API
   const { data: unreadCountData } = useUnreadCount();
