@@ -42,6 +42,7 @@ export const useSignup = () => {
   const [smsVerified, setSmsVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [verifyLoading, setVerifyLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   
   // Timer state
@@ -408,6 +409,20 @@ export const useSignup = () => {
     }
   };
 
+  // Google Sign-In Handler
+  const handleGoogleSignIn = async () => {
+    try {
+      setGoogleLoading(true);
+      // TODO: Implement Google Sign-In for signup
+      Alert.alert('Coming Soon', 'Google Sign-In for signup will be available soon!');
+    } catch (error) {
+      console.error('Google Sign-In error:', error);
+      Alert.alert('Error', 'Failed to sign in with Google. Please try again.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   return {
     // Form state
     firstName,
@@ -447,6 +462,7 @@ export const useSignup = () => {
     smsVerified,
     loading,
     verifyLoading,
+    googleLoading,
     emailTimer,
     smsTimer,
     emailOtpRefs,
@@ -460,5 +476,6 @@ export const useSignup = () => {
     handleVerifySms,
     handleResendEmail,
     handleResendSms,
+    handleGoogleSignIn,
   };
 };
