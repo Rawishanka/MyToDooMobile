@@ -93,7 +93,10 @@ export class MockApiService {
         address: taskData.location,
         coordinates: {
           type: 'Point',
-          coordinates: [coordinates.lng, coordinates.lat]
+          coordinates: [
+            'lng' in coordinates ? coordinates.lng : coordinates.longitude,
+            'lat' in coordinates ? coordinates.lat : coordinates.latitude
+          ]
         }
       },
       dateType: taskData.dateType,
@@ -102,7 +105,7 @@ export class MockApiService {
         end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       },
       time: taskData.time,
-      categories: taskData.category
+      categories: [taskData.category]
     });
     
     // Add to mock database

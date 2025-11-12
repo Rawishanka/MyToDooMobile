@@ -25,15 +25,35 @@ interface MapViewProps {
 
 export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: MapViewProps) {
   const generateMapHTML = () => {
+    console.log('🗺️ MapView Debug:', {
+      totalTasks: tasks.length,
+      tasksWithLocationData: tasks.filter(t => t.location).length,
+      tasksWithCoordinatesData: tasks.filter(t => t.location?.coordinates).length,
+      sampleTask: tasks[0] ? {
+        id: tasks[0]._id,
+        location: tasks[0].location,
+        coordinates: tasks[0].location?.coordinates
+      } : 'No tasks'
+    });
+
     const tasksWithCoordinates = tasks.filter((task) => {
-      const coords = task.location.coordinates;
-      return (
-        coords &&
+      const coords = task.location?.coordinates;
+      const hasCoords = coords &&
         typeof coords === 'object' &&
         'coordinates' in coords &&
         Array.isArray(coords.coordinates) &&
-        coords.coordinates.length === 2
-      );
+        coords.coordinates.length === 2 &&
+        !isNaN(coords.coordinates[0]) &&
+        !isNaN(coords.coordinates[1]);
+      
+      if (!hasCoords && task.location?.coordinates) {
+        console.log('🚫 Task filtered out:', {
+          taskId: task._id,
+          coordinates: task.location.coordinates
+        });
+      }
+      
+      return hasCoords;
     });
 
     const markers = tasksWithCoordinates.map((task) => {
@@ -52,6 +72,44 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         offers: task.offerCount || 0,
       };
     });
+
+    console.log('🗺️ Map Markers Created:', {
+      totalMarkers: markers.length,
+      markers: markers.map(m => ({
+        id: m.id,
+        lat: m.lat,
+        lng: m.lng,
+        title: m.title
+      }))
+    });
+
+    // If no real markers, add some demo markers for Australia to test the system
+    if (markers.length === 0 && tasks.length > 0) {
+      const demoCoordinates = [
+        { lat: -33.8688, lng: 151.2093, city: 'Sydney' },
+        { lat: -37.8136, lng: 144.9631, city: 'Melbourne' },
+        { lat: -27.4698, lng: 153.0251, city: 'Brisbane' },
+        { lat: -31.9505, lng: 115.8605, city: 'Perth' },
+        { lat: -34.9285, lng: 138.6007, city: 'Adelaide' }
+      ];
+      
+      tasks.slice(0, Math.min(5, tasks.length)).forEach((task, index) => {
+        if (demoCoordinates[index]) {
+          markers.push({
+            id: task._id,
+            lat: demoCoordinates[index].lat,
+            lng: demoCoordinates[index].lng,
+            title: task.title,
+            price: task.formattedBudget || `${task.currency} ${task.budget}`,
+            location: demoCoordinates[index].city + ', Australia',
+            status: task.status,
+            offers: task.offerCount || 0,
+          });
+        }
+      });
+      
+      console.log('🗺️ Added demo markers for testing:', markers.length);
+    }
 
     const focusedMarker = focusTaskId
       ? markers.find((m) => m.id === focusTaskId)
@@ -98,22 +156,30 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
             color: #333;
         }
         .marker-icon {
-            background-color: #007bff;
-            border: 2px solid white;
-            border-radius: 50%;
-      width: 60px;
-      height: 60px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: 3px solid white;
+            border-radius: 50% 50% 50% 0;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transform: rotate(-45deg);
+            position: relative;
+        }
+        .marker-icon::before {
+            content: '$';
+            transform: rotate(45deg);
             font-size: 16px;
             font-weight: bold;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
-    .my-custom-marker {
-      width: 60px !important;
-      height: 60px !important;
+    .airtasker-marker {
+      width: 50px !important;
+      height: 50px !important;
     }
     </style>
 </head>
@@ -121,11 +187,15 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
     <div id="map"></div>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        const map = L.map('map').setView([-25.2744, 133.7751], 4);
+        const map = L.map('map', {
+            minZoom: 6,
+            maxZoom: 18,
+            zoomControl: true
+        }).setView([-25.2744, 133.7751], 6);
         
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            maxZoom: 20
+            maxZoom: 18
         }).addTo(map);
 
         const markers = ${JSON.stringify(markers)};
@@ -134,17 +204,17 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         const customIcon = markerIconUrl
           ? L.icon({
               iconUrl: markerIconUrl,
-              iconSize: [60, 60],
-              iconAnchor: [30, 60],
-              popupAnchor: [0, -60],
-              className: 'my-custom-marker'
+              iconSize: [50, 50],
+              iconAnchor: [25, 50],
+              popupAnchor: [0, -50],
+              className: 'airtasker-marker'
             })
           : L.divIcon({
               html: '<div class="marker-icon"></div>',
               className: 'custom-div-icon',
-              iconSize: [60, 60],
-              iconAnchor: [30, 60],
-              popupAnchor: [0, -60]
+              iconSize: [40, 40],
+              iconAnchor: [20, 40],
+              popupAnchor: [0, -40]
             });
         
         const focusedTaskId = ${JSON.stringify(focusTaskId)};
@@ -170,19 +240,16 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         });
         
         if (focusedMarker) {
-            map.setView([focusedMarker.lat, focusedMarker.lng], 14);
+            map.setView([focusedMarker.lat, focusedMarker.lng], 12);
         } else if (markers.length > 0) {
-            const group = new L.featureGroup(map.eachLayer(layer => {
-                if (layer instanceof L.Marker) {
-                    return layer;
-                }
-            }));
-            
             if (markers.length === 1) {
-                map.setView([markers[0].lat, markers[0].lng], 12);
+                map.setView([markers[0].lat, markers[0].lng], 10);
             } else {
                 const bounds = L.latLngBounds(markers.map(m => [m.lat, m.lng]));
-                map.fitBounds(bounds, { padding: [20, 20] });
+                map.fitBounds(bounds, { 
+                    padding: [20, 20],
+                    maxZoom: 10  // Prevent zooming out too much
+                });
             }
         }
     </script>

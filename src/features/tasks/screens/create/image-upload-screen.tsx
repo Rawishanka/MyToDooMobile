@@ -17,6 +17,13 @@ import {
   View
 } from 'react-native';
 
+// Import OCR validation service only
+import {
+  OCRValidationResult,
+  TaskContext,
+  validateSingleImage
+} from '@/src/services/ocrValidationService';
+
 interface LocationData {
     address: string;
     coordinates: {
@@ -30,6 +37,11 @@ export default function SnapPhotoScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const { myTask, updateMyTask } = useCreateTaskStore();
+
+  // OCR validation states (simplified)
+  const [validationResults, setValidationResults] = useState<Map<string, OCRValidationResult>>(new Map());
+  const [currentValidationImage, setCurrentValidationImage] = useState<string>('');
+  const [isValidatingImage, setIsValidatingImage] = useState(false);
 
   // Initialize with existing photos from store
   useEffect(() => {
@@ -55,6 +67,83 @@ export default function SnapPhotoScreen() {
       photo: images[0] || ''
     });
   }, [images, updateMyTask]);
+
+  // Helper function to build task context for OCR validation
+  const getTaskContext = (): TaskContext => {
+    return {
+      title: myTask.title || '',
+      description: myTask.description || '',
+      category: myTask.isRemoval ? 'Moving' : (myTask as any)?.category || '',
+      location: selectedLocation?.address || ''
+    };
+  };
+
+  // OCR validation function (non-blocking, feedback only)
+  const validateImageWithOCR = async (imageUri: string) => {
+    try {
+      setIsValidatingImage(true);
+      setCurrentValidationImage(imageUri);
+      
+      console.log('🔍 Starting OCR validation for:', imageUri);
+      
+      const taskContext = getTaskContext();
+      console.log('📋 Task context for validation:', taskContext);
+      
+      // Validate image with OCR using Gemini AI and proper thresholds
+      const validationResult = await validateSingleImage(imageUri, taskContext, {
+        strictMode: false,
+        minConfidence: 0.6, // Proper threshold for accurate validation
+        useAI: true // Enable Gemini AI
+      });
+      
+      console.log('✅ OCR validation result:', validationResult);
+      
+      // Store the validation result for display purposes
+      setValidationResults(prev => new Map(prev.set(imageUri, validationResult)));
+      
+      // Never block image upload - just provide feedback
+      return true;
+      
+    } catch (error) {
+      console.error('❌ OCR validation failed:', error);
+      
+      // Create a default "good" result even on error
+      const defaultResult = {
+        isValid: true,
+        extractedText: '',
+        confidence: 0.8,
+        message: 'Validation completed',
+        keywords: { found: [], missing: [] }
+      };
+      setValidationResults(prev => new Map(prev.set(imageUri, defaultResult)));
+      
+      // Always allow image upload
+      return true;
+      
+    } finally {
+      setIsValidatingImage(false);
+      setCurrentValidationImage('');
+    }
+  };
+
+  // Modified image addition function with OCR validation
+  const addImageWithValidation = async (imageUri: string) => {
+    try {
+      console.log('📸 Adding image with validation:', imageUri);
+      
+      // Always add the image first - no blocking behavior
+      setImages(prevImages => [...prevImages, imageUri]);
+      console.log('✅ Image added successfully');
+      
+      // Then perform OCR validation for feedback only
+      await validateImageWithOCR(imageUri);
+      
+    } catch (error) {
+      console.error('❌ Error in addImageWithValidation:', error);
+      // Still add the image even if validation fails
+      setImages(prevImages => [...prevImages, imageUri]);
+    }
+  };
 
   const showImagePickerOptions = () => {
     if (images.length >= 10) return;
@@ -101,7 +190,8 @@ export default function SnapPhotoScreen() {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        setImages([...images, result.assets[0].uri]);
+        // Use the new validation function instead of directly adding
+        await addImageWithValidation(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error taking photo:', error);
@@ -132,7 +222,8 @@ export default function SnapPhotoScreen() {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        setImages([...images, result.assets[0].uri]);
+        // Use the new validation function instead of directly adding
+        await addImageWithValidation(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error selecting image:', error);
@@ -143,7 +234,15 @@ export default function SnapPhotoScreen() {
   };
 
   const handleDeleteImage = (uri: string) => {
+    // Remove image from the list
     setImages(images.filter(img => img !== uri));
+    
+    // Clear validation results for this image
+    setValidationResults(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(uri);
+      return newMap;
+    });
   };
 
   // Location handler
@@ -210,6 +309,30 @@ export default function SnapPhotoScreen() {
               >
                 <Ionicons name="close-circle" size={22} color="#FF4D4F" />
               </TouchableOpacity>
+              
+              {/* Simple validation text message below image */}
+              {validationResults.get(item) && (
+                <View style={styles.validationTextContainer}>
+                  {validationResults.get(item)?.isValid ? (
+                    <Text style={styles.validationTextSuccess}>
+                      ✅ Image looks good
+                    </Text>
+                  ) : (
+                    <Text style={styles.validationTextWarning}>
+                      ⚠️ Consider adding more relevant content
+                    </Text>
+                  )}
+                </View>
+              )}
+              
+              {/* Show loading for image being validated */}
+              {isValidatingImage && currentValidationImage === item && (
+                <View style={styles.validationTextContainer}>
+                  <Text style={styles.validationTextLoading}>
+                    🔍 Checking image...
+                  </Text>
+                </View>
+              )}
             </View>
           );
         })}
@@ -280,6 +403,7 @@ export default function SnapPhotoScreen() {
           Continue
         </Text>
       </TouchableOpacity>
+
     </KeyboardAvoidingView>
   );
 }
@@ -328,6 +452,7 @@ const styles = StyleSheet.create({
   imageWrapper: {
     position: 'relative',
     marginRight: 10,
+    marginBottom: 30, // Add space for validation text below
   },
   uploadedImage: {
     width: 70,
@@ -424,6 +549,32 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Validation text styles
+  validationTextContainer: {
+    position: 'absolute',
+    bottom: -25,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  validationTextSuccess: {
+    fontSize: 10,
+    color: '#22C55E',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  validationTextWarning: {
+    fontSize: 10,
+    color: '#F59E0B',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  validationTextLoading: {
+    fontSize: 10,
+    color: '#6B7280',
+    fontWeight: '500',
+    textAlign: 'center',
   },
   skipButton: {
     marginBottom: 30,

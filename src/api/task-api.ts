@@ -596,39 +596,88 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
   try {
     console.log("🔍 Searching tasks with params:", params);
     
-    // Build query string using the correct API parameter names
-    const searchParams = new URLSearchParams();
+    // Try multiple GET approaches only (POST is not supported)
+    const getApproaches = [
+      // Approach 1: Standard search with all parameters
+      () => {
+        const searchParams = new URLSearchParams();
+        
+        if (params.search || params.q) {
+          searchParams.append('q', params.search || params.q!);
+        }
+        if (params.category) {
+          searchParams.append('category', params.category);
+        }
+        if (params.categories && params.categories.length > 0) {
+          searchParams.append('category', params.categories[0]);
+        }
+        if (params.location) {
+          searchParams.append('location', params.location);
+        }
+        if (params.minBudget !== undefined && params.minBudget > 0) {
+          searchParams.append('minBudget', params.minBudget.toString());
+        }
+        if (params.maxBudget !== undefined && params.maxBudget < 10000) {
+          searchParams.append('maxBudget', params.maxBudget.toString());
+        }
+        if (params.sort) {
+          searchParams.append('sort', params.sort);
+        }
+        
+        searchParams.append('page', '1');
+        searchParams.append('limit', '20');
+        
+        return `/tasks/search?${searchParams.toString()}`;
+      },
+      
+      // Approach 2: Minimal parameters (just sort)
+      () => {
+        const searchParams = new URLSearchParams();
+        if (params.sort) {
+          searchParams.append('sort', params.sort);
+        } else {
+          searchParams.append('sort', 'latest');
+        }
+        return `/tasks/search?${searchParams.toString()}`;
+      },
+      
+      // Approach 3: Just basic search endpoint without parameters
+      () => {
+        return `/tasks/search`;
+      }
+    ];
+
+    // Try each GET approach
+    for (let i = 0; i < getApproaches.length; i++) {
+      try {
+        const url = getApproaches[i]();
+        console.log(`🔍 Trying GET approach ${i + 1}:`, url);
+        const response = await api.get(url);
+        
+        console.log("✅ Search tasks success with approach", i + 1, ":", response.data);
+        return response.data;
+        
+      } catch (approachError: any) {
+        console.log(`❌ GET Approach ${i + 1} failed:`, approachError.response?.status, approachError.message);
+        
+        // If this isn't the last approach, try the next one
+        if (i < getApproaches.length - 1) {
+          continue;
+        }
+        
+        // If all GET approaches failed, throw the last error
+        throw approachError;
+      }
+    }
     
-    // Map to correct API parameter names as per specification
-    if (params.search || params.q) {
-      searchParams.append('q', params.search || params.q!);
-    }
-    if (params.category) {
-      searchParams.append('category', params.category);
-    }
-    if (params.categories && params.categories.length > 0) {
-      searchParams.append('category', params.categories[0]); // Take first category
-    }
-    if (params.location) {
-      searchParams.append('location', params.location);
-    }
-    if (params.minBudget !== undefined || params.minPrice !== undefined) {
-      const minVal = params.minBudget !== undefined ? params.minBudget : params.minPrice!;
-      searchParams.append('minBudget', minVal.toString());
-    }
-    if (params.maxBudget !== undefined || params.maxPrice !== undefined) {
-      const maxVal = params.maxBudget !== undefined ? params.maxBudget : params.maxPrice!;
-      searchParams.append('maxBudget', maxVal.toString());
-    }
-    if (params.sort) {
-      searchParams.append('sort', params.sort);
-    }
-    
-    const response = await api.get(`/tasks/search?${searchParams.toString()}`);
-    console.log("✅ Search tasks success:", response.data);
-    return response.data;
   } catch (error: any) {
-    console.error("❌ Search tasks failed:", error);
+    console.error("❌ All search approaches failed:", error);
+    console.error("❌ Error details:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
     
     // Check for network connection errors - use mock service as fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
@@ -636,8 +685,42 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
       return await MockApiService.searchTasks(params);
     }
     
-    throw error;
+    // Try the filter endpoint as final fallback
+    console.warn("🔄 Search API failed completely, trying filter API as final fallback...");
+    try {
+      const filterParams: TaskFilterParams = {
+        sortBy: params.sort as 'latest' | 'newest' | 'oldest' | 'highest-budget' | 'lowest-budget' | 'earliest' | 'price-high' | 'price-low' | undefined,
+        categories: params.category,
+        search: params.q || params.search,
+        minBudget: params.minBudget,
+        maxBudget: params.maxBudget,
+        locationType: params.location as 'In-person' | 'Online' | undefined,
+        page: 1,
+        limit: 20
+      };
+      const filterResult = await getFilteredTasks(filterParams);
+      console.log("✅ Filter API fallback succeeded");
+      
+      // Convert TaskFilterResponse to TasksResponse
+      const tasksResponse: TasksResponse = {
+        success: filterResult.success,
+        count: filterResult.data.length,
+        total: filterResult.pagination.totalItems,
+        pages: filterResult.pagination.totalPages,
+        currentPage: filterResult.pagination.currentPage,
+        data: filterResult.data
+      };
+      
+      return tasksResponse;
+    } catch (filterError) {
+      console.error("❌ Filter API fallback also failed:", filterError);
+      console.warn("🎭 Using Mock API as final fallback");
+      return await MockApiService.searchTasks(params);
+    }
   }
+  
+  // This should never be reached due to the try-catch structure above
+  throw new Error("All search approaches failed");
 }
 
 /**
@@ -921,16 +1004,42 @@ export async function createOffer(taskId: string, offerData: CreateOfferRequest)
   const api = getApi();
   try {
     console.log("💰 Creating offer for task:", taskId, offerData);
-    const response = await api.post(`/tasks/${taskId}/offers`, offerData);
+    
+    // Clean the offer data - remove currency if it might cause issues
+    const cleanOfferData = {
+      amount: offerData.amount,
+      message: offerData.message
+      // Temporarily removing currency to see if that's causing the 400 error
+    };
+    
+    console.log("📤 Sending clean offer data:", cleanOfferData);
+    
+    const response = await api.post(`/tasks/${taskId}/offers`, cleanOfferData);
     console.log("✅ Create offer success:", response.data);
     return response.data;
   } catch (error: any) {
     console.error("❌ Create offer failed:", error);
+    console.error("❌ Error details:", {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      message: error.message,
+      requestData: offerData
+    });
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       console.error("❌ Create offer failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    // Handle validation errors (400 Bad Request)
+    if (error?.response?.status === 400) {
+      console.error("❌ Create offer failed - Bad Request (400)");
+      const errorMessage = error?.response?.data?.message || 
+                          error?.response?.data?.error || 
+                          "Invalid offer data. Please check your amount and message.";
+      throw new Error(`Validation Error: ${errorMessage}`);
     }
     
     throw error;

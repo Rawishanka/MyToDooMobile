@@ -7,10 +7,10 @@ import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'r
 
 // Components
 import {
-    LoadingState,
-    MyTasksHeader,
-    SearchModal,
-    TaskCard,
+  LoadingState,
+  MyTasksHeader,
+  SearchModal,
+  TaskCard,
 } from './components';
 
 // Notification Modal

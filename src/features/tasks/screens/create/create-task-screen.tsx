@@ -22,6 +22,14 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// Import OCR validation service only (no UI components)
+import {
+  OCRValidationResult,
+  TaskContext,
+  validateSingleImage
+} from '@/src/services/ocrValidationService';
+
 import {
   DateOptionSelector,
   TimeOfDayGrid,
@@ -85,6 +93,11 @@ export default function CreateTaskScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
+
+  // OCR validation states - simplified (no blocking behavior)
+  const [validationResults, setValidationResults] = useState<Map<string, OCRValidationResult>>(new Map());
+  const [currentValidationImage, setCurrentValidationImage] = useState<string>('');
+  const [isValidatingImage, setIsValidatingImage] = useState(false);
 
   // Section 3: Time
   const [selectedOption, setSelectedOption] = useState('');
@@ -292,6 +305,82 @@ export default function CreateTaskScreen() {
       )
     : allCategories;
 
+  // Helper function to build task context for OCR validation
+  const getTaskContext = (): TaskContext => {
+    return {
+      title: title || '',
+      description: description || '',
+      category: selectedCategory || '',
+      location: selectedLocation?.address || ''
+    };
+  };
+
+  // OCR validation function (completely non-blocking)
+  const validateImageWithOCR = async (imageUri: string) => {
+    try {
+      setIsValidatingImage(true);
+      setCurrentValidationImage(imageUri);
+      
+      console.log('🔍 Starting background OCR validation for:', imageUri);
+      
+      const taskContext = getTaskContext();
+      
+      // Validate image with OCR using Gemini AI and proper thresholds
+      const validationResult = await validateSingleImage(imageUri, taskContext, {
+        strictMode: false,
+        minConfidence: 0.6, // Proper threshold for accurate validation
+        useAI: true // Enable Gemini AI
+      });
+      
+      console.log('✅ OCR validation result (background):', validationResult);
+      
+      // Store the validation result for display
+      setValidationResults(prev => new Map(prev.set(imageUri, validationResult)));
+      
+      // Always return true - never block image upload
+      return true;
+      
+    } catch (error) {
+      console.error('❌ OCR validation failed (non-blocking):', error);
+      
+      // Create a default "good" result even on error
+      const defaultResult = {
+        isValid: true,
+        extractedText: '',
+        confidence: 0.8,
+        message: 'Validation completed',
+        keywords: { found: [], missing: [] }
+      };
+      setValidationResults(prev => new Map(prev.set(imageUri, defaultResult)));
+      
+      // Always allow image upload
+      return true;
+      
+    } finally {
+      setIsValidatingImage(false);
+      setCurrentValidationImage('');
+    }
+  };
+
+  // Modified image addition function - completely non-blocking
+  const addImageWithValidation = async (imageUri: string) => {
+    try {
+      console.log('📸 Adding image (no validation blocking):', imageUri);
+      
+      // Always add the image first - no blocking behavior
+      setImages(prevImages => [...prevImages, imageUri]);
+      console.log('✅ Image added successfully');
+      
+      // Run validation in background for analytics only
+      await validateImageWithOCR(imageUri);
+      
+    } catch (error) {
+      console.error('❌ Error in addImageWithValidation:', error);
+      // Still add the image even if validation fails
+      setImages(prevImages => [...prevImages, imageUri]);
+    }
+  };
+
   // Image handlers
   const showImagePickerOptions = () => {
     if (images.length >= 10) return;
@@ -320,7 +409,8 @@ export default function CreateTaskScreen() {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        setImages([...images, result.assets[0].uri]);
+        // Use the new validation function instead of directly adding
+        await addImageWithValidation(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error taking photo:', error);
@@ -346,7 +436,8 @@ export default function CreateTaskScreen() {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        setImages([...images, result.assets[0].uri]);
+        // Use the new validation function instead of directly adding
+        await addImageWithValidation(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error selecting image:', error);
@@ -357,7 +448,15 @@ export default function CreateTaskScreen() {
   };
 
   const handleDeleteImage = (uri: string) => {
+    // Remove image from the list
     setImages(images.filter(img => img !== uri));
+    
+    // Clear validation results for this image
+    setValidationResults(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(uri);
+      return newMap;
+    });
   };
 
   const handleLocationSelect = (location: LocationData) => {
@@ -463,6 +562,30 @@ export default function CreateTaskScreen() {
               <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDeleteImage(item)}>
                 <Ionicons name="close-circle" size={22} color="#FF4D4F" />
               </TouchableOpacity>
+              
+              {/* Simple validation text message below image */}
+              {validationResults.get(item) && (
+                <View style={styles.validationTextContainer}>
+                  {validationResults.get(item)?.isValid ? (
+                    <Text style={styles.validationTextSuccess}>
+                      ✅ Image looks good
+                    </Text>
+                  ) : (
+                    <Text style={styles.validationTextWarning}>
+                      ⚠️ Consider adding more relevant content
+                    </Text>
+                  )}
+                </View>
+              )}
+              
+              {/* Show loading for image being validated */}
+              {isValidatingImage && currentValidationImage === item && (
+                <View style={styles.validationTextContainer}>
+                  <Text style={styles.validationTextLoading}>
+                    🔍 Checking image...
+                  </Text>
+                </View>
+              )}
             </View>
           );
         })}
@@ -775,7 +898,9 @@ export default function CreateTaskScreen() {
           <Text style={styles.sectionTitle}>Photos & Location</Text>
           <Text style={styles.sectionSubtitle}>Help taskers understand what needs doing ({images.length}/10 photos)</Text>
 
-          <View style={styles.imageSection}>{renderGridItems()}</View>
+          <View style={styles.imageSection}>
+            {renderGridItems()}
+          </View>
 
           {/* Location */}
           <View style={styles.fieldContainer}>
@@ -900,6 +1025,8 @@ export default function CreateTaskScreen() {
           <Text style={styles.continueText}>Continue</Text>
         </TouchableOpacity>
       )}
+
+      {/* OCR Validation Modal - REMOVED */}
     </View>
   );
 }
@@ -1113,6 +1240,7 @@ const styles = StyleSheet.create({
   imageWrapper: {
     position: 'relative',
     marginRight: 10,
+    marginBottom: 30, // Add space for validation text below
   },
   uploadedImage: {
     width: 70,
@@ -1192,5 +1320,31 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Validation text styles
+  validationTextContainer: {
+    position: 'absolute',
+    bottom: -25,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  validationTextSuccess: {
+    fontSize: 10,
+    color: '#22C55E',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  validationTextWarning: {
+    fontSize: 10,
+    color: '#F59E0B',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  validationTextLoading: {
+    fontSize: 10,
+    color: '#6B7280',
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });

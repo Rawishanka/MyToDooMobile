@@ -154,9 +154,12 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
     try {
       const offerData = {
         amount: parseFloat(offerAmount),
-        currency: currencyInfo.code,
+        // Removing currency field as it might be causing 400 error
+        // currency: currencyInfo.code,
         message: message.trim(),
       };
+
+      console.log("📤 [useOfferSubmission] Submitting offer data:", offerData);
 
       await createOfferMutation.mutateAsync({
         taskId,

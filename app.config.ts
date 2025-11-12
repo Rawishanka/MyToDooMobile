@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'MyToDooMobile',
   slug: 'MyToDooMobile',
-  owner: 'janidu1234',
+  owner: 'janidu5678',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/mytodoo-icon.png',
@@ -46,6 +46,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-router',
     'expo-font',
+    'expo-video',
     [
       'expo-location',
       {
@@ -72,7 +73,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
     googleClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
     eas: {
-      projectId: "b9eb76c3-56d8-4ce9-9ea0-bae0908a0d4c"
+      projectId: "a1856428-ab54-4d0f-95a3-7fc57ae8e968"
     },
   },
 });

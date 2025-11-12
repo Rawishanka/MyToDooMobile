@@ -20,6 +20,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Import OCR validation service
+import {
+  OCRValidationResult,
+  TaskContext,
+  validateSingleImage
+} from '@/src/services/ocrValidationService';
+
 interface EditTaskScreenProps {
   route?: {
     params: {
@@ -91,6 +98,10 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   // Keyboard visibility
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
+  // OCR validation states
+  const [imageValidationResults, setImageValidationResults] = useState<Record<number, OCRValidationResult>>({});
+  const [validatingImages, setValidatingImages] = useState<Record<number, boolean>>({});
+
   // Fetch categories
   const { data: categoriesResponse, isLoading: loadingCategories } = useGetCategories();
   const categories = categoriesResponse?.data || [];
@@ -120,6 +131,15 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     };
   }, []);
 
+  // Validate existing images when component mounts
+  useEffect(() => {
+    if (images.length > 0) {
+      images.forEach((imageUri, index) => {
+        validateImageWithOCR(imageUri, index);
+      });
+    }
+  }, []); // Only run once when component mounts
+
   // Handle location field focus - scroll into view
   const handleLocationFocus = () => {
     console.log('📍 Location field focused - scrolling into view');
@@ -140,6 +160,41 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     }
   };
 
+  // OCR validation function
+  const validateImageWithOCR = async (imageUri: string, index: number) => {
+    setValidatingImages(prev => ({ ...prev, [index]: true }));
+    
+    try {
+      const taskContext: TaskContext = {
+        category: selectedCategory || 'general',
+        title: title || '',
+        description: description || ''
+      };
+
+      const result = await validateSingleImage(imageUri, taskContext, {
+        strictMode: false,
+        minConfidence: 0.6, // Proper threshold for accurate validation
+        useAI: true // Enable Gemini AI
+      });
+      setImageValidationResults(prev => ({ ...prev, [index]: result }));
+    } catch (error) {
+      console.error('OCR validation error:', error);
+      setImageValidationResults(prev => ({ 
+        ...prev, 
+        [index]: { 
+          isValid: true,
+          extractedText: '',
+          confidence: 0, 
+          message: 'Validation temporarily unavailable',
+          suggestions: [],
+          keywords: { found: [], missing: [] }
+        } 
+      }));
+    } finally {
+      setValidatingImages(prev => ({ ...prev, [index]: false }));
+    }
+  };
+
   // Image picker function
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -150,7 +205,13 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     });
 
     if (!result.canceled && result.assets[0].uri) {
-      setImages([...images, result.assets[0].uri]);
+      const newImages = [...images, result.assets[0].uri];
+      const newImageIndex = newImages.length - 1;
+      
+      setImages(newImages);
+      
+      // Validate the newly added image
+      validateImageWithOCR(result.assets[0].uri, newImageIndex);
     }
   };
 
@@ -159,6 +220,44 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     const newImages = [...images];
     newImages.splice(index, 1);
     setImages(newImages);
+    
+    // Clear validation results for removed image and update indices
+    setImageValidationResults(prev => {
+      const newResults = { ...prev };
+      delete newResults[index];
+      
+      // Shift validation results for images after the removed one
+      const updatedResults: Record<number, OCRValidationResult> = {};
+      Object.keys(newResults).forEach(key => {
+        const keyNum = parseInt(key);
+        if (keyNum > index) {
+          updatedResults[keyNum - 1] = newResults[keyNum];
+        } else if (keyNum < index) {
+          updatedResults[keyNum] = newResults[keyNum];
+        }
+      });
+      
+      return updatedResults;
+    });
+    
+    // Clear validation loading states
+    setValidatingImages(prev => {
+      const newValidating = { ...prev };
+      delete newValidating[index];
+      
+      // Shift validation loading states for images after the removed one
+      const updatedValidating: Record<number, boolean> = {};
+      Object.keys(newValidating).forEach(key => {
+        const keyNum = parseInt(key);
+        if (keyNum > index) {
+          updatedValidating[keyNum - 1] = newValidating[keyNum];
+        } else if (keyNum < index) {
+          updatedValidating[keyNum] = newValidating[keyNum];
+        }
+      });
+      
+      return updatedValidating;
+    });
   };
 
   // Handle save
@@ -295,6 +394,25 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
                 >
                   <Ionicons name="close-circle" size={24} color="#FF0000" />
                 </TouchableOpacity>
+                
+                {/* OCR Validation Display */}
+                <View style={styles.validationContainer}>
+                  {validatingImages[index] ? (
+                    <View style={styles.validationMessage}>
+                      <ActivityIndicator size="small" color="#007AFF" />
+                      <Text style={styles.validationText}>Analyzing image...</Text>
+                    </View>
+                  ) : imageValidationResults[index] ? (
+                    <View style={styles.validationMessage}>
+                      <Text style={[
+                        styles.validationText,
+                        imageValidationResults[index].isValid ? styles.validationSuccess : styles.validationWarning
+                      ]}>
+                        {imageValidationResults[index].message}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
               </View>
             ))}
             {images.length < 3 && (
@@ -635,5 +753,32 @@ const styles = StyleSheet.create({
   whenOptionTextSelected: {
     color: '#007AFF',
     fontWeight: '600',
+  },
+  // OCR Validation styles
+  validationContainer: {
+    position: 'absolute',
+    bottom: -30,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+  },
+  validationMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  },
+  validationText: {
+    fontSize: 10,
+    marginLeft: 4,
+    flex: 1,
+  },
+  validationSuccess: {
+    color: '#22C55E',
+  },
+  validationWarning: {
+    color: '#F59E0B',
   },
 });
