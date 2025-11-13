@@ -7,10 +7,10 @@ import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'r
 
 // Components
 import {
-    LoadingState,
-    MyTasksHeader,
-    SearchModal,
-    TaskCard,
+  LoadingState,
+  MyTasksHeader,
+  SearchModal,
+  TaskCard,
 } from './components';
 
 // Notification Modal
@@ -298,44 +298,69 @@ export default function MyTasksScreen() {
 
   // Categorize tasks and offers based on status
   const categorizedData = useMemo(() => {
-    const openTasks = allTasks.filter((task: Task) => 
-      task.status === 'open' || task.status === 'active'
+    // Helper function to sort tasks by creation date (newest first)
+    const sortByCreatedDate = (tasks: Task[]) => {
+      return [...tasks].sort((a: Task, b: Task) => {
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA; // Descending order (newest first)
+      });
+    };
+
+    const openTasks = sortByCreatedDate(
+      allTasks.filter((task: Task) => 
+        task.status === 'open' || task.status === 'active'
+      )
     );
     
-    const todoTasks = allTasks.filter((task: Task) => 
-      task.status === 'assigned' || task.status === 'in_progress'
+    // Debug: Log sorting for Open Tasks
+    if (openTasks.length > 0) {
+      console.log('📋 Open Tasks sorted by date:', openTasks.map(t => ({
+        title: t.title,
+        createdAt: t.createdAt,
+        date: new Date(t.createdAt).toLocaleDateString()
+      })));
+    }
+    
+    const todoTasks = sortByCreatedDate(
+      allTasks.filter((task: Task) => 
+        task.status === 'assigned' || task.status === 'in_progress'
+      )
     );
     
-    const completedTasks = allTasks.filter((task: Task) => 
-      task.status === 'completed'
+    const completedTasks = sortByCreatedDate(
+      allTasks.filter((task: Task) => 
+        task.status === 'completed'
+      )
     );
     
-    const overdueTasks = allTasks.filter((task: Task) => 
-      task.status === 'overdue'
+    const overdueTasks = sortByCreatedDate(
+      allTasks.filter((task: Task) => 
+        task.status === 'overdue'
+      )
     );
     
-    const cancelledTasks = allTasks.filter((task: Task) => 
-      task.status === 'cancelled'
+    const cancelledTasks = sortByCreatedDate(
+      allTasks.filter((task: Task) => 
+        task.status === 'cancelled'
+      )
     );
     
     // If no cancelled tasks from API, use dummy data
     const finalCancelledTasks = cancelledTasks.length > 0 ? cancelledTasks : dummyCancelledTasks;
 
     // For Poster role - tasks they've posted (sorted by creation date, newest first)
-    const postedTasks = allTasks
-      .filter((task: Task) => 
+    const postedTasks = sortByCreatedDate(
+      allTasks.filter((task: Task) => 
         task.status === 'open' || task.status === 'active' || task.status === 'assigned'
       )
-      .sort((a: Task, b: Task) => {
-        // Sort by creation date in descending order (newest first)
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
-        return dateB - dateA;
-      });
+    );
 
-    // For accepted offers - offers that have been accepted
-    const acceptedTasks = allOffers.filter((offer: any) => 
-      offer.status === 'accepted'
+    // For accepted offers - offers that have been accepted (sorted by creation date, newest first)
+    const acceptedTasks = sortByCreatedDate(
+      allOffers.filter((offer: any) => 
+        offer.status === 'accepted'
+      )
     );
     
     // If no accepted offers from API, use dummy data

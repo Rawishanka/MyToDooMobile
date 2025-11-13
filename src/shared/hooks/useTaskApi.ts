@@ -264,9 +264,12 @@ export function usePostTaskWithImages() {
     mutationFn: ({ taskData, imageUris }: { taskData: CreateTaskRequest; imageUris: string[] }) => 
       TaskAPI.postTaskWithImages(taskData, imageUris),
     onSuccess: (result, variables) => {
-      // Optimized: Only invalidate queries, let them refetch on demand
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all });
-      console.log("✅ Task with images posted successfully");
+      // Force immediate refetch of all task-related queries
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all }); // All task queries (includes map data, browse, my tasks, search)
+      queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.lists() }); // Force immediate refetch of browse tasks
+      queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() }); // Force immediate refetch of my tasks
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers specifically
+      console.log("✅ Task with images posted successfully - force refetched all task queries");
     },
     onError: (error: any) => {
       console.error("❌ Error posting task with images:", error);
