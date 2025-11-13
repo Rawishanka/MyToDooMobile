@@ -12,9 +12,6 @@ export const DetailHeader: React.FC = () => {
         <Ionicons name="arrow-back" size={24} color="#000" />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.moreButton}>
-        <Ionicons name="ellipsis-horizontal" size={24} color="#000" />
-      </TouchableOpacity>
     </View>
   );
 };
@@ -39,8 +36,5 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 16,
     color: '#000',
-  },
-  moreButton: {
-    padding: 4,
   },
 });

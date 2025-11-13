@@ -2,6 +2,8 @@
 
 import API_CONFIG from '@/src/api/config';
 import { useCreateSignUpToken, useVerifyOTP } from '@/src/api/user-api';
+import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
+import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -12,6 +14,8 @@ import { COUNTRIES } from './signup-types';
 
 export const useSignup = () => {
   const router = useRouter();
+  const { myTask, resetTask } = useCreateTaskStore();
+  const postTaskMutation = useCreateTask();
   
   // Form state
   const [firstName, setFirstName] = useState('');
@@ -38,6 +42,7 @@ export const useSignup = () => {
   const [smsVerified, setSmsVerified] = useState(false);
   const [loading, setLoading] = useState(false);
   const [verifyLoading, setVerifyLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   
   // Timer state
@@ -90,6 +95,72 @@ export const useSignup = () => {
       return () => clearInterval(interval);
     }
   }, [verificationStep, smsTimer]);
+
+  // Helper function to check if there's a pending task to post
+  const hasPendingTask = () => {
+    return myTask && myTask.title && myTask.title.trim() !== '';
+  };
+
+  // Helper function to convert task store data to API format
+  const convertTaskToAPIFormat = () => {
+    const taskDate = myTask.date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const category = !myTask.isRemoval && myTask.category ? myTask.category : "General";
+    
+    // Extract location string - API expects location as string
+    let locationString = '';
+    if (selectedLocation) {
+      locationString = selectedLocation.address;
+    }
+    
+    return {
+      title: myTask.title || "Untitled Task",
+      category: category,
+      details: myTask.description || "",
+      dateType: "DoneBy",
+      date: taskDate,
+      time: myTask.time || "Anytime",
+      location: locationString,
+      locationType: !myTask.isRemoval ? (myTask.locationType || 'In-person') : 'In-person',
+      budget: myTask.budget || 0,
+      currency: "LKR",
+      images: [],
+    };
+  };
+
+  // Helper function to post pending task after signup
+  const postPendingTask = async () => {
+    if (!hasPendingTask()) {
+      console.log('No pending task to post');
+      return false;
+    }
+
+    try {
+      console.log('🚀 Posting pending task after signup...');
+      
+      // Wait for authentication token to be properly set in API client
+      console.log('⏱️ Waiting for auth token to be set in API client...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const taskData = convertTaskToAPIFormat();
+      console.log('📝 Task data:', taskData);
+      
+      const result = await postTaskMutation.mutateAsync(taskData);
+      console.log('✅ Pending task posted successfully:', result);
+      
+      // Reset task store after successful posting
+      resetTask();
+      console.log('🔄 Task store reset after posting');
+      
+      // Add a small delay to ensure the task is fully saved on the server
+      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('⏱️ Waited for server to process task');
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Error posting pending task:', error);
+      return false;
+    }
+  };
 
   // Form submission
   const handleSignUp = async () => {
@@ -244,16 +315,54 @@ export const useSignup = () => {
         setSmsVerified(true);
         setVerificationStep(null);
         
-        Alert.alert(
-          'Success!',
-          'Account verified successfully! Welcome to MyToDo.',
-          [
-            {
-              text: 'OK',
-              onPress: () => router.replace('/(tabs)')
-            }
-          ]
-        );
+        // Check if there's a pending task to post
+        if (hasPendingTask()) {
+          console.log('📋 Pending task detected after signup');
+          
+          // Post the pending task
+          const taskPosted = await postPendingTask();
+          
+          if (taskPosted) {
+            Alert.alert(
+              'Success!',
+              'Account verified successfully! Your task has been posted.',
+              [
+                {
+                  text: 'View My Tasks',
+                  onPress: () => {
+                    // Navigate to My Tasks with Poster role and Posted tab
+                    router.replace({
+                      pathname: '/(tabs)/my-tasks',
+                      params: { role: 'Poster', tab: 'posted' }
+                    });
+                  }
+                }
+              ]
+            );
+          } else {
+            Alert.alert(
+              'Success!',
+              'Account verified successfully! However, there was an issue posting your task. You can create it again from the home page.',
+              [
+                {
+                  text: 'OK',
+                  onPress: () => router.replace('/(tabs)')
+                }
+              ]
+            );
+          }
+        } else {
+          Alert.alert(
+            'Success!',
+            'Account verified successfully! Welcome to MyToDo.',
+            [
+              {
+                text: 'OK',
+                onPress: () => router.replace('/(tabs)')
+              }
+            ]
+          );
+        }
       } else {
         Alert.alert('Error', data.message || 'Invalid SMS code.');
       }
@@ -300,6 +409,20 @@ export const useSignup = () => {
     }
   };
 
+  // Google Sign-In Handler
+  const handleGoogleSignIn = async () => {
+    try {
+      setGoogleLoading(true);
+      // TODO: Implement Google Sign-In for signup
+      Alert.alert('Coming Soon', 'Google Sign-In for signup will be available soon!');
+    } catch (error) {
+      console.error('Google Sign-In error:', error);
+      Alert.alert('Error', 'Failed to sign in with Google. Please try again.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   return {
     // Form state
     firstName,
@@ -339,6 +462,7 @@ export const useSignup = () => {
     smsVerified,
     loading,
     verifyLoading,
+    googleLoading,
     emailTimer,
     smsTimer,
     emailOtpRefs,
@@ -352,5 +476,6 @@ export const useSignup = () => {
     handleVerifySms,
     handleResendEmail,
     handleResendSms,
+    handleGoogleSignIn,
   };
 };

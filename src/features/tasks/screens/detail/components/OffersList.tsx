@@ -1,6 +1,8 @@
+import { getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface OffersListProps {
   offers: any[];
@@ -9,6 +11,7 @@ interface OffersListProps {
   currentUserId?: string;
   onAcceptOffer?: (offerId: string) => void;
   excludeOfferId?: string; // Offer ID to exclude (shown in MyOfferCard)
+  taskLocation?: { address?: string };
 }
 
 export const OffersList: React.FC<OffersListProps> = ({ 
@@ -17,8 +20,13 @@ export const OffersList: React.FC<OffersListProps> = ({
   taskCreatorId, 
   currentUserId,
   onAcceptOffer,
-  excludeOfferId
+  excludeOfferId,
+  taskLocation
 }) => {
+  const insets = useSafeAreaInsets();
+  // Get location-based currency info
+  const currencyInfo = getCurrencyFromLocation(taskLocation);
+  
   // Filter out:
   // 1. The current user's offer (shown separately in MyOfferCard)
   // 2. The offer being displayed in MyOfferCard (if task poster is viewing)
@@ -39,7 +47,7 @@ export const OffersList: React.FC<OffersListProps> = ({
 
   if (otherOffers.length === 0) {
     return (
-      <View style={styles.emptyState}>
+      <View style={[styles.emptyState, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <Ionicons name="document-outline" size={48} color="#ccc" />
         <Text style={styles.emptyStateText}>No other offers yet</Text>
         <Text style={styles.emptyStateSubtext}>
@@ -54,6 +62,7 @@ export const OffersList: React.FC<OffersListProps> = ({
       data={otherOffers}
       scrollEnabled={false}
       keyExtractor={(item: any) => item._id}
+      contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) }}
       renderItem={({ item: offer }: { item: any }) => {
         // Handle both nested and flat offer structures
         const offerAmount = offer.offer?.amount || offer.amount || 0;
@@ -111,14 +120,6 @@ export const OffersList: React.FC<OffersListProps> = ({
                   </View>
                 </View>
               </View>
-            </View>
-
-            {/* Offer Amount - Always visible for task posters viewing offers */}
-            <View style={styles.offerAmountContainer}>
-              <Text style={styles.offerAmountLabel}>Offer Amount</Text>
-              <Text style={styles.offerAmount}>
-                {offerCurrency} ${offerAmount.toFixed(2)}
-              </Text>
             </View>
 
             {/* Accept Offer Button - Only show if:
@@ -250,24 +251,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#4CAF50',
     marginBottom: 8,
-  },
-  offerAmountContainer: {
-    backgroundColor: '#F0F8FF',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#004aad',
-  },
-  offerAmountLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
-  },
-  offerAmount: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#004aad',
   },
   offerMessageRow: {
     flexDirection: 'row',

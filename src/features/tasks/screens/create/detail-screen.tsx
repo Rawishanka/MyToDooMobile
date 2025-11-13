@@ -3,18 +3,19 @@ import { useStorageState } from '@/src/shared/hooks/useStorageState';
 import { usePostTask } from '@/src/shared/hooks/useTaskApi';
 import { debugAuthState, forceFreshLogin } from '@/src/shared/utils/auth-utils';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
+import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -41,6 +42,7 @@ const ListItem = ({ icon, text, value, onPress }: ListItemProps) => (
 export default function DetailScreen() {
   const { myTask, resetTask } = useCreateTaskStore();
   const [[isLoading, storedToken], setStoredToken] = useStorageState('token');
+  const { setPendingAction } = usePendingActionStore();
   const insets = useSafeAreaInsets();
   
   // Use React Query mutation for posting task
@@ -128,6 +130,18 @@ export default function DetailScreen() {
     // Check if user is logged in
     if (!storedToken) {
       console.log("❌ No stored token found, redirecting to login");
+      console.log("📋 Task data will be saved and posted after login/signup");
+      // Redirect to login - task data is already saved in Zustand store
+      // After successful login/signup, the task will be automatically posted
+      console.log("❌ No stored token found, setting pending action and redirecting to login");
+      
+      // Set pending action to continue task posting after login
+      setPendingAction({
+        type: 'post-task',
+        data: convertToTaskRequest(),
+        returnPath: '/(tabs)/my-tasks'
+      });
+      
       router.push('/(auth)/login');
       return;
     }
@@ -141,24 +155,33 @@ export default function DetailScreen() {
       const response = await postTaskMutation.mutateAsync(taskData);
       console.log("✅ Task posted successfully:", response);
       
-      // Reset task store after successful posting
-      resetTask();
-      console.log("🔄 Task store reset after successful posting");
-      
-      // Show success message
-      Alert.alert(
-        "Success!", 
-        "Your task has been posted successfully and will appear in My Tasks!",
-        [
-          {
-            text: "View My Tasks",
-            onPress: () => {
-              // Navigate back to tabs and then to my-tasks tab
-              router.replace('/(tabs)/my-tasks');
+      // Only show success alert if response is valid and successful
+      if (response && (response.success || response.data)) {
+        // Reset task store after confirmed successful posting
+        resetTask();
+        console.log("🔄 Task store reset after successful posting");
+        
+        // Show success message only after confirmed success
+        Alert.alert(
+          "Posted Successfully!", 
+          "Your task has been posted and is now live. You can view it in My Tasks.",
+          [
+            {
+              text: "View My Tasks",
+              onPress: () => {
+                // Navigate to My Tasks with Poster role
+                router.replace({
+                  pathname: '/(tabs)/my-tasks',
+                  params: { role: 'Poster', tab: 'posted' }
+                } as any);
+              }
             }
-          }
-        ]
-      );
+          ]
+        );
+      } else {
+        // If response doesn't indicate success, show error
+        throw new Error("Task posting failed - no success confirmation from server");
+      }
       
     } catch (error: any) {
       console.error('❌ Error posting task:', error);

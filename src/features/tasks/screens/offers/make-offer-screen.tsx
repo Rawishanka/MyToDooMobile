@@ -19,6 +19,7 @@ import {
     TipsSection,
 } from './components';
 import { useOfferSubmission } from './hooks/useOfferSubmission';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MakeOfferScreen() {
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
@@ -31,6 +32,9 @@ export default function MakeOfferScreen() {
 
   const task = taskData?.data;
 
+  const insets = useSafeAreaInsets();
+  const scrollRef = React.useRef<ScrollView>(null);
+
   const {
     offerAmount,
     message,
@@ -38,8 +42,11 @@ export default function MakeOfferScreen() {
     isLoadingOffers,
     userHasExistingOffer,
     currencySymbol,
+    validationError,
+    taskBudget,
     setMessage,
     handleOfferAmountChange,
+    handleOfferAmountFocus,
     handleSubmitOffer,
   } = useOfferSubmission({ 
     taskId: taskId!,
@@ -72,53 +79,66 @@ export default function MakeOfferScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       
-      <OfferFormHeader />
+      <View style={{ flex: 1 }}>
+        <OfferFormHeader />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <TaskSummarySection task={task} />
-
-        <OfferForm
-          offerAmount={offerAmount}
-          message={message}
-          currencySymbol={currencySymbol}
-          onAmountChange={handleOfferAmountChange}
-          onMessageChange={setMessage}
-        />
-
-        <TipsSection />
-        
-        {/* Show message if user already has an offer */}
-        {userHasExistingOffer && (
-          <View style={styles.warningContainer}>
-            <Text style={styles.warningText}>
-              ⚠️ You have already submitted an offer for this task. Only one offer per task is allowed.
-            </Text>
-          </View>
-        )}
-      </ScrollView>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.submitButton, 
-            (isSubmitting || userHasExistingOffer || isLoadingOffers) && styles.disabledButton
-          ]}
-          onPress={userHasExistingOffer ? undefined : handleSubmitOffer}
-          disabled={isSubmitting || userHasExistingOffer || isLoadingOffers}
+        <ScrollView
+          ref={scrollRef}
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentContainerStyle={{ paddingBottom: 20 }}
         >
-          {isSubmitting || isLoadingOffers ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.submitButtonText}>
-              {userHasExistingOffer 
-                ? 'Already Offer Submitted' 
-                : isLoadingOffers 
-                  ? 'Checking Previous Offers...' 
-                  : 'Submit Offer'
-              }
-            </Text>
+          <TaskSummarySection task={task} />
+
+          <OfferForm
+            offerAmount={offerAmount}
+            message={message}
+            currencySymbol={currencySymbol}
+            budget={taskBudget}
+            validationError={validationError}
+            onAmountChange={handleOfferAmountChange}
+            onAmountFocus={handleOfferAmountFocus}
+            onMessageFocus={() => scrollRef.current?.scrollToEnd({ animated: true })}
+            onMessageChange={setMessage}
+          />
+
+          <TipsSection />
+          
+          {/* Show message if user already has an offer */}
+          {userHasExistingOffer && (
+            <View style={styles.warningContainer}>
+              <Text style={styles.warningText}>
+                ⚠️ You have already submitted an offer for this task. Only one offer per task is allowed.
+              </Text>
+            </View>
           )}
-        </TouchableOpacity>
+        </ScrollView>
+
+        <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+          <TouchableOpacity
+            style={[
+              styles.submitButton, 
+              (isSubmitting || userHasExistingOffer || isLoadingOffers || !!validationError) && styles.disabledButton
+            ]}
+            onPress={userHasExistingOffer ? undefined : handleSubmitOffer}
+            disabled={isSubmitting || userHasExistingOffer || isLoadingOffers || !!validationError}
+          >
+            {isSubmitting || isLoadingOffers ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.submitButtonText}>
+                {userHasExistingOffer 
+                  ? 'Already Offer Submitted' 
+                  : isLoadingOffers 
+                    ? 'Checking Previous Offers...' 
+                    : 'Submit Offer'
+                }
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -156,7 +176,8 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingTop: 20,
+    paddingBottom: 20,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',

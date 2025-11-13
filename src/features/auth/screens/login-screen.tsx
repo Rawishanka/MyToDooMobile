@@ -1,4 +1,8 @@
 import { useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
+import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
+import { useCreateTaskStore } from '@/src/store/create-task-store';
+import { checkPendingAction, executePendingAction } from '@/src/shared/utils/pending-action-utils';
+import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as Google from 'expo-auth-session/providers/google';
@@ -7,17 +11,17 @@ import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -32,6 +36,11 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const { mutateAsync } = useCreateAuthToken();
   const { mutateAsync: googleSignIn } = useGoogleSignIn();
+  
+  // Task store and mutation for auto-posting pending tasks
+  const { myTask, resetTask } = useCreateTaskStore();
+  const postTaskMutation = useCreateTask();
+  const { pendingAction } = usePendingActionStore();
 
   // Get Google Client ID from environment
   const googleClientId = Constants.expoConfig?.extra?.googleClientId || process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
@@ -120,10 +129,17 @@ export default function LoginScreen() {
       const result = await googleSignIn({ credential: idToken });
       
       console.log('✅ Backend authentication successful:', result);
-      console.log('🚀 Navigating to welcome screen...');
       
-      // Navigate to tabs (which shows welcome screen as default) after successful login
-      router.replace('/(tabs)' as any);
+      // Check for pending actions after successful login
+      const pendingActionType = checkPendingAction();
+      if (pendingActionType) {
+        console.log('� Found pending action after Google login, executing:', pendingActionType);
+        await executePendingAction();
+      } else {
+        console.log('🚀 No pending action, navigating to tabs...');
+        // Navigate to tabs (which shows welcome screen as default) after successful login
+        router.replace('/(tabs)' as any);
+      }
       
     } catch (error: any) {
       console.error('❌ Google Sign-In backend error:', error);
@@ -143,6 +159,72 @@ export default function LoginScreen() {
     }
   };
 
+  // Helper function to check if there's a pending task
+  const hasPendingTask = () => {
+    return myTask && myTask.title && myTask.title.trim() !== '';
+  };
+
+  // Helper function to convert task store data to API format
+  const convertTaskToAPIFormat = () => {
+    const taskDate = myTask.date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const category = !myTask.isRemoval && myTask.category ? myTask.category : "General";
+    
+    let locationString = '';
+    if (!myTask.isRemoval) {
+      // Type narrowing: myTask is CategoryTask here
+      locationString = myTask.location || '';
+    }
+    
+    return {
+      title: myTask.title || "Untitled Task",
+      category: category,
+      details: myTask.description || "",
+      dateType: "DoneBy",
+      date: taskDate,
+      time: myTask.time || "Anytime",
+      location: locationString,
+      locationType: !myTask.isRemoval ? (myTask.locationType || 'In-person') : 'In-person',
+      budget: myTask.budget || 0,
+      currency: "LKR",
+      images: [],
+    };
+  };
+
+  // Helper function to post pending task after login
+  const postPendingTask = async () => {
+    if (!hasPendingTask()) {
+      console.log('No pending task to post');
+      return false;
+    }
+
+    try {
+      console.log('🚀 Posting pending task after login...');
+      
+      // Wait for authentication token to be properly set in API client
+      console.log('⏱️ Waiting for auth token to be set in API client...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const taskData = convertTaskToAPIFormat();
+      console.log('📝 Task data:', taskData);
+      
+      const result = await postTaskMutation.mutateAsync(taskData);
+      console.log('✅ Pending task posted successfully:', result);
+      
+      // Reset task store after successful posting
+      resetTask();
+      console.log('🔄 Task store reset after posting');
+      
+      // Add delay to ensure server processes the task
+      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log('⏱️ Waited for server to process task');
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Error posting pending task:', error);
+      return false;
+    }
+  };
+
   const handleLogin = async () => {
     // Validate inputs
     if (!email || !password) {
@@ -157,8 +239,52 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       await mutateAsync({ username: email, password });
-      // Navigate back to detail screen after successful login
-      router.replace('/(tabs)' as any);
+      
+      // Check if there's a pending task to post
+      if (hasPendingTask()) {
+        console.log('📋 Pending task detected after login');
+        const taskPosted = await postPendingTask();
+        
+        if (taskPosted) {
+          Alert.alert(
+            'Success!',
+            'Login successful! Your task has been posted.',
+            [
+              {
+                text: 'View My Tasks',
+                onPress: () => {
+                  router.replace({
+                    pathname: '/(tabs)/my-tasks',
+                    params: { role: 'Poster', tab: 'posted' }
+                  } as any);
+                }
+              }
+            ]
+          );
+        } else {
+          Alert.alert(
+            'Success!',
+            'Login successful! However, there was an issue posting your task. You can create it again from the home page.',
+            [
+              {
+                text: 'OK',
+                onPress: () => router.replace('/(tabs)' as any)
+              }
+            ]
+          );
+        }
+      } else {
+        // No pending task, just navigate to home
+      // Check for pending actions after successful login
+      const pendingActionType = checkPendingAction();
+      if (pendingActionType) {
+        console.log('🔄 Found pending action after email login, executing:', pendingActionType);
+        await executePendingAction();
+      } else {
+        console.log('🚀 No pending action, navigating to tabs...');
+        // Navigate back to detail screen after successful login
+        router.replace('/(tabs)' as any);
+      }
     } catch (error: any) {
       console.error('Login Error:', error);
       
@@ -234,7 +360,15 @@ export default function LoginScreen() {
       {/* Cross icon in top right */}
       <TouchableOpacity
         style={styles.closeIcon}
-        onPress={() => router.replace('/')}
+        onPress={() => {
+          // Clear pending action if user cancels login
+          if (pendingAction) {
+            const { clearPendingAction } = usePendingActionStore.getState();
+            clearPendingAction();
+            console.log("🔄 Cleared pending action due to login cancellation");
+          }
+          router.replace('/');
+        }}
         hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
       >
         <Ionicons name="close" size={28} color="#333" />
@@ -246,6 +380,17 @@ export default function LoginScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to your account</Text>
+          {pendingAction && (
+            <View style={styles.pendingActionBanner}>
+              <Ionicons name="information-circle" size={16} color="#007AFF" />
+              <Text style={styles.pendingActionText}>
+                {pendingAction.type === 'post-task' ? 
+                  'Complete your login to post your task' :
+                  'Complete your login to continue'
+                }
+              </Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.form}>
@@ -321,7 +466,7 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
+          <Text style={styles.footerText}>Don&apos;t have an account? </Text>
           <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
             <Text style={styles.registerText}>Sign Up</Text>
           </TouchableOpacity>
@@ -461,5 +606,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.7)',
     borderRadius: 16,
     padding: 4,
+  },
+  pendingActionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginTop: 12,
+    gap: 8,
+  },
+  pendingActionText: {
+    flex: 1,
+    color: '#1976D2',
+    fontSize: 13,
+    fontWeight: '500',
   },
 });

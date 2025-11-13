@@ -1,8 +1,8 @@
 import { Task } from '@/src/api/types/tasks';
 import { useGetMyOffers, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // Components
@@ -47,6 +47,20 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
     }
   };
 
+  const handleTaskCancelled = (taskId: string) => {
+    console.log('📋 Task cancelled:', taskId);
+    console.log('   Refreshing task list to move task to Cancelled tab');
+    // Refresh the task list to update the UI
+    onRefresh();
+  };
+
+  const handleTaskDeleted = (taskId: string) => {
+    console.log('🗑️ Task deleted:', taskId);
+    console.log('   Refreshing task list to remove task');
+    // Refresh the task list to update the UI
+    onRefresh();
+  };
+
   return (
     <View style={styles.tabContent}>
       <FlatList
@@ -58,9 +72,19 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             status={status}
             userRole={userRole}
             onPress={(taskId: string) => {
-              console.log('Navigating to edit-task with taskId:', taskId);
-              router.push(`/edit-task?taskId=${taskId}` as any);
+              console.log('✏️ Navigating to edit-task with taskId:', taskId);
+              console.log('   Task data:', item);
+              // Pass full task data to edit screen
+              router.push({
+                pathname: '/edit-task',
+                params: {
+                  taskId: taskId,
+                  task: JSON.stringify(item)
+                }
+              } as any);
             }}
+            onTaskCancelled={handleTaskCancelled}
+            onTaskDeleted={handleTaskDeleted}
           />
         )}
         contentContainerStyle={[
@@ -88,10 +112,19 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
 };
 
 export default function MyTasksScreen() {
+  const params = useLocalSearchParams();
   const [searchVisible, setSearchVisible] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [userRole, setUserRole] = useState('Tasker'); // 'Tasker' or 'Poster'
   const [searchText, setSearchText] = useState('');
+
+  // Handle route parameters to set initial role
+  useEffect(() => {
+    if (params.role === 'Poster') {
+      console.log('📋 Setting user role to Poster from route params');
+      setUserRole('Poster');
+    }
+  }, [params.role]);
 
   // Get real notification count from API
   const { data: unreadCountData } = useUnreadCount();
@@ -288,10 +321,17 @@ export default function MyTasksScreen() {
     // If no cancelled tasks from API, use dummy data
     const finalCancelledTasks = cancelledTasks.length > 0 ? cancelledTasks : dummyCancelledTasks;
 
-    // For Poster role - tasks they've posted
-    const postedTasks = allTasks.filter((task: Task) => 
-      task.status === 'open' || task.status === 'active' || task.status === 'assigned'
-    );
+    // For Poster role - tasks they've posted (sorted by creation date, newest first)
+    const postedTasks = allTasks
+      .filter((task: Task) => 
+        task.status === 'open' || task.status === 'active' || task.status === 'assigned'
+      )
+      .sort((a: Task, b: Task) => {
+        // Sort by creation date in descending order (newest first)
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      });
 
     // For accepted offers - offers that have been accepted
     const acceptedTasks = allOffers.filter((offer: any) => 

@@ -141,13 +141,20 @@ export default function WelcomeScreen() {
     router.push('/(welcome-screen)/title-screen' as any);
   };
 
-  const handleTagPress = (tag: string) => {
-    setTaskInput(tag);
-    updateMyTask({
-      mainGoal: tag,
-      title: tag
-    });
-    router.push('/(welcome-screen)/title-screen' as any);
+  const handleTagPress = (categoryName: string) => {
+    console.log('📌 Category tag pressed:', categoryName);
+    console.log('   Navigating to title-screen (create-task) with category:', categoryName);
+    
+    // Navigate to title-screen (which is the create-task page) with pre-selected category
+    router.push({
+      pathname: '/(welcome-screen)/title-screen',
+      params: { 
+        selectedCategory: categoryName,
+        section: 'details'
+      }
+    } as any);
+    
+    console.log('   ✅ Navigation initiated');
   };
 
   return (
@@ -211,6 +218,7 @@ export default function WelcomeScreen() {
             <Text style={styles.postButtonText}>Post a Task</Text>
             <ChevronRight size={18} color="#fff" />
           </TouchableOpacity>
+          
           
           {/* Database Categories Tags */}
           {loadingCategories ? (

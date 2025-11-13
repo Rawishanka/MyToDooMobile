@@ -2,11 +2,11 @@ import { cardStyles, colors, spacing } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 // Import Task type
@@ -142,10 +142,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         {task.title}
       </Text>
 
-      {/* Location Type */}
+      {/* Location */}
       <View style={styles.taskRow}>
         <Ionicons name={locationInfo.icon as any} size={16} color={colors.textSecondary} />
-        <Text style={styles.taskRowText}>{locationInfo.text}</Text>
+        <Text style={styles.taskRowText} numberOfLines={1}>
+          {task.location?.address || 'Location not specified'}
+        </Text>
       </View>
 
       {/* Time Preference */}
@@ -154,10 +156,37 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <Text style={styles.taskRowText}>{getTimePreference()}</Text>
       </View>
 
+      {/* Categories */}
+      {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
+        <View style={styles.categoriesRow}>
+          {task.categories.slice(0, 2).map((category, index) => (
+            <View key={index} style={styles.categoryTag}>
+              <Text style={styles.categoryText}>{category}</Text>
+            </View>
+          ))}
+          {task.categories.length > 2 && (
+            <Text style={styles.moreCategoriesText}>
+              +{task.categories.length - 2} more
+            </Text>
+          )}
+        </View>
+      )}
+
       {/* Status and Offers Row */}
       <View style={styles.bottomRow}>
         <View style={styles.statusContainer}>
-          <Text style={styles.statusText}>Posted</Text>
+          {/* Task Status */}
+          <Text style={[styles.statusBadge, { color: getStatusColor(task.status || 'open') }]}>
+            {task.status ? task.status.charAt(0).toUpperCase() + task.status.slice(1) : 'Open'}
+          </Text>
+          {/* Posted Date */}
+          <Text style={styles.statusText}>
+            Posted {task.createdAt ? new Date(task.createdAt).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+            }) : ''}
+          </Text>
+          {/* Offer Count */}
           <Text style={styles.offerText}>
             {(task.offerCount || 0) > 0
               ? `${task.offerCount} Offer${task.offerCount !== 1 ? 's' : ''}`
@@ -309,6 +338,30 @@ const styles = StyleSheet.create({
   taskRowText: {
     fontSize: 13,
     color: colors.textSecondary,
+  },
+
+  categoriesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: spacing.xs,
+  },
+  categoryTag: {
+    backgroundColor: '#e3f2fd',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  categoryText: {
+    fontSize: 11,
+    color: '#1976d2',
+    fontWeight: '500',
+  },
+  moreCategoriesText: {
+    fontSize: 11,
+    color: '#666',
+    fontStyle: 'italic',
   },
 
   bottomRow: {

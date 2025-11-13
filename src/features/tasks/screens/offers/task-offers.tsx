@@ -1,4 +1,5 @@
 import { useGetTaskOffers } from '@/src/shared/hooks/useTaskApi';
+import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
@@ -51,6 +52,15 @@ export default function TaskOffersScreen() {
     status: offer.status as 'pending' | 'accepted' | 'rejected'
   }));
 
+  // Get currency info based on task location
+  const currencyInfo = getCurrencyFromLocation(task?.location);
+  
+  // Format budget with location-appropriate currency
+  const displayBudget = task?.formattedBudget || 
+    (task?.budget ? formatCurrency(task.budget, currencyInfo) : 
+    task?.budgetInfo?.amount ? `${task.budgetInfo.currency}${task.budgetInfo.amount}` : 
+    'Budget not specified');
+
   if (isLoading) {
     return <LoadingState message="Loading offers..." />;
   }
@@ -91,7 +101,7 @@ export default function TaskOffersScreen() {
       {/* Task Summary */}
       <TaskSummaryHeader
         title={task.title}
-        budget={task.formattedBudget || `${task.budgetInfo?.currency}${task.budgetInfo?.amount}`}
+        budget={displayBudget}
         offerCount={task.offerCount || offers.length}
       />
 

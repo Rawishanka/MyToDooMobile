@@ -1,4 +1,4 @@
-import { Entypo, FontAwesome, Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
@@ -90,19 +90,19 @@ export default function TabNavigator() {
           return (
             <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: 2 }}>
               {route.name === 'index' && (
-                <FontAwesome name="check" size={iconSize} color={iconColor} />
+                <Ionicons name="rocket" size={iconSize} color={iconColor} />
               )}
               {route.name === 'browse' && (
-                <Ionicons name="search" size={iconSize} color={iconColor} />
+                <Ionicons name="compass" size={iconSize} color={iconColor} />
               )}
               {route.name === 'my-tasks' && (
-                <Ionicons name="clipboard-outline" size={iconSize} color={iconColor} />
+                <Ionicons name="list" size={iconSize} color={iconColor} />
               )}
               {route.name === 'message' && (
-                <Entypo name="chat" size={iconSize} color={iconColor} />
+                <Ionicons name="chatbubbles" size={iconSize} color={iconColor} />
               )}
               {route.name === 'account' && (
-                <FontAwesome name="user-circle-o" size={iconSize} color={iconColor} />
+                <Ionicons name="person-circle" size={iconSize} color={iconColor} />
               )}
             </View>
           );

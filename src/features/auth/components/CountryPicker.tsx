@@ -11,6 +11,7 @@ interface CountryPickerProps {
   showPicker: boolean;
   onTogglePicker: () => void;
   onSelectCountry: (country: CountryData) => void;
+  hasError?: boolean;
 }
 
 export const CountryPicker: React.FC<CountryPickerProps> = ({
@@ -18,11 +19,12 @@ export const CountryPicker: React.FC<CountryPickerProps> = ({
   showPicker,
   onTogglePicker,
   onSelectCountry,
+  hasError = false,
 }) => {
   return (
     <View>
       <TouchableOpacity 
-        style={styles.dropdownContainer}
+        style={[styles.dropdownContainer, hasError && styles.dropdownError]}
         onPress={onTogglePicker}
         activeOpacity={0.7}
       >
@@ -68,7 +70,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     backgroundColor: '#FAFAFA',
-    marginBottom: 16,
+    marginBottom: 4,
+  },
+  dropdownError: {
+    borderColor: '#FF3B30',
+    backgroundColor: '#FFF5F5',
   },
   dropdownText: {
     fontSize: 15,

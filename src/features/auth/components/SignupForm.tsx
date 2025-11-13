@@ -2,9 +2,12 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -47,6 +50,7 @@ interface SignupFormProps {
   
   // Loading
   loading: boolean;
+  googleLoading?: boolean;
   
   // Setters
   setFirstName: (value: string) => void;
@@ -66,6 +70,7 @@ interface SignupFormProps {
   // Handlers
   handleSignUp: () => void;
   handleDateChange: (event: DateTimePickerEvent, selectedDate?: Date) => void;
+  handleGoogleSignIn?: () => void;
 }
 
 export const SignupForm: React.FC<SignupFormProps> = ({
@@ -83,6 +88,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   showCountryPicker,
   showDatePicker,
   loading,
+  googleLoading,
   setFirstName,
   setLastName,
   setEmail,
@@ -98,30 +104,66 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   setDateOfBirth,
   handleSignUp,
   handleDateChange,
+  handleGoogleSignIn,
 }) => {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  
+  // Refs for input fields to enable scrolling to error
+  const firstNameRef = useRef<TextInput>(null);
+  const lastNameRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const validateField = (field: string, value: any) => {
     const newErrors = { ...errors };
 
     switch (field) {
       case 'firstName':
+        // Check if empty or whitespace only
         if (!value || value.trim() === '') {
           newErrors.firstName = 'First name is required';
-        } else if (value.trim().length < 2) {
-          newErrors.firstName = 'First name must be at least 2 characters';
-        } else {
+        }
+        // Check for numbers only
+        else if (/^\d+$/.test(value.trim())) {
+          newErrors.firstName = 'Only letters allowed';
+        }
+        // Check for special characters or numbers
+        else if (!/^[a-zA-Z\s'-]+$/.test(value.trim())) {
+          newErrors.firstName = 'Only letters allowed';
+        }
+        // Check maximum length (50 characters)
+        else if (value.trim().length > 50) {
+          newErrors.firstName = 'First name must not exceed 50 characters';
+        }
+        // Valid input
+        else {
           delete newErrors.firstName;
         }
         break;
 
       case 'lastName':
+        // Check if empty or whitespace only
         if (!value || value.trim() === '') {
           newErrors.lastName = 'Last name is required';
-        } else if (value.trim().length < 2) {
-          newErrors.lastName = 'Last name must be at least 2 characters';
-        } else {
+        }
+        // Check for numbers only
+        else if (/^\d+$/.test(value.trim())) {
+          newErrors.lastName = 'Only letters allowed';
+        }
+        // Check for special characters or numbers
+        else if (!/^[a-zA-Z\s'-]+$/.test(value.trim())) {
+          newErrors.lastName = 'Only letters allowed';
+        }
+        // Check maximum length (50 characters)
+        else if (value.trim().length > 50) {
+          newErrors.lastName = 'Last name must not exceed 50 characters';
+        }
+        // Valid input
+        else {
           delete newErrors.lastName;
         }
         break;
@@ -243,20 +285,138 @@ export const SignupForm: React.FC<SignupFormProps> = ({
     });
     setTouched(newTouched);
 
-    // Validate all fields
-    validateField('firstName', firstName);
-    validateField('lastName', lastName);
-    validateField('email', email);
-    validateField('phone', phone);
-    validateField('password', password);
-    validateField('confirmPassword', confirmPassword);
-    validateField('dateOfBirth', dateOfBirth);
-    validateField('location', selectedLocation);
-
-    // If no errors, proceed with signup
-    if (Object.keys(errors).length === 0) {
-      handleSignUp();
+    // Collect all validation errors
+    const validationErrors: ValidationErrors = {};
+    
+    // Validate each field and collect errors
+    if (!firstName || firstName.trim() === '') {
+      validationErrors.firstName = 'First name is required';
+    } else if (/^\d+$/.test(firstName.trim())) {
+      validationErrors.firstName = 'Only letters allowed';
+    } else if (!/^[a-zA-Z\s'-]+$/.test(firstName.trim())) {
+      validationErrors.firstName = 'Only letters allowed';
+    } else if (firstName.trim().length > 50) {
+      validationErrors.firstName = 'First name must not exceed 50 characters';
     }
+    
+    if (!lastName || lastName.trim() === '') {
+      validationErrors.lastName = 'Last name is required';
+    } else if (/^\d+$/.test(lastName.trim())) {
+      validationErrors.lastName = 'Only letters allowed';
+    } else if (!/^[a-zA-Z\s'-]+$/.test(lastName.trim())) {
+      validationErrors.lastName = 'Only letters allowed';
+    } else if (lastName.trim().length > 50) {
+      validationErrors.lastName = 'Last name must not exceed 50 characters';
+    }
+    
+    if (!email || email.trim() === '') {
+      validationErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      validationErrors.email = 'Please enter a valid email address';
+    }
+    
+    if (!phone || phone.trim() === '') {
+      validationErrors.phone = 'Mobile number is required';
+    } else if (!/^[0-9]{7,15}$/.test(phone.replace(/[\s-]/g, ''))) {
+      validationErrors.phone = 'Please enter a valid phone number';
+    }
+    
+    if (!password) {
+      validationErrors.password = 'Password is required';
+    } else if (password.length < 8) {
+      validationErrors.password = 'Password must be at least 8 characters';
+    } else if (!/(?=.*[a-z])/.test(password)) {
+      validationErrors.password = 'Password must contain at least one lowercase letter';
+    } else if (!/(?=.*[A-Z])/.test(password)) {
+      validationErrors.password = 'Password must contain at least one uppercase letter';
+    } else if (!/(?=.*\d)/.test(password)) {
+      validationErrors.password = 'Password must contain at least one number';
+    }
+    
+    if (!confirmPassword) {
+      validationErrors.confirmPassword = 'Please confirm your password';
+    } else if (confirmPassword !== password) {
+      validationErrors.confirmPassword = 'Passwords do not match';
+    }
+    
+    if (!dateOfBirth) {
+      validationErrors.dateOfBirth = 'Date of birth is required';
+    } else {
+      const age = new Date().getFullYear() - dateOfBirth.getFullYear();
+      if (age < 18) {
+        validationErrors.dateOfBirth = 'You must be at least 18 years old';
+      }
+    }
+    
+    if (!selectedLocation) {
+      validationErrors.location = 'Location is required';
+    }
+    
+    // Set all errors at once
+    setErrors(validationErrors);
+    
+    // If there are errors, show alert and focus on first error field
+    if (Object.keys(validationErrors).length > 0) {
+      // Find first error field
+      const firstErrorField = allFields.find(field => validationErrors[field as keyof ValidationErrors]);
+      
+      // Create error message with specific field names
+      const errorCount = Object.keys(validationErrors).length;
+      const missingFields = Object.keys(validationErrors).map(field => {
+        switch(field) {
+          case 'firstName': return 'First Name';
+          case 'lastName': return 'Last Name';
+          case 'email': return 'Email';
+          case 'phone': return 'Mobile Number';
+          case 'password': return 'Password';
+          case 'confirmPassword': return 'Confirm Password';
+          case 'dateOfBirth': return 'Date of Birth';
+          case 'location': return 'Location';
+          default: return field;
+        }
+      });
+      
+      const errorMessage = errorCount === 1 
+        ? `Please fill in: ${missingFields[0]}`
+        : `Please fill in the following fields:\n• ${missingFields.join('\n• ')}`;
+      
+      Alert.alert(
+        'Please Complete Form',
+        errorMessage,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Focus on first error field
+              switch(firstErrorField) {
+                case 'firstName':
+                  firstNameRef.current?.focus();
+                  break;
+                case 'lastName':
+                  lastNameRef.current?.focus();
+                  break;
+                case 'email':
+                  emailRef.current?.focus();
+                  break;
+                case 'phone':
+                  phoneRef.current?.focus();
+                  break;
+                case 'password':
+                  passwordRef.current?.focus();
+                  break;
+                case 'confirmPassword':
+                  confirmPasswordRef.current?.focus();
+                  break;
+              }
+            }
+          }
+        ]
+      );
+      return;
+    }
+    
+    // If no errors, proceed with signup
+    handleSignUp();
   };
 
   return (
@@ -268,15 +428,22 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             First Name <Text style={styles.required}>*</Text>
           </Text>
           <TextInput
+            ref={firstNameRef}
             style={[styles.input, touched.firstName && errors.firstName && styles.inputError]}
             value={firstName}
             onChangeText={(text) => {
-              setFirstName(text);
-              if (touched.firstName) validateField('firstName', text);
+              // Limit to 50 characters
+              if (text.length <= 50) {
+                setFirstName(text);
+                if (touched.firstName) validateField('firstName', text);
+              }
             }}
             onBlur={() => handleBlur('firstName')}
             placeholder="Enter first name"
             autoCapitalize="words"
+            maxLength={50}
+            returnKeyType="next"
+            onSubmitEditing={() => lastNameRef.current?.focus()}
           />
           {touched.firstName && errors.firstName && (
             <Text style={styles.errorText}>{errors.firstName}</Text>
@@ -288,15 +455,22 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             Last Name <Text style={styles.required}>*</Text>
           </Text>
           <TextInput
+            ref={lastNameRef}
             style={[styles.input, touched.lastName && errors.lastName && styles.inputError]}
             value={lastName}
             onChangeText={(text) => {
-              setLastName(text);
-              if (touched.lastName) validateField('lastName', text);
+              // Limit to 50 characters
+              if (text.length <= 50) {
+                setLastName(text);
+                if (touched.lastName) validateField('lastName', text);
+              }
             }}
             onBlur={() => handleBlur('lastName')}
             placeholder="Enter last name"
             autoCapitalize="words"
+            maxLength={50}
+            returnKeyType="next"
+            onSubmitEditing={() => emailRef.current?.focus()}
           />
           {touched.lastName && errors.lastName && (
             <Text style={styles.errorText}>{errors.lastName}</Text>
@@ -309,6 +483,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         Email <Text style={styles.required}>*</Text>
       </Text>
       <TextInput
+        ref={emailRef}
         style={[styles.input, touched.email && errors.email && styles.inputError]}
         value={email}
         onChangeText={(text) => {
@@ -319,6 +494,8 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         placeholder="Enter your email"
         keyboardType="email-address"
         autoCapitalize="none"
+        returnKeyType="next"
+        onSubmitEditing={() => phoneRef.current?.focus()}
       />
       {touched.email && errors.email && (
         <Text style={styles.errorText}>{errors.email}</Text>
@@ -334,11 +511,18 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       />
 
       {/* Location Input */}
+      <Text style={styles.label}>
+        Location <Text style={styles.required}>*</Text>
+      </Text>
       <LocationInput
         selectedLocation={selectedLocation}
         countryCode={selectedCountry.code}
-        onLocationSelect={setSelectedLocation}
+        onLocationSelect={(loc) => setSelectedLocation(loc)}
+        hasError={!!(touched.location && errors.location)}
       />
+      {touched.location && errors.location && (
+        <Text style={styles.errorText}>{errors.location}</Text>
+      )}
 
       {/* Date of Birth */}
       <DatePickerInput
@@ -347,25 +531,31 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         onTogglePicker={setShowDatePicker}
         onDateChange={handleDateChange}
       />
+      {touched.dateOfBirth && errors.dateOfBirth && (
+        <Text style={styles.errorText}>{errors.dateOfBirth}</Text>
+      )}
 
       {/* Mobile Number */}
       <Text style={styles.label}>
         Mobile Number <Text style={styles.required}>*</Text>
       </Text>
-      <View style={styles.phoneContainer}>
+      <View style={[styles.phoneContainer, touched.phone && errors.phone && styles.inputError]}>
         <View style={styles.phonePrefix}>
           <Text style={styles.phonePrefixText}>{selectedCountry.phoneCode}</Text>
         </View>
         <TextInput
-          style={[styles.phoneInput, touched.phone && errors.phone && styles.inputError]}
+          ref={phoneRef}
+          style={styles.phoneInput}
           value={phone}
           onChangeText={(text) => {
             setPhone(text);
             if (touched.phone) validateField('phone', text);
           }}
           onBlur={() => handleBlur('phone')}
-          placeholder="754640658"
+          placeholder="Mobile number"
           keyboardType="phone-pad"
+          returnKeyType="next"
+          onSubmitEditing={() => passwordRef.current?.focus()}
         />
       </View>
       {touched.phone && errors.phone && (
@@ -378,16 +568,18 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       </Text>
       <View style={[styles.passwordContainer, touched.password && errors.password && styles.inputError]}>
         <TextInput
+          ref={passwordRef}
           style={styles.passwordInput}
           value={password}
           onChangeText={(text) => {
             setPassword(text);
             if (touched.password) validateField('password', text);
-            if (touched.confirmPassword && confirmPassword) validateField('confirmPassword', confirmPassword);
           }}
           onBlur={() => handleBlur('password')}
-          placeholder="Enter your password"
+          placeholder="Create a password"
           secureTextEntry={!showPassword}
+          returnKeyType="next"
+          onSubmitEditing={() => confirmPasswordRef.current?.focus()}
         />
         <TouchableOpacity 
           style={styles.passwordToggle}
@@ -411,6 +603,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       </Text>
       <View style={[styles.passwordContainer, touched.confirmPassword && errors.confirmPassword && styles.inputError]}>
         <TextInput
+          ref={confirmPasswordRef}
           style={styles.passwordInput}
           value={confirmPassword}
           onChangeText={(text) => {
@@ -420,6 +613,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           onBlur={() => handleBlur('confirmPassword')}
           placeholder="Confirm your password"
           secureTextEntry={!showConfirmPassword}
+          returnKeyType="done"
         />
         <TouchableOpacity 
           style={styles.passwordToggle}
@@ -449,6 +643,36 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           <Text style={styles.signUpButtonText}>Continue</Text>
         )}
       </TouchableOpacity>
+
+      {/* Divider */}
+      {handleGoogleSignIn && (
+        <>
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>OR</Text>
+            <View style={styles.divider} />
+          </View>
+
+          {/* Google Sign-In Button */}
+          <TouchableOpacity 
+            style={styles.googleButton} 
+            onPress={handleGoogleSignIn} 
+            disabled={googleLoading || loading}
+          >
+            {googleLoading ? (
+              <ActivityIndicator color="#666" />
+            ) : (
+              <>
+                <Image 
+                  source={require('@/assets/icons/google.png')}
+                  style={styles.googleIcon}
+                />
+                <Text style={styles.googleButtonText}>Continue with Google</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 };
@@ -532,28 +756,65 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#E0E0E0',
     borderRadius: 10,
-    marginBottom: 16,
+    paddingHorizontal: 16,
+    marginBottom: 4,
     backgroundColor: '#FAFAFA',
   },
   passwordInput: {
     flex: 1,
-    paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 15,
   },
   passwordToggle: {
-    paddingHorizontal: 12,
+    padding: 8,
   },
   signUpButton: {
-    backgroundColor: '#0057FF',
-    paddingVertical: 16,
+    backgroundColor: '#007AFF',
     borderRadius: 10,
+    paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 24,
   },
   signUpButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E0E0E0',
+  },
+  dividerText: {
+    marginHorizontal: 10,
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    marginBottom: 16,
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+  },
+  googleButtonText: {
+    color: '#333',
+    fontWeight: '600',
+    fontSize: 15,
   },
 });

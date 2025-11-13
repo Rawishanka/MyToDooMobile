@@ -18,6 +18,7 @@ interface DatePickerInputProps {
   showDatePicker: boolean;
   onTogglePicker: (show: boolean) => void;
   onDateChange: (event: DateTimePickerEvent, selectedDate?: Date) => void;
+  hasError?: boolean;
 }
 
 export const DatePickerInput: React.FC<DatePickerInputProps> = ({
@@ -25,17 +26,16 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
   showDatePicker,
   onTogglePicker,
   onDateChange,
+  hasError = false,
 }) => {
   return (
     <>
-      <Text style={styles.label}>Date of Birth *</Text>
-      <Text style={styles.subLabel}>You must be 18 years or older to create an account</Text>
       <TouchableOpacity 
         style={styles.dateInputContainer}
         onPress={() => onTogglePicker(true)}
         activeOpacity={0.7}
       >
-        <View style={styles.dateInputWrapper}>
+        <View style={[styles.dateInputWrapper, hasError && styles.dateInputError]}>
           <Ionicons 
             name="calendar-outline" 
             size={18} 
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   dateInputContainer: {
-    marginBottom: 16,
+    marginBottom: 4,
   },
   dateInputWrapper: {
     flexDirection: 'row',
@@ -118,6 +118,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     backgroundColor: '#FAFAFA',
+  },
+  dateInputError: {
+    borderColor: '#FF3B30',
+    backgroundColor: '#FFF5F5',
   },
   dateIcon: {
     marginRight: 10,

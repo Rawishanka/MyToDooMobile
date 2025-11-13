@@ -2,16 +2,16 @@ import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import {
-  AskQuestionModal,
-  DetailHeader,
-  ErrorState,
-  LoadingState,
-  MakeOfferSection,
-  MyOfferCard,
-  OffersList,
-  QuestionsList,
-  TabsSection,
-  TaskInfoCard,
+    AskQuestionModal,
+    DetailHeader,
+    ErrorState,
+    LoadingState,
+    MakeOfferSection,
+    MyOfferCard,
+    OffersList,
+    QuestionsList,
+    TabsSection,
+    TaskInfoCard,
 } from './components';
 import { useTaskDetail } from './hooks/useTaskDetail';
 
@@ -21,14 +21,13 @@ export default function TaskDetailScreen() {
   const {
     task,
     taskOffers,
-    allOffers,
     myOffer,
     questions,
     isLoading,
     error,
     refetch,
+    refetchQuestions,
     isLoadingTaskOffers,
-    isLoadingAllOffers,
     isLoadingQuestions,
     activeTab,
     setActiveTab,
@@ -62,7 +61,10 @@ export default function TaskDetailScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Only show Make Offer section to taskers (not the task creator) */}
         {task?.createdBy?._id !== currentUser?._id && (
-          <MakeOfferSection onMakeOffer={handleMakeOffer} />
+          <MakeOfferSection 
+            onMakeOffer={handleMakeOffer} 
+            offerCount={task?.offerCount || taskOffers.length}
+          />
         )}
 
         <TaskInfoCard
@@ -78,6 +80,7 @@ export default function TaskDetailScreen() {
             offer={myOffer || taskOffers[0]} 
             isTaskPoster={task?.createdBy?._id === currentUser?._id}
             onAcceptOffer={handleAcceptOffer}
+            taskLocation={task?.location}
           />
         )}
 
@@ -86,18 +89,23 @@ export default function TaskDetailScreen() {
         <View style={styles.tabContent}>
           {activeTab === 'offers' ? (
             <OffersList 
-              offers={allOffers} 
-              isLoading={isLoadingAllOffers}
+              offers={taskOffers} 
+              isLoading={isLoadingTaskOffers}
               taskCreatorId={task?.createdBy?._id}
               currentUserId={currentUser?._id}
               onAcceptOffer={handleAcceptOffer}
               excludeOfferId={myOffer?._id || (task?.createdBy?._id === currentUser?._id && taskOffers.length > 0 ? taskOffers[0]._id : undefined)}
+              taskLocation={task?.location}
             />
           ) : (
             <QuestionsList
               questions={questions}
               isLoading={isLoadingQuestions}
               onAskQuestion={() => setShowAskQuestion(true)}
+              taskId={taskId}
+              currentUserId={currentUser?._id}
+              taskCreatorId={task?.createdBy?._id}
+              onRefreshQuestions={refetchQuestions}
             />
           )}
         </View>

@@ -1,3 +1,4 @@
+import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -12,6 +13,7 @@ interface PaymentDetailsProps {
   };
   amount?: number;
   offerMessage?: string;
+  taskLocation?: { address?: string };
 }
 
 export default function PaymentDetails({
@@ -19,7 +21,11 @@ export default function PaymentDetails({
   taskPerformer,
   amount,
   offerMessage,
+  taskLocation,
 }: PaymentDetailsProps) {
+  // Get location-based currency info
+  const currencyInfo = getCurrencyFromLocation(taskLocation);
+  
   return (
     <View style={styles.container}>
       <Text style={styles.sectionTitle}>💰 Payment Details</Text>
@@ -41,7 +47,9 @@ export default function PaymentDetails({
         
         <View style={styles.row}>
           <Text style={styles.label}>Agreed Amount:</Text>
-          <Text style={styles.amount}>${amount}</Text>
+          <Text style={styles.amount}>
+            {amount ? formatCurrency(amount, currencyInfo) : 'N/A'}
+          </Text>
         </View>
         
         {offerMessage && (

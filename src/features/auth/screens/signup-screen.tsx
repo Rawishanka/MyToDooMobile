@@ -82,6 +82,7 @@ export default function SignUpScreen() {
             showCountryPicker={signup.showCountryPicker}
             showDatePicker={signup.showDatePicker}
             loading={signup.loading}
+            googleLoading={signup.googleLoading}
             setFirstName={signup.setFirstName}
             setLastName={signup.setLastName}
             setEmail={signup.setEmail}
@@ -97,6 +98,7 @@ export default function SignUpScreen() {
             setDateOfBirth={signup.setDateOfBirth}
             handleSignUp={signup.handleSignUp}
             handleDateChange={handleDateChange}
+            handleGoogleSignIn={signup.handleGoogleSignIn}
           />
 
           <View style={styles.footer}>
@@ -189,6 +191,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 20,
+    marginBottom: 32, // Added margin to avoid overlay with system navigation
   },
   footerText: {
     color: '#666',
