@@ -1,6 +1,8 @@
 import { useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
 import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
+import { checkPendingAction, executePendingAction } from '@/src/shared/utils/pending-action-utils';
+import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import * as Google from 'expo-auth-session/providers/google';
@@ -9,17 +11,17 @@ import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -38,6 +40,7 @@ export default function LoginScreen() {
   // Task store and mutation for auto-posting pending tasks
   const { myTask, resetTask } = useCreateTaskStore();
   const postTaskMutation = useCreateTask();
+  const { pendingAction } = usePendingActionStore();
 
   // Get Google Client ID from environment
   const googleClientId = Constants.expoConfig?.extra?.googleClientId || process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
@@ -126,10 +129,17 @@ export default function LoginScreen() {
       const result = await googleSignIn({ credential: idToken });
       
       console.log('✅ Backend authentication successful:', result);
-      console.log('🚀 Navigating to welcome screen...');
       
-      // Navigate to tabs (which shows welcome screen as default) after successful login
-      router.replace('/(tabs)' as any);
+      // Check for pending actions after successful login
+      const pendingActionType = checkPendingAction();
+      if (pendingActionType) {
+        console.log('� Found pending action after Google login, executing:', pendingActionType);
+        await executePendingAction();
+      } else {
+        console.log('🚀 No pending action, navigating to tabs...');
+        // Navigate to tabs (which shows welcome screen as default) after successful login
+        router.replace('/(tabs)' as any);
+      }
       
     } catch (error: any) {
       console.error('❌ Google Sign-In backend error:', error);
@@ -265,6 +275,14 @@ export default function LoginScreen() {
         }
       } else {
         // No pending task, just navigate to home
+      // Check for pending actions after successful login
+      const pendingActionType = checkPendingAction();
+      if (pendingActionType) {
+        console.log('🔄 Found pending action after email login, executing:', pendingActionType);
+        await executePendingAction();
+      } else {
+        console.log('🚀 No pending action, navigating to tabs...');
+        // Navigate back to detail screen after successful login
         router.replace('/(tabs)' as any);
       }
     } catch (error: any) {
@@ -342,7 +360,15 @@ export default function LoginScreen() {
       {/* Cross icon in top right */}
       <TouchableOpacity
         style={styles.closeIcon}
-        onPress={() => router.replace('/')}
+        onPress={() => {
+          // Clear pending action if user cancels login
+          if (pendingAction) {
+            const { clearPendingAction } = usePendingActionStore.getState();
+            clearPendingAction();
+            console.log("🔄 Cleared pending action due to login cancellation");
+          }
+          router.replace('/');
+        }}
         hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
       >
         <Ionicons name="close" size={28} color="#333" />
@@ -354,6 +380,17 @@ export default function LoginScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to your account</Text>
+          {pendingAction && (
+            <View style={styles.pendingActionBanner}>
+              <Ionicons name="information-circle" size={16} color="#007AFF" />
+              <Text style={styles.pendingActionText}>
+                {pendingAction.type === 'post-task' ? 
+                  'Complete your login to post your task' :
+                  'Complete your login to continue'
+                }
+              </Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.form}>
@@ -569,5 +606,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.7)',
     borderRadius: 16,
     padding: 4,
+  },
+  pendingActionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginTop: 12,
+    gap: 8,
+  },
+  pendingActionText: {
+    flex: 1,
+    color: '#1976D2',
+    fontSize: 13,
+    fontWeight: '500',
   },
 });
