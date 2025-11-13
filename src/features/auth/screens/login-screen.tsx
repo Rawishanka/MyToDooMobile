@@ -1,6 +1,6 @@
 import { useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
-import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
+import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { checkPendingAction, executePendingAction } from '@/src/shared/utils/pending-action-utils';
 import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons } from '@expo/vector-icons';
@@ -466,7 +466,7 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
+          <Text style={styles.footerText}>Don&apos;t have an account? </Text>
           <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
             <Text style={styles.registerText}>Sign Up</Text>
           </TouchableOpacity>

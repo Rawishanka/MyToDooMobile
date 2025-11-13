@@ -6,6 +6,7 @@ import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -49,6 +50,7 @@ interface SignupFormProps {
   
   // Loading
   loading: boolean;
+  googleLoading?: boolean;
   
   // Setters
   setFirstName: (value: string) => void;
@@ -68,6 +70,7 @@ interface SignupFormProps {
   // Handlers
   handleSignUp: () => void;
   handleDateChange: (event: DateTimePickerEvent, selectedDate?: Date) => void;
+  handleGoogleSignIn?: () => void;
 }
 
 export const SignupForm: React.FC<SignupFormProps> = ({
@@ -85,6 +88,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   showCountryPicker,
   showDatePicker,
   loading,
+  googleLoading,
   setFirstName,
   setLastName,
   setEmail,
@@ -100,6 +104,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   setDateOfBirth,
   handleSignUp,
   handleDateChange,
+  handleGoogleSignIn,
 }) => {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -638,6 +643,36 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           <Text style={styles.signUpButtonText}>Continue</Text>
         )}
       </TouchableOpacity>
+
+      {/* Divider */}
+      {handleGoogleSignIn && (
+        <>
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>OR</Text>
+            <View style={styles.divider} />
+          </View>
+
+          {/* Google Sign-In Button */}
+          <TouchableOpacity 
+            style={styles.googleButton} 
+            onPress={handleGoogleSignIn} 
+            disabled={googleLoading || loading}
+          >
+            {googleLoading ? (
+              <ActivityIndicator color="#666" />
+            ) : (
+              <>
+                <Image 
+                  source={require('@/assets/icons/google.png')}
+                  style={styles.googleIcon}
+                />
+                <Text style={styles.googleButtonText}>Continue with Google</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 };
@@ -744,5 +779,42 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E0E0E0',
+  },
+  dividerText: {
+    marginHorizontal: 10,
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    marginBottom: 16,
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+  },
+  googleButtonText: {
+    color: '#333',
+    fontWeight: '600',
+    fontSize: 15,
   },
 });

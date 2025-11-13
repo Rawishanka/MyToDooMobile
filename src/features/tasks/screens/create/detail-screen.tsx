@@ -155,24 +155,33 @@ export default function DetailScreen() {
       const response = await postTaskMutation.mutateAsync(taskData);
       console.log("✅ Task posted successfully:", response);
       
-      // Reset task store after successful posting
-      resetTask();
-      console.log("🔄 Task store reset after successful posting");
-      
-      // Show success message
-      Alert.alert(
-        "Success!", 
-        "Your task has been posted successfully and will appear in My Tasks!",
-        [
-          {
-            text: "View My Tasks",
-            onPress: () => {
-              // Navigate back to tabs and then to my-tasks tab
-              router.replace('/(tabs)/my-tasks');
+      // Only show success alert if response is valid and successful
+      if (response && (response.success || response.data)) {
+        // Reset task store after confirmed successful posting
+        resetTask();
+        console.log("🔄 Task store reset after successful posting");
+        
+        // Show success message only after confirmed success
+        Alert.alert(
+          "Posted Successfully!", 
+          "Your task has been posted and is now live. You can view it in My Tasks.",
+          [
+            {
+              text: "View My Tasks",
+              onPress: () => {
+                // Navigate to My Tasks with Poster role
+                router.replace({
+                  pathname: '/(tabs)/my-tasks',
+                  params: { role: 'Poster', tab: 'posted' }
+                } as any);
+              }
             }
-          }
-        ]
-      );
+          ]
+        );
+      } else {
+        // If response doesn't indicate success, show error
+        throw new Error("Task posting failed - no success confirmation from server");
+      }
       
     } catch (error: any) {
       console.error('❌ Error posting task:', error);
