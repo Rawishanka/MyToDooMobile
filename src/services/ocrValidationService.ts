@@ -1,5 +1,5 @@
 // Enhanced OCR validation service with Gemini AI integration
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
 /**
@@ -50,9 +50,22 @@ export interface ValidationOptions {
   failFast?: boolean;
 }
 
-// Gemini AI Configuration
+// Gemini AI Configuration - Multiple model support
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY';
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+
+// Legacy support - deprecated, use simpleOcrService instead
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent';
+
+// Try multiple models in order of preference
+const GEMINI_MODELS = [
+  'gemini-1.5-pro',
+  'gemini-1.5-flash', 
+  'gemini-pro-vision',
+  'gemini-pro'
+];
+
+const getGeminiUrl = (model: string) => 
+  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
 // Enable debug mode for OCR validation
 const DEBUG_MODE = __DEV__;
@@ -232,6 +245,8 @@ Respond ONLY with valid JSON in this exact format:
       if (DEBUG_MODE) {
         console.log('🤖 Sending request to Gemini API:', {
           url: `${GEMINI_API_URL}?key=${GEMINI_API_KEY ? 'PROVIDED' : 'MISSING'}`,
+          apiKeyLength: GEMINI_API_KEY ? GEMINI_API_KEY.length : 0,
+          modelUsed: GEMINI_API_URL.split('/').pop(),
           taskContext: {
             title: taskContext.title,
             category: taskContext.category,
@@ -250,6 +265,49 @@ Respond ONLY with valid JSON in this exact format:
 
       if (!response.ok) {
         const errorText = await response.text();
+        
+        // Try fallback with gemini-1.5-flash model if gemini-1.5-pro fails
+        if (response.status === 404 && GEMINI_API_URL.includes('gemini-1.5-pro')) {
+          console.log('🔄 Trying fallback to gemini-1.5-flash model...');
+          const fallbackUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+          
+          // Remove image data for text-only model
+          const fallbackBody = {
+            contents: [{
+              parts: [{ text: `Analyze this task: "${taskContext.title}" in category "${taskContext.category}". Description: "${taskContext.description}". Rate relevance 1-10 and respond with JSON: {"description": "analysis", "relevanceScore": 7, "isRelevant": true, "extractedText": "", "suggestions": [], "reasoning": "explanation"}` }]
+            }],
+            generationConfig: {
+              temperature: 0.1,
+              maxOutputTokens: 1000,
+            }
+          };
+
+          const fallbackResponse = await fetch(`${fallbackUrl}?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(fallbackBody)
+          });
+
+          if (fallbackResponse.ok) {
+            const fallbackResult = await fallbackResponse.json();
+            const fallbackAiResponse = fallbackResult.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            if (fallbackAiResponse) {
+              let cleanedResponse = fallbackAiResponse.trim();
+              if (cleanedResponse.startsWith('```json')) {
+                cleanedResponse = cleanedResponse.replace(/```json\s*/, '').replace(/```\s*$/, '');
+              }
+              
+              const parsedResponse = JSON.parse(cleanedResponse);
+              return {
+                text: parsedResponse.extractedText || '',
+                analysis: parsedResponse.description || 'Fallback analysis using text-only model',
+                confidence: parsedResponse.relevanceScore / 10
+              };
+            }
+          }
+        }
+        
         throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
       }
 
@@ -502,6 +560,44 @@ Respond ONLY with valid JSON in this exact format:
   }
 
   /**
+   * Basic image file validation
+   */
+  private async validateImageFile(imageUri: string): Promise<{ isValid: boolean; message: string }> {
+    try {
+      // Check if image URI is valid
+      if (!imageUri || imageUri.trim() === '') {
+        return { isValid: false, message: 'No image provided' };
+      }
+
+      // Check file extension if available
+      const extension = imageUri.toLowerCase().split('.').pop();
+      const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+      
+      if (extension && !validExtensions.includes(extension)) {
+        return { isValid: false, message: 'Invalid image format. Please use JPG, PNG, or other standard image formats.' };
+      }
+
+      // Try to get file info (this is a basic check)
+      try {
+        const fileInfo = await FileSystem.getInfoAsync(imageUri);
+        if (fileInfo.exists && fileInfo.size && fileInfo.size > 0) {
+          return { isValid: true, message: 'Image file is valid' };
+        }
+      } catch (error) {
+        // File info check failed, but this might be normal for some URIs
+        console.log('File info check failed (this may be normal):', error);
+      }
+
+      // Default to valid if we can't determine otherwise
+      return { isValid: true, message: 'Image appears to be valid' };
+      
+    } catch (error) {
+      console.warn('Image validation failed:', error);
+      return { isValid: true, message: 'Image validation skipped due to error' };
+    }
+  }
+
+  /**
    * Enhanced validation with Gemini AI integration
    */
   async validateImage(
@@ -517,6 +613,19 @@ Respond ONLY with valid JSON in this exact format:
       console.log('🔍 Starting enhanced validation with AI for image:', imageUri);
       console.log('📋 Task context:', taskContext);
       console.log('⚙️ Options:', { strictMode, minConfidence, useAI });
+    }
+    
+    // Basic image file validation first
+    const imageFileCheck = await this.validateImageFile(imageUri);
+    if (!imageFileCheck.isValid) {
+      return {
+        isValid: false,
+        extractedText: '',
+        confidence: 0,
+        message: `❌ Invalid image: ${imageFileCheck.message}`,
+        errorMessage: imageFileCheck.message,
+        keywords: { found: [], missing: [] }
+      };
     }
     
     try {
@@ -552,6 +661,11 @@ Respond ONLY with valid JSON in this exact format:
           
         } catch (aiError) {
           console.log('🤖 AI analysis failed, falling back to traditional method:', aiError);
+          
+          // Set a basic analysis result for fallback
+          aiAnalysis = `Basic image validation (AI unavailable): Image uploaded for task "${taskContext.title}" in category "${taskContext.category}". Please ensure the image clearly shows the work area or task requirements.`;
+          extractedText = '';
+          confidence = 0.5; // Moderate confidence for fallback
         }
       }
       

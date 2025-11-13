@@ -23,12 +23,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Import OCR validation service only (no UI components)
+// Import smart image validation
 import {
-  OCRValidationResult,
+  SmartValidationResult,
   TaskContext,
-  validateSingleImage
-} from '@/src/services/ocrValidationService';
+  validateImageSmart
+} from '@/src/services/smartImageValidator';
 
 import {
   DateOptionSelector,
@@ -95,9 +95,19 @@ export default function CreateTaskScreen() {
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
 
   // OCR validation states - simplified (no blocking behavior)
-  const [validationResults, setValidationResults] = useState<Map<string, OCRValidationResult>>(new Map());
+  const [validationResults, setValidationResults] = useState<Map<string, SmartValidationResult>>(new Map());
   const [currentValidationImage, setCurrentValidationImage] = useState<string>('');
   const [isValidatingImage, setIsValidatingImage] = useState(false);
+
+  // Debug validation results state changes
+  useEffect(() => {
+    console.log('🔍 Validation results state changed:');
+    console.log('📋 Results count:', validationResults.size);
+    console.log('📋 Images count:', images.length);
+    Array.from(validationResults.entries()).forEach(([imageUri, result]) => {
+      console.log(`📋 ${imageUri.substring(imageUri.length - 20)}: ${result.message}`);
+    });
+  }, [validationResults, images]);
 
   // Section 3: Time
   const [selectedOption, setSelectedOption] = useState('');
@@ -315,69 +325,77 @@ export default function CreateTaskScreen() {
     };
   };
 
-  // OCR validation function (completely non-blocking)
-  const validateImageWithOCR = async (imageUri: string) => {
-    try {
-      setIsValidatingImage(true);
-      setCurrentValidationImage(imageUri);
-      
-      console.log('🔍 Starting background OCR validation for:', imageUri);
-      
-      const taskContext = getTaskContext();
-      
-      // Validate image with OCR using Gemini AI and proper thresholds
-      const validationResult = await validateSingleImage(imageUri, taskContext, {
-        strictMode: false,
-        minConfidence: 0.6, // Proper threshold for accurate validation
-        useAI: true // Enable Gemini AI
-      });
-      
-      console.log('✅ OCR validation result (background):', validationResult);
-      
-      // Store the validation result for display
-      setValidationResults(prev => new Map(prev.set(imageUri, validationResult)));
-      
-      // Always return true - never block image upload
-      return true;
-      
-    } catch (error) {
-      console.error('❌ OCR validation failed (non-blocking):', error);
-      
-      // Create a default "good" result even on error
-      const defaultResult = {
-        isValid: true,
-        extractedText: '',
-        confidence: 0.8,
-        message: 'Validation completed',
-        keywords: { found: [], missing: [] }
-      };
-      setValidationResults(prev => new Map(prev.set(imageUri, defaultResult)));
-      
-      // Always allow image upload
-      return true;
-      
-    } finally {
-      setIsValidatingImage(false);
-      setCurrentValidationImage('');
-    }
-  };
-
-  // Modified image addition function - completely non-blocking
+  // Modified image addition function - NOW WITH SMART VALIDATION
   const addImageWithValidation = async (imageUri: string) => {
     try {
-      console.log('📸 Adding image (no validation blocking):', imageUri);
+      console.log('📸 Validating image before adding:', imageUri);
+      console.log('🔧 Smart validation system active - using OpenAI Vision API');
       
-      // Always add the image first - no blocking behavior
+      // Add placeholder validation result immediately
+      console.log('💾 Setting placeholder validation result');
+      setValidationResults(prev => {
+        const newMap = new Map(prev);
+        newMap.set(imageUri, {
+          isValid: true,
+          confidence: 0,
+          message: 'Analyzing image...',
+          reasons: ['Analysis in progress'],
+          suggestions: []
+        });
+        return newMap;
+      });
+      
+      // Add image immediately with placeholder validation
+      console.log('📸 Adding image to list with placeholder validation');
       setImages(prevImages => [...prevImages, imageUri]);
-      console.log('✅ Image added successfully');
       
-      // Run validation in background for analytics only
-      await validateImageWithOCR(imageUri);
+      const taskContext = getTaskContext();
+      console.log('📋 Task context for validation:', taskContext);
+      
+      // VALIDATE FIRST with smart validation - BLOCK if invalid
+      const validationResult = await validateImageSmart(imageUri, taskContext);
+      
+      console.log('🎯 Validation completed:', {
+        isValid: validationResult.isValid,
+        confidence: validationResult.confidence,
+        message: validationResult.message
+      });
+      
+      // Store validation result immediately (for both success and failure)
+      console.log('💾 Storing validation result for display:', validationResult);
+      setValidationResults(prev => {
+        const newMap = new Map(prev);
+        newMap.set(imageUri, validationResult);
+        console.log('📋 Validation results map updated, size:', newMap.size);
+        console.log('📋 All validation entries:', Array.from(newMap.entries()));
+        return newMap;
+      });
+      
+      if (!validationResult.isValid) {
+        console.log('🚫 Image validation failed - removing from list');
+        
+        // Remove the image since validation failed
+        setImages(prevImages => prevImages.filter(img => img !== imageUri));
+        
+        Alert.alert(
+          'Image Not Suitable',
+          validationResult.message + '\n\nSuggestions:\n' + validationResult.suggestions.join('\n'),
+          [{ text: 'OK' }]
+        );
+        return; // Exit early
+      }
+      
+      // Validation passed - image is already in list, just update validation result
+      console.log('✅ Image APPROVED - validation completed successfully');
+      console.log('✅ Image validated and added successfully');
       
     } catch (error) {
       console.error('❌ Error in addImageWithValidation:', error);
-      // Still add the image even if validation fails
-      setImages(prevImages => [...prevImages, imageUri]);
+      Alert.alert(
+        'Image Validation Error',
+        'Could not validate this image. Please try with a different image.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
@@ -563,16 +581,16 @@ export default function CreateTaskScreen() {
                 <Ionicons name="close-circle" size={22} color="#FF4D4F" />
               </TouchableOpacity>
               
-              {/* Simple validation text message below image */}
+              {/* AI validation result display */}
               {validationResults.get(item) && (
                 <View style={styles.validationTextContainer}>
                   {validationResults.get(item)?.isValid ? (
                     <Text style={styles.validationTextSuccess}>
-                      ✅ Image looks good
+                      ✅ AI approved (confidence: {Math.round((validationResults.get(item)?.confidence || 0) * 100)}%)
                     </Text>
                   ) : (
                     <Text style={styles.validationTextWarning}>
-                      ⚠️ Consider adding more relevant content
+                      ⚠️ AI flagged: {validationResults.get(item)?.reasons?.[0] || 'Quality concerns'}
                     </Text>
                   )}
                 </View>
@@ -1324,27 +1342,40 @@ const styles = StyleSheet.create({
   // Validation text styles
   validationTextContainer: {
     position: 'absolute',
-    bottom: -25,
+    bottom: -30,
     left: 0,
     right: 0,
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingVertical: 3,
+    paddingHorizontal: 5,
+    borderRadius: 6,
+    minHeight: 22,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   validationTextSuccess: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#22C55E',
-    fontWeight: '500',
+    fontWeight: '600',
     textAlign: 'center',
   },
   validationTextWarning: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#F59E0B',
-    fontWeight: '500',
+    fontWeight: '600',
     textAlign: 'center',
   },
   validationTextLoading: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#6B7280',
-    fontWeight: '500',
+    fontWeight: '600',
     textAlign: 'center',
   },
 });

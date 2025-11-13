@@ -2,7 +2,7 @@
 // This file contains ALL task-related API endpoints from your API documentation
 
 import { createApi } from "@/src/shared/utils/api";
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
@@ -721,6 +721,120 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
   
   // This should never be reached due to the try-catch structure above
   throw new Error("All search approaches failed");
+}
+
+/**
+ * 🎯 Filter Tasks (for Sort and Filter UI actions)
+ * Endpoint: GET /api/tasks/filter
+ * Auth: No
+ */
+export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterResponse> {
+  const api = getApi();
+  try {
+    console.log("🎯 Filtering tasks with params:", params);
+    
+    // Build query parameters for the filter endpoint
+    const searchParams = new URLSearchParams();
+    
+    if (params.sortBy) {
+      searchParams.append('sortBy', params.sortBy);
+    }
+    
+    if (params.lat !== undefined) {
+      searchParams.append('lat', params.lat.toString());
+    }
+    
+    if (params.lng !== undefined) {
+      searchParams.append('lng', params.lng.toString());
+    }
+    
+    if (params.radius !== undefined) {
+      searchParams.append('radius', params.radius.toString());
+    }
+    
+    if (params.categories && params.categories.trim()) {
+      searchParams.append('categories', params.categories);
+    }
+    
+    if (params.minBudget !== undefined) {
+      searchParams.append('minBudget', params.minBudget.toString());
+    }
+    
+    if (params.maxBudget !== undefined) {
+      searchParams.append('maxBudget', params.maxBudget.toString());
+    }
+    
+    if (params.status) {
+      searchParams.append('status', params.status);
+    } else {
+      searchParams.append('status', 'open'); // Default to open tasks
+    }
+    
+    if (params.locationType) {
+      searchParams.append('locationType', params.locationType);
+    }
+    
+    if (params.search && params.search.trim()) {
+      searchParams.append('search', params.search.trim());
+    }
+    
+    if (params.page !== undefined) {
+      searchParams.append('page', params.page.toString());
+    } else {
+      searchParams.append('page', '1');
+    }
+    
+    if (params.limit !== undefined) {
+      searchParams.append('limit', params.limit.toString());
+    } else {
+      searchParams.append('limit', '20');
+    }
+
+    const endpoint = `/tasks/filter?${searchParams.toString()}`;
+    console.log("🔗 Filter API endpoint:", endpoint);
+    
+    const response = await api.get<TaskFilterResponse>(endpoint);
+    
+    if (response.data && response.data.success) {
+      console.log("✅ Filter API succeeded", {
+        totalItems: response.data.pagination.totalItems,
+        currentPage: response.data.pagination.currentPage,
+        totalPages: response.data.pagination.totalPages,
+      });
+      return response.data;
+    } else {
+      console.warn("⚠️ Filter API returned unsuccessful response");
+      throw new Error("Filter API returned unsuccessful response");
+    }
+
+  } catch (error) {
+    console.error("❌ Filter API failed:", error);
+    
+    // Fallback to mock data if real API fails
+    try {
+      console.warn("🎭 Network failed - Using Mock API for filterTasks");
+      const mockResponse = await MockApiService.searchTasks(params as any);
+      
+      // Convert TasksResponse to TaskFilterResponse format
+      const filterResponse: TaskFilterResponse = {
+        success: mockResponse.success,
+        data: mockResponse.data,
+        pagination: {
+          currentPage: mockResponse.currentPage,
+          totalPages: mockResponse.pages,
+          totalItems: mockResponse.total,
+          itemsPerPage: mockResponse.data.length,
+          hasNextPage: mockResponse.currentPage < mockResponse.pages,
+          hasPreviousPage: mockResponse.currentPage > 1
+        }
+      };
+      
+      return filterResponse;
+    } catch (mockError) {
+      console.error("❌ Mock API also failed for filterTasks:", mockError);
+      throw mockError;
+    }
+  }
 }
 
 /**
@@ -1747,6 +1861,7 @@ export const TaskAPI = {
   postTask,
   postTaskWithImages, // New function for binary image upload
   searchTasks,
+  filterTasks, // New filter API for Sort/Filter UI
   getMyTasks,
   getMyOffers,
   

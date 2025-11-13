@@ -7,6 +7,7 @@ import {
     CreateOfferRequest,
     CreateTaskRequest,
     MyTasksParams,
+    TaskFilterParams,
     TaskOffer,
     TaskSearchParams,
     UpdateTaskRequest
@@ -86,7 +87,7 @@ export function useGetCategoriesByLocation(locationType: string, enabled = true)
 }
 
 /**
- * �🔍 Search Tasks Hook
+ * 🔍 Search Tasks Hook (for search functionality)
  */
 export function useSearchTasks(params: TaskSearchParams, enabled = true) {
   return useQuery({
@@ -94,6 +95,18 @@ export function useSearchTasks(params: TaskSearchParams, enabled = true) {
     queryFn: () => TaskAPI.searchTasks(params),
     enabled: enabled && Object.keys(params).length > 0,
     staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+}
+
+/**
+ * 🎯 Filter Tasks Hook (for filter/sort UI actions)
+ */
+export function useFilterTasks(params: TaskFilterParams, enabled = true) {
+  return useQuery({
+    queryKey: ['tasks', 'filter', params],
+    queryFn: () => TaskAPI.filterTasks(params),
+    enabled: enabled && Object.keys(params).length > 0,
+    staleTime: 1 * 60 * 1000, // 1 minute - shorter cache for filter results
   });
 }
 
@@ -561,6 +574,7 @@ export const TaskHooks = {
   // Query Hooks
   useGetAllTasks,
   useSearchTasks,
+  useFilterTasks, // New filter hook for Sort/Filter UI
   useGetMyTasks,
   useGetMyOffers,
   useGetTaskById,
