@@ -275,15 +275,16 @@ export default function LoginScreen() {
         }
       } else {
         // No pending task, just navigate to home
-      // Check for pending actions after successful login
-      const pendingActionType = checkPendingAction();
-      if (pendingActionType) {
-        console.log('🔄 Found pending action after email login, executing:', pendingActionType);
-        await executePendingAction();
-      } else {
-        console.log('🚀 No pending action, navigating to tabs...');
-        // Navigate back to detail screen after successful login
-        router.replace('/(tabs)' as any);
+        // Check for pending actions after successful login
+        const pendingActionType = checkPendingAction();
+        if (pendingActionType) {
+          console.log('🔄 Found pending action after email login, executing:', pendingActionType);
+          await executePendingAction();
+        } else {
+          console.log('🚀 No pending action, navigating to tabs...');
+          // Navigate back to detail screen after successful login
+          router.replace('/(tabs)' as any);
+        }
       }
     } catch (error: any) {
       console.error('Login Error:', error);
@@ -350,6 +351,7 @@ export default function LoginScreen() {
         'Something went wrong with Google Sign-In. Please try again.',
         [{ text: 'OK' }]
       );
+    } finally {
       setGoogleLoading(false);
     }
   };

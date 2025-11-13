@@ -52,20 +52,25 @@ export default function BudgetScreen() {
   const [errorMessage, setErrorMessage] = useState('');
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
-  // Initialize with existing data from store or default amount
+  // Initialize with existing data from store only
   useEffect(() => {
     if (myTask.budget && myTask.budget > 0) {
       setBudget(myTask.budget.toString());
-    } else {
-      // Set default budget based on currency
-      setBudget(defaultBudgetAmount.toString());
+      setHasUserInteracted(true); // Mark as interacted if we have existing budget
     }
-  }, [myTask.budget, defaultBudgetAmount]);
+    // Don't set default budget automatically - let it show as placeholder
+  }, [myTask.budget]);
 
   const handleKeyPress = (value: string) => {
-    // Mark that user has interacted with the field
+    // Mark that user has interacted with the field and clear placeholder
     if (!hasUserInteracted) {
       setHasUserInteracted(true);
+      // If this is the first interaction and we're not deleting, start fresh
+      if (value !== 'delete') {
+        setBudget(value);
+        setErrorMessage('');
+        return;
+      }
     }
 
     if (value === 'delete') {
@@ -114,9 +119,10 @@ export default function BudgetScreen() {
 
   // Helper to update zustand store with budget
   const handleCreateTask = () => {
-    const budgetNumber = Number(budget);
+    const finalBudget = budget || (!hasUserInteracted ? defaultBudgetAmount.toString() : '0');
+    const budgetNumber = Number(finalBudget);
     // Only update if valid and meets minimum for currency
-    if (budget && budgetNumber >= minimumBudget) {
+    if (budgetNumber >= minimumBudget) {
       updateMyTask({
         budget: budgetNumber,
       });
@@ -124,8 +130,9 @@ export default function BudgetScreen() {
     }
   };
 
-  // Check if budget is valid (not empty, not zero, and meets minimum)
-  const isBudgetValid = budget && Number(budget) >= minimumBudget;
+  // Check if budget is valid (user has entered a value and it meets minimum)
+  const currentBudgetValue = budget || (!hasUserInteracted ? defaultBudgetAmount : 0);
+  const isBudgetValid = hasUserInteracted ? (budget && Number(budget) >= minimumBudget) : (Number(currentBudgetValue) >= minimumBudget);
 
   return (
     <View style={styles.container}>
@@ -145,9 +152,10 @@ export default function BudgetScreen() {
         <Text style={styles.currencySymbol}>{currencyInfo.symbol}</Text>
         <Text style={[
           styles.budgetText, 
-          budget && Number(budget) < minimumBudget && Number(budget) > 0 && styles.invalidBudgetText
+          budget && Number(budget) < minimumBudget && Number(budget) > 0 && styles.invalidBudgetText,
+          !hasUserInteracted && !budget && styles.placeholderText
         ]}>
-          {budget || '0'}
+          {budget || (!hasUserInteracted ? defaultBudgetAmount.toString() : '0')}
         </Text>
       </TouchableOpacity>
       
@@ -234,6 +242,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: '#002366',
+  },
+  placeholderText: {
+    color: '#999999',
+    fontWeight: '400',
   },
   invalidBudgetText: {
     color: '#FF3B30',
