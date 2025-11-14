@@ -112,11 +112,25 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
 };
 
 export default function MyTasksScreen() {
-  const params = useLocalSearchParams();
   const [searchVisible, setSearchVisible] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [userRole, setUserRole] = useState('Tasker'); // 'Tasker' or 'Poster'
   const [searchText, setSearchText] = useState('');
+  
+  // Get navigation params
+  const params = useLocalSearchParams<{ role?: string; tab?: string }>();
+
+  // Set initial role and tab based on navigation params
+  useEffect(() => {
+    if (params.role === 'Poster') {
+      console.log('🎯 Setting userRole to Poster from navigation params');
+      setUserRole('Poster');
+    }
+    if (params.tab) {
+      console.log('🎯 Navigation requested tab:', params.tab);
+      // The tab will be handled by the Tab.Navigator's initialRouteName if needed
+    }
+  }, [params.role, params.tab]);
 
   // Handle route parameters to set initial role
   useEffect(() => {
@@ -296,7 +310,7 @@ export default function MyTasksScreen() {
     userRole
   });
 
-  // Categorize tasks and offers based on status
+  // Categorize tasks and offers based on status and user role
   const categorizedData = useMemo(() => {
     // Helper function to sort tasks by creation date (newest first)
     const sortByCreatedDate = (tasks: Task[]) => {
@@ -307,6 +321,41 @@ export default function MyTasksScreen() {
       });
     };
 
+    // For Tasker role - filter based on offers made by current user
+    if (userRole === 'Tasker') {
+      const openTasks = allOffers.filter((offer: any) => 
+        offer.task?.status === 'open' || offer.task?.status === 'active'
+      ).map((offer: any) => offer.task).filter(Boolean);
+      
+      const todoTasks = allOffers.filter((offer: any) => 
+        offer.status === 'accepted' && 
+        (offer.task?.status === 'assigned' || offer.task?.status === 'in_progress' || offer.task?.status === 'accepted')
+      ).map((offer: any) => offer.task).filter(Boolean);
+      
+      const completedTasks = allOffers.filter((offer: any) => 
+        offer.task?.status === 'completed'
+      ).map((offer: any) => offer.task).filter(Boolean);
+      
+      const overdueTasks = allOffers.filter((offer: any) => 
+        offer.task?.status === 'overdue'
+      ).map((offer: any) => offer.task).filter(Boolean);
+      
+      const cancelledTasks = allOffers.filter((offer: any) => 
+        offer.task?.status === 'cancelled'
+      ).map((offer: any) => offer.task).filter(Boolean);
+      
+      return {
+        openTasks,
+        todoTasks,
+        completedTasks,
+        overdueTasks,
+        cancelledTasks: cancelledTasks.length > 0 ? cancelledTasks : dummyCancelledTasks,
+        postedTasks: [],
+        acceptedTasks: [],
+      };
+    }
+    
+    // For Poster role - filter based on tasks posted by current user
     const openTasks = sortByCreatedDate(
       allTasks.filter((task: Task) => 
         task.status === 'open' || task.status === 'active'
@@ -375,7 +424,7 @@ export default function MyTasksScreen() {
       postedTasks,
       acceptedTasks: finalAcceptedTasks,
     };
-  }, [allTasks, allOffers, dummyAcceptedOffers, dummyCancelledTasks]);
+  }, [allTasks, allOffers, dummyAcceptedOffers, dummyCancelledTasks, userRole]);
 
   const handleRefresh = useCallback(() => {
     refetchTasks();

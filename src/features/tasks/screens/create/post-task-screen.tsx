@@ -5,15 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function PostTaskScreen() {
@@ -103,18 +103,25 @@ export default function PostTaskScreen() {
 
       // Get image URIs from the store
       const imageUris = myTask.photos || [];
+      
+      console.log('📸 Task Posting - Image URIs from store:', imageUris.length);
+      console.log('📸 First image URI:', imageUris[0]?.substring(0, 100));
 
       let result;
       
       if (imageUris.length > 0) {
         setUploadProgress(`Processing ${imageUris.length} image(s)...`);
+        console.log('📤 Posting task WITH IMAGES:', imageUris.length, 'images');
         result = await postTaskWithImagesMutation.mutateAsync({ 
           taskData, 
           imageUris 
         });
+        console.log('✅ Task posted with images - Response:', result);
       } else {
         setUploadProgress('Creating task...');
+        console.log('📤 Posting task WITHOUT images');
         result = await createTaskMutation.mutateAsync(taskData);
+        console.log('✅ Task posted without images - Response:', result);
       }
       
       // Reset the task store immediately

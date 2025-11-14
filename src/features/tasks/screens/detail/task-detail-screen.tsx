@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
 import {
     AskQuestionModal,
     DetailHeader,
@@ -42,6 +43,12 @@ export default function TaskDetailScreen() {
     getTimeDisplay,
     postQuestionMutation,
     currentUser,
+    // Stripe Payment Modal
+    showPaymentModal,
+    selectedOfferId,
+    selectedOffer,
+    handleClosePaymentModal,
+    handlePaymentSuccess,
   } = useTaskDetail({ taskId: taskId! });
 
   if (isLoading) {
@@ -118,6 +125,18 @@ export default function TaskDetailScreen() {
         onSubmit={handleAskQuestion}
         onClose={() => setShowAskQuestion(false)}
         isSubmitting={postQuestionMutation.isPending}
+      />
+
+      <StripePaymentModal
+        visible={showPaymentModal}
+        taskId={taskId!}
+        offerId={selectedOfferId || ''}
+        offerAmount={selectedOffer?.amount || 0}
+        currency={selectedOffer?.currency || 'LKR'}
+        taskTitle={task?.title || 'Task'}
+        taskCategory={task?.categories?.[0]}
+        onClose={handleClosePaymentModal}
+        onSuccess={handlePaymentSuccess}
       />
     </View>
   );

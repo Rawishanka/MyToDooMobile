@@ -1,5 +1,5 @@
 import { LocationAutocomplete, LocationData } from '@/src/shared/components/LocationAutocomplete';
-import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
+import { useGetCategories, useUpdateTask } from '@/src/shared/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -7,6 +7,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -19,6 +20,13 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// Import OCR validation service
+import {
+  OCRValidationResult,
+  TaskContext,
+  validateSingleImage
+} from '@/src/services/ocrValidationService';
 
 interface EditTaskScreenProps {
   route?: {
@@ -91,9 +99,16 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   // Keyboard visibility
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
+  // OCR validation states
+  const [imageValidationResults, setImageValidationResults] = useState<Record<number, OCRValidationResult>>({});
+  const [validatingImages, setValidatingImages] = useState<Record<number, boolean>>({});
+
   // Fetch categories
   const { data: categoriesResponse, isLoading: loadingCategories } = useGetCategories();
   const categories = categoriesResponse?.data || [];
+
+  // Update task mutation
+  const updateTaskMutation = useUpdateTask();
 
   // Keyboard listeners
   useEffect(() => {
@@ -120,6 +135,15 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     };
   }, []);
 
+  // Validate existing images when component mounts
+  useEffect(() => {
+    if (images.length > 0) {
+      images.forEach((imageUri, index) => {
+        validateImageWithOCR(imageUri, index);
+      });
+    }
+  }, []); // Only run once when component mounts
+
   // Handle location field focus - scroll into view
   const handleLocationFocus = () => {
     console.log('📍 Location field focused - scrolling into view');
@@ -140,6 +164,41 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     }
   };
 
+  // OCR validation function
+  const validateImageWithOCR = async (imageUri: string, index: number) => {
+    setValidatingImages(prev => ({ ...prev, [index]: true }));
+    
+    try {
+      const taskContext: TaskContext = {
+        category: selectedCategory || 'general',
+        title: title || '',
+        description: description || ''
+      };
+
+      const result = await validateSingleImage(imageUri, taskContext, {
+        strictMode: false,
+        minConfidence: 0.6, // Proper threshold for accurate validation
+        useAI: true // Enable Gemini AI
+      });
+      setImageValidationResults(prev => ({ ...prev, [index]: result }));
+    } catch (error) {
+      console.error('OCR validation error:', error);
+      setImageValidationResults(prev => ({ 
+        ...prev, 
+        [index]: { 
+          isValid: true,
+          extractedText: '',
+          confidence: 0, 
+          message: 'Validation temporarily unavailable',
+          suggestions: [],
+          keywords: { found: [], missing: [] }
+        } 
+      }));
+    } finally {
+      setValidatingImages(prev => ({ ...prev, [index]: false }));
+    }
+  };
+
   // Image picker function
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -150,7 +209,13 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     });
 
     if (!result.canceled && result.assets[0].uri) {
-      setImages([...images, result.assets[0].uri]);
+      const newImages = [...images, result.assets[0].uri];
+      const newImageIndex = newImages.length - 1;
+      
+      setImages(newImages);
+      
+      // Validate the newly added image
+      validateImageWithOCR(result.assets[0].uri, newImageIndex);
     }
   };
 
@@ -159,10 +224,53 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     const newImages = [...images];
     newImages.splice(index, 1);
     setImages(newImages);
+    
+    // Clear validation results for removed image and update indices
+    setImageValidationResults(prev => {
+      const newResults = { ...prev };
+      delete newResults[index];
+      
+      // Shift validation results for images after the removed one
+      const updatedResults: Record<number, OCRValidationResult> = {};
+      Object.keys(newResults).forEach(key => {
+        const keyNum = parseInt(key);
+        if (keyNum > index) {
+          updatedResults[keyNum - 1] = newResults[keyNum];
+        } else if (keyNum < index) {
+          updatedResults[keyNum] = newResults[keyNum];
+        }
+      });
+      
+      return updatedResults;
+    });
+    
+    // Clear validation loading states
+    setValidatingImages(prev => {
+      const newValidating = { ...prev };
+      delete newValidating[index];
+      
+      // Shift validation loading states for images after the removed one
+      const updatedValidating: Record<number, boolean> = {};
+      Object.keys(newValidating).forEach(key => {
+        const keyNum = parseInt(key);
+        if (keyNum > index) {
+          updatedValidating[keyNum - 1] = newValidating[keyNum];
+        } else if (keyNum < index) {
+          updatedValidating[keyNum] = newValidating[keyNum];
+        }
+      });
+      
+      return updatedValidating;
+    });
   };
 
   // Handle save
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!taskId) {
+      Alert.alert("Error", "Task ID is missing");
+      return;
+    }
+
     console.log('💾 Saving task:', taskId);
     console.log('   Category:', selectedCategory);
     console.log('   Title:', title);
@@ -170,8 +278,82 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     console.log('   Location:', selectedLocation);
     console.log('   When:', selectedOption);
     console.log('   Budget:', budget);
-    // TODO: Implement actual save logic
-    router.back();
+
+    // Validate required fields
+    if (!title.trim()) {
+      Alert.alert("Validation Error", "Please enter a task title");
+      return;
+    }
+
+    try {
+      // Prepare the update request body according to the API spec
+      const updateRequest = {
+        title: title.trim(),
+        description: description.trim(),
+        budget: budget ? parseFloat(budget) : 0,
+        currency: "LKR", // Default currency
+        time: selectedOption || "Anytime",
+        date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
+        dateType: selectedOption || "Easy",
+        location: selectedLocation ? {
+          address: selectedLocation.address,
+          coordinates: {
+            lat: selectedLocation.coordinates.lat,
+            lng: selectedLocation.coordinates.lng
+          }
+        } : undefined
+      };
+
+      console.log('📤 Update request body:', updateRequest);
+
+      // Call the update API
+      const result = await updateTaskMutation.mutateAsync({
+        taskId: taskId as string,
+        updates: updateRequest
+      });
+
+      console.log('✅ Task updated successfully:', result);
+
+      // Show success message
+      Alert.alert(
+        "Task Updated",
+        "Your task has been updated successfully.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              // Navigate back to the tasks list
+              router.back();
+            }
+          }
+        ]
+      );
+
+    } catch (error: any) {
+      console.error('❌ Error updating task:', error);
+      
+      // Show error message
+      let errorMessage = "Failed to update task. Please try again.";
+      let errorTitle = "Update Failed";
+      
+      if (error?.message?.includes("Authentication") || error?.isAuthError) {
+        errorMessage = "Your session has expired. Please login again to update this task.";
+        errorTitle = "Authentication Required";
+      } else if (error?.message?.includes("Network")) {
+        errorMessage = "Network error. Please check your internet connection and try again.";
+        errorTitle = "Connection Error";
+      } else if (error?.message?.includes("not found")) {
+        errorMessage = "This task was not found. It may have been deleted.";
+        errorTitle = "Task Not Found";
+      } else if (error?.message?.includes("permission")) {
+        errorMessage = "You don't have permission to update this task.";
+        errorTitle = "Permission Denied";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert(errorTitle, errorMessage);
+    }
   };
 
   // Filter categories based on search
@@ -295,6 +477,25 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
                 >
                   <Ionicons name="close-circle" size={24} color="#FF0000" />
                 </TouchableOpacity>
+                
+                {/* OCR Validation Display */}
+                <View style={styles.validationContainer}>
+                  {validatingImages[index] ? (
+                    <View style={styles.validationMessage}>
+                      <ActivityIndicator size="small" color="#007AFF" />
+                      <Text style={styles.validationText}>Analyzing image...</Text>
+                    </View>
+                  ) : imageValidationResults[index] ? (
+                    <View style={styles.validationMessage}>
+                      <Text style={[
+                        styles.validationText,
+                        imageValidationResults[index].isValid ? styles.validationSuccess : styles.validationWarning
+                      ]}>
+                        {imageValidationResults[index].message}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
               </View>
             ))}
             {images.length < 3 && (
@@ -373,11 +574,20 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
         <TouchableOpacity 
           style={[
             styles.saveButton,
-            { bottom: Math.max(insets.bottom, 20) }
+            { bottom: Math.max(insets.bottom, 20) },
+            updateTaskMutation.isPending && styles.saveButtonDisabled
           ]}
           onPress={handleSave}
+          disabled={updateTaskMutation.isPending}
         >
-          <Text style={styles.saveButtonText}>Save Changes</Text>
+          {updateTaskMutation.isPending ? (
+            <View style={styles.saveButtonContent}>
+              <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+              <Text style={styles.saveButtonText}>Saving...</Text>
+            </View>
+          ) : (
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          )}
         </TouchableOpacity>
       )}
     </View>
@@ -563,6 +773,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  saveButtonDisabled: {
+    backgroundColor: '#aaa',
+    opacity: 0.7,
+  },
+  saveButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   saveButtonText: {
     color: '#fff',
     fontSize: 16,
@@ -635,5 +853,32 @@ const styles = StyleSheet.create({
   whenOptionTextSelected: {
     color: '#007AFF',
     fontWeight: '600',
+  },
+  // OCR Validation styles
+  validationContainer: {
+    position: 'absolute',
+    bottom: -30,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+  },
+  validationMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  },
+  validationText: {
+    fontSize: 10,
+    marginLeft: 4,
+    flex: 1,
+  },
+  validationSuccess: {
+    color: '#22C55E',
+  },
+  validationWarning: {
+    color: '#F59E0B',
   },
 });

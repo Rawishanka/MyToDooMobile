@@ -1,7 +1,7 @@
 import { useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
 import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
-import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { checkPendingAction, executePendingAction } from '@/src/shared/utils/pending-action-utils';
+import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -11,17 +11,17 @@ import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();

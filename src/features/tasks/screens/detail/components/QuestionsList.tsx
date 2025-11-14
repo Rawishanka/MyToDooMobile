@@ -1,9 +1,10 @@
-import { useAuthStore } from '@/src/store/auth-task-store';
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnswerQuestionModal } from './AnswerQuestionModal';
+import { useAuthStore } from '@/src/store/auth-task-store';
 
 interface QuestionsListProps {
   questions: any[];
@@ -124,10 +125,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           data={questions}
           scrollEnabled={false}
           keyExtractor={(item: any) => item._id}
-          renderItem={({ item: question }: { item: any }) => {
-            // Debug log to see the actual question structure
-            console.log('🔍 Question data structure:', JSON.stringify(question, null, 2));
-            return (
+          renderItem={({ item: question }: { item: any }) => (
             <View style={styles.questionCard}>
               {/* Show task context for public questions */}
               {question.isPublic && question.taskId !== taskId && (
@@ -142,22 +140,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
               <View style={styles.questionHeader}>
                 <View style={styles.questionUserSection}>
                   <View style={styles.questionAvatar}>
-                    {(() => {
-                      const avatarUri = getUserAvatar(question);
-                      if (avatarUri && typeof avatarUri === 'string' && avatarUri.trim() && !failedImages.has(avatarUri)) {
-                        return (
-                          <Image
-                            source={{ uri: avatarUri }}
-                            style={styles.avatarImage}
-                            onError={(error) => {
-                              console.log('Failed to load avatar:', avatarUri, error);
-                              setFailedImages(prev => new Set(prev).add(avatarUri));
-                            }}
-                          />
-                        );
-                      }
-                      return <Ionicons name="person" size={20} color="#666" />;
-                    })()}
+                    <Ionicons name="person" size={20} color="#666" />
                   </View>
                   <View style={styles.questionUserInfo}>
                     <Text style={styles.questionUserName}>
@@ -189,7 +172,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                             
                             return 'Unknown User';
                           })()}
-                        : `${question.askedBy?.firstName || question.userId?.firstName} ${question.askedBy?.lastName || question.userId?.lastName}`}
+                        : `${question.askedBy?.firstName || question.userId?.firstName} ${question.askedBy?.lastName || question.userId?.lastName}`
                     </Text>
                     <Text style={styles.questionTime}>
                       {new Date(question.createdAt).toLocaleTimeString('en-US', {
@@ -268,8 +251,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                 })()
               )}
             </View>
-            );
-          }}
+          )}
         />
       )}
 
@@ -373,12 +355,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
-    overflow: 'hidden',
-  },
-  avatarImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
   },
   questionUserInfo: {
     flex: 1,

@@ -1,14 +1,14 @@
-import {
-    useAcceptOffer,
-    useGetAllPublicQuestions,
-    useGetTaskById,
-    useGetTaskOffers,
-    useGetTaskQuestions,
-    usePostTaskQuestion,
-} from '@/src/shared/hooks/useTaskApi';
-import { useAuthStore } from '@/src/store/auth-task-store';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import {
+  useAcceptOffer,
+  useGetAllPublicQuestions,
+  useGetTaskById,
+  useGetTaskOffers,
+  useGetTaskQuestions,
+  usePostTaskQuestion,
+} from '../../../../../shared/hooks/useTaskApi';
+import { useAuthStore } from '../../../../../store/auth-task-store';
 
 interface UseTaskDetailProps {
   taskId: string;
@@ -20,6 +20,11 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
   const [activeTab, setActiveTab] = useState<'offers' | 'questions'>('offers');
   const [showAskQuestion, setShowAskQuestion] = useState(false);
   const [questionText, setQuestionText] = useState('');
+  
+  // Stripe Payment Modal State
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+  const [selectedOffer, setSelectedOffer] = useState<any>(null);
 
   // Fetch task details
   const {
@@ -34,6 +39,7 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     data: taskOffersData,
     isLoading: isLoadingTaskOffers,
     error: taskOffersError,
+    refetch: refetchTaskOffers,
   } = useGetTaskOffers(taskId || '', !!taskId);
 
   // Fetch questions for this specific task
@@ -44,12 +50,12 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     refetch: refetchQuestions,
   } = useGetTaskQuestions(taskId || '', !!taskId); // Enabled when we have a taskId
 
-  // Fetch ALL public questions from ALL tasks
+  // Fetch ALL public questions from ALL tasks (with error tolerance)
   const {
     data: publicQuestionsData,
     isLoading: isLoadingPublicQuestions,
     error: publicQuestionsError,
-  } = useGetAllPublicQuestions();
+  } = useGetAllPublicQuestions(true); // Enable public questions
 
   // Post question mutation
   const postQuestionMutation = usePostTaskQuestion();
@@ -63,15 +69,24 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
   // Get offers for THIS specific task (for both MyOfferCard and Offers tab)
   const taskOffers = taskOffersData?.data?.offers || [];
   
-  // Combine task-specific questions with public questions from all tasks
+  // Combine task-specific questions with public questions from all tasks (if available)
   const taskQuestions = questionsData?.data || [];
-  const publicQuestions = publicQuestionsData?.data || [];
+  const publicQuestions = publicQuestionsError 
+    ? [] // If there's an error, use empty array
+    : (publicQuestionsData?.data || []).filter((q: any) => q && q._id); // Filter out invalid entries
+  
+  console.log('📝 Questions Debug:', {
+    taskQuestionsCount: taskQuestions.length,
+    publicQuestionsCount: publicQuestions.length,
+    publicQuestionsError: publicQuestionsError?.message,
+    isLoadingPublicQuestions
+  });
   
   // Combine and deduplicate questions (task questions + public questions from other tasks)
   const allQuestions = [
     ...taskQuestions,
     ...publicQuestions.filter((pq: any) => 
-      !taskQuestions.some((tq: any) => tq._id === pq._id)
+      pq && pq._id && !taskQuestions.some((tq: any) => tq._id === pq._id)
     )
   ];
   
@@ -91,13 +106,56 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
 
   const handleAcceptOffer = async (offerId: string) => {
     try {
-      await acceptOfferMutation.mutateAsync({
-        taskId: taskId || '',
+      console.log('💳 Opening Stripe payment modal for offer:', offerId);
+      
+      // Find the offer data
+      const offerToAccept = taskOffers.find((offer: any) => offer._id === offerId);
+      
+      if (!offerToAccept) {
+        console.error('❌ Could not find offer data for:', offerId);
+        return;
+      }
+      
+      // Set the selected offer and show payment modal
+      setSelectedOfferId(offerId);
+      setSelectedOffer(offerToAccept);
+      setShowPaymentModal(true);
+      
+      console.log('✅ Payment modal opened for offer:', {
         offerId,
+        amount: offerToAccept.offer?.amount || (offerToAccept as any).amount,
+        currency: offerToAccept.offer?.currency || (offerToAccept as any).currency
       });
+      
     } catch (error) {
-      console.error('Failed to accept offer:', error);
+      console.error('Failed to open payment modal:', error);
     }
+  };
+  
+  const handleClosePaymentModal = () => {
+    setShowPaymentModal(false);
+    setSelectedOfferId(null);
+    setSelectedOffer(null);
+  };
+  
+  const handlePaymentSuccess = async () => {
+    console.log('🎉 Payment completed successfully!');
+    
+    // Refresh task data to show updated status
+    console.log('🔄 Refreshing task data and offers after payment success');
+    await Promise.all([refetch(), refetchTaskOffers()]);
+    
+    handleClosePaymentModal();
+    
+    // Small delay to ensure UI updates before navigation
+    setTimeout(() => {
+      // Navigate to My Tasks → Poster → Posted tab (where poster can see their accepted tasks)
+      console.log('🧭 Navigating to My Tasks - Poster - Posted tab');
+      router.push({
+        pathname: '/(tabs)/my-tasks' as any,
+        params: { role: 'Poster', tab: 'Posted' }
+      });
+    }, 500);
   };
 
   const handleAskQuestion = async () => {
@@ -148,9 +206,10 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     isLoading,
     error,
     refetch,
+    refetchTaskOffers,
     isLoadingTaskOffers,
-    isLoadingQuestions: isLoadingQuestions || isLoadingPublicQuestions,
-    questionsError: questionsError || publicQuestionsError,
+    isLoadingQuestions: isLoadingQuestions, // Don't include public questions loading to avoid blocking UI
+    questionsError: questionsError, // Only show error if task questions fail
     refetchQuestions,
     activeTab,
     setActiveTab,
@@ -165,5 +224,11 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     getTimeDisplay,
     postQuestionMutation,
     currentUser,
+    // Stripe Payment Modal
+    showPaymentModal,
+    selectedOfferId,
+    selectedOffer,
+    handleClosePaymentModal,
+    handlePaymentSuccess,
   };
 };
