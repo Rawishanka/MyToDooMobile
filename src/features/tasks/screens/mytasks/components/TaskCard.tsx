@@ -306,17 +306,15 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             </Text>
           </View>
 
-          {/* Categories */}
+          {/* Category */}
           {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
-            <View style={styles.categoriesContainer}>
-              {task.categories.slice(0, 3).map((category, index) => (
-                <View key={index} style={styles.categoryTag}>
-                  <Text style={styles.categoryText}>{category}</Text>
-                </View>
-              ))}
-              {task.categories.length > 3 && (
+            <View style={styles.categoryContainer}>
+              <Text style={styles.categoryLabel}>
+                Category - {task.categories[0]}
+              </Text>
+              {task.categories.length > 1 && (
                 <Text style={styles.moreCategoriesText}>
-                  +{task.categories.length - 3} more
+                  +{task.categories.length - 1} more
                 </Text>
               )}
             </View>
@@ -868,12 +866,21 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginTop: 8,
   },
-  categoriesContainer: {
+  categoryContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 8,
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  categoryLabel: {
+    fontSize: 13,
+    color: '#4a5568',
+    fontWeight: '600',
+    lineHeight: 18,
   },
   categoryTag: {
     backgroundColor: '#e3f2fd',
@@ -887,9 +894,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   moreCategoriesText: {
-    fontSize: 11,
-    color: '#666',
+    fontSize: 12,
+    color: '#718096',
+    fontWeight: '500',
     fontStyle: 'italic',
+    marginLeft: 4,
   },
   posterCancelOverlay: {
     flex: 1,

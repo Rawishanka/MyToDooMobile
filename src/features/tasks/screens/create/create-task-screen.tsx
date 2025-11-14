@@ -209,7 +209,13 @@ export default function CreateTaskScreen() {
     const cleanedText = text.replace(/[^a-zA-Z\s'\-,.]/g, '');
     setTitle(cleanedText);
     
-    if (touched.title) {
+    // Always validate if the field has been touched or if user is actively typing
+    if (touched.title || cleanedText.length > 0) {
+      // Mark as touched if user starts typing
+      if (!touched.title && cleanedText.length > 0) {
+        setTouched({ ...touched, title: true });
+      }
+      
       if (cleanedText.trim().length === 0) {
         setTitleError('Title is required');
       } else if (cleanedText.trim().length < 10) {
@@ -261,8 +267,35 @@ export default function CreateTaskScreen() {
   // Initialize with existing data from store
   useEffect(() => {
     // Section 1
-    if (myTask.title) setTitle(myTask.title);
-    if (myTask.description) setDescription(myTask.description);
+    if (myTask.title) {
+      setTitle(myTask.title);
+      // Mark as touched and validate if title comes from welcome screen
+      setTouched(prev => ({ ...prev, title: true }));
+      
+      // Run validation on the loaded title
+      const trimmedTitle = myTask.title.trim();
+      if (trimmedTitle.length === 0) {
+        setTitleError('Title is required');
+      } else if (trimmedTitle.length < 10) {
+        setTitleError('Minimum 10 characters required');
+      } else {
+        setTitleError('');
+      }
+    }
+    if (myTask.description) {
+      setDescription(myTask.description);
+      // Also validate description if it exists
+      setTouched(prev => ({ ...prev, description: true }));
+      
+      const trimmedDescription = myTask.description.trim();
+      if (trimmedDescription.length === 0) {
+        setDescriptionError('Description is required');
+      } else if (trimmedDescription.length < 20) {
+        setDescriptionError('Minimum 20 characters required');
+      } else {
+        setDescriptionError('');
+      }
+    }
     if ('category' in myTask && myTask.category) setSelectedCategory(myTask.category);
 
     // Section 2
@@ -297,6 +330,14 @@ export default function CreateTaskScreen() {
       setNeedSpecificTime(true);
     }
   }, []);
+
+  // Reset time toggle when Flexible option is selected
+  useEffect(() => {
+    if (selectedOption === 'no_rush') {
+      setNeedSpecificTime(false);
+      setSelectedTimeBlock('');
+    }
+  }, [selectedOption]);
 
   // Get categories
   const categoriesData = categoriesResponse?.data || [];
@@ -534,8 +575,8 @@ export default function CreateTaskScreen() {
   ];
 
   const options = [
-    { label: 'On Time', value: 'on_time' },
-    { label: 'Before', value: 'before' },
+    { label: 'On Date', value: 'on_time' },
+    { label: 'Before Date', value: 'before' },
     { label: 'Flexible', value: 'no_rush' },
   ];
 
@@ -874,7 +915,7 @@ export default function CreateTaskScreen() {
             <TextInput
               style={[
                 styles.input,
-                touched.title && (titleError || (titleLength > 0 && titleLength < 10)) && styles.inputError
+                titleError && styles.inputError
               ]}
               placeholder="e.g. Move my couch"
               value={title}
@@ -884,11 +925,8 @@ export default function CreateTaskScreen() {
               maxLength={200}
             />
             <Text style={styles.charCount}>{titleLength}/200</Text>
-            {touched.title && titleError && (
+            {titleError && (
               <Text style={styles.errorText}>{titleError}</Text>
-            )}
-            {touched.title && !titleError && titleLength > 0 && titleLength < 10 && (
-              <Text style={styles.errorText}>Minimum 10 characters required</Text>
             )}
             <Text style={styles.helperText}>Only letters, spaces, and basic punctuation allowed</Text>
           </View>
@@ -1009,10 +1047,14 @@ export default function CreateTaskScreen() {
           )}
 
           {/* Time Toggle */}
-          <TimeToggle needSpecificTime={needSpecificTime} onToggle={setNeedSpecificTime} />
+          <TimeToggle 
+            needSpecificTime={needSpecificTime} 
+            onToggle={setNeedSpecificTime}
+            disabled={selectedOption === 'no_rush'}
+          />
 
           {/* Time of Day Grid */}
-          {needSpecificTime && (
+          {needSpecificTime && selectedOption !== 'no_rush' && (
             <TimeOfDayGrid
               timeBlocks={timeBlocks}
               selectedTimeBlock={selectedTimeBlock}

@@ -1,8 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnswerQuestionModal } from './AnswerQuestionModal';
+import { useAuthStore } from '@/src/store/auth-task-store';
 
 interface QuestionsListProps {
   questions: any[];
@@ -24,6 +26,22 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   onRefreshQuestions,
 }) => {
   const insets = useSafeAreaInsets();
+  const currentUser = useAuthStore((state) => state.user);
+  const [failedImages, setFailedImages] = React.useState<Set<string>>(new Set());
+
+  // Helper function to get user profile picture
+  const getUserAvatar = (question: any) => {
+    const user = question.askedBy || question.user || question.questioner;
+    
+    // If no user data in question, use current user's avatar
+    if (!user && currentUser) {
+      return currentUser.profilePicture || currentUser.avatar;
+    }
+    
+    if (!user) return null;
+    
+    return user.profilePicture || user.avatar || user.profile_picture || user.image;
+  };
   const [showAnswerModal, setShowAnswerModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<any>(null);
   
@@ -128,7 +146,33 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                     <Text style={styles.questionUserName}>
                       {question.isAnonymous
                         ? 'Anonymous User'
-                        : `${question.askedBy?.firstName || question.userId?.firstName} ${question.askedBy?.lastName || question.userId?.lastName}`}
+                        : (() => {
+                            // Handle different possible user data structures
+                            const user = question.askedBy || question.user || question.questioner;
+                            
+                            // If no user data in question, check if it might be current user's question
+                            if (!user && currentUser) {
+                              const currentUserFullName = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim();
+                              return currentUserFullName || currentUser.email?.split('@')[0] || 'You';
+                            }
+                            
+                            if (!user) return 'Unknown User';
+                            
+                            const firstName = user.firstName || user.first_name || '';
+                            const lastName = user.lastName || user.last_name || '';
+                            const fullName = `${firstName} ${lastName}`.trim();
+                            
+                            // If we have a full name, use it
+                            if (fullName) return fullName;
+                            
+                            // Fallback to email or username if available
+                            if (user.email) return user.email.split('@')[0];
+                            if (user.username) return user.username;
+                            if (user.name) return user.name;
+                            
+                            return 'Unknown User';
+                          })()}
+                        : `${question.askedBy?.firstName || question.userId?.firstName} ${question.askedBy?.lastName || question.userId?.lastName}`
                     </Text>
                     <Text style={styles.questionTime}>
                       {new Date(question.createdAt).toLocaleTimeString('en-US', {

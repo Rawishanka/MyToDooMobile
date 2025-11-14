@@ -351,6 +351,7 @@ export default function LoginScreen() {
         'Something went wrong with Google Sign-In. Please try again.',
         [{ text: 'OK' }]
       );
+    } finally {
       setGoogleLoading(false);
     }
   };
