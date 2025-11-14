@@ -8,24 +8,33 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// Import smart image validation
 import {
-  DateOptionSelector,
-  TimeOfDayGrid,
-  TimeToggle,
+    SmartValidationResult,
+    TaskContext,
+    validateImageSmart
+} from '@/src/services/smartImageValidator';
+import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
+
+import {
+    DateOptionSelector,
+    TimeOfDayGrid,
+    TimeToggle,
 } from './components';
 
 interface Category {
@@ -85,6 +94,21 @@ export default function CreateTaskScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
+
+  // OCR validation states - simplified (no blocking behavior)
+  const [validationResults, setValidationResults] = useState<Map<string, SmartValidationResult>>(new Map());
+  const [currentValidationImage, setCurrentValidationImage] = useState<string>('');
+  const [isValidatingImage, setIsValidatingImage] = useState(false);
+
+  // Debug validation results state changes
+  useEffect(() => {
+    console.log('🔍 Validation results state changed:');
+    console.log('📋 Results count:', validationResults.size);
+    console.log('📋 Images count:', images.length);
+    Array.from(validationResults.entries()).forEach(([imageUri, result]) => {
+      console.log(`📋 ${imageUri.substring(imageUri.length - 20)}: ${result.message}`);
+    });
+  }, [validationResults, images]);
 
   // Section 3: Time
   const [selectedOption, setSelectedOption] = useState('');
@@ -185,7 +209,13 @@ export default function CreateTaskScreen() {
     const cleanedText = text.replace(/[^a-zA-Z\s'\-,.]/g, '');
     setTitle(cleanedText);
     
-    if (touched.title) {
+    // Always validate if the field has been touched or if user is actively typing
+    if (touched.title || cleanedText.length > 0) {
+      // Mark as touched if user starts typing
+      if (!touched.title && cleanedText.length > 0) {
+        setTouched({ ...touched, title: true });
+      }
+      
       if (cleanedText.trim().length === 0) {
         setTitleError('Title is required');
       } else if (cleanedText.trim().length < 10) {
@@ -237,8 +267,35 @@ export default function CreateTaskScreen() {
   // Initialize with existing data from store
   useEffect(() => {
     // Section 1
-    if (myTask.title) setTitle(myTask.title);
-    if (myTask.description) setDescription(myTask.description);
+    if (myTask.title) {
+      setTitle(myTask.title);
+      // Mark as touched and validate if title comes from welcome screen
+      setTouched(prev => ({ ...prev, title: true }));
+      
+      // Run validation on the loaded title
+      const trimmedTitle = myTask.title.trim();
+      if (trimmedTitle.length === 0) {
+        setTitleError('Title is required');
+      } else if (trimmedTitle.length < 10) {
+        setTitleError('Minimum 10 characters required');
+      } else {
+        setTitleError('');
+      }
+    }
+    if (myTask.description) {
+      setDescription(myTask.description);
+      // Also validate description if it exists
+      setTouched(prev => ({ ...prev, description: true }));
+      
+      const trimmedDescription = myTask.description.trim();
+      if (trimmedDescription.length === 0) {
+        setDescriptionError('Description is required');
+      } else if (trimmedDescription.length < 20) {
+        setDescriptionError('Minimum 20 characters required');
+      } else {
+        setDescriptionError('');
+      }
+    }
     if ('category' in myTask && myTask.category) setSelectedCategory(myTask.category);
 
     // Section 2
@@ -274,6 +331,14 @@ export default function CreateTaskScreen() {
     }
   }, []);
 
+  // Reset time toggle when Flexible option is selected
+  useEffect(() => {
+    if (selectedOption === 'no_rush') {
+      setNeedSpecificTime(false);
+      setSelectedTimeBlock('');
+    }
+  }, [selectedOption]);
+
   // Get categories
   const categoriesData = categoriesResponse?.data || [];
   const fullCategories: Category[] = categoriesData.map((cat: any) => {
@@ -291,6 +356,90 @@ export default function CreateTaskScreen() {
         cat.toLowerCase().includes(categorySearchQuery.toLowerCase())
       )
     : allCategories;
+
+  // Helper function to build task context for OCR validation
+  const getTaskContext = (): TaskContext => {
+    return {
+      title: title || '',
+      description: description || '',
+      category: selectedCategory || '',
+      location: selectedLocation?.address || ''
+    };
+  };
+
+  // Modified image addition function - NOW WITH SMART VALIDATION
+  const addImageWithValidation = async (imageUri: string) => {
+    try {
+      console.log('📸 Validating image before adding:', imageUri);
+      console.log('🔧 Smart validation system active - using OpenAI Vision API');
+      
+      // Add placeholder validation result immediately
+      console.log('💾 Setting placeholder validation result');
+      setValidationResults(prev => {
+        const newMap = new Map(prev);
+        newMap.set(imageUri, {
+          isValid: true,
+          confidence: 0,
+          message: 'Analyzing image...',
+          reasons: ['Analysis in progress'],
+          suggestions: []
+        });
+        return newMap;
+      });
+      
+      // Add image immediately with placeholder validation
+      console.log('📸 Adding image to list with placeholder validation');
+      setImages(prevImages => [...prevImages, imageUri]);
+      
+      const taskContext = getTaskContext();
+      console.log('📋 Task context for validation:', taskContext);
+      
+      // VALIDATE FIRST with smart validation - BLOCK if invalid
+      const validationResult = await validateImageSmart(imageUri, taskContext);
+      
+      console.log('🎯 Validation completed:', {
+        isValid: validationResult.isValid,
+        confidence: validationResult.confidence,
+        message: validationResult.message
+      });
+      
+      // Store validation result immediately (for both success and failure)
+      console.log('💾 Storing validation result for display:', validationResult);
+      setValidationResults(prev => {
+        const newMap = new Map(prev);
+        newMap.set(imageUri, validationResult);
+        console.log('📋 Validation results map updated, size:', newMap.size);
+        console.log('📋 All validation entries:', Array.from(newMap.entries()));
+        return newMap;
+      });
+      
+      if (!validationResult.isValid) {
+        console.log('🚫 Image validation failed - removing from list');
+        
+        // Remove the image since validation failed
+        setImages(prevImages => prevImages.filter(img => img !== imageUri));
+        
+        Alert.alert(
+          'Image Not Suitable',
+          validationResult.message + '\n\nSuggestions:\n' + validationResult.suggestions.join('\n'),
+          [{ text: 'OK' }]
+        );
+        return; // Exit early
+      }
+      
+      // Validation passed - image is already in list, just update validation result
+      console.log('✅ Image APPROVED - validation completed successfully');
+      console.log('✅ Image validated and added successfully');
+      
+    } catch (error) {
+      console.error('❌ Error in addImageWithValidation:', error);
+      Alert.alert(
+        'Image Validation Error',
+        'Could not validate this image. Please try with a different image.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
 
   // Image handlers
   const showImagePickerOptions = () => {
@@ -320,7 +469,8 @@ export default function CreateTaskScreen() {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        setImages([...images, result.assets[0].uri]);
+        // Use the new validation function instead of directly adding
+        await addImageWithValidation(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error taking photo:', error);
@@ -346,7 +496,8 @@ export default function CreateTaskScreen() {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        setImages([...images, result.assets[0].uri]);
+        // Use the new validation function instead of directly adding
+        await addImageWithValidation(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error selecting image:', error);
@@ -357,7 +508,15 @@ export default function CreateTaskScreen() {
   };
 
   const handleDeleteImage = (uri: string) => {
+    // Remove image from the list
     setImages(images.filter(img => img !== uri));
+    
+    // Clear validation results for this image
+    setValidationResults(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(uri);
+      return newMap;
+    });
   };
 
   const handleLocationSelect = (location: LocationData) => {
@@ -416,8 +575,8 @@ export default function CreateTaskScreen() {
   ];
 
   const options = [
-    { label: 'On Time', value: 'on_time' },
-    { label: 'Before', value: 'before' },
+    { label: 'On Date', value: 'on_time' },
+    { label: 'Before Date', value: 'before' },
     { label: 'Flexible', value: 'no_rush' },
   ];
 
@@ -463,6 +622,30 @@ export default function CreateTaskScreen() {
               <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDeleteImage(item)}>
                 <Ionicons name="close-circle" size={22} color="#FF4D4F" />
               </TouchableOpacity>
+              
+              {/* AI validation result display */}
+              {validationResults.get(item) && (
+                <View style={styles.validationTextContainer}>
+                  {validationResults.get(item)?.isValid ? (
+                    <Text style={styles.validationTextSuccess}>
+                      ✅ AI approved (confidence: {Math.round((validationResults.get(item)?.confidence || 0) * 100)}%)
+                    </Text>
+                  ) : (
+                    <Text style={styles.validationTextWarning}>
+                      ⚠️ AI flagged: {validationResults.get(item)?.reasons?.[0] || 'Quality concerns'}
+                    </Text>
+                  )}
+                </View>
+              )}
+              
+              {/* Show loading for image being validated */}
+              {isValidatingImage && currentValidationImage === item && (
+                <View style={styles.validationTextContainer}>
+                  <Text style={styles.validationTextLoading}>
+                    🔍 Checking image...
+                  </Text>
+                </View>
+              )}
             </View>
           );
         })}
@@ -709,6 +892,21 @@ export default function CreateTaskScreen() {
             )}
           </View>
 
+          {/* AI-Powered Title Suggestions */}
+          <TaskTitleSuggestions 
+            selectedCategory={selectedCategory}
+            currentTitle={title}
+            onSuggestionSelect={(suggestion) => {
+              setTitle(suggestion);
+              setTouched(prev => ({ ...prev, title: true }));
+              // Trigger validation
+              if (suggestion.trim().length >= 10) {
+                setTitleError('');
+              }
+              console.log('📝 Applied AI suggestion to title in create-task:', suggestion);
+            }}
+          />
+
           {/* Title Input */}
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>
@@ -717,7 +915,7 @@ export default function CreateTaskScreen() {
             <TextInput
               style={[
                 styles.input,
-                touched.title && (titleError || (titleLength > 0 && titleLength < 10)) && styles.inputError
+                titleError && styles.inputError
               ]}
               placeholder="e.g. Move my couch"
               value={title}
@@ -727,11 +925,8 @@ export default function CreateTaskScreen() {
               maxLength={200}
             />
             <Text style={styles.charCount}>{titleLength}/200</Text>
-            {touched.title && titleError && (
+            {titleError && (
               <Text style={styles.errorText}>{titleError}</Text>
-            )}
-            {touched.title && !titleError && titleLength > 0 && titleLength < 10 && (
-              <Text style={styles.errorText}>Minimum 10 characters required</Text>
             )}
             <Text style={styles.helperText}>Only letters, spaces, and basic punctuation allowed</Text>
           </View>
@@ -775,7 +970,9 @@ export default function CreateTaskScreen() {
           <Text style={styles.sectionTitle}>Photos & Location</Text>
           <Text style={styles.sectionSubtitle}>Help taskers understand what needs doing ({images.length}/10 photos)</Text>
 
-          <View style={styles.imageSection}>{renderGridItems()}</View>
+          <View style={styles.imageSection}>
+            {renderGridItems()}
+          </View>
 
           {/* Location */}
           <View style={styles.fieldContainer}>
@@ -850,10 +1047,14 @@ export default function CreateTaskScreen() {
           )}
 
           {/* Time Toggle */}
-          <TimeToggle needSpecificTime={needSpecificTime} onToggle={setNeedSpecificTime} />
+          <TimeToggle 
+            needSpecificTime={needSpecificTime} 
+            onToggle={setNeedSpecificTime}
+            disabled={selectedOption === 'no_rush'}
+          />
 
           {/* Time of Day Grid */}
-          {needSpecificTime && (
+          {needSpecificTime && selectedOption !== 'no_rush' && (
             <TimeOfDayGrid
               timeBlocks={timeBlocks}
               selectedTimeBlock={selectedTimeBlock}
@@ -900,6 +1101,8 @@ export default function CreateTaskScreen() {
           <Text style={styles.continueText}>Continue</Text>
         </TouchableOpacity>
       )}
+
+      {/* OCR Validation Modal - REMOVED */}
     </View>
   );
 }
@@ -1113,6 +1316,7 @@ const styles = StyleSheet.create({
   imageWrapper: {
     position: 'relative',
     marginRight: 10,
+    marginBottom: 30, // Add space for validation text below
   },
   uploadedImage: {
     width: 70,
@@ -1192,5 +1396,44 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Validation text styles
+  validationTextContainer: {
+    position: 'absolute',
+    bottom: -30,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingVertical: 3,
+    paddingHorizontal: 5,
+    borderRadius: 6,
+    minHeight: 22,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  validationTextSuccess: {
+    fontSize: 11,
+    color: '#22C55E',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  validationTextWarning: {
+    fontSize: 11,
+    color: '#F59E0B',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  validationTextLoading: {
+    fontSize: 11,
+    color: '#6B7280',
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

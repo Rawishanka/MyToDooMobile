@@ -188,9 +188,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           </Text>
           {/* Offer Count */}
           <Text style={styles.offerText}>
-            {(task.offerCount || 0) > 0
-              ? `${task.offerCount} Offer${task.offerCount !== 1 ? 's' : ''}`
-              : 'Make the first offer'}
+            {task.status === 'accepted' || task.status === 'completed' || 
+             task.status === 'assigned' || task.status === 'in_progress' || task.status === 'in-progress'
+              ? task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')
+              : (task.offerCount || 0) > 0
+                ? `${task.offerCount} Offer${task.offerCount !== 1 ? 's' : ''}`
+                : 'Make the first offer'}
           </Text>
         </View>
 

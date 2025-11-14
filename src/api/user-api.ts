@@ -257,6 +257,30 @@ export function useCreateSignUpToken() {
       } catch (error: any) {
         console.error('❌ Signup API error:', error);
         
+        // Enhanced server error detection for 500-level errors
+        const statusCode = error?.response?.status || error?.status;
+        const errorMessage = error?.message || '';
+        
+        // Check for server errors (500, 502, 503, 504) in multiple ways
+        const isServerError = statusCode >= 500 || 
+                             errorMessage.includes('status code 5') ||
+                             errorMessage.includes('Internal Server Error') ||
+                             errorMessage.includes('Bad Gateway') ||
+                             errorMessage.includes('Service Unavailable') ||
+                             errorMessage.includes('Gateway Timeout');
+        
+        if (isServerError && API_CONFIG.DEVELOPMENT_MODE) {
+          console.warn('⚠️ Server error detected in development - using fallback');
+          console.warn('📊 Error details:', { statusCode, errorMessage, error: error?.response?.data });
+          return {
+            success: true,
+            message: 'Account created in development mode (server fallback)',
+            userId: 'dev-user-' + Date.now(),
+            email: signUpData.email,
+            otpSent: true
+          };
+        }
+        
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
           console.warn('🎭 Network failed - Using Mock Signup');
@@ -299,6 +323,29 @@ export function useVerifyOTP() {
         return response.data;
       } catch (error: any) {
         console.error('❌ Email OTP verification error:', error);
+        
+        // Enhanced server error detection for 500-level errors
+        const statusCode = error?.response?.status || error?.status;
+        const errorMessage = error?.message || '';
+        
+        // Check for server errors (500, 502, 503, 504) in multiple ways
+        const isServerError = statusCode >= 500 || 
+                             errorMessage.includes('status code 5') ||
+                             errorMessage.includes('Internal Server Error') ||
+                             errorMessage.includes('Bad Gateway') ||
+                             errorMessage.includes('Service Unavailable') ||
+                             errorMessage.includes('Gateway Timeout');
+        
+        if (isServerError && API_CONFIG.DEVELOPMENT_MODE) {
+          console.warn('⚠️ Server error in email verification - using fallback');
+          console.warn('📊 Error details:', { statusCode, errorMessage, error: error?.response?.data });
+          return {
+            success: true,
+            message: 'Email verified in development mode (server fallback)',
+            emailVerified: true,
+            userId: verifyData.userId || 'dev-user-' + Date.now()
+          };
+        }
         
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
@@ -344,7 +391,53 @@ export function useVerifySMS() {
         console.log('✅ SMS verification response:', response.data);
         return response.data;
       } catch (error: any) {
-        console.error('❌ SMS verification error:', error);
+        console.error('❌ SMS verification error:', {
+          error,
+          status: error?.response?.status,
+          message: error?.message,
+          responseData: error?.response?.data,
+          name: error?.name
+        });
+        
+        // Enhanced server error detection for 500-level errors
+        const errorMessage = error?.message || '';
+        const isServerError = 
+          error?.response?.status >= 500 ||
+          errorMessage.includes('status code 5') ||
+          errorMessage.includes('Internal Server Error') ||
+          errorMessage.includes('Bad Gateway') ||
+          errorMessage.includes('Service Unavailable') ||
+          errorMessage.includes('Gateway Timeout') ||
+          error?.name === 'InternalServerError';
+          
+        if (isServerError) {
+          if (API_CONFIG.DEVELOPMENT_MODE) {
+            console.warn('⚠️ Server error detected in development - using SMS verification fallback');
+            
+            const mockUser = {
+              id: 'dev-user-' + Date.now(),
+              _id: 'dev-user-' + Date.now(),
+              email: 'dev@example.com',
+              firstName: 'Dev',
+              lastName: 'User',
+              phone: verifyData.phone,
+              role: 'user',
+              isVerified: true
+            };
+            
+            const mockToken = 'dev-token-' + Date.now();
+            
+            return {
+              success: true,
+              message: 'Phone verified in development mode (server fallback)',
+              phoneVerified: true,
+              isVerified: true,
+              token: mockToken,
+              user: mockUser,
+              expiresIn: 604800
+            };
+          }
+        }
         
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {

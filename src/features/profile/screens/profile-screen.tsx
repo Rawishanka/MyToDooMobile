@@ -13,6 +13,13 @@ import { Entypo, Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+// Import OCR validation service
+import {
+    OCRValidationResult,
+    TaskContext,
+    validateSingleImage
+} from '@/src/services/ocrValidationService';
 import AccountInformation from './accountinformation';
 import IDVerificationScreen from './id-verification-screen';
 import InsuranceProtection from './isuranceprotection';
@@ -25,6 +32,10 @@ export default function AccountScreen() {
   const [editAccessStatus, setEditAccessStatus] = useState<'locked' | 'pending' | 'approved'>('locked');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
+
+  // OCR validation states for avatar
+  const [avatarValidationResult, setAvatarValidationResult] = useState<OCRValidationResult | null>(null);
+  const [isValidatingAvatar, setIsValidatingAvatar] = useState(false);
 
   // � **AUTO-LOGIN for development**
   React.useEffect(() => {
@@ -75,6 +86,34 @@ export default function AccountScreen() {
     isVerified: userData?.isVerified
   });
 
+  // OCR validation function for avatar
+  const validateAvatarWithOCR = async (imageUri: string) => {
+    setIsValidatingAvatar(true);
+    
+    try {
+      const taskContext: TaskContext = {
+        category: 'profile',
+        title: 'Profile Picture',
+        description: 'User avatar image validation'
+      };
+
+      const result = await validateSingleImage(imageUri, taskContext);
+      setAvatarValidationResult(result);
+    } catch (error) {
+      console.error('Avatar OCR validation error:', error);
+      setAvatarValidationResult({ 
+        isValid: true,
+        extractedText: '',
+        confidence: 0, 
+        message: 'Validation temporarily unavailable',
+        suggestions: [],
+        keywords: { found: [], missing: [] }
+      });
+    } finally {
+      setIsValidatingAvatar(false);
+    }
+  };
+
   // Handle avatar change
   const handleChangeAvatar = async () => {
     // Request permission
@@ -95,6 +134,9 @@ export default function AccountScreen() {
     
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const imageUri = result.assets[0].uri;
+      
+      // Validate image with OCR
+      validateAvatarWithOCR(imageUri);
       
       // Create FormData
       const formData = new FormData();
@@ -332,6 +374,28 @@ export default function AccountScreen() {
             </View>
           </View>
         </TouchableOpacity>
+
+        {/* Avatar OCR Validation Display */}
+        {(isValidatingAvatar || avatarValidationResult) && (
+          <View style={styles.avatarValidationContainer}>
+            {isValidatingAvatar ? (
+              <View style={styles.validationMessage}>
+                <ActivityIndicator size="small" color="#007AFF" />
+                <Text style={styles.validationText}>Analyzing profile picture...</Text>
+              </View>
+            ) : avatarValidationResult ? (
+              <View style={styles.validationMessage}>
+                <Text style={[
+                  styles.validationText,
+                  avatarValidationResult.isValid ? styles.validationSuccess : styles.validationWarning
+                ]}>
+                  {avatarValidationResult.message}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        )}
+
         <Text style={styles.name}>
           {userData?.firstName} {userData?.lastName?.charAt(0)}.
         </Text>
@@ -898,5 +962,35 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#0052A2',
     marginTop: 2,
+  },
+  // Avatar OCR Validation styles
+  avatarValidationContainer: {
+    marginTop: 8,
+    paddingHorizontal: 20,
+  },
+  validationMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  validationText: {
+    fontSize: 12,
+    marginLeft: 6,
+    textAlign: 'center',
+  },
+  validationSuccess: {
+    color: '#22C55E',
+  },
+  validationWarning: {
+    color: '#F59E0B',
   },
 });

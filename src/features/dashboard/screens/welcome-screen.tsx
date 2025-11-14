@@ -122,8 +122,8 @@ export default function WelcomeScreen() {
       return;
     }
     
-    if (trimmedInput.length < 5) {
-      setErrorMessage('Please provide more details (at least 5 characters)');
+    if (trimmedInput.length < 10) {
+      setErrorMessage('Please provide more details (at least 10 characters)');
       return;
     }
     

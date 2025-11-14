@@ -1,7 +1,7 @@
 import { useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
 import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
-import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { checkPendingAction, executePendingAction } from '@/src/shared/utils/pending-action-utils';
+import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -11,17 +11,17 @@ import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -275,15 +275,16 @@ export default function LoginScreen() {
         }
       } else {
         // No pending task, just navigate to home
-      // Check for pending actions after successful login
-      const pendingActionType = checkPendingAction();
-      if (pendingActionType) {
-        console.log('🔄 Found pending action after email login, executing:', pendingActionType);
-        await executePendingAction();
-      } else {
-        console.log('🚀 No pending action, navigating to tabs...');
-        // Navigate back to detail screen after successful login
-        router.replace('/(tabs)' as any);
+        // Check for pending actions after successful login
+        const pendingActionType = checkPendingAction();
+        if (pendingActionType) {
+          console.log('🔄 Found pending action after email login, executing:', pendingActionType);
+          await executePendingAction();
+        } else {
+          console.log('🚀 No pending action, navigating to tabs...');
+          // Navigate back to detail screen after successful login
+          router.replace('/(tabs)' as any);
+        }
       }
     } catch (error: any) {
       console.error('Login Error:', error);
@@ -350,6 +351,7 @@ export default function LoginScreen() {
         'Something went wrong with Google Sign-In. Please try again.',
         [{ text: 'OK' }]
       );
+    } finally {
       setGoogleLoading(false);
     }
   };

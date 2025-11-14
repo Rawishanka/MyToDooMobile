@@ -1,17 +1,18 @@
 // 🎯 **REACT QUERY HOOKS FOR TASK API**
 // This file contains all React Query hooks for task operations
 
-import { TaskAPI } from '@/src/api/task-api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { TaskAPI } from '../../api/task-api';
 import {
     CreateOfferRequest,
     CreateTaskRequest,
     MyTasksParams,
+    TaskFilterParams,
     TaskOffer,
     TaskSearchParams,
     UpdateTaskRequest
-} from '@/src/api/types/tasks';
-import { handleAuthenticationError, isAuthError } from '@/src/shared/utils/auth-utils';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+} from '../../api/types/tasks';
+import { handleAuthenticationError, isAuthError } from '../utils/auth-utils';
 
 // 🔑 **QUERY KEYS**
 export const TASK_QUERY_KEYS = {
@@ -51,6 +52,21 @@ export function useGetAllTasks() {
 }
 
 /**
+ * 🎯 Get Filtered Tasks Hook (Advanced filtering and sorting)
+ */
+export function useGetFilteredTasks(params?: import('@/src/api/types/tasks').TaskFilterParams, enabled = true) {
+  return useQuery({
+    queryKey: [...TASK_QUERY_KEYS.lists(), 'filtered', params],
+    queryFn: () => TaskAPI.getFilteredTasks(params),
+    enabled,
+    staleTime: 0, // Always consider data stale
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+  });
+}
+
+/**
  * � Get Categories Hook
  */
 export function useGetCategories() {
@@ -71,7 +87,7 @@ export function useGetCategoriesByLocation(locationType: string, enabled = true)
 }
 
 /**
- * �🔍 Search Tasks Hook
+ * 🔍 Search Tasks Hook (for search functionality)
  */
 export function useSearchTasks(params: TaskSearchParams, enabled = true) {
   return useQuery({
@@ -79,6 +95,18 @@ export function useSearchTasks(params: TaskSearchParams, enabled = true) {
     queryFn: () => TaskAPI.searchTasks(params),
     enabled: enabled && Object.keys(params).length > 0,
     staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+}
+
+/**
+ * 🎯 Filter Tasks Hook (for filter/sort UI actions)
+ */
+export function useFilterTasks(params: TaskFilterParams, enabled = true) {
+  return useQuery({
+    queryKey: ['tasks', 'filter', params],
+    queryFn: () => TaskAPI.filterTasks(params),
+    enabled: enabled && Object.keys(params).length > 0,
+    staleTime: 1 * 60 * 1000, // 1 minute - shorter cache for filter results
   });
 }
 
@@ -218,6 +246,15 @@ export function useGetAllPublicQuestions(enabled = true) {
     enabled: enabled,
     staleTime: 2 * 60 * 1000, // 2 minutes
     refetchOnMount: true,
+    retry: (failureCount, error: any) => {
+      // Don't retry if it's a 404 or 500 error
+      if (error?.response?.status === 404 || error?.response?.status === 500) {
+        console.log('📝 Public questions endpoint not available, skipping retries');
+        return false;
+      }
+      return failureCount < 1; // Only retry once for other errors
+    },
+    retryDelay: 2000, // Wait 2 seconds before retry
   });
 }
 
@@ -264,9 +301,12 @@ export function usePostTaskWithImages() {
     mutationFn: ({ taskData, imageUris }: { taskData: CreateTaskRequest; imageUris: string[] }) => 
       TaskAPI.postTaskWithImages(taskData, imageUris),
     onSuccess: (result, variables) => {
-      // Optimized: Only invalidate queries, let them refetch on demand
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all });
-      console.log("✅ Task with images posted successfully");
+      // Force immediate refetch of all task-related queries
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all }); // All task queries (includes map data, browse, my tasks, search)
+      queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.lists() }); // Force immediate refetch of browse tasks
+      queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() }); // Force immediate refetch of my tasks
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers specifically
+      console.log("✅ Task with images posted successfully - force refetched all task queries");
     },
     onError: (error: any) => {
       console.error("❌ Error posting task with images:", error);
@@ -374,8 +414,8 @@ export function useAcceptOffer() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ taskId, offerId }: { taskId: string; offerId: string }) => 
-      TaskAPI.acceptOffer(taskId, offerId),
+    mutationFn: ({ taskId, offerId, userId, taskCategory }: { taskId: string; offerId: string; userId?: string; taskCategory?: string }) => 
+      TaskAPI.acceptOffer(taskId, offerId, userId, taskCategory),
     onSuccess: (data, variables) => {
       // Refetch task details and offers
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
@@ -537,6 +577,7 @@ export const TaskHooks = {
   // Query Hooks
   useGetAllTasks,
   useSearchTasks,
+  useFilterTasks, // New filter hook for Sort/Filter UI
   useGetMyTasks,
   useGetMyOffers,
   useGetTaskById,
