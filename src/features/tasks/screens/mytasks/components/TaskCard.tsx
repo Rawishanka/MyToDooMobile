@@ -1,8 +1,9 @@
 import { Task } from '@/src/api/types/tasks';
+import { useDeleteTask } from '@/src/shared/hooks/useTaskApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useRef, useState } from 'react';
+import { Alert, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface TaskCardProps {
   task: Task;
@@ -19,13 +20,41 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const [showPosterCancelModal, setShowPosterCancelModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCancelReason, setSelectedCancelReason] = useState<number | null>(null);
+  
+  // Debouncing state to prevent multiple rapid clicks
+  const lastClickTime = useRef<number>(0);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // API hooks
+  const deleteTaskMutation = useDeleteTask();
+
+  // Debouncing helper function to prevent multiple rapid clicks
+  const withDebounce = useCallback((callback: () => void, delay: number = 300) => {
+    const now = Date.now();
+    if (now - lastClickTime.current < delay) {
+      console.log('🛡️ Button click debounced - preventing rapid taps');
+      return;
+    }
+    lastClickTime.current = now;
+    callback();
+  }, []);
 
   const handleMarkAsCompleted = () => {
-    console.log('Mark as completed:', task._id);
-    // TODO: API call to mark task as completed
+    withDebounce(() => {
+      console.log('Mark as completed:', task._id);
+      // TODO: API call to mark task as completed
+    });
   };
 
-  const handleCancelTask = () => {
+  const handleCancelTask = useCallback(() => {
+    console.log('🔥 Cancel button touched!'); // Debug log
+    if (isProcessing) {
+      console.log('🛡️ Cancel operation already in progress');
+      return;
+    }
+    
+    console.log('❌ Handling cancel task:', task._id);
+    
     // Check if this is a Poster cancelling their own posted task
     if (userRole === 'Poster' && (status === 'open' || status === 'posted' || !status)) {
       setShowPosterCancelModal(true);
@@ -37,44 +66,100 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         onTaskCancelled(task._id);
       }
     }
-  };
+  }, [userRole, status, task._id, onTaskCancelled, isProcessing]);
 
-  const handleDeleteTask = () => {
+  const handleDeleteTask = useCallback(() => {
+    console.log('🔥 Delete button touched!'); // Debug log
+    if (deleteTaskMutation.isPending || isProcessing) {
+      console.log('🛡️ Delete operation already in progress');
+      return;
+    }
+    console.log('🗑️ Opening delete confirmation modal');
     setShowDeleteModal(true);
-  };
+  }, [deleteTaskMutation.isPending, isProcessing]);
 
-  const confirmDeleteTask = async () => {
+  const confirmDeleteTask = useCallback(async () => {
     try {
-      console.log('🗑️ Deleting task:', task._id);
+      if (deleteTaskMutation.isPending || isProcessing) {
+        console.log('�️ Delete operation already in progress');
+        return;
+      }
+
+      setIsProcessing(true);
+      console.log('�🗑️ Attempting to delete task:', task._id);
+      console.log('🔍 Task details:', { 
+        id: task._id, 
+        title: task.title, 
+        status: task.status 
+      });
       
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/tasks/${task._id}`, {
-      //   method: 'DELETE',
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`,
-      //     'Content-Type': 'application/json',
-      //   },
-      // });
+      // Check mutation state before calling
+      console.log('🔍 Delete mutation state:', { 
+        isPending: deleteTaskMutation.isPending,
+        isError: deleteTaskMutation.isError,
+        error: deleteTaskMutation.error
+      });
       
-      // if (response.ok) {
-      //   console.log('✅ Task deleted successfully');
-      //   if (onTaskDeleted) {
-      //     onTaskDeleted(task._id);
-      //   }
-      // }
+      // Use the React Query mutation to delete the task
+      const result = await deleteTaskMutation.mutateAsync(task._id);
       
-      // For now, just close modal and notify parent
+      console.log('✅ Delete API response:', result);
+      console.log('✅ Task deleted successfully');
       setShowDeleteModal(false);
+      
+      // Notify parent component to refresh the task list
       if (onTaskDeleted) {
+        console.log('🔄 Notifying parent component to refresh task list');
         onTaskDeleted(task._id);
       }
       
-      console.log('✅ Task deleted successfully');
-    } catch (error) {
+      // Show success message
+      Alert.alert(
+        "Task Deleted",
+        result?.message || "Your task has been deleted successfully.",
+        [{ text: "OK" }]
+      );
+      
+    } catch (error: any) {
       console.error('❌ Error deleting task:', error);
-      // Show error message to user
+      console.error('❌ Error details:', {
+        message: error?.message,
+        status: error?.response?.status,
+        data: error?.response?.data,
+        isAuthError: error?.isAuthError
+      });
+      
+      setShowDeleteModal(false);
+      
+      // Show detailed error message to user
+      let errorMessage = "Failed to delete task. Please try again.";
+      let errorTitle = "Delete Failed";
+      
+      if (error?.message?.includes("Authentication") || error?.isAuthError || error?.response?.status === 401) {
+        errorMessage = "Your session has expired. Please login again to delete this task.";
+        errorTitle = "Authentication Required";
+      } else if (error?.message?.includes("Network") || error?.code === 'NETWORK_ERROR') {
+        errorMessage = "Network error. Please check your internet connection and try again.";
+        errorTitle = "Connection Error";
+      } else if (error?.response?.status === 404) {
+        errorMessage = "This task was not found. It may have already been deleted.";
+        errorTitle = "Task Not Found";
+      } else if (error?.response?.status === 403) {
+        errorMessage = "You don't have permission to delete this task.";
+        errorTitle = "Permission Denied";
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      Alert.alert(
+        errorTitle,
+        errorMessage,
+        [{ text: "OK" }]
+      );
+    } finally {
+      setIsProcessing(false);
     }
-  };
+  }, [task._id, deleteTaskMutation, onTaskDeleted, isProcessing]);
 
   const handleConfirmPosterCancel = async () => {
     if (selectedCancelReason === null) {
@@ -262,74 +347,131 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       )}
 
       {/* Action Buttons */}
-      <View style={styles.actionButtons} pointerEvents="box-none">
+      <View style={styles.actionButtons}>
         {status === 'accepted' ? (
           // Accepted Offers tab: Mark as Completed + Cancel
           <>
             <TouchableOpacity 
-              style={styles.completedButton}
-              onPress={handleMarkAsCompleted}
+              style={[
+                styles.completedButton,
+                isProcessing && styles.disabledButton
+              ]}
+              onPress={() => {
+                if (!isProcessing) {
+                  handleMarkAsCompleted();
+                }
+              }}
               activeOpacity={0.7}
               delayPressIn={0}
+              disabled={isProcessing}
             >
-              <Text style={styles.completedButtonText}>Mark as Completed</Text>
+              <Text style={[
+                styles.completedButtonText,
+                isProcessing && { color: '#999' }
+              ]}>
+                Mark as Completed
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.cancelButton}
-              onPress={handleCancelTask}
+              style={[
+                styles.cancelButton,
+                isProcessing && styles.disabledButton
+              ]}
+              onPress={() => {
+                if (!isProcessing) {
+                  handleCancelTask();
+                }
+              }}
               activeOpacity={0.7}
               delayPressIn={0}
+              disabled={isProcessing}
             >
-              <MaterialIcons name="close" size={20} color="#fff" />
+              <MaterialIcons 
+                name="close" 
+                size={20} 
+                color={isProcessing ? "#999" : "#fff"} 
+              />
             </TouchableOpacity>
           </>
         ) : (
           // Posted tab: Edit + Delete + Cancel
           <>
+            {/* Edit Button */}
             <TouchableOpacity 
-              style={styles.actionButton} 
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              delayPressIn={0}
+              style={[
+                styles.actionButton,
+                (isProcessing || deleteTaskMutation.isPending) && styles.disabledButton
+              ]} 
+              activeOpacity={0.6}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              disabled={isProcessing || deleteTaskMutation.isPending}
               onPress={() => {
-                console.log('✏️ Edit button pressed for task:', task._id);
-                console.log('   Task data:', task);
-                if (onPress) {
-                  onPress(task._id);
-                } else {
-                  // Pass full task data to edit screen
-                  router.push({
-                    pathname: '/edit-task',
-                    params: {
-                      taskId: task._id,
-                      task: JSON.stringify(task)
+                console.log('🔥 Edit button touched!'); // Debug log
+                if (!isProcessing && !deleteTaskMutation.isPending) {
+                  withDebounce(() => {
+                    console.log('✏️ Edit button pressed for task:', task._id);
+                    console.log('   Task data:', task);
+                    if (onPress) {
+                      onPress(task._id);
+                    } else {
+                      // Pass full task data to edit screen
+                      router.push({
+                        pathname: '/edit-task',
+                        params: {
+                          taskId: task._id,
+                          task: JSON.stringify(task)
+                        }
+                      } as any);
                     }
-                  } as any);
+                  });
                 }
               }}
             >
-              <MaterialIcons name="edit" size={20} color="#007bff" />
+              <MaterialIcons 
+                name="edit" 
+                size={20} 
+                color={(isProcessing || deleteTaskMutation.isPending) ? "#999" : "#007bff"} 
+              />
             </TouchableOpacity>
+            
+            {/* Delete Button */}
             <TouchableOpacity 
-              style={[styles.actionButton, styles.deleteButton]} 
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              delayPressIn={0}
+              style={[
+                styles.actionButton, 
+                styles.deleteButton, 
+                (deleteTaskMutation.isPending || isProcessing) && styles.disabledButton
+              ]} 
+              activeOpacity={0.6}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
               onPress={handleDeleteTask}
+              disabled={deleteTaskMutation.isPending || isProcessing}
             >
-              <MaterialIcons name="delete" size={20} color="#dc3545" />
+              <MaterialIcons 
+                name="delete" 
+                size={20} 
+                color={(deleteTaskMutation.isPending || isProcessing) ? "#999" : "#dc3545"} 
+              />
             </TouchableOpacity>
+            
+            {/* Cancel Button */}
             <TouchableOpacity 
-              style={styles.actionButton} 
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              delayPressIn={0}
+              style={[
+                styles.actionButton,
+                isProcessing && styles.disabledButton
+              ]} 
+              activeOpacity={0.6}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
               onPress={handleCancelTask}
+              disabled={isProcessing}
             >
-              <MaterialIcons name="cancel" size={20} color="#dc3545" />
+              <MaterialIcons 
+                name="cancel" 
+                size={20} 
+                color={isProcessing ? "#999" : "#dc3545"} 
+              />
             </TouchableOpacity>
           </>
-        )}
+        )} 
       </View>
 
       {/* Cancellation Notice for Cancelled Tab - Only for Tasker role */}
@@ -476,10 +618,16 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={styles.deleteConfirmButton}
+                style={[
+                  styles.deleteConfirmButton,
+                  deleteTaskMutation.isPending && styles.deleteConfirmButtonDisabled
+                ]}
                 onPress={confirmDeleteTask}
+                disabled={deleteTaskMutation.isPending}
               >
-                <Text style={styles.deleteConfirmButtonText}>Delete</Text>
+                <Text style={styles.deleteConfirmButtonText}>
+                  {deleteTaskMutation.isPending ? "Deleting..." : "Delete"}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -521,6 +669,10 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 5,
     zIndex: 20,
+  },
+  disabledButton: {
+    opacity: 0.5,
+    backgroundColor: '#f5f5f5',
   },
   completedButton: {
     flex: 1,
@@ -900,6 +1052,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#dc3545',
     alignItems: 'center',
+  },
+  deleteConfirmButtonDisabled: {
+    backgroundColor: '#aaa',
+    opacity: 0.7,
   },
   deleteConfirmButtonText: {
     fontSize: 16,

@@ -29,6 +29,7 @@ import {
   TaskContext,
   validateImageSmart
 } from '@/src/services/smartImageValidator';
+import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
 
 import {
   DateOptionSelector,
@@ -849,6 +850,21 @@ export default function CreateTaskScreen() {
               </View>
             )}
           </View>
+
+          {/* AI-Powered Title Suggestions */}
+          <TaskTitleSuggestions 
+            selectedCategory={selectedCategory}
+            currentTitle={title}
+            onSuggestionSelect={(suggestion) => {
+              setTitle(suggestion);
+              setTouched(prev => ({ ...prev, title: true }));
+              // Trigger validation
+              if (suggestion.trim().length >= 10) {
+                setTitleError('');
+              }
+              console.log('📝 Applied AI suggestion to title in create-task:', suggestion);
+            }}
+          />
 
           {/* Title Input */}
           <View style={styles.fieldContainer}>

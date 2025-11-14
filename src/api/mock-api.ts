@@ -51,10 +51,21 @@ export class MockApiService {
     ];
     
     const locations = [
-      'Sydney CBD', 'Melbourne Central', 'Brisbane City', 'Perth Hills',
-      'Adelaide Park', 'Darwin Centre', 'Hobart Marina', 'Canberra Mall',
-      'Gold Coast Beach', 'Newcastle West', 'Wollongong South', 'Cairns North',
-      'Townsville East', 'Geelong West', 'Ballarat Central'
+      { name: 'Sydney CBD', coords: [151.2093, -33.8688] },
+      { name: 'Melbourne Central', coords: [144.9631, -37.8136] },
+      { name: 'Brisbane City', coords: [153.0251, -27.4698] },
+      { name: 'Perth Hills', coords: [115.8613, -31.9505] },
+      { name: 'Adelaide Park', coords: [138.6007, -34.9285] },
+      { name: 'Gold Coast Beach', coords: [153.4000, -28.0167] },
+      { name: 'Newcastle West', coords: [151.7817, -32.9283] },
+      { name: 'Wollongong South', coords: [150.8931, -34.4278] },
+      { name: 'Cairns North', coords: [145.7781, -16.9186] },
+      { name: 'Geelong West', coords: [144.3617, -38.1499] },
+      { name: 'Townsville East', coords: [146.8169, -19.2590] },
+      { name: 'Canberra Mall', coords: [149.1300, -35.2809] },
+      { name: 'Darwin Centre', coords: [130.8456, -12.4634] },
+      { name: 'Hobart Marina', coords: [147.3272, -42.8821] },
+      { name: 'Ballarat Central', coords: [143.8503, -37.5622] }
     ];
     
     return generateMockTask({
@@ -64,10 +75,10 @@ export class MockApiService {
       formattedBudget: `A$${50 + (i * 25)}`,
       offerCount: Math.floor(Math.random() * 10),
       location: {
-        address: locations[i] || 'Mock Location',
+        address: locations[i]?.name || 'Mock Location',
         coordinates: {
           type: 'Point',
-          coordinates: [144.9631 + (Math.random() - 0.5) * 2, -37.8136 + (Math.random() - 0.5) * 2]
+          coordinates: locations[i]?.coords || [144.9631, -37.8136]
         }
       },
       status: Math.random() > 0.7 ? 'completed' : 'open',

@@ -1,5 +1,5 @@
 import { LocationAutocomplete, LocationData } from '@/src/shared/components/LocationAutocomplete';
-import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
+import { useGetCategories, useUpdateTask } from '@/src/shared/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -7,6 +7,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -105,6 +106,9 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   // Fetch categories
   const { data: categoriesResponse, isLoading: loadingCategories } = useGetCategories();
   const categories = categoriesResponse?.data || [];
+
+  // Update task mutation
+  const updateTaskMutation = useUpdateTask();
 
   // Keyboard listeners
   useEffect(() => {
@@ -261,7 +265,12 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   };
 
   // Handle save
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!taskId) {
+      Alert.alert("Error", "Task ID is missing");
+      return;
+    }
+
     console.log('💾 Saving task:', taskId);
     console.log('   Category:', selectedCategory);
     console.log('   Title:', title);
@@ -269,8 +278,82 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     console.log('   Location:', selectedLocation);
     console.log('   When:', selectedOption);
     console.log('   Budget:', budget);
-    // TODO: Implement actual save logic
-    router.back();
+
+    // Validate required fields
+    if (!title.trim()) {
+      Alert.alert("Validation Error", "Please enter a task title");
+      return;
+    }
+
+    try {
+      // Prepare the update request body according to the API spec
+      const updateRequest = {
+        title: title.trim(),
+        description: description.trim(),
+        budget: budget ? parseFloat(budget) : 0,
+        currency: "LKR", // Default currency
+        time: selectedOption || "Anytime",
+        date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
+        dateType: selectedOption || "Easy",
+        location: selectedLocation ? {
+          address: selectedLocation.address,
+          coordinates: {
+            lat: selectedLocation.coordinates.lat,
+            lng: selectedLocation.coordinates.lng
+          }
+        } : undefined
+      };
+
+      console.log('📤 Update request body:', updateRequest);
+
+      // Call the update API
+      const result = await updateTaskMutation.mutateAsync({
+        taskId: taskId as string,
+        updates: updateRequest
+      });
+
+      console.log('✅ Task updated successfully:', result);
+
+      // Show success message
+      Alert.alert(
+        "Task Updated",
+        "Your task has been updated successfully.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              // Navigate back to the tasks list
+              router.back();
+            }
+          }
+        ]
+      );
+
+    } catch (error: any) {
+      console.error('❌ Error updating task:', error);
+      
+      // Show error message
+      let errorMessage = "Failed to update task. Please try again.";
+      let errorTitle = "Update Failed";
+      
+      if (error?.message?.includes("Authentication") || error?.isAuthError) {
+        errorMessage = "Your session has expired. Please login again to update this task.";
+        errorTitle = "Authentication Required";
+      } else if (error?.message?.includes("Network")) {
+        errorMessage = "Network error. Please check your internet connection and try again.";
+        errorTitle = "Connection Error";
+      } else if (error?.message?.includes("not found")) {
+        errorMessage = "This task was not found. It may have been deleted.";
+        errorTitle = "Task Not Found";
+      } else if (error?.message?.includes("permission")) {
+        errorMessage = "You don't have permission to update this task.";
+        errorTitle = "Permission Denied";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert(errorTitle, errorMessage);
+    }
   };
 
   // Filter categories based on search
@@ -491,11 +574,20 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
         <TouchableOpacity 
           style={[
             styles.saveButton,
-            { bottom: Math.max(insets.bottom, 20) }
+            { bottom: Math.max(insets.bottom, 20) },
+            updateTaskMutation.isPending && styles.saveButtonDisabled
           ]}
           onPress={handleSave}
+          disabled={updateTaskMutation.isPending}
         >
-          <Text style={styles.saveButtonText}>Save Changes</Text>
+          {updateTaskMutation.isPending ? (
+            <View style={styles.saveButtonContent}>
+              <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+              <Text style={styles.saveButtonText}>Saving...</Text>
+            </View>
+          ) : (
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          )}
         </TouchableOpacity>
       )}
     </View>
@@ -680,6 +772,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#aaa',
+    opacity: 0.7,
+  },
+  saveButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   saveButtonText: {
     color: '#fff',

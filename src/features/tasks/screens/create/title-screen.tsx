@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
 
 interface Category {
   _id: string;
@@ -172,9 +173,19 @@ export default function TitleInputScreen() {
           )}
         </View>
 
+        {/* AI-Powered Title Suggestions */}
+        <TaskTitleSuggestions 
+          selectedCategory={selectedCategory}
+          currentTitle={title}
+          onSuggestionSelect={(suggestion) => {
+            setTitle(suggestion);
+            console.log('📝 Applied AI suggestion to title:', suggestion);
+          }}
+        />
+
         {/* Title Input */}
         <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Title</Text>
+          <Text style={styles.label}>Task title <Text style={styles.required}>*</Text></Text>
           <TextInput
             style={[
               styles.input,
@@ -189,6 +200,9 @@ export default function TitleInputScreen() {
           {titleLength > 0 && titleLength < 10 && (
             <Text style={styles.validationText}>Minimum 10 characters required</Text>
           )}
+          <Text style={styles.characterCount}>
+            {titleLength}/200 characters
+          </Text>
         </View>
 
         {/* Description Input */}
@@ -390,5 +404,14 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  characterCount: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'right',
+    marginTop: 4,
+  },
+  required: {
+    color: '#EF4444',
   },
 });

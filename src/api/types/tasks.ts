@@ -364,20 +364,22 @@ export interface CreateTaskRequest {
 // 🔄 *UPDATE TASK REQUEST*
 export interface UpdateTaskRequest {
   title?: string;
-  details?: string; // ✅ Backend expects 'details'
+  description?: string; // API expects 'description' not 'details'
   budget?: number;
-  status?: string;
-  category?: string; // ✅ Backend expects singular 'category' as string
-  dateType?: string;
-  date?: string; // ✅ Added date field
-  time?: string;
-  location?: string; // ✅ MUST be string - backend expects location.trim()
-  coordinates?: {
-    latitude: number;
-    longitude: number;
-  }; // ✅ Separate coordinates field
-  locationType?: 'In-person' | 'Online' | 'Both'; // ✅ Added locationType field
   currency?: string;
+  time?: string;
+  date?: string; // ISO date string
+  dateType?: string;
+  location?: {
+    address: string;
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
+  };
+  status?: string;
+  category?: string; // Backend expects singular 'category' as string
+  locationType?: 'In-person' | 'Online' | 'Both';
   images?: string[];
 }
 

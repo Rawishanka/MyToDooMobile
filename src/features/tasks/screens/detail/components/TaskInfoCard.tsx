@@ -1,26 +1,8 @@
+import { Task } from '@/src/api/types/tasks';
 import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
-interface Task {
-  title: string;
-  createdBy?: {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    avatar?: string; // Base64 image data
-    profilePicture?: string; // URL string
-  };
-  location?: {
-    address?: string;
-  };
-  budget?: number;
-  categories?: string[];
-  details?: string;
-  images?: string[];
-  createdAt: string; // Task creation date
-}
 
 interface TaskInfoCardProps {
   task: Task;
@@ -40,7 +22,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
   const screenWidth = Dimensions.get('window').width;
 
-  // Debug log to see what avatar data we have
+  // Debug log to see what avatar and images data we have
   React.useEffect(() => {
     console.log('🖼️ Avatar Debug - Task Creator Data:', {
       firstName: task.createdBy?.firstName,
@@ -50,7 +32,15 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       avatarPreview: task.createdBy?.avatar?.substring(0, 50) + '...',
       profilePictureUrl: task.createdBy?.profilePicture
     });
-  }, [task.createdBy]);
+    
+    // Debug log for task images
+    console.log('🖼️ Task Images Debug:', {
+      hasImagesField: !!task.images,
+      imagesCount: task.images?.length || 0,
+      images: task.images,
+      imagesPreview: task.images?.slice(0, 2).map(img => img?.substring(0, 100))
+    });
+  }, [task.createdBy, task.images]);
 
   const handleImageLoadStart = (index: number) => {
     setImageLoadingStates(prev => ({ ...prev, [index]: true }));
@@ -68,26 +58,35 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   };
 
   const isValidImageUri = (uri: string): boolean => {
-    if (!uri || typeof uri !== 'string') return false;
+    if (!uri || typeof uri !== 'string') {
+      console.log('❌ Invalid URI: not a string or empty');
+      return false;
+    }
     
     // Check for valid data URI format or HTTP(S) URLs
     const isValidFormat = (
       uri.startsWith('data:image/') || 
       uri.startsWith('http://') || 
       uri.startsWith('https://') ||
-      uri.startsWith('file://')
+      uri.startsWith('file://') ||
+      uri.startsWith('data:') // More lenient for data URIs
     );
 
-    // Additional validation for data URIs
-    if (uri.startsWith('data:image/')) {
-      // Check if it has the proper format: data:image/type;base64,data
-      const hasBase64 = uri.includes(';base64,');
-      const hasData = uri.split(',').length === 2 && uri.split(',')[1].length > 0;
-      
-      if (!hasBase64 || !hasData) {
-        console.warn('⚠️ Invalid base64 data URI format:', uri.substring(0, 50) + '...');
+    // For data URIs, do basic validation
+    if (uri.startsWith('data:')) {
+      // Just check if it has some content after 'data:'
+      const hasContent = uri.length > 20; // Reasonable minimum length
+      if (!hasContent) {
+        console.warn('⚠️ Data URI too short:', uri);
         return false;
       }
+      console.log('✅ Data URI looks valid (length:', uri.length, ')');
+      return true;
+    }
+
+    // For HTTP URLs, just check format is correct
+    if (!isValidFormat) {
+      console.warn('⚠️ URI format not recognized:', uri.substring(0, 50));
     }
 
     return isValidFormat;
@@ -155,15 +154,116 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   };
 
   const renderImageGallery = () => {
+    console.log('🚨 renderImageGallery called!');
+    console.log('🚨 task.images exists?', !!task.images);
+    console.log('🚨 task.images value:', task.images);
+    console.log('🚨 task.images length:', task.images?.length);
+    
     if (!task.images || task.images.length === 0) {
-      return null;
+      console.error('❌ NO IMAGES FOUND IN TASK DATA!');
+      console.error('❌ This is why Photos section is not showing');
+      console.error('❌ Backend is not returning images array');
+      
+      // TEMPORARY: Show a message indicating no images were uploaded
+      return (
+        <View style={styles.imageGallery}>
+          <Text style={styles.imageGalleryTitle}>Photos (0)</Text>
+          <Text style={styles.noImagesText}>No photos were saved with this task</Text>
+        </View>
+      );
     }
 
+    console.log('✅ Task has images array!');
     console.log('🖼️ Task images (original):', task.images);
+    console.log('🖼️ First image type:', typeof task.images[0]);
+    console.log('🖼️ First image value:', task.images[0]);
+
+    // Extract image strings from whatever format backend sends
+    const extractImageString = (imageData: any): string | null => {
+      if (!imageData) {
+        console.log('❌ Image data is null/undefined');
+        return null;
+      }
+      
+      // If already a string, return it
+      if (typeof imageData === 'string') {
+        console.log('✅ Image is already a string');
+        return imageData;
+      }
+      
+      // If it's an object, try common properties
+      if (typeof imageData === 'object') {
+        const keys = Object.keys(imageData);
+        console.log('🔍 Image is object with properties:', keys);
+        
+        // Check common URL properties
+        if (imageData.url) {
+          console.log('✅ Found image.url property');
+          return imageData.url;
+        }
+        if (imageData.uri) {
+          console.log('✅ Found image.uri property');
+          return imageData.uri;
+        }
+        if (imageData.path) {
+          console.log('✅ Found image.path property');
+          return imageData.path;
+        }
+        if (imageData.src) {
+          console.log('✅ Found image.src property');
+          return imageData.src;
+        }
+        
+        // Check if it has data and contentType (some backends send structured objects)
+        if (imageData.data && imageData.contentType) {
+          console.log('✅ Found structured data with contentType');
+          return `data:${imageData.contentType};base64,${imageData.data}`;
+        }
+        
+        // Just data property without contentType
+        if (imageData.data && typeof imageData.data === 'string') {
+          console.log('✅ Found data property (assuming base64 image)');
+          return `data:image/jpeg;base64,${imageData.data}`;
+        }
+        
+        // Check if it's a Buffer object
+        if (imageData.type === 'Buffer' && imageData.data) {
+          console.log('✅ Found Buffer object');
+          try {
+            const base64 = btoa(String.fromCharCode(...imageData.data));
+            return `data:image/jpeg;base64,${base64}`;
+          } catch (error) {
+            console.error('❌ Failed to convert buffer to base64:', error);
+          }
+        }
+        
+        console.warn('⚠️ Could not extract image string from object properties:', keys);
+      }
+      
+      return null;
+    };
+
+    // Convert all images to strings first
+    const imageStrings = task.images
+      .map((imageData, index) => {
+        const result = extractImageString(imageData);
+        console.log(`📸 Image ${index} extraction:`, {
+          input: typeof imageData === 'object' ? `Object with keys: ${Object.keys(imageData).join(', ')}` : imageData,
+          output: result ? `${result.substring(0, 60)}...` : 'null'
+        });
+        return result;
+      })
+      .filter((uri): uri is string => uri !== null);
+    
+    console.log('🔄 Extracted image strings count:', imageStrings.length);
+    
+    if (imageStrings.length === 0 && task.images.length > 0) {
+      console.error('❌ Failed to extract any image strings!');
+      console.error('❌ Raw images data:', JSON.stringify(task.images, null, 2));
+    }
 
     // Fix and filter out any null/undefined/empty image URLs and validate format
-    const fixedImages = task.images.map(uri => {
-      if (!uri) return uri;
+    const fixedImages = imageStrings.map(uri => {
       const fixed = fixImageUri(uri);
       if (fixed !== uri) {
         console.log('🔧 URL fixed:', uri, '→', fixed);
@@ -173,13 +273,21 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
     
     console.log('🔧 Task images (after fixing):', fixedImages);
     
-    const validImages = fixedImages.filter(uri => uri && isValidImageUri(uri));
+    // Be more lenient - try to show images even if validation is uncertain
+    const validImages = fixedImages.filter(uri => {
+      if (!uri) return false;
+      const isValid = isValidImageUri(uri);
+      console.log(`🔍 Validating image: ${uri.substring(0, 50)}... → ${isValid ? '✅ Valid' : '❌ Invalid'}`);
+      // Show image anyway if it looks like a URL or data URI
+      return uri.length > 10;
+    });
     
-    console.log('✅ Valid images found:', validImages.length, 'of', task.images.length);
-    console.log('✅ Valid images array:', validImages);
+    console.log('✅ Images to display:', validImages.length, 'of', imageStrings.length);
+    console.log('✅ Final images array:', validImages.map(img => img.substring(0, 80)));
     
     if (validImages.length === 0) {
-      console.warn('⚠️ No valid image URIs found');
+      console.warn('⚠️ No displayable images found after extraction');
+      console.warn('⚠️ Original images:', task.images);
       return null;
     }
 
@@ -278,8 +386,32 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   const renderImageModal = () => {
     if (!task.images || selectedImageIndex === null) return null;
 
-    const validImages = task.images
-      .map(uri => uri ? fixImageUri(uri) : uri) // Fix URLs first
+    // Extract image strings (same logic as renderImageGallery)
+    const extractImageString = (imageData: any): string | null => {
+      if (!imageData) return null;
+      if (typeof imageData === 'string') return imageData;
+      if (typeof imageData === 'object') {
+        if (imageData.url) return imageData.url;
+        if (imageData.uri) return imageData.uri;
+        if (imageData.path) return imageData.path;
+        if (imageData.src) return imageData.src;
+        if (imageData.data && imageData.contentType) {
+          return `data:${imageData.contentType};base64,${imageData.data}`;
+        }
+        if (imageData.type === 'Buffer' && imageData.data) {
+          const base64 = btoa(String.fromCharCode(...imageData.data));
+          return `data:image/jpeg;base64,${base64}`;
+        }
+      }
+      return null;
+    };
+
+    const imageStrings = task.images
+      .map(extractImageString)
+      .filter((uri): uri is string => uri !== null);
+
+    const validImages = imageStrings
+      .map(uri => fixImageUri(uri)) // Fix URLs first
       .filter(uri => uri && isValidImageUri(uri)); // Then validate
     
     if (validImages.length === 0 || selectedImageIndex >= validImages.length) return null;
@@ -576,6 +708,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
+  },
+  noImagesText: {
+    fontSize: 14,
+    color: '#999',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    padding: 16,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
   },
   imageRow: {
     flexDirection: 'row',
