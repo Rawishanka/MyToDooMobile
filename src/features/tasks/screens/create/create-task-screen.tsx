@@ -8,33 +8,33 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import smart image validation
 import {
-  SmartValidationResult,
-  TaskContext,
-  validateImageSmart
+    SmartValidationResult,
+    TaskContext,
+    validateImageSmart
 } from '@/src/services/smartImageValidator';
 import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
 
 import {
-  DateOptionSelector,
-  TimeOfDayGrid,
-  TimeToggle,
+    DateOptionSelector,
+    TimeOfDayGrid,
+    TimeToggle,
 } from './components';
 
 interface Category {
