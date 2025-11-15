@@ -3,11 +3,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 // API and Hooks
@@ -20,13 +20,13 @@ import { TaskCard } from '@/src/features/tasks/components';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { LoadingState } from '../../components/shared';
 import {
-  FilterButton,
-  FilterModal,
-  MapView,
-  SearchBar,
-  SortButton,
-  SortModal,
-  ViewModeToggle
+    FilterButton,
+    FilterModal,
+    MapView,
+    SearchBar,
+    SortButton,
+    SortModal,
+    ViewModeToggle
 } from './components';
 
 // Custom Hooks
