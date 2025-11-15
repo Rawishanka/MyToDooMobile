@@ -1,15 +1,16 @@
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { getCurrencySymbol } from '@/src/shared/utils/currency';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
   Modal,
+  PanResponder,
   ScrollView,
   StyleSheet,
   Switch,
   Text,
   TouchableOpacity,
-  View,
-  PanResponder,
-  Animated
+  View
 } from 'react-native';
 
 interface FilterModalProps {
@@ -49,6 +50,10 @@ export default function FilterModal({
   onShowTasksWithNoOffersChange,
   onResetFilters,
 }: FilterModalProps) {
+  // Get geolocation-based currency
+  const { countryInfo } = useLocationCountry();
+  const currencySymbol = getCurrencySymbol(countryInfo.currency);
+  
   const [categoryDropdownVisible, setCategoryDropdownVisible] = useState(false);
   const [sliderWidth, setSliderWidth] = useState(300);
   const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null);
@@ -159,67 +164,18 @@ export default function FilterModal({
             )}
           </View>
 
-          {/* Task Type Filter */}
-          <View style={styles.filterSection}>
-            <Text style={styles.sectionTitle}>To be done</Text>
-            <View style={styles.taskTypeButtons}>
-              <TouchableOpacity
-                style={[
-                  styles.taskTypeBtn,
-                  taskType === 'in-person' && styles.taskTypeBtnActive
-                ]}
-                onPress={() => onTaskTypeChange(taskType === 'in-person' ? 'all' : 'in-person')}
-              >
-                <Text style={[
-                  styles.taskTypeBtnText,
-                  taskType === 'in-person' && styles.taskTypeBtnTextActive
-                ]}>
-                  In person
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.taskTypeBtn,
-                  taskType === 'remote' && styles.taskTypeBtnActive
-                ]}
-                onPress={() => onTaskTypeChange(taskType === 'remote' ? 'all' : 'remote')}
-              >
-                <Text style={[
-                  styles.taskTypeBtnText,
-                  taskType === 'remote' && styles.taskTypeBtnTextActive
-                ]}>
-                  Remotely
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.taskTypeBtn,
-                  taskType === 'all' && styles.taskTypeBtnActive
-                ]}
-                onPress={() => onTaskTypeChange('all')}
-              >
-                <Text style={[
-                  styles.taskTypeBtnText,
-                  taskType === 'all' && styles.taskTypeBtnTextActive
-                ]}>
-                  All
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
           {/* Price Range Filter */}
           <View style={styles.filterSection}>
             <Text style={styles.sectionTitle}>Price Range</Text>
             <View style={styles.priceRangeDisplay}>
               <View style={styles.priceBox}>
                 <Text style={styles.priceBoxLabel}>Min</Text>
-                <Text style={styles.priceBoxValue}>A${priceRange[0].toLocaleString()}</Text>
+                <Text style={styles.priceBoxValue}>{currencySymbol}{priceRange[0].toLocaleString()}</Text>
               </View>
               <Text style={styles.priceSeparator}>-</Text>
               <View style={styles.priceBox}>
                 <Text style={styles.priceBoxLabel}>Max</Text>
-                <Text style={styles.priceBoxValue}>A${priceRange[1].toLocaleString()}</Text>
+                <Text style={styles.priceBoxValue}>{currencySymbol}{priceRange[1].toLocaleString()}</Text>
               </View>
             </View>
             <View style={styles.sliderContainer}>
@@ -262,8 +218,8 @@ export default function FilterModal({
                 </View>
               </View>
               <View style={styles.sliderLabels}>
-                <Text style={styles.sliderLabel}>A$0</Text>
-                <Text style={styles.sliderLabel}>A$10,000+</Text>
+                <Text style={styles.sliderLabel}>{currencySymbol}0</Text>
+                <Text style={styles.sliderLabel}>{currencySymbol}10,000+</Text>
               </View>
             </View>
           </View>
@@ -274,7 +230,7 @@ export default function FilterModal({
             
             <View style={styles.toggleRow}>
               <View style={styles.toggleTextContainer}>
-                <Text style={styles.toggleLabel}>Available tasks only</Text>
+                <Text style={styles.toggleLabel}>Available Mytodoo tasks only</Text>
                 <Text style={styles.toggleSubtitle}>Hide tasks that are already assigned</Text>
               </View>
               <Switch
