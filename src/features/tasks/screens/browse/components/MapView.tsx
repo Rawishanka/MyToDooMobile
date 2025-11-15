@@ -10,7 +10,7 @@ interface Task {
   formattedBudget?: string;
   location: {
     address: string;
-    coordinates: {} | { type: string; coordinates: [number, number] };
+    coordinates: object | { type: string; coordinates: [number, number] };
   };
   status: string;
   offerCount?: number;
@@ -65,7 +65,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       });
     }
 
-    const markers: Array<{
+    const markers: {
       id: string;
       lat: number;
       lng: number;
@@ -74,7 +74,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       location: string;
       status: string;
       offers: number;
-    }> = [];
+    }[] = [];
 
     // Process tasks - convert addresses to coordinates
     tasks.forEach((task, index) => {
@@ -100,27 +100,38 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       });
 
       if (coords && Object.keys(coords).length > 0) {
-        // Handle different coordinate formats
+        // Handle different coordinate formats from the API
+        
+        // Format 1: GeoJSON format { type: "Point", coordinates: [lng, lat] }
         if (typeof coords === 'object' && 'coordinates' in coords && Array.isArray(coords.coordinates)) {
           if (coords.coordinates.length === 2) {
             lng = typeof coords.coordinates[0] === 'number' ? coords.coordinates[0] : parseFloat(coords.coordinates[0]);
             lat = typeof coords.coordinates[1] === 'number' ? coords.coordinates[1] : parseFloat(coords.coordinates[1]);
-            console.log(`✅ Found GeoJSON coordinates for ${task.title}:`, { lat, lng, source: 'GeoJSON' });
+            console.log(`✅ Extracted GeoJSON coordinates for ${task.title}:`, { lat, lng, source: 'GeoJSON API' });
           }
         }
+        // Format 2: Object format { lat: number, lng: number }
         else if (typeof coords === 'object' && 'lat' in coords && 'lng' in coords) {
           const coordsObj = coords as any;
           lat = typeof coordsObj.lat === 'number' ? coordsObj.lat : parseFloat(coordsObj.lat);
           lng = typeof coordsObj.lng === 'number' ? coordsObj.lng : parseFloat(coordsObj.lng);
-          console.log(`✅ Found object coordinates for ${task.title}:`, { lat, lng, source: 'Object' });
+          console.log(`✅ Extracted object coordinates for ${task.title}:`, { lat, lng, source: 'Object API' });
         }
+        // Format 3: Alternative object format { latitude: number, longitude: number }
+        else if (typeof coords === 'object' && 'latitude' in coords && 'longitude' in coords) {
+          const coordsObj = coords as any;
+          lat = typeof coordsObj.latitude === 'number' ? coordsObj.latitude : parseFloat(coordsObj.latitude);
+          lng = typeof coordsObj.longitude === 'number' ? coordsObj.longitude : parseFloat(coordsObj.longitude);
+          console.log(`✅ Extracted lat/lng coordinates for ${task.title}:`, { lat, lng, source: 'LatLng API' });
+        }
+        // Format 4: Direct array format [lng, lat]
         else if (Array.isArray(coords) && coords.length === 2) {
           lng = typeof coords[0] === 'number' ? coords[0] : parseFloat(coords[0]);
           lat = typeof coords[1] === 'number' ? coords[1] : parseFloat(coords[1]);
-          console.log(`✅ Found array coordinates for ${task.title}:`, { lat, lng, source: 'Array' });
+          console.log(`✅ Extracted array coordinates for ${task.title}:`, { lat, lng, source: 'Array API' });
         }
         else {
-          console.log(`⚠️ Coordinates exist but format unknown for ${task.title}:`, { coords });
+          console.log(`⚠️ Unknown coordinate format for ${task.title}:`, { coords, type: typeof coords, keys: Object.keys(coords) });
         }
       }
 
@@ -141,6 +152,8 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
         // Validate coordinates are reasonable
         if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+          const coordinateSource = task.location.coordinates && Object.keys(task.location.coordinates).length > 0 ? 'API' : 'Geocoded';
+          
           markers.push({
             id: task._id,
             lat: lat,
@@ -152,16 +165,22 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
             offers: task.offerCount || 0,
           });
           
-          console.log(`🎯 Added marker ${markers.length} for task:`, {
+          console.log(`🎯 Added marker ${markers.length} for task (${coordinateSource} coordinates):`, {
             id: task._id,
             title: task.title,
             lat: lat,
             lng: lng,
             address: task.location.address,
-            source: lat && lng ? 'API or Geocoded' : 'Unknown'
+            source: coordinateSource
           });
         } else {
-          console.log('⚠️ Invalid coordinates range:', { taskId: task._id, lat, lng, address: task.location.address });
+          console.log('⚠️ Invalid coordinates range for task:', { 
+            taskId: task._id, 
+            title: task.title,
+            lat, 
+            lng, 
+            address: task.location.address 
+          });
         }
       } else {
         console.log('🚫 No valid coordinates found for task:', {
@@ -171,17 +190,33 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           hasCoords: !!coords,
           coordsEmpty: coords && Object.keys(coords).length === 0,
           lat: lat,
-          lng: lng
+          lng: lng,
+          reason: 'Missing or invalid coordinate data'
         });
       }
     });
 
-    console.log(`🗺️ Final markers summary:`, {
-      totalTasks: tasks.length,
-      markersCreated: markers.length,
-      tasksWithoutMarkers: tasks.length - markers.length,
+    console.log(`🗺️ Final map data summary:`, {
+      totalTasksFromAPI: tasks.length,
+      totalMarkersCreated: markers.length,
+      tasksWithoutValidCoords: tasks.length - markers.length,
       focusTaskId: focusTaskId,
-      markerDetails: markers.map(m => ({ id: m.id, title: m.title, lat: m.lat, lng: m.lng }))
+      sampleMarkers: markers.slice(0, 3).map(m => ({ 
+        id: m.id, 
+        title: m.title, 
+        lat: m.lat, 
+        lng: m.lng,
+        address: m.location
+      })),
+      tasksWithoutMarkers: tasks.filter(t => 
+        !markers.find(m => m.id === t._id)
+      ).map(t => ({
+        id: t._id,
+        title: t.title,
+        address: t.location?.address,
+        hasCoords: !!t.location?.coordinates,
+        coordsEmpty: t.location?.coordinates && Object.keys(t.location.coordinates).length === 0
+      }))
     });
     
     return generateHTMLContent(markers);
@@ -354,7 +389,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
     ]);
   };
 
-  const generateHTMLContent = (markers: Array<{
+  const generateHTMLContent = (markers: {
     id: string;
     lat: number;
     lng: number;
@@ -363,7 +398,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
     location: string;
     status: string;
     offers: number;
-  }>) => {
+  }[]) => {
     console.log('🗺️ Final Map Markers:', {
       totalMarkers: markers.length,
       markers: markers.slice(0, 3).map(m => ({
@@ -410,10 +445,22 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           margin: 0; 
           padding: 0; 
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          overflow: hidden;
         }
         #map { 
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
           height: 100vh; 
-          width: 100vw; 
+          width: 100vw;
+          background-color: #f5f5f5;
+        }
+        .leaflet-container {
+          background-color: #f5f5f5 !important;
+          height: 100% !important;
+          width: 100% !important;
         }
         .marker-popup {
           max-width: 250px;
@@ -462,6 +509,25 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         .action-btn:hover {
           background: #0056b3;
         }
+        .leaflet-tile-pane {
+          filter: grayscale(20%) brightness(95%) !important;
+        }
+        .leaflet-control-zoom {
+          border: none !important;
+          border-radius: 8px !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+        }
+        .leaflet-control-zoom a {
+          background-color: white !important;
+          border: 1px solid #ddd !important;
+          color: #666 !important;
+          font-size: 16px !important;
+          line-height: 26px !important;
+          text-align: center !important;
+        }
+        .leaflet-control-zoom a:hover {
+          background-color: #f8f9fa !important;
+        }
       </style>
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
       <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
@@ -469,44 +535,36 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
     <body>
       <div id="map"></div>
       <script>
-        // Initialize the map with appropriate zoom level
+        // Initialize the map with appropriate zoom level and constraints
         const initialZoom = ${focusTaskId ? '14' : markers.length > 0 ? '10' : '6'};
-        const map = L.map('map').setView([${centerLat}, ${centerLng}], initialZoom);
+        const map = L.map('map', {
+          center: [${centerLat}, ${centerLng}],
+          zoom: initialZoom,
+          minZoom: 3,
+          maxZoom: 18,
+          zoomControl: true,
+          scrollWheelZoom: true,
+          doubleClickZoom: true,
+          touchZoom: true,
+          maxBounds: [[-90, -180], [90, 180]],
+          maxBoundsViscosity: 1.0
+        });
         console.log('🗺️ Map initialized with center:', [${centerLat}, ${centerLng}], 'zoom:', initialZoom);
         
-        // Add OpenStreetMap tiles with custom styling
+        // Add OpenStreetMap tiles with zoom constraints
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
+          minZoom: 3,
           maxZoom: 18,
         }).addTo(map);
 
-        // Add custom CSS for map styling
-        const style = document.createElement('style');
-        style.textContent = \`
-          .leaflet-container {
-            background-color: #f5f5f5 !important;
+        // Prevent zoom out beyond world bounds
+        map.on('zoomend', function() {
+          const zoom = map.getZoom();
+          if (zoom < 3) {
+            map.setZoom(3);
           }
-          .leaflet-tile-pane {
-            filter: grayscale(20%) brightness(95%) !important;
-          }
-          .leaflet-control-zoom {
-            border: none !important;
-            border-radius: 8px !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-          }
-          .leaflet-control-zoom a {
-            background-color: white !important;
-            border: 1px solid #ddd !important;
-            color: #666 !important;
-            font-size: 16px !important;
-            line-height: 26px !important;
-            text-align: center !important;
-          }
-          .leaflet-control-zoom a:hover {
-            background-color: #f8f9fa !important;
-          }
-        \`;
-        document.head.appendChild(style);
+        });
 
         // Custom airtasker marker icon using the SVG
         const airtaskerIcon = L.divIcon({

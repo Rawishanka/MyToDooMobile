@@ -3,17 +3,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 // API and Hooks
 import { Task } from '@/src/api/types/tasks';
 import { useGetCategoriesWithAll } from '@/src/shared/hooks/useCategoriesApi';
-import { useClearAllCaches, useForceRefreshCategories, useForceRefreshTasks } from '@/src/shared/utils/cache-utils';
 
 // Components
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
@@ -21,14 +20,13 @@ import { TaskCard } from '@/src/features/tasks/components';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { LoadingState } from '../../components/shared';
 import {
-  DebugTools,
-  FilterButton,
-  FilterModal,
-  MapView,
-  SearchBar,
-  SortButton,
-  SortModal,
-  ViewModeToggle
+    FilterButton,
+    FilterModal,
+    MapView,
+    SearchBar,
+    SortButton,
+    SortModal,
+    ViewModeToggle
 } from './components';
 
 // Custom Hooks
@@ -108,11 +106,6 @@ export default function BrowseTasksScreen() {
     useSearchAPI,
     activeAPI,
   } = useBrowseFiltersAPI();
-
-  // Cache management utilities
-  const clearAllCaches = useClearAllCaches();
-  const forceRefreshTasks = useForceRefreshTasks();
-  const forceRefreshCategories = useForceRefreshCategories();
 
   // Custom map marker icon
   // Use the actual airtasker-marker.svg as a data URI
@@ -227,23 +220,6 @@ export default function BrowseTasksScreen() {
           <TouchableOpacity onPress={() => setSearchVisible(true)}>
             <Ionicons name="search-outline" size={20} color="#000" />
           </TouchableOpacity>
-          
-          {/* Debug: Cache Management Buttons */}
-          <DebugTools
-            onClearAll={() => {
-              console.log("🔄 Manual refresh triggered");
-              clearAllCaches();
-              setTimeout(() => {
-                refetch();
-                forceRefreshCategories();
-              }, 100);
-            }}
-            onRefresh={() => {
-              console.log("🔄 Force refresh triggered");
-              forceRefreshTasks();
-              forceRefreshCategories();
-            }}
-          />
           
           <TouchableOpacity 
             onPress={() => setShowNotifications(true)} 

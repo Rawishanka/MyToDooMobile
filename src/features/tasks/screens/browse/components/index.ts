@@ -1,4 +1,3 @@
-export { default as DebugTools } from './DebugTools';
 export { default as FilterButton } from './FilterButton';
 export { default as FilterModal } from './FilterModal';
 export { default as MapView } from './MapView';
