@@ -351,9 +351,9 @@ export const useSignup = () => {
                 {
                   text: 'OK',
                   onPress: () => {
-                    console.log('🚀 Navigating to browse tasks screen (task failed to post)...');
+                    console.log('🚀 Navigating to home screen (task failed to post)...');
                     router.dismissAll(); // Clear all previous screens
-                    router.replace('/(tabs)/browse');
+                    router.replace('/(tabs)' as any);
                   }
                 }
               ]
@@ -363,14 +363,14 @@ export const useSignup = () => {
           console.log('🎉 Account verification completed - no pending task');
           Alert.alert(
             'Success!',
-            'Akkauntha created successfully! Welcome to MyToDo.',
+            'Account created successfully! Welcome to MyToDoo.',
             [
               {
                 text: 'OK',
                 onPress: () => {
-                  console.log('🚀 Navigating to browse tasks screen...');
+                  console.log('🚀 Navigating to home screen (Get it Done)...');
                   router.dismissAll(); // Clear all previous screens
-                  router.replace('/(tabs)/browse');
+                  router.replace('/(tabs)' as any);
                 }
               }
             ]
