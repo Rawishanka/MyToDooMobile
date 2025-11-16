@@ -5,17 +5,16 @@ import { PropsWithChildren, useEffect } from 'react';
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [[isLoading, storedToken], setStoredToken] = useStorageState('token');
-  const { user, expiresIn, setAuthData } = useAuthStore();
+  const { token, setAuthData } = useAuthStore();
   
   useEffect(() => {
-    // Don't block the UI, let auth load in background
-    if (!isLoading && storedToken) {
-      // Use setTimeout to avoid blocking render
-      setTimeout(() => {
-        setAuthData(storedToken, user!, expiresIn!);
-      }, 0);
+    // Only restore token if we have a stored token and no current token
+    if (!isLoading && storedToken && !token) {
+      console.log("🔄 Found stored token, but need user data from API");
+      // Don't call setAuthData here - let the API calls handle user data fetching
+      // The stored token will be used by API calls to authenticate requests
     }
-  }, [isLoading, storedToken, user, expiresIn, setAuthData]);
+  }, [isLoading, storedToken, token]);
 
   // Don't show loading screen - let app render while auth loads in background
   // Auth status will be checked by individual screens that need it

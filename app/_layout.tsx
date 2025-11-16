@@ -83,6 +83,7 @@ export default function RootLayout() {
               <Stack.Screen name="(auth)" options={{ headerShown: false }} />
               <Stack.Screen name="(welcome-screen)" options={{ headerShown: false }} />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="(legal)" options={{ headerShown: false }} />
               <Stack.Screen name="task-detail" options={{ headerShown: false }} />
               <Stack.Screen name="make-offer-screen" options={{ headerShown: false }} />
               <Stack.Screen name="questions" options={{ headerShown: false }} />

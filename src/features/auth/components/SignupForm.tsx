@@ -2,17 +2,18 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { CountryPicker } from './CountryPicker';
 import { DatePickerInput } from './DatePickerInput';
@@ -106,8 +107,10 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   handleDateChange,
   handleGoogleSignIn,
 }) => {
+  const router = useRouter();
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [termsAccepted, setTermsAccepted] = useState(false);
   
   // Refs for input fields to enable scrolling to error
   const firstNameRef = useRef<TextInput>(null);
@@ -631,16 +634,45 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         <Text style={styles.errorText}>{errors.confirmPassword}</Text>
       )}
 
+      {/* Terms and Conditions Checkbox */}
+      <View style={styles.termsContainer}>
+        <TouchableOpacity
+          style={styles.checkboxContainer}
+          onPress={() => setTermsAccepted(!termsAccepted)}
+        >
+          <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
+            {termsAccepted && (
+              <Ionicons name="checkmark" size={16} color="#ffffff" />
+            )}
+          </View>
+        </TouchableOpacity>
+        <View style={styles.termsTextContainer}>
+          <Text style={styles.termsText}>
+            By creating an account, you agree to the{' '}
+          </Text>
+          <TouchableOpacity onPress={() => router.push('/(legal)/terms')}>
+            <Text style={styles.termsLink}>MyToDoo Terms & Conditions</Text>
+          </TouchableOpacity>
+          <Text style={styles.termsText}> and </Text>
+          <TouchableOpacity onPress={() => router.push('/(legal)/privacy')}>
+            <Text style={styles.termsLink}>Privacy Policy</Text>
+          </TouchableOpacity>
+          <Text style={styles.termsText}>.</Text>
+        </View>
+      </View>
+
       {/* Submit Button */}
       <TouchableOpacity 
-        style={styles.signUpButton} 
+        style={[styles.signUpButton, !termsAccepted && styles.signUpButtonDisabled]} 
         onPress={wrappedHandleSignUp} 
-        disabled={loading}
+        disabled={loading || !termsAccepted}
       >
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.signUpButtonText}>Continue</Text>
+          <Text style={[styles.signUpButtonText, !termsAccepted && styles.signUpButtonTextDisabled]}>
+            Create Account
+          </Text>
         )}
       </TouchableOpacity>
 
@@ -775,10 +807,57 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 24,
   },
+  signUpButtonDisabled: {
+    backgroundColor: '#cccccc',
+  },
   signUpButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  signUpButtonTextDisabled: {
+    color: '#666666',
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+    paddingHorizontal: 4,
+  },
+  checkboxContainer: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  termsTextContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+  },
+  termsText: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
+  termsLink: {
+    fontSize: 14,
+    color: '#007AFF',
+    fontWeight: '600',
+    lineHeight: 20,
   },
   dividerContainer: {
     flexDirection: 'row',

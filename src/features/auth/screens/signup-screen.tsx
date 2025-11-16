@@ -2,21 +2,27 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import React from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { OTPModal } from '../components/OTPModal';
 import { SignupForm } from '../components/SignupForm';
 import { useSignup } from '../components/useSignup';
+
+WebBrowser.maybeCompleteAuthSession();
+
+// Warm up the browser for better OAuth performance
+WebBrowser.warmUpAsync();
 
 export default function SignUpScreen() {
   const router = useRouter();

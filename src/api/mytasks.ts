@@ -46,16 +46,9 @@ export function useApiFunctions() {
 
     // Ensure auth store token is synced with storage token
     if (storedToken && !authState.token) {
-      console.log("🔄 Syncing storage token to auth store");
-      // For development, create a mock user if we have a stored token but no auth state
-      setAuthData(storedToken, {
-        id: "dev-user-123",
-        _id: "dev-user-123", 
-        email: "dev@example.com",
-        firstName: "Dev",
-        lastName: "User",
-        role: "user"
-      }, 3600);
+      console.log("🔄 Found stored token, setting in auth store without user data");
+      // Set token without user data - user data will be fetched from API when needed
+      setAuthData(storedToken, null, 3600);
     } else if (authState.token && storedToken && authState.token !== storedToken) {
       console.log("⚠️ Token mismatch between auth store and storage!");
       console.log("Auth store token:", authState.token?.substring(0, 20) + "...");
@@ -278,21 +271,25 @@ export function useApiFunctions() {
       setStoredToken(token);
       
       // Store credentials for automatic re-authentication
-      await AsyncStorage.setItem('userEmail', email);
-      await AsyncStorage.setItem('userPassword', password);
+      try {
+        await AsyncStorage.setItem('userEmail', email);
+        await AsyncStorage.setItem('userPassword', password);
+      } catch (storageError) {
+        console.warn('Failed to store credentials in AsyncStorage:', storageError);
+      }
       
       return token;
     } catch (error: any) {
       console.log("========================================");
       console.log("❌ LOGIN FAILED");
       console.log("========================================");
-      console.error("Error type:", error.constructor.name);
-      console.error("Error code:", error.code);
-      console.error("Error message:", error.message);
-      console.error("Response status:", error.response?.status);
-      console.error("Response data:", error.response?.data);
-      console.error("Request URL:", error.config?.url);
-      console.error("Request method:", error.config?.method);
+      console.error("Error type:", error?.constructor?.name || 'Unknown');
+      console.error("Error code:", error?.code || 'No code');
+      console.error("Error message:", error?.message || 'No message');
+      console.error("Response status:", error?.response?.status || 'No status');
+      console.error("Response data:", error?.response?.data || 'No data');
+      console.error("Request URL:", error?.config?.url || 'No URL');
+      console.error("Request method:", error?.config?.method || 'No method');
       console.log("========================================");
       
       // Development fallback - if server is not available, use mock data
@@ -320,16 +317,20 @@ export function useApiFunctions() {
             // Set up development session
             setAuthData(mockToken, mockUser, mockExpiresIn);
             setStoredToken(mockToken);
-            await AsyncStorage.setItem('userEmail', email);
+            try {
+                await AsyncStorage.setItem('userEmail', email);
+            } catch (storageError) {
+                console.warn('Failed to store email in AsyncStorage:', storageError);
+            }
             
             return mockToken;
         }
         
         // Production mode - throw network error
         console.error("Network Error Details:", {
-            code: error.code,
-            message: error.message,
-            config: error?.config,
+            code: error?.code || 'No code',
+            message: error?.message || 'No message',
+            config: error?.config || null,
             url: API_CONFIG.BASE_URL
         });
         throw new Error('Server connection failed. Please check your internet connection or try again later.');
@@ -367,15 +368,36 @@ export function useApiFunctions() {
       console.log("✅ Google Sign-In Success Response:", response.data);
       const { token, user, expiresIn } = response.data;
       
+      // Enhanced validation with detailed logging
+      console.log("🔍 Backend response details:", {
+        hasToken: !!token,
+        hasUser: !!user,
+        tokenPreview: token?.substring(0, 20) + "...",
+        userDetails: user ? {
+          id: user.id || user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatar: user.avatar ? "has avatar" : "no avatar"
+        } : "NO USER DATA"
+      });
+      
       // Validate that we received a valid token and user from backend
-      if (!token || !user) {
-        console.error("❌ Invalid response from server - missing token or user");
-        throw new Error('Invalid response from server');
+      if (!token) {
+        console.error("❌ No token in backend response");
+        throw new Error('No authentication token received from server');
       }
       
+      if (!user) {
+        console.error("❌ No user data in backend response");
+        throw new Error('No user data received from server');
+      }
+      
+      console.log("✅ Calling setAuthData with validated data...");
       setAuthData(token, user, expiresIn);
       setStoredToken(token);
       
+      console.log("✅ Returning data to React Query...");
       return { token, user };
     } catch (error: any) {
       // Log detailed error information

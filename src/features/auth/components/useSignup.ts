@@ -2,9 +2,14 @@
 
 import API_CONFIG from '@/src/api/config';
 import { useCreateSignUpToken, useVerifyOTP } from '@/src/api/user-api';
+import { useGoogleSignIn } from '@/src/shared/hooks/useApi';
 import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
+import { useAuthStore } from '@/src/store/auth-task-store';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { useFocusEffect } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
+import * as Google from 'expo-auth-session/providers/google';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, BackHandler, TextInput } from 'react-native';
@@ -14,6 +19,23 @@ import { COUNTRIES } from './signup-types';
 
 export const useSignup = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { user: authUser, setAuthData } = useAuthStore();
+  const { mutateAsync: googleSignIn } = useGoogleSignIn();
+  
+  // Google OAuth Configuration
+  const googleClientId = Constants.expoConfig?.extra?.googleClientId || process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
+  const owner = Constants.expoConfig?.owner || 'janidu5678';
+  const slug = Constants.expoConfig?.slug || 'MyToDooMobile';
+  
+  // Always use Expo auth proxy for better compatibility
+  const redirectUri = `https://auth.expo.io/@${owner}/${slug}`;
+  
+  const [googleRequest, googleResponse, promptGoogleAsync] = Google.useIdTokenAuthRequest({
+    clientId: googleClientId,
+    redirectUri: redirectUri,
+    scopes: ['openid', 'profile', 'email'],
+  });
   const { myTask, resetTask } = useCreateTaskStore();
   const postTaskMutation = useCreateTask();
   
@@ -56,6 +78,45 @@ export const useSignup = () => {
   // API hooks
   const { mutateAsync: signUp } = useCreateSignUpToken();
   const { mutateAsync: verifyOTP } = useVerifyOTP();
+  
+  // Google OAuth Response Handler
+  useEffect(() => {
+    if (!googleResponse) return;
+
+    console.log('🔍 Google OAuth Response (Signup):', {
+      type: googleResponse.type,
+      params: (googleResponse as any).params,
+      error: (googleResponse as any).error,
+    });
+
+    if (googleResponse?.type === 'success') {
+      const { id_token, authentication } = (googleResponse as any).params;
+      const token = id_token || authentication?.idToken;
+      
+      if (token) {
+        handleGoogleSignInSuccess(token);
+      } else {
+        console.error('❌ No ID token in Google signup response:', (googleResponse as any).params);
+        Alert.alert(
+          'Authentication Error',
+          'Unable to retrieve authentication token. Please try again.',
+          [{ text: 'OK' }]
+        );
+        setGoogleLoading(false);
+      }
+    } else if (googleResponse?.type === 'error') {
+      console.error('❌ Google OAuth error:', (googleResponse as any).error);
+      Alert.alert(
+        'Google Sign-In Error',
+        'There was an error connecting to Google. Please try again.',
+        [{ text: 'OK' }]
+      );
+      setGoogleLoading(false);
+    } else if (googleResponse?.type === 'dismiss') {
+      console.log('ℹ️ Google OAuth dismissed by user');
+      setGoogleLoading(false);
+    }
+  }, [googleResponse]);
 
   // Handle hardware back button
   useFocusEffect(
@@ -498,16 +559,110 @@ export const useSignup = () => {
     }
   };
 
+  // Google Sign-In Success Handler
+  const handleGoogleSignInSuccess = async (idToken: string) => {
+    try {
+      console.log('✅ Google Sign-In successful for signup, ID token received');
+      console.log('📤 Sending token to backend...');
+      
+      // Send the ID token to backend
+      const result = await googleSignIn({ credential: idToken });
+      
+      console.log('✅ Backend authentication successful:', result);
+      console.log('🔍 Google signup result:', { 
+        hasToken: !!result.token, 
+        hasUser: !!result.user,
+        userEmail: result.user?.email,
+        isVerified: result.user?.isVerified 
+      });
+      
+      if (result.user?.isVerified) {
+        // User is already verified - complete signup and go to welcome
+        console.log('✅ User already verified - completing signup');
+        Alert.alert(
+          'Welcome Back!',
+          'Your Google account is already verified. Welcome to MyToDoo!',
+          [
+            {
+              text: 'Continue',
+              onPress: () => {
+                router.replace('/(tabs)' as any);
+              }
+            }
+          ]
+        );
+      } else {
+        // User is not verified - show verification needed and go to 2FA
+        console.log('⚠️ User not verified - redirecting to verification');
+        
+        // Set form data from Google response
+        if (result.user?.email) setEmail(result.user.email);
+        if (result.user?.firstName) setFirstName(result.user.firstName);
+        if (result.user?.lastName) setLastName(result.user.lastName);
+        if (result.user?.phone) setPhone(result.user.phone.replace(/^\+\d+/, '')); // Remove country code
+        
+        Alert.alert(
+          'Account Not Verified',
+          'Your Google account needs verification. Please verify your email and phone number.',
+          [
+            {
+              text: 'Verify Account',
+              onPress: () => {
+                setVerificationStep('email');
+                setEmailTimer(57);
+                // Send email verification
+                handleResendEmail();
+              }
+            }
+          ]
+        );
+      }
+      
+    } catch (error: any) {
+      console.error('❌ Google Sign-In backend error:', error);
+      Alert.alert(
+        'Authentication Error',
+        error?.response?.data?.message || 'Failed to authenticate with Google. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   // Google Sign-In Handler
   const handleGoogleSignIn = async () => {
     try {
       setGoogleLoading(true);
-      // TODO: Implement Google Sign-In for signup
-      Alert.alert('Coming Soon', 'Google Sign-In for signup will be available soon!');
+      console.log('🔐 Starting Google Sign-In for signup...');
+      
+      if (!googleClientId) {
+        Alert.alert(
+          'Configuration Error',
+          'Google Sign-In is not configured. Please contact support.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+      
+      if (!googleRequest) {
+        console.error('❌ Google request not ready');
+        Alert.alert('Error', 'Google Sign-In is not ready. Please try again.');
+        return;
+      }
+      
+      console.log('🔐 Google Sign-In Configuration:');
+      console.log('Client ID:', googleClientId);
+      console.log('Redirect URI:', redirectUri);
+      console.log('Request ready:', !!googleRequest);
+      
+      console.log('🚀 Prompting Google OAuth...');
+      const result = await promptGoogleAsync();
+      console.log('Google Sign-In result:', result);
+      
     } catch (error) {
-      console.error('Google Sign-In error:', error);
-      Alert.alert('Error', 'Failed to sign in with Google. Please try again.');
-    } finally {
+      console.error('❌ Google Sign-In error:', error);
+      Alert.alert('Error', 'Failed to start Google Sign-In. Please try again.');
       setGoogleLoading(false);
     }
   };

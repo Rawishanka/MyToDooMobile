@@ -23,16 +23,19 @@ export default function LogoutPopup({ onBack }) {
       setIsLoggingOut(true);
       console.log("🔐 Starting logout process...");
       
-      // STEP 1: Immediately disable all queries by setting isAuthenticated to false
-      console.log("🚫 Disabling all React Query hooks...");
-      const { disableAuth } = useAuthStore.getState();
-      disableAuth(); // This stops all queries immediately
-      
-      // STEP 2: Clear React Query cache after queries are disabled
+      // STEP 1: Clear React Query cache FIRST while user is still authenticated
       console.log("🧹 Clearing all caches...");
       clearAllCaches();
       
-      // STEP 3: Clear all authentication data (this won't re-trigger cache clearing)
+      // STEP 2: Wait a moment for cache clearing to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // STEP 3: Disable auth queries
+      console.log("🚫 Disabling all React Query hooks...");
+      const { disableAuth } = useAuthStore.getState();
+      disableAuth();
+      
+      // STEP 4: Clear all authentication data
       await clearAuth();
       
       console.log("✅ Logout successful, redirecting to login...");

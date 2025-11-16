@@ -77,7 +77,9 @@ export const sampleTasks: { [key: string]: Task[] } = {
         lastName: 'Smith',
         rating: 4.5,
         verified: true
-      }
+      },
+      offerCount: 2,
+      offers: []
     },
     {
       ...baseTask,
@@ -101,7 +103,9 @@ export const sampleTasks: { [key: string]: Task[] } = {
         lastName: 'Johnson',
         rating: 4.8,
         verified: true
-      }
+      },
+      offerCount: 1,
+      offers: []
     }
   ],
   
@@ -156,7 +160,34 @@ export const sampleTasks: { [key: string]: Task[] } = {
         lastName: 'Wilson',
         rating: 4.6,
         verified: true
-      }
+      },
+      offerCount: 3,
+      offers: [
+        {
+          _id: 'offer1',
+          taskId: '4',
+          taskCreatorId: {
+            _id: 'user4',
+            firstName: 'Emma',
+            lastName: 'Wilson'
+          },
+          taskTakerId: {
+            _id: 'developer1',
+            firstName: 'Alex',
+            lastName: 'Dev',
+            rating: 4.8
+          },
+          offer: {
+            amount: 400,
+            currency: 'AUD',
+            message: 'I can create a professional portfolio website with React'
+          },
+          status: 'pending',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          __v: 0
+        }
+      ]
     }
   ],
   

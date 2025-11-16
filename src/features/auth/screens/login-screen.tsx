@@ -3,6 +3,7 @@ import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
 import { USER_PROFILE_QUERY_KEYS } from '@/src/shared/hooks/useUserProfileApi';
 import { useClearCachesOnLogin } from '@/src/shared/utils/cache-utils';
 import { checkPendingAction, executePendingAction } from '@/src/shared/utils/pending-action-utils';
+import { useAuthStore } from '@/src/store/auth-task-store';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,20 +15,23 @@ import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
+
+// Warm up the browser for better OAuth performance
+WebBrowser.warmUpAsync();
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -50,10 +54,11 @@ export default function LoginScreen() {
   // Get Google Client ID from environment
   const googleClientId = Constants.expoConfig?.extra?.googleClientId || process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
 
-  // FORCE use of Expo auth proxy - manually construct the URL
-  // For Expo Go, we MUST use the auth proxy to avoid local IP issues
-  const owner = Constants.expoConfig?.owner || 'nowanya';
+  // Use the correct owner from app.config.ts
+  const owner = Constants.expoConfig?.owner || 'janidu5678';
   const slug = Constants.expoConfig?.slug || 'MyToDooMobile';
+  
+  // Always use Expo auth proxy for better compatibility
   const redirectUri = `https://auth.expo.io/@${owner}/${slug}`;
   
   console.log('📱 Redirect URI for Google OAuth:', redirectUri);
@@ -69,6 +74,7 @@ export default function LoginScreen() {
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId: googleClientId,
     redirectUri: redirectUri,
+    scopes: ['openid', 'profile', 'email'],
   });
 
   // Handle Google Sign-In response
@@ -130,23 +136,45 @@ export default function LoginScreen() {
       console.log('✅ Google Sign-In successful, ID token received');
       console.log('📤 Sending token to backend...');
       
+      // Clear all caches BEFORE Google Sign-In to ensure no stale data
+      console.log('🧹 Pre-Google login: Clearing all cached data...');
+      clearCachesOnLogin();
+      await queryClient.clear(); // Force clear everything
+      
       // Send the ID token to backend
       const result = await googleSignIn({ credential: idToken });
       
       console.log('✅ Backend authentication successful:', result);
+      console.log('🔍 Auth result details:', { 
+        hasToken: !!result.token, 
+        hasUser: !!result.user,
+        userEmail: result.user?.email,
+        userId: result.user?.id 
+      });
       
-      // Clear any cached data to ensure fresh data for the new user
-      console.log('🧹 Clearing cached data for fresh user session...');
-      clearCachesOnLogin();
+      // Wait a moment for auth store to be updated
+      await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Force invalidate profile queries to ensure fresh profile data
-      await queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
-      console.log('🔄 Profile queries invalidated for fresh data');
+      // Check current auth state
+      const authState = useAuthStore.getState();
+      console.log('🔍 Auth state after Google Sign-In:', {
+        hasToken: !!authState.token,
+        hasUser: !!authState.user,
+        isAuthenticated: authState.isAuthenticated,
+        userEmail: authState.user?.email
+      });
+      
+      // Force invalidate profile queries to ensure fresh profile data with user context
+      if (authState.user?.id) {
+        const userSpecificKeys = [`user-profile-${authState.user.id}`, 'user-profile'];
+        await queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+        console.log('🔄 Profile queries invalidated for user:', authState.user.id);
+      }
       
       // Check for pending actions after successful login
       const pendingActionType = checkPendingAction();
       if (pendingActionType) {
-        console.log('� Found pending action after Google login, executing:', pendingActionType);
+        console.log('📋 Found pending action after Google login, executing:', pendingActionType);
         await executePendingAction();
       } else {
         console.log('🚀 No pending action, navigating to tabs...');
@@ -251,11 +279,13 @@ export default function LoginScreen() {
 
     try {
       setLoading(true);
-      await mutateAsync({ username: email, password });
       
-      // Clear any cached data to ensure fresh data for the new user
-      console.log('🧹 Clearing cached data for fresh user session...');
+      // Clear all caches BEFORE login to ensure no stale data
+      console.log('🧹 Pre-login: Clearing all cached data...');
       clearCachesOnLogin();
+      await queryClient.clear(); // Force clear everything
+      
+      await mutateAsync({ username: email, password });
       
       // Force invalidate profile queries to ensure fresh profile data
       await queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
