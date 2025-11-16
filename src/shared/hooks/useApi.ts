@@ -75,11 +75,28 @@ export function useGoogleSignIn() {
   return useMutation({
     mutationFn: ({ credential }: { credential: string }) => handleGoogleSignIn(credential),
     onSuccess: (data) => {
+      console.log('🔄 useGoogleSignIn - Setting cache data:', { 
+        token: data.token?.substring(0, 20) + '...', 
+        user: data.user 
+      });
+      
+      // Set auth token and user data in React Query cache
       queryClient.setQueryData(['auth-token'], data.token);
       queryClient.setQueryData(['user'], data.user);
+      
+      // Also set user-specific profile cache if user data exists
+      if (data.user?.id) {
+        const userSpecificKey = ['user-profile', data.user.id];
+        queryClient.setQueryData(userSpecificKey, data.user);
+        console.log('✅ Set user-specific profile cache:', userSpecificKey);
+      }
+      
+      // Invalidate all queries to force fresh data fetch
+      queryClient.invalidateQueries();
+      console.log('🔄 All queries invalidated for fresh data');
     },
     onError: (error) => {
-      console.error("Google Sign-In failed:", error);
+      console.error("❌ Google Sign-In failed:", error);
     },
   });
 }

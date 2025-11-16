@@ -11,15 +11,11 @@ import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { Entypo, Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-// Import OCR validation service
-import {
-  OCRValidationResult,
-  TaskContext,
-  validateSingleImage
-} from '@/src/services/ocrValidationService';
+
 import AccountInformation from './accountinformation';
 import IDVerificationScreen from './id-verification-screen';
 import InsuranceProtection from './isuranceprotection';
@@ -33,9 +29,11 @@ export default function AccountScreen() {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
 
-  // OCR validation states for avatar
-  const [avatarValidationResult, setAvatarValidationResult] = useState<OCRValidationResult | null>(null);
-  const [isValidatingAvatar, setIsValidatingAvatar] = useState(false);
+  // Local state for profile picture preview
+  const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState<boolean>(false);
+
+  const router = useRouter();
 
   // � **AUTO-LOGIN for development**
   React.useEffect(() => {
@@ -53,74 +51,103 @@ export default function AccountScreen() {
       console.log("🔄 Auth state changed - triggering profile refetch");
       refetch();
     }
-  }, [isAuthenticated, token, authUser?.email, refetch]);
+  }, [isAuthenticated, token, authUser?.email, authUser?._id, refetch]);
 
-  // 🔧 **FIXED: Only use fresh API data, no fallback to auth store to prevent cache persistence**
+  // 🔄 **CRITICAL: Clear ALL user data when auth user changes to prevent cache persistence**
+  React.useEffect(() => {
+    console.log("🔄 User ID changed - clearing all cached data to prevent persistence", {
+      userId: authUser?._id,
+      userEmail: authUser?.email
+    });
+    
+    // Clear any local state that might hold user data
+    setSelectedImageUri(null);
+    
+    // Force refetch if authenticated
+    if (isAuthenticated && token && authUser) {
+      console.log("🔄 Forcing fresh profile fetch for new user");
+      refetch();
+    }
+  }, [authUser?._id]); // Trigger only when user ID actually changes
+
+  // 🔄 **Force profile refetch when component mounts**
+  React.useEffect(() => {
+    console.log("🔄 Profile screen mounted - forcing fresh data fetch");
+    if (isAuthenticated && token) {
+      refetch();
+    }
+  }, []);
+
+  // 🔄 **Clear selected image when profile data updates with new avatar**
+  React.useEffect(() => {
+    if (userProfileData?.avatar && selectedImageUri) {
+      // Only clear preview if we have fresh avatar data from API
+      console.log("✅ Avatar updated in profile data, clearing preview");
+      setSelectedImageUri(null);
+      setAvatarLoadFailed(false); // Reset avatar load state when new data arrives
+    }
+  }, [userProfileData?.avatar, userProfileData?._id]); // Also depend on user ID to prevent cross-user issues
+
+  // 🔄 **Clear selected image when user changes - prevents cache persistence**
+  React.useEffect(() => {
+    console.log("🔄 User changed - clearing selected image preview and resetting avatar state");
+    setSelectedImageUri(null);
+    setAvatarLoadFailed(false); // Reset avatar load state for new user
+  }, [authUser?._id, authUser?.email]);
+
+  // 🔧 **CRITICAL FIX: Only use fresh API data, NO MOCK DATA to prevent cache persistence**
   let userData: any = userProfileData;
 
-  // If API fails due to auth error, use mock data that reflects unverified status
-  if (profileError && !userData) {
-    console.log("⚠️ Profile API failed, using mock data with correct verification status");
-    userData = {
-      _id: "mock-user-123",
-      firstName: "John",
-      lastName: "Doe", 
-      email: "john.doe@example.com",
-      phone: "+1234567890",
-      location: "Sydney, NSW",
-      bio: "Welcome to MyToDoo! Complete your profile verification to build trust with other users.",
-      skills: {
-        goodAt: ["General Services"],
-        transport: ["Car"],
-        languages: ["English"],
-        qualifications: ["High School"],
-        experience: ["1-3 years"]
-      },
-      rating: 4.5,
-      completedTasks: 25,
-      createdAt: new Date().toISOString(),
-      isVerified: false, // 🎯 **KEY FIX: Default to false**
-      avatar: undefined
-    };
+  // 🚨 **PREVENT CACHE PERSISTENCE: Multiple validation layers**
+  // 1. No authentication = no data
+  // 2. API error = no data  
+  // 3. Mismatched user = no data
+  if (!isAuthenticated || !token || !authUser?._id) {
+    console.log("⚠️ Not authenticated - no profile data");
+    userData = null;
+  } else if (profileError && !userData) {
+    console.log("⚠️ Profile API error - no profile data to prevent cache persistence");
+    userData = null;
+  } else if (userData && authUser?._id && userData._id && userData._id !== authUser._id) {
+    console.log("⚠️ User ID mismatch - clearing cached data", {
+      cachedUserId: userData._id,
+      currentUserId: authUser._id
+    });
+    userData = null; // Clear mismatched user data
+    refetch(); // Force fresh fetch for correct user
   }
 
   // 🚨 **DEBUG: Log authentication state**
   console.log("🔍 Profile Screen Debug:", {
-    isAuthenticated,
     hasToken: !!token,
-    tokenPreview: token?.substring(0, 20) + "...",
     hasUserData: !!userData,
+    isAuthenticated,
+    isVerified: userData?.isVerified,
     profileError: profileError?.message,
-    isVerified: userData?.isVerified
+    tokenPreview: token?.substring(0, 20) + "...",
+    authUserDetails: authUser ? {
+      id: authUser.id || authUser._id,
+      email: authUser.email,
+      firstName: authUser.firstName
+    } : undefined,
+    userDataDetails: userData ? {
+      id: userData.id || userData._id,
+      email: userData.email,
+      firstName: userData.firstName
+    } : undefined
   });
 
-  // OCR validation function for avatar
-  const validateAvatarWithOCR = async (imageUri: string) => {
-    setIsValidatingAvatar(true);
-    
-    try {
-      const taskContext: TaskContext = {
-        category: 'profile',
-        title: 'Profile Picture',
-        description: 'User avatar image validation'
-      };
-
-      const result = await validateSingleImage(imageUri, taskContext);
-      setAvatarValidationResult(result);
-    } catch (error) {
-      console.error('Avatar OCR validation error:', error);
-      setAvatarValidationResult({ 
-        isValid: true,
-        extractedText: '',
-        confidence: 0, 
-        message: 'Validation temporarily unavailable',
-        suggestions: [],
-        keywords: { found: [], missing: [] }
-      });
-    } finally {
-      setIsValidatingAvatar(false);
-    }
-  };
+  // 🚨 **EARLY RETURN: Show auth error if not properly authenticated**
+  if (!isAuthenticated || !token || !authUser) {
+    console.log("❌ Authentication error - not retrying profile fetch");
+    return (
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Please sign in to view your profile</Text>
+        </View>
+      </View>
+    );
+  }
 
   // Handle avatar change
   const handleChangeAvatar = async () => {
@@ -143,8 +170,8 @@ export default function AccountScreen() {
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const imageUri = result.assets[0].uri;
       
-      // Validate image with OCR
-      validateAvatarWithOCR(imageUri);
+      // Set selected image for immediate preview
+      setSelectedImageUri(imageUri);
       
       // Create FormData
       const formData = new FormData();
@@ -160,12 +187,34 @@ export default function AccountScreen() {
       
       // Upload avatar
       uploadAvatar(formData, {
-        onSuccess: () => {
+        onSuccess: (response) => {
+          console.log("✅ Avatar upload successful, response:", response);
           Alert.alert('Success', 'Profile picture updated successfully!');
-          refetch(); // Refresh profile data
+          
+          // Reset avatar load state since we have a new upload
+          setAvatarLoadFailed(false); // New upload means we should try the new avatar
+          
+          // Try to refetch profile data, but don't clear preview yet
+          if (isAuthenticated && token) {
+            refetch().then(() => {
+              console.log("✅ Profile refetch successful, clearing preview");
+              // Give a small delay before clearing preview to ensure new image loads
+              setTimeout(() => {
+                setSelectedImageUri(null);
+              }, 1500); // 1.5 second delay to allow new S3 image to be accessible
+            }).catch((error) => {
+              console.warn("⚠️ Profile refetch failed after upload, keeping preview:", error);
+              // Don't clear selectedImageUri so the uploaded image stays visible
+              // The preview will serve as the current avatar until next successful fetch
+            });
+          } else {
+            console.warn("⚠️ Not authenticated for refetch, keeping uploaded image preview");
+            // Keep the preview showing since we can't refetch
+          }
         },
         onError: (error: any) => {
           console.error('Avatar upload error:', error);
+          setSelectedImageUri(null); // Reset preview on error
           Alert.alert(
             'Upload Failed', 
             error?.message || 'Failed to upload profile picture. Please try again.',
@@ -176,8 +225,8 @@ export default function AccountScreen() {
     }
   };
 
-  // Handle loading state
-  if (isLoadingProfile && !userData) {
+  // Handle loading state - but only if we're authenticated
+  if (isLoadingProfile && !userData && isAuthenticated && token) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0052A2" />
@@ -186,17 +235,27 @@ export default function AccountScreen() {
     );
   }
 
-  // Handle error state
-  if (profileError && !userData) {
+  // Handle error state - but only if we're authenticated and have an error
+  if ((profileError && !userData && isAuthenticated && token) || (!isAuthenticated || !token)) {
     return (
       <View style={styles.errorContainer}>
         <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
-        <Text style={styles.errorTitle}>Failed to load profile</Text>
-        <Text style={styles.errorSubtitle}>
-          Could not load your profile. Please check your connection and try again.
+        <Text style={styles.errorTitle}>
+          {!isAuthenticated || !token ? "Please log in" : "Failed to load profile"}
         </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
-          <Text style={styles.retryButtonText}>Try Again</Text>
+        <Text style={styles.errorSubtitle}>
+          {!isAuthenticated || !token 
+            ? "You need to be logged in to view your profile."
+            : "Could not load your profile. Please check your connection and try again."
+          }
+        </Text>
+        <TouchableOpacity 
+          style={styles.retryButton} 
+          onPress={() => isAuthenticated && token ? refetch() : router.push('/(auth)/login')}
+        >
+          <Text style={styles.retryButtonText}>
+            {!isAuthenticated || !token ? "Go to Login" : "Try Again"}
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -366,11 +425,30 @@ export default function AccountScreen() {
           <View>
             <Image
               source={{ 
-                uri: userData?.avatar || 
-                     userData?.profilePicture || 
-                     `https://ui-avatars.com/api/?name=${userData?.firstName}+${userData?.lastName}&background=0052A2&color=fff&size=120`
+                uri: selectedImageUri || // Show selected image first (highest priority)
+                     (!avatarLoadFailed && (userData?.avatar || userData?.profilePicture)) || // Only try S3 if not failed
+                     `https://ui-avatars.com/api/?name=${userData?.firstName || 'U'}+${userData?.lastName || 'U'}&background=0052A2&color=fff&size=120`
               }}
               style={styles.profileImage}
+              onError={(error) => {
+                console.log("🖼️ Image load error:", error.nativeEvent.error);
+                const currentUri = userData?.avatar || userData?.profilePicture;
+                console.log("🖼️ Failed to load avatar URL:", currentUri);
+                
+                // If it's an S3 URL that failed, mark avatar as failed
+                if (currentUri && !selectedImageUri) { // Only mark failed if not showing selected image
+                  console.log("🚫 Marking avatar as failed, will show initials");
+                  setAvatarLoadFailed(true);
+                }
+              }}
+              onLoad={() => {
+                // Only log success for S3 images, don't change state for initials avatar
+                const currentUri = userData?.avatar || userData?.profilePicture;
+                if (currentUri && !selectedImageUri && avatarLoadFailed) {
+                  console.log("🖼️ Avatar loaded successfully after previous failure");
+                  setAvatarLoadFailed(false); // S3 image loaded successfully
+                }
+              }}
             />
             {isUploadingAvatar && (
               <View style={styles.uploadingOverlay}>
@@ -382,27 +460,6 @@ export default function AccountScreen() {
             </View>
           </View>
         </TouchableOpacity>
-
-        {/* Avatar OCR Validation Display */}
-        {(isValidatingAvatar || avatarValidationResult) && (
-          <View style={styles.avatarValidationContainer}>
-            {isValidatingAvatar ? (
-              <View style={styles.validationMessage}>
-                <ActivityIndicator size="small" color="#007AFF" />
-                <Text style={styles.validationText}>Analyzing profile picture...</Text>
-              </View>
-            ) : avatarValidationResult ? (
-              <View style={styles.validationMessage}>
-                <Text style={[
-                  styles.validationText,
-                  avatarValidationResult.isValid ? styles.validationSuccess : styles.validationWarning
-                ]}>
-                  {avatarValidationResult.message}
-                </Text>
-              </View>
-            ) : null}
-          </View>
-        )}
 
         <Text style={styles.name}>
           {userData?.firstName} {userData?.lastName?.charAt(0)}.
@@ -977,35 +1034,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#0052A2',
     marginTop: 2,
-  },
-  // Avatar OCR Validation styles
-  avatarValidationContainer: {
-    marginTop: 8,
-    paddingHorizontal: 20,
-  },
-  validationMessage: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  validationText: {
-    fontSize: 12,
-    marginLeft: 6,
-    textAlign: 'center',
-  },
-  validationSuccess: {
-    color: '#22C55E',
-  },
-  validationWarning: {
-    color: '#F59E0B',
   },
 });

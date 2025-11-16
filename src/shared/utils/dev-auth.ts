@@ -15,6 +15,13 @@ export async function autoLoginForDevelopment() {
     return;
   }
   
+  // Check if we're in development mode
+  const isDevelopment = __DEV__;
+  if (!isDevelopment) {
+    console.log("🔧 Not in development mode, skipping auto-login");
+    return;
+  }
+  
   try {
     // Check if we have stored credentials
     const storedEmail = await AsyncStorage.getItem('userEmail');
@@ -22,59 +29,18 @@ export async function autoLoginForDevelopment() {
     const storedToken = await AsyncStorage.getItem('token');
     
     if (storedToken) {
-      // Try to use stored token
-      console.log("🔄 Found stored token, attempting to restore session");
-      
-      // Create a mock user for the stored session
-      const mockUser = {
-        id: "dev-user-123",
-        _id: "dev-user-123", 
-        email: storedEmail || "john.doe@example.com",
-        firstName: "John",
-        lastName: "Doe",
-        phone: "+1234567890",
-        role: "user" as const,
-        isVerified: false, // Start as unverified
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      setAuthData(storedToken, mockUser, 3600);
-      console.log("✅ Development session restored");
+      // Don't create mock user - let the app fetch real user data from API
+      console.log("🔄 Found stored token in development, setting token only");
+      setAuthData(storedToken, null, 3600);
+      console.log("✅ Development token restored (user data will be fetched from API)");
       return;
     }
     
-    // If no stored credentials, create a development session
-    console.log("🔧 No authentication found, creating development session");
-    
-    const devToken = "dev-token-" + Date.now();
-    const devUser = {
-      id: "dev-user-123",
-      _id: "dev-user-123",
-      email: "john.doe@example.com", 
-      firstName: "John",
-      lastName: "Doe",
-      phone: "+1234567890",
-      role: "user" as const,
-      isVerified: false, // Important: Start as unverified
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    // Set development auth data
-    setAuthData(devToken, devUser, 3600);
-    
-    // Store for persistence
-    await AsyncStorage.setItem('token', devToken);
-    await AsyncStorage.setItem('userEmail', devUser.email);
-    
-    console.log("✅ Development user session created:", {
-      email: devUser.email,
-      isVerified: devUser.isVerified
-    });
+    // Only create development session if explicitly requested
+    console.log("🔧 No stored token found in development mode");
     
   } catch (error) {
-    console.error("❌ Failed to create development session:", error);
+    console.error("❌ Error during development auto-login:", error);
   }
 }
 

@@ -100,60 +100,21 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
     console.log("✅ User profile fetched successfully:", response.data);
     return response.data;
   } catch (error: any) {
-    // Handle auth errors - return mock data for development (don't log as error)
-    if (error?.isAuthError || error?.status === 401) {
-      console.log("ℹ️ Not authenticated - Using mock profile data for development");
-      return {
-        success: true,
-        data: {
-          _id: "mock-user-123",
-          firstName: "John",
-          lastName: "Doe",
-          email: "john@example.com",
-          phone: "+1234567890",
-          location: "Sydney, NSW",
-          bio: "Hi I'm John",
-          skills: {
-            goodAt: ["Developer", "Designer"],
-            transport: ["Car"],
-            languages: ["English"],
-            qualifications: ["Bachelor's Degree"],
-            experience: ["5+ years"]
-          },
-          rating: 4.5,
-          completedTasks: 25,
-          createdAt: new Date().toISOString(),
-          isVerified: false
-        }
-      };
+    // 🚨 CRITICAL FIX: Don't return mock data to prevent cache persistence
+    console.error("❌ Get user profile failed:", error?.response?.status || error?.code || error?.message);
+    
+    // For auth errors, throw the error to prevent cache pollution
+    if (error?.isAuthError || 
+        error?.response?.status === 401 || 
+        error?.status === 401) {
+      console.log("⚠️ 401 Unauthorized - Authentication may have expired");
+      throw error; // Let the UI handle the auth error
     }
     
-    // Network error fallback
+    // For network errors, also throw to prevent mock data cache persistence
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.log("ℹ️ Network unavailable - Using mock profile data");
-      return {
-        success: true,
-        data: {
-          _id: "mock-user-123",
-          firstName: "John",
-          lastName: "Doe",
-          email: "john@example.com",
-          phone: "+1234567890",
-          location: "Sydney, NSW",
-          bio: "Hi I'm John",
-          skills: {
-            goodAt: ["Developer", "Designer"],
-            transport: ["Car"],
-            languages: ["English"],
-            qualifications: ["Bachelor's Degree"],
-            experience: ["5+ years"]
-          },
-          rating: 4.5,
-          completedTasks: 25,
-          createdAt: new Date().toISOString(),
-          isVerified: false
-        }
-      };
+      console.log("⚠️ Network error - no mock data to prevent cache pollution");
+      throw error; // Let the UI handle the network error
     }
     
     // For other errors, log and throw
@@ -239,11 +200,19 @@ export async function uploadUserAvatar(formData: FormData): Promise<UserProfileR
       
       console.log("ℹ️ Using mock avatar upload for development (auth or network issue)");
       
-      // Extract the image URI from the FormData for mock response
+      // Extract the actual image URI from FormData for better mock response
       let mockAvatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."; // Default mock
       
-      // In a real scenario, we'd process the actual image
-      // For now, just return success with mock data
+      try {
+        // Try to get the actual image URI from FormData for better preview
+        const avatarData = formData.get('avatar') as any;
+        if (avatarData && avatarData.uri) {
+          mockAvatar = avatarData.uri; // Use the actual selected image URI
+        }
+      } catch (e) {
+        console.log("Could not extract image URI from FormData, using default mock");
+      }
+      
       return {
         success: true,
         data: {

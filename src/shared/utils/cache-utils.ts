@@ -84,6 +84,10 @@ export function useClearUserProfileCaches() {
       }
     });
     
+    // Force clear everything to be absolutely sure
+    console.log("🧹 Force clearing entire cache to prevent any data persistence...");
+    queryClient.clear();
+    
     console.log("✅ All user profile caches cleared successfully");
   };
 }
