@@ -1,10 +1,12 @@
 import { LocationAutocomplete, LocationData } from '@/src/shared/components/LocationAutocomplete';
 import { useGetCategories, useUpdateTask } from '@/src/shared/hooks/useTaskApi';
+import { getCurrencyFromLocation, getMinimumBudget } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import { ChevronDown, ChevronLeft } from 'lucide-react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -21,12 +23,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Import OCR validation service
+// Import smart image validation (same as Create Task)
 import {
-  OCRValidationResult,
+  SmartValidationResult,
   TaskContext,
-  validateSingleImage
-} from '@/src/services/ocrValidationService';
+  validateImageSmart
+} from '@/src/services/smartImageValidator';
 
 interface EditTaskScreenProps {
   route?: {
@@ -37,41 +39,40 @@ interface EditTaskScreenProps {
   };
 }
 
+interface TimeBlock {
+  label: string;
+  value: string;
+  description: string;
+  icon: any;
+}
+
 export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const scrollViewRef = useRef<ScrollView>(null);
   const locationSectionRef = useRef<View>(null);
 
-  // Get task data from params
-  const taskData = route?.params?.task || (params.task ? JSON.parse(String(params.task)) : null);
+  // Get task data from params - MEMOIZED to prevent infinite re-renders
+  const taskData = useMemo(() => {
+    return route?.params?.task || (params.task ? JSON.parse(String(params.task)) : null);
+  }, [route?.params?.task, params.task]);
+  
   const taskId = route?.params?.taskId || params.taskId;
 
   console.log('📝 Edit Task Screen - Task ID:', taskId);
   console.log('📝 Edit Task Screen - Task Data:', taskData);
-  console.log('📝 Mapped Fields:');
-  console.log('   - Category:', taskData?.categories?.[0]);
-  console.log('   - Title:', taskData?.title);
-  console.log('   - Description:', taskData?.details);
-  console.log('   - Location:', taskData?.location?.address);
-  console.log('   - DateType (When):', taskData?.dateType);
-  console.log('   - Budget:', taskData?.budget);
-  console.log('   - Images:', taskData?.images?.length || 0, 'images');
 
-  // Map task data to form fields
-  const getLocationFromTask = () => {
+  // Map task data to form fields - MEMOIZED to prevent recreation
+  const initialLocation = useMemo(() => {
     if (!taskData?.location) return null;
     
     const coords = taskData.location.coordinates;
-    // Handle both coordinate formats
     let lat = 0, lng = 0;
     if (coords && typeof coords === 'object') {
       if ('coordinates' in coords && Array.isArray(coords.coordinates)) {
-        // Format: { type: "Point", coordinates: [lng, lat] }
         lng = coords.coordinates[0];
         lat = coords.coordinates[1];
       } else if ('lat' in coords && 'lng' in coords) {
-        // Format: { lat: number, lng: number }
         lat = coords.lat;
         lng = coords.lng;
       }
@@ -81,27 +82,49 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
       address: taskData.location.address || '',
       coordinates: { lat, lng }
     };
-  };
+  }, [taskData]);
 
-  // Form states - Initialize with existing task data
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(
-    taskData?.categories?.[0] || null  // Take first category from array
+  // Form states - Initialize ONCE with useMemo values
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(() => 
+    taskData?.categories?.[0] || null
   );
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
-  const [title, setTitle] = useState(taskData?.title || '');
-  const [description, setDescription] = useState(taskData?.details || '');  // 'details' not 'description'
-  const [images, setImages] = useState<string[]>(taskData?.images || []);
-  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(getLocationFromTask());
-  const [selectedOption, setSelectedOption] = useState(taskData?.dateType || '');  // 'dateType' not 'when'
-  const [budget, setBudget] = useState(taskData?.budget?.toString() || '');
+  const [title, setTitle] = useState(() => taskData?.title || '');
+  const [description, setDescription] = useState(() => taskData?.details || '');
+  const [images, setImages] = useState<string[]>(() => taskData?.images || []);
+  const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(initialLocation);
+  
+  // When/Time states - match Create Task screen
+  const [selectedOption, setSelectedOption] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [activePickerOption, setActivePickerOption] = useState('');
+  const [onTimeDate, setOnTimeDate] = useState<Date | null>(null);
+  const [beforeDate, setBeforeDate] = useState<Date | null>(null);
+  const [selectedTimeBlock, setSelectedTimeBlock] = useState('');
+  const [needSpecificTime, setNeedSpecificTime] = useState(false);
+  
+  const [budget, setBudget] = useState(() => taskData?.budget?.toString() || '');
+  const [currencySymbol, setCurrencySymbol] = useState('$');
+  const [budgetError, setBudgetError] = useState('');
+  const [budgetTouched, setBudgetTouched] = useState(false);
+
+  // Validation states
+  const [titleError, setTitleError] = useState('');
+  const [descriptionError, setDescriptionError] = useState('');
+  const [touched, setTouched] = useState({ 
+    title: false, 
+    description: false, 
+    category: false, 
+    location: false,
+    when: false 
+  });
 
   // Keyboard visibility
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
-  // OCR validation states
-  const [imageValidationResults, setImageValidationResults] = useState<Record<number, OCRValidationResult>>({});
-  const [validatingImages, setValidatingImages] = useState<Record<number, boolean>>({});
+  // Smart validation states (same as Create Task)
+  const [validationResults, setValidationResults] = useState<Map<string, SmartValidationResult>>(new Map());
 
   // Fetch categories
   const { data: categoriesResponse, isLoading: loadingCategories } = useGetCategories();
@@ -110,23 +133,51 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   // Update task mutation
   const updateTaskMutation = useUpdateTask();
 
+  // Initialize date states from task data
+  useEffect(() => {
+    if (taskData?.dateType) {
+      const dateTypeMap: Record<string, string> = {
+        'flexible': 'no_rush',
+        'before': 'before',
+        'on_time': 'on_time',
+        'Easy': 'no_rush',
+        'Specific': 'on_time',
+        'Before': 'before'
+      };
+      setSelectedOption(dateTypeMap[taskData.dateType] || 'no_rush');
+    }
+
+    if (taskData?.date) {
+      const existingDate = new Date(taskData.date);
+      if (taskData.dateType === 'before' || taskData.dateType === 'Before') {
+        setBeforeDate(existingDate);
+      } else {
+        setOnTimeDate(existingDate);
+      }
+    } else {
+      // Initialize with default dates if no existing date
+      const today = new Date();
+      setOnTimeDate(today);
+      const futureDateFor5Days = new Date(today);
+      futureDateFor5Days.setDate(today.getDate() + 5);
+      setBeforeDate(futureDateFor5Days);
+    }
+
+    if (taskData?.time) {
+      setSelectedTimeBlock(taskData.time);
+      setNeedSpecificTime(true);
+    }
+  }, [taskData]);
+
   // Keyboard listeners
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
-      () => {
-        console.log('⌨️ Keyboard shown');
-        setIsKeyboardVisible(true);
-      }
+      () => setIsKeyboardVisible(true)
     );
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
-      () => {
-        console.log('⌨️ Keyboard hidden');
-        setTimeout(() => {
-          setIsKeyboardVisible(false);
-        }, 100);
-      }
+      () => setTimeout(() => setIsKeyboardVisible(false), 100)
     );
 
     return () => {
@@ -135,166 +186,405 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     };
   }, []);
 
-  // Validate existing images when component mounts
+  // Reset time toggle when Flexible option is selected
   useEffect(() => {
-    if (images.length > 0) {
-      images.forEach((imageUri, index) => {
-        validateImageWithOCR(imageUri, index);
-      });
+    if (selectedOption === 'no_rush') {
+      setNeedSpecificTime(false);
+      setSelectedTimeBlock('');
     }
-  }, []); // Only run once when component mounts
+  }, [selectedOption]);
 
-  // Handle location field focus - scroll into view
-  const handleLocationFocus = () => {
-    console.log('📍 Location field focused - scrolling into view');
-    if (locationSectionRef.current && scrollViewRef.current) {
-      setTimeout(() => {
-        locationSectionRef.current?.measureLayout(
-          scrollViewRef.current as any,
-          (x, y) => {
-            console.log('   Scrolling to location field at y:', y);
-            scrollViewRef.current?.scrollTo({ 
-              y: y + 100, 
-              animated: true 
-            });
-          },
-          () => console.log('   Failed to measure location field')
-        );
-      }, 150);
+  // Update currency symbol based on location using utility function
+  useEffect(() => {
+    if (selectedLocation) {
+      const currencyInfo = getCurrencyFromLocation(selectedLocation);
+      setCurrencySymbol(currencyInfo.symbol);
+    } else {
+      setCurrencySymbol('$'); // Default to USD
     }
-  };
+  }, [selectedLocation]);
 
-  // OCR validation function
-  const validateImageWithOCR = async (imageUri: string, index: number) => {
-    setValidatingImages(prev => ({ ...prev, [index]: true }));
+  // Calculate minimum budget based on currency
+  const minimumBudget = useMemo(() => {
+    const currencyInfo = getCurrencyFromLocation(selectedLocation || undefined);
+    return getMinimumBudget(currencyInfo.code);
+  }, [selectedLocation]);
+
+  // Validation functions (same as Create Task) - MEMOIZED with useCallback
+  const handleTitleChange = useCallback((text: string) => {
+    const cleanedText = text.replace(/[^a-zA-Z\s'\-,.]/g, '');
+    setTitle(cleanedText);
     
-    try {
-      const taskContext: TaskContext = {
-        category: selectedCategory || 'general',
-        title: title || '',
-        description: description || ''
-      };
+    if (touched.title || cleanedText.length > 0) {
+      if (!touched.title && cleanedText.length > 0) {
+        setTouched(prev => ({ ...prev, title: true }));
+      }
+      
+      if (cleanedText.trim().length === 0) {
+        setTitleError('Title is required');
+      } else if (cleanedText.trim().length < 10) {
+        setTitleError('Minimum 10 characters required');
+      } else {
+        setTitleError('');
+      }
+    }
+  }, [touched.title]);
 
-      const result = await validateSingleImage(imageUri, taskContext, {
-        strictMode: false,
-        minConfidence: 0.6, // Proper threshold for accurate validation
-        useAI: true // Enable Gemini AI
-      });
-      setImageValidationResults(prev => ({ ...prev, [index]: result }));
-    } catch (error) {
-      console.error('OCR validation error:', error);
-      setImageValidationResults(prev => ({ 
-        ...prev, 
-        [index]: { 
+  const handleDescriptionChange = useCallback((text: string) => {
+    const cleanedText = text.replace(/[^a-zA-Z\s'\-,.]/g, '');
+    setDescription(cleanedText);
+    
+    if (touched.description) {
+      if (cleanedText.trim().length === 0) {
+        setDescriptionError('Description is required');
+      } else if (cleanedText.trim().length < 20) {
+        setDescriptionError('Minimum 20 characters required');
+      } else {
+        setDescriptionError('');
+      }
+    }
+  }, [touched.description]);
+
+  const handleTitleBlur = useCallback(() => {
+    setTouched(prev => ({ ...prev, title: true }));
+    if (title.trim().length === 0) {
+      setTitleError('Title is required');
+    } else if (title.trim().length < 10) {
+      setTitleError('Minimum 10 characters required');
+    } else {
+      setTitleError('');
+    }
+  }, [title]);
+
+  const handleDescriptionBlur = useCallback(() => {
+    setTouched(prev => ({ ...prev, description: true }));
+    if (description.trim().length === 0) {
+      setDescriptionError('Description is required');
+    } else if (description.trim().length < 20) {
+      setDescriptionError('Minimum 20 characters required');
+    } else {
+      setDescriptionError('');
+    }
+  }, [description]);
+
+  // Helper function to build task context - MEMOIZED
+  const getTaskContext = useCallback((): TaskContext => {
+    return {
+      title: title || '',
+      description: description || '',
+      category: selectedCategory || '',
+      location: selectedLocation?.address || ''
+    };
+  }, [title, description, selectedCategory, selectedLocation?.address]);
+
+  // Smart image validation (same as Create Task)
+  const addImageWithValidation = async (imageUri: string) => {
+    try {
+      console.log('📸 Validating image:', imageUri);
+      
+      // Add placeholder validation result
+      setValidationResults(prev => {
+        const newMap = new Map(prev);
+        newMap.set(imageUri, {
           isValid: true,
-          extractedText: '',
-          confidence: 0, 
-          message: 'Validation temporarily unavailable',
-          suggestions: [],
-          keywords: { found: [], missing: [] }
-        } 
-      }));
-    } finally {
-      setValidatingImages(prev => ({ ...prev, [index]: false }));
+          confidence: 0,
+          message: 'Analyzing image...',
+          reasons: ['Analysis in progress'],
+          suggestions: []
+        });
+        return newMap;
+      });
+      
+      // Add image immediately
+      setImages(prevImages => [...prevImages, imageUri]);
+      
+      const taskContext = getTaskContext();
+      
+      // Validate with smart validation
+      const validationResult = await validateImageSmart(imageUri, taskContext);
+      
+      console.log('🎯 Validation completed:', validationResult);
+      
+      // Store validation result
+      setValidationResults(prev => {
+        const newMap = new Map(prev);
+        newMap.set(imageUri, validationResult);
+        return newMap;
+      });
+      
+      if (!validationResult.isValid) {
+        console.log('🚫 Image validation failed - removing');
+        setImages(prevImages => prevImages.filter(img => img !== imageUri));
+        
+        Alert.alert(
+          'Image Not Suitable',
+          validationResult.message + '\n\nSuggestions:\n' + validationResult.suggestions.join('\n'),
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+      
+      console.log('✅ Image validated and added successfully');
+      
+    } catch (error) {
+      console.error('❌ Error in addImageWithValidation:', error);
+      Alert.alert(
+        'Image Validation Error',
+        'Could not validate this image. Please try with a different image.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
   // Image picker function
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    if (images.length >= 10) return;
 
-    if (!result.canceled && result.assets[0].uri) {
-      const newImages = [...images, result.assets[0].uri];
-      const newImageIndex = newImages.length - 1;
-      
-      setImages(newImages);
-      
-      // Validate the newly added image
-      validateImageWithOCR(result.assets[0].uri, newImageIndex);
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Photo library permission is required to select photos.', [{ text: 'OK' }]);
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets?.[0]) {
+        await addImageWithValidation(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error selecting image:', error);
+      Alert.alert('Error', 'Failed to select image. Please try again.');
     }
   };
 
-  // Remove image function
-  const removeImage = (index: number) => {
-    const newImages = [...images];
-    newImages.splice(index, 1);
-    setImages(newImages);
+  // Remove image function - MEMOIZED
+  const removeImage = useCallback((uri: string) => {
+    setImages(prevImages => prevImages.filter(img => img !== uri));
     
-    // Clear validation results for removed image and update indices
-    setImageValidationResults(prev => {
-      const newResults = { ...prev };
-      delete newResults[index];
-      
-      // Shift validation results for images after the removed one
-      const updatedResults: Record<number, OCRValidationResult> = {};
-      Object.keys(newResults).forEach(key => {
-        const keyNum = parseInt(key);
-        if (keyNum > index) {
-          updatedResults[keyNum - 1] = newResults[keyNum];
-        } else if (keyNum < index) {
-          updatedResults[keyNum] = newResults[keyNum];
-        }
-      });
-      
-      return updatedResults;
+    // Clear validation results for this image
+    setValidationResults(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(uri);
+      return newMap;
     });
-    
-    // Clear validation loading states
-    setValidatingImages(prev => {
-      const newValidating = { ...prev };
-      delete newValidating[index];
-      
-      // Shift validation loading states for images after the removed one
-      const updatedValidating: Record<number, boolean> = {};
-      Object.keys(newValidating).forEach(key => {
-        const keyNum = parseInt(key);
-        if (keyNum > index) {
-          updatedValidating[keyNum - 1] = newValidating[keyNum];
-        } else if (keyNum < index) {
-          updatedValidating[keyNum] = newValidating[keyNum];
-        }
-      });
-      
-      return updatedValidating;
-    });
-  };
+  }, []);
 
-  // Handle save
+  // Location handlers - MEMOIZED
+  const handleLocationSelect = useCallback((location: LocationData) => {
+    console.log('📍 Location selected:', location);
+    setSelectedLocation(location);
+    setTouched(prev => ({ ...prev, location: true }));
+  }, []);
+
+  const handleLocationFocus = useCallback(() => {
+    console.log('📍 Location field focused');
+    if (locationSectionRef.current && scrollViewRef.current) {
+      setTimeout(() => {
+        locationSectionRef.current?.measureLayout(
+          scrollViewRef.current as any,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({ y: y + 100, animated: true });
+          },
+          () => {}
+        );
+      }, 150);
+    }
+  }, []);
+
+  // Date picker handlers - MEMOIZED
+  const handleDateChange = useCallback((event: DateTimePickerEvent, date?: Date | undefined): void => {
+    console.log('📅 Date picker change:', { event: event.type, date });
+    
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    
+    if (event.type === 'set' && date) {
+      if (activePickerOption === 'on_time') {
+        console.log('📅 Setting onTimeDate:', date);
+        setOnTimeDate(date);
+      } else if (activePickerOption === 'before') {
+        console.log('📅 Setting beforeDate:', date);
+        setBeforeDate(date);
+      }
+    }
+    
+    if (Platform.OS === 'ios' && event.type === 'dismissed') {
+      setShowDatePicker(false);
+    }
+    
+    setActivePickerOption('');
+  }, [activePickerOption]);
+
+  const handleOpenPicker = useCallback((pickerType: string) => {
+    console.log('📅 Opening date picker:', pickerType);
+    setActivePickerOption(pickerType);
+    setShowDatePicker(true);
+  }, []);
+
+  // Budget handlers - MEMOIZED with validation
+  const handleBudgetChange = useCallback((text: string) => {
+    // Remove any non-numeric characters except decimal point
+    const cleanedText = text.replace(/[^0-9.]/g, '');
+    
+    // Prevent multiple decimal points
+    const parts = cleanedText.split('.');
+    const validText = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : cleanedText;
+    
+    setBudget(validText);
+    setBudgetTouched(true);
+    
+    // Validate budget amount
+    const budgetNumber = parseFloat(validText);
+    if (validText && !isNaN(budgetNumber)) {
+      if (budgetNumber < minimumBudget) {
+        setBudgetError(`Minimum budget is ${currencySymbol}${minimumBudget}`);
+      } else {
+        setBudgetError('');
+      }
+    } else if (validText) {
+      setBudgetError('Please enter a valid number');
+    } else {
+      setBudgetError('');
+    }
+  }, [minimumBudget, currencySymbol]);
+
+  const handleBudgetFocus = useCallback(() => {
+    setBudgetTouched(true);
+    // Clear default "0" or "0.00" when user starts typing
+    if (budget === '0' || budget === '0.00' || budget === '') {
+      setBudget('');
+      setBudgetError('');
+    }
+  }, [budget]);
+
+  const handleBudgetBlur = useCallback(() => {
+    // Validate on blur
+    const budgetNumber = parseFloat(budget);
+    if (budget && !isNaN(budgetNumber)) {
+      if (budgetNumber < minimumBudget) {
+        setBudgetError(`Minimum budget is ${currencySymbol}${minimumBudget}`);
+      } else {
+        setBudgetError('');
+      }
+    } else if (budgetTouched && !budget) {
+      setBudgetError('Budget is recommended');
+    }
+  }, [budget, budgetTouched, minimumBudget, currencySymbol]);
+
+  // Time blocks (same as Create Task) - MEMOIZED to prevent recreation
+  const timeBlocks: TimeBlock[] = useMemo(() => [
+    { label: 'Morning', value: 'morning', description: 'before 12 pm', icon: require('@/assets/icons/rooster.png') },
+    { label: 'Afternoon', value: 'afternoon', description: '12pm to 5 pm', icon: require('@/assets/icons/hat.png') },
+    { label: 'Evening', value: 'evening', description: 'After 5pm', icon: require('@/assets/icons/tea.png') },
+    { label: 'Late night', value: 'late_night', description: 'After 9pm', icon: require('@/assets/icons/owl.png') },
+  ], []);
+
+  // Date options (same as Create Task: On Date, Before Date, Flexible) - MEMOIZED
+  const dateOptions = useMemo(() => [
+    { label: 'On Date', value: 'on_time' },
+    { label: 'Before Date', value: 'before' },
+    { label: 'Flexible', value: 'no_rush' },
+  ], []);
+
+  // Filter categories based on search
+  const filteredCategories = categories.filter((cat: any) =>
+    (typeof cat === 'string' ? cat : cat.name)
+      .toLowerCase()
+      .includes(categorySearchQuery.toLowerCase())
+  );
+
+  // Validation check
+  const titleLength = title.trim().length;
+  const descriptionLength = description.trim().length;
+  const budgetNumber = parseFloat(budget);
+  const isBudgetValid = !budget || (!isNaN(budgetNumber) && budgetNumber >= minimumBudget);
+  
+  const isFormValid =
+    !!selectedCategory &&
+    titleLength >= 10 &&
+    descriptionLength >= 20 &&
+    !titleError &&
+    !descriptionError &&
+    !!selectedLocation &&
+    selectedOption !== '' &&
+    isBudgetValid;
+
+  // Handle save with validation
   const handleSave = async () => {
     if (!taskId) {
       Alert.alert("Error", "Task ID is missing");
       return;
     }
 
-    console.log('💾 Saving task:', taskId);
-    console.log('   Category:', selectedCategory);
-    console.log('   Title:', title);
-    console.log('   Description:', description);
-    console.log('   Location:', selectedLocation);
-    console.log('   When:', selectedOption);
-    console.log('   Budget:', budget);
+    // Mark all fields as touched
+    setTouched({
+      title: true,
+      description: true,
+      category: true,
+      location: true,
+      when: true,
+    });
 
-    // Validate required fields
-    if (!title.trim()) {
-      Alert.alert("Validation Error", "Please enter a task title");
+    // Validate all fields
+    if (title.trim().length === 0) {
+      setTitleError('Title is required');
+    } else if (title.trim().length < 10) {
+      setTitleError('Minimum 10 characters required');
+    }
+
+    if (description.trim().length === 0) {
+      setDescriptionError('Description is required');
+    } else if (description.trim().length < 20) {
+      setDescriptionError('Minimum 20 characters required');
+    }
+
+    if (!isFormValid) {
+      const missingFields = [];
+      if (!selectedCategory) missingFields.push('Category');
+      if (titleLength < 10) missingFields.push('Title (min 10 chars)');
+      if (descriptionLength < 20) missingFields.push('Description (min 20 chars)');
+      if (!selectedLocation) missingFields.push('Location');
+      if (selectedOption === '') missingFields.push('When');
+      if (!isBudgetValid) missingFields.push(`Budget (min ${currencySymbol}${minimumBudget})`);
+      
+      Alert.alert(
+        'Incomplete Form',
+        'Please fill in all required fields:\n' +
+        (!selectedCategory ? '• Select a category\n' : '') +
+        (titleLength < 10 ? '• Title must be at least 10 characters\n' : '') +
+        (descriptionLength < 20 ? '• Description must be at least 20 characters\n' : '') +
+        (!selectedLocation ? '• Select a location\n' : '') +
+        (selectedOption === '' ? '• Select when you need this done\n' : '') +
+        (!isBudgetValid ? `• Budget must be at least ${currencySymbol}${minimumBudget}` : '')
+      );
       return;
     }
 
+    console.log('💾 Saving task:', taskId);
+
     try {
-      // Prepare the update request body according to the API spec
+      const selectedDate =
+        selectedOption === 'on_time' ? onTimeDate : selectedOption === 'before' ? beforeDate : null;
+
+      // Get currency code from location using utility function
+      const currencyInfo = getCurrencyFromLocation(selectedLocation || undefined);
+
+      // Prepare the update request body
       const updateRequest = {
         title: title.trim(),
         description: description.trim(),
         budget: budget ? parseFloat(budget) : 0,
-        currency: "LKR", // Default currency
-        time: selectedOption || "Anytime",
-        date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
-        dateType: selectedOption || "Easy",
+        currency: currencyInfo.code,
+        time: selectedTimeBlock || "",
+        date: selectedDate ? selectedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        dateType: selectedOption === 'no_rush' ? 'flexible' : selectedOption,
         location: selectedLocation ? {
           address: selectedLocation.address,
           coordinates: {
@@ -322,7 +612,6 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
           {
             text: "OK",
             onPress: () => {
-              // Navigate back to the tasks list
               router.back();
             }
           }
@@ -332,7 +621,6 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     } catch (error: any) {
       console.error('❌ Error updating task:', error);
       
-      // Show error message
       let errorMessage = "Failed to update task. Please try again.";
       let errorTitle = "Update Failed";
       
@@ -355,13 +643,6 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
       Alert.alert(errorTitle, errorMessage);
     }
   };
-
-  // Filter categories based on search
-  const filteredCategories = categories.filter((cat: any) =>
-    (typeof cat === 'string' ? cat : cat.name)
-      .toLowerCase()
-      .includes(categorySearchQuery.toLowerCase())
-  );
 
   return (
     <View style={styles.container}>
@@ -391,194 +672,389 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
           keyboardDismissMode="on-drag"
           nestedScrollEnabled={true}
         >
-        <View style={styles.form}>
-        {/* Category */}
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Category* <Text style={styles.required}>*</Text></Text>
-          <TouchableOpacity 
-            style={[styles.input, styles.categoryButton]}
-            onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
-          >
-            <Text style={[styles.inputText, selectedCategory && styles.selectedText]}>
-              {selectedCategory || 'Select a Category'}
+        {/* SECTION 1: TASK DETAILS */}
+        <View style={styles.section}>
+          {/* Category Selection */}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>
+              Category <Text style={styles.required}>*</Text>
             </Text>
-            <Ionicons name="chevron-down" size={20} color="#666" />
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.categorySelector,
+                touched.category && !selectedCategory && styles.inputError
+              ]}
+              onPress={() => {
+                setShowCategoryDropdown(!showCategoryDropdown);
+                setTouched({ ...touched, category: true });
+              }}
+            >
+              <Text style={[styles.categorySelectorText, !selectedCategory && styles.placeholder]}>
+                {selectedCategory || 'Select a category'}
+              </Text>
+              <ChevronDown size={20} color="#666" />
+            </TouchableOpacity>
+            {touched.category && !selectedCategory && (
+              <Text style={styles.validationText}>Category is required</Text>
+            )}
 
-          {/* Category Dropdown */}
-          {showCategoryDropdown && (
-            <View style={styles.dropdown}>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search categories..."
-                value={categorySearchQuery}
-                onChangeText={setCategorySearchQuery}
-              />
-              <ScrollView style={styles.dropdownList} nestedScrollEnabled>
-                {loadingCategories ? (
-                  <ActivityIndicator size="small" color="#007AFF" />
-                ) : (
-                  filteredCategories.map((cat: any, index: number) => {
-                    const categoryName = typeof cat === 'string' ? cat : cat.name;
-                    return (
-                      <TouchableOpacity
-                        key={index}
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setSelectedCategory(categoryName);
-                          setShowCategoryDropdown(false);
-                          setCategorySearchQuery('');
-                        }}
-                      >
-                        <Text style={styles.dropdownItemText}>{categoryName}</Text>
-                      </TouchableOpacity>
-                    );
-                  })
-                )}
-              </ScrollView>
-            </View>
-          )}
+            {showCategoryDropdown && (
+              <View style={styles.categoryDropdown}>
+                <View style={styles.searchContainer}>
+                  <Ionicons name="search" size={18} color="#999" />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search categories..."
+                    value={categorySearchQuery}
+                    onChangeText={setCategorySearchQuery}
+                    placeholderTextColor="#999"
+                  />
+                </View>
+
+                <ScrollView style={styles.categoriesList} nestedScrollEnabled>
+                  {loadingCategories ? (
+                    <ActivityIndicator size="small" color="#0057FF" style={styles.loader} />
+                  ) : categories.length === 0 ? (
+                    <Text style={styles.noResultsText}>No categories found</Text>
+                  ) : (
+                    filteredCategories.map((cat: any, index: number) => {
+                      const categoryName = typeof cat === 'string' ? cat : cat.name;
+                      return (
+                        <TouchableOpacity
+                          key={index}
+                          style={[styles.categoryItem, selectedCategory === categoryName && styles.categoryItemSelected]}
+                          onPress={() => {
+                            setSelectedCategory(categoryName);
+                            setShowCategoryDropdown(false);
+                            setCategorySearchQuery('');
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.categoryItemText,
+                              selectedCategory === categoryName && styles.categoryItemTextSelected,
+                            ]}
+                          >
+                            {categoryName}
+                          </Text>
+                          {selectedCategory === categoryName && <Ionicons name="checkmark" size={20} color="#0057FF" />}
+                        </TouchableOpacity>
+                      );
+                    })
+                  )}
+                </ScrollView>
+              </View>
+            )}
+          </View>
+
+          {/* Title Input */}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>
+              Title <Text style={styles.required}>*</Text>
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                titleError && styles.inputError
+              ]}
+              placeholder="e.g. Move my couch"
+              value={title}
+              onChangeText={handleTitleChange}
+              onBlur={handleTitleBlur}
+              placeholderTextColor="#999"
+              maxLength={200}
+            />
+            <Text style={styles.charCount}>{titleLength}/200</Text>
+            {titleError && (
+              <Text style={styles.errorText}>{titleError}</Text>
+            )}
+            <Text style={styles.helperText}>Only letters, spaces, and basic punctuation allowed</Text>
+          </View>
+
+          {/* Description Input */}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>
+              Description <Text style={styles.required}>*</Text>
+            </Text>
+            <TextInput
+              style={[
+                styles.textArea,
+                touched.description && (descriptionError || (descriptionLength > 0 && descriptionLength < 20)) && styles.inputError
+              ]}
+              multiline
+              placeholder="Give a detailed description of your task..."
+              value={description}
+              onChangeText={handleDescriptionChange}
+              onBlur={handleDescriptionBlur}
+              placeholderTextColor="#999"
+              textAlignVertical="top"
+              numberOfLines={4}
+              maxLength={1000}
+            />
+            <Text style={styles.charCount}>{descriptionLength}/1000</Text>
+            {touched.description && descriptionError && (
+              <Text style={styles.errorText}>{descriptionError}</Text>
+            )}
+            {touched.description && !descriptionError && descriptionLength > 0 && descriptionLength < 20 && (
+              <Text style={styles.errorText}>Minimum 20 characters required</Text>
+            )}
+            <Text style={styles.helperText}>Only letters, spaces, and basic punctuation allowed</Text>
+          </View>
         </View>
 
-        {/* Title */}
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>MyToDo Title for Task</Text>
-          <TextInput
-            style={styles.input}
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Tell My ToDoo here's what you need done?"
-          />
-        </View>
+        {/* Divider */}
+        <View style={styles.divider} />
 
-        {/* Description */}
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Describe the MyToDoo Task</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Give a detailed description of the MyToDoo tasks"
-            multiline
-            numberOfLines={4}
-          />
-        </View>
+        {/* SECTION 2: PHOTOS & LOCATION */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Photos & Location</Text>
+          <Text style={styles.sectionSubtitle}>Help taskers understand what needs doing ({images.length}/10 photos)</Text>
 
-        {/* Photos */}
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Snap a Photo</Text>
-          <View style={styles.imageGrid}>
+          <View style={styles.imageSection}>
             {images.map((uri, index) => (
-              <View key={index} style={styles.imageContainer}>
-                <Image source={{ uri }} style={styles.image} />
-                <TouchableOpacity
-                  style={styles.removeImageButton}
-                  onPress={() => removeImage(index)}
-                >
-                  <Ionicons name="close-circle" size={24} color="#FF0000" />
+              <View key={uri} style={styles.imageWrapper}>
+                <Image source={{ uri }} style={styles.uploadedImage} />
+                <TouchableOpacity style={styles.deleteBtn} onPress={() => removeImage(uri)}>
+                  <Ionicons name="close-circle" size={22} color="#FF4D4F" />
                 </TouchableOpacity>
                 
-                {/* OCR Validation Display */}
-                <View style={styles.validationContainer}>
-                  {validatingImages[index] ? (
-                    <View style={styles.validationMessage}>
-                      <ActivityIndicator size="small" color="#007AFF" />
-                      <Text style={styles.validationText}>Analyzing image...</Text>
-                    </View>
-                  ) : imageValidationResults[index] ? (
-                    <View style={styles.validationMessage}>
-                      <Text style={[
-                        styles.validationText,
-                        imageValidationResults[index].isValid ? styles.validationSuccess : styles.validationWarning
-                      ]}>
-                        {imageValidationResults[index].message}
+                {/* AI validation result display */}
+                {validationResults.get(uri) && (
+                  <View style={styles.validationTextContainer}>
+                    {validationResults.get(uri)?.isValid ? (
+                      <Text style={styles.validationTextSuccess}>
+                        ✅ AI approved (confidence: {Math.round((validationResults.get(uri)?.confidence || 0) * 100)}%)
                       </Text>
-                    </View>
-                  ) : null}
-                </View>
+                    ) : (
+                      <Text style={styles.validationTextWarning}>
+                        ⚠️ AI flagged: {validationResults.get(uri)?.reasons?.[0] || 'Quality concerns'}
+                      </Text>
+                    )}
+                  </View>
+                )}
               </View>
             ))}
-            {images.length < 3 && (
-              <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
-                <Ionicons name="camera-outline" size={32} color="#007AFF" />
+            {images.length < 10 && (
+              <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
+                <Ionicons name="camera" size={24} color="#467FFF" />
+                <Ionicons name="add" size={16} color="#467FFF" style={styles.addIcon} />
               </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Location */}
+          <View ref={locationSectionRef} style={styles.fieldContainer}>
+            <Text style={styles.label}>
+              Location <Text style={styles.required}>*</Text>
+            </Text>
+            <Text style={styles.locationSubtitle}>
+              Where do you need this done? Type and select from suggestions.
+            </Text>
+
+            <LocationAutocomplete
+              onSelect={handleLocationSelect}
+              onFocus={handleLocationFocus}
+              placeholder="Enter address or suburb"
+              initialValue={selectedLocation?.address}
+            />
+
+            {!selectedLocation && touched.location && (
+              <Text style={styles.helperText}>
+                💡 Tip: Type your address and tap on a suggestion from the dropdown list
+              </Text>
+            )}
+
+            {selectedLocation && (
+              <View style={styles.selectedLocationContainer}>
+                <Ionicons name="location" size={20} color="#0057FF" />
+                <Text style={styles.selectedLocationText} numberOfLines={2}>
+                  {selectedLocation.address}
+                </Text>
+              </View>
+            )}
+            {touched.location && !selectedLocation && (
+              <Text style={styles.validationText}>
+                Location is required - Please select from dropdown
+              </Text>
             )}
           </View>
         </View>
 
-        {/* Location */}
-        <View ref={locationSectionRef} style={styles.formGroup}>
-          <Text style={styles.label}>Location <Text style={styles.required}>*</Text></Text>
-          <LocationAutocomplete
-            onSelect={(location) => {
-              console.log('📍 Location selected:', location);
-              setSelectedLocation(location);
-            }}
-            onFocus={handleLocationFocus}
-            placeholder="Enter address or suburb"
-            initialValue={selectedLocation?.address}
+        {/* Divider */}
+        <View style={styles.divider} />
+
+        {/* SECTION 3: WHEN */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            When <Text style={styles.required}>*</Text>
+          </Text>
+          <Text style={styles.sectionSubtitle}>When do you need this done?</Text>
+
+          {/* Date/Time Options - Match Create Task */}
+          <View style={styles.dateSection}>
+            <Text style={styles.dateSectionTitle}>Date</Text>
+            {dateOptions.map((option) => (
+              <View key={option.value}>
+                <TouchableOpacity
+                  style={styles.optionRow}
+                  onPress={() => {
+                    setSelectedOption(option.value);
+                    setTouched({ ...touched, when: true });
+                  }}
+                >
+                  <Text style={styles.optionText}>{option.label}</Text>
+                  <View style={[
+                    styles.radioOuter,
+                    selectedOption === option.value && styles.radioOuterSelected,
+                  ]}>
+                    {selectedOption === option.value && <View style={styles.radioInner} />}
+                  </View>
+                </TouchableOpacity>
+
+                {/* Show date selector for On Date */}
+                {option.value === 'on_time' && selectedOption === 'on_time' && (
+                  <TouchableOpacity 
+                    onPress={() => handleOpenPicker('on_time')} 
+                    style={styles.dateSelector}
+                  >
+                    <Text style={styles.dateText}>
+                      📅 {onTimeDate ? onTimeDate.toDateString() : 'Select date'} (Tap to change)
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* Show date selector for Before Date */}
+                {option.value === 'before' && selectedOption === 'before' && (
+                  <TouchableOpacity 
+                    onPress={() => handleOpenPicker('before')} 
+                    style={styles.dateSelector}
+                  >
+                    <Text style={styles.dateText}>
+                      📅 {beforeDate ? beforeDate.toDateString() : 'Select date'} (Tap to change)
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ))}
+          </View>
+          {touched.when && selectedOption === '' && (
+            <Text style={styles.validationText}>Please select when you need this done</Text>
+          )}
+
+          {/* Time Toggle */}
+          <View style={[styles.toggleRow, selectedOption === 'no_rush' && styles.toggleRowDisabled]}>
+            <Text style={[styles.toggleText, selectedOption === 'no_rush' && styles.toggleTextDisabled]}>
+              I need certain time of day
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                if (selectedOption !== 'no_rush') {
+                  setNeedSpecificTime(!needSpecificTime);
+                }
+              }}
+              disabled={selectedOption === 'no_rush'}
+            >
+              <View style={[
+                styles.switch,
+                needSpecificTime && selectedOption !== 'no_rush' && styles.switchActive,
+                selectedOption === 'no_rush' && styles.switchDisabled
+              ]}>
+                <View style={[
+                  styles.switchThumb,
+                  needSpecificTime && selectedOption !== 'no_rush' && styles.switchThumbActive
+                ]} />
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Time of Day Grid */}
+          {needSpecificTime && selectedOption !== 'no_rush' && (
+            <View style={styles.gridContainer}>
+              {timeBlocks.map(block => (
+                <TouchableOpacity
+                  key={block.value}
+                  style={[
+                    styles.gridItem,
+                    selectedTimeBlock === block.value && styles.gridItemSelected
+                  ]}
+                  onPress={() => setSelectedTimeBlock(block.value)}
+                >
+                  <View style={styles.iconContainer}>
+                    <Image source={block.icon} style={styles.timeIcon} />
+                  </View>
+                  <Text style={styles.gridTitle}>{block.label}</Text>
+                  <Text style={styles.gridDescription}>{block.description}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* Divider */}
+        <View style={styles.divider} />
+
+        {/* SECTION 4: BUDGET */}
+        <View style={styles.section}>
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Budget (Optional)</Text>
+            <Text style={styles.helperText}>
+              Minimum recommended: {currencySymbol}{minimumBudget}. You can negotiate the final price later.
+            </Text>
+            <View style={[
+              styles.budgetInputContainer,
+              budgetError && budgetTouched && styles.inputError
+            ]}>
+              <Text style={styles.currencySymbol}>{currencySymbol}</Text>
+              <TextInput
+                style={styles.budgetTextInput}
+                value={budget}
+                onChangeText={handleBudgetChange}
+                onFocus={handleBudgetFocus}
+                onBlur={handleBudgetBlur}
+                keyboardType="decimal-pad"
+                placeholder={minimumBudget.toString()}
+                placeholderTextColor="#999"
+              />
+            </View>
+            {budgetError && budgetTouched && (
+              <Text style={styles.errorText}>{budgetError}</Text>
+            )}
+            {budget && !budgetError && parseFloat(budget) >= minimumBudget && (
+              <Text style={styles.successText}>✓ Valid budget amount</Text>
+            )}
+          </View>
+        </View>
+        </ScrollView>
+
+        {/* Date Picker */}
+        {showDatePicker && (
+          <DateTimePicker
+            value={
+              activePickerOption === 'on_time'
+                ? onTimeDate || new Date()
+                : activePickerOption === 'before'
+                ? beforeDate || new Date()
+                : new Date()
+            }
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={handleDateChange}
+            minimumDate={new Date()}
           />
-        </View>
-
-        {/* When - Options only, NO TIME PICKER */}
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>When <Text style={styles.required}>*</Text></Text>
-          <View style={styles.whenOptions}>
-            <TouchableOpacity
-              style={[styles.whenOption, selectedOption === 'flexible' && styles.whenOptionSelected]}
-              onPress={() => setSelectedOption('flexible')}
-            >
-              <Text style={[styles.whenOptionText, selectedOption === 'flexible' && styles.whenOptionTextSelected]}>
-                I&apos;m Flexible
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.whenOption, selectedOption === 'on_time' && styles.whenOptionSelected]}
-              onPress={() => setSelectedOption('on_time')}
-            >
-              <Text style={[styles.whenOptionText, selectedOption === 'on_time' && styles.whenOptionTextSelected]}>
-                On a Specific Time
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.whenOption, selectedOption === 'before' && styles.whenOptionSelected]}
-              onPress={() => setSelectedOption('before')}
-            >
-              <Text style={[styles.whenOptionText, selectedOption === 'before' && styles.whenOptionTextSelected]}>
-                Before a Date
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Budget (Optional) */}
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Budget (Optional)</Text>
-          <View style={styles.budgetInput}>
-            <Text style={styles.currencySymbol}>$</Text>
-            <TextInput
-              style={styles.budgetTextInput}
-              value={budget}
-              onChangeText={setBudget}
-              keyboardType="numeric"
-              placeholder="0.00"
-            />
-          </View>
-        </View>
-        </View>
-      </ScrollView>
+        )}
       </KeyboardAvoidingView>
 
-      {/* Save Button - Outside KeyboardAvoidingView, Hidden when keyboard is visible */}
+      {/* Save Button */}
       {!isKeyboardVisible && (
         <TouchableOpacity 
           style={[
             styles.saveButton,
+            isFormValid && styles.saveButtonEnabled,
             { bottom: Math.max(insets.bottom, 20) },
             updateTaskMutation.isPending && styles.saveButtonDisabled
           ]}
           onPress={handleSave}
-          disabled={updateTaskMutation.isPending}
+          disabled={!isFormValid || updateTaskMutation.isPending}
         >
           {updateTaskMutation.isPending ? (
             <View style={styles.saveButtonContent}>
@@ -594,38 +1070,37 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   );
 }
 
-// Styles for Edit Task Screen
+// Styles matching Create Task Screen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    paddingTop: 50,
+    paddingBottom: 20,
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 16 : 50,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
     backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
   },
   backButton: {
-    padding: 8,
-    marginRight: 12,
+    marginBottom: 15,
   },
   headerContent: {
-    flex: 1,
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     color: '#1C1C1E',
+    marginBottom: 5,
+    textAlign: 'center',
   },
   headerSubtitle: {
     fontSize: 14,
     color: '#8E8E93',
-    marginTop: 2,
+    textAlign: 'center',
   },
   scrollView: {
     flex: 1,
@@ -635,120 +1110,384 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 300,
   },
-  form: {
-    flex: 1,
+  section: {
+    marginBottom: 20,
   },
-  formGroup: {
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1C1C1E',
+    marginBottom: 5,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 20,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E5E5EA',
+    marginVertical: 24,
+  },
+  fieldContainer: {
     marginBottom: 20,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 8,
-    color: '#333',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    padding: 12,
     fontSize: 16,
-    backgroundColor: '#F8F8F8',
+    fontWeight: '600',
+    color: '#1C1C1E',
+    marginBottom: 8,
+  },
+  required: {
+    color: '#FF3B30',
+    fontSize: 16,
+  },
+  charCount: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginTop: 4,
+    textAlign: 'right',
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginTop: 4,
+    fontStyle: 'italic',
+  },
+  locationSubtitle: {
+    fontSize: 13,
+    color: '#8E8E93',
+    marginBottom: 10,
+  },
+  categorySelector: {
+    backgroundColor: '#F2F2F7',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
-  inputText: {
+  categorySelectorText: {
     fontSize: 16,
-    color: '#666',
+    color: '#000',
   },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
+  placeholder: {
+    color: '#999',
   },
-  imageGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  imageContainer: {
-    width: 100,
-    height: 100,
-    position: 'relative',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 8,
-  },
-  removeImageButton: {
-    position: 'absolute',
-    top: -10,
-    right: -10,
+  categoryDropdown: {
+    marginTop: 8,
     backgroundColor: '#fff',
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    maxHeight: 300,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  addImageButton: {
-    width: 100,
-    height: 100,
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#000',
+  },
+  categoriesList: {
+    maxHeight: 250,
+  },
+  loader: {
+    padding: 20,
+  },
+  errorText: {
+    color: '#FF3B30',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  successText: {
+    color: '#34C759',
+    fontSize: 12,
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  noResultsText: {
+    color: '#8E8E93',
+    padding: 20,
+    textAlign: 'center',
+  },
+  categoryItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F2F2F7',
+  },
+  categoryItemSelected: {
+    backgroundColor: '#F0F5FF',
+  },
+  categoryItemText: {
+    fontSize: 16,
+    color: '#1C1C1E',
+  },
+  categoryItemTextSelected: {
+    color: '#0057FF',
+    fontWeight: '600',
+  },
+  input: {
+    backgroundColor: '#F2F2F7',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    fontSize: 16,
+    color: '#000',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  inputError: {
+    borderColor: '#FF3B30',
+  },
+  validationText: {
+    fontSize: 12,
+    color: '#FF3B30',
+    marginTop: 4,
+  },
+  textArea: {
+    backgroundColor: '#F2F2F7',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    fontSize: 16,
+    color: '#000',
+    height: 120,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  imageSection: {
+    marginBottom: 20,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  imageWrapper: {
+    position: 'relative',
+    marginRight: 10,
+    marginBottom: 30,
+  },
+  uploadedImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 10,
+  },
+  deleteBtn: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 11,
+    padding: 1,
+    zIndex: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  uploadBox: {
+    width: 70,
+    height: 70,
+    backgroundColor: '#F2F4F7',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
     borderWidth: 2,
-    borderColor: '#007AFF',
+    borderColor: '#E4E7EC',
     borderStyle: 'dashed',
+    position: 'relative',
+  },
+  addIcon: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    backgroundColor: '#F2F4F7',
     borderRadius: 8,
+  },
+  selectedLocationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F5FF',
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  selectedLocationText: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#0057FF',
+  },
+  dateSection: {
+    marginBottom: 30,
+  },
+  dateSectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1C1C1E',
+    marginBottom: 12,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  optionText: {
+    fontSize: 16,
+    color: '#1C1C1E',
+    fontWeight: '500',
+  },
+  radioOuter: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E5E5EA',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  locationInput: {
+  radioOuterSelected: {
+    borderColor: '#0057FF',
+    backgroundColor: '#0057FF',
+  },
+  radioInner: {
+    width: 8,
+    height: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 4,
+  },
+  dateSelector: {
+    marginBottom: 16,
+    paddingLeft: 16,
+  },
+  dateText: {
+    color: '#0057FF',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#F8F8F8',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    marginBottom: 20,
   },
-  locationTextInput: {
-    flex: 1,
-    marginLeft: 8,
+  toggleText: {
     fontSize: 16,
+    color: '#1C1C1E',
+    fontWeight: '500',
   },
-  dateTimeContainer: {
-    flexDirection: 'row',
-    gap: 10,
+  toggleRowDisabled: {
+    opacity: 0.5,
+    backgroundColor: '#F2F2F7',
   },
-  dateInput: {
-    flex: 1,
+  toggleTextDisabled: {
+    color: '#8E8E93',
+  },
+  switch: {
+    width: 51,
+    height: 31,
+    borderRadius: 16,
+    backgroundColor: '#E5E5EA',
+    padding: 2,
+    justifyContent: 'center',
+  },
+  switchActive: {
+    backgroundColor: '#0057FF',
+  },
+  switchDisabled: {
+    backgroundColor: '#F2F2F7',
+  },
+  switchThumb: {
+    width: 27,
+    height: 27,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  switchThumbActive: {
+    alignSelf: 'flex-end',
+  },
+  gridContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  gridItem: {
+    width: '48%',
+    backgroundColor: '#F5F5F5',
+    padding: 15,
+    borderRadius: 12,
+    marginVertical: 6,
+    borderWidth: 2,
+    borderColor: 'transparent',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#F8F8F8',
   },
-  timeInput: {
-    flex: 1,
-    flexDirection: 'row',
+  gridItemSelected: {
+    borderColor: '#FF6A00',
+    backgroundColor: '#FFF4E6',
+  },
+  iconContainer: {
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#F8F8F8',
+    marginBottom: 8,
   },
-  dateTimeText: {
-    marginLeft: 8,
+  timeIcon: {
+    width: 32,
+    height: 32,
+    resizeMode: 'contain',
+  },
+  gridTitle: {
     fontSize: 16,
-    color: '#333',
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 2,
   },
-  budgetInput: {
+  gridDescription: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+  },
+  budgetInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#F2F2F7',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#F8F8F8',
+    borderColor: 'transparent',
   },
   currencySymbol: {
     fontSize: 16,
@@ -758,20 +1497,20 @@ const styles = StyleSheet.create({
   budgetTextInput: {
     flex: 1,
     fontSize: 16,
+    color: '#000',
   },
   saveButton: {
     position: 'absolute',
+    bottom: 20,
     left: 20,
     right: 20,
-    backgroundColor: '#4CD964',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#D1D1D6',
+    paddingVertical: 16,
+    borderRadius: 25,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  },
+  saveButtonEnabled: {
+    backgroundColor: '#0057FF',
   },
   saveButtonDisabled: {
     backgroundColor: '#aaa',
@@ -786,99 +1525,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  required: {
-    color: '#FF3B30',
-  },
-  categoryButton: {
-    cursor: 'pointer',
-  },
-  selectedText: {
-    color: '#000',
-  },
-  dropdown: {
-    position: 'absolute',
-    top: 70,
-    left: 0,
-    right: 0,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    maxHeight: 200,
-    zIndex: 1000,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  searchInput: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
-    padding: 12,
-    fontSize: 16,
-  },
-  dropdownList: {
-    maxHeight: 150,
-  },
-  dropdownItem: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  dropdownItemText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  whenOptions: {
-    gap: 10,
-  },
-  whenOption: {
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#F8F8F8',
-    marginBottom: 8,
-  },
-  whenOptionSelected: {
-    borderColor: '#007AFF',
-    backgroundColor: '#E3F2FD',
-  },
-  whenOptionText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-  },
-  whenOptionTextSelected: {
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  // OCR Validation styles
-  validationContainer: {
+  validationTextContainer: {
     position: 'absolute',
     bottom: -30,
     left: 0,
     right: 0,
-    zIndex: 1,
-  },
-  validationMessage: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingVertical: 3,
+    paddingHorizontal: 5,
+    borderRadius: 6,
+    minHeight: 22,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  validationText: {
-    fontSize: 10,
-    marginLeft: 4,
-    flex: 1,
-  },
-  validationSuccess: {
+  validationTextSuccess: {
+    fontSize: 11,
     color: '#22C55E',
+    fontWeight: '600',
+    textAlign: 'center',
   },
-  validationWarning: {
+  validationTextWarning: {
+    fontSize: 11,
     color: '#F59E0B',
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
