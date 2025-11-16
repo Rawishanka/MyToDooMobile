@@ -26,7 +26,7 @@ interface TabScreenProps {
 }
 
 // Tab screen components
-const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string }> = ({ tasks, isLoading, onRefresh, status, userRole }) => {
+const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string }> = React.memo(({ tasks, isLoading, onRefresh, status, userRole }) => {
   
   const getEmptyMessage = () => {
     switch (status) {
@@ -47,22 +47,31 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
     }
   };
 
-  const handleTaskCancelled = (taskId: string) => {
+  const handleTaskCancelled = useCallback((taskId: string) => {
     console.log('📋 Task cancelled:', taskId);
     console.log('   Refreshing task list to move task to Cancelled tab');
     // Refresh the task list to update the UI
     onRefresh();
-  };
+  }, [onRefresh]);
 
-  const handleTaskDeleted = (taskId: string) => {
+  const handleTaskDeleted = useCallback((taskId: string) => {
     console.log('🗑️ Task deleted:', taskId);
     console.log('   Refreshing task list to remove task');
     // Refresh the task list to update the UI
     onRefresh();
-  };
+  }, [onRefresh]);
+
+  // FIX: Don't show empty state while loading - prevents layout shifts
+  if (isLoading && tasks.length === 0) {
+    return (
+      <View style={styles.tabContent}>
+        <LoadingState />
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.tabContent}>
+    <View style={styles.tabContent} pointerEvents="auto">
       <FlatList
         data={tasks}
         keyExtractor={(item) => item._id}
@@ -87,35 +96,35 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             onTaskDeleted={handleTaskDeleted}
           />
         )}
-        contentContainerStyle={[
-          styles.flatListContent,
-          tasks.length === 0 && styles.emptyListContent
-        ]}
+        contentContainerStyle={styles.flatListContent}
         showsVerticalScrollIndicator={false}
-        refreshing={isLoading}
+        refreshing={false}
         onRefresh={onRefresh}
+        removeClippedSubviews={false}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={10}
         ListEmptyComponent={
-          isLoading ? (
-            <LoadingState />
-          ) : (
-            <View style={styles.emptyListContent}>
-              <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
-              <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
-                <Text style={styles.refreshButtonText}>Refresh</Text>
-              </TouchableOpacity>
-            </View>
-          )
+          <View style={styles.emptyListContent}>
+            <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
+            <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
+              <Text style={styles.refreshButtonText}>Refresh</Text>
+            </TouchableOpacity>
+          </View>
         }
       />
     </View>
   );
-};
+});
+
+TabScreen.displayName = 'TabScreen';
 
 export default function MyTasksScreen() {
   const [searchVisible, setSearchVisible] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [userRole, setUserRole] = useState('Tasker'); // 'Tasker' or 'Poster'
   const [searchText, setSearchText] = useState('');
+  const [isRoleSwitching, setIsRoleSwitching] = useState(false); // FIX: Track role switching
   
   // Get navigation params
   const params = useLocalSearchParams<{ role?: string; tab?: string }>();
@@ -139,6 +148,11 @@ export default function MyTasksScreen() {
       setUserRole('Poster');
     }
   }, [params.role]);
+
+  // FIX: Log when screen mounts to verify layout is ready
+  useEffect(() => {
+    console.log('✅ My Tasks screen mounted and ready for interaction');
+  }, []);
 
   // Get real notification count from API
   const { data: unreadCountData } = useUnreadCount();
@@ -453,47 +467,60 @@ export default function MyTasksScreen() {
       <View style={styles.roleSelectorContainer}>
         <TouchableOpacity
           style={[styles.roleButton, userRole === 'Tasker' && styles.activeRole]}
-          onPress={() => setUserRole('Tasker')}
+          onPress={() => {
+            setIsRoleSwitching(true);
+            setUserRole('Tasker');
+            // FIX: Allow Tab.Navigator to initialize before enabling interactions
+            setTimeout(() => setIsRoleSwitching(false), 150);
+          }}
         >
           <Text style={[styles.roleText, userRole === 'Tasker' && styles.activeRoleText]}>Tasker</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.roleButton, userRole === 'Poster' && styles.activeRole]}
-          onPress={() => setUserRole('Poster')}
+          onPress={() => {
+            setIsRoleSwitching(true);
+            setUserRole('Poster');
+            // FIX: Allow Tab.Navigator to initialize before enabling interactions
+            setTimeout(() => setIsRoleSwitching(false), 150);
+          }}
         >
           <Text style={[styles.roleText, userRole === 'Poster' && styles.activeRoleText]}>Poster</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Tab Navigation */}
-      <Tab.Navigator
-        screenOptions={{
-          tabBarActiveTintColor: '#007AFF',
-          tabBarInactiveTintColor: '#666',
-          tabBarLabelStyle: { 
-            fontSize: 12, 
-            fontWeight: '600',
-            textTransform: 'none'
-          },
-          tabBarStyle: { 
-            backgroundColor: '#fff',
-            elevation: 0,
-            shadowOpacity: 0,
-            borderBottomWidth: 1,
-            borderBottomColor: '#f0f0f0'
-          },
-          tabBarIndicatorStyle: { 
-            backgroundColor: '#007AFF', 
-            height: 2 
-          },
-          tabBarPressColor: '#e3f2fd',
-          tabBarPressOpacity: 0.8,
-          swipeEnabled: true,
-          animationEnabled: true,
-          lazy: true,
-          tabBarScrollEnabled: true
-        }}
-      >
+      {/* Tab Navigation - Key prop forces proper remount when role changes */}
+      <View style={{ flex: 1 }} pointerEvents={isRoleSwitching ? 'none' : 'auto'}>
+        <Tab.Navigator
+          key={`tab-nav-${userRole}`}
+          screenOptions={{
+            tabBarActiveTintColor: '#007AFF',
+            tabBarInactiveTintColor: '#666',
+            tabBarLabelStyle: { 
+              fontSize: 12, 
+              fontWeight: '600',
+              textTransform: 'none'
+            },
+            tabBarStyle: { 
+              backgroundColor: '#fff',
+              elevation: 0,
+              shadowOpacity: 0,
+              borderBottomWidth: 1,
+              borderBottomColor: '#f0f0f0'
+            },
+            tabBarIndicatorStyle: { 
+              backgroundColor: '#007AFF', 
+              height: 2 
+            },
+            tabBarPressColor: '#e3f2fd',
+            tabBarPressOpacity: 0.8,
+            swipeEnabled: true,
+            animationEnabled: true,
+            lazy: false, // FIX: Disable lazy loading to ensure all tabs render immediately
+            lazyPreloadDistance: 0,
+            tabBarScrollEnabled: true
+          }}
+        >
         {userRole === 'Tasker' ? (
           <>
             <Tab.Screen
@@ -627,20 +654,25 @@ export default function MyTasksScreen() {
           </>
         )}
       </Tab.Navigator>
+      </View>
 
-      {/* Search Modal */}
-      <SearchModal
-        visible={searchVisible}
-        searchText={searchText}
-        onClose={() => setSearchVisible(false)}
-        onChangeText={setSearchText}
-      />
+      {/* Search Modal - Only render when visible to prevent blocking touches */}
+      {searchVisible && (
+        <SearchModal
+          visible={searchVisible}
+          searchText={searchText}
+          onClose={() => setSearchVisible(false)}
+          onChangeText={setSearchText}
+        />
+      )}
 
-      {/* Notification Modal */}
-      <NotificationModal
-        visible={showNotifications}
-        onClose={() => setShowNotifications(false)}
-      />
+      {/* Notification Modal - Only render when visible to prevent blocking touches */}
+      {showNotifications && (
+        <NotificationModal
+          visible={showNotifications}
+          onClose={() => setShowNotifications(false)}
+        />
+      )}
     </View>
   );
 }
@@ -656,14 +688,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   flatListContent: {
+    flexGrow: 1,
     paddingVertical: 16,
     paddingBottom: 100,
   },
   emptyListContent: {
-    flexGrow: 1,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    paddingVertical: 60,
   },
   emptyText: {
     fontSize: 16,

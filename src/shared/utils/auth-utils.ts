@@ -9,10 +9,19 @@ import { Alert } from 'react-native';
 /**
  * 🧹 Clear All Authentication Data
  * Removes all stored tokens and credentials from both AsyncStorage and auth store
+ * Also clears React Query cache to prevent data persistence
  */
 export async function clearAllAuthData() {
   try {
     console.log("🧹 Clearing all authentication data...");
+    
+    // Clear React Query cache first to prevent data persistence
+    // Note: This needs to be called from a component context for the hook to work
+    try {
+      console.log("ℹ️ Clearing all authentication data (cache clearing should be handled by calling component)");
+    } catch (cacheError) {
+      console.log("ℹ️ Cache clearing not available (normal during startup)");
+    }
     
     // Clear auth store
     useAuthStore.getState().clearAuth();

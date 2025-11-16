@@ -16,9 +16,9 @@ import { ActivityIndicator, Alert, Image, Modal, ScrollView, StyleSheet, Text, T
 
 // Import OCR validation service
 import {
-    OCRValidationResult,
-    TaskContext,
-    validateSingleImage
+  OCRValidationResult,
+  TaskContext,
+  validateSingleImage
 } from '@/src/services/ocrValidationService';
 import AccountInformation from './accountinformation';
 import IDVerificationScreen from './id-verification-screen';
@@ -42,13 +42,21 @@ export default function AccountScreen() {
     autoLoginForDevelopment();
   }, []);
 
-  // �🚀 **NEW: Get real user data from API**
+  //  **NEW: Get real user data from API**
   const { data: userProfileData, isLoading: isLoadingProfile, error: profileError, refetch } = useGetUserProfile();
   const { mutate: uploadAvatar, isPending: isUploadingAvatar } = useUploadUserAvatar();
   const { user: authUser, isAuthenticated, token } = useAuthStore();
 
-  // 🔧 **FIX: Better fallback logic for user data**
-  let userData = userProfileData || authUser;
+  // 🔄 **Force profile refetch when user changes**
+  React.useEffect(() => {
+    if (isAuthenticated && token) {
+      console.log("🔄 Auth state changed - triggering profile refetch");
+      refetch();
+    }
+  }, [isAuthenticated, token, authUser?.email, refetch]);
+
+  // 🔧 **FIXED: Only use fresh API data, no fallback to auth store to prevent cache persistence**
+  let userData: any = userProfileData;
 
   // If API fails due to auth error, use mock data that reflects unverified status
   if (profileError && !userData) {
@@ -400,7 +408,14 @@ export default function AccountScreen() {
           {userData?.firstName} {userData?.lastName?.charAt(0)}.
         </Text>
         <Text style={styles.location}>
-          {userData?.location || 'Location not set'}
+          {userData?.location ? 
+            (typeof userData.location === 'string' 
+              ? userData.location 
+              : (userData.location as any).city && (userData.location as any).state 
+                ? `${(userData.location as any).city}, ${(userData.location as any).state}${(userData.location as any).country ? ', ' + (userData.location as any).country : ''}`
+                : 'Location not set'
+            ) 
+            : 'Location not set'}
         </Text>
         <TouchableOpacity style={styles.row}>
           <Text style={styles.linkText}>See your public profile</Text>

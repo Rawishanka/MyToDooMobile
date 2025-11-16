@@ -1,3 +1,4 @@
+import { useClearAllCaches } from '@/src/shared/utils/cache-utils';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -7,6 +8,7 @@ export default function LogoutPopup({ onBack }) {
   const [showPopup, setShowPopup] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { clearAuth } = useAuthStore();
+  const clearAllCaches = useClearAllCaches();
   const router = useRouter();
 
   const handleCancel = () => {
@@ -21,7 +23,16 @@ export default function LogoutPopup({ onBack }) {
       setIsLoggingOut(true);
       console.log("🔐 Starting logout process...");
       
-      // Clear all authentication data
+      // STEP 1: Immediately disable all queries by setting isAuthenticated to false
+      console.log("🚫 Disabling all React Query hooks...");
+      const { disableAuth } = useAuthStore.getState();
+      disableAuth(); // This stops all queries immediately
+      
+      // STEP 2: Clear React Query cache after queries are disabled
+      console.log("🧹 Clearing all caches...");
+      clearAllCaches();
+      
+      // STEP 3: Clear all authentication data (this won't re-trigger cache clearing)
       await clearAuth();
       
       console.log("✅ Logout successful, redirecting to login...");

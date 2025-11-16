@@ -1,27 +1,30 @@
 import { useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
 import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
+import { USER_PROFILE_QUERY_KEYS } from '@/src/shared/hooks/useUserProfileApi';
+import { useClearCachesOnLogin } from '@/src/shared/utils/cache-utils';
 import { checkPendingAction, executePendingAction } from '@/src/shared/utils/pending-action-utils';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 import * as Google from 'expo-auth-session/providers/google';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -36,6 +39,8 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const { mutateAsync } = useCreateAuthToken();
   const { mutateAsync: googleSignIn } = useGoogleSignIn();
+  const clearCachesOnLogin = useClearCachesOnLogin();
+  const queryClient = useQueryClient();
   
   // Task store and mutation for auto-posting pending tasks
   const { myTask, resetTask } = useCreateTaskStore();
@@ -129,6 +134,14 @@ export default function LoginScreen() {
       const result = await googleSignIn({ credential: idToken });
       
       console.log('✅ Backend authentication successful:', result);
+      
+      // Clear any cached data to ensure fresh data for the new user
+      console.log('🧹 Clearing cached data for fresh user session...');
+      clearCachesOnLogin();
+      
+      // Force invalidate profile queries to ensure fresh profile data
+      await queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
+      console.log('🔄 Profile queries invalidated for fresh data');
       
       // Check for pending actions after successful login
       const pendingActionType = checkPendingAction();
@@ -239,6 +252,14 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       await mutateAsync({ username: email, password });
+      
+      // Clear any cached data to ensure fresh data for the new user
+      console.log('🧹 Clearing cached data for fresh user session...');
+      clearCachesOnLogin();
+      
+      // Force invalidate profile queries to ensure fresh profile data
+      await queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
+      console.log('🔄 Profile queries invalidated for fresh data');
       
       // Check if there's a pending task to post
       if (hasPendingTask()) {

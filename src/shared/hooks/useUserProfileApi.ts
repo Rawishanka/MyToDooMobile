@@ -1,6 +1,7 @@
 // React Query hooks for user profile management
 import type { RequestReviewRequest, Review, UpdateProfileRequest } from '@/src/api/user-profile-api';
 import * as UserProfileAPI from '@/src/api/user-profile-api';
+import { useAuthStore } from '@/src/store/auth-task-store';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // ==========================================
@@ -22,10 +23,17 @@ export const USER_PROFILE_QUERY_KEYS = {
  * Hook to fetch user profile
  */
 export function useGetUserProfile() {
+  const { isAuthenticated, token, user } = useAuthStore();
+  
   return useQuery({
     queryKey: USER_PROFILE_QUERY_KEYS.profile(),
-    queryFn: () => UserProfileAPI.getUserProfile(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    queryFn: () => {
+      console.log("🔍 Fetching fresh user profile data...");
+      return UserProfileAPI.getUserProfile();
+    },
+    staleTime: 0, // Always fetch fresh data to prevent cache issues
+    gcTime: 0, // Don't cache the result (was cacheTime in older versions)
+    enabled: isAuthenticated && !!token, // Only fetch when authenticated
     select: (response) => response.data, // Extract data from response
     retry: (failureCount, error: any) => {
       // Don't retry on 401 authentication errors
