@@ -7,10 +7,10 @@ import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'r
 
 // Components
 import {
-  LoadingState,
-  MyTasksHeader,
-  SearchModal,
-  TaskCard,
+    LoadingState,
+    MyTasksHeader,
+    SearchModal,
+    TaskCard,
 } from './components';
 
 // Notification Modal
@@ -81,14 +81,13 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             status={status}
             userRole={userRole}
             onPress={(taskId: string) => {
-              console.log('✏️ Navigating to edit-task with taskId:', taskId);
+              console.log('👁️ Navigating to task-detail with taskId:', taskId);
               console.log('   Task data:', item);
-              // Pass full task data to edit screen
+              // Navigate to task detail screen to view task and make offers
               router.push({
-                pathname: '/edit-task',
+                pathname: '/task-detail',
                 params: {
-                  taskId: taskId,
-                  task: JSON.stringify(item)
+                  taskId: taskId
                 }
               } as any);
             }}
@@ -321,7 +320,15 @@ export default function MyTasksScreen() {
     totalOffers: allOffers.length,
     isLoadingTasks,
     isLoadingOffers,
-    userRole
+    userRole,
+    sampleTasks: allTasks.slice(0, 2).map(t => ({ 
+      id: t._id, 
+      title: t.title, 
+      status: t.status, 
+      offersArray: t.offers?.length || 0,
+      offerCount: t.offerCount || 0,
+      hasOffers: !!(t.offers?.length || t.offerCount)
+    }))
   });
 
   // Categorize tasks and offers based on status and user role
@@ -335,12 +342,16 @@ export default function MyTasksScreen() {
       });
     };
 
-    // For Tasker role - filter based on offers made by current user
+    // For Tasker role - show available tasks and their offer status
     if (userRole === 'Tasker') {
-      const openTasks = allOffers.filter((offer: any) => 
-        offer.task?.status === 'open' || offer.task?.status === 'active'
-      ).map((offer: any) => offer.task).filter(Boolean);
+      // Open Tasks: All available tasks that are open and active for taskers to offer on
+      const openTasks = sortByCreatedDate(
+        allTasks.filter((task: Task) => 
+          task.status === 'open' || task.status === 'active'
+        )
+      );
       
+      // Todo Tasks: Tasks where their offers have been accepted and are in progress
       const todoTasks = allOffers.filter((offer: any) => 
         offer.status === 'accepted' && 
         (offer.task?.status === 'assigned' || offer.task?.status === 'in_progress' || offer.task?.status === 'accepted')
@@ -439,6 +450,15 @@ export default function MyTasksScreen() {
       acceptedTasks: finalAcceptedTasks,
     };
   }, [allTasks, allOffers, dummyAcceptedOffers, dummyCancelledTasks, userRole]);
+
+  // Debug log categorized data counts
+  console.log(`📋 Categorized Data for ${userRole}:`, {
+    openTasks: categorizedData.openTasks.length,
+    todoTasks: categorizedData.todoTasks.length,
+    completedTasks: categorizedData.completedTasks.length,
+    postedTasks: categorizedData.postedTasks.length,
+    acceptedTasks: categorizedData.acceptedTasks.length,
+  });
 
   const handleRefresh = useCallback(() => {
     refetchTasks();

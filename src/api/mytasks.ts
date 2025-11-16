@@ -271,21 +271,25 @@ export function useApiFunctions() {
       setStoredToken(token);
       
       // Store credentials for automatic re-authentication
-      await AsyncStorage.setItem('userEmail', email);
-      await AsyncStorage.setItem('userPassword', password);
+      try {
+        await AsyncStorage.setItem('userEmail', email);
+        await AsyncStorage.setItem('userPassword', password);
+      } catch (storageError) {
+        console.warn('Failed to store credentials in AsyncStorage:', storageError);
+      }
       
       return token;
     } catch (error: any) {
       console.log("========================================");
       console.log("❌ LOGIN FAILED");
       console.log("========================================");
-      console.error("Error type:", error.constructor.name);
-      console.error("Error code:", error.code);
-      console.error("Error message:", error.message);
-      console.error("Response status:", error.response?.status);
-      console.error("Response data:", error.response?.data);
-      console.error("Request URL:", error.config?.url);
-      console.error("Request method:", error.config?.method);
+      console.error("Error type:", error?.constructor?.name || 'Unknown');
+      console.error("Error code:", error?.code || 'No code');
+      console.error("Error message:", error?.message || 'No message');
+      console.error("Response status:", error?.response?.status || 'No status');
+      console.error("Response data:", error?.response?.data || 'No data');
+      console.error("Request URL:", error?.config?.url || 'No URL');
+      console.error("Request method:", error?.config?.method || 'No method');
       console.log("========================================");
       
       // Development fallback - if server is not available, use mock data
@@ -313,16 +317,20 @@ export function useApiFunctions() {
             // Set up development session
             setAuthData(mockToken, mockUser, mockExpiresIn);
             setStoredToken(mockToken);
-            await AsyncStorage.setItem('userEmail', email);
+            try {
+                await AsyncStorage.setItem('userEmail', email);
+            } catch (storageError) {
+                console.warn('Failed to store email in AsyncStorage:', storageError);
+            }
             
             return mockToken;
         }
         
         // Production mode - throw network error
         console.error("Network Error Details:", {
-            code: error.code,
-            message: error.message,
-            config: error?.config,
+            code: error?.code || 'No code',
+            message: error?.message || 'No message',
+            config: error?.config || null,
             url: API_CONFIG.BASE_URL
         });
         throw new Error('Server connection failed. Please check your internet connection or try again later.');

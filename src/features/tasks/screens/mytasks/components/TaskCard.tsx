@@ -1,9 +1,9 @@
 import { Task } from '@/src/api/types/tasks';
-import { useDeleteTask } from '@/src/shared/hooks/useTaskApi';
+import { useAcceptOffer, useDeleteTask } from '@/src/shared/hooks/useTaskApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
-import { Alert, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface TaskCardProps {
   task: Task;
@@ -19,7 +19,17 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const [showCancellationModal, setShowCancellationModal] = useState(false);
   const [showPosterCancelModal, setShowPosterCancelModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showOffersModal, setShowOffersModal] = useState(false);
   const [selectedCancelReason, setSelectedCancelReason] = useState<number | null>(null);
+  
+  // Debug logging for offer data
+  console.log(`💳 TaskCard [${task._id}] offer data:`, {
+    title: task.title,
+    offersArray: task.offers?.length || 0,
+    offerCount: task.offerCount || 0,
+    hasOffers: !!(task.offers?.length || task.offerCount),
+    userRole
+  });
   
   // Debouncing state to prevent multiple rapid clicks
   const lastClickTime = useRef<number>(0);
@@ -27,6 +37,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   // API hooks
   const deleteTaskMutation = useDeleteTask();
+  const acceptOfferMutation = useAcceptOffer();
 
   // Debouncing helper function to prevent multiple rapid clicks
   const withDebounce = useCallback((callback: () => void, delay: number = 300) => {
@@ -227,6 +238,46 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     setShowCancellationModal(false);
   };
 
+  // Accept Offer functionality
+  const handleAcceptOffer = async (offerId: string, taskerId: string) => {
+    try {
+      setIsProcessing(true);
+      console.log('✅ Accepting offer:', { taskId: task._id, offerId, taskerId });
+      
+      await acceptOfferMutation.mutateAsync({
+        taskId: task._id,
+        offerId: offerId,
+        userId: taskerId,
+        taskCategory: task.categories?.[0] || 'General'
+      });
+      
+      console.log('✅ Offer accepted successfully');
+      Alert.alert(
+        'Success!',
+        'Offer accepted successfully. You will be redirected to payment.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // TODO: Redirect to Stripe payment gateway
+              console.log('🔄 Redirecting to payment...');
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('❌ Error accepting offer:', error);
+      Alert.alert('Error', 'Failed to accept offer. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleViewOffers = () => {
+    console.log('📋 Viewing offers for task:', task._id);
+    setShowOffersModal(true);
+  };
+
   // Helper function to get time preference display
   const getTimePreference = () => {
     if (task.dateType === 'before' || task.dateType === 'DoneBy') return '🕐 Before specific date';
@@ -336,6 +387,16 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 )}
               </View>
             )}
+
+            {/* Offer Count Display - Same as Browse screen */}
+            <Text style={styles.offerCountText}>
+              {task.status === 'accepted' || task.status === 'completed' || 
+               task.status === 'assigned' || task.status === 'in_progress' || task.status === 'in-progress'
+                ? task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')
+                : (task.offerCount || 0) > 0
+                  ? `${task.offerCount} Offer${task.offerCount !== 1 ? 's' : ''}`
+                  : 'Make the first offer'}
+            </Text>
           </View>
 
           {/* Price and User Info */}
@@ -361,6 +422,39 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           </Text>
         )}
       </TouchableOpacity>
+
+      {/* Offers Section - Show offer count for all roles when offers exist */}
+      {(() => {
+        const offerCount = task.offers?.length || task.offerCount || 0;
+        return offerCount > 0;
+      })() && (
+        <View style={styles.offersSection}>
+          {userRole === 'Poster' ? (
+            <TouchableOpacity 
+              style={styles.offersButton}
+              onPress={handleViewOffers}
+            >
+              <View style={styles.offersInfo}>
+                <MaterialIcons name="local-offer" size={20} color="#007bff" />
+                <Text style={styles.offersLabel}>
+                  Offers: {task.offers?.length || task.offerCount || 0}
+                </Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={20} color="#007bff" />
+            </TouchableOpacity>
+          ) : (
+            /* For Taskers - just display offer count without interaction */
+            <View style={styles.offersButton}>
+              <View style={styles.offersInfo}>
+                <MaterialIcons name="local-offer" size={20} color="#007bff" />
+                <Text style={styles.offersLabel}>
+                  Offers: {task.offers?.length || task.offerCount || 0}
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
+      )}
 
       {/* Action Buttons - Separate from Card Content */}
       <View style={styles.actionButtons} pointerEvents="box-none">
@@ -429,18 +523,14 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                   withDebounce(() => {
                     console.log('✏️ Edit button pressed for task:', task._id);
                     console.log('   Task data:', task);
-                    if (onPress) {
-                      onPress(task._id);
-                    } else {
-                      // Pass full task data to edit screen
-                      router.push({
-                        pathname: '/edit-task',
-                        params: {
-                          taskId: task._id,
-                          task: JSON.stringify(task)
-                        }
-                      } as any);
-                    }
+                    // Always navigate to edit screen for edit button
+                    router.push({
+                      pathname: '/edit-task',
+                      params: {
+                        taskId: task._id,
+                        task: JSON.stringify(task)
+                      }
+                    } as any);
                   });
                 }
               }}
@@ -648,6 +738,95 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 </Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Offers Modal */}
+      <Modal
+        visible={showOffersModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowOffersModal(false)}
+      >
+        <View style={styles.offersModalOverlay}>
+          <View style={styles.offersModalContent}>
+            <View style={styles.offersModalHeader}>
+              <Text style={styles.offersModalTitle}>
+                Offers for "{task.title}"
+              </Text>
+              <TouchableOpacity 
+                style={styles.offersCloseButton}
+                onPress={() => setShowOffersModal(false)}
+              >
+                <MaterialIcons name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={task.offers || []}
+              keyExtractor={(offer) => offer._id}
+              renderItem={({ item: offer }) => (
+                <View style={styles.offerItem}>
+                  <View style={styles.offerHeader}>
+                    <View style={styles.offerUserInfo}>
+                      <Image
+                        source={{
+                          uri: `https://ui-avatars.com/api/?name=${offer.taskTakerId.firstName}+${offer.taskTakerId.lastName}&background=random`,
+                        }}
+                        style={styles.offerAvatar}
+                      />
+                      <View style={styles.offerUserDetails}>
+                        <Text style={styles.offerUserName}>
+                          {offer.taskTakerId.firstName} {offer.taskTakerId.lastName}
+                        </Text>
+                        <View style={styles.offerRating}>
+                          <MaterialIcons name="star" size={16} color="#ffd700" />
+                          <Text style={styles.offerRatingText}>
+                            {offer.taskTakerId.rating?.toFixed(1) || '0.0'}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                    <View style={styles.offerAmount}>
+                      <Text style={styles.offerPrice}>
+                        {offer.offer.currency} {offer.offer.amount}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {offer.offer.message && (
+                    <Text style={styles.offerMessage}>
+                      {offer.offer.message}
+                    </Text>
+                  )}
+
+                  <View style={styles.offerFooter}>
+                    <Text style={styles.offerDate}>
+                      {new Date(offer.createdAt).toLocaleDateString()}
+                    </Text>
+                    {userRole === 'Poster' && offer.status === 'pending' && (
+                      <TouchableOpacity
+                        style={[
+                          styles.acceptOfferButton,
+                          (acceptOfferMutation.isPending || isProcessing) && styles.acceptOfferDisabledButton
+                        ]}
+                        onPress={() => handleAcceptOffer(offer._id, offer.taskTakerId._id)}
+                        disabled={acceptOfferMutation.isPending || isProcessing}
+                      >
+                        {acceptOfferMutation.isPending || isProcessing ? (
+                          <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                          <Text style={styles.acceptOfferText}>Accept Offer</Text>
+                        )}
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+              )}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.offersListContent}
+            />
           </View>
         </View>
       </Modal>
@@ -867,6 +1046,12 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 12,
     color: '#999',
+  },
+  offerCountText: {
+    fontSize: 12,
+    color: '#007bff',
+    fontWeight: '600',
+    marginTop: 4,
   },
   price: {
     alignItems: 'flex-end',
@@ -1093,5 +1278,153 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  // Offers section styles
+  offersSection: {
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    paddingTop: 12,
+    marginTop: 12,
+  },
+  offersButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  offersInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  offersLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginLeft: 8,
+  },
+  offersCount: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 4,
+  },
+  // Offers modal styles
+  offersModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  offersModalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+    paddingTop: 20,
+  },
+  offersModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  offersModalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    flex: 1,
+    marginRight: 16,
+  },
+  offersCloseButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  offersListContent: {
+    padding: 20,
+  },
+  offerItem: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#007AFF',
+  },
+  offerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  offerUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  offerAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  offerUserDetails: {
+    flex: 1,
+  },
+  offerUserName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 2,
+  },
+  offerRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  offerRatingText: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 4,
+  },
+  offerAmount: {
+    alignItems: 'flex-end',
+  },
+  offerPrice: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#007AFF',
+  },
+  offerMessage: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  offerFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  offerDate: {
+    fontSize: 12,
+    color: '#999',
+  },
+  acceptOfferButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  acceptOfferDisabledButton: {
+    backgroundColor: '#ccc',
+  },
+  acceptOfferText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
