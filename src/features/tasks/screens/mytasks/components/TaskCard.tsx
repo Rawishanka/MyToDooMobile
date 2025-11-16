@@ -159,7 +159,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     } finally {
       setIsProcessing(false);
     }
-  }, [task._id, deleteTaskMutation, onTaskDeleted, isProcessing]);
+  }, [task._id, task.status, task.title, deleteTaskMutation, onTaskDeleted, isProcessing]);
 
   const handleConfirmPosterCancel = async () => {
     if (selectedCancelReason === null) {
@@ -229,10 +229,23 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   // Helper function to get time preference display
   const getTimePreference = () => {
-    if (task.dateType === 'before') return '🕐 Before specific date';
-    if (task.dateType === 'no-rush') return '⏰ No rush';
+    if (task.dateType === 'before' || task.dateType === 'DoneBy') return '🕐 Before specific date';
+    if (task.dateType === 'no-rush' || task.dateType === 'Easy' || task.dateType === 'Flexible') return '⏰ No rush';
+    if (task.dateType === 'on_time' || task.dateType === 'Specific') return '📅 Specific date';
     if (task.time && task.time !== 'Anytime') return `🕒 ${task.time}`;
     return '⏰ Flexible timing';
+  };
+
+  // Helper function to format task date
+  const getTaskDate = () => {
+    // Priority: dateRange.start > dateRange.end > createdAt
+    if (task.dateRange?.start) {
+      return new Date(task.dateRange.start).toLocaleDateString();
+    }
+    if (task.dateRange?.end) {
+      return new Date(task.dateRange.end).toLocaleDateString();
+    }
+    return new Date(task.createdAt).toLocaleDateString();
   };
 
   // Helper function to get location type
@@ -272,80 +285,85 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   };
 
   return (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.7}
-      delayPressIn={0}
-      onPress={() => router.push(`/task-detail?taskId=${task._id}`)}
-    >
-      <View style={styles.header}>
-        <View style={styles.info}>
-          <Text style={styles.title}>{task.title}</Text>
+    <View style={styles.card} pointerEvents="auto">
+      {/* Clickable Card Content - Navigates to Details */}
+      <TouchableOpacity
+        style={styles.cardContent}
+        activeOpacity={0.7}
+        onPress={() => {
+          console.log('📋 Card pressed, navigating to task detail:', task._id);
+          router.push(`/task-detail?taskId=${task._id}`);
+        }}
+      >
+        <View style={styles.header}>
+          <View style={styles.info}>
+            <Text style={styles.title}>{task.title}</Text>
 
-          {/* Time and Date Information */}
-          <View style={styles.metaRow}>
-            <Text style={styles.timePreference}>{getTimePreference()}</Text>
-          </View>
-
-          {/* Location Information */}
-          <View style={styles.metaRow}>
-            <Text style={styles.locationType}>{getLocationType()}</Text>
-            <Text style={styles.locationDivider}>•</Text>
-            <Text style={styles.locationText} numberOfLines={1}>
-              {formatLocation()}
-            </Text>
-          </View>
-
-          {/* Task Status and Date */}
-          <View style={styles.meta}>
-            <Text style={[styles.status, { color: getStatusColor() }]}>
-              {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
-            </Text>
-            <Text style={styles.date}>
-              {new Date(task.createdAt).toLocaleDateString()}
-            </Text>
-          </View>
-
-          {/* Category */}
-          {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
-            <View style={styles.categoryContainer}>
-              <Text style={styles.categoryLabel}>
-                Category - {task.categories[0]}
-              </Text>
-              {task.categories.length > 1 && (
-                <Text style={styles.moreCategoriesText}>
-                  +{task.categories.length - 1} more
-                </Text>
-              )}
+            {/* Time and Date Information */}
+            <View style={styles.metaRow}>
+              <Text style={styles.timePreference}>{getTimePreference()}</Text>
             </View>
-          )}
+
+            {/* Location Information */}
+            <View style={styles.metaRow}>
+              <Text style={styles.locationType}>{getLocationType()}</Text>
+              <Text style={styles.locationDivider}>•</Text>
+              <Text style={styles.locationText} numberOfLines={1}>
+                {formatLocation()}
+              </Text>
+            </View>
+
+            {/* Task Status and Date */}
+            <View style={styles.meta}>
+              <Text style={[styles.status, { color: getStatusColor() }]}>
+                {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
+              </Text>
+              <Text style={styles.date}>
+                {getTaskDate()}
+              </Text>
+            </View>
+
+            {/* Category */}
+            {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
+              <View style={styles.categoryContainer}>
+                <Text style={styles.categoryLabel}>
+                  Category - {task.categories[0]}
+                </Text>
+                {task.categories.length > 1 && (
+                  <Text style={styles.moreCategoriesText}>
+                    +{task.categories.length - 1} more
+                  </Text>
+                )}
+              </View>
+            )}
+          </View>
+
+          {/* Price and User Info */}
+          <View style={styles.price}>
+            <Text style={styles.priceText}>
+              {task.formattedBudget || `${task.currency || 'A$'}${task.budget}`}
+            </Text>
+            {task.createdBy && (
+              <Image
+                source={{
+                  uri: `https://ui-avatars.com/api/?name=${task.createdBy.firstName}+${task.createdBy.lastName}&background=random`,
+                }}
+                style={styles.userAvatar}
+              />
+            )}
+          </View>
         </View>
 
-        {/* Price and User Info */}
-        <View style={styles.price}>
-          <Text style={styles.priceText}>
-            {task.formattedBudget || `${task.currency || 'A$'}${task.budget}`}
+        {/* Task Details */}
+        {task.details && (
+          <Text style={styles.description} numberOfLines={2}>
+            {task.details}
           </Text>
-          {task.createdBy && (
-            <Image
-              source={{
-                uri: `https://ui-avatars.com/api/?name=${task.createdBy.firstName}+${task.createdBy.lastName}&background=random`,
-              }}
-              style={styles.userAvatar}
-            />
-          )}
-        </View>
-      </View>
+        )}
+      </TouchableOpacity>
 
-      {/* Task Details */}
-      {task.details && (
-        <Text style={styles.description} numberOfLines={2}>
-          {task.details}
-        </Text>
-      )}
-
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
+      {/* Action Buttons - Separate from Card Content */}
+      <View style={styles.actionButtons} pointerEvents="box-none">
         {status === 'accepted' ? (
           // Accepted Offers tab: Mark as Completed + Cancel
           <>
@@ -355,6 +373,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 isProcessing && styles.disabledButton
               ]}
               onPress={() => {
+                console.log('🔥 Mark as Completed button touched!');
                 if (!isProcessing) {
                   handleMarkAsCompleted();
                 }
@@ -376,6 +395,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 isProcessing && styles.disabledButton
               ]}
               onPress={() => {
+                console.log('🔥 Cancel button (Accepted) touched!');
                 if (!isProcessing) {
                   handleCancelTask();
                 }
@@ -631,7 +651,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           </View>
         </View>
       </Modal>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -642,6 +662,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,
+  },
+  cardContent: {
+    flex: 1,
   },
   actionButtons: {
     flexDirection: 'row',
