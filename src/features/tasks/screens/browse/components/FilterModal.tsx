@@ -1,7 +1,7 @@
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { getCurrencySymbol } from '@/src/shared/utils/currency';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Modal,
   PanResponder,
@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Switch,
   Text,
+  TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
@@ -55,11 +56,23 @@ export default function FilterModal({
   const currencySymbol = getCurrencySymbol(countryInfo.currency);
   
   const [categoryDropdownVisible, setCategoryDropdownVisible] = useState(false);
+  const [categorySearchText, setCategorySearchText] = useState('');
   const [sliderWidth, setSliderWidth] = useState(300);
   const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null);
 
   const MIN_PRICE = 0;
   const MAX_PRICE = 10000;
+
+  // Filter categories based on search text
+  const filteredCategories = useMemo(() => {
+    if (!categorySearchText.trim()) {
+      return categories;
+    }
+    const searchLower = categorySearchText.toLowerCase().trim();
+    return categories.filter(cat => 
+      cat.toLowerCase().includes(searchLower)
+    );
+  }, [categories, categorySearchText]);
 
   const createPanResponder = (thumbType: 'min' | 'max') => {
     return PanResponder.create({
@@ -115,14 +128,19 @@ export default function FilterModal({
             <Text style={styles.sectionTitle}>Categories</Text>
             <TouchableOpacity
               style={styles.categorySelector}
-              onPress={() => setCategoryDropdownVisible(!categoryDropdownVisible)}
+              onPress={() => {
+                setCategoryDropdownVisible(!categoryDropdownVisible);
+                if (!categoryDropdownVisible) {
+                  setCategorySearchText(''); // Clear search when opening
+                }
+              }}
               disabled={categoriesLoading}
             >
               <Text style={styles.categorySelectorText}>
                 {categoriesLoading ? 'Loading categories...' : selectedCategory}
               </Text>
               <MaterialCommunityIcons 
-                name="chevron-down"
+                name={categoryDropdownVisible ? "chevron-up" : "chevron-down"}
                 size={20} 
                 color="#666" 
               />
@@ -130,30 +148,63 @@ export default function FilterModal({
             
             {categoryDropdownVisible && !categoriesLoading && (
               <View style={styles.categoryDropdown}>
-                {categories.map((cat, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.categoryOption,
-                      selectedCategory === cat && styles.categoryOptionSelected,
-                      index === categories.length - 1 && { borderBottomWidth: 0 }
-                    ]}
-                    onPress={() => {
-                      onCategoryChange(cat);
-                      setCategoryDropdownVisible(false);
-                    }}
-                  >
-                    <Text style={[
-                      styles.categoryOptionText,
-                      selectedCategory === cat && styles.categoryOptionTextSelected
-                    ]}>
-                      {cat}
-                    </Text>
-                    {selectedCategory === cat && (
-                      <Ionicons name="checkmark" size={20} color="#007bff" />
-                    )}
-                  </TouchableOpacity>
-                ))}
+                {/* Search Input */}
+                <View style={styles.categorySearchContainer}>
+                  <Ionicons name="search-outline" size={18} color="#999" style={styles.searchIcon} />
+                  <TextInput
+                    style={styles.categorySearchInput}
+                    placeholder="Search categories..."
+                    placeholderTextColor="#999"
+                    value={categorySearchText}
+                    onChangeText={setCategorySearchText}
+                    autoFocus={false}
+                  />
+                  {categorySearchText.length > 0 && (
+                    <TouchableOpacity 
+                      onPress={() => setCategorySearchText('')}
+                      style={styles.clearSearchIcon}
+                    >
+                      <Ionicons name="close-circle" size={18} color="#999" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* Category List */}
+                <ScrollView style={styles.categoryList} nestedScrollEnabled>
+                  {filteredCategories.length > 0 ? (
+                    filteredCategories.map((cat, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={[
+                          styles.categoryOption,
+                          selectedCategory === cat && styles.categoryOptionSelected,
+                          index === filteredCategories.length - 1 && { borderBottomWidth: 0 }
+                        ]}
+                        onPress={() => {
+                          onCategoryChange(cat);
+                          setCategoryDropdownVisible(false);
+                          setCategorySearchText('');
+                        }}
+                      >
+                        <Text style={[
+                          styles.categoryOptionText,
+                          selectedCategory === cat && styles.categoryOptionTextSelected
+                        ]}>
+                          {cat}
+                        </Text>
+                        {selectedCategory === cat && (
+                          <Ionicons name="checkmark" size={20} color="#007bff" />
+                        )}
+                      </TouchableOpacity>
+                    ))
+                  ) : (
+                    <View style={styles.noResultsContainer}>
+                      <Ionicons name="search-outline" size={32} color="#ccc" />
+                      <Text style={styles.noResultsText}>No categories found</Text>
+                      <Text style={styles.noResultsSubtext}>Try a different search term</Text>
+                    </View>
+                  )}
+                </ScrollView>
               </View>
             )}
             
@@ -325,13 +376,38 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     marginTop: 4,
-    maxHeight: 200,
+    maxHeight: 300,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     zIndex: 1000,
+    overflow: 'hidden',
+  },
+  categorySearchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e5e5',
+    backgroundColor: '#fafafa',
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  categorySearchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#333',
+    paddingVertical: 4,
+  },
+  clearSearchIcon: {
+    padding: 4,
+  },
+  categoryList: {
+    maxHeight: 250,
   },
   categoryOption: {
     flexDirection: 'row',
@@ -353,6 +429,23 @@ const styles = StyleSheet.create({
   categoryOptionTextSelected: {
     color: '#007bff',
     fontWeight: '600',
+  },
+  noResultsContainer: {
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noResultsText: {
+    fontSize: 16,
+    color: '#666',
+    fontWeight: '500',
+    marginTop: 12,
+  },
+  noResultsSubtext: {
+    fontSize: 14,
+    color: '#999',
+    marginTop: 4,
   },
   categoryErrorText: {
     fontSize: 12,
@@ -491,9 +584,11 @@ const styles = StyleSheet.create({
   filterFooter: {
     flexDirection: 'row',
     padding: 16,
+    paddingBottom: 52,
     gap: 12,
     borderTopWidth: 1,
     borderTopColor: '#eee',
+    backgroundColor: '#fff',
   },
   resetButton: {
     flex: 1,
