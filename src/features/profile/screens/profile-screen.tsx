@@ -15,6 +15,12 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+// Import rating components
+import { useUserRating } from '../hooks';
+import { GetMoreReviewsSection } from './user-profile/components/GetMoreReviewsSection';
+import { OverallRatingSection } from './user-profile/components/OverallRatingSection';
+import { ReviewsList } from './user-profile/components/ReviewsList';
+
 
 import AccountInformation from './accountinformation';
 import IDVerificationScreen from './id-verification-screen';
@@ -44,6 +50,16 @@ export default function AccountScreen() {
   const { data: userProfileData, isLoading: isLoadingProfile, error: profileError, refetch } = useGetUserProfile();
   const { mutate: uploadAvatar, isPending: isUploadingAvatar } = useUploadUserAvatar();
   const { user: authUser, isAuthenticated, token } = useAuthStore();
+
+  // **Get rating data for the current user**
+  const userId = authUser?._id || authUser?.id || '';
+  const {
+    ratingData,
+    loading: ratingLoading,
+    error: ratingError,
+    loadMoreReviews,
+    refreshRatings,
+  } = useUserRating(userId);
 
   // 🔄 **Force profile refetch when user changes**
   React.useEffect(() => {
@@ -427,7 +443,7 @@ export default function AccountScreen() {
               source={{ 
                 uri: selectedImageUri || // Show selected image first (highest priority)
                      (!avatarLoadFailed && (userData?.avatar || userData?.profilePicture)) || // Only try S3 if not failed
-                     `https://ui-avatars.com/api/?name=${userData?.firstName || 'U'}+${userData?.lastName || 'U'}&background=0052A2&color=fff&size=120`
+                     `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.firstName || 'U')}+${encodeURIComponent(userData?.lastName || 'U')}&background=0052A2&color=fff&size=120`
               }}
               style={styles.profileImage}
               onError={(error) => {
@@ -436,7 +452,7 @@ export default function AccountScreen() {
                 console.log("🖼️ Failed to load avatar URL:", currentUri);
                 
                 // If it's an S3 URL that failed, mark avatar as failed
-                if (currentUri && !selectedImageUri) { // Only mark failed if not showing selected image
+                if (currentUri && !selectedImageUri && !avatarLoadFailed) { // Only mark failed once
                   console.log("🚫 Marking avatar as failed, will show initials");
                   setAvatarLoadFailed(true);
                 }
@@ -505,6 +521,45 @@ export default function AccountScreen() {
           <Ionicons name="create-outline" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
+
+      {/* Rating and Reviews Section */}
+      {userId && (
+        <View style={styles.ratingSection}>
+          {ratingLoading && !ratingData ? (
+            <View style={styles.ratingLoadingContainer}>
+              <ActivityIndicator size="small" color="#0052A2" />
+              <Text style={styles.ratingLoadingText}>Loading ratings...</Text>
+            </View>
+          ) : ratingData ? (
+            <>
+              <OverallRatingSection
+                averageRating={ratingData?.stats?.overall_rating || 0}
+                totalReviews={ratingData?.stats?.total_reviews || 0}
+                ratingDistribution={ratingData?.stats?.rating_distribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
+                completionRate={ratingData?.stats?.completion_rate || 0}
+                totalTasks={ratingData?.stats?.total_completed_tasks || 0}
+              />
+              
+              <GetMoreReviewsSection 
+                userId={userId}
+              />
+              
+              <ReviewsList
+                reviews={ratingData?.reviews || []}
+                loading={ratingLoading}
+                onLoadMore={loadMoreReviews}
+                hasMore={ratingData?.pagination?.has_next || false}
+              />
+            </>
+          ) : (
+            <View style={styles.noRatingContainer}>
+              <Ionicons name="star-outline" size={48} color="#ccc" />
+              <Text style={styles.noRatingText}>No ratings yet</Text>
+              <Text style={styles.noRatingSubtext}>Complete tasks to start building your reputation</Text>
+            </View>
+          )}
+        </View>
+      )}
 
       {/* Settings List */}
       <View style={styles.card}>
@@ -863,6 +918,39 @@ const styles = StyleSheet.create({
     top: 50,
     right: 20,
     padding: 8,
+  },
+  ratingSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  ratingLoadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  ratingLoadingText: {
+    marginLeft: 12,
+    fontSize: 14,
+    color: '#666',
+  },
+  noRatingContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  noRatingText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#666',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  noRatingSubtext: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   card: {
     paddingHorizontal: 20,

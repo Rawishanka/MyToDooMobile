@@ -546,9 +546,9 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         <View style={styles.budgetInfo}>
           <Text style={styles.budgetAmount}>
             {(() => {
-              const budget = task.budget || 56;
+              const budget = task.budget;
               const currencyInfo = getCurrencyFromLocation(task.location);
-              return formatCurrency(budget, currencyInfo);
+              return budget ? formatCurrency(budget, currencyInfo) : `${currencyInfo.symbol}0`;
             })()}
           </Text>
           <Text style={styles.budgetLabel}>Budget</Text>

@@ -1,5 +1,6 @@
 import { CreateTaskRequest } from '@/src/api/types/tasks';
 import { useCreateTask, usePostTaskWithImages } from '@/src/shared/hooks/useTaskApi';
+import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -164,7 +165,16 @@ export default function PostTaskScreen() {
 
   const formatBudget = () => {
     if (myTask.budget) {
-      return `AUD${myTask.budget}`;
+      // Handle different task types for location
+      let address = '';
+      if (!myTask.isRemoval && myTask.location) {
+        address = myTask.location;
+      } else if (myTask.isRemoval && myTask.pickupLocation) {
+        address = myTask.pickupLocation;
+      }
+      
+      const currencyInfo = getCurrencyFromLocation({ address });
+      return formatCurrency(myTask.budget, currencyInfo);
     }
     return 'Not set';
   };

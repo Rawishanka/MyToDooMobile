@@ -1,3 +1,4 @@
+import { formatNumber } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -43,7 +44,7 @@ export const BudgetKeypad: React.FC<BudgetKeypadProps> = ({ budget, onKeyPress }
           styles.budgetText, 
           budget && Number(budget) < 20 && Number(budget) > 0 && styles.invalidBudgetText
         ]}>
-          {budget || '0'}
+          {budget ? formatNumber(Number(budget)) : '0'}
         </Text>
       </View>
       
