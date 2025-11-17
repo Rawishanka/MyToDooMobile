@@ -7,10 +7,10 @@ import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'r
 
 // Components
 import {
-    LoadingState,
-    MyTasksHeader,
-    SearchModal,
-    TaskCard,
+  LoadingState,
+  MyTasksHeader,
+  SearchModal,
+  TaskCard,
 } from './components';
 
 // Notification Modal
@@ -365,16 +365,41 @@ export default function MyTasksScreen() {
         offer.task?.status === 'overdue'
       ).map((offer: any) => offer.task).filter(Boolean);
       
-      const cancelledTasks = allOffers.filter((offer: any) => 
+      // Cancelled Tasks: Combine tasks from offers and all tasks that are cancelled
+      const cancelledTasksFromOffers = allOffers.filter((offer: any) => 
         offer.task?.status === 'cancelled'
       ).map((offer: any) => offer.task).filter(Boolean);
+      
+      const cancelledTasksFromAll = allTasks.filter((task: Task) => 
+        task.status === 'cancelled'
+      );
+      
+      // Merge and deduplicate cancelled tasks by _id
+      const allCancelledTasks = [...cancelledTasksFromOffers, ...cancelledTasksFromAll];
+      const uniqueCancelledTasks = Array.from(
+        new Map(allCancelledTasks.map(task => [task._id, task])).values()
+      );
+      
+      const sortedCancelledTasks = sortByCreatedDate(uniqueCancelledTasks);
+      
+      // Use real cancelled tasks if available, otherwise use dummy data
+      const finalCancelledTasks = sortedCancelledTasks.length > 0 
+        ? sortedCancelledTasks 
+        : dummyCancelledTasks;
+      
+      console.log('📋 Tasker Cancelled Tasks:', {
+        fromOffers: cancelledTasksFromOffers.length,
+        fromAllTasks: cancelledTasksFromAll.length,
+        uniqueTotal: uniqueCancelledTasks.length,
+        finalCount: finalCancelledTasks.length
+      });
       
       return {
         openTasks,
         todoTasks,
         completedTasks,
         overdueTasks,
-        cancelledTasks: cancelledTasks.length > 0 ? cancelledTasks : dummyCancelledTasks,
+        cancelledTasks: finalCancelledTasks,
         postedTasks: [],
         acceptedTasks: [],
       };

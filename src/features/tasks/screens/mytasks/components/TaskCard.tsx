@@ -1,5 +1,5 @@
 import { Task } from '@/src/api/types/tasks';
-import { useAcceptOffer, useDeleteTask } from '@/src/shared/hooks/useTaskApi';
+import { useAcceptOffer, useCancelTask, useDeleteTask } from '@/src/shared/hooks/useTaskApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
@@ -37,6 +37,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   // API hooks
   const deleteTaskMutation = useDeleteTask();
+  const cancelTaskMutation = useCancelTask();
   const acceptOfferMutation = useAcceptOffer();
 
   // Debouncing helper function to prevent multiple rapid clicks
@@ -174,47 +175,74 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   const handleConfirmPosterCancel = async () => {
     if (selectedCancelReason === null) {
-      return; // Don't proceed without a reason
+      Alert.alert('Reason Required', 'Please select a reason for cancelling this task.');
+      return;
+    }
+    
+    if (cancelTaskMutation.isPending || isProcessing) {
+      console.log('🛡️ Cancel operation already in progress');
+      return;
     }
     
     try {
+      setIsProcessing(true);
       const reasonText = cancelReasons[selectedCancelReason];
       console.log('❌ Poster cancelling task:', task._id);
       console.log('   Reason:', reasonText);
+      console.log('   Reason Index:', selectedCancelReason);
       
-      // TODO: Replace with actual API call
-      // const response = await fetch(`/api/tasks/${task._id}/cancel`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`,
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     reason: reasonText,
-      //     reasonIndex: selectedCancelReason,
-      //   }),
-      // });
+      // Call the API to cancel the task
+      await cancelTaskMutation.mutateAsync(task._id);
       
-      // if (response.ok) {
-      //   console.log('✅ Task cancelled successfully');
-      //   // Task will move to cancelled tab
-      //   if (onTaskCancelled) {
-      //     onTaskCancelled(task._id);
-      //   }
-      // }
+      console.log('✅ Task cancelled successfully via API');
       
-      // For now, just close modal and notify parent
+      // Close modal and reset state
       setShowPosterCancelModal(false);
       setSelectedCancelReason(null);
       
+      // Notify parent component to refresh task list
       if (onTaskCancelled) {
         onTaskCancelled(task._id);
       }
       
-      console.log('✅ Task cancelled successfully - moved to Cancelled tab');
-    } catch (error) {
+      // Show success message
+      Alert.alert(
+        'Task Cancelled',
+        'Your task has been cancelled successfully and moved to the Cancelled tab.',
+        [{ text: 'OK' }]
+      );
+      
+      console.log('✅ Task moved to Cancelled tab');
+    } catch (error: any) {
       console.error('❌ Error cancelling task:', error);
+      
+      // Close modal on error
+      setShowPosterCancelModal(false);
+      setSelectedCancelReason(null);
+      
       // Show error message to user
+      let errorMessage = 'Failed to cancel task. Please try again.';
+      let errorTitle = 'Cancellation Failed';
+      
+      if (error?.message?.includes('Authentication') || error?.isAuthError || error?.response?.status === 401) {
+        errorMessage = 'Your session has expired. Please login again to cancel this task.';
+        errorTitle = 'Authentication Required';
+      } else if (error?.message?.includes('Network') || error?.code === 'NETWORK_ERROR') {
+        errorMessage = 'Network error. Please check your internet connection and try again.';
+        errorTitle = 'Connection Error';
+      } else if (error?.response?.status === 404) {
+        errorMessage = 'This task was not found. It may have already been cancelled or deleted.';
+        errorTitle = 'Task Not Found';
+      } else if (error?.response?.status === 403) {
+        errorMessage = 'You don\'t have permission to cancel this task.';
+        errorTitle = 'Permission Denied';
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -753,7 +781,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           <View style={styles.offersModalContent}>
             <View style={styles.offersModalHeader}>
               <Text style={styles.offersModalTitle}>
-                Offers for "{task.title}"
+                Offers for &quot;{task.title}&quot;
               </Text>
               <TouchableOpacity 
                 style={styles.offersCloseButton}
