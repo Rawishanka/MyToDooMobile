@@ -1,13 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 // API and Hooks
@@ -20,13 +20,13 @@ import { TaskCard } from '@/src/features/tasks/components';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { LoadingState } from '../../components/shared';
 import {
-    FilterButton,
-    FilterModal,
-    MapView,
-    SearchBar,
-    SortButton,
-    SortModal,
-    ViewModeToggle
+  FilterButton,
+  FilterModal,
+  MapView,
+  SearchBar,
+  SortButton,
+  SortModal,
+  ViewModeToggle
 } from './components';
 
 // Custom Hooks
@@ -54,7 +54,7 @@ export default function BrowseTasksScreen() {
       console.log('📝 Clearing selectedTaskId when switching to list view');
       setSelectedTaskId(null);
     }
-  }, [viewMode]);
+  }, [viewMode, selectedTaskId]);
   
   const router = useRouter();
 
@@ -69,16 +69,20 @@ export default function BrowseTasksScreen() {
     error: categoriesError 
   } = useGetCategoriesWithAll();
   
-  const categories = categoriesWithAll || [
-    'All Categories',
-    'Home & Garden', 
-    'Design & Creative',
-    'Technology',
-    'Cleaning',
-    'Admin & Data',
-    'Business',
-    'Writing & Translation',
-  ];
+  // Memoize categories array to prevent effect dependency issues
+  const categories = useMemo(
+    () => categoriesWithAll || [
+      'All Categories',
+      'Home & Garden', 
+      'Design & Creative',
+      'Technology',
+      'Cleaning',
+      'Admin & Data',
+      'Business',
+      'Writing & Translation',
+    ],
+    [categoriesWithAll]
+  );
 
   // Use combined API-based hook (intelligently uses search OR filter API)
   const {
@@ -130,12 +134,6 @@ export default function BrowseTasksScreen() {
 
   // Debug logging
   useEffect(() => {
-    console.log("🔧 API Configuration Debug:", {
-      useMockOnly: require('@/src/api/config').default.USE_MOCK_ONLY,
-      baseUrl: require('@/src/api/config').default.BASE_URL,
-      currentTime: new Date().toISOString()
-    });
-
     console.log("🏷️ Categories Debug:", {
       categoriesLoading,
       categoriesError: categoriesError?.message,
@@ -154,7 +152,7 @@ export default function BrowseTasksScreen() {
       dataLength: filteredAndSortedTasks.length,
       activeFiltersCount,
     });
-  }, [categoriesLoading, categoriesError, categories, isLoading, error, totalItems, filteredAndSortedTasks.length, activeFiltersCount]);
+  }, [categoriesLoading, categoriesError, categories, isLoading, error, totalItems, filteredAndSortedTasks.length, activeFiltersCount, activeAPI, searchText, useSearchAPI]);
 
   // Refresh on screen focus
   useFocusEffect(
@@ -179,7 +177,7 @@ export default function BrowseTasksScreen() {
         }))
       });
     }
-  }, [viewMode, filteredAndSortedTasks.length]);
+  }, [viewMode, filteredAndSortedTasks]);
 
   // Render task card
   const renderTaskCard = ({ item }: { item: Task }) => (
@@ -245,6 +243,21 @@ export default function BrowseTasksScreen() {
         onClose={() => setSearchVisible(false)}
       />
 
+      {/* Search Results Info */}
+      {searchText.trim().length > 0 && !searchVisible && (
+        <View style={styles.searchResultsInfo}>
+          <Text style={styles.searchResultsText}>
+            {filteredAndSortedTasks.length} result{filteredAndSortedTasks.length !== 1 ? 's' : ''} for &quot;{searchText}&quot;
+          </Text>
+          <TouchableOpacity onPress={() => {
+            setSearchText('');
+            setSearchVisible(false);
+          }}>
+            <Ionicons name="close-circle" size={20} color="#666" />
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Filter & Sort Row */}
       <View style={styles.filterSortRow}>
         <FilterButton 
@@ -309,9 +322,23 @@ export default function BrowseTasksScreen() {
               }}
               ListEmptyComponent={
                 <View style={styles.emptyState}>
+                  <Ionicons name="search-outline" size={64} color="#ccc" style={{ marginBottom: 16 }} />
                   <Text style={styles.emptyText}>
-                    {searchText ? 'No tasks found matching your search' : 'No tasks found matching your criteria'}
+                    {searchText.trim() 
+                      ? `No tasks found matching "${searchText.replace(/"/g, '\\"')}"`
+                      : 'No tasks found matching your criteria'}
                   </Text>
+                  {searchText.trim() && (
+                    <TouchableOpacity 
+                      style={styles.clearSearchButton}
+                      onPress={() => {
+                        setSearchText('');
+                        setSearchVisible(false);
+                      }}
+                    >
+                      <Text style={styles.clearSearchText}>Clear search</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               }
             />
@@ -404,6 +431,22 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
   },
+  searchResultsInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#f0f8ff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e5e5',
+  },
+  searchResultsText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+    flex: 1,
+  },
   filterSortRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -430,6 +473,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+  },
+  clearSearchButton: {
+    marginTop: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: '#007bff',
+    borderRadius: 8,
+  },
+  clearSearchText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   errorContainer: {
     flex: 1,
