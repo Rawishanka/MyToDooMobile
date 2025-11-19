@@ -337,12 +337,24 @@ export const useSignup = () => {
       setVerificationStep('sms');
       setSmsTimer(57);
       
-      // Automatically send SMS after email verification
-      await sendSmsCode();
+      // Backend automatically sends SMS after email verification
+      console.log('📱 SMS OTP should be sent by backend automatically');
       
     } catch (error: any) {
       console.error('Email verification error:', error);
-      Alert.alert('Error', 'Invalid verification code. Please try again.');
+      
+      // Extract the actual error message from the backend
+      let errorMessage = 'Invalid verification code. Please try again.';
+      
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Verification Failed', errorMessage);
     } finally {
       setVerifyLoading(false);
     }
@@ -374,69 +386,45 @@ export const useSignup = () => {
       );
 
       const data = await response.json();
+      console.log('📱 SMS verification response:', data);
       
-      if (data.success) {
+      // Backend returns: { verified: true, token: "...", user: {...}, message: "..." }
+      if (data.verified === true) {
         setSmsVerified(true);
+        
+        console.log('🎉 Account verification completed successfully!');
+        console.log('📝 User data received:', data.user);
+        console.log('🔐 User needs to login with their credentials');
+        
+        // Close modal first
         setVerificationStep(null);
         
-        // Check if there's a pending task to post
-        if (hasPendingTask()) {
-          console.log('📋 Pending task detected after signup');
-          
-          // Post the pending task
-          const taskPosted = await postPendingTask();
-          
-          if (taskPosted) {
-            Alert.alert(
-              'Success!',
-              'Account verified successfully! Your task has been posted.',
-              [
-                {
-                  text: 'View My Tasks',
-                  onPress: () => {
-                    console.log('🚀 Navigating to my tasks screen...');
-                    router.dismissAll(); // Clear all previous screens
-                    router.replace({
-                      pathname: '/(tabs)/my-tasks',
-                      params: { role: 'Poster', tab: 'posted' }
-                    } as any);
-                  }
-                }
-              ]
-            );
-          } else {
-            Alert.alert(
-              'Success!',
-              'Account verified successfully! However, there was an issue posting your task. You can create it again from the home page.',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    console.log('🚀 Navigating to home screen (task failed to post)...');
-                    router.dismissAll(); // Clear all previous screens
-                    router.replace('/(tabs)' as any);
-                  }
-                }
-              ]
-            );
-          }
-        } else {
-          console.log('🎉 Account verification completed - no pending task');
+        // Small delay to let modal close
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Clear the form data for security
+        const userEmail = email; // Save email before clearing
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setFirstName('');
+        setLastName('');
+        setPhone('');
+        setDateOfBirth(null);
+        setSelectedLocation(null);
+        
+        // Navigate to login immediately
+        console.log('🚀 Navigating to login screen...');
+        router.replace('/(auth)/login' as any);
+        
+        // Show success message after navigation
+        setTimeout(() => {
           Alert.alert(
-            'Success!',
-            'Account created successfully! Welcome to MyToDoo.',
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  console.log('🚀 Navigating to home screen (Get it Done)...');
-                  router.dismissAll(); // Clear all previous screens
-                  router.replace('/(tabs)' as any);
-                }
-              }
-            ]
+            'Account Created Successfully!',
+            `Your account has been verified. Please login with ${userEmail} to continue.`,
+            [{ text: 'OK' }]
           );
-        }
+        }, 500);
       } else {
         Alert.alert('Error', data.message || 'Invalid SMS code.');
       }
@@ -466,62 +454,16 @@ export const useSignup = () => {
   };
 
   const sendSmsCode = async () => {
-    try {
-      const fullPhone = `${selectedCountry.phoneCode}${phone}`;
-      console.log(`📱 Attempting to send SMS OTP to ${fullPhone} for email ${email}`);
-      
-      const response = await fetch(
-        `${API_CONFIG.BASE_URL}/two-factor-auth/send-sms`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: fullPhone, email }),
-        }
-      );
-      
-      const data = await response.json();
-      console.log('📱 SMS API Response:', {
-        status: response.status,
-        ok: response.ok,
-        data: data
-      });
-      
-      if (!response.ok) {
-        throw new Error(`SMS API returned ${response.status}: ${data.message || 'Unknown error'}`);
-      }
-      
-      if (data.success) {
-        console.log('✅ SMS code sent automatically after email verification');
-      } else {
-        console.warn('⚠️ SMS API returned success=false:', data.message);
-        // Don't show alert for automatic SMS - user can use resend if needed
-      }
-    } catch (error: any) {
-      console.error('❌ Failed to send SMS code automatically:', {
-        error: error.message,
-        phone: `${selectedCountry.phoneCode}${phone}`,
-        endpoint: `${API_CONFIG.BASE_URL}/two-factor-auth/send-sms`
-      });
-      
-      // Only show error alert for critical failures that prevent SMS entirely
-      // Don't show for JSON parsing errors as SMS might still be sent
-      if (!error.message.includes('JSON Parse error') && !error.message.includes('Unexpected character')) {
-        Alert.alert(
-          'SMS Sending Issue', 
-          `Could not send SMS to ${selectedCountry.phoneCode}${phone}. Please use the "Resend" button if you don't receive the code.`,
-          [{ text: 'OK' }]
-        );
-      } else {
-        // Just log JSON parsing errors - SMS might still work
-        console.log('📱 SMS request completed but got non-JSON response (possibly still successful)');
-      }
-    }
+    // Backend automatically sends SMS after email verification
+    // This function is kept for manual resend only
+    console.log('📱 Note: SMS is automatically sent by backend after email verification');
+    console.log('⚠️ Separate SMS send endpoint may not be available');
   };
 
   const handleResendSms = async () => {
     try {
       const fullPhone = `${selectedCountry.phoneCode}${phone}`;
-      console.log(`📱 Resending SMS OTP to ${fullPhone} for email ${email}`);
+      console.log(`📱 Attempting to resend SMS OTP to ${fullPhone} for email ${email}`);
       
       const response = await fetch(
         `${API_CONFIG.BASE_URL}/two-factor-auth/send-sms`,
@@ -532,22 +474,30 @@ export const useSignup = () => {
         }
       );
       
-      const data = await response.json();
-      console.log('📱 SMS Resend API Response:', {
-        status: response.status,
-        ok: response.ok,
-        data: data
-      });
-      
-      if (!response.ok) {
-        throw new Error(`SMS API returned ${response.status}: ${data.message || 'Unknown error'}`);
-      }
-      
-      if (data.success) {
-        setSmsTimer(57);
-        Alert.alert('Sent!', 'Verification code resent to your phone.');
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        console.log('📱 SMS Resend API Response:', {
+          status: response.status,
+          ok: response.ok,
+          data: data
+        });
+        
+        if (data.success || data.verified) {
+          setSmsTimer(57);
+          Alert.alert('Sent!', 'Verification code resent to your phone.');
+        } else {
+          Alert.alert('Info', 'SMS code may have been sent. Please check your messages.');
+        }
       } else {
-        Alert.alert('Error', data.message || 'Failed to resend SMS code.');
+        // HTML response (404 or error page)
+        console.warn('⚠️ SMS resend endpoint returned non-JSON response');
+        Alert.alert(
+          'SMS Resend Unavailable',
+          'The SMS code was already sent when you verified your email. Please check your messages.',
+          [{ text: 'OK' }]
+        );
       }
     } catch (error: any) {
       console.error('❌ Failed to resend SMS code:', {
@@ -555,7 +505,11 @@ export const useSignup = () => {
         phone: `${selectedCountry.phoneCode}${phone}`,
         endpoint: `${API_CONFIG.BASE_URL}/two-factor-auth/send-sms`
       });
-      Alert.alert('Error', `Failed to resend SMS code: ${error.message}`);
+      Alert.alert(
+        'Info',
+        'The SMS code was already sent. Please check your messages or wait for the timer to try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 

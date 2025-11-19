@@ -5,15 +5,15 @@ import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import React from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { OTPModal } from '../components/OTPModal';
 import { SignupForm } from '../components/SignupForm';
@@ -44,9 +44,10 @@ export default function SignUpScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Fixed Header Section */}
-      <View style={styles.fixedHeader}>
+    <View style={styles.wrapper}>
+      <SafeAreaView style={styles.container}>
+        {/* Fixed Header Section */}
+        <View style={styles.fixedHeader}>
         {!signup.verificationStep && (
           <TouchableOpacity
             style={styles.closeIcon}
@@ -142,14 +143,29 @@ export default function SignUpScreen() {
         handleResendEmail={signup.handleResendEmail}
         handleResendSms={signup.handleResendSms}
       />
-    </SafeAreaView>
+      </SafeAreaView>
+      {/* Bottom Safe Area for System Navigation Bar */}
+      <View style={styles.bottomSafeArea} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  bottomSafeArea: {
+    backgroundColor: '#fff',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: Platform.OS === 'android' ? 48 : 0, // Cover Android navigation bar area
   },
   fixedHeader: {
     backgroundColor: '#fff',
