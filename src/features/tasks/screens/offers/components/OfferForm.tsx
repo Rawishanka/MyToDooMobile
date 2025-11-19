@@ -1,3 +1,4 @@
+import { formatNumber } from '@/src/shared/utils/currency';
 import React from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -30,7 +31,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
 
       <View style={styles.inputContainer}>
         <Text style={styles.inputLabel}>
-          Offer Amount * {budget && `(Budget: ${currencySymbol}${budget})`}
+          Offer Amount * {budget && `(Budget: ${currencySymbol}${formatNumber(budget)})`}
         </Text>
         <View style={[styles.amountInputContainer, validationError ? styles.errorBorder : undefined]}>
           <Text style={styles.currencySymbol}>{currencySymbol}</Text>
@@ -48,7 +49,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
           <Text style={styles.errorText}>{validationError}</Text>
         ) : (
           <Text style={styles.inputHint}>
-            Enter amount up to the task budget ({currencySymbol}{budget || '0'})
+            Enter amount up to the task budget ({currencySymbol}{budget ? formatNumber(budget) : '0'})
           </Text>
         )}
       </View>

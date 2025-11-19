@@ -170,4 +170,94 @@ export class MockApiService {
       data: filteredTasks
     };
   }
+
+  static async filterTasks(params: any): Promise<any> {
+    console.log('📝 Mock API: Filtering tasks', params);
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    let filteredTasks = [...this.mockTasks];
+    
+    // Apply filters
+    if (params.search) {
+      const searchLower = params.search.toLowerCase();
+      filteredTasks = filteredTasks.filter(task => 
+        task.title.toLowerCase().includes(searchLower) ||
+        task.details.toLowerCase().includes(searchLower) ||
+        task.location.address.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    if (params.categories) {
+      const categoryLower = params.categories.toLowerCase();
+      filteredTasks = filteredTasks.filter(task =>
+        task.categories.some((cat: string) => cat.toLowerCase().includes(categoryLower))
+      );
+    }
+    
+    if (params.minBudget !== undefined) {
+      filteredTasks = filteredTasks.filter(task => task.budget >= params.minBudget);
+    }
+    
+    if (params.maxBudget !== undefined) {
+      filteredTasks = filteredTasks.filter(task => task.budget <= params.maxBudget);
+    }
+    
+    if (params.status) {
+      filteredTasks = filteredTasks.filter(task => task.status === params.status);
+    }
+    
+    if (params.locationType) {
+      if (params.locationType === 'Online') {
+        filteredTasks = filteredTasks.filter(task =>
+          task.location.address.toLowerCase().includes('online') ||
+          task.location.address.toLowerCase().includes('remote')
+        );
+      } else if (params.locationType === 'In-person') {
+        filteredTasks = filteredTasks.filter(task =>
+          !task.location.address.toLowerCase().includes('online') &&
+          !task.location.address.toLowerCase().includes('remote')
+        );
+      }
+    }
+    
+    // Apply sorting
+    if (params.sortBy) {
+      switch (params.sortBy) {
+        case 'price-high':
+        case 'highest-budget':
+          filteredTasks.sort((a, b) => b.budget - a.budget);
+          break;
+        case 'price-low':
+        case 'lowest-budget':
+          filteredTasks.sort((a, b) => a.budget - b.budget);
+          break;
+        case 'newest':
+        case 'latest':
+          filteredTasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          break;
+        case 'oldest':
+          filteredTasks.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+          break;
+        default:
+          // Keep original order for latest/recommended
+          break;
+      }
+    }
+    
+    // Return in TaskFilterResponse format
+    return {
+      success: true,
+      data: filteredTasks,
+      pagination: {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: filteredTasks.length,
+        itemsPerPage: filteredTasks.length,
+        hasNextPage: false,
+        hasPreviousPage: false
+      }
+    };
+  }
 }

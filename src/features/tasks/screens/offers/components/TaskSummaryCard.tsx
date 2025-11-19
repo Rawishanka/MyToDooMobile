@@ -1,3 +1,4 @@
+import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -16,6 +17,9 @@ export default function TaskSummaryCard({
   location, 
   budget 
 }: TaskSummaryCardProps) {
+  // Get proper currency formatting
+  const currencyInfo = getCurrencyFromLocation({ address: location });
+  
   return (
     <View style={styles.taskSummary}>
       <Text style={styles.taskTitle}>{title}</Text>
@@ -29,7 +33,7 @@ export default function TaskSummaryCard({
       </Text>
       <View style={styles.budgetContainer}>
         <Text style={styles.budgetLabel}>Budget:</Text>
-        <Text style={styles.budgetAmount}>${budget}</Text>
+        <Text style={styles.budgetAmount}>{formatCurrency(budget, currencyInfo)}</Text>
       </View>
     </View>
   );

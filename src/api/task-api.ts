@@ -10,22 +10,22 @@ import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-  AllOffersResponse,
-  CreateOfferRequest,
-  CreateOfferResponse,
-  CreateTaskRequest,
-  CreateTaskResponse,
-  MyTasksParams,
-  PaymentStatusResponse,
-  SingleTaskResponse,
-  Task,
-  TaskCompletionStatusResponse,
-  TaskFilterParams,
-  TaskFilterResponse,
-  TaskOffersResponse,
-  TaskSearchParams,
-  TasksResponse,
-  UpdateTaskRequest
+    AllOffersResponse,
+    CreateOfferRequest,
+    CreateOfferResponse,
+    CreateTaskRequest,
+    CreateTaskResponse,
+    MyTasksParams,
+    PaymentStatusResponse,
+    SingleTaskResponse,
+    Task,
+    TaskCompletionStatusResponse,
+    TaskFilterParams,
+    TaskFilterResponse,
+    TaskOffersResponse,
+    TaskSearchParams,
+    TasksResponse,
+    UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -930,50 +930,189 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
       searchParams.append('limit', '20');
     }
 
-    const endpoint = `/tasks/filter?${searchParams.toString()}`;
-    console.log("🔗 Filter API endpoint:", endpoint);
+    // Try multiple endpoints to work around backend routing conflicts
+    const endpoints = [
+      `/tasks/filter?${searchParams.toString()}`,      // Primary endpoint
+      `/filter/tasks?${searchParams.toString()}`,      // Alternative routing
+      `/tasks/filter-all?${searchParams.toString()}`,  // Alternative name
+    ];
     
-    const response = await api.get<TaskFilterResponse>(endpoint);
+    // Add search endpoint with correct parameters (search API has different params)
+    const searchParams2 = new URLSearchParams();
+    if (params.search && params.search.trim()) {
+      searchParams2.append('q', params.search.trim());
+    }
+    if (params.categories && params.categories.trim()) {
+      searchParams2.append('category', params.categories.trim());
+    }
+    if (params.minBudget !== undefined) {
+      searchParams2.append('minBudget', params.minBudget.toString());
+    }
+    if (params.maxBudget !== undefined) {
+      searchParams2.append('maxBudget', params.maxBudget.toString());
+    }
+    if (params.locationType) {
+      searchParams2.append('location', params.locationType);
+    }
     
-    if (response.data && response.data.success) {
-      console.log("✅ Filter API succeeded", {
-        totalItems: response.data.pagination.totalItems,
-        currentPage: response.data.pagination.currentPage,
-        totalPages: response.data.pagination.totalPages,
+    endpoints.push(`/tasks/search?${searchParams2.toString()}`); // Search as final fallback
+    
+    let response: any;
+    let lastError: any;
+    
+    for (let i = 0; i < endpoints.length; i++) {
+      try {
+        console.log(`🔗 Trying Filter API endpoint ${i + 1}:`, endpoints[i]);
+        response = await api.get<any>(endpoints[i]);
+        
+        if (response.data && response.data.success) {
+          console.log(`✅ Filter API succeeded with endpoint ${i + 1}:`, {
+            success: response.data.success,
+            hasData: !!response.data.data,
+            dataLength: response.data.data?.length,
+            responseKeys: Object.keys(response.data)
+          });
+          break;
+        } else {
+          console.log(`⚠️ Endpoint ${i + 1} returned unsuccessful response:`, {
+            success: response.data?.success,
+            hasData: !!response.data?.data,
+            responseData: response.data
+          });
+        }
+      } catch (error: any) {
+        console.log(`❌ Endpoint ${i + 1} failed:`, error?.response?.status, error?.message);
+        lastError = error;
+        
+        // If this is the routing conflict error, continue to next endpoint
+        if (error?.response?.status === 500 && 
+            (error?.response?.data?.message?.includes('Cast to ObjectId failed') ||
+             error?.response?.data?.message?.includes('filter'))) {
+          console.warn(`🚨 Detected routing conflict on endpoint ${i + 1}, trying next...`);
+          continue;
+        }
+      }
+    }
+    
+    if (!response || !response.data || !response.data.success) {
+      console.log("❌ All endpoints failed or returned unsuccessful response:", {
+        hasResponse: !!response,
+        hasData: !!response?.data,
+        success: response?.data?.success,
+        lastError: lastError?.message
       });
-      return response.data;
+      throw lastError || new Error('All filter endpoints failed');
+    }
+    
+    // Handle different response formats
+    if (response.data && response.data.success) {
+      // Check if this is a search response (TasksResponse) that needs conversion
+      if ('count' in response.data && 'total' in response.data && !('pagination' in response.data)) {
+        console.log("✅ Search API succeeded, converting to filter format", {
+          totalItems: response.data.total,
+          count: response.data.count,
+          dataLength: response.data.data?.length
+        });
+        
+        // Convert TasksResponse to TaskFilterResponse
+        const filterResponse: TaskFilterResponse = {
+          success: true,
+          data: response.data.data || [],
+          pagination: {
+            currentPage: response.data.currentPage || 1,
+            totalPages: response.data.pages || 1,
+            totalItems: response.data.total || response.data.count || 0,
+            itemsPerPage: response.data.data?.length || 20,
+            hasNextPage: (response.data.currentPage || 1) < (response.data.pages || 1),
+            hasPreviousPage: (response.data.currentPage || 1) > 1
+          }
+        };
+        
+        return filterResponse;
+      } 
+      // This is already a filter response
+      else if ('pagination' in response.data) {
+        console.log("✅ Filter API succeeded", {
+          totalItems: response.data.pagination?.totalItems,
+          currentPage: response.data.pagination?.currentPage,
+          totalPages: response.data.pagination?.totalPages,
+        });
+        return response.data;
+      }
+      // Handle edge case where response format is unexpected
+      else {
+        console.log("✅ API succeeded with unknown format, adapting", {
+          responseKeys: Object.keys(response.data),
+          dataLength: response.data.data?.length
+        });
+        
+        const filterResponse: TaskFilterResponse = {
+          success: true,
+          data: response.data.data || [],
+          pagination: {
+            currentPage: 1,
+            totalPages: 1,
+            totalItems: response.data.data?.length || 0,
+            itemsPerPage: response.data.data?.length || 20,
+            hasNextPage: false,
+            hasPreviousPage: false
+          }
+        };
+        
+        return filterResponse;
+      }
     } else {
-      console.warn("⚠️ Filter API returned unsuccessful response");
-      throw new Error("Filter API returned unsuccessful response");
+      console.warn("⚠️ API returned unsuccessful response");
+      throw new Error("API returned unsuccessful response");
     }
 
-  } catch (error) {
-    console.error("❌ Filter API failed:", error);
+  } catch (error: any) {
+    console.error("❌ Filter API failed:", {
+      message: error?.message,
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data
+    });
     
-    // Fallback to mock data if real API fails
-    try {
-      console.warn("🎭 Network failed - Using Mock API for filterTasks");
-      const mockResponse = await MockApiService.searchTasks(params as any);
-      
-      // Convert TasksResponse to TaskFilterResponse format
-      const filterResponse: TaskFilterResponse = {
-        success: mockResponse.success,
-        data: mockResponse.data,
-        pagination: {
-          currentPage: mockResponse.currentPage,
-          totalPages: mockResponse.pages,
-          totalItems: mockResponse.total,
-          itemsPerPage: mockResponse.data.length,
-          hasNextPage: mockResponse.currentPage < mockResponse.pages,
-          hasPreviousPage: mockResponse.currentPage > 1
-        }
-      };
-      
-      return filterResponse;
-    } catch (mockError) {
-      console.error("❌ Mock API also failed for filterTasks:", mockError);
-      throw mockError;
+    // Check for backend routing conflict (ObjectId casting error)
+    if (error?.response?.status === 500 && 
+        (error?.response?.data?.message?.includes('Cast to ObjectId failed') ||
+         error?.response?.data?.message?.includes('filter'))) {
+      console.error('🚨 BACKEND ROUTING CONFLICT: /tasks/filter is being treated as /tasks/:id');
+      console.error('Backend needs: router.get("/filter", ...) BEFORE router.get("/:id", ...)');
     }
+    
+    // Only fallback to mock if we actually have an error that prevents getting data
+    if (error?.response?.status || error?.message?.includes('failed')) {
+      console.warn("🎭 Using Mock API for filterTasks due to API failure");
+      try {
+        const mockResponse = await MockApiService.filterTasks(params);
+        console.log("✅ Mock API succeeded", {
+          totalItems: mockResponse.pagination?.totalItems,
+          dataLength: mockResponse.data?.length
+        });
+        return mockResponse;
+      } catch (mockError) {
+        console.error("❌ Mock API also failed for filterTasks:", mockError);
+        
+        // Final fallback: return empty successful response
+        return {
+          success: true,
+          data: [],
+          pagination: {
+            currentPage: 1,
+            totalPages: 0,
+            totalItems: 0,
+            itemsPerPage: 0,
+            hasNextPage: false,
+            hasPreviousPage: false
+          }
+        };
+      }
+    }
+    
+    // If we get here, something unexpected happened
+    throw error;
   }
 }
 
