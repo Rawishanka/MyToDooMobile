@@ -528,11 +528,15 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       )}
 
       {/* Date of Birth */}
+      <Text style={styles.label}>
+        Date of Birth <Text style={styles.required}>*</Text>
+      </Text>
       <DatePickerInput
         dateOfBirth={dateOfBirth}
         showDatePicker={showDatePicker}
         onTogglePicker={setShowDatePicker}
         onDateChange={handleDateChange}
+        hasError={!!(touched.dateOfBirth && errors.dateOfBirth)}
       />
       {touched.dateOfBirth && errors.dateOfBirth && (
         <Text style={styles.errorText}>{errors.dateOfBirth}</Text>
