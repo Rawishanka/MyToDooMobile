@@ -1,8 +1,8 @@
 import { Task } from '@/src/api/types/tasks';
 import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
-import { formatCurrency, getCurrencyFromLocation, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { useAcceptOffer, useCancelTask, useCompleteTask, useDeleteTask } from '@/src/shared/hooks/useTaskApi';
+import { formatCurrency, getCurrencyFromLocation, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
@@ -460,13 +460,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   // Helper function to get location type
   const getLocationType = () => {
     const address = task.location?.address || '';
-    if (address.toLowerCase().includes('online') || address.toLowerCase().includes('remote')) {
-      return '💻 Online';
-    }
     if (address.includes(' → ') || address.includes(' to ')) {
       return '🚚 Moving/Delivery';
     }
-    return '📍 In Person';
+    return '📍'; // Just show location pin, location address will be shown separately
   };
 
   // Helper function to format location display
@@ -537,7 +534,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             {/* Location Information */}
             <View style={styles.metaRow}>
               <Text style={styles.locationType}>{getLocationType()}</Text>
-              <Text style={styles.locationDivider}>•</Text>
               <Text style={styles.locationText} numberOfLines={1}>
                 {formatLocation()}
               </Text>

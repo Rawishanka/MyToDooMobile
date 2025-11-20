@@ -138,6 +138,7 @@ export default function TaskDetailScreen() {
               currentUserId={currentUser?._id}
               taskCreatorId={task?.createdBy?._id}
               onRefreshQuestions={refetchQuestions}
+              taskOffers={taskOffers}
             />
           )}
         </View>
