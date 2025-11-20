@@ -31,7 +31,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
 
       <View style={styles.inputContainer}>
         <Text style={styles.inputLabel}>
-          Offer Amount * {budget && `(Budget: ${currencySymbol}${formatNumber(budget)})`}
+          Offer Amount * {budget && `(Budget: ${currencySymbol}${formatNumber(budget, { forceDecimals: true })})`}
         </Text>
         <View style={[styles.amountInputContainer, validationError ? styles.errorBorder : undefined]}>
           <Text style={styles.currencySymbol}>{currencySymbol}</Text>
@@ -49,7 +49,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
           <Text style={styles.errorText}>{validationError}</Text>
         ) : (
           <Text style={styles.inputHint}>
-            Enter amount up to the task budget ({currencySymbol}{budget ? formatNumber(budget) : '0'})
+            Enter amount up to the task budget ({currencySymbol}{budget ? formatNumber(budget, { forceDecimals: true }) : '0.00'})
           </Text>
         )}
       </View>

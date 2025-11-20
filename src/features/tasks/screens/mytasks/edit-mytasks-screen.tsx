@@ -444,7 +444,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     const budgetNumber = parseFloat(validText);
     if (validText && !isNaN(budgetNumber)) {
       if (budgetNumber < minimumBudget) {
-        setBudgetError(`Minimum budget is ${currencySymbol}${formatNumber(minimumBudget)}`);
+        setBudgetError(`Minimum budget is ${currencySymbol}${formatNumber(minimumBudget, { forceDecimals: true })}`);
       } else {
         setBudgetError('');
       }
@@ -469,7 +469,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     const budgetNumber = parseFloat(budget);
     if (budget && !isNaN(budgetNumber)) {
       if (budgetNumber < minimumBudget) {
-        setBudgetError(`Minimum budget is ${currencySymbol}${formatNumber(minimumBudget)}`);
+        setBudgetError(`Minimum budget is ${currencySymbol}${formatNumber(minimumBudget, { forceDecimals: true })}`);
       } else {
         setBudgetError('');
       }
@@ -552,7 +552,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
       if (descriptionLength < 20) missingFields.push('Description (min 20 chars)');
       if (!selectedLocation) missingFields.push('Location');
       if (selectedOption === '') missingFields.push('When');
-      if (!isBudgetValid) missingFields.push(`Budget (min ${currencySymbol}${formatNumber(minimumBudget)})`);
+      if (!isBudgetValid) missingFields.push(`Budget (min ${currencySymbol}${formatNumber(minimumBudget, { forceDecimals: true })})`);
       
       Alert.alert(
         'Incomplete Form',
@@ -562,7 +562,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
         (descriptionLength < 20 ? '• Description must be at least 20 characters\n' : '') +
         (!selectedLocation ? '• Select a location\n' : '') +
         (selectedOption === '' ? '• Select when you need this done\n' : '') +
-        (!isBudgetValid ? `• Budget must be at least ${currencySymbol}${formatNumber(minimumBudget)}` : '')
+        (!isBudgetValid ? `• Budget must be at least ${currencySymbol}${formatNumber(minimumBudget, { forceDecimals: true })}` : '')
       );
       return;
     }

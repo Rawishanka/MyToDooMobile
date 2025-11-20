@@ -303,26 +303,41 @@ export interface TaskActions {
 export interface TaskOffer {
   _id: string;
   taskId: string;
-  taskCreatorId: {
+  taskCreatorId?: {
     _id: string;
     firstName: string;
     lastName: string;
   };
-  taskTakerId: {
+  taskTakerId?: {
     _id: string;
     firstName: string;
     lastName: string;
     rating: number;
   };
-  offer: {
+  // Alternative structure used by the API
+  taskTaker?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    rating: number;
+    avatar?: string;
+    name?: string;
+    completedTasks?: number;
+  };
+  // Nested offer structure
+  offer?: {
     amount: number;
     currency: string;
     message: string;
   };
+  // Direct properties (alternative structure)
+  amount?: number;
+  currency?: string;
+  message?: string;
   status: string;
   createdAt: string;
   updatedAt: string;
-  __v: number;
+  __v?: number;
 }
 
 // 📝 *CREATE TASK REQUEST*
@@ -338,9 +353,9 @@ export interface CreateTaskRequest {
   time: string;
   location: string; // ✅ MUST be string - backend expects location.trim()
   coordinates?: {
-    latitude: number;
-    longitude: number;
-  }; // ✅ Separate coordinates field
+    lat: number;
+    lng: number;
+  }; // ✅ Separate coordinates field - FIXED: Use lat/lng to match backend
   locationType?: 'In-person' | 'Online' | 'Both'; // ✅ Added locationType field
   details: string; // ✅ Backend expects 'details' not 'description'
   budget: number;

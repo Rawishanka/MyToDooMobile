@@ -1,4 +1,5 @@
-import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -17,8 +18,9 @@ export default function TaskSummaryCard({
   location, 
   budget 
 }: TaskSummaryCardProps) {
-  // Get proper currency formatting
-  const currencyInfo = getCurrencyFromLocation({ address: location });
+  // Use user's current location for currency display (auto geo-location)
+  const { countryInfo } = useLocationCountry();
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
   
   return (
     <View style={styles.taskSummary}>

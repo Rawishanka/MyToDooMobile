@@ -1,6 +1,8 @@
 import { Task } from '@/src/api/types/tasks';
-import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useAcceptOffer, useCancelTask, useDeleteTask } from '@/src/shared/hooks/useTaskApi';
+import { formatCurrency, getCurrencyFromLocation, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
@@ -17,10 +19,16 @@ interface TaskCardProps {
 
 export default function TaskCard({ task, onPress, status, userRole, onTaskCancelled, onTaskDeleted }: TaskCardProps) {
   const router = useRouter();
+  
+  // Use current user's location for currency auto-detection
+  const { countryInfo } = useLocationCountry();
+  
   const [showCancellationModal, setShowCancellationModal] = useState(false);
   const [showPosterCancelModal, setShowPosterCancelModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showOffersModal, setShowOffersModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [selectedCancelReason, setSelectedCancelReason] = useState<number | null>(null);
   
   // Debug logging for offer data
@@ -267,39 +275,54 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     setShowCancellationModal(false);
   };
 
-  // Accept Offer functionality
+  // Accept Offer functionality - now integrates with Stripe payment
   const handleAcceptOffer = async (offerId: string, taskerId: string) => {
     try {
       setIsProcessing(true);
-      console.log('✅ Accepting offer:', { taskId: task._id, offerId, taskerId });
-      
-      await acceptOfferMutation.mutateAsync({
-        taskId: task._id,
-        offerId: offerId,
-        userId: taskerId,
-        taskCategory: task.categories?.[0] || 'General'
+      console.log('✅ Preparing to accept offer with payment:', { 
+        taskId: task._id, 
+        offerId, 
+        taskerId,
+        offerExists: !!offerId,
+        taskerExists: !!taskerId 
       });
       
-      console.log('✅ Offer accepted successfully');
-      Alert.alert(
-        'Success!',
-        'Offer accepted successfully. You will be redirected to payment.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              // TODO: Redirect to Stripe payment gateway
-              console.log('🔄 Redirecting to payment...');
-            }
-          }
-        ]
-      );
+      if (!offerId || !taskerId) {
+        throw new Error('Missing offer ID or tasker ID');
+      }
+      
+      // Find the offer details
+      const offer = task.offers?.find(o => o._id === offerId);
+      if (!offer) {
+        throw new Error('Offer not found');
+      }
+      
+      // Set selected offer and show payment modal
+      setSelectedOffer({
+        ...offer,
+        taskId: task._id,
+        taskCategory: task.categories?.[0] || 'General'
+      });
+      setShowPaymentModal(true);
+      
+      console.log('💳 Opening payment modal for offer:', {
+        offerId,
+        amount: offer.amount || offer.offer?.amount,
+        currency: offer.currency || offer.offer?.currency
+      });
+      
     } catch (error) {
-      console.error('❌ Error accepting offer:', error);
-      Alert.alert('Error', 'Failed to accept offer. Please try again.');
+      console.error('❌ Error preparing offer acceptance:', error);
+      Alert.alert('Error', 'Failed to prepare payment. Please try again.');
     } finally {
       setIsProcessing(false);
     }
+  };
+  
+  // Handle payment modal close
+  const handleClosePaymentModal = () => {
+    setShowPaymentModal(false);
+    setSelectedOffer(null);
   };
 
   const handleViewOffers = () => {
@@ -365,10 +388,25 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   };
 
   // Get currency info and format budget with thousand separators
-  const currencyInfo = getCurrencyFromLocation(task.location);
+  // Use user's current location for currency display (auto geo-location feature)
+  const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
+  const taskLocationCurrencyInfo = getCurrencyFromLocation(task.location);
+  
+  // Prioritize user's current location currency for auto geo-location
   const formattedBudgetDisplay = task.formattedBudget || 
-    (task.budget ? formatCurrency(task.budget, currencyInfo) : 
-    `${currencyInfo.symbol}0`);
+    (task.budget ? formatCurrency(task.budget, userCurrencyInfo) : 
+    `${userCurrencyInfo.symbol}0.00`);
+    
+  console.log('💰 TaskCard currency info:', {
+    taskId: task._id.substring(0, 8),
+    userCountry: countryInfo.countryName,
+    userCurrency: userCurrencyInfo.code,
+    userSymbol: userCurrencyInfo.symbol,
+    taskLocation: task.location?.address,
+    taskCurrency: taskLocationCurrencyInfo.code,
+    originalBudget: task.budget,
+    formattedBudget: formattedBudgetDisplay
+  });
 
   return (
     <View style={styles.card} pointerEvents="auto">
@@ -801,38 +839,52 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             <FlatList
               data={task.offers || []}
               keyExtractor={(offer) => offer._id}
-              renderItem={({ item: offer }) => (
+              renderItem={({ item: offer }) => {
+                // Debug logging for offer structure
+                console.log('🔍 [TaskCard] Offer data structure:', {
+                  offerId: offer._id,
+                  taskId: task._id,
+                  taskTitle: task.title,
+                  taskTakerId: offer.taskTakerId, // This might be undefined
+                  taskTaker: offer.taskTaker, // This is the actual user data
+                  offerAmount: offer.amount, // Direct property, not nested
+                  offerCurrency: offer.currency, // Direct property
+                  offerMessage: offer.message, // Direct property
+                  fullOffer: offer
+                });
+                
+                return (
                 <View style={styles.offerItem}>
                   <View style={styles.offerHeader}>
                     <View style={styles.offerUserInfo}>
                       <Image
                         source={{
-                          uri: `https://ui-avatars.com/api/?name=${offer.taskTakerId.firstName}+${offer.taskTakerId.lastName}&background=random`,
+                          uri: `https://ui-avatars.com/api/?name=${offer.taskTaker?.firstName || offer.taskTakerId?.firstName || 'User'}+${offer.taskTaker?.lastName || offer.taskTakerId?.lastName || ''}&background=random`,
                         }}
                         style={styles.offerAvatar}
                       />
                       <View style={styles.offerUserDetails}>
                         <Text style={styles.offerUserName}>
-                          {offer.taskTakerId.firstName} {offer.taskTakerId.lastName}
+                          {offer.taskTaker?.firstName || offer.taskTakerId?.firstName || 'Unknown'} {offer.taskTaker?.lastName || offer.taskTakerId?.lastName || 'User'}
                         </Text>
                         <View style={styles.offerRating}>
                           <MaterialIcons name="star" size={16} color="#ffd700" />
                           <Text style={styles.offerRatingText}>
-                            {offer.taskTakerId.rating?.toFixed(1) || '0.0'}
+                            {offer.taskTaker?.rating?.toFixed(1) || offer.taskTakerId?.rating?.toFixed(1) || '0.0'}
                           </Text>
                         </View>
                       </View>
                     </View>
                     <View style={styles.offerAmount}>
                       <Text style={styles.offerPrice}>
-                        {offer.offer.currency} {offer.offer.amount}
+                        {formatCurrency(offer.amount || offer.offer?.amount || 0, userCurrencyInfo)}
                       </Text>
                     </View>
                   </View>
 
-                  {offer.offer.message && (
+                  {(offer.message || offer.offer?.message) && (
                     <Text style={styles.offerMessage}>
-                      {offer.offer.message}
+                      {offer.message || offer.offer?.message}
                     </Text>
                   )}
 
@@ -840,13 +892,13 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                     <Text style={styles.offerDate}>
                       {new Date(offer.createdAt).toLocaleDateString()}
                     </Text>
-                    {userRole === 'Poster' && offer.status === 'pending' && (
+                    {userRole === 'Poster' && offer.status === 'pending' && (offer.taskTaker?._id || offer.taskTakerId?._id) && (
                       <TouchableOpacity
                         style={[
                           styles.acceptOfferButton,
                           (acceptOfferMutation.isPending || isProcessing) && styles.acceptOfferDisabledButton
                         ]}
-                        onPress={() => handleAcceptOffer(offer._id, offer.taskTakerId._id)}
+                        onPress={() => handleAcceptOffer(offer._id, offer.taskTaker?._id || offer.taskTakerId?._id!)}
                         disabled={acceptOfferMutation.isPending || isProcessing}
                       >
                         {acceptOfferMutation.isPending || isProcessing ? (
@@ -858,13 +910,27 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                     )}
                   </View>
                 </View>
-              )}
+                );
+              }}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.offersListContent}
             />
           </View>
         </View>
       </Modal>
+      
+      {/* Stripe Payment Modal */}
+      <StripePaymentModal
+        visible={showPaymentModal}
+        taskId={task._id}
+        offerId={selectedOffer?._id}
+        offerAmount={selectedOffer?.amount || selectedOffer?.offer?.amount || 0}
+        currency={selectedOffer?.currency || selectedOffer?.offer?.currency || 'USD'}
+        taskTitle={task.title}
+        taskCategory={selectedOffer?.taskCategory}
+        onClose={handleClosePaymentModal}
+        onSuccess={handleClosePaymentModal}
+      />
     </View>
   );
 }

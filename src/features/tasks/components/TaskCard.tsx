@@ -1,13 +1,14 @@
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { cardStyles, colors, spacing } from '@/src/shared/theme';
-import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 // Import Task type
@@ -28,6 +29,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   showMapButton = true,
   variant = 'default',
 }) => {
+  // Use current user's location for currency auto-detection
+  const { countryInfo } = useLocationCountry();
+  
   // Helper: Get location type with icon
   const getLocationInfo = () => {
     const address = task.location?.address || '';
@@ -64,11 +68,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   const locationInfo = getLocationInfo();
   
-  // Get proper currency formatting with thousand separators
-  const currencyInfo = getCurrencyFromLocation(task.location);
+  // Use user's current location currency for auto geo-location feature
+  const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
   const formattedBudget = task.formattedBudget || 
-    (task.budget ? formatCurrency(task.budget, currencyInfo) : 
-    `${currencyInfo.symbol}0`);
+    (task.budget ? formatCurrency(task.budget, userCurrencyInfo) : 
+    `${userCurrencyInfo.symbol}0.00`);
 
   // Compact variant (for lists with many items)
   if (variant === 'compact') {

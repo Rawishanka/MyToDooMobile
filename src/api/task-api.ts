@@ -10,22 +10,22 @@ import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-    AllOffersResponse,
-    CreateOfferRequest,
-    CreateOfferResponse,
-    CreateTaskRequest,
-    CreateTaskResponse,
-    MyTasksParams,
-    PaymentStatusResponse,
-    SingleTaskResponse,
-    Task,
-    TaskCompletionStatusResponse,
-    TaskFilterParams,
-    TaskFilterResponse,
-    TaskOffersResponse,
-    TaskSearchParams,
-    TasksResponse,
-    UpdateTaskRequest
+  AllOffersResponse,
+  CreateOfferRequest,
+  CreateOfferResponse,
+  CreateTaskRequest,
+  CreateTaskResponse,
+  MyTasksParams,
+  PaymentStatusResponse,
+  SingleTaskResponse,
+  Task,
+  TaskCompletionStatusResponse,
+  TaskFilterParams,
+  TaskFilterResponse,
+  TaskOffersResponse,
+  TaskSearchParams,
+  TasksResponse,
+  UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -523,6 +523,20 @@ export async function createTask(taskData: CreateTaskRequest): Promise<CreateTas
 export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris: string[] = []): Promise<CreateTaskResponse> {
   const api = getApi();
   try {
+    console.log("🚀 === POST TASK WITH IMAGES FUNCTION STARTED ===");
+    console.log("📤 postTaskWithImages called with:");
+    console.log("📤 taskData:", JSON.stringify(taskData, null, 2));
+    console.log("📤 imageUris parameter:", JSON.stringify(imageUris, null, 2));
+    console.log("📤 imageUris.length:", imageUris.length);
+    console.log("📤 imageUris type:", typeof imageUris);
+    console.log("📤 imageUris isArray:", Array.isArray(imageUris));
+    
+    if (imageUris.length > 0) {
+      console.log("📤 Processing images - starting conversion to base64...");
+    } else {
+      console.log("📤 No images to process - imageUris is empty or undefined");
+    }
+    
     console.log("📤 Posting task with images:", imageUris.length);
 
     if (imageUris.length > 0) {
@@ -566,7 +580,18 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
           }
 
           // Create data URI with binary data
-          return `data:${mimeType};base64,${base64Data}`;
+          const dataUri = `data:${mimeType};base64,${base64Data}`;
+          
+          console.log(`🖼️ Image ${i + 1} conversion successful:`, {
+            filename,
+            mimeType,
+            originalFileSize: fileInfo.size,
+            base64DataLength: base64Data.length,
+            dataUriLength: dataUri.length,
+            dataUriPreview: `${dataUri.substring(0, 100)}...`
+          });
+          
+          return dataUri;
         } catch (fileError) {
           console.error(`❌ Failed to read image ${i + 1}:`, fileError);
           throw new Error(`Failed to read image ${filename}: ${fileError}`);
@@ -576,6 +601,30 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
       // Wait for all images to be processed in parallel
       const binaryImages = await Promise.all(imagePromises);
       console.log(`✅ Converted ${binaryImages.length} images to base64`);
+      
+      // VALIDATE ALL IMAGES BEFORE SENDING
+      console.log("🔍 Validating converted images...");
+      binaryImages.forEach((img, index) => {
+        const isValidDataUri = img.startsWith('data:image/') && img.includes(';base64,');
+        const base64Part = img.split(';base64,')[1];
+        const isValidBase64 = base64Part && base64Part.length > 0;
+        
+        console.log(`🔍 Image ${index + 1} validation:`, {
+          isValidDataUri,
+          isValidBase64,
+          length: img.length,
+          mimeType: img.split(';')[0],
+          base64Length: base64Part?.length || 0
+        });
+        
+        if (!isValidDataUri || !isValidBase64) {
+          console.error(`❌ Image ${index + 1} is INVALID!`, {
+            preview: img.substring(0, 100),
+            hasDataPrefix: img.startsWith('data:'),
+            hasBase64Marker: img.includes(';base64,')
+          });
+        }
+      });
       
       const imageSizes = binaryImages.map(img => img.length / 1024);
       const totalSizeKB = imageSizes.reduce((sum, size) => sum + size, 0);
@@ -590,7 +639,7 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
         console.warn(`⚠️ Consider implementing image compression before upload`);
       }
 
-      // Create enhanced task data with binary images in JSON
+      // Create enhanced task data with binary images in JSON - EXACTLY like the required format
       const taskDataWithImages = {
         ...taskData,
         images: binaryImages
@@ -602,10 +651,34 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
         firstImagePreview: taskDataWithImages.images?.[0]?.substring(0, 100),
         imagesSizes: taskDataWithImages.images?.map((img: string) => `${(img.length / 1024).toFixed(2)}KB`)
       });
-      console.log(`📤 FULL REQUEST BODY:`, JSON.stringify({
-        ...taskDataWithImages,
-        images: taskDataWithImages.images?.map((img: string) => `${img.substring(0, 60)}... (${img.length} chars)`)
-      }, null, 2));
+      console.log(`📤 FULL REQUEST BODY STRUCTURE:`, {
+        title: taskDataWithImages.title,
+        category: taskDataWithImages.category,
+        details: taskDataWithImages.details,
+        budget: taskDataWithImages.budget,
+        currency: taskDataWithImages.currency,
+        dateType: taskDataWithImages.dateType,
+        date: taskDataWithImages.date,
+        time: taskDataWithImages.time,
+        locationType: taskDataWithImages.locationType,
+        location: taskDataWithImages.location,
+        coordinates: taskDataWithImages.coordinates,
+        imagesCount: taskDataWithImages.images?.length,
+        imagesPreview: taskDataWithImages.images?.map((img: string) => `${img.substring(0, 50)}...`)
+      });
+      
+      // 🚨 LOG THE COMPLETE REQUEST BODY FOR DEBUGGING
+      console.log("🚨 === COMPLETE REQUEST BODY BEING SENT TO BACKEND ===");
+      console.log("🚨 Request URL: POST /tasks");
+      console.log("🚨 Request Headers:", {
+        'Content-Type': 'application/json'
+      });
+      console.log("🚨 Request Body Size:", JSON.stringify(taskDataWithImages).length, "characters");
+      console.log("🚨 Request Body Size:", (JSON.stringify(taskDataWithImages).length / 1024).toFixed(2), "KB");
+      console.log("🚨 Request Body Size:", (JSON.stringify(taskDataWithImages).length / 1024 / 1024).toFixed(2), "MB");
+      console.log("🚨 FULL REQUEST BODY (COMPLETE):");
+      console.log(JSON.stringify(taskDataWithImages, null, 2));
+      console.log("🚨 === END OF REQUEST BODY ===");
       
       const response = await api.post('/tasks', taskDataWithImages, {
         headers: {
@@ -613,15 +686,24 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
         },
       });
       console.log("✅ Task posted successfully - Backend response:");
-      console.log("📦 Response data:", JSON.stringify(response.data, null, 2));
+      console.log("📦 Response status:", response.status);
+      console.log("📦 Response headers:", response.headers);
+      console.log("📦 Response data (FULL):", JSON.stringify(response.data, null, 2));
       console.log("🖼️ Images in response:", response.data?.data?.images?.length || 0);
       
       // CRITICAL CHECK: Did backend save the images?
       if (binaryImages.length > 0 && (!response.data?.data?.images || response.data.data.images.length === 0)) {
         console.error("🚨 🚨 🚨 CRITICAL: IMAGES WERE SENT BUT NOT SAVED BY BACKEND! 🚨 🚨 🚨");
-        console.error("🚨 Sent:", binaryImages.length, "images");
-        console.error("🚨 Backend saved:", response.data?.data?.images?.length || 0, "images");
-        console.error("🚨 This is a BACKEND ISSUE - images are being received but not saved to database!");
+        console.error("🚨 Sent images count:", binaryImages.length);
+        console.error("🚨 Backend saved images count:", response.data?.data?.images?.length || 0);
+        console.error("🚨 Full backend response data:", JSON.stringify(response.data, null, 2));
+        console.error("🚨 This indicates a BACKEND ISSUE - images are being received but not saved to database!");
+        console.error("🚨 Check backend logs for image processing errors!");
+      } else if (binaryImages.length > 0 && response.data?.data?.images && response.data.data.images.length > 0) {
+        console.log("✅ SUCCESS: Images were properly saved by backend!");
+        console.log("✅ Sent:", binaryImages.length, "images");
+        console.log("✅ Backend saved:", response.data.data.images.length, "images");
+        console.log("✅ Backend image URLs:", response.data.data.images);
       }
       
       return response.data;
@@ -633,6 +715,18 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
     }
   } catch (error: any) {
     console.error("❌ Task posting failed:", error?.response?.status);
+    console.error("❌ Error details:", {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      message: error?.message,
+      config: {
+        url: error?.config?.url,
+        method: error?.config?.method,
+        headers: error?.config?.headers,
+        dataLength: error?.config?.data?.length
+      }
+    });
     
     // Check for authentication errors with special handling
     if (error?.response?.status === 401) {
@@ -645,12 +739,20 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
     // Check for validation errors  
     if (error?.response?.status === 400) {
       const errorMessage = error?.response?.data?.message || error?.response?.data?.error || "Invalid task data";
+      console.error("❌ Backend validation error:", errorMessage);
       throw new Error(`Validation Error: ${errorMessage}`);
     }
     
     // Check for file upload errors
     if (error?.response?.status === 413) {
+      console.error("❌ Payload too large error - images are too big");
       throw new Error("Images are too large. Please reduce image size and try again.");
+    }
+    
+    // Check for server errors that might indicate image processing issues
+    if (error?.response?.status >= 500) {
+      console.error("❌ Server error - might be related to image processing");
+      console.error("❌ This could indicate backend issues with image handling");
     }
     
     throw error;
@@ -713,6 +815,104 @@ export async function postTask(taskData: CreateTaskRequest): Promise<CreateTaskR
     }
     
     console.error("❌ Task posting failed:", error);
+    throw error;
+  }
+}
+
+/**
+ * ⭐ Post Task with Direct Format (Matches Backend JSON exactly)
+ * Endpoint: POST /api/tasks/
+ * Auth: Required - Sends task data in the exact format backend expects
+ */
+export async function postTaskDirect(taskDataWithImages: CreateTaskRequest): Promise<CreateTaskResponse> {
+  const api = getApi();
+  try {
+    console.log("🚀 === POST TASK DIRECT (EXACT BACKEND FORMAT) ===");
+    console.log("📦 postTaskDirect called with task data:");
+    console.log("📦 Request Body Size:", JSON.stringify(taskDataWithImages).length, "characters");
+    console.log("📦 Request Body Size:", (JSON.stringify(taskDataWithImages).length / 1024).toFixed(2), "KB");
+    console.log("📦 Images included:", taskDataWithImages.images?.length || 0);
+    
+    if (taskDataWithImages.images && taskDataWithImages.images.length > 0) {
+      console.log("🔍 Validating images in task data...");
+      taskDataWithImages.images.forEach((img, index) => {
+        const isValidDataUri = img.startsWith('data:image/') && img.includes(';base64,');
+        const base64Part = img.split(';base64,')[1];
+        const isValidBase64 = base64Part && base64Part.length > 0;
+        
+        console.log(`🔍 Image ${index + 1} validation:`, {
+          isValidDataUri,
+          isValidBase64,
+          length: img.length,
+          mimeType: img.split(';')[0],
+        });
+      });
+    }
+    
+    // 🚨 LOG THE COMPLETE REQUEST BODY FOR DEBUGGING
+    console.log("🚨 === COMPLETE REQUEST BODY (DIRECT FORMAT) ===");
+    console.log("🚨 Request URL: POST /tasks");
+    console.log("🚨 Request Headers:", {
+      'Content-Type': 'application/json'
+    });
+    console.log("🚨 FULL REQUEST BODY (COMPLETE):");
+    console.log(JSON.stringify(taskDataWithImages, null, 2));
+    console.log("🚨 === END OF REQUEST BODY ===");
+    
+    const response = await api.post('/tasks', taskDataWithImages, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    console.log("✅ Task posted successfully (DIRECT) - Backend response:");
+    console.log("📦 Response status:", response.status);
+    console.log("📦 Response data (FULL):", JSON.stringify(response.data, null, 2));
+    console.log("🖼️ Images in response:", response.data?.data?.images?.length || 0);
+    
+    // CRITICAL CHECK: Did backend save the images?
+    if (taskDataWithImages.images && taskDataWithImages.images.length > 0 && (!response.data?.data?.images || response.data.data.images.length === 0)) {
+      console.error("🚨 🚨 🚨 CRITICAL: IMAGES WERE SENT BUT NOT SAVED BY BACKEND! 🚨 🚨 🚨");
+      console.error("🚨 Sent images count:", taskDataWithImages.images.length);
+      console.error("🚨 Backend saved images count:", response.data?.data?.images?.length || 0);
+      console.error("🚨 This indicates a BACKEND ISSUE - images are being received but not processed correctly!");
+    } else if (taskDataWithImages.images && taskDataWithImages.images.length > 0 && response.data?.data?.images && response.data.data.images.length > 0) {
+      console.log("✅ SUCCESS: Images were properly saved by backend!");
+      console.log("✅ Sent:", taskDataWithImages.images.length, "images");
+      console.log("✅ Backend saved:", response.data.data.images.length, "images");
+    }
+    
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Task posting failed (DIRECT):", error?.response?.status);
+    console.error("❌ Error details:", {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      message: error?.message,
+    });
+    
+    // Check for authentication errors with special handling
+    if (error?.response?.status === 401) {
+      if (error.isAuthError) {
+        throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      }
+      throw error;
+    }
+    
+    // Check for validation errors  
+    if (error?.response?.status === 400) {
+      const errorMessage = error?.response?.data?.message || error?.response?.data?.error || "Invalid task data";
+      console.error("❌ Backend validation error:", errorMessage);
+      throw new Error(`Validation Error: ${errorMessage}`);
+    }
+    
+    // Check for file upload errors
+    if (error?.response?.status === 413) {
+      console.error("❌ Payload too large error - images are too big");
+      throw new Error("Images are too large. Please reduce image size and try again.");
+    }
+    
     throw error;
   }
 }
@@ -1269,21 +1469,98 @@ export async function getTaskById(taskId: string): Promise<SingleTaskResponse> {
     console.log("📖 Fetching task details for ID:", taskId);
     const response = await api.get(`/tasks/${taskId}`);
     console.log("✅ Get task details success");
-    console.log("� FULL TASK RESPONSE:", JSON.stringify(response.data, null, 2));
-    console.log("�🖼️ Images in task response:", response.data?.data?.images?.length || 0);
     
-    if (!response.data?.data?.images || response.data.data.images.length === 0) {
-      console.error("❌ ❌ ❌ CRITICAL: Backend returned NO IMAGES! ❌ ❌ ❌");
-      console.error("❌ This means images were not saved to database during task creation");
-      console.error("❌ Check backend logs to see if images were received and saved");
+    // Enhanced logging for image debugging
+    const taskData = response.data?.data;
+    console.log("🔍 === TASK FETCH IMAGE DEBUG ===");
+    console.log("🔍 Response status:", response.status);
+    console.log("🔍 Response has data:", !!response.data);
+    console.log("🔍 Response.data has data:", !!response.data?.data);
+    console.log("🔍 Task ID:", taskId);
+    console.log("🔍 Task title:", taskData?.title || 'No title');
+    console.log("🔍 Task created at:", taskData?.createdAt || 'No date');
+    console.log("🔍 TASK DATA STRUCTURE:", {
+      hasData: !!taskData,
+      hasImages: !!taskData?.images,
+      imagesLength: taskData?.images?.length || 0,
+      imagesType: typeof taskData?.images,
+      isArray: Array.isArray(taskData?.images),
+      allKeys: taskData ? Object.keys(taskData) : 'No data'
+    });
+    
+    // CRITICAL: Log the exact images field value
+    console.log("🔍 === EXACT IMAGES FIELD ANALYSIS ===");
+    console.log("🔍 taskData.images exact value:", taskData?.images);
+    console.log("🔍 taskData.images JSON:", JSON.stringify(taskData?.images, null, 2));
+    console.log("🔍 taskData.images stringified:", String(taskData?.images));
+    console.log("🔍 === END EXACT IMAGES ANALYSIS ===");
+    
+    // Check if images exist in different possible fields
+    const possibleImageFields = ['images', 'image', 'photos', 'pictures', 'attachments', 'files'];
+    possibleImageFields.forEach(field => {
+      if (taskData?.[field]) {
+        console.log(`🔍 Found ${field} field:`, {
+          type: typeof taskData[field],
+          isArray: Array.isArray(taskData[field]),
+          length: taskData[field]?.length,
+          value: Array.isArray(taskData[field]) ? taskData[field].slice(0, 2) : taskData[field]
+        });
+      }
+    });
+    
+    if (taskData?.images && taskData.images.length > 0) {
+      console.log("🖼️ === IMAGES DETAILED ANALYSIS ===");
+      taskData.images.forEach((img: any, index: number) => {
+        console.log(`📸 Image ${index + 1}/${taskData.images.length}:`, {
+          type: typeof img,
+          isString: typeof img === 'string',
+          isObject: typeof img === 'object',
+          length: typeof img === 'string' ? img.length : 'N/A',
+          preview: typeof img === 'string' ? img.substring(0, 100) + '...' : 'Not string',
+          keys: typeof img === 'object' ? Object.keys(img) : 'N/A',
+          hasUrl: typeof img === 'object' && img?.url,
+          hasData: typeof img === 'object' && img?.data,
+          isDataUri: typeof img === 'string' && img.startsWith('data:'),
+          isHttpUri: typeof img === 'string' && img.startsWith('http'),
+          fullObject: typeof img === 'object' ? JSON.stringify(img, null, 2) : 'N/A'
+        });
+      });
+      
+      console.log("🔍 === RAW IMAGES ARRAY (FULL) ===");
+      console.log(JSON.stringify(taskData.images, null, 2));
+      console.log("🔍 === END RAW IMAGES ===");
     } else {
-      console.log("✅ Backend returned images!");
-      console.log("🖼️ First image preview:", response.data.data.images[0]?.substring(0, 100));
+      console.error("🚨 ❌ ❌ ❌ CRITICAL: Backend returned NO IMAGES! ❌ ❌ ❌ 🚨");
+      console.error("🚨 This means one of the following:");
+      console.error("🚨 1. Images were not saved to database during task creation");
+      console.error("🚨 2. Images are saved but not returned in API response"); 
+      console.error("🚨 3. Images are in a different field than 'images'");
+      console.error("🚨 4. Database/backend issue with image storage");
+      
+      if (taskData?.images && Array.isArray(taskData.images) && taskData.images.length === 0) {
+        console.error("🚨 CONFIRMED: Images field exists but is EMPTY ARRAY []");
+        console.error("🚨 This specifically means images were not saved during task creation");
+      }
+      
+      console.error("🚨 Check backend logs to see if images were received during task posting");
+      console.error("🚨 Full task data keys:", taskData ? Object.keys(taskData) : 'No data');
     }
     
     return response.data;
   } catch (error: any) {
-    console.error("❌ Get task details failed:", error);
+    console.error("❌ Get task details failed:", {
+      taskId,
+      status: error?.response?.status,
+      message: error?.message,
+      data: error?.response?.data
+    });
+    
+    // Handle 400 errors - bad request (invalid task ID, etc.)
+    if (error?.response?.status === 400) {
+      const errorMessage = error?.response?.data?.message || `Invalid task ID or task not found: ${taskId}`;
+      console.error("❌ Get task details failed - Bad request (400):", errorMessage);
+      throw new Error(errorMessage);
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
@@ -1802,44 +2079,48 @@ export async function createOffer(taskId: string, offerData: CreateOfferRequest)
 /**
  * 🔄 Map Category Display Name to ServiceType Enum
  * Maps user-friendly category names to backend enum values
+ * Backend expects exact category display names, not kebab-case
  */
 function mapCategoryToServiceType(categoryName: string): string {
-  // Create mapping for common variations and typos
+  // Create mapping for common variations and typos to standardized display names
   const categoryMappings: { [key: string]: string } = {
-    // Handle typos and variations in category names
-    'Building Maintenance and Renovations': 'building-maintenance-and-renovations',
-    'Buliding Maintatance and Renovations': 'building-maintenance-and-renovations', // Handle typos
-    'Appliance installation and repair': 'appliance-installation-and-repair',
-    'Auto Michanic and Electrician': 'auto-mechanic-and-electrician',
-    'Auto Mechanic and Electrician': 'auto-mechanic-and-electrician',
-    'Business and Accounting': 'business-and-accounting',
-    'Carpentry': 'carpentry',
-    'Cleaning and Organising': 'cleaning-and-organising',
-    'Removalist': 'removalist',
-    'Education and Tutoring': 'education-and-tutoring',
-    'Electrical': 'electrical',
-    'Event Planning': 'event-planning',
-    'Furniture repair and Flatpack Assemply': 'furniture-repair-and-flatpack-assembly',
-    'Gardening and Landscaping': 'gardening-and-landscaping',
-    'Graphic Design': 'graphic-design',
-    'Handyman and Handywomen': 'handyman-and-handywomen',
-    'Health & Fitness': 'health-and-fitness',
-    'IT & Tech': 'it-and-tech',
-    'Legal Services': 'legal-services',
-    'Marketting and Advertising': 'marketing-and-advertising',
-    'Marketing and Advertising': 'marketing-and-advertising',
-    'Music and Entertainment': 'music-and-entertainment',
-    'Painting': 'painting',
-    'Pet Care': 'pet-care',
-    'Photography': 'photography',
-    'Plumbing': 'plumbing',
-    'Something Else': 'something-else',
-    'Web & App Development': 'web-and-app-development',
-    'Personal Assistance': 'personal-assistance',
+    // Handle typos and variations in category names - return exact display names
+    'Building Maintenance and Renovations': 'Building Maintenance and Renovations',
+    'Buliding Maintatance and Renovations': 'Building Maintenance and Renovations', // Handle typos
+    'Appliance installation and repair': 'Appliance installation and repair',
+    'Auto Michanic and Electrician': 'Auto Michanic and Electrician',
+    'Auto Mechanic and Electrician': 'Auto Michanic and Electrician', // Normalize to backend format
+    'Business and Accounting': 'Business and Accounting',
+    'Carpentry': 'Carpentry',
+    'Cleaning and Organising': 'Cleaning and Organising',
+    'Removalist': 'Removalist',
+    'Education and Tutoring': 'Education and Tutoring',
+    'Electrical': 'Electrical',
+    'Event Planning': 'Event Planning',
+    'Furniture repair and Flatpack Assemply': 'Furniture repair and Flatpack Assemply',
+    'Gardening and Landscaping': 'Gardening and Landscaping',
+    'Graphic Design': 'Graphic Design',
+    'Handyman and Handywomen': 'Handyman and Handywomen',
+    'Health & Fitness': 'Health & Fitness',
+    'IT & Tech': 'IT & Tech',
+    'Legal Services': 'Legal Services',
+    'Marketting and Advertising': 'Marketting and Advertising',
+    'Marketing and Advertising': 'Marketting and Advertising', // Normalize to backend format
+    'Music and Entertainment': 'Music and Entertainment',
+    'Painting': 'Painting',
+    'Pet Care': 'Pet Care',
+    'Photography': 'Photography',
+    'Plumbing': 'Plumbing',
+    'Something Else': 'Something Else',
+    'Web & App Development': 'Web & App Development',
+    'Personal Assistance': 'Personal Assistance',
+    'Tours and Transport': 'Tours and Transport',
+    'Delivery': 'Delivery',
+    'Realestate': 'Realestate',
   };
   
-  // Return mapped value or fallback to slug format
-  return categoryMappings[categoryName] || categoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  // Return mapped value or return the original category name
+  return categoryMappings[categoryName] || categoryName;
 }
 
 /**
@@ -1852,26 +2133,54 @@ export async function acceptOffer(taskId: string, offerId: string, userId?: stri
   try {
     console.log("✅ Accepting offer:", { taskId, offerId, userId, taskCategory });
     
-    // Map category to serviceType enum format
-    const serviceType = taskCategory ? mapCategoryToServiceType(taskCategory) : undefined;
+    // Try empty body first as API documentation doesn't specify request body requirements
+    console.log("📤 Accept offer - trying with empty body");
     
-    // Send the required payload according to API spec: role + userId + serviceType
-    const requestBody: any = {
-      role: "poster", // Required by backend API
-      userId: userId || "" // Include userId (required field)
-    };
-    
-    // Add serviceType if available
-    if (serviceType) {
-      requestBody.serviceType = serviceType;
-      console.log("📋 Mapped serviceType:", { original: taskCategory, mapped: serviceType });
+    // Try the specific accept endpoint first
+    try {
+      const response = await api.post(`/tasks/${taskId}/offers/${offerId}/accept`, {});
+      console.log("✅ Accept offer success:", response.data);
+      return response.data;
+    } catch (acceptError: any) {
+      console.log("⚠️ Accept endpoint failed with empty body, trying with user data:", {
+        status: acceptError?.response?.status,
+        data: acceptError?.response?.data,
+        message: acceptError.message
+      });
+      
+      // If empty body fails, try with minimal user data
+      if (acceptError?.response?.status === 500 || acceptError?.response?.status === 400) {
+        console.log("🔄 Trying with minimal user data");
+        const requestBody = {
+          role: "poster",
+          userId: userId || ""
+        };
+        
+        try {
+          const retryResponse = await api.post(`/tasks/${taskId}/offers/${offerId}/accept`, requestBody);
+          console.log("✅ Accept offer success with user data:", retryResponse.data);
+          return retryResponse.data;
+        } catch (retryError: any) {
+          console.log("❌ Accept endpoint failed again:", retryError?.response?.data);
+          throw retryError;
+        }
+      }
+      
+      // If accept endpoint fails with 404, try updating offer status to 'accepted'
+      if (acceptError?.response?.status === 404) {
+        console.log("🔄 Attempting alternative approach: updating offer status to 'accepted'");
+        const statusUpdateBody = {
+          status: 'accepted',
+          role: "poster",
+          userId: userId || ""
+        };
+        const updateResponse = await api.put(`/tasks/${taskId}/offers/${offerId}`, statusUpdateBody);
+        console.log("✅ Accept offer via status update success:", updateResponse.data);
+        return updateResponse.data;
+      }
+      
+      throw acceptError;
     }
-    
-    console.log("📤 Accept offer request body:", requestBody);
-    
-    const response = await api.put(`/tasks/${taskId}/offers/${offerId}/accept`, requestBody);
-    console.log("✅ Accept offer success:", response.data);
-    return response.data;
   } catch (error: any) {
     console.log("❌ Accept offer failed:", {
       message: error.message,
@@ -2499,6 +2808,7 @@ export const TaskAPI = {
   createTask,
   postTask,
   postTaskWithImages, // New function for binary image upload
+  postTaskDirect, // ✅ NEW: Direct posting with exact backend format
   searchTasks,
   filterTasks, // New filter API for Sort/Filter UI
   getMyTasks,
