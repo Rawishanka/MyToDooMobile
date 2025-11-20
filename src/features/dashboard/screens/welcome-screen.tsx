@@ -196,8 +196,19 @@ export default function WelcomeScreen() {
             placeholderTextColor="#999"
             value={taskInput}
             onChangeText={(text) => {
-              setTaskInput(text);
-              if (errorMessage) setErrorMessage(''); // Clear error on typing
+              // Check if user is trying to type numbers
+              const hasNumbers = /\d/.test(text);
+              
+              // Remove numbers and special characters
+              const cleanedText = text.replace(/[^a-zA-Z\s'\-,.]/g, '');
+              setTaskInput(cleanedText);
+              
+              // Show error message if numbers were detected
+              if (hasNumbers && text !== cleanedText) {
+                setErrorMessage('Numbers are not allowed. Only letters, spaces, and basic punctuation.');
+              } else if (errorMessage) {
+                setErrorMessage(''); // Clear error on typing
+              }
             }}
             maxLength={100}
             returnKeyType="done"

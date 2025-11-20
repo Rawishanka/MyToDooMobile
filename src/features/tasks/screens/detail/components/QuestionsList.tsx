@@ -115,7 +115,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           <Text style={styles.loadingStateText}>Loading questions...</Text>
         </View>
       ) : questions.length === 0 ? (
-        <View style={styles.emptyState}>
+        <View style={[styles.emptyState, { marginBottom: 100 }]}>
           <Ionicons name="help-circle-outline" size={48} color="#ccc" />
           <Text style={styles.emptyStateText}>No questions yet</Text>
           <Text style={styles.emptyStateSubtext}>Be the first to ask a question!</Text>
@@ -125,6 +125,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           data={questions}
           scrollEnabled={false}
           keyExtractor={(item: any) => item._id}
+          contentContainerStyle={{ paddingBottom: 100 }}
           renderItem={({ item: question }: { item: any }) => (
             <View style={styles.questionCard}>
               {/* DEBUG: Let's check what's in the question data */}
@@ -309,7 +310,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: 80, // Add space for the fixed button
+    paddingBottom: 0, // Removed since button is now fixed
   },
   questionsHeader: {
     marginBottom: 16,
@@ -410,17 +411,23 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   askQuestionButton: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
     paddingVertical: 16,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#4CAF50',
-    borderStyle: 'dashed',
-    marginTop: 16,
-    marginHorizontal: 16,
+    borderRadius: 0,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
   },
   askQuestionButtonText: {
     fontSize: 16,

@@ -412,14 +412,41 @@ export function useUpdateTask() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ taskId, updates }: { taskId: string; updates: UpdateTaskRequest }) => 
-      TaskAPI.updateTask(taskId, updates),
+    mutationFn: ({ taskId, updates }: { taskId: string; updates: UpdateTaskRequest }) => {
+      console.log('🔄 useUpdateTask: Starting mutation for taskId:', taskId);
+      console.log('🔄 useUpdateTask: Update payload:', JSON.stringify(updates, null, 2));
+      return TaskAPI.updateTask(taskId, updates);
+    },
     onSuccess: (data, variables) => {
-      // Update all task-related queries for consistency
+      console.log('✅ useUpdateTask: Mutation successful!');
+      console.log('✅ useUpdateTask: Response data:', JSON.stringify(data, null, 2));
+      console.log('🔄 useUpdateTask: Starting cache invalidation and refetch...');
+      
+      // Force immediate refetch of all task-related queries
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
+      console.log('✅ Invalidated task detail query for:', variables.taskId);
+      
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all }); // All views
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.lists() }); // Browse tasks
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() }); // My tasks
+      console.log('✅ Invalidated all task queries');
+      
+      queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.lists() }); // Force immediate refetch of browse tasks
+      console.log('✅ Refetching browse tasks list...');
+      
+      queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() }); // Force immediate refetch of my tasks
+      console.log('✅ Refetching my tasks list...');
+      
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers
+      console.log('✅ Invalidated my offers query');
+      
+      console.log("✅ useUpdateTask: All cache operations completed - UI should update immediately");
+    },
+    onError: (error: any, variables) => {
+      console.error('❌ useUpdateTask: Mutation failed!');
+      console.error('❌ useUpdateTask: TaskId:', variables.taskId);
+      console.error('❌ useUpdateTask: Updates payload:', JSON.stringify(variables.updates, null, 2));
+      console.error('❌ useUpdateTask: Error details:', error);
+      console.error('❌ useUpdateTask: Error message:', error?.message);
+      console.error('❌ useUpdateTask: Error response:', error?.response?.data);
     },
   });
 }

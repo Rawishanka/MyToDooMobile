@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
-import React from 'react';
-import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import React, { useRef } from 'react';
+import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
 import {
     AskQuestionModal,
@@ -18,6 +18,8 @@ import { useTaskDetail } from './hooks/useTaskDetail';
 
 export default function TaskDetailScreen() {
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
+  const scrollViewRef = useRef<ScrollView>(null);
+  const tabsSectionRef = useRef<View>(null);
 
   const {
     task,
@@ -51,6 +53,22 @@ export default function TaskDetailScreen() {
     handlePaymentSuccess,
   } = useTaskDetail({ taskId: taskId! });
 
+  // Handle tab change with auto-scroll
+  const handleTabChange = (tab: 'offers' | 'questions') => {
+    setActiveTab(tab);
+    
+    // Scroll to tabs section after a small delay to ensure render
+    setTimeout(() => {
+      tabsSectionRef.current?.measureLayout(
+        scrollViewRef.current as any,
+        (x, y) => {
+          scrollViewRef.current?.scrollTo({ y: y - 20, animated: true });
+        },
+        () => console.log('Failed to measure tabs section')
+      );
+    }, 100);
+  };
+
   if (isLoading) {
     return <LoadingState />;
   }
@@ -60,12 +78,17 @@ export default function TaskDetailScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      <DetailHeader />
+        <DetailHeader />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          ref={scrollViewRef}
+          style={styles.content} 
+          showsVerticalScrollIndicator={false}
+        >
         {/* Only show Make Offer section to taskers (not the task creator) */}
         {task?.createdBy?._id !== currentUser?._id && (
           <MakeOfferSection 
@@ -91,7 +114,9 @@ export default function TaskDetailScreen() {
           />
         )}
 
-        <TabsSection activeTab={activeTab} onTabChange={setActiveTab} />
+        <View ref={tabsSectionRef} collapsable={false}>
+          <TabsSection activeTab={activeTab} onTabChange={handleTabChange} />
+        </View>
 
         <View style={styles.tabContent}>
           {activeTab === 'offers' ? (
@@ -138,11 +163,19 @@ export default function TaskDetailScreen() {
         onClose={handleClosePaymentModal}
         onSuccess={handlePaymentSuccess}
       />
+      </View>
+
+      {/* Bottom safe area for Android navigation bar */}
+      <View style={styles.bottomSafeArea} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
@@ -153,5 +186,13 @@ const styles = StyleSheet.create({
   },
   tabContent: {
     flex: 1,
+  },
+  bottomSafeArea: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: Platform.OS === 'android' ? 48 : 0,
+    backgroundColor: '#fff',
   },
 });
