@@ -31,17 +31,19 @@ const COUNTRY_MAP: Record<string, CountryInfo> = {
   'Indonesia': { countryCode: 'ID', countryName: 'Indonesia', currency: 'IDR' },
 };
 
-// Default fallback (Australia)
+// Default fallback (Sri Lanka for testing - can be changed later)
 const DEFAULT_COUNTRY: CountryInfo = {
-  countryCode: 'AU',
-  countryName: 'Australia', 
-  currency: 'AUD'
+  countryCode: 'LK',
+  countryName: 'Sri Lanka', 
+  currency: 'LKR'
 };
 
 export const useLocationCountry = () => {
   const [countryInfo, setCountryInfo] = useState<CountryInfo>(DEFAULT_COUNTRY);
   const [isDetecting, setIsDetecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  console.log('🏗️ useLocationCountry hook initialized with default:', DEFAULT_COUNTRY);
 
   useEffect(() => {
     detectCurrentCountry();
@@ -52,6 +54,8 @@ export const useLocationCountry = () => {
       setIsDetecting(true);
       setError(null);
 
+      console.log('🌍 Starting country detection...');
+
       // Request permissions
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -60,10 +64,19 @@ export const useLocationCountry = () => {
         return;
       }
 
-      // Get current location
+      console.log('✅ Location permission granted, getting current position...');
+
+      // Get current location with timeout
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
-        timeInterval: 5000, // 5 seconds timeout
+        timeInterval: 15000, // 15 seconds timeout
+      });
+
+      console.log('📍 Current location coordinates:', {
+        lat: location.coords.latitude,
+        lng: location.coords.longitude,
+        accuracy: location.coords.accuracy,
+        timestamp: new Date(location.timestamp).toISOString()
       });
 
       // Reverse geocode to get country
@@ -72,18 +85,31 @@ export const useLocationCountry = () => {
         longitude: location.coords.longitude,
       });
 
+      console.log('🔍 Reverse geocode result:', reverseGeocodeResult);
+
       if (reverseGeocodeResult.length > 0) {
         const address = reverseGeocodeResult[0];
         const detectedCountry = address.country;
         
-        console.log('📍 Detected country:', detectedCountry);
+        console.log('📍 Detected country from GPS:', detectedCountry);
+        console.log('🗺️ Full address details:', {
+          country: address.country,
+          region: address.region,
+          city: address.city,
+          postalCode: address.postalCode
+        });
 
         if (detectedCountry && COUNTRY_MAP[detectedCountry]) {
           const countryInfo = COUNTRY_MAP[detectedCountry];
-          console.log('✅ Using detected country info:', countryInfo);
+          console.log('✅ Using detected country info:', {
+            countryName: countryInfo.countryName,
+            countryCode: countryInfo.countryCode,
+            currency: countryInfo.currency
+          });
           setCountryInfo(countryInfo);
         } else {
           console.log('⚠️ Country not in supported list, using default:', detectedCountry);
+          console.log('📋 Supported countries:', Object.keys(COUNTRY_MAP));
           setCountryInfo(DEFAULT_COUNTRY);
         }
       } else {
@@ -97,6 +123,7 @@ export const useLocationCountry = () => {
       setCountryInfo(DEFAULT_COUNTRY);
     } finally {
       setIsDetecting(false);
+      console.log('🏁 Country detection completed');
     }
   };
 

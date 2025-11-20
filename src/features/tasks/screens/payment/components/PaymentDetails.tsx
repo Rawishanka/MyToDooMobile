@@ -1,4 +1,5 @@
-import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -23,8 +24,9 @@ export default function PaymentDetails({
   offerMessage,
   taskLocation,
 }: PaymentDetailsProps) {
-  // Get location-based currency info
-  const currencyInfo = getCurrencyFromLocation(taskLocation);
+  // Use user's current location for currency display (auto geo-location)
+  const { countryInfo } = useLocationCountry();
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
   
   return (
     <View style={styles.container}>

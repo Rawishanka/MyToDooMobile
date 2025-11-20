@@ -1,4 +1,5 @@
-import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -11,14 +12,15 @@ interface MyOfferCardProps {
 }
 
 export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, onAcceptOffer, taskLocation }) => {
+  // Use user's current location for currency display (auto geo-location)
+  const { countryInfo } = useLocationCountry();
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
+  
   // Handle both nested and flat offer structures
   const offerAmount = offer.offer?.amount || offer.amount || 0;
   const offerCurrency = offer.offer?.currency || offer.currency || 'SGD';
   const offerMessage = offer.offer?.message || offer.message || '';
   const status = offer.status || 'pending';
-  
-  // Get location-based currency info
-  const currencyInfo = getCurrencyFromLocation(taskLocation);
   
   // Debug logging to see what we're actually getting
   console.log('MyOfferCard - Raw offer data:', JSON.stringify(offer, null, 2));

@@ -163,9 +163,10 @@ export const getCurrencyFromLocation = (location?: { address?: string }): Curren
  * @returns Formatted string (e.g., "$1,000", "₹5,500", "Rs 7,500")
  */
 export const formatCurrency = (amount: number, currencyInfo: CurrencyInfo): string => {
-  // Format number with thousand separators
-  const formattedAmount = amount.toLocaleString('en-US', {
-    minimumFractionDigits: 0,
+  // Round amount to 2 decimal places and format with thousand separators
+  const roundedAmount = Math.round(amount * 100) / 100;
+  const formattedAmount = roundedAmount.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
   
@@ -181,6 +182,31 @@ export const formatCurrency = (amount: number, currencyInfo: CurrencyInfo): stri
 };
 
 /**
+ * Get currency based on user's current location for auto geo-location
+ * This uses the detected country from useLocationCountry hook
+ * @param userCountryInfo - Country info from useLocationCountry hook
+ * @returns Currency info based on user's current location
+ */
+export const getCurrencyFromUserLocation = (userCountryInfo: { currency: string }): CurrencyInfo => {
+  const symbol = getCurrencySymbol(userCountryInfo.currency);
+  return {
+    code: userCountryInfo.currency,
+    symbol: symbol
+  };
+};
+
+/**
+ * Format amount with currency based on user's current location (auto geo-location)
+ * @param amount - Numeric amount
+ * @param userCountryInfo - Country info from useLocationCountry hook
+ * @returns Formatted string with user's local currency
+ */
+export const formatCurrencyForUserLocation = (amount: number, userCountryInfo: { currency: string }): string => {
+  const currencyInfo = getCurrencyFromUserLocation(userCountryInfo);
+  return formatCurrency(amount, currencyInfo);
+};
+
+/**
  * Format number with thousand separators
  * @param amount - Numeric amount
  * @param options - Formatting options
@@ -191,11 +217,19 @@ export const formatNumber = (
   options: {
     minimumFractionDigits?: number;
     maximumFractionDigits?: number;
+    forceDecimals?: boolean;
   } = {}
 ): string => {
-  return amount.toLocaleString('en-US', {
-    minimumFractionDigits: options.minimumFractionDigits ?? 0,
-    maximumFractionDigits: options.maximumFractionDigits ?? 2,
+  // Round amount to ensure precision
+  const roundedAmount = Math.round(amount * 100) / 100;
+  
+  // If forceDecimals is true, always show 2 decimal places
+  const minDecimals = options.forceDecimals ? 2 : (options.minimumFractionDigits ?? 0);
+  const maxDecimals = options.maximumFractionDigits ?? 2;
+  
+  return roundedAmount.toLocaleString('en-US', {
+    minimumFractionDigits: minDecimals,
+    maximumFractionDigits: maxDecimals,
   });
 };
 

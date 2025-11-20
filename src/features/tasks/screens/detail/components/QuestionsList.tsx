@@ -128,15 +128,23 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           contentContainerStyle={{ paddingBottom: 100 }}
           renderItem={({ item: question }: { item: any }) => (
             <View style={styles.questionCard}>
-              {/* Show task context for public questions */}
-              {question.isPublic && question.taskId !== taskId && (
-                <View style={styles.taskContextHeader}>
-                  <Ionicons name="link-outline" size={14} color="#007AFF" />
-                  <Text style={styles.taskContextText}>
-                    From task: {question.taskTitle || 'Other task'}
-                  </Text>
-                </View>
-              )}
+              {/* DEBUG: Let's check what's in the question data */}
+              {(() => {
+                if (__DEV__) {
+                  console.log('🐛 Question data debug:', {
+                    id: question._id,
+                    askedBy: question.askedBy,
+                    user: question.user,
+                    questioner: question.questioner,
+                    isAnonymous: question.isAnonymous,
+                    type: typeof question.askedBy,
+                    keys: question.askedBy ? Object.keys(question.askedBy) : 'no askedBy'
+                  });
+                }
+                return null;
+              })()}
+              
+              {/* PRIVACY: Removed task context header since we only show questions for current task */}
               
               <View style={styles.questionHeader}>
                 <View style={styles.questionUserSection}>
@@ -173,7 +181,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                             
                             return 'Unknown User';
                           })()}
-                        : `${question.askedBy?.firstName || question.userId?.firstName} ${question.askedBy?.lastName || question.userId?.lastName}`
                     </Text>
                     <Text style={styles.questionTime}>
                       {new Date(question.createdAt).toLocaleTimeString('en-US', {
@@ -208,7 +215,16 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
               {hasValidAnswer(question) ? (
                 <View style={styles.answerSection}>
                   <Text style={styles.answerLabel}>
-                    Answer from {question.answeredBy?.firstName || question.posterId?.firstName || 'poster'}:
+                    Answer from {(() => {
+                      const answerer = question.answeredBy || question.posterId;
+                      if (!answerer) return 'poster';
+                      
+                      const firstName = answerer.firstName || answerer.first_name || '';
+                      const lastName = answerer.lastName || answerer.last_name || '';
+                      const fullName = `${firstName} ${lastName}`.trim();
+                      
+                      return fullName || answerer.email?.split('@')[0] || answerer.username || 'poster';
+                    })()}:
                   </Text>
                   <Text style={styles.answerText}>
                     {typeof question.answer === 'string'

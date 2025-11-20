@@ -17,6 +17,7 @@ import API_CONFIG from '../../api/config';
 import { useAuthStore } from '../../store/auth-task-store';
 import { useCreatePaymentIntent } from '../hooks/usePaymentApi';
 import { useAcceptOffer } from '../hooks/useTaskApi';
+import { formatNumber } from '../utils/currency';
 
 interface StripePaymentModalProps {
   visible: boolean;
@@ -155,7 +156,7 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
         'Expected Total': 7625,
         'Backend Total': paymentResult.breakdown?.totalCharge,
         'Frontend Display Total': feeCalculation.totalAmount,
-        'Stripe will show': `LKR ${(paymentResult.breakdown?.totalCharge || 0).toLocaleString()}`,
+        'Stripe will show': `LKR ${formatNumber(paymentResult.breakdown?.totalCharge || 0, { forceDecimals: true })}`,
         'Issue': paymentResult.breakdown?.totalCharge !== 7625 ? 'BACKEND AMOUNT MISMATCH!' : 'Amounts match correctly'
       });
 
@@ -434,15 +435,15 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
         <View style={styles.summaryContainer}>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Offer Amount</Text>
-            <Text style={styles.summaryValue}>LKR {feeCalculation.budgetAmount.toLocaleString()}</Text>
+            <Text style={styles.summaryValue}>LKR {formatNumber(feeCalculation.budgetAmount, { forceDecimals: true })}</Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Service Fee (10%)</Text>
-            <Text style={styles.summaryValue}>LKR {feeCalculation.serviceFee.toLocaleString()}</Text>
+            <Text style={styles.summaryValue}>LKR {formatNumber(feeCalculation.serviceFee, { forceDecimals: true })}</Text>
           </View>
           <View style={[styles.summaryRow, styles.totalRow]}>
             <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalValue}>LKR {feeCalculation.totalAmount.toLocaleString()}</Text>
+            <Text style={styles.totalValue}>LKR {formatNumber(feeCalculation.totalAmount, { forceDecimals: true })}</Text>
           </View>
           
           {/* Show backend data if available */}
@@ -450,7 +451,7 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
             <View style={styles.backendDataInfo}>
               <Text style={styles.backendDataLabel}>✅ Payment confirmed by backend</Text>
               <Text style={styles.backendDataText}>
-                Backend calculated: LKR {paymentIntentData.breakdown.totalCharge.toLocaleString()}
+                Backend calculated: LKR {formatNumber(paymentIntentData.breakdown.totalCharge, { forceDecimals: true })}
               </Text>
             </View>
           )}
@@ -508,7 +509,7 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
           ) : (
             <View style={styles.payButtonContent}>
               <Ionicons name="card" size={20} color="white" style={styles.payButtonIcon} />
-              <Text style={styles.payButtonText}>Pay LKR {feeCalculation.totalAmount.toLocaleString()}</Text>
+              <Text style={styles.payButtonText}>Pay LKR {formatNumber(feeCalculation.totalAmount, { forceDecimals: true })}</Text>
             </View>
           )}
         </TouchableOpacity>

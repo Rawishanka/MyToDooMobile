@@ -755,6 +755,20 @@ export default function MyTasksScreen() {
               )}
             </Tab.Screen>
             <Tab.Screen
+              name="OverduePoster"
+              options={{ tabBarLabel: 'Overdue' }}
+            >
+              {() => (
+                <TabScreen
+                  tasks={categorizedData.overdueTasks}
+                  isLoading={isLoading}
+                  onRefresh={handleRefresh}
+                  status="overdue"
+                  userRole={userRole}
+                />
+              )}
+            </Tab.Screen>
+            <Tab.Screen
               name="Cancelled"
               options={{ tabBarLabel: 'Cancelled' }}
             >

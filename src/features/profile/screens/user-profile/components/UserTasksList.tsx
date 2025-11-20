@@ -1,4 +1,5 @@
-import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import React from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -22,6 +23,9 @@ interface UserTasksListProps {
 }
 
 export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate, onTaskPress }) => {
+  // Use current user's location for currency auto-detection
+  const { countryInfo } = useLocationCountry();
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -36,11 +40,11 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
   };
 
   const renderTaskItem = ({ item }: { item: Task }) => {
-    // Get proper currency formatting
-    const currencyInfo = getCurrencyFromLocation(item.location);
+    // Use user's current location for currency display (auto geo-location)
+    const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
     const formattedPrice = item.formattedBudget || 
-      (item.budget ? formatCurrency(item.budget, currencyInfo) : 
-      `${currencyInfo.symbol}0`);
+      (item.budget ? formatCurrency(item.budget, userCurrencyInfo) : 
+      `${userCurrencyInfo.symbol}0.00`);
     
     return (
       <TouchableOpacity

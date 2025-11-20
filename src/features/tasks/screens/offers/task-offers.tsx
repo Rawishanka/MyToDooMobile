@@ -1,5 +1,6 @@
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useGetTaskOffers } from '@/src/shared/hooks/useTaskApi';
-import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
@@ -52,8 +53,9 @@ export default function TaskOffersScreen() {
     status: offer.status as 'pending' | 'accepted' | 'rejected'
   }));
 
-  // Get currency info based on task location
-  const currencyInfo = getCurrencyFromLocation(task?.location);
+  // Use user's current location for currency display (auto geo-location)
+  const { countryInfo } = useLocationCountry();
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
   
   // Format budget with location-appropriate currency
   const displayBudget = task?.formattedBudget || 

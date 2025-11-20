@@ -105,8 +105,8 @@ export class MockApiService {
         coordinates: {
           type: 'Point',
           coordinates: [
-            'lng' in coordinates ? coordinates.lng : coordinates.longitude,
-            'lat' in coordinates ? coordinates.lat : coordinates.latitude
+            coordinates.lng,
+            coordinates.lat
           ]
         }
       },

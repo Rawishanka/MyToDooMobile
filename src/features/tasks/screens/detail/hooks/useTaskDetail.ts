@@ -1,12 +1,11 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  useAcceptOffer,
-  useGetAllPublicQuestions,
-  useGetTaskById,
-  useGetTaskOffers,
-  useGetTaskQuestions,
-  usePostTaskQuestion,
+    useAcceptOffer,
+    useGetTaskById,
+    useGetTaskOffers,
+    useGetTaskQuestions,
+    usePostTaskQuestion,
 } from '../../../../../shared/hooks/useTaskApi';
 import { useAuthStore } from '../../../../../store/auth-task-store';
 
@@ -42,7 +41,7 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     refetch: refetchTaskOffers,
   } = useGetTaskOffers(taskId || '', !!taskId);
 
-  // Fetch questions for this specific task
+  // Fetch questions for this specific task ONLY
   const {
     data: questionsData,
     isLoading: isLoadingQuestions,
@@ -50,12 +49,12 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     refetch: refetchQuestions,
   } = useGetTaskQuestions(taskId || '', !!taskId); // Enabled when we have a taskId
 
-  // Fetch ALL public questions from ALL tasks (with error tolerance)
-  const {
-    data: publicQuestionsData,
-    isLoading: isLoadingPublicQuestions,
-    error: publicQuestionsError,
-  } = useGetAllPublicQuestions(true); // Enable public questions
+  // NOTE: Removed public questions to maintain privacy - only show questions for current task
+  // const {
+  //   data: publicQuestionsData,
+  //   isLoading: isLoadingPublicQuestions, 
+  //   error: publicQuestionsError,
+  // } = useGetAllPublicQuestions(true);
 
   // Post question mutation
   const postQuestionMutation = usePostTaskQuestion();
@@ -69,29 +68,35 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
   // Get offers for THIS specific task (for both MyOfferCard and Offers tab)
   const taskOffers = taskOffersData?.data?.offers || [];
   
-  // Combine task-specific questions with public questions from all tasks (if available)
+  // PRIVACY FIX: Only show questions specific to THIS task, not public questions from other tasks
   const taskQuestions = questionsData?.data || [];
-  const publicQuestions = publicQuestionsError 
-    ? [] // If there's an error, use empty array
-    : (publicQuestionsData?.data || []).filter((q: any) => q && q._id); // Filter out invalid entries
   
-  console.log('📝 Questions Debug:', {
+  console.log('📝 Questions Debug (PRIVACY MODE):', {
+    taskId: taskId,
     taskQuestionsCount: taskQuestions.length,
-    publicQuestionsCount: publicQuestions.length,
-    publicQuestionsError: publicQuestionsError?.message,
-    isLoadingPublicQuestions
+    questionsShownToUser: taskQuestions.length,
+    privacyMode: 'enabled - only showing questions for this specific task',
+    currentUserId: currentUser?._id,
+    taskCreatorId: task?.createdBy?._id
   });
   
-  // Combine and deduplicate questions (task questions + public questions from other tasks)
-  const allQuestions = [
-    ...taskQuestions,
-    ...publicQuestions.filter((pq: any) => 
-      pq && pq._id && !taskQuestions.some((tq: any) => tq._id === pq._id)
-    )
-  ];
+  // PRIVACY: Only use questions for THIS specific task
+  // Additional privacy filter: ensure questions are relevant to current user
+  const filteredQuestions = taskQuestions.filter((question: any) => {
+    // Show questions if user is:
+    // 1. The task creator/poster
+    // 2. The person who asked the question  
+    // 3. A participant (has made offers)
+    
+    const isTaskCreator = currentUser?._id === task?.createdBy?._id;
+    const isQuestionAsker = currentUser?._id === (question.askedBy?._id || question.userId?._id || question.user?._id);
+    const hasOfferOnTask = taskOffers.some((offer: any) => offer.taskTakerId?._id === currentUser?._id);
+    
+    return isTaskCreator || isQuestionAsker || hasOfferOnTask;
+  });
   
   // Sort questions by creation date (newest first)
-  const questions = allQuestions.sort((a: any, b: any) => 
+  const questions = filteredQuestions.sort((a: any, b: any) => 
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
