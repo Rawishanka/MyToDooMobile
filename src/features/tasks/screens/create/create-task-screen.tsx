@@ -8,33 +8,33 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import smart image validation
 import {
-    SmartValidationResult,
-    TaskContext,
-    validateImageSmart
+  SmartValidationResult,
+  TaskContext,
+  validateImageSmart
 } from '@/src/services/smartImageValidator';
 import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
 
 import {
-    DateOptionSelector,
-    TimeOfDayGrid,
-    TimeToggle,
+  DateOptionSelector,
+  TimeOfDayGrid,
+  TimeToggle,
 } from './components';
 
 interface Category {
@@ -205,9 +205,21 @@ export default function CreateTaskScreen() {
 
   // Validation functions
   const handleTitleChange = (text: string) => {
+    // Check if user is trying to type numbers
+    const hasNumbers = /\d/.test(text);
+    
     // Remove numbers and special characters as user types
     const cleanedText = text.replace(/[^a-zA-Z\s'\-,.]/g, '');
     setTitle(cleanedText);
+    
+    // Show alert if numbers were detected and removed
+    if (hasNumbers && text !== cleanedText) {
+      Alert.alert(
+        'Numbers Not Allowed',
+        'Task titles can only contain letters, spaces, and basic punctuation (apostrophes, hyphens, commas, periods).',
+        [{ text: 'OK' }]
+      );
+    }
     
     // Always validate if the field has been touched or if user is actively typing
     if (touched.title || cleanedText.length > 0) {
@@ -790,9 +802,10 @@ export default function CreateTaskScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Fixed Header */}
-      <View style={styles.header}>
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
+        {/* Fixed Header */}
+        <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <ChevronLeft size={24} color="#333" />
         </TouchableOpacity>
@@ -1103,12 +1116,20 @@ export default function CreateTaskScreen() {
       )}
 
       {/* OCR Validation Modal - REMOVED */}
+      </View>
+
+      {/* Bottom safe area for Android navigation bar */}
+      <View style={styles.bottomSafeArea} />
     </View>
   );
 }
 
 // Styles for create task screen
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -1386,6 +1407,7 @@ const styles = StyleSheet.create({
     right: 20,
     backgroundColor: '#D1D1D6',
     paddingVertical: 16,
+    marginBottom: 0,
     borderRadius: 25,
     alignItems: 'center',
   },
@@ -1435,5 +1457,13 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontWeight: '600',
     textAlign: 'center',
+  },
+  bottomSafeArea: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: Platform.OS === 'android' ? 48 : 0,
+    backgroundColor: '#fff',
   },
 });

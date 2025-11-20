@@ -361,20 +361,20 @@ export interface CreateTaskRequest {
   };
 }
 
-// 🔄 *UPDATE TASK REQUEST*
+// 🔄 *UPDATE TASK REQUEST* - Matches PUT /api/tasks/:id endpoint
 export interface UpdateTaskRequest {
   title?: string;
-  description?: string; // API expects 'description' not 'details'
+  details?: string; // Backend expects 'details' not 'description' (confirmed from API responses)
   budget?: number;
   currency?: string;
   time?: string;
-  date?: string; // ISO date string
-  dateType?: string;
+  date?: string; // ISO date string (YYYY-MM-DD)
+  dateType?: 'Easy' | 'DoneBy' | 'DoneOn'; // Backend expects: Easy, DoneBy, DoneOn
   location?: {
     address: string;
     coordinates: {
-      lat: number;
-      lng: number;
+      type: "Point";
+      coordinates: [number, number]; // GeoJSON format: [longitude, latitude]
     };
   };
   status?: string;
@@ -489,7 +489,7 @@ export interface CreateOfferResponse {
 
 export interface AllOffersResponse {
   success: boolean;
-  data: Array<{
+  data: {
     _id: string;
     taskId: {
       _id: string;
@@ -519,7 +519,7 @@ export interface AllOffersResponse {
     status: string;
     createdAt: string;
     updatedAt?: string;
-  }>;
+  }[];
   pagination: {
     total: number;
     page: number;

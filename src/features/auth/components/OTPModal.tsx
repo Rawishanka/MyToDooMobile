@@ -3,14 +3,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Modal,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import type { VerificationStep } from './signup-types';
 
@@ -37,8 +37,8 @@ interface OTPModalProps {
   verifyLoading: boolean;
   
   // Refs
-  emailOtpRefs: React.MutableRefObject<Array<TextInput | null>>;
-  smsOtpRefs: React.MutableRefObject<Array<TextInput | null>>;
+  emailOtpRefs: React.MutableRefObject<(TextInput | null)[]>;
+  smsOtpRefs: React.MutableRefObject<(TextInput | null)[]>;
   
   // Handlers
   handleEmailOtpChange: (value: string, index: number) => void;
@@ -145,7 +145,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
 
             {emailTimer === 0 && (
               <TouchableOpacity style={styles.resendButton} onPress={handleResendEmail}>
-                <Text style={styles.resendButtonText}>Didn't receive a code? Resend</Text>
+                <Text style={styles.resendButtonText}>Didn&apos;t receive a code? Resend</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -244,7 +244,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
 
             {smsTimer === 0 && (
               <TouchableOpacity style={styles.resendButton} onPress={handleResendSms}>
-                <Text style={styles.resendButtonText}>Didn't receive a code? Resend</Text>
+                <Text style={styles.resendButtonText}>Didn&apos;t receive a code? Resend</Text>
               </TouchableOpacity>
             )}
           </View>

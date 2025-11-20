@@ -1,18 +1,18 @@
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
 import {
-    AskQuestionModal,
-    DetailHeader,
-    ErrorState,
-    LoadingState,
-    MakeOfferSection,
-    MyOfferCard,
-    OffersList,
-    QuestionsList,
-    TabsSection,
-    TaskInfoCard,
+  AskQuestionModal,
+  DetailHeader,
+  ErrorState,
+  LoadingState,
+  MakeOfferSection,
+  MyOfferCard,
+  OffersList,
+  QuestionsList,
+  TabsSection,
+  TaskInfoCard,
 } from './components';
 import { useTaskDetail } from './hooks/useTaskDetail';
 
@@ -60,12 +60,13 @@ export default function TaskDetailScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      <DetailHeader />
+        <DetailHeader />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Only show Make Offer section to taskers (not the task creator) */}
         {task?.createdBy?._id !== currentUser?._id && (
           <MakeOfferSection 
@@ -138,11 +139,19 @@ export default function TaskDetailScreen() {
         onClose={handleClosePaymentModal}
         onSuccess={handlePaymentSuccess}
       />
+      </View>
+
+      {/* Bottom safe area for Android navigation bar */}
+      <View style={styles.bottomSafeArea} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
@@ -153,5 +162,13 @@ const styles = StyleSheet.create({
   },
   tabContent: {
     flex: 1,
+  },
+  bottomSafeArea: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: Platform.OS === 'android' ? 48 : 0,
+    backgroundColor: '#fff',
   },
 });

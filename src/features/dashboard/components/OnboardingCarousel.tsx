@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -14,6 +15,9 @@ import {
 } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
+
+// Keep splash screen visible while images load
+SplashScreen.preventAutoHideAsync();
 
 interface OnboardingSlide {
   id: string;
@@ -45,8 +49,30 @@ const slides: OnboardingSlide[] = [
 
 export default function OnboardingCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
+
+  // Preload all images on component mount
+  useEffect(() => {
+    const preloadImages = async () => {
+      try {
+        const imagePromises = slides.map(slide => {
+          return Image.prefetch(Image.resolveAssetSource(slide.image).uri);
+        });
+        
+        await Promise.all(imagePromises);
+        setImagesLoaded(true);
+        await SplashScreen.hideAsync();
+      } catch (error) {
+        console.log('Error preloading images:', error);
+        setImagesLoaded(true);
+        await SplashScreen.hideAsync();
+      }
+    };
+
+    preloadImages();
+  }, []);
 
   const viewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     if (viewableItems.length > 0) {
@@ -83,7 +109,12 @@ export default function OnboardingCarousel() {
   const renderItem = ({ item }: { item: OnboardingSlide }) => (
     <View style={styles.slide}>
       {/* Illustration */}
-      <Image source={item.image} style={styles.image} resizeMode="contain" />
+      <Image 
+        source={item.image} 
+        style={styles.image} 
+        resizeMode="contain"
+        fadeDuration={0}
+      />
 
       {/* Text */}
       <View style={styles.textContainer}>
@@ -125,6 +156,15 @@ export default function OnboardingCarousel() {
       })}
     </View>
   );
+
+  // Show loading or placeholder while images are being preloaded
+  if (!imagesLoaded) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -247,5 +287,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF7A00',
     padding: 14,
     borderRadius: 50,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: 'white',
+    fontSize: 16,
   },
 });

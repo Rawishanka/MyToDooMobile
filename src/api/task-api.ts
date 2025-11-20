@@ -1166,9 +1166,14 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
   try {
     console.log("✏️ Starting update task operation...");
     console.log("📋 Task ID:", taskId);
-    console.log("📝 Updates:", updates);
+    console.log("📝 Updates payload:", JSON.stringify(updates, null, 2));
     console.log("🌐 API Base URL:", API_CONFIG.BASE_URL);
     console.log("🔗 Full update URL:", `${API_CONFIG.BASE_URL}/tasks/${taskId}`);
+    
+    // Validate taskId format (MongoDB ObjectId is 24 hex characters)
+    if (!taskId || !/^[0-9a-fA-F]{24}$/.test(taskId)) {
+      throw new Error(`Invalid task ID format: ${taskId}`);
+    }
     
     // Ensure authentication
     const authResult = await ensureAuthentication();
@@ -1179,18 +1184,31 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
 
     console.log("🔐 Authentication confirmed for update operation");
     
+    // Make PUT request to /tasks/:id endpoint
     const response = await api.put(`/tasks/${taskId}`, updates);
-    console.log("✅ Update task API response:", response.data);
+    console.log("✅ Update task API response:", JSON.stringify(response.data, null, 2));
     console.log("✅ Update task HTTP status:", response.status);
+    
+    if (!response.data || !response.data.success) {
+      throw new Error("Update failed - server returned unsuccessful response");
+    }
     
     return response.data;
   } catch (error: any) {
     console.error("❌ Update task failed - Full error details:");
     console.error("   - Error message:", error?.message);
     console.error("   - HTTP status:", error?.response?.status);
-    console.error("   - Response data:", error?.response?.data);
+    console.error("   - Response data:", JSON.stringify(error?.response?.data, null, 2));
     console.error("   - Request URL:", error?.config?.url);
     console.error("   - Request method:", error?.config?.method);
+    console.error("   - Request payload:", JSON.stringify(updates, null, 2));
+    
+    // Handle validation errors (400)
+    if (error?.response?.status === 400) {
+      const errorMessage = error?.response?.data?.message || error?.response?.data?.error;
+      console.error("❌ Update task failed - Validation error (400):", errorMessage);
+      throw new Error(errorMessage || "Invalid task data. Please check your inputs.");
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
@@ -1233,7 +1251,7 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
         const mockUpdatedTask = {
           _id: taskId,
           title: updates.title || "Updated Task",
-          details: updates.description || "Updated description",
+          details: updates.details || "Updated description",
           budget: updates.budget || 0,
           currency: updates.currency || "LKR",
           time: updates.time || "Anytime",
@@ -1284,7 +1302,7 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
         const mockUpdatedTask = {
           _id: taskId,
           title: updates.title || "Updated Task",
-          details: updates.description || "Updated description", // Task uses 'details' not 'description'
+          details: updates.details || "Updated description", // Task uses 'details' field
           budget: updates.budget || 0,
           currency: updates.currency || "LKR",
           time: updates.time || "Anytime",
@@ -1333,7 +1351,7 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
         const mockUpdatedTask = {
           _id: taskId,
           title: updates.title || "Updated Task",
-          details: updates.description || "Updated description", // Task uses 'details' not 'description'
+          details: updates.details || "Updated description", // Task uses 'details' field
           budget: updates.budget || 0,
           currency: updates.currency || "LKR",
           time: updates.time || "Anytime",
@@ -1380,7 +1398,7 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
       const mockUpdatedTask = {
         _id: taskId,
         title: updates.title || "Updated Task",
-        details: updates.description || "Updated description",
+        details: updates.details || "Updated description",
         budget: updates.budget || 0,
         currency: updates.currency || "LKR",
         time: updates.time || "Anytime",
@@ -1977,11 +1995,20 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
     return response.data;
   } catch (error: any) {
     console.error("❌ Complete task failed:", error);
+    console.error("❌ Error response:", error?.response?.data);
+    console.error("❌ Error status:", error?.response?.status);
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       console.error("❌ Complete task failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    // Handle 400 Bad Request with backend message
+    if (error?.response?.status === 400) {
+      const backendMessage = error?.response?.data?.message || error?.response?.data?.error;
+      console.error("❌ Complete task failed - Bad Request (400):", backendMessage);
+      throw new Error(backendMessage || "Cannot complete task. Please check the task status.");
     }
     
     throw error;
