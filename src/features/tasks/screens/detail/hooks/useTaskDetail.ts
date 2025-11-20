@@ -104,8 +104,12 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
   );
 
   // Find the current user's offer on THIS task (if they made one)
+  // Backend returns user info in 'user' field, not 'taskTakerId'
   const myOffer = taskOffers.find(
-    (offer: any) => offer.taskTakerId?._id === currentUser?._id
+    (offer: any) => {
+      const offerUserId = offer.user?._id || offer.taskTakerId?._id;
+      return offerUserId === currentUser?._id;
+    }
   );
 
   const handleMakeOffer = () => {
