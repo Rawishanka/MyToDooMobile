@@ -33,7 +33,8 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
       offerId: offer._id,
       taskTakerId: offer.taskTakerId?._id,
       status: offer.status,
-      isMatch: offer.taskTakerId?._id === currentUser?._id
+      // Backend returns user info in 'user' field, not 'taskTakerId'
+      isMatch: (offer.user?._id || offer.taskTakerId?._id) === currentUser?._id
     });
   });
   

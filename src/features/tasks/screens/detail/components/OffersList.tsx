@@ -31,9 +31,11 @@ export const OffersList: React.FC<OffersListProps> = ({
   // 1. The current user's offer (shown separately in MyOfferCard)
   // 2. The offer being displayed in MyOfferCard (if task poster is viewing)
   const otherOffers = offers.filter(
-    (offer: any) => 
-      offer.taskTakerId?._id !== currentUserId && 
-      offer._id !== excludeOfferId
+    (offer: any) => {
+      // Backend returns offer.user._id, fallback to taskTakerId._id
+      const offerUserId = offer.user?._id || offer.taskTakerId?._id;
+      return offerUserId !== currentUserId && offer._id !== excludeOfferId;
+    }
   );
 
   if (isLoading) {
@@ -71,7 +73,20 @@ export const OffersList: React.FC<OffersListProps> = ({
         
         // Debug logging
         console.log('OffersList - Raw offer data:', JSON.stringify(offer, null, 2));
-        console.log('OffersList - Extracted amount:', offerAmount);
+        console.log('OffersList - User data check:', {
+          'offer.user': offer.user,
+          'offer.user.name': offer.user?.name,
+          'offer.taskTakerId': offer.taskTakerId,
+          'offer.taskTakerId.firstName': offer.taskTakerId?.firstName,
+        });
+        
+        // Extract user name from offer - handle both backend structures
+        const userName = offer.user?.name || 
+                        (offer.taskTakerId?.firstName ? 
+                          `${offer.taskTakerId.firstName} ${offer.taskTakerId.lastName || ''}`.trim() : 
+                          'Tasker');
+        
+        console.log('OffersList - Final userName:', userName);
         
         return (
           <View style={styles.offerCard}>
@@ -91,8 +106,7 @@ export const OffersList: React.FC<OffersListProps> = ({
                 <View style={styles.offerUserInfo}>
                   <View style={styles.offerNameRow}>
                     <Text style={styles.offerUserName}>
-                      {offer.taskTakerId?.firstName || 'Tasker'}{' '}
-                      {offer.taskTakerId?.lastName || ''}
+                      {userName}
                     </Text>
                     <Ionicons name="star" size={14} color="#007AFF" style={styles.verifiedIcon} />
                   </View>
@@ -100,15 +114,15 @@ export const OffersList: React.FC<OffersListProps> = ({
                   <View style={styles.offerRating}>
                     <Ionicons name="star" size={14} color="#FFB800" />
                     <Text style={styles.offerRatingText}>
-                      {offer.taskTakerId?.rating?.toFixed(1) || '4.4'}
+                      {(offer.user?.rating || offer.taskTakerId?.rating)?.toFixed(1) || '4.4'}
                     </Text>
                     <Text style={styles.offerRatingCount}>
-                      ({offer.taskTakerId?.completedTasks || 352})
+                      ({offer.user?.completedTasks || offer.taskTakerId?.completedTasks || 0})
                     </Text>
                   </View>
 
                   <Text style={styles.offerCompletionRate}>
-                    {offer.taskTakerId?.completionRate || '98%'} Completion Rate
+                    {offer.user?.completionRate || offer.taskTakerId?.completionRate || '98%'} Completion Rate
                   </Text>
 
                   {/* Message */}
