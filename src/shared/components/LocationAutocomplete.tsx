@@ -5,6 +5,7 @@ import * as Location from 'expo-location';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -41,14 +42,10 @@ interface LocationAutocompleteProps {
 }
 
 // Mapbox Access Token Configuration
-// You can get your token from: https://account.mapbox.com/access-tokens/
-// In React Native with Expo, use EXPO_PUBLIC_ prefix (equivalent to VITE_ in web)
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_TOKEN || 'YOUR_MAPBOX_ACCESS_TOKEN_HERE';
 
 // Mapbox Geocoding API configuration
 const MAPBOX_BASE_URL = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
-const SEARCH_TYPES = 'country,region,postcode,district,place,locality,neighborhood,address';
-const COUNTRIES = 'AU'; // Focus on Australia as shown in your image
 
 export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   onSelect,
@@ -69,16 +66,27 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<Coordinates | null>(null);
   const [detectingLocation, setDetectingLocation] = useState(false);
+  const [permissionStatus, setPermissionStatus] = useState<'unknown' | 'granted' | 'denied'>('unknown');
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setQuery(initialValue);
   }, [initialValue]);
 
-  // Auto-detect current location when component mounts
+  // Check permission status on component mount
   useEffect(() => {
-    getCurrentLocation();
+    checkLocationPermission();
   }, []);
+
+  const checkLocationPermission = async () => {
+    try {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      setPermissionStatus(status === 'granted' ? 'granted' : 'denied');
+    } catch (error) {
+      console.log('Error checking permission:', error);
+      setPermissionStatus('unknown');
+    }
+  };
 
   // Show country detection status in placeholder when detecting
   const dynamicPlaceholder = isDetectingCountry 
@@ -92,16 +100,71 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     countryName: countryInfo.countryName
   });
 
+  const requestLocationPermission = async (): Promise<boolean> => {
+    try {
+      const { status: existingStatus } = await Location.getForegroundPermissionsAsync();
+      
+      if (existingStatus === 'granted') {
+        setPermissionStatus('granted');
+        return true;
+      }
+
+      // Show user-friendly alert explaining why we need location
+      Alert.alert(
+        'Location Permission Required',
+        'To help you find nearby tasks and set your location quickly, this app needs access to your location.\n\nYou can always enter your location manually if you prefer.',
+        [
+          {
+            text: 'Enter Manually',
+            style: 'cancel',
+            onPress: () => {
+              setPermissionStatus('denied');
+              // Focus on the search input
+              console.log('📍 User chose to enter location manually');
+            }
+          },
+          {
+            text: 'Allow Location',
+            onPress: async () => {
+              const { status } = await Location.requestForegroundPermissionsAsync();
+              const granted = status === 'granted';
+              setPermissionStatus(granted ? 'granted' : 'denied');
+              
+              if (!granted) {
+                Alert.alert(
+                  'Location Access Needed',
+                  'To use current location, please enable location permissions in your device settings.\n\nGo to Settings > MyToDoo > Location and select "While Using App"',
+                  [
+                    { text: 'Enter Manually', style: 'cancel' },
+                    { text: 'Open Settings', onPress: () => Location.requestForegroundPermissionsAsync() }
+                  ]
+                );
+              }
+              
+              return granted;
+            }
+          }
+        ]
+      );
+      
+      return false;
+    } catch (error) {
+      console.error('❌ Error requesting location permission:', error);
+      setPermissionStatus('denied');
+      return false;
+    }
+  };
+
   const getCurrentLocation = async () => {
     try {
       setDetectingLocation(true);
+      setError(null);
       console.log('📍 Getting current location...');
       
-      // Request permissions
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
+      // Check/request permissions
+      const hasPermission = await requestLocationPermission();
+      if (!hasPermission) {
         console.log('❌ Location permission denied');
-        setError('Location permission denied. Please enable location access.');
         return;
       }
 
@@ -127,37 +190,54 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       
       if (reverseGeocodeResult.length > 0) {
         const address = reverseGeocodeResult[0];
-        const addressParts = [
-          address.street,
-          address.streetNumber,
-          address.city || address.subregion,
-          address.region,
-          address.country
-        ].filter(Boolean);
         
-        const readableAddress = addressParts.join(', ');
+        // 🎯 IMPROVED: Show only suburb/city, not full address
+        const suburbOnly = address.city || address.subregion || address.district;
+        const regionInfo = address.region;
         
-        console.log('📍 Current location detected:', readableAddress);
+        // Create a clean suburb + region format
+        const shortAddress = [suburbOnly, regionInfo].filter(Boolean).join(', ');
         
-        // Auto-fill and auto-select the current location
-        setQuery(readableAddress);
+        console.log('📍 Current location detected:', shortAddress);
+        console.log('   Full address available:', {
+          street: address.street,
+          streetNumber: address.streetNumber,
+          city: address.city,
+          subregion: address.subregion,
+          region: address.region,
+          country: address.country
+        });
         
-        // Automatically trigger onSelect with current location
+        // Auto-fill with suburb only
+        setQuery(shortAddress);
+        
+        // Automatically trigger onSelect with suburb location
         const locationData: LocationData = {
-          address: readableAddress,
+          address: shortAddress,
           coordinates: coords,
         };
         
-        console.log('✅ Auto-selecting current location');
+        console.log('✅ Auto-selecting current suburb/city');
         onSelect(locationData);
         setSuggestions([]);
         setShowSuggestions(false);
         setError(null);
       }
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error getting current location:', error);
-      setError('Failed to get current location. Please try again.');
+      
+      // Provide specific error messages
+      let errorMessage = 'Failed to get current location. ';
+      if (error.code === 'E_LOCATION_TIMEOUT') {
+        errorMessage += 'Location request timed out. Please try again or enter manually.';
+      } else if (error.code === 'E_LOCATION_UNAVAILABLE') {
+        errorMessage += 'Location services unavailable. Please enter manually.';
+      } else {
+        errorMessage += 'Please try again or enter manually.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setDetectingLocation(false);
     }
@@ -324,21 +404,41 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     );
   };
 
+  const getLocationButtonText = () => {
+    if (detectingLocation) return 'Getting your location...';
+    if (permissionStatus === 'denied') return 'Enable location to use this';
+    return 'Use Current Location';
+  };
+
+  const getLocationButtonStyle = () => {
+    if (permissionStatus === 'denied') {
+      return [styles.currentLocationButton, styles.currentLocationButtonDisabled];
+    }
+    return styles.currentLocationButton;
+  };
+
   return (
     <View style={[styles.container, style]}>
       {/* Use Current Location Button */}
       <TouchableOpacity
         onPress={getCurrentLocation}
-        style={styles.currentLocationButton}
+        style={getLocationButtonStyle()}
         disabled={detectingLocation || isDetectingCountry}
       >
         {detectingLocation ? (
           <ActivityIndicator size="small" color="#4285F4" />
         ) : (
-          <Ionicons name="locate" size={20} color="#4285F4" />
+          <Ionicons 
+            name="locate" 
+            size={20} 
+            color={permissionStatus === 'denied' ? '#999' : '#4285F4'} 
+          />
         )}
-        <Text style={styles.currentLocationText}>
-          {detectingLocation ? 'Detecting location...' : 'Use Current Location'}
+        <Text style={[
+          styles.currentLocationText,
+          permissionStatus === 'denied' && styles.currentLocationTextDisabled
+        ]}>
+          {getLocationButtonText()}
         </Text>
       </TouchableOpacity>
 
@@ -408,10 +508,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     gap: 8,
   },
+  currentLocationButtonDisabled: {
+    backgroundColor: '#F5F5F5',
+    borderColor: '#DDD',
+  },
   currentLocationText: {
     fontSize: 15,
     fontWeight: '600',
     color: '#4285F4',
+  },
+  currentLocationTextDisabled: {
+    color: '#999',
   },
   inputContainer: {
     flexDirection: 'row',

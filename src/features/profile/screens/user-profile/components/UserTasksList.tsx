@@ -1,3 +1,4 @@
+import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import React from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -34,35 +35,43 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
     }
   };
 
-  const renderTaskItem = ({ item }: { item: Task }) => (
-    <TouchableOpacity
-      style={styles.taskCard}
-      activeOpacity={0.7}
-      onPress={() => onTaskPress(item._id)}
-    >
-      <View style={styles.taskHeader}>
-        <View style={styles.taskInfo}>
-          <Text style={styles.taskTitle} numberOfLines={2}>
-            {item.title}
-          </Text>
-          <Text style={styles.taskLocation}>
-            {item.location?.address || 'Location not specified'}
-          </Text>
-          <View style={styles.taskMeta}>
-            <Text style={[styles.taskStatus, { color: getStatusColor(item.status) }]}>
-              {item.status?.charAt(0).toUpperCase() + item.status?.slice(1)}
+  const renderTaskItem = ({ item }: { item: Task }) => {
+    // Get proper currency formatting
+    const currencyInfo = getCurrencyFromLocation(item.location);
+    const formattedPrice = item.formattedBudget || 
+      (item.budget ? formatCurrency(item.budget, currencyInfo) : 
+      `${currencyInfo.symbol}0`);
+    
+    return (
+      <TouchableOpacity
+        style={styles.taskCard}
+        activeOpacity={0.7}
+        onPress={() => onTaskPress(item._id)}
+      >
+        <View style={styles.taskHeader}>
+          <View style={styles.taskInfo}>
+            <Text style={styles.taskTitle} numberOfLines={2}>
+              {item.title}
             </Text>
-            <Text style={styles.taskDate}>{formatDate(item.createdAt)}</Text>
+            <Text style={styles.taskLocation}>
+              {item.location?.address || 'Location not specified'}
+            </Text>
+            <View style={styles.taskMeta}>
+              <Text style={[styles.taskStatus, { color: getStatusColor(item.status) }]}>
+                {item.status?.charAt(0).toUpperCase() + item.status?.slice(1)}
+              </Text>
+              <Text style={styles.taskDate}>{formatDate(item.createdAt)}</Text>
+            </View>
+          </View>
+          <View style={styles.taskPrice}>
+            <Text style={styles.priceText}>
+              {formattedPrice}
+            </Text>
           </View>
         </View>
-        <View style={styles.taskPrice}>
-          <Text style={styles.priceText}>
-            {item.formattedBudget || `${item.currency || 'A$'}${item.budget}`}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   if (tasks.length === 0) {
     return (

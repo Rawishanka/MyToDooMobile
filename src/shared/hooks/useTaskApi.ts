@@ -107,6 +107,23 @@ export function useFilterTasks(params: TaskFilterParams, enabled = true) {
     queryFn: () => TaskAPI.filterTasks(params),
     enabled: enabled && Object.keys(params).length > 0,
     staleTime: 1 * 60 * 1000, // 1 minute - shorter cache for filter results
+    retry: (failureCount, error: any) => {
+      // Don't retry on backend routing conflicts (500 errors with ObjectId)
+      if (error?.response?.status === 500 && 
+          error?.response?.data?.message?.includes('Cast to ObjectId failed')) {
+        console.warn('🚨 Detected routing conflict, not retrying');
+        return false;
+      }
+      
+      // Don't retry on other 500 errors
+      if (error?.response?.status === 500) {
+        return false;
+      }
+      
+      // Retry network errors up to 2 times
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 }
 

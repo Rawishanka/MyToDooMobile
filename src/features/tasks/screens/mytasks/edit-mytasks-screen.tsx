@@ -1,6 +1,6 @@
 import { LocationAutocomplete, LocationData } from '@/src/shared/components/LocationAutocomplete';
 import { useGetCategories, useUpdateTask } from '@/src/shared/hooks/useTaskApi';
-import { getCurrencyFromLocation, getMinimumBudget } from '@/src/shared/utils/currency';
+import { formatNumber, getCurrencyFromLocation, getMinimumBudget } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
@@ -8,26 +8,26 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import smart image validation (same as Create Task)
 import {
-  SmartValidationResult,
-  TaskContext,
-  validateImageSmart
+    SmartValidationResult,
+    TaskContext,
+    validateImageSmart
 } from '@/src/services/smartImageValidator';
 
 interface EditTaskScreenProps {
@@ -444,7 +444,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     const budgetNumber = parseFloat(validText);
     if (validText && !isNaN(budgetNumber)) {
       if (budgetNumber < minimumBudget) {
-        setBudgetError(`Minimum budget is ${currencySymbol}${minimumBudget}`);
+        setBudgetError(`Minimum budget is ${currencySymbol}${formatNumber(minimumBudget)}`);
       } else {
         setBudgetError('');
       }
@@ -469,7 +469,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     const budgetNumber = parseFloat(budget);
     if (budget && !isNaN(budgetNumber)) {
       if (budgetNumber < minimumBudget) {
-        setBudgetError(`Minimum budget is ${currencySymbol}${minimumBudget}`);
+        setBudgetError(`Minimum budget is ${currencySymbol}${formatNumber(minimumBudget)}`);
       } else {
         setBudgetError('');
       }
@@ -552,7 +552,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
       if (descriptionLength < 20) missingFields.push('Description (min 20 chars)');
       if (!selectedLocation) missingFields.push('Location');
       if (selectedOption === '') missingFields.push('When');
-      if (!isBudgetValid) missingFields.push(`Budget (min ${currencySymbol}${minimumBudget})`);
+      if (!isBudgetValid) missingFields.push(`Budget (min ${currencySymbol}${formatNumber(minimumBudget)})`);
       
       Alert.alert(
         'Incomplete Form',
@@ -562,7 +562,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
         (descriptionLength < 20 ? '• Description must be at least 20 characters\n' : '') +
         (!selectedLocation ? '• Select a location\n' : '') +
         (selectedOption === '' ? '• Select when you need this done\n' : '') +
-        (!isBudgetValid ? `• Budget must be at least ${currencySymbol}${minimumBudget}` : '')
+        (!isBudgetValid ? `• Budget must be at least ${currencySymbol}${formatNumber(minimumBudget)}` : '')
       );
       return;
     }
@@ -1045,7 +1045,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>Budget (Optional)</Text>
             <Text style={styles.helperText}>
-              Minimum recommended: {currencySymbol}{minimumBudget}. You can negotiate the final price later.
+              Minimum recommended: {currencySymbol}{formatNumber(minimumBudget)}. You can negotiate the final price later.
             </Text>
             <View style={[
               styles.budgetInputContainer,

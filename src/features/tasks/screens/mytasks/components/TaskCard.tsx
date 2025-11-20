@@ -1,5 +1,6 @@
 import { Task } from '@/src/api/types/tasks';
 import { useAcceptOffer, useCancelTask, useCompleteTask, useDeleteTask } from '@/src/shared/hooks/useTaskApi';
+import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
@@ -469,6 +470,12 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     }
   };
 
+  // Get currency info and format budget with thousand separators
+  const currencyInfo = getCurrencyFromLocation(task.location);
+  const formattedBudgetDisplay = task.formattedBudget || 
+    (task.budget ? formatCurrency(task.budget, currencyInfo) : 
+    `${currencyInfo.symbol}0`);
+
   return (
     <View style={styles.card} pointerEvents="auto">
       {/* Clickable Card Content - Navigates to Details */}
@@ -536,7 +543,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           {/* Price and User Info */}
           <View style={styles.price}>
             <Text style={styles.priceText}>
-              {task.formattedBudget || `${task.currency || 'A$'}${task.budget}`}
+              {formattedBudgetDisplay}
             </Text>
             {task.createdBy && (
               <Image

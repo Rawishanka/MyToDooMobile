@@ -1,15 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useUserRating } from '../../hooks';
 import {
-    ErrorState,
-    LoadingState,
-    StatsCard,
-    TasksTabsSection,
-    UserInfoCard,
-    UserProfileHeader,
-    UserTasksList,
+  ErrorState,
+  LoadingState,
+  StatsCard,
+  TasksTabsSection,
+  UserInfoCard,
+  UserProfileHeader,
+  UserTasksList,
 } from './components';
+import { GetMoreReviewsSection } from './components/GetMoreReviewsSection';
+import { OverallRatingSection } from './components/OverallRatingSection';
+import { ReviewsList } from './components/ReviewsList';
 import { useUserProfile } from './hooks/useUserProfile';
 
 export default function UserProfileScreen() {
@@ -25,6 +29,17 @@ export default function UserProfileScreen() {
     getTasksByTab,
     handleTaskPress,
   } = useUserProfile();
+
+  // Get the user ID from userData
+  const userId = userData?.user?._id || '';
+  
+  const {
+    ratingData,
+    loading: ratingLoading,
+    error: ratingError,
+    loadMoreReviews,
+    refreshRatings,
+  } = useUserRating(userId);
 
   if (isLoading) {
     return <LoadingState />;
@@ -69,6 +84,54 @@ export default function UserProfileScreen() {
         <UserInfoCard user={userData.user} formatDate={formatDate} />
 
         <StatsCard stats={userData.stats} />
+
+        {/* Rating and Reviews Section */}
+        {ratingData && (
+          <>
+            <OverallRatingSection
+              averageRating={ratingData?.stats?.overall_rating || 0}
+              totalReviews={ratingData?.stats?.total_reviews || 0}
+              ratingDistribution={ratingData?.stats?.rating_distribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
+              completionRate={ratingData?.stats?.completion_rate || 0}
+              totalTasks={ratingData?.stats?.total_completed_tasks || 0}
+            />
+            
+            <GetMoreReviewsSection 
+              userId={userId}
+            />
+            
+            <ReviewsList
+              reviews={ratingData?.reviews || []}
+              loading={ratingLoading}
+              onLoadMore={loadMoreReviews}
+              hasMore={ratingData?.pagination?.has_next || false}
+            />
+          </>
+        )}
+
+        {/* Show default rating section when loading or no data */}
+        {!ratingData && !ratingLoading && (
+          <>
+            <OverallRatingSection
+              averageRating={0}
+              totalReviews={0}
+              ratingDistribution={{"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
+              completionRate={0}
+              totalTasks={0}
+            />
+            
+            <GetMoreReviewsSection 
+              userId={userId}
+            />
+            
+            <ReviewsList
+              reviews={[]}
+              loading={false}
+              onLoadMore={() => {}}
+              hasMore={false}
+            />
+          </>
+        )}
 
         <TasksTabsSection
           activeTab={activeTab}

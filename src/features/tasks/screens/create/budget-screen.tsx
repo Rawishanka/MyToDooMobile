@@ -1,7 +1,7 @@
 // BudgetScreen.tsx
 
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
-import { getCurrencyFromLocation, getCurrencySymbol, getDefaultBudget, getMinimumBudget } from '@/src/shared/utils/currency';
+import { formatNumber, getCurrencyFromLocation, getCurrencySymbol, getDefaultBudget, getMinimumBudget } from '@/src/shared/utils/currency';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -9,10 +9,10 @@ import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -144,7 +144,7 @@ export default function BudgetScreen() {
       {/* Title */}
       <Text style={styles.title}>Enter Your budget</Text>
       <Text style={styles.subtitle}>
-        Minimum budget is {currencyInfo.symbol}{minimumBudget}. Don&apos;t worry, you can always negotiate the final price later
+        Minimum budget is {currencyInfo.symbol}{formatNumber(minimumBudget)}. Don&apos;t worry, you can always negotiate the final price later
       </Text>
 
       {/* Budget Display */}
@@ -155,7 +155,7 @@ export default function BudgetScreen() {
           budget && Number(budget) < minimumBudget && Number(budget) > 0 && styles.invalidBudgetText,
           !hasUserInteracted && !budget && styles.placeholderText
         ]}>
-          {budget || (!hasUserInteracted ? defaultBudgetAmount.toString() : '0')}
+          {budget ? formatNumber(Number(budget)) : (!hasUserInteracted ? formatNumber(defaultBudgetAmount) : '0')}
         </Text>
       </TouchableOpacity>
       
@@ -166,7 +166,7 @@ export default function BudgetScreen() {
         </Text>
       ) : budget && Number(budget) < minimumBudget && Number(budget) > 0 ? (
         <Text style={styles.validationText}>
-          Minimum budget is {currencyInfo.symbol}{minimumBudget}
+          Minimum budget is {currencyInfo.symbol}{formatNumber(minimumBudget)}
         </Text>
       ) : null}
 

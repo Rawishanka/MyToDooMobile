@@ -157,21 +157,46 @@ export const getCurrencyFromLocation = (location?: { address?: string }): Curren
 };
 
 /**
- * Format amount with currency symbol
+ * Format amount with currency symbol and thousand separators
  * @param amount - Numeric amount
  * @param currencyInfo - Currency information
- * @returns Formatted string (e.g., "$100", "₹500", "Rs 750")
+ * @returns Formatted string (e.g., "$1,000", "₹5,500", "Rs 7,500")
  */
 export const formatCurrency = (amount: number, currencyInfo: CurrencyInfo): string => {
+  // Format number with thousand separators
+  const formattedAmount = amount.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+  
   // For currencies with symbol before amount
   const symbolBeforeAmount = ['$', '£', '€', '¥', '₹', 'R$', 'Fr', '₽', '₪', '₺', 'R', '₦'];
   
   if (symbolBeforeAmount.includes(currencyInfo.symbol)) {
-    return `${currencyInfo.symbol}${amount.toFixed(2)}`;
+    return `${currencyInfo.symbol}${formattedAmount}`;
   }
   
   // For currencies with symbol after amount (or space separated)
-  return `${currencyInfo.symbol} ${amount.toFixed(2)}`;
+  return `${currencyInfo.symbol} ${formattedAmount}`;
+};
+
+/**
+ * Format number with thousand separators
+ * @param amount - Numeric amount
+ * @param options - Formatting options
+ * @returns Formatted string with commas (e.g., "1,000", "15,000")
+ */
+export const formatNumber = (
+  amount: number, 
+  options: {
+    minimumFractionDigits?: number;
+    maximumFractionDigits?: number;
+  } = {}
+): string => {
+  return amount.toLocaleString('en-US', {
+    minimumFractionDigits: options.minimumFractionDigits ?? 0,
+    maximumFractionDigits: options.maximumFractionDigits ?? 2,
+  });
 };
 
 /**
