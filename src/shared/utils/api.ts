@@ -14,11 +14,17 @@ export function createApi(baseURL: string) {
     });
 
     axiosInstance.interceptors.request.use(async (config) => {
+        // Skip token for authentication endpoints (login, signup, google auth)
+        const isAuthEndpoint = config.url?.includes('/auth/login') || 
+                               config.url?.includes('/auth/signup') || 
+                               config.url?.includes('/auth/google') ||
+                               config.url?.includes('/auth/register');
+        
         // First try to get token from auth store
         let token = useAuthStore.getState().token;
         
         // If no token in store, try to get from AsyncStorage
-        if (!token) {
+        if (!token && !isAuthEndpoint) {
             try {
                 const storedToken = await AsyncStorage.getItem('token');
                 if (storedToken) {
@@ -34,8 +40,11 @@ export function createApi(baseURL: string) {
             config.headers.Authorization = `Bearer ${token}`;
             console.log("🔐 Added auth header to request:", config.url);
             console.log("🔐 Token preview:", token.substring(0, 20) + "...");
-        } else {
+        } else if (!isAuthEndpoint) {
+            // Only warn if it's NOT an auth endpoint
             console.warn("⚠️ No token available for API request to:", config.url);
+        } else {
+            console.log("✅ Auth endpoint - no token required:", config.url);
         }
         
         return config;

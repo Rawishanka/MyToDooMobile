@@ -79,9 +79,6 @@ export default function CreateTaskScreen() {
   // Validation errors
   const [titleError, setTitleError] = useState('');
   const [descriptionError, setDescriptionError] = useState('');
-  const [categoryError, setCategoryError] = useState('');
-  const [locationError, setLocationError] = useState('');
-  const [whenError, setWhenError] = useState('');
   const [touched, setTouched] = useState({ 
     title: false, 
     description: false, 
@@ -843,8 +840,13 @@ export default function CreateTaskScreen() {
                 touched.category && !selectedCategory && styles.inputError
               ]}
               onPress={() => {
+                const wasOpen = showCategoryDropdown;
                 setShowCategoryDropdown(!showCategoryDropdown);
-                setTouched({ ...touched, category: true });
+                
+                // Only mark as touched when closing dropdown without selection
+                if (wasOpen && !selectedCategory) {
+                  setTouched({ ...touched, category: true });
+                }
               }}
             >
               <Text style={[styles.categorySelectorText, !selectedCategory && styles.placeholder]}>
@@ -885,7 +887,8 @@ export default function CreateTaskScreen() {
                           setSelectedCategory(category);
                           setShowCategoryDropdown(false);
                           setCategorySearchQuery('');
-                          setCategoryError('');
+                          // Clear any validation error when category is selected
+                          setTouched(prev => ({ ...prev, category: false }));
                         }}
                       >
                         <Text
@@ -1002,7 +1005,6 @@ export default function CreateTaskScreen() {
                 console.log('   Received location:', location);
                 handleLocationSelect(location);
                 setTouched({ ...touched, location: true });
-                setLocationError('');
                 console.log('   Location touched and error cleared');
               }}
               onFocus={handleLocationFocus}
@@ -1049,7 +1051,6 @@ export default function CreateTaskScreen() {
             onSelectOption={(option) => {
               setSelectedOption(option);
               setTouched({ ...touched, when: true });
-              setWhenError('');
             }}
             onTimeDate={onTimeDate}
             beforeDate={beforeDate}

@@ -1,23 +1,25 @@
 import { useLocalSearchParams } from 'expo-router';
-import React from 'react';
+import React, { useRef } from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
 import {
-  AskQuestionModal,
-  DetailHeader,
-  ErrorState,
-  LoadingState,
-  MakeOfferSection,
-  MyOfferCard,
-  OffersList,
-  QuestionsList,
-  TabsSection,
-  TaskInfoCard,
+    AskQuestionModal,
+    DetailHeader,
+    ErrorState,
+    LoadingState,
+    MakeOfferSection,
+    MyOfferCard,
+    OffersList,
+    QuestionsList,
+    TabsSection,
+    TaskInfoCard,
 } from './components';
 import { useTaskDetail } from './hooks/useTaskDetail';
 
 export default function TaskDetailScreen() {
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
+  const scrollViewRef = useRef<ScrollView>(null);
+  const tabsSectionRef = useRef<View>(null);
 
   const {
     task,
@@ -51,6 +53,22 @@ export default function TaskDetailScreen() {
     handlePaymentSuccess,
   } = useTaskDetail({ taskId: taskId! });
 
+  // Handle tab change with auto-scroll
+  const handleTabChange = (tab: 'offers' | 'questions') => {
+    setActiveTab(tab);
+    
+    // Scroll to tabs section after a small delay to ensure render
+    setTimeout(() => {
+      tabsSectionRef.current?.measureLayout(
+        scrollViewRef.current as any,
+        (x, y) => {
+          scrollViewRef.current?.scrollTo({ y: y - 20, animated: true });
+        },
+        () => console.log('Failed to measure tabs section')
+      );
+    }, 100);
+  };
+
   if (isLoading) {
     return <LoadingState />;
   }
@@ -66,7 +84,11 @@ export default function TaskDetailScreen() {
 
         <DetailHeader />
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          ref={scrollViewRef}
+          style={styles.content} 
+          showsVerticalScrollIndicator={false}
+        >
         {/* Only show Make Offer section to taskers (not the task creator) */}
         {task?.createdBy?._id !== currentUser?._id && (
           <MakeOfferSection 
@@ -92,7 +114,9 @@ export default function TaskDetailScreen() {
           />
         )}
 
-        <TabsSection activeTab={activeTab} onTabChange={setActiveTab} />
+        <View ref={tabsSectionRef} collapsable={false}>
+          <TabsSection activeTab={activeTab} onTabChange={handleTabChange} />
+        </View>
 
         <View style={styles.tabContent}>
           {activeTab === 'offers' ? (
