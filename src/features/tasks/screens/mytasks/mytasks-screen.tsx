@@ -6,12 +6,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // Components
+import { Ionicons } from '@expo/vector-icons';
 import {
   LoadingState,
   MyTasksHeader,
-  SearchModal,
   TaskCard,
 } from './components';
+import SearchBar from './components/SearchModal';
 
 // Notification Modal
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
@@ -342,28 +343,58 @@ export default function MyTasksScreen() {
       });
     };
 
+    // Helper function to filter tasks by search text
+    const filterBySearch = (tasks: Task[]) => {
+      const searchLower = searchText.toLowerCase().trim();
+      if (!searchLower) return tasks;
+      
+      return tasks.filter((task: Task) => {
+        // Search in title
+        if (task.title?.toLowerCase().includes(searchLower)) return true;
+        
+        // Search in location
+        if (task.location?.address?.toLowerCase().includes(searchLower)) return true;
+        
+        // Search in categories
+        if (task.categories?.some(cat => cat.toLowerCase().includes(searchLower))) return true;
+        
+        // Search in details/description
+        if (task.details?.toLowerCase().includes(searchLower)) return true;
+        
+        return false;
+      });
+    };
+
     // For Tasker role - show available tasks and their offer status
     if (userRole === 'Tasker') {
       // Open Tasks: All available tasks that are open and active for taskers to offer on
       const openTasks = sortByCreatedDate(
-        allTasks.filter((task: Task) => 
-          task.status === 'open' || task.status === 'active'
+        filterBySearch(
+          allTasks.filter((task: Task) => 
+            task.status === 'open' || task.status === 'active'
+          )
         )
       );
       
       // Todo Tasks: Tasks where their offers have been accepted and are in progress
-      const todoTasks = allOffers.filter((offer: any) => 
-        offer.status === 'accepted' && 
-        (offer.task?.status === 'assigned' || offer.task?.status === 'in_progress' || offer.task?.status === 'accepted')
-      ).map((offer: any) => offer.task).filter(Boolean);
+      const todoTasks = filterBySearch(
+        allOffers.filter((offer: any) => 
+          offer.status === 'accepted' && 
+          (offer.task?.status === 'assigned' || offer.task?.status === 'in_progress' || offer.task?.status === 'accepted')
+        ).map((offer: any) => offer.task).filter(Boolean)
+      );
       
-      const completedTasks = allOffers.filter((offer: any) => 
-        offer.task?.status === 'completed'
-      ).map((offer: any) => offer.task).filter(Boolean);
+      const completedTasks = filterBySearch(
+        allOffers.filter((offer: any) => 
+          offer.task?.status === 'completed'
+        ).map((offer: any) => offer.task).filter(Boolean)
+      );
       
-      const overdueTasks = allOffers.filter((offer: any) => 
-        offer.task?.status === 'overdue'
-      ).map((offer: any) => offer.task).filter(Boolean);
+      const overdueTasks = filterBySearch(
+        allOffers.filter((offer: any) => 
+          offer.task?.status === 'overdue'
+        ).map((offer: any) => offer.task).filter(Boolean)
+      );
       
       // Cancelled Tasks: Combine tasks from offers and all tasks that are cancelled
       const cancelledTasksFromOffers = allOffers.filter((offer: any) => 
@@ -383,9 +414,11 @@ export default function MyTasksScreen() {
       const sortedCancelledTasks = sortByCreatedDate(uniqueCancelledTasks);
       
       // Use real cancelled tasks if available, otherwise use dummy data
-      const finalCancelledTasks = sortedCancelledTasks.length > 0 
+      const baseCancelledTasks = sortedCancelledTasks.length > 0 
         ? sortedCancelledTasks 
         : dummyCancelledTasks;
+      
+      const finalCancelledTasks = filterBySearch(baseCancelledTasks);
       
       console.log('📋 Tasker Cancelled Tasks:', {
         fromOffers: cancelledTasksFromOffers.length,
@@ -407,8 +440,10 @@ export default function MyTasksScreen() {
     
     // For Poster role - filter based on tasks posted by current user
     const openTasks = sortByCreatedDate(
-      allTasks.filter((task: Task) => 
-        task.status === 'open' || task.status === 'active'
+      filterBySearch(
+        allTasks.filter((task: Task) => 
+          task.status === 'open' || task.status === 'active'
+        )
       )
     );
     
@@ -422,48 +457,62 @@ export default function MyTasksScreen() {
     }
     
     const todoTasks = sortByCreatedDate(
-      allTasks.filter((task: Task) => 
-        task.status === 'assigned' || task.status === 'in_progress'
+      filterBySearch(
+        allTasks.filter((task: Task) => 
+          task.status === 'assigned' || task.status === 'in_progress'
+        )
       )
     );
     
     const completedTasks = sortByCreatedDate(
-      allTasks.filter((task: Task) => 
-        task.status === 'completed'
+      filterBySearch(
+        allTasks.filter((task: Task) => 
+          task.status === 'completed'
+        )
       )
     );
     
     const overdueTasks = sortByCreatedDate(
-      allTasks.filter((task: Task) => 
-        task.status === 'overdue'
+      filterBySearch(
+        allTasks.filter((task: Task) => 
+          task.status === 'overdue'
+        )
       )
     );
     
     const cancelledTasks = sortByCreatedDate(
-      allTasks.filter((task: Task) => 
-        task.status === 'cancelled'
+      filterBySearch(
+        allTasks.filter((task: Task) => 
+          task.status === 'cancelled'
+        )
       )
     );
     
     // If no cancelled tasks from API, use dummy data
-    const finalCancelledTasks = cancelledTasks.length > 0 ? cancelledTasks : dummyCancelledTasks;
+    const baseCancelledTasksForPoster = cancelledTasks.length > 0 ? cancelledTasks : dummyCancelledTasks;
+    const finalCancelledTasks = filterBySearch(baseCancelledTasksForPoster);
 
     // For Poster role - tasks they've posted (sorted by creation date, newest first)
     const postedTasks = sortByCreatedDate(
-      allTasks.filter((task: Task) => 
-        task.status === 'open' || task.status === 'active' || task.status === 'assigned'
+      filterBySearch(
+        allTasks.filter((task: Task) => 
+          task.status === 'open' || task.status === 'active' || task.status === 'assigned'
+        )
       )
     );
 
     // For accepted offers - offers that have been accepted (sorted by creation date, newest first)
     const acceptedTasks = sortByCreatedDate(
-      allOffers.filter((offer: any) => 
-        offer.status === 'accepted'
+      filterBySearch(
+        allOffers.filter((offer: any) => 
+          offer.status === 'accepted'
+        )
       )
     );
     
     // If no accepted offers from API, use dummy data
-    const finalAcceptedTasks = acceptedTasks.length > 0 ? acceptedTasks : dummyAcceptedOffers;
+    const baseAcceptedTasks = acceptedTasks.length > 0 ? acceptedTasks : dummyAcceptedOffers;
+    const finalAcceptedTasks = filterBySearch(baseAcceptedTasks);
 
     return {
       openTasks,
@@ -474,7 +523,7 @@ export default function MyTasksScreen() {
       postedTasks,
       acceptedTasks: finalAcceptedTasks,
     };
-  }, [allTasks, allOffers, dummyAcceptedOffers, dummyCancelledTasks, userRole]);
+  }, [allTasks, allOffers, dummyAcceptedOffers, dummyCancelledTasks, userRole, searchText]);
 
   // Debug log categorized data counts
   console.log(`📋 Categorized Data for ${userRole}:`, {
@@ -507,6 +556,29 @@ export default function MyTasksScreen() {
         onSearchPress={() => setSearchVisible(true)}
         onNotificationPress={() => setShowNotifications(true)}
       />
+
+      {/* Search Bar */}
+      <SearchBar 
+        visible={searchVisible}
+        searchText={searchText}
+        onChangeText={setSearchText}
+        onClose={() => setSearchVisible(false)}
+      />
+
+      {/* Search Results Info */}
+      {searchText.trim().length > 0 && !searchVisible && (
+        <View style={styles.searchResultsInfo}>
+          <Text style={styles.searchResultsText}>
+            Searching for &quot;{searchText}&quot;
+          </Text>
+          <TouchableOpacity onPress={() => {
+            setSearchText('');
+            setSearchVisible(false);
+          }}>
+            <Ionicons name="close-circle" size={20} color="#666" />
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Role Selector */}
       <View style={styles.roleSelectorContainer}>
@@ -701,16 +773,6 @@ export default function MyTasksScreen() {
       </Tab.Navigator>
       </View>
 
-      {/* Search Modal - Only render when visible to prevent blocking touches */}
-      {searchVisible && (
-        <SearchModal
-          visible={searchVisible}
-          searchText={searchText}
-          onClose={() => setSearchVisible(false)}
-          onChangeText={setSearchText}
-        />
-      )}
-
       {/* Notification Modal - Only render when visible to prevent blocking touches */}
       {showNotifications && (
         <NotificationModal
@@ -787,6 +849,28 @@ const styles = StyleSheet.create({
   },
   activeRoleText: {
     color: '#fff',
+  },
+  searchResultsInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#f0f8ff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#d0e8ff',
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  searchResultsText: {
+    fontSize: 14,
+    color: '#007AFF',
+    fontWeight: '600',
+    flex: 1,
+    letterSpacing: 0.2,
   },
   tabsContainer: {
     flexDirection: 'row',
