@@ -231,17 +231,23 @@ export function useApiFunctions() {
   async function handleLoginUser(email: string, password: string) {
     // API_CONFIG.BASE_URL already handles the env variable and fallback
     const api = createApi(API_CONFIG.BASE_URL);
+    
+    // Prepare the request payload
+    const loginPayload = { email, password };
+    
     console.log("========================================");
     console.log("🔐 LOGIN ATTEMPT");
     console.log("========================================");
     console.log("📍 API URL:", API_CONFIG.BASE_URL + "/auth/login");
     console.log("📧 Email:", email);
+    console.log("🔒 Password length:", password?.length || 0, "characters");
+    console.log("📦 Request payload:", JSON.stringify(loginPayload, null, 2));
     console.log("🌐 BASE_URL from config:", API_CONFIG.BASE_URL);
     console.log("⏱️ Timeout:", API_CONFIG.TIMEOUT);
     console.log("========================================");
 
     try {
-      const response = await api.post('/auth/login', { email, password }, {
+      const response = await api.post('/auth/login', loginPayload, {
         timeout: API_CONFIG.TIMEOUT,
         headers: {
           'Content-Type': 'application/json',
@@ -283,13 +289,13 @@ export function useApiFunctions() {
       console.log("========================================");
       console.log("❌ LOGIN FAILED");
       console.log("========================================");
-      console.error("Error type:", error?.constructor?.name || 'Unknown');
-      console.error("Error code:", error?.code || 'No code');
-      console.error("Error message:", error?.message || 'No message');
-      console.error("Response status:", error?.response?.status || 'No status');
-      console.error("Response data:", error?.response?.data || 'No data');
-      console.error("Request URL:", error?.config?.url || 'No URL');
-      console.error("Request method:", error?.config?.method || 'No method');
+      console.log("⚠️ Error type:", error?.constructor?.name || 'Unknown');
+      console.log("⚠️ Error code:", error?.code || 'No code');
+      console.log("⚠️ Error message:", error?.message || 'No message');
+      console.log("⚠️ Response status:", error?.response?.status || 'No status');
+      console.log("⚠️ Response data:", JSON.stringify(error?.response?.data) || 'No data');
+      console.log("⚠️ Request URL:", error?.config?.url || 'No URL');
+      console.log("⚠️ Request method:", error?.config?.method || 'No method');
       console.log("========================================");
       
       // Development fallback - if server is not available, use mock data
@@ -327,33 +333,22 @@ export function useApiFunctions() {
         }
         
         // Production mode - throw network error
-        console.error("Network Error Details:", {
+        console.log("⚠️ Network Error Details:", {
             code: error?.code || 'No code',
             message: error?.message || 'No message',
-            config: error?.config || null,
             url: API_CONFIG.BASE_URL
         });
         throw new Error('Server connection failed. Please check your internet connection or try again later.');
       }
       
-      // Log detailed error information
-      console.error("❌ Login failed:");
-      console.error("Status:", error?.response?.status);
-      console.error("Status Text:", error?.response?.statusText);
-      console.error("Response Data:", error?.response?.data);
-      console.error("Error Message:", error?.message);
+      // Log detailed error information without causing Metro crashes
+      console.log("❌ Login failed - Details:");
+      console.log("• Status:", error?.response?.status);
+      console.log("• Response:", JSON.stringify(error?.response?.data));
+      console.log("• Message:", error?.message);
       
-      // Handle specific error cases
-      if (error?.response?.status === 401) {
-        throw new Error('Invalid email or password');
-      } else if (error?.response?.status === 404) {
-        throw new Error('Login service not available');
-      } else if (error?.response?.status >= 500) {
-        throw new Error('Server error. Please try again later');
-      }
-      
-      // Generic error
-      throw new Error(error?.response?.data?.message || 'Login failed. Please try again.');
+      // Re-throw the original error to preserve response data for proper error handling in the UI
+      throw error;
     }
   }
 

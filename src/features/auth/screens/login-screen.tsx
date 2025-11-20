@@ -7,13 +7,12 @@ import { useAuthStore } from '@/src/store/auth-task-store';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Google from 'expo-auth-session/providers/google';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -34,7 +33,6 @@ WebBrowser.maybeCompleteAuthSession();
 WebBrowser.warmUpAsync();
 
 export default function LoginScreen() {
-  const navigation = useNavigation();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -77,59 +75,7 @@ export default function LoginScreen() {
     scopes: ['openid', 'profile', 'email'],
   });
 
-  // Handle Google Sign-In response
-  useEffect(() => {
-    if (!response) return;
-
-    console.log('🔍 Google OAuth Response:', {
-      type: response.type,
-      params: (response as any).params,
-      error: (response as any).error,
-    });
-
-    if (response?.type === 'success') {
-      const { id_token, authentication } = (response as any).params;
-      const token = id_token || authentication?.idToken;
-      
-      if (token) {
-        handleGoogleSignInSuccess(token);
-      } else {
-        console.error('❌ No ID token in response:', (response as any).params);
-        Alert.alert(
-          'Authentication Error',
-          'Unable to retrieve authentication token. Please try again.',
-          [{ text: 'OK' }]
-        );
-        setGoogleLoading(false);
-      }
-    } else if (response?.type === 'error') {
-      console.error('❌ Google Sign-In error:', (response as any).error);
-      setGoogleLoading(false);
-      
-      // Check for specific error
-      const errorMsg = (response as any).error?.message || '';
-      if (errorMsg.includes('invalid_request') || errorMsg.includes('400')) {
-        Alert.alert(
-          'Google Sign-In Setup Required',
-          'Please add this redirect URI to your Google Cloud Console:\n\n' + 
-          redirectUri +
-          '\n\nAlso add https://auth.expo.io to Authorized JavaScript origins.',
-          [{ text: 'OK' }]
-        );
-      } else {
-        Alert.alert(
-          'Google Sign-In Failed',
-          errorMsg || 'An error occurred during Google Sign-In. Please check your Google Cloud Console configuration.',
-          [{ text: 'OK' }]
-        );
-      }
-    } else if (response?.type === 'dismiss' || response?.type === 'cancel') {
-      console.log('ℹ️ User dismissed/cancelled Google Sign-In');
-      setGoogleLoading(false);
-    }
-  }, [response]);
-
-  const handleGoogleSignInSuccess = async (idToken: string) => {
+  const handleGoogleSignInSuccess = useCallback(async (idToken: string) => {
     try {
       setGoogleLoading(true);
       
@@ -166,7 +112,6 @@ export default function LoginScreen() {
       
       // Force invalidate profile queries to ensure fresh profile data with user context
       if (authState.user?.id) {
-        const userSpecificKeys = [`user-profile-${authState.user.id}`, 'user-profile'];
         await queryClient.invalidateQueries({ queryKey: ['user-profile'] });
         console.log('🔄 Profile queries invalidated for user:', authState.user.id);
       }
@@ -183,22 +128,87 @@ export default function LoginScreen() {
       }
       
     } catch (error: any) {
-      console.error('❌ Google Sign-In backend error:', error);
-      console.error('❌ Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
+      // Use console.log to prevent Metro crashes
+      console.log('❌ Google Sign-In backend error:', error?.message);
+      console.log('📊 Error details:', {
+        message: error?.message,
+        backendMessage: error?.response?.data?.message,
+        status: error?.response?.status,
       });
       
       Alert.alert(
         'Sign-In Failed',
-        error.response?.data?.message || error.message || 'Unable to complete Google Sign-In. Please try again or use email/password.',
+        error?.response?.data?.message || error?.message || 'Unable to complete Google Sign-In. Please try again or use email/password.',
         [{ text: 'OK' }]
       );
     } finally {
       setGoogleLoading(false);
     }
-  };
+  }, [googleSignIn, clearCachesOnLogin, queryClient, router]);
+
+  // Handle Google Sign-In response
+  useEffect(() => {
+    if (!response) return;
+
+    console.log('🔍 Google OAuth Response:', {
+      type: response.type,
+      params: (response as any).params,
+      error: (response as any).error,
+    });
+
+    if (response?.type === 'success') {
+      const { id_token, authentication } = (response as any).params;
+      const token = id_token || authentication?.idToken;
+      
+      if (token) {
+        handleGoogleSignInSuccess(token);
+      } else {
+        console.log('⚠️ No ID token in response:', (response as any).params);
+        Alert.alert(
+          'Authentication Failed',
+          'Unable to complete Google Sign-In. The authentication token was not received.\n\nPlease try again or use email/password login.',
+          [{ text: 'OK' }]
+        );
+        setGoogleLoading(false);
+      }
+    } else if (response?.type === 'error') {
+      console.log('❌ Google Sign-In error:', (response as any).error?.message || 'Unknown error');
+      setGoogleLoading(false);
+      
+      // Check for specific error
+      const errorMsg = (response as any).error?.message || '';
+      const errorDescription = (response as any).error?.description || '';
+      
+      if (errorMsg.includes('invalid_request') || errorMsg.includes('400')) {
+        Alert.alert(
+          'Configuration Error',
+          'Google Sign-In is not properly configured.\n\nPlease use email/password login or contact support.',
+          [{ text: 'OK' }]
+        );
+      } else if (errorMsg.includes('access_denied') || errorDescription.includes('access_denied')) {
+        Alert.alert(
+          'Access Denied',
+          'Google Sign-In was denied. Please grant the necessary permissions or try email/password login.',
+          [{ text: 'OK' }]
+        );
+      } else if (errorMsg.includes('network') || errorMsg.includes('timeout')) {
+        Alert.alert(
+          'Connection Problem',
+          'Unable to connect to Google services. Please check your internet connection and try again.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'Google Sign-In Failed',
+          'Unable to sign in with Google. Please try again or use email/password login.',
+          [{ text: 'OK' }]
+        );
+      }
+    } else if (response?.type === 'dismiss' || response?.type === 'cancel') {
+      console.log('ℹ️ User cancelled Google Sign-In');
+      setGoogleLoading(false);
+    }
+  }, [response, handleGoogleSignInSuccess]);
 
   // Helper function to check if there's a pending task
   const hasPendingTask = () => {
@@ -267,11 +277,54 @@ export default function LoginScreen() {
   };
 
   const handleLogin = async () => {
-    // Validate inputs
-    if (!email || !password) {
+    // Comprehensive input validation
+    const trimmedEmail = email?.trim() || '';
+    const trimmedPassword = password?.trim() || '';
+
+    // Check for empty fields
+    if (!trimmedEmail && !trimmedPassword) {
       Alert.alert(
         'Missing Information', 
-        'Please enter both email and password.',
+        'Please enter your email and password to continue.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    if (!trimmedEmail) {
+      Alert.alert(
+        'Email Required', 
+        'Please enter your email address.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    if (!trimmedPassword) {
+      Alert.alert(
+        'Password Required', 
+        'Please enter your password.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      Alert.alert(
+        'Invalid Email Format', 
+        'Please enter a valid email address (e.g., example@email.com).',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    // Password length validation
+    if (trimmedPassword.length < 3) {
+      Alert.alert(
+        'Password Too Short', 
+        'Password must be at least 3 characters long.',
         [{ text: 'OK' }]
       );
       return;
@@ -285,7 +338,8 @@ export default function LoginScreen() {
       clearCachesOnLogin();
       await queryClient.clear(); // Force clear everything
       
-      await mutateAsync({ username: email, password });
+      // Use trimmed values for login
+      await mutateAsync({ username: trimmedEmail.toLowerCase(), password: trimmedPassword });
       
       // Force invalidate profile queries to ensure fresh profile data
       await queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
@@ -338,31 +392,107 @@ export default function LoginScreen() {
         }
       }
     } catch (error: any) {
-      console.error('Login Error:', error);
+      // Use console.log instead of console.error to prevent Metro crashes
+      console.log('❌ Login Error:', error?.message || 'Unknown error');
+      console.log('📊 Login Error Details:', {
+        status: error?.response?.status,
+        message: error?.message,
+        backendMessage: error?.response?.data?.message,
+        code: error?.code
+      });
       
-      // Show user-friendly error messages based on status code
+      // Get error message from backend if available
+      const backendMessage = error?.response?.data?.message || error?.response?.data?.error;
+      
+      // Show user-friendly error messages based on status code and error details
       if (error?.response?.status === 400 || error?.response?.status === 401) {
-        Alert.alert(
-          'Login Failed', 
-          'Invalid email or password. Please check your credentials and try again.',
-          [{ text: 'OK' }]
-        );
+        // Check if it's specifically about invalid email format
+        if (backendMessage?.toLowerCase().includes('email') && backendMessage?.toLowerCase().includes('invalid')) {
+          Alert.alert(
+            'Invalid Email Format', 
+            'The email address format is incorrect. Please check and try again.',
+            [{ text: 'OK' }]
+          );
+        } else if (backendMessage?.toLowerCase().includes('not found') || backendMessage?.toLowerCase().includes('does not exist')) {
+          Alert.alert(
+            'Account Not Found', 
+            'We couldn\'t find an account with this email address.\n\nWould you like to create a new account?',
+            [
+              { text: 'Try Again', style: 'cancel' },
+              { 
+                text: 'Create Account', 
+                onPress: () => router.push('/(auth)/signup' as any),
+                style: 'default'
+              }
+            ]
+          );
+        } else if (backendMessage?.toLowerCase().includes('invalid credentials') || 
+                   backendMessage?.toLowerCase().includes('incorrect password')) {
+          Alert.alert(
+            'Incorrect Credentials', 
+            'The email or password you entered is incorrect.\n\n✓ Check your email spelling\n✓ Verify your password is correct\n✓ Try using "Forgot Password" if needed',
+            [
+              { text: 'Try Again', style: 'cancel' },
+              { 
+                text: 'Reset Password', 
+                onPress: () => router.push('/(auth)/forgot-password' as any),
+                style: 'default'
+              }
+            ]
+          );
+        } else {
+          // Generic invalid credentials message
+          Alert.alert(
+            'Login Failed', 
+            backendMessage || 'Unable to log in with the provided credentials. Please verify your email and password.',
+            [{ text: 'OK' }]
+          );
+        }
       } else if (error?.response?.status === 404) {
         Alert.alert(
           'Account Not Found', 
-          'No account found with this email. Please sign up first.',
+          'This email is not registered.\n\nPlease check your email or create a new account.',
+          [
+            { text: 'Try Again', style: 'cancel' },
+            { 
+              text: 'Sign Up', 
+              onPress: () => router.push('/(auth)/signup' as any),
+              style: 'default'
+            }
+          ]
+        );
+      } else if (error?.response?.status === 429) {
+        Alert.alert(
+          'Too Many Attempts', 
+          'You\'ve made too many login attempts. Please wait a few minutes and try again.',
           [{ text: 'OK' }]
         );
-      } else if (error?.message?.includes('Network Error') || error?.code === 'ECONNREFUSED') {
+      } else if (error?.response?.status >= 500) {
         Alert.alert(
-          'Connection Error', 
-          'Unable to connect to the server. Please check your internet connection and try again.',
+          'Server Error', 
+          'Our servers are experiencing issues. Please try again in a few moments.',
+          [{ text: 'OK' }]
+        );
+      } else if (error?.message?.includes('Network Error') || 
+                 error?.code === 'ECONNREFUSED' || 
+                 error?.code === 'ETIMEDOUT' ||
+                 error?.message?.includes('timeout')) {
+        Alert.alert(
+          'Connection Problem', 
+          'Unable to connect to the server.\n\n✓ Check your internet connection\n✓ Make sure you have WiFi or mobile data\n✓ Try again in a moment',
+          [{ text: 'OK' }]
+        );
+      } else if (error?.code === 'ERR_NETWORK') {
+        Alert.alert(
+          'Network Error', 
+          'A network error occurred. Please check your connection and try again.',
           [{ text: 'OK' }]
         );
       } else {
+        // Show backend error message if available, otherwise generic message
         Alert.alert(
-          'Login Error', 
-          'Something went wrong. Please try again later.',
+          'Unable to Login', 
+          backendMessage || 'An unexpected error occurred. Please try again or contact support if the problem persists.',
           [{ text: 'OK' }]
         );
       }
@@ -375,33 +505,60 @@ export default function LoginScreen() {
     try {
       setGoogleLoading(true);
       
+      // Validate Google configuration
       if (!googleClientId) {
         Alert.alert(
-          'Configuration Error',
-          'Google Sign-In is not configured. Please contact support.',
+          'Setup Required',
+          'Google Sign-In is not configured for this app. Please use email/password login or contact support.',
           [{ text: 'OK' }]
         );
+        setGoogleLoading(false);
+        return;
+      }
+
+      if (!request) {
+        Alert.alert(
+          'Not Ready',
+          'Google Sign-In is initializing. Please wait a moment and try again.',
+          [{ text: 'OK' }]
+        );
+        setGoogleLoading(false);
         return;
       }
       
       // Log configuration for debugging
-      console.log('🔐 Google Sign-In Configuration:');
-      console.log('Client ID:', googleClientId);
+      console.log('🔐 Initiating Google Sign-In...');
+      console.log('Client ID:', googleClientId.substring(0, 20) + '...');
       console.log('Redirect URI:', redirectUri);
-      console.log('Using Proxy:', true);
       
       // Trigger Google Sign-In flow
       const result = await promptAsync();
-      console.log('Google Sign-In result:', result);
+      console.log('Google Sign-In result type:', result?.type);
       
     } catch (error: any) {
-      console.error('❌ Google Sign-In Error:', error);
+      console.log('❌ Google Sign-In Error:', error?.message || 'Unknown error');
       
-      Alert.alert(
-        'Sign-In Error',
-        'Something went wrong with Google Sign-In. Please try again.',
-        [{ text: 'OK' }]
-      );
+      const errorMessage = error?.message || '';
+      
+      if (errorMessage.includes('network') || errorMessage.includes('Network')) {
+        Alert.alert(
+          'Connection Error',
+          'Unable to connect to Google. Please check your internet connection and try again.',
+          [{ text: 'OK' }]
+        );
+      } else if (errorMessage.includes('popup') || errorMessage.includes('Popup')) {
+        Alert.alert(
+          'Browser Error',
+          'Unable to open Google Sign-In. Please try again or use email/password login.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'Sign-In Error',
+          'Unable to complete Google Sign-In. Please try again or use email/password login.',
+          [{ text: 'OK' }]
+        );
+      }
     } finally {
       setGoogleLoading(false);
     }

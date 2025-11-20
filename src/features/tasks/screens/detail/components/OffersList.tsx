@@ -47,7 +47,7 @@ export const OffersList: React.FC<OffersListProps> = ({
 
   if (otherOffers.length === 0) {
     return (
-      <View style={[styles.emptyState, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+      <View style={[styles.emptyState, { paddingBottom: Math.max(insets.bottom, 20), marginBottom: 100 }]}>
         <Ionicons name="document-outline" size={48} color="#ccc" />
         <Text style={styles.emptyStateText}>No other offers yet</Text>
         <Text style={styles.emptyStateSubtext}>
@@ -62,7 +62,7 @@ export const OffersList: React.FC<OffersListProps> = ({
       data={otherOffers}
       scrollEnabled={false}
       keyExtractor={(item: any) => item._id}
-      contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20) }}
+      contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20), marginBottom: 100 }}
       renderItem={({ item: offer }: { item: any }) => {
         // Handle both nested and flat offer structures
         const offerAmount = offer.offer?.amount || offer.amount || 0;

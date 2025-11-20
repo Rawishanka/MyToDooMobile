@@ -573,28 +573,63 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
       const selectedDate =
         selectedOption === 'on_time' ? onTimeDate : selectedOption === 'before' ? beforeDate : null;
 
+      console.log('\n🔨 EDIT TASK: Building update request...');
+      console.log('📝 EDIT TASK: Current form values:');
+      console.log('  - Title:', title);
+      console.log('  - Description:', description);
+      console.log('  - Budget:', budget);
+      console.log('  - Location:', selectedLocation?.address);
+      console.log('  - Category:', selectedCategory);
+      console.log('  - Date option:', selectedOption);
+      console.log('  - Selected date:', selectedDate);
+      console.log('  - Time block:', selectedTimeBlock);
+
       // Get currency code from location using utility function
       const currencyInfo = getCurrencyFromLocation(selectedLocation || undefined);
+      console.log('💰 EDIT TASK: Currency info:', currencyInfo);
 
-      // Prepare the update request body
-      const updateRequest = {
+      // Prepare the update request body matching backend API expectations
+      const updateRequest: any = {
         title: title.trim(),
-        description: description.trim(),
-        budget: budget ? parseFloat(budget) : 0,
+        details: description.trim(), // Backend expects 'details' field
+        budget: budget ? parseFloat(budget) : undefined,
         currency: currencyInfo.code,
-        time: selectedTimeBlock || "",
-        date: selectedDate ? selectedDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-        dateType: selectedOption === 'no_rush' ? 'flexible' : selectedOption,
-        location: selectedLocation ? {
+        time: selectedTimeBlock || undefined,
+        date: selectedDate ? selectedDate.toISOString().split('T')[0] : undefined,
+        dateType: selectedOption === 'no_rush' ? 'Easy' : selectedOption === 'on_time' ? 'DoneOn' : 'DoneBy',
+      };
+      
+      console.log('🗓️ EDIT TASK: Date type mapping:', {
+        selectedOption,
+        mappedDateType: updateRequest.dateType
+      });
+
+      // Add location only if it exists (GeoJSON format required by backend)
+      if (selectedLocation) {
+        updateRequest.location = {
           address: selectedLocation.address,
           coordinates: {
-            lat: selectedLocation.coordinates.lat,
-            lng: selectedLocation.coordinates.lng
+            type: "Point",
+            coordinates: [selectedLocation.coordinates.lng, selectedLocation.coordinates.lat] // GeoJSON: [longitude, latitude]
           }
-        } : undefined
-      };
+        };
+        console.log('📍 EDIT TASK: Location added (GeoJSON format):', updateRequest.location);
+      }
 
-      console.log('📤 Update request body:', updateRequest);
+      // Add category if changed
+      if (selectedCategory) {
+        updateRequest.category = selectedCategory; // Backend expects singular string
+        console.log('🏷️ EDIT TASK: Category added:', selectedCategory);
+      }
+
+      // Remove undefined values
+      Object.keys(updateRequest).forEach(key => 
+        updateRequest[key] === undefined && delete updateRequest[key]
+      );
+
+      console.log('\n📤 EDIT TASK: Final update request payload:');
+      console.log(JSON.stringify(updateRequest, null, 2));
+      console.log('\n🚀 EDIT TASK: Calling mutation API...');
 
       // Call the update API
       const result = await updateTaskMutation.mutateAsync({
@@ -602,8 +637,12 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
         updates: updateRequest
       });
 
-      console.log('✅ Task updated successfully:', result);
+      console.log('\n✅ EDIT TASK: Mutation completed successfully!');
+      console.log('✅ EDIT TASK: API Response:');
+      console.log(JSON.stringify(result, null, 2));
 
+      console.log('\n🎉 EDIT TASK: Showing success alert...');
+      
       // Show success message
       Alert.alert(
         "Task Updated",
@@ -612,6 +651,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
           {
             text: "OK",
             onPress: () => {
+              console.log('✅ EDIT TASK: User confirmed success, navigating back...');
               router.back();
             }
           }
@@ -619,7 +659,13 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
       );
 
     } catch (error: any) {
-      console.error('❌ Error updating task:', error);
+      console.error('\n❌❌❌ EDIT TASK: ERROR OCCURRED ❌❌❌');
+      console.error('❌ EDIT TASK: Error object:', error);
+      console.error('❌ EDIT TASK: Error message:', error?.message);
+      console.error('❌ EDIT TASK: Error stack:', error?.stack);
+      console.error('❌ EDIT TASK: Error response:', error?.response);
+      console.error('❌ EDIT TASK: Error response data:', error?.response?.data);
+      console.error('❌ EDIT TASK: Error status:', error?.response?.status);
       
       let errorMessage = "Failed to update task. Please try again.";
       let errorTitle = "Update Failed";
@@ -645,9 +691,10 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Fixed Header */}
-      <View style={styles.header}>
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
+        {/* Fixed Header */}
+        <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <ChevronLeft size={24} color="#333" />
         </TouchableOpacity>
@@ -1066,12 +1113,20 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
           )}
         </TouchableOpacity>
       )}
+      </View>
+
+      {/* Bottom safe area for Android navigation bar */}
+      <View style={styles.bottomSafeArea} />
     </View>
   );
 }
 
 // Styles matching Create Task Screen
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -1556,5 +1611,13 @@ const styles = StyleSheet.create({
     color: '#F59E0B',
     fontWeight: '600',
     textAlign: 'center',
+  },
+  bottomSafeArea: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: Platform.OS === 'android' ? 48 : 0,
+    backgroundColor: '#fff',
   },
 });

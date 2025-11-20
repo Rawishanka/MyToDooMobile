@@ -1,6 +1,6 @@
 import { Task } from '@/src/api/types/tasks';
+import { useAcceptOffer, useCancelTask, useCompleteTask, useDeleteTask } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
-import { useAcceptOffer, useCancelTask, useDeleteTask } from '@/src/shared/hooks/useTaskApi';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
@@ -13,9 +13,10 @@ interface TaskCardProps {
   userRole?: string;
   onTaskCancelled?: (taskId: string) => void;
   onTaskDeleted?: (taskId: string) => void;
+  onTaskCompleted?: (taskId: string) => void;
 }
 
-export default function TaskCard({ task, onPress, status, userRole, onTaskCancelled, onTaskDeleted }: TaskCardProps) {
+export default function TaskCard({ task, onPress, status, userRole, onTaskCancelled, onTaskDeleted, onTaskCompleted }: TaskCardProps) {
   const router = useRouter();
   const [showCancellationModal, setShowCancellationModal] = useState(false);
   const [showPosterCancelModal, setShowPosterCancelModal] = useState(false);
@@ -40,6 +41,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const deleteTaskMutation = useDeleteTask();
   const cancelTaskMutation = useCancelTask();
   const acceptOfferMutation = useAcceptOffer();
+  const completeTaskMutation = useCompleteTask();
 
   // Debouncing helper function to prevent multiple rapid clicks
   const withDebounce = useCallback((callback: () => void, delay: number = 300) => {
@@ -52,17 +54,99 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     callback();
   }, []);
 
-  const handleMarkAsCompleted = () => {
-    withDebounce(() => {
-      console.log('Mark as completed:', task._id);
-      // TODO: API call to mark task as completed
-    });
-  };
+  // Helper function to validate MongoDB ObjectId format (24-character hexadecimal)
+  const isValidMongoId = useCallback((id: string): boolean => {
+    return /^[0-9a-fA-F]{24}$/.test(id);
+  }, []);
+
+  const handleMarkAsCompleted = useCallback(async () => {
+    if (completeTaskMutation.isPending || isProcessing) {
+      console.log('🛡️ Complete operation already in progress');
+      return;
+    }
+
+    // Validate task ID format before making API call
+    if (!isValidMongoId(task._id)) {
+      Alert.alert(
+        'Invalid Task',
+        'This is a demo/placeholder task and cannot be completed. Please use real tasks from the backend.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      console.log('✅ Marking task as completed:', task._id);
+      
+      // Call the API to mark task as completed
+      await completeTaskMutation.mutateAsync(task._id);
+      
+      console.log('✅ Task marked as completed successfully');
+      
+      // Notify parent component to refresh and move to Completed tab
+      if (onTaskCompleted) {
+        onTaskCompleted(task._id);
+      }
+      
+      // Show success message
+      Alert.alert(
+        'Task Completed',
+        'The task has been marked as completed and moved to the Completed tab.',
+        [{ text: 'OK' }]
+      );
+      
+    } catch (error: any) {
+      console.error('❌ Error marking task as completed:', error);
+      console.error('❌ Error response:', error?.response?.data);
+      console.error('❌ Error message:', error?.message);
+      
+      let errorMessage = 'Failed to mark task as completed. Please try again.';
+      let errorTitle = 'Completion Failed';
+      
+      // Check for backend error message first (most specific)
+      if (error?.response?.data?.message || error?.response?.data?.error) {
+        errorMessage = error.response.data.message || error.response.data.error;
+        errorTitle = 'Cannot Complete Task';
+      } else if (error?.message?.includes('Authentication') || error?.isAuthError || error?.response?.status === 401) {
+        errorMessage = 'Your session has expired. Please login again to complete this task.';
+        errorTitle = 'Authentication Required';
+      } else if (error?.response?.status === 400) {
+        errorMessage = 'This task cannot be completed in its current state. Please ensure the task has been accepted first.';
+        errorTitle = 'Invalid Task Status';
+      } else if (error?.message?.includes('Network') || error?.code === 'NETWORK_ERROR') {
+        errorMessage = 'Network error. Please check your internet connection and try again.';
+        errorTitle = 'Connection Error';
+      } else if (error?.response?.status === 404) {
+        errorMessage = 'This task was not found. It may have been deleted.';
+        errorTitle = 'Task Not Found';
+      } else if (error?.response?.status === 403) {
+        errorMessage = 'You don\'t have permission to complete this task.';
+        errorTitle = 'Permission Denied';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [task._id, completeTaskMutation, onTaskCompleted, isProcessing, isValidMongoId]);
 
   const handleCancelTask = useCallback(() => {
     console.log('🔥 Cancel button touched!'); // Debug log
     if (isProcessing) {
       console.log('🛡️ Cancel operation already in progress');
+      return;
+    }
+    
+    // Validate task ID format before making API call
+    if (!isValidMongoId(task._id)) {
+      Alert.alert(
+        'Invalid Task',
+        'This is a demo/placeholder task and cannot be cancelled. Please use real tasks from the backend.',
+        [{ text: 'OK' }]
+      );
       return;
     }
     
@@ -79,7 +163,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         onTaskCancelled(task._id);
       }
     }
-  }, [userRole, status, task._id, onTaskCancelled, isProcessing]);
+  }, [userRole, status, task._id, onTaskCancelled, isProcessing, isValidMongoId]);
 
   const handleDeleteTask = useCallback(() => {
     console.log('🔥 Delete button touched!'); // Debug log
@@ -87,19 +171,41 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       console.log('🛡️ Delete operation already in progress');
       return;
     }
+
+    // Validate task ID format before making API call
+    if (!isValidMongoId(task._id)) {
+      Alert.alert(
+        'Demo Task',
+        'This is a demo/placeholder task and cannot be deleted. Please use real tasks from your backend.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     console.log('🗑️ Opening delete confirmation modal');
     setShowDeleteModal(true);
-  }, [deleteTaskMutation.isPending, isProcessing]);
+  }, [deleteTaskMutation.isPending, isProcessing, isValidMongoId, task._id]);
 
   const confirmDeleteTask = useCallback(async () => {
     try {
       if (deleteTaskMutation.isPending || isProcessing) {
-        console.log('�️ Delete operation already in progress');
+        console.log('🛡️ Delete operation already in progress');
+        return;
+      }
+
+      // Validate task ID format before making API call
+      if (!isValidMongoId(task._id)) {
+        Alert.alert(
+          'Demo Task',
+          'This is a demo/placeholder task and cannot be deleted. Please use real tasks from your backend.',
+          [{ text: 'OK' }]
+        );
+        setShowDeleteModal(false);
         return;
       }
 
       setIsProcessing(true);
-      console.log('�🗑️ Attempting to delete task:', task._id);
+      console.log('🗑️ Attempting to delete task:', task._id);
       console.log('🔍 Task details:', { 
         id: task._id, 
         title: task.title, 
@@ -172,7 +278,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     } finally {
       setIsProcessing(false);
     }
-  }, [task._id, task.status, task.title, deleteTaskMutation, onTaskDeleted, isProcessing]);
+  }, [task._id, task.status, task.title, deleteTaskMutation, onTaskDeleted, isProcessing, isValidMongoId]);
 
   const handleConfirmPosterCancel = async () => {
     if (selectedCancelReason === null) {
@@ -499,24 +605,30 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             <TouchableOpacity 
               style={[
                 styles.completedButton,
-                isProcessing && styles.disabledButton
+                (isProcessing || completeTaskMutation.isPending) && styles.disabledButton
               ]}
               onPress={() => {
                 console.log('🔥 Mark as Completed button touched!');
-                if (!isProcessing) {
+                if (!isProcessing && !completeTaskMutation.isPending) {
                   handleMarkAsCompleted();
                 }
               }}
               activeOpacity={0.7}
               delayPressIn={0}
-              disabled={isProcessing}
+              disabled={isProcessing || completeTaskMutation.isPending}
             >
-              <Text style={[
-                styles.completedButtonText,
-                isProcessing && { color: '#999' }
-              ]}>
-                Mark as Completed
-              </Text>
+              {(isProcessing || completeTaskMutation.isPending) ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={styles.completedButtonText}>
+                    Completing...
+                  </Text>
+                </View>
+              ) : (
+                <Text style={styles.completedButtonText}>
+                  Mark as Completed
+                </Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity 
               style={[
