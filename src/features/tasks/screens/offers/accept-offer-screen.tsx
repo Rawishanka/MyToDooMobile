@@ -1,5 +1,6 @@
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useAcceptOffer, useGetTaskById, useGetTaskOffers } from '@/src/shared/hooks/useTaskApi';
-import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -34,8 +35,9 @@ export default function AcceptOfferScreen() {
   const selectedOffer = offers.find((offer: any) => offer._id === selectedOfferId);
   const isLoading = isTaskLoading || isOffersLoading;
 
-  // Get currency info based on task location
-  const currencyInfo = getCurrencyFromLocation(task?.location);
+  // Use user's current location for currency display (auto geo-location)
+  const { countryInfo } = useLocationCountry();
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
 
   const handleAcceptOffer = async () => {
     try {
@@ -210,10 +212,10 @@ export default function AcceptOfferScreen() {
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Offer Amount:</Text>
                 <Text style={styles.summaryAmount}>
-                  {formatCurrency(selectedOffer.offer.amount, currencyInfo)}
+                  {formatCurrency(selectedOffer.offer?.amount || 0, currencyInfo)}
                 </Text>
               </View>
-              {selectedOffer.offer.message && (
+              {selectedOffer.offer?.message && (
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Message:</Text>
                   <Text style={styles.summaryValue}>{selectedOffer.offer.message}</Text>
@@ -246,7 +248,7 @@ export default function AcceptOfferScreen() {
             <>
               <Ionicons name="checkmark-circle" size={20} color="#fff" />
               <Text style={styles.acceptButtonText}>
-                Accept Offer {selectedOffer ? `(${formatCurrency(selectedOffer.offer.amount, currencyInfo)})` : ''}
+                Accept Offer {selectedOffer ? `(${formatCurrency(selectedOffer.offer?.amount || 0, currencyInfo)})` : ''}
               </Text>
             </>
           )}

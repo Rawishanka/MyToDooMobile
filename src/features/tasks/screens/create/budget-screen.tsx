@@ -1,7 +1,7 @@
 // BudgetScreen.tsx
 
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
-import { getCurrencyFromLocation, getCurrencySymbol, getDefaultBudget, getMinimumBudget } from '@/src/shared/utils/currency';
+import { formatNumber, getCurrencySymbol, getDefaultBudget, getMinimumBudget } from '@/src/shared/utils/currency';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -9,10 +9,10 @@ import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -22,7 +22,13 @@ export default function BudgetScreen() {
   const insets = useSafeAreaInsets();
 
   // Auto-detect country for currency if no location set yet
-  const { countryInfo } = useLocationCountry();
+  const { countryInfo, isDetecting } = useLocationCountry();
+
+  console.log('🏗️ Budget screen useLocationCountry state:', {
+    countryInfo,
+    isDetecting,
+    hookResult: { countryInfo, isDetecting }
+  });
 
   // Get currency based on task location or detected country
   const location = 'location' in myTask ? myTask.location : undefined;
@@ -33,10 +39,12 @@ export default function BudgetScreen() {
     ? location 
     : undefined;
   
-  // If no location set, use detected country's currency
-  const currencyInfo = locationForCurrency 
-    ? getCurrencyFromLocation(locationForCurrency)
-    : { code: countryInfo.currency, symbol: getCurrencySymbol(countryInfo.currency) };
+  // Always use user's current GPS location for currency in budget screen (auto geo-location feature)
+  // This ensures users see budget amounts in their local currency regardless of task location
+  const currencyInfo = { 
+    code: countryInfo.currency, 
+    symbol: getCurrencySymbol(countryInfo.currency) 
+  };
 
   const minimumBudget = getMinimumBudget(currencyInfo.code);
   const defaultBudgetAmount = getDefaultBudget(currencyInfo.code);
@@ -45,7 +53,11 @@ export default function BudgetScreen() {
     hasLocation: !!locationForCurrency,
     detectedCountry: countryInfo.countryName,
     detectedCurrency: countryInfo.currency,
-    finalCurrency: currencyInfo.code
+    finalCurrency: currencyInfo.code,
+    symbol: currencyInfo.symbol,
+    minimumBudget,
+    defaultBudgetAmount,
+    isDetecting
   });
 
   const [budget, setBudget] = useState('');
@@ -144,7 +156,7 @@ export default function BudgetScreen() {
       {/* Title */}
       <Text style={styles.title}>Enter Your budget</Text>
       <Text style={styles.subtitle}>
-        Minimum budget is {currencyInfo.symbol}{minimumBudget}. Don&apos;t worry, you can always negotiate the final price later
+        Minimum budget is {currencyInfo.symbol}{formatNumber(minimumBudget, { forceDecimals: true })}. Don&apos;t worry, you can always negotiate the final price later
       </Text>
 
       {/* Budget Display */}
@@ -155,7 +167,7 @@ export default function BudgetScreen() {
           budget && Number(budget) < minimumBudget && Number(budget) > 0 && styles.invalidBudgetText,
           !hasUserInteracted && !budget && styles.placeholderText
         ]}>
-          {budget || (!hasUserInteracted ? defaultBudgetAmount.toString() : '0')}
+          {budget ? formatNumber(Number(budget)) : (!hasUserInteracted ? formatNumber(defaultBudgetAmount) : '0')}
         </Text>
       </TouchableOpacity>
       
@@ -166,7 +178,7 @@ export default function BudgetScreen() {
         </Text>
       ) : budget && Number(budget) < minimumBudget && Number(budget) > 0 ? (
         <Text style={styles.validationText}>
-          Minimum budget is {currencyInfo.symbol}{minimumBudget}
+          Minimum budget is {currencyInfo.symbol}{formatNumber(minimumBudget, { forceDecimals: true })}
         </Text>
       ) : null}
 

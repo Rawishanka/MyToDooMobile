@@ -1,5 +1,6 @@
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useCreateOffer, useGetTaskOffers } from '@/src/shared/hooks/useTaskApi';
-import { getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import { getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
@@ -15,6 +16,9 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
   const router = useRouter();
   const currentUser = useAuthStore((state) => state.user);
   const createOfferMutation = useCreateOffer();
+  
+  // Use user's current location for currency display (auto geo-location)
+  const { countryInfo } = useLocationCountry();
 
   // Fetch offers for this specific task to check if user already made an offer
   const {
@@ -74,10 +78,10 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
   const [validationError, setValidationError] = useState<string>('');
   const [hasUserEditedAmount, setHasUserEditedAmount] = useState(false);
 
-  // Get currency info based on task location
+  // Get currency info based on user's current location (auto geo-location)
   const currencyInfo = useMemo(
-    () => getCurrencyFromLocation(taskLocation),
-    [taskLocation]
+    () => getCurrencyFromUserLocation(countryInfo),
+    [countryInfo]
   );
 
   // Set default offer amount to task budget when available

@@ -18,6 +18,9 @@ import SearchBar from './components/SearchModal';
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 
+// Auth Store
+import { useAuthStore } from '@/src/store/auth-task-store';
+
 const Tab = createMaterialTopTabNavigator();
 
 interface TabScreenProps {
@@ -125,6 +128,10 @@ export default function MyTasksScreen() {
   const [userRole, setUserRole] = useState('Tasker'); // 'Tasker' or 'Poster'
   const [searchText, setSearchText] = useState('');
   const [isRoleSwitching, setIsRoleSwitching] = useState(false); // FIX: Track role switching
+  
+  // Get current user from auth store
+  const currentUser = useAuthStore((state) => state.user);
+  const currentUserId = currentUser?.id || currentUser?._id;
   
   // Get navigation params
   const params = useLocalSearchParams<{ role?: string; tab?: string }>();
@@ -367,33 +374,22 @@ export default function MyTasksScreen() {
 
     // For Tasker role - show available tasks and their offer status
     if (userRole === 'Tasker') {
-      // Open Tasks: Only show tasks that have at least one offer
-      // This ensures taskers only see tasks they or others have made offers on
-      const openTasksFiltered = allTasks.filter((task: Task) => {
-        const hasOffers = (task.offers && task.offers.length > 0) || (task.offerCount && task.offerCount > 0);
-        const isOpenStatus = task.status === 'open' || task.status === 'active';
-        const shouldShow = isOpenStatus && hasOffers;
-        
-        if (isOpenStatus) {
-          console.log(`📋 Tasker Open Task Filter - ${task.title}:`, {
-            status: task.status,
-            hasOffersArray: task.offers?.length || 0,
-            offerCount: task.offerCount || 0,
-            hasOffers,
-            shouldShow
-          });
-        }
-        
-        return shouldShow;
-      });
-      
-      const openTasks = sortByCreatedDate(filterBySearch(openTasksFiltered));
-      
-      console.log(`📊 Tasker Open Tasks Summary:`, {
-        totalOpenTasks: allTasks.filter(t => t.status === 'open' || t.status === 'active').length,
-        tasksWithOffers: openTasksFiltered.length,
-        afterSearch: openTasks.length
-      });
+
+const openTasksFiltered = allTasks.filter((task: Task) => {
+  // Must be open/active
+  const isOpenStatus = task.status === 'open' || task.status === 'active';
+  
+  // Must have offers
+  const hasOffers = (task.offers && task.offers.length > 0) || 
+                    (task.offerCount && task.offerCount > 0);
+  
+  // Must NOT be created by current user
+  const isNotMyTask = currentUserId ? task.createdBy?._id !== currentUserId : true;
+  
+  // ALL three conditions must be true
+  return isOpenStatus && hasOffers && isNotMyTask;
+});
+
       
       // Todo Tasks: Tasks where their offers have been accepted and are in progress
       const todoTasks = filterBySearch(
@@ -769,6 +765,20 @@ export default function MyTasksScreen() {
                   isLoading={isLoading}
                   onRefresh={handleRefresh}
                   status="completed"
+                  userRole={userRole}
+                />
+              )}
+            </Tab.Screen>
+            <Tab.Screen
+              name="OverduePoster"
+              options={{ tabBarLabel: 'Overdue' }}
+            >
+              {() => (
+                <TabScreen
+                  tasks={categorizedData.overdueTasks}
+                  isLoading={isLoading}
+                  onRefresh={handleRefresh}
+                  status="overdue"
                   userRole={userRole}
                 />
               )}

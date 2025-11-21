@@ -1,5 +1,6 @@
 import { Task } from '@/src/api/types/tasks';
-import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -15,6 +16,9 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   getLocationIcon,
   getTimeDisplay,
 }) => {
+  // Use current user's location for currency auto-detection
+  const { countryInfo } = useLocationCountry();
+  
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [imageLoadingStates, setImageLoadingStates] = useState<{ [key: number]: boolean }>({});
@@ -154,21 +158,91 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   };
 
   const renderImageGallery = () => {
-    console.log('🚨 renderImageGallery called!');
-    console.log('🚨 task.images exists?', !!task.images);
-    console.log('🚨 task.images value:', task.images);
-    console.log('🚨 task.images length:', task.images?.length);
+    console.log('🔍 === RENDER IMAGE GALLERY DEBUG ===');
+    console.log('🔍 renderImageGallery called for task:', task?.title || task?._id);
+    console.log('🔍 task.images exists?', !!task.images);
+    console.log('🔍 task.images type:', typeof task.images);
+    console.log('🔍 task.images is array?', Array.isArray(task.images));
+    console.log('🔍 task.images value:', task.images);
+    console.log('🔍 task.images length:', task.images?.length);
+    console.log('🔍 task.images JSON:', JSON.stringify(task.images, null, 2));
     
-    if (!task.images || task.images.length === 0) {
-      console.error('❌ NO IMAGES FOUND IN TASK DATA!');
-      console.error('❌ This is why Photos section is not showing');
-      console.error('❌ Backend is not returning images array');
+    // Check alternative image fields that backend might use
+    const possibleImageFields = ['images', 'image', 'photos', 'pictures', 'attachments', 'files'];
+    const foundImageFields: any[] = [];
+    
+    possibleImageFields.forEach(field => {
+      const taskAsAny = task as any; // Type assertion for dynamic field access
+      const fieldValue = taskAsAny?.[field];
+      console.log(`🔍 Checking field '${field}':`, {
+        exists: !!fieldValue,
+        type: typeof fieldValue,
+        isArray: Array.isArray(fieldValue),
+        length: Array.isArray(fieldValue) ? fieldValue.length : 'N/A',
+        value: fieldValue
+      });
       
-      // TEMPORARY: Show a message indicating no images were uploaded
+      if (fieldValue && (Array.isArray(fieldValue) ? fieldValue.length > 0 : true)) {
+        foundImageFields.push({
+          field,
+          value: fieldValue,
+          type: typeof fieldValue,
+          isArray: Array.isArray(fieldValue),
+          length: Array.isArray(fieldValue) ? fieldValue.length : 'N/A'
+        });
+      }
+    });
+    
+    console.log('🔍 Found alternative image fields count:', foundImageFields.length);
+    if (foundImageFields.length > 0) {
+      console.log('✅ Found alternative image fields:', foundImageFields);
+    }
+    
+    // Show task structure for debugging
+    console.log('🔍 === COMPLETE TASK STRUCTURE ===');
+    console.log('🔍 Task ID:', task?._id);
+    console.log('🔍 Task title:', task?.title);
+    console.log('🔍 Task keys:', task ? Object.keys(task) : 'No task');
+    console.log('🔍 Full task object:', JSON.stringify(task, null, 2));
+    console.log('🔍 === END TASK STRUCTURE ===');
+    
+    if (!task.images || !Array.isArray(task.images) || task.images.length === 0) {
+      console.error('🚨 NO IMAGES FOUND IN TASK DATA!');
+      console.error('🚨 This is why Photos section is not showing');
+      console.error('🚨 task.images:', task.images);
+      console.error('🚨 All task keys:', task ? Object.keys(task) : 'No task');
+      console.error('🚨 Alternative image fields found:', foundImageFields.length);
+      
+      // Check if images field exists but is empty
+      if (task.images && Array.isArray(task.images) && task.images.length === 0) {
+        console.error('🚨 CRITICAL: Images field exists but is EMPTY ARRAY!');
+        console.error('🚨 This means either:');
+        console.error('🚨   1. Images were not saved during task creation');
+        console.error('🚨   2. Images were saved but not returned by backend');
+        console.error('🚨   3. Images were deleted after creation');
+      }
+      
+      // Show debug info in development
       return (
         <View style={styles.imageGallery}>
           <Text style={styles.imageGalleryTitle}>Photos (0)</Text>
-          <Text style={styles.noImagesText}>No photos were saved with this task</Text>
+          <Text style={styles.noImagesText}>No photos were found with this task</Text>
+          {__DEV__ && (
+            <View style={{ marginTop: 8, padding: 8, backgroundColor: '#f5f5f5', borderRadius: 4 }}>
+              <Text style={{ fontSize: 10, color: '#666', fontWeight: 'bold' }}>DEBUG INFO:</Text>
+              <Text style={{ fontSize: 10, color: '#666' }}>
+                task.images: {task.images ? JSON.stringify(task.images) : 'undefined'}
+              </Text>
+              {foundImageFields.length > 0 && (
+                <Text style={{ fontSize: 10, color: '#666' }}>
+                  Alternative fields: {foundImageFields.map(f => f.field).join(', ')}
+                </Text>
+              )}
+              <Text style={{ fontSize: 10, color: '#666' }}>
+                All keys: {task ? Object.keys(task).slice(0, 10).join(', ') : 'No task'}
+              </Text>
+            </View>
+          )}
         </View>
       );
     }
@@ -178,57 +252,89 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
     console.log('🖼️ First image type:', typeof task.images[0]);
     console.log('🖼️ First image value:', task.images[0]);
 
-    // Extract image strings from whatever format backend sends
+    // If main images field is empty but we found alternatives, try to use them
+    let imageDataToProcess = task.images;
+    if ((!imageDataToProcess || imageDataToProcess.length === 0) && foundImageFields.length > 0) {
+      console.log('🔄 Using alternative image field:', foundImageFields[0].field);
+      const alternativeValue = foundImageFields[0].value;
+      imageDataToProcess = Array.isArray(alternativeValue) 
+        ? alternativeValue 
+        : [alternativeValue];
+    }
+
+    if (!imageDataToProcess || imageDataToProcess.length === 0) {
+      console.error('❌ No processable image data found');
+      return (
+        <View style={styles.imageGallery}>
+          <Text style={styles.imageGalleryTitle}>Photos (0)</Text>
+          <Text style={styles.noImagesText}>No displayable photos found</Text>
+        </View>
+      );
+    }
+
+    // Enhanced image string extraction with comprehensive support
     const extractImageString = (imageData: any): string | null => {
+      console.log('🔍 Processing image data:', {
+        type: typeof imageData,
+        isNull: imageData === null,
+        isUndefined: imageData === undefined,
+        preview: typeof imageData === 'string' ? imageData.substring(0, 50) : 'Not string'
+      });
+
       if (!imageData) {
         console.log('❌ Image data is null/undefined');
         return null;
       }
       
-      // If already a string, return it
+      // If already a string (most common case for CDN URLs or data URIs)
       if (typeof imageData === 'string') {
-        console.log('✅ Image is already a string');
+        console.log('✅ Image is already a string, length:', imageData.length);
+        // Handle various URL patterns
+        if (imageData.startsWith('http') || imageData.startsWith('https') || imageData.startsWith('data:')) {
+          return imageData;
+        }
+        // Handle relative URLs or file paths
+        if (imageData.startsWith('/') || imageData.includes('cloudinary') || imageData.includes('s3') || imageData.includes('cdn')) {
+          return imageData.startsWith('/') ? `https://your-api-domain.com${imageData}` : imageData;
+        }
+        // Return as-is and let React Native handle it
         return imageData;
       }
       
-      // If it's an object, try common properties
+      // If it's an object, try multiple extraction strategies
       if (typeof imageData === 'object') {
         const keys = Object.keys(imageData);
         console.log('🔍 Image is object with properties:', keys);
         
-        // Check common URL properties
-        if (imageData.url) {
-          console.log('✅ Found image.url property');
-          return imageData.url;
-        }
-        if (imageData.uri) {
-          console.log('✅ Found image.uri property');
-          return imageData.uri;
-        }
-        if (imageData.path) {
-          console.log('✅ Found image.path property');
-          return imageData.path;
-        }
-        if (imageData.src) {
-          console.log('✅ Found image.src property');
-          return imageData.src;
+        // Strategy 1: Common URL properties
+        const urlProperties = ['url', 'uri', 'path', 'src', 'location', 'link', 'href'];
+        for (const prop of urlProperties) {
+          if (imageData[prop] && typeof imageData[prop] === 'string') {
+            console.log(`✅ Found ${prop} property:`, imageData[prop].substring(0, 50));
+            return imageData[prop];
+          }
         }
         
-        // Check if it has data and contentType (some backends send structured objects)
+        // Strategy 2: Base64 data with content type
         if (imageData.data && imageData.contentType) {
-          console.log('✅ Found structured data with contentType');
+          console.log('✅ Found structured data with contentType:', imageData.contentType);
           return `data:${imageData.contentType};base64,${imageData.data}`;
         }
         
-        // Just data property without contentType
-        if (imageData.data && typeof imageData.data === 'string') {
-          console.log('✅ Found data property (assuming base64 image)');
+        // Strategy 3: Just base64 data (assume JPEG)
+        if (imageData.data && typeof imageData.data === 'string' && imageData.data.length > 100) {
+          console.log('✅ Found base64 data property, length:', imageData.data.length);
+          // Check if it's already a data URI
+          if (imageData.data.startsWith('data:')) {
+            return imageData.data;
+          }
+          // Assume it's raw base64
           return `data:image/jpeg;base64,${imageData.data}`;
         }
         
-        // Check if it's a Buffer object
-        if (imageData.type === 'Buffer' && imageData.data) {
-          console.log('✅ Found Buffer object');
+        // Strategy 4: Buffer object
+        if (imageData.type === 'Buffer' && imageData.data && Array.isArray(imageData.data)) {
+          console.log('✅ Found Buffer object, converting to base64');
           try {
             const base64 = btoa(String.fromCharCode(...imageData.data));
             return `data:image/jpeg;base64,${base64}`;
@@ -237,19 +343,64 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
           }
         }
         
-        console.warn('⚠️ Could not extract image string from object properties:', keys);
+        // Strategy 5: Nested file object
+        if (imageData.file && typeof imageData.file === 'object') {
+          console.log('🔍 Found nested file object, recursing...');
+          return extractImageString(imageData.file);
+        }
+        
+        // Strategy 6: Try to find any string property that looks like an image
+        for (const [key, value] of Object.entries(imageData)) {
+          if (typeof value === 'string' && value.length > 20 && 
+              (value.includes('http') || value.includes('data:image') || value.includes('base64'))) {
+            console.log(`✅ Found image-like string in ${key} property`);
+            return value;
+          }
+        }
+        
+        console.warn('⚠️ Could not extract image string from object, keys:', keys);
+        console.warn('⚠️ Full object:', JSON.stringify(imageData, null, 2));
       }
       
       return null;
     };
 
+    // Enhanced image validation - more permissive
+    const isValidImageUri = (uri: string): boolean => {
+      if (!uri || typeof uri !== 'string') return false;
+      
+      // Allow data URIs
+      if (uri.startsWith('data:image/')) return true;
+      
+      // Allow HTTP/HTTPS URLs
+      if (uri.startsWith('http://') || uri.startsWith('https://')) return true;
+      
+      // Allow relative paths that look like images
+      if (uri.includes('.jpg') || uri.includes('.jpeg') || uri.includes('.png') || 
+          uri.includes('.webp') || uri.includes('.gif')) return true;
+      
+      // Allow CDN URLs (cloudinary, S3, etc.)
+      if (uri.includes('cloudinary') || uri.includes('s3.amazonaws') || 
+          uri.includes('cdn.') || uri.includes('amazonaws.com')) return true;
+      
+      // For very long strings that might be base64 without proper prefix
+      if (uri.length > 100 && !uri.includes(' ') && !uri.includes('\n')) {
+        console.log('🔍 Possibly raw base64 string, allowing:', uri.substring(0, 50));
+        return true;
+      }
+      
+      console.log('❌ URI validation failed for:', uri.substring(0, 50));
+      return false;
+    };
+
     // Convert all images to strings first
-    const imageStrings = task.images
+    const imageStrings = imageDataToProcess
       .map((imageData, index) => {
         const result = extractImageString(imageData);
         console.log(`📸 Image ${index} extraction:`, {
           input: typeof imageData === 'object' ? `Object with keys: ${Object.keys(imageData).join(', ')}` : imageData,
-          output: result ? `${result.substring(0, 60)}...` : 'null'
+          output: result ? `${result.substring(0, 60)}...` : 'null',
+          outputLength: result ? result.length : 0
         });
         return result;
       })
@@ -257,38 +408,81 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
     
     console.log('🔄 Extracted image strings count:', imageStrings.length);
     
-    if (imageStrings.length === 0 && task.images.length > 0) {
+    if (imageStrings.length === 0 && imageDataToProcess.length > 0) {
       console.error('❌ Failed to extract any image strings!');
-      console.error('❌ Raw images data:', JSON.stringify(task.images, null, 2));
+      console.error('❌ Raw images data:', JSON.stringify(imageDataToProcess.slice(0, 2), null, 2));
+      
+      // Show debug info to user in development
+      return (
+        <View style={styles.imageGallery}>
+          <Text style={styles.imageGalleryTitle}>Photos ({imageDataToProcess.length} found, 0 displayable)</Text>
+          <Text style={styles.noImagesText}>
+            Images found but could not be displayed. Check console for details.
+          </Text>
+          {__DEV__ && (
+            <Text style={[styles.noImagesText, { fontSize: 10, color: '#999' }]}>
+              DEV: {JSON.stringify(imageDataToProcess[0], null, 2).substring(0, 200)}...
+            </Text>
+          )}
+        </View>
+      );
     }
 
-    // Fix and filter out any null/undefined/empty image URLs and validate format
+    // Fix and validate image URLs
     const fixedImages = imageStrings.map(uri => {
       const fixed = fixImageUri(uri);
       if (fixed !== uri) {
-        console.log('🔧 URL fixed:', uri, '→', fixed);
+        console.log('🔧 URL fixed:', uri.substring(0, 50), '→', fixed.substring(0, 50));
       }
       return fixed;
     });
     
-    console.log('🔧 Task images (after fixing):', fixedImages);
+    console.log('🔧 Task images (after fixing):', fixedImages.length);
     
-    // Be more lenient - try to show images even if validation is uncertain
+    // More lenient validation - prioritize showing images over strict validation
     const validImages = fixedImages.filter(uri => {
       if (!uri) return false;
       const isValid = isValidImageUri(uri);
       console.log(`🔍 Validating image: ${uri.substring(0, 50)}... → ${isValid ? '✅ Valid' : '❌ Invalid'}`);
-      // Show image anyway if it looks like a URL or data URI
-      return uri.length > 10;
+      return isValid;
     });
     
     console.log('✅ Images to display:', validImages.length, 'of', imageStrings.length);
-    console.log('✅ Final images array:', validImages.map(img => img.substring(0, 80)));
+    if (validImages.length > 0) {
+      console.log('✅ First displayable image:', validImages[0].substring(0, 100));
+    }
     
     if (validImages.length === 0) {
       console.warn('⚠️ No displayable images found after extraction');
-      console.warn('⚠️ Original images:', task.images);
-      return null;
+      console.warn('⚠️ Original images:', imageDataToProcess?.length, 'images');
+      console.warn('⚠️ Extracted strings:', imageStrings.length, 'strings');
+      
+      return (
+        <View style={styles.imageGallery}>
+          <Text style={styles.imageGalleryTitle}>Photos ({imageDataToProcess?.length || 0})</Text>
+          <Text style={styles.noImagesText}>
+            {imageDataToProcess?.length > 0 
+              ? `Found ${imageDataToProcess.length} images but couldn't display them. Format may be unsupported.`
+              : 'No photos were saved with this task'}
+          </Text>
+          {__DEV__ && imageDataToProcess?.length > 0 && (
+            <View style={{ marginTop: 8, padding: 8, backgroundColor: '#f9f9f9', borderRadius: 4 }}>
+              <Text style={[styles.noImagesText, { fontSize: 10, color: '#666', fontWeight: 'bold' }]}>
+                DEV DEBUG:
+              </Text>
+              <Text style={[styles.noImagesText, { fontSize: 10, color: '#666' }]}>
+                Extracted: {imageStrings.length} strings
+              </Text>
+              <Text style={[styles.noImagesText, { fontSize: 10, color: '#666' }]}>
+                Valid: {validImages.length} valid URIs
+              </Text>
+              <Text style={[styles.noImagesText, { fontSize: 10, color: '#666' }]}>
+                Sample: {imageDataToProcess[0] ? JSON.stringify(imageDataToProcess[0], null, 1).substring(0, 100) : 'None'}
+              </Text>
+            </View>
+          )}
+        </View>
+      );
     }
 
     // Log first image for debugging
@@ -298,7 +492,9 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         uri: firstImage.substring(0, 50) + (firstImage.length > 50 ? '...' : ''),
         isDataUri: firstImage.startsWith('data:'),
         isHttpUri: firstImage.startsWith('http'),
-        length: firstImage.length
+        length: firstImage.length,
+        hasBase64: firstImage.includes('base64'),
+        format: firstImage.match(/(jpeg|jpg|png|webp|gif)/i)?.[0] || 'unknown'
       });
     }
 
@@ -321,8 +517,12 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
               // Apply one final URL fix right before rendering
               const finalImageUri = fixImageUri(imageUri);
               
-              console.log(`🏞️ Rendering image ${globalIndex}:`, finalImageUri);
-              console.log(`🔍 Original vs Final URL:`, { original: imageUri, final: finalImageUri });
+              console.log(`🏞️ Rendering image ${globalIndex}:`, {
+                original: imageUri.substring(0, 50),
+                final: finalImageUri.substring(0, 50),
+                hasError,
+                isLoading
+              });
               
               return (
                 <TouchableOpacity
@@ -336,15 +536,16 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                       <Image 
                         source={{ 
                           uri: finalImageUri,
-                          // Add headers for better S3 compatibility
+                          // Add headers for better compatibility
                           headers: {
                             'Accept': 'image/*',
+                            'Cache-Control': 'no-cache'
                           }
                         }} 
                         style={styles.thumbnailImage}
                         resizeMode="cover"
                         onLoadStart={() => {
-                          console.log(`🔄 Loading started for image ${globalIndex}: ${finalImageUri}`);
+                          console.log(`🔄 Loading started for image ${globalIndex}`);
                           handleImageLoadStart(globalIndex);
                         }}
                         onLoadEnd={() => {
@@ -352,7 +553,10 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                           handleImageLoadEnd(globalIndex);
                         }}
                         onError={(error) => {
-                          console.error(`❌ Loading failed for image ${globalIndex} with URI: ${finalImageUri}`, error);
+                          console.error(`❌ Loading failed for image ${globalIndex}:`, {
+                            uri: finalImageUri.substring(0, 100),
+                            error: error.nativeEvent?.error || error
+                          });
                           handleImageError(globalIndex, error);
                         }}
                       />
@@ -361,10 +565,13 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                     {hasError && (
                       <View style={styles.thumbnailImageError}>
                         <Ionicons name="image-outline" size={24} color="#999" />
+                        <Text style={{ fontSize: 10, color: '#999', marginTop: 4 }}>
+                          Load Error
+                        </Text>
                       </View>
                     )}
                     
-                    {isLoading && (
+                    {isLoading && !hasError && (
                       <View style={styles.imageLoadingOverlay}>
                         <ActivityIndicator size="small" color="#0057FF" />
                       </View>
@@ -546,9 +753,10 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         <View style={styles.budgetInfo}>
           <Text style={styles.budgetAmount}>
             {(() => {
-              const budget = task.budget || 56;
-              const currencyInfo = getCurrencyFromLocation(task.location);
-              return formatCurrency(budget, currencyInfo);
+              const budget = task.budget;
+              // Use user's current location for currency display (auto geo-location)
+              const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
+              return budget ? formatCurrency(budget, userCurrencyInfo) : `${userCurrencyInfo.symbol}0.00`;
             })()}
           </Text>
           <Text style={styles.budgetLabel}>Budget</Text>

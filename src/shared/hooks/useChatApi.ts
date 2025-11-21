@@ -65,6 +65,8 @@ export function useGetGroupChatMessages(taskId: string, limit: number = 50, enab
     enabled: enabled && !!taskId,
     staleTime: 10000, // 10 seconds
     refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
+    refetchOnMount: true,
+    refetchOnWindowFocus: false, // Prevent excessive refetching
     retry: (failureCount, error) => {
       if (error?.message?.includes('404') || 
           error?.message?.includes('Authentication failed') ||
@@ -123,9 +125,13 @@ export function useSendGroupChatMessage() {
     mutationFn: ({ taskId, message }: { taskId: string; message: SendGroupMessageRequest }) =>
       ChatAPI.sendGroupChatMessage(taskId, message),
     onSuccess: (_, { taskId }) => {
-      // Invalidate group chat messages to refresh the list
-      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.groupMessages(taskId) });
-      queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.lists() });
+      console.log('✅ Message sent successfully, invalidating cache for taskId:', taskId);
+      // Invalidate group chat messages to refresh the list with a slight delay for API propagation
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.groupMessages(taskId) });
+        queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.lists() });
+        console.log('🔄 Cache invalidated for taskId:', taskId);
+      }, 200);
     },
     onError: (error) => {
       console.error('❌ Failed to send group chat message:', error);

@@ -1,4 +1,6 @@
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { cardStyles, colors, spacing } from '@/src/shared/theme';
+import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -27,16 +29,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   showMapButton = true,
   variant = 'default',
 }) => {
+  // Use current user's location for currency auto-detection
+  const { countryInfo } = useLocationCountry();
+  
   // Helper: Get location type with icon
   const getLocationInfo = () => {
     const address = task.location?.address || '';
-    if (address.toLowerCase().includes('online') || address.toLowerCase().includes('remote')) {
-      return { icon: 'laptop-outline', text: 'Remote' };
-    }
     if (address.includes(' → ') || address.includes(' to ')) {
       return { icon: 'car-outline', text: 'Moving' };
     }
-    return { icon: 'location-outline', text: 'In Person' };
+    return { icon: 'location-outline', text: '' }; // Just show icon, address will be displayed elsewhere
   };
 
   // Helper: Get time preference
@@ -62,7 +64,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   };
 
   const locationInfo = getLocationInfo();
-  const formattedBudget = task.formattedBudget || `${task.currency || 'A$'}${task.budget}`;
+  
+  // Use user's current location currency for auto geo-location feature
+  const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
+  const formattedBudget = task.formattedBudget || 
+    (task.budget ? formatCurrency(task.budget, userCurrencyInfo) : 
+    `${userCurrencyInfo.symbol}0.00`);
 
   // Compact variant (for lists with many items)
   if (variant === 'compact') {
@@ -226,6 +233,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           }}
           style={styles.userAvatar}
         />
+        {/* Poster Name */}
+        <Text style={styles.posterName} numberOfLines={2}>
+          Posted by: {task.createdBy?.firstName || 'User'} {task.createdBy?.lastName || ''}
+        </Text>
       </View>
 
       {/* Navigation Indicator */}
@@ -242,6 +253,7 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.base,
     marginBottom: spacing.sm,
     position: 'relative',
+    paddingRight: 100, // Space for avatar and poster name
   },
 
   // Compact Card Styles
@@ -303,6 +315,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.xs,
     lineHeight: 22,
+    paddingRight: spacing.xs,
   },
   taskLocation: {
     fontSize: 13,
@@ -337,10 +350,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.xs,
     gap: spacing.xs,
+    paddingRight: spacing.sm,
   },
   taskRowText: {
     fontSize: 13,
     color: colors.textSecondary,
+    flex: 1,
+    flexShrink: 1,
   },
 
   categoriesRow: {
@@ -373,6 +389,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: spacing.xs,
     marginBottom: spacing.sm,
+    paddingRight: spacing.xs,
   },
   statusContainer: {
     flexDirection: 'column',
@@ -416,12 +433,29 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.sm,
     right: spacing.sm,
+    alignItems: 'center',
+    width: 85,
+    zIndex: 2,
   },
   userAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: colors.backgroundDark,
+  },
+  posterName: {
+    fontSize: 9,
+    color: colors.textPrimary,
+    textAlign: 'center',
+    marginTop: 3,
+    maxWidth: 80,
+    lineHeight: 11,
+    fontWeight: '500',
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderRadius: 3,
+    overflow: 'hidden',
   },
 
   // Navigation Indicator

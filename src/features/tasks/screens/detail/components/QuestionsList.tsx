@@ -14,6 +14,7 @@ interface QuestionsListProps {
   currentUserId?: string;
   taskCreatorId?: string;
   onRefreshQuestions?: () => void;
+  taskOffers?: any[]; // Add task offers to check if user is a participant
 }
 
 export const QuestionsList: React.FC<QuestionsListProps> = ({
@@ -24,6 +25,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   currentUserId,
   taskCreatorId,
   onRefreshQuestions,
+  taskOffers = [], // Default to empty array
 }) => {
   const insets = useSafeAreaInsets();
   const currentUser = useAuthStore((state) => state.user);
@@ -69,17 +71,79 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
 
   // Helper function to check if user can answer a specific question
   const canUserAnswerQuestion = (question: any): boolean => {
-    // Only task creators can answer questions
+    // Allow both task creators and taskers to answer questions
     if (!currentUserId || !taskCreatorId) {
       console.log('❌ Missing user IDs - currentUserId:', currentUserId, 'taskCreatorId:', taskCreatorId);
       return false;
     }
     
-    // Check if current user is the task creator
+    // Check if current user is the task creator (poster)
     const isTaskCreator = currentUserId === taskCreatorId;
-    console.log('✅ Permission check - isTaskCreator:', isTaskCreator, 'for question:', question._id);
     
-    return isTaskCreator;
+    // Enhanced debugging for task offers
+    console.log('🔍 Debugging taskOffers for user permission:', {
+      currentUserId,
+      taskOffersLength: taskOffers.length,
+      taskOffers: taskOffers.map((offer: any) => ({
+        offerId: offer._id,
+        taskTakerId: offer.taskTakerId,
+        userId: offer.userId,
+        user: offer.user,
+        userFromOffer: offer.user?._id,
+        directUserId: offer.userId,
+        taskTakerIdObj: offer.taskTakerId?._id,
+        taskTakerName: offer.taskTakerId?.firstName + ' ' + offer.taskTakerId?.lastName
+      }))
+    });
+    
+    // Check if current user is a tasker (has made an offer on this task)
+    // Try multiple possible user ID fields in offers
+    const isTasker = taskOffers.some((offer: any) => {
+      // Try all possible ways to identify the user in an offer
+      const possibleUserIds = [
+        offer.user?._id,
+        offer.userId,
+        offer.taskTakerId?._id,
+        offer.taskTakerId,
+        offer.createdBy?._id,
+        offer.createdBy,
+        offer.postedBy?._id,
+        offer.postedBy
+      ].filter(Boolean);
+      
+      const matches = possibleUserIds.includes(currentUserId);
+      if (matches) {
+        console.log('✅ Found matching offer for user:', {
+          currentUserId,
+          matchedField: possibleUserIds.find(id => id === currentUserId),
+          offer: offer
+        });
+      }
+      return matches;
+    });
+    
+    // Check if user asked the question (they can answer their own questions too)
+    const isQuestionAsker = currentUserId === (question.askedBy?._id || question.userId || question.user?._id);
+    
+    // For Q&A functionality, allow any authenticated user to answer questions
+    // This ensures better collaboration and participation
+    const isAuthenticatedUser = !!currentUserId;
+    
+    console.log('✅ Permission check for question', question._id, ':', {
+      isTaskCreator,
+      isTasker,
+      isQuestionAsker,
+      isAuthenticatedUser,
+      currentUserId,
+      taskCreatorId,
+      offersCount: taskOffers.length,
+      questionAskedBy: question.askedBy?._id || question.userId || question.user?._id,
+      finalDecision: isTaskCreator || isTasker || isQuestionAsker || isAuthenticatedUser
+    });
+    
+    // Allow task creator, taskers who made offers, question askers, or any authenticated user to answer
+    // This ensures the Q&A system is open and collaborative
+    return isTaskCreator || isTasker || isQuestionAsker || isAuthenticatedUser;
   };
 
   // Helper function to check if question has an answer
@@ -128,15 +192,23 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           contentContainerStyle={{ paddingBottom: 100 }}
           renderItem={({ item: question }: { item: any }) => (
             <View style={styles.questionCard}>
-              {/* Show task context for public questions */}
-              {question.isPublic && question.taskId !== taskId && (
-                <View style={styles.taskContextHeader}>
-                  <Ionicons name="link-outline" size={14} color="#007AFF" />
-                  <Text style={styles.taskContextText}>
-                    From task: {question.taskTitle || 'Other task'}
-                  </Text>
-                </View>
-              )}
+              {/* DEBUG: Let's check what's in the question data */}
+              {(() => {
+                if (__DEV__) {
+                  console.log('🐛 Question data debug:', {
+                    id: question._id,
+                    askedBy: question.askedBy,
+                    user: question.user,
+                    questioner: question.questioner,
+                    isAnonymous: question.isAnonymous,
+                    type: typeof question.askedBy,
+                    keys: question.askedBy ? Object.keys(question.askedBy) : 'no askedBy'
+                  });
+                }
+                return null;
+              })()}
+              
+              {/* PRIVACY: Removed task context header since we only show questions for current task */}
               
               <View style={styles.questionHeader}>
                 <View style={styles.questionUserSection}>
@@ -173,7 +245,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                             
                             return 'Unknown User';
                           })()}
-                        : `${question.askedBy?.firstName || question.userId?.firstName} ${question.askedBy?.lastName || question.userId?.lastName}`
                     </Text>
                     <Text style={styles.questionTime}>
                       {new Date(question.createdAt).toLocaleTimeString('en-US', {
@@ -208,7 +279,16 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
               {hasValidAnswer(question) ? (
                 <View style={styles.answerSection}>
                   <Text style={styles.answerLabel}>
-                    Answer from {question.answeredBy?.firstName || question.posterId?.firstName || 'poster'}:
+                    Answer from {(() => {
+                      const answerer = question.answeredBy || question.posterId;
+                      if (!answerer) return 'poster';
+                      
+                      const firstName = answerer.firstName || answerer.first_name || '';
+                      const lastName = answerer.lastName || answerer.last_name || '';
+                      const fullName = `${firstName} ${lastName}`.trim();
+                      
+                      return fullName || answerer.email?.split('@')[0] || answerer.username || 'poster';
+                    })()}:
                   </Text>
                   <Text style={styles.answerText}>
                     {typeof question.answer === 'string'
@@ -245,7 +325,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                   } else {
                     return (
                       <View style={styles.noAnswerYet}>
-                        <Text style={styles.noAnswerText}>Waiting for answer from task creator...</Text>
+                        <Text style={styles.noAnswerText}>Waiting for an answer...</Text>
                       </View>
                     );
                   }

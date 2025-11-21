@@ -107,6 +107,23 @@ export function useFilterTasks(params: TaskFilterParams, enabled = true) {
     queryFn: () => TaskAPI.filterTasks(params),
     enabled: enabled && Object.keys(params).length > 0,
     staleTime: 1 * 60 * 1000, // 1 minute - shorter cache for filter results
+    retry: (failureCount, error: any) => {
+      // Don't retry on backend routing conflicts (500 errors with ObjectId)
+      if (error?.response?.status === 500 && 
+          error?.response?.data?.message?.includes('Cast to ObjectId failed')) {
+        console.warn('🚨 Detected routing conflict, not retrying');
+        return false;
+      }
+      
+      // Don't retry on other 500 errors
+      if (error?.response?.status === 500) {
+        return false;
+      }
+      
+      // Retry network errors up to 2 times
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 }
 
@@ -294,12 +311,49 @@ export function useCreateTask() {
 /**
  * ➕ Post Task with Images Mutation
  */
+export function usePostTaskDirect() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (taskData: CreateTaskRequest) => {
+      console.log('🚀 DIRECT MUTATION - Received task data with images:');
+      console.log('🚀 DIRECT MUTATION - taskData:', JSON.stringify(taskData, null, 2));
+      console.log('🚀 DIRECT MUTATION - images count:', taskData.images?.length || 0);
+      return TaskAPI.postTaskDirect(taskData);
+    },
+    onSuccess: (result, variables) => {
+      // Force immediate refetch of all task-related queries
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all });
+      queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.lists() });
+      queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
+      console.log("✅ Task posted successfully (DIRECT) - force refetched all task queries");
+    },
+    onError: (error: any) => {
+      console.error("❌ Error posting task (DIRECT):", error);
+      
+      if (isAuthError(error)) {
+        console.error("❌ Authentication error detected - handling automatically");
+        handleAuthenticationError(error);
+      } else if (error?.message?.includes("Images are too large")) {
+        console.error("❌ Image upload failed - files too large");
+      } else {
+        console.error("❌ Task posting failed with unknown error:", error);
+      }
+    }
+  });
+}
+
 export function usePostTaskWithImages() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ taskData, imageUris }: { taskData: CreateTaskRequest; imageUris: string[] }) => 
-      TaskAPI.postTaskWithImages(taskData, imageUris),
+    mutationFn: ({ taskData, imageUris }: { taskData: CreateTaskRequest; imageUris: string[] }) => {
+      console.log('🔧 MUTATION - Received parameters:');
+      console.log('🔧 MUTATION - taskData:', JSON.stringify(taskData, null, 2));
+      console.log('🔧 MUTATION - imageUris:', JSON.stringify(imageUris, null, 2));
+      return TaskAPI.postTaskWithImages(taskData, imageUris);
+    },
     onSuccess: (result, variables) => {
       // Force immediate refetch of all task-related queries
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all }); // All task queries (includes map data, browse, my tasks, search)

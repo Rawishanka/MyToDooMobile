@@ -57,8 +57,11 @@ export const NOTIFICATIONS_DATA: NotificationItem[] = [
   },
 ];
 
-// Sample chat messages
+// Sample chat messages - FOR DEVELOPMENT/TESTING ONLY
+// These should NOT be used in production chats
 export const SAMPLE_CHAT_MESSAGES: ChatMessage[] = [
+  // Commented out to prevent accidental use in production
+  /*
   {
     id: '1',
     text: 'Hi! I saw your task about the folding arm awning. I have experience with these types of repairs.',
@@ -92,6 +95,7 @@ export const SAMPLE_CHAT_MESSAGES: ChatMessage[] = [
     sender: 'me',
     timestamp: '10:40 AM'
   }
+  */
 ];
 
 // Sample messages list

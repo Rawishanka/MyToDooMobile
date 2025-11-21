@@ -1,4 +1,5 @@
-import { getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -24,8 +25,9 @@ export const OffersList: React.FC<OffersListProps> = ({
   taskLocation
 }) => {
   const insets = useSafeAreaInsets();
-  // Get location-based currency info
-  const currencyInfo = getCurrencyFromLocation(taskLocation);
+  // Use user's current location for currency display (auto geo-location)
+  const { countryInfo } = useLocationCountry();
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
   
   // Filter out:
   // 1. The current user's offer (shown separately in MyOfferCard)

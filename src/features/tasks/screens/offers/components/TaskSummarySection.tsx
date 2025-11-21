@@ -1,4 +1,5 @@
-import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -15,8 +16,9 @@ interface TaskSummarySectionProps {
 }
 
 export const TaskSummarySection: React.FC<TaskSummarySectionProps> = ({ task }) => {
-  // Get the appropriate currency based on task location
-  const currencyInfo = getCurrencyFromLocation(task.location);
+  // Use user's current location for currency display (auto geo-location)
+  const { countryInfo } = useLocationCountry();
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
   
   // Format the budget with location-appropriate currency
   const displayBudget = task.formattedBudget || 
