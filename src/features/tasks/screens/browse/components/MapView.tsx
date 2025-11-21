@@ -135,9 +135,9 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         }
       }
 
-      // If no coordinates found, try to geocode the address using known locations
-      if ((lat === null || lng === null || isNaN(lat) || isNaN(lng)) && task.location.address) {
-        console.log(`🔍 No API coordinates found, geocoding address for ${task.title}:`, task.location.address);
+      // If no coordinates found OR coordinates are (0,0), try to geocode the address using known locations
+      if ((lat === null || lng === null || isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) && task.location.address) {
+        console.log(`🔍 No valid API coordinates found (lat: ${lat}, lng: ${lng}), geocoding address for ${task.title}:`, task.location.address);
         const geocodedCoords = geocodeAddressSync(task.location.address);
         if (geocodedCoords) {
           lat = geocodedCoords.lat;
@@ -150,8 +150,8 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
 
       // Add marker if we have valid coordinates
       if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
-        // Validate coordinates are reasonable
-        if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        // Validate coordinates are reasonable and NOT (0, 0) which indicates missing data
+        if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 && !(lat === 0 && lng === 0)) {
           const coordinateSource = task.location.coordinates && Object.keys(task.location.coordinates).length > 0 ? 'API' : 'Geocoded';
           
           markers.push({
@@ -376,6 +376,9 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       ['dehiwala', { lat: 6.8569, lng: 79.8658 }],
       ['moratuwa', { lat: 6.7731, lng: 79.8828 }],
       ['kotte', { lat: 6.8905, lng: 79.9075 }],
+      ['mirigama', { lat: 7.2417, lng: 80.1283 }],
+      ['gampaha', { lat: 7.0917, lng: 80.0000 }],
+      ['kalutara', { lat: 6.5854, lng: 79.9607 }],
       
       // New Zealand - Major Cities
       ['auckland', { lat: -36.8485, lng: 174.7633 }],
