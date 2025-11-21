@@ -18,6 +18,9 @@ import SearchBar from './components/SearchModal';
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 
+// Auth Store
+import { useAuthStore } from '@/src/store/auth-task-store';
+
 const Tab = createMaterialTopTabNavigator();
 
 interface TabScreenProps {
@@ -125,6 +128,10 @@ export default function MyTasksScreen() {
   const [userRole, setUserRole] = useState('Tasker'); // 'Tasker' or 'Poster'
   const [searchText, setSearchText] = useState('');
   const [isRoleSwitching, setIsRoleSwitching] = useState(false); // FIX: Track role switching
+  
+  // Get current user from auth store
+  const currentUser = useAuthStore((state) => state.user);
+  const currentUserId = currentUser?.id || currentUser?._id;
   
   // Get navigation params
   const params = useLocalSearchParams<{ role?: string; tab?: string }>();
@@ -367,12 +374,30 @@ export default function MyTasksScreen() {
 
     // For Tasker role - show available tasks and their offer status
     if (userRole === 'Tasker') {
-      // Open Tasks: All available tasks that are open and active for taskers to offer on
+      // Open Tasks: Available tasks posted by OTHER USERS that are open/active for taskers to offer on
+      // EXCLUDE tasks posted by the current user
       const openTasks = sortByCreatedDate(
         filterBySearch(
-          allTasks.filter((task: Task) => 
-            task.status === 'open' || task.status === 'active'
-          )
+          allTasks.filter((task: Task) => {
+            // Only show open/active tasks
+            const isOpenOrActive = task.status === 'open' || task.status === 'active';
+            
+            // Exclude tasks posted by the current user (they can't offer on their own tasks)
+            const isNotMyTask = currentUserId ? task.createdBy?._id !== currentUserId : true;
+            
+            console.log('🔍 Tasker Open Tasks filtering:', {
+              taskId: task._id,
+              title: task.title,
+              status: task.status,
+              createdBy: task.createdBy?._id,
+              currentUserId: currentUserId,
+              isOpenOrActive,
+              isNotMyTask,
+              shouldInclude: isOpenOrActive && isNotMyTask
+            });
+            
+            return isOpenOrActive && isNotMyTask;
+          })
         )
       );
       

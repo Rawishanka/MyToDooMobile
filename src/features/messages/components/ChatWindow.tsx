@@ -22,7 +22,6 @@ import {
   View,
 } from 'react-native';
 import type { ChatMessage, Message } from './message-types';
-import { SAMPLE_CHAT_MESSAGES } from './message-types';
 
 interface ChatScreenProps {
   visible: boolean;
@@ -33,10 +32,12 @@ interface ChatScreenProps {
 
 export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, message, taskId }) => {
   const [newMessage, setNewMessage] = useState('');
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(SAMPLE_CHAT_MESSAGES);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [currentUserName, setCurrentUserName] = useState<string>('');
+  const [lastTaskId, setLastTaskId] = useState<string | null>(null);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   // Get real chat messages from API
   const { 
@@ -46,6 +47,32 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
 
   // Mutation for sending messages
   const sendGroupMessageMutation = useSendGroupChatMessage();
+
+  // Helper functions for local storage
+  const getStorageKey = (taskId: string) => `chat_messages_${taskId}`;
+  
+  const saveMessagesToStorage = async (taskId: string, messages: ChatMessage[]) => {
+    try {
+      await AsyncStorage.setItem(getStorageKey(taskId), JSON.stringify(messages));
+      console.log(`💾 Saved ${messages.length} messages to storage for task: ${taskId}`);
+    } catch (error) {
+      console.error('❌ Failed to save messages to storage:', error);
+    }
+  };
+  
+  const loadMessagesFromStorage = async (taskId: string): Promise<ChatMessage[]> => {
+    try {
+      const stored = await AsyncStorage.getItem(getStorageKey(taskId));
+      if (stored) {
+        const messages = JSON.parse(stored);
+        console.log(`💼 Loaded ${messages.length} messages from storage for task: ${taskId}`);
+        return messages;
+      }
+    } catch (error) {
+      console.error('❌ Failed to load messages from storage:', error);
+    }
+    return [];
+  };
 
   // Load user info on component mount
   useEffect(() => {
@@ -65,10 +92,40 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
     }
   }, [visible]);
 
-  // Load API messages when available
+  // Reset chat messages when switching to a different chat
   useEffect(() => {
-    if (groupChatData?.messages && visible) {
-      console.log(`📡 Loading ${groupChatData.messages.length} messages from API`);
+    if (taskId !== lastTaskId && visible) {
+      console.log(`🔄 Switching chat from ${lastTaskId} to ${taskId}`);
+      setIsFirstLoad(true);
+      setChatMessages([]);
+      setLastTaskId(taskId || null);
+    }
+  }, [taskId, lastTaskId, visible]);
+
+  // Load messages when chat opens or task changes
+  useEffect(() => {
+    if (visible && taskId && isFirstLoad) {
+      const loadInitialMessages = async () => {
+        // First, load from local storage
+        const storedMessages = await loadMessagesFromStorage(taskId);
+        if (storedMessages.length > 0) {
+          console.log(`💼 Using stored messages for task: ${taskId}`);
+          setChatMessages(storedMessages);
+        } else {
+          console.log(`💭 Starting new conversation for task: ${taskId}`);
+          setChatMessages([]); // Start with empty array for new conversations
+        }
+        setIsFirstLoad(false);
+      };
+      
+      loadInitialMessages();
+    }
+  }, [visible, taskId, isFirstLoad]);
+
+  // Load API messages when available and merge with local storage
+  useEffect(() => {
+    if (groupChatData?.messages && visible && currentUserId && !isFirstLoad) {
+      console.log(`📡 Loading ${groupChatData.messages.length} messages from API for taskId: ${taskId}`);
       
       const convertedMessages: ChatMessage[] = groupChatData.messages.map(msg => ({
         id: msg.id,
@@ -80,40 +137,92 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
         }),
         senderName: msg.senderName,
       }));
-      setChatMessages(convertedMessages);
-    } else if (visible && !isLoadingMessages) {
-      // Fallback to sample messages
-      console.log('📱 Using sample chat messages');
-      setChatMessages(SAMPLE_CHAT_MESSAGES);
+      
+      // Only update if we have new API data and it's different from stored data
+      if (convertedMessages.length > 0) {
+        setChatMessages(prev => {
+          // Merge API messages with any local messages that aren't duplicates
+          const apiMessageIds = convertedMessages.map(msg => msg.id);
+          const localMessages = prev.filter(msg => !apiMessageIds.includes(msg.id));
+          const mergedMessages = [...convertedMessages, ...localMessages];
+          
+          // Save merged messages back to storage
+          if (taskId) {
+            saveMessagesToStorage(taskId, mergedMessages);
+          }
+          
+          console.log(`🔄 Updated messages state with ${mergedMessages.length} total messages`);
+          return mergedMessages;
+        });
+      }
     }
-  }, [groupChatData, visible, currentUserId, isLoadingMessages]);
+  }, [groupChatData, visible, currentUserId, taskId, isFirstLoad]);
 
   const sendMessage = async () => {
     if (newMessage.trim() && taskId) {
+      const messageText = newMessage.trim();
+      let optimisticMsg: ChatMessage | null = null;
+      
       try {
         setIsLoading(true);
         
+        // Add to local state immediately for UI feedback (optimistic update)
+        optimisticMsg = {
+          id: `temp_${Date.now()}`, // Temporary ID for optimistic update
+          text: messageText,
+          sender: 'me',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          senderName: currentUserName
+        };
+        
+        const newMessages = [...chatMessages, optimisticMsg];
+        setChatMessages(newMessages);
+        setNewMessage(''); // Clear input immediately for better UX
+        
+        // Save to local storage immediately
+        await saveMessagesToStorage(taskId, newMessages);
+        
         // Send via API
-        await sendGroupMessageMutation.mutateAsync({
+        const response = await sendGroupMessageMutation.mutateAsync({
           taskId,
           message: {
-            text: newMessage.trim(),
+            text: messageText,
             messageType: 'text',
             metadata: {}
           }
         });
 
-        // Add to local state immediately for UI feedback
-        const newMsg: ChatMessage = {
-          id: Date.now().toString(),
-          text: newMessage.trim(),
-          sender: 'me',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        setChatMessages(prev => [...prev, newMsg]);
-        setNewMessage('');
+        // Update the temporary message with real ID from response
+        if (response.messageId) {
+          setChatMessages(prev => {
+            const updatedMessages = prev.map(msg => 
+              msg.id === optimisticMsg!.id 
+                ? { ...msg, id: response.messageId! } 
+                : msg
+            );
+            // Save updated messages
+            saveMessagesToStorage(taskId, updatedMessages);
+            return updatedMessages;
+          });
+        }
+        
+        console.log('✅ Message sent successfully for taskId:', taskId);
+        
       } catch (error) {
         console.error('❌ Failed to send message:', error);
+        
+        // Remove the optimistic message on error
+        if (optimisticMsg) {
+          setChatMessages(prev => {
+            const filtered = prev.filter(msg => msg.id !== optimisticMsg!.id);
+            console.log('🔄 Rolled back optimistic message, remaining:', filtered.length);
+            // Save the rolled back state
+            saveMessagesToStorage(taskId, filtered);
+            return filtered;
+          });
+        }
+        setNewMessage(messageText); // Restore the message text for retry
+        
         Alert.alert('Error', 'Failed to send message. Please try again.');
       } finally {
         setIsLoading(false);
@@ -126,7 +235,11 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
         sender: 'me',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      setChatMessages([...chatMessages, newMsg]);
+      const updatedMessages = [...chatMessages, newMsg];
+      setChatMessages(updatedMessages);
+      if (taskId) {
+        saveMessagesToStorage(taskId, updatedMessages);
+      }
       setNewMessage('');
     }
   };
@@ -246,6 +359,13 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
           style={styles.messagesContainer}
           contentContainerStyle={styles.messagesContentContainer}
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={() => (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="chatbubbles-outline" size={64} color="#E1E8ED" />
+              <Text style={styles.emptyTitle}>Start a conversation</Text>
+              <Text style={styles.emptySubtext}>Send a message to begin chatting about this task</Text>
+            </View>
+          )}
           renderItem={({ item: msg }) => (
             <View
               style={[
@@ -453,5 +573,26 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.5,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1A1A1A',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#8E8E93',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

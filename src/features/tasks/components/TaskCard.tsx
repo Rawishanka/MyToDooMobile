@@ -35,13 +35,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   // Helper: Get location type with icon
   const getLocationInfo = () => {
     const address = task.location?.address || '';
-    if (address.toLowerCase().includes('online') || address.toLowerCase().includes('remote')) {
-      return { icon: 'laptop-outline', text: 'Remote' };
-    }
     if (address.includes(' → ') || address.includes(' to ')) {
       return { icon: 'car-outline', text: 'Moving' };
     }
-    return { icon: 'location-outline', text: 'In Person' };
+    return { icon: 'location-outline', text: '' }; // Just show icon, address will be displayed elsewhere
   };
 
   // Helper: Get time preference

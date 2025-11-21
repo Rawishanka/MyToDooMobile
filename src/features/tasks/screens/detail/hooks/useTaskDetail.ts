@@ -81,18 +81,21 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
   });
   
   // PRIVACY: Only use questions for THIS specific task
-  // Additional privacy filter: ensure questions are relevant to current user
+  // Updated filtering to show questions to all relevant users for better collaboration
   const filteredQuestions = taskQuestions.filter((question: any) => {
     // Show questions if user is:
     // 1. The task creator/poster
     // 2. The person who asked the question  
-    // 3. A participant (has made offers)
+    // 3. A participant (has made offers or is viewing the task)
+    // 4. Any authenticated user viewing this specific task (for better collaboration)
     
     const isTaskCreator = currentUser?._id === task?.createdBy?._id;
     const isQuestionAsker = currentUser?._id === (question.askedBy?._id || question.userId?._id || question.user?._id);
     const hasOfferOnTask = taskOffers.some((offer: any) => offer.taskTakerId?._id === currentUser?._id);
+    const isAuthenticatedUser = !!currentUser?._id; // Allow any authenticated user to see questions for collaboration
     
-    return isTaskCreator || isQuestionAsker || hasOfferOnTask;
+    // Be more inclusive to allow proper Q&A collaboration
+    return isTaskCreator || isQuestionAsker || hasOfferOnTask || isAuthenticatedUser;
   });
   
   // Sort questions by creation date (newest first)

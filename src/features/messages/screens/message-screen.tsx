@@ -1,7 +1,8 @@
 // Enhanced Message Screen with Real Chat API Integration
 
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -32,6 +33,7 @@ const MessageScreen: React.FC = () => {
   const [showChat, setShowChat] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [localMessagePreviews, setLocalMessagePreviews] = useState<Record<string, string>>({});
 
   // Get real chat data from API
   const { 
@@ -44,6 +46,40 @@ const MessageScreen: React.FC = () => {
   // Get real notification count from API
   const { data: unreadCountData } = useUnreadCount();
   const notificationCount = (unreadCountData as any)?.unreadCount || 0;
+
+  // Load local message previews on mount
+  useEffect(() => {
+    const loadLocalPreviews = async () => {
+      try {
+        const keys = await AsyncStorage.getAllKeys();
+        const chatKeys = keys.filter(key => key.startsWith('chat_messages_'));
+        const previews: Record<string, string> = {};
+        
+        for (const key of chatKeys) {
+          try {
+            const taskId = key.replace('chat_messages_', '');
+            const messagesJson = await AsyncStorage.getItem(key);
+            if (messagesJson) {
+              const messages = JSON.parse(messagesJson);
+              if (messages.length > 0) {
+                const lastMessage = messages[messages.length - 1];
+                previews[taskId] = lastMessage.text;
+              }
+            }
+          } catch (error) {
+            console.error(`❌ Error loading preview for ${key}:`, error);
+          }
+        }
+        
+        console.log(`📱 Loaded ${Object.keys(previews).length} local message previews`);
+        setLocalMessagePreviews(previews);
+      } catch (error) {
+        console.error('❌ Failed to load local message previews:', error);
+      }
+    };
+    
+    loadLocalPreviews();
+  }, []);
 
   // Convert API chat data to display format
   const chatMessages: Message[] = useMemo(() => {
@@ -59,21 +95,29 @@ const MessageScreen: React.FC = () => {
           // Filter out invalid chat items
           return chatItem && chatItem.chat && chatItem.chat._id;
         })
-        .map((chatItem: ChatListItem) => ({
-          id: chatItem.chat._id,
-          title: chatItem.task?.title || 'Untitled Task',
-          preview: chatItem.lastMessage?.text || 'No messages yet',
-          date: new Date(chatItem.lastMessage?.timestamp || chatItem.chat.createdAt).toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-          }),
-          avatar: chatItem.chat.otherParticipant?.firstName && chatItem.chat.otherParticipant?.lastName ? 
-            `https://ui-avatars.com/api/?name=${chatItem.chat.otherParticipant.firstName}+${chatItem.chat.otherParticipant.lastName}&background=random&color=fff&size=50` : 
-            'https://randomuser.me/api/portraits/men/1.jpg',
-          unreadCount: chatItem.unreadCount > 0 ? chatItem.unreadCount : undefined,
-          taskId: chatItem.chat.taskId || '', // Store task ID for chat functionality, ensure it's not null
-        }));
+        .map((chatItem: ChatListItem) => {
+          // Get preview from local storage if API doesn't have lastMessage
+          const taskId = chatItem.chat.taskId;
+          const apiPreview = chatItem.lastMessage?.text;
+          const localPreview = localMessagePreviews[taskId];
+          const preview = apiPreview || localPreview || 'Start a conversation';
+          
+          return {
+            id: chatItem.chat._id,
+            title: chatItem.task?.title || 'Untitled Task',
+            preview: preview,
+            date: new Date(chatItem.lastMessage?.timestamp || chatItem.chat.createdAt).toLocaleDateString('en-GB', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric'
+            }),
+            avatar: chatItem.chat.otherParticipant?.firstName && chatItem.chat.otherParticipant?.lastName ? 
+              `https://ui-avatars.com/api/?name=${chatItem.chat.otherParticipant.firstName}+${chatItem.chat.otherParticipant.lastName}&background=random&color=fff&size=50` : 
+              'https://randomuser.me/api/portraits/men/1.jpg',
+            unreadCount: chatItem.unreadCount > 0 ? chatItem.unreadCount : undefined,
+            taskId: chatItem.chat.taskId || '', // Store task ID for chat functionality, ensure it's not null
+          };
+        });
     } catch (error) {
       console.error('❌ Error processing chat data:', error);
       console.log('📱 Falling back to mock data due to processing error');
@@ -94,6 +138,7 @@ const MessageScreen: React.FC = () => {
   }, [searchQuery, chatMessages]);
 
   const handleMessagePress = (message: Message) => {
+    console.log('📱 Opening chat for message:', message.id, 'taskId:', (message as any).taskId);
     setSelectedMessage(message);
     setSelectedChatId((message as any).taskId || null);
     setShowChat(true);
@@ -107,6 +152,35 @@ const MessageScreen: React.FC = () => {
 
   const handleRefresh = () => {
     refetchChats();
+    // Also reload local previews when refreshing
+    const loadLocalPreviews = async () => {
+      try {
+        const keys = await AsyncStorage.getAllKeys();
+        const chatKeys = keys.filter(key => key.startsWith('chat_messages_'));
+        const previews: Record<string, string> = {};
+        
+        for (const key of chatKeys) {
+          try {
+            const taskId = key.replace('chat_messages_', '');
+            const messagesJson = await AsyncStorage.getItem(key);
+            if (messagesJson) {
+              const messages = JSON.parse(messagesJson);
+              if (messages.length > 0) {
+                const lastMessage = messages[messages.length - 1];
+                previews[taskId] = lastMessage.text;
+              }
+            }
+          } catch (error) {
+            console.error(`❌ Error loading preview for ${key}:`, error);
+          }
+        }
+        
+        setLocalMessagePreviews(previews);
+      } catch (error) {
+        console.error('❌ Failed to load local message previews:', error);
+      }
+    };
+    loadLocalPreviews();
   };
 
   return (

@@ -1,4 +1,4 @@
-import { useGetCategories, useGetCategoriesByLocation } from '@/src/shared/hooks/useTaskApi';
+import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
@@ -14,7 +14,6 @@ import {
 import {
     CategoryDropdown,
     LocationInputSection,
-    LocationTypeSelector,
     MovingToggle,
     RemovalLocationInputs,
 } from './components';
@@ -37,13 +36,10 @@ interface Category {
     isActive?: boolean;
 }
 
-type LocationType = 'In-person' | 'Online' | 'Both';
-
 const LocationScreen = () => {
     const [isRemoval, setIsRemoval] = useState(false);
     const [pickupCode, setPickupCode] = useState('');
     const [dropoffCode, setDropoffCode] = useState('');
-    const [locationType, setLocationType] = useState<LocationType>('In-person');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
@@ -52,11 +48,7 @@ const LocationScreen = () => {
 
     const { myTask, updateMyTask } = useCreateTaskStore();
     
-    // Fetch categories based on location type (only for In-person and Online, not Both)
-    const shouldUseFilteredCategories = !isRemoval && locationType !== 'Both';
-    const { data: categoriesByLocation, isLoading: loadingCategoriesByLocation, error: categoriesByLocationError, refetch: refetchCategoriesByLocation } = useGetCategoriesByLocation(locationType, shouldUseFilteredCategories);
-    
-    // Always fetch regular categories (used for Both option and as fallback)
+    // Fetch regular categories
     const { data: categoriesResponse, isLoading: loadingCategories, error: categoriesError, refetch: refetchCategories } = useGetCategories();
 
     // Debug logs - only when data changes
@@ -137,15 +129,6 @@ const LocationScreen = () => {
         
         setShowCategoryDropdown(!showCategoryDropdown);
     };
-    // Handle location type change
-    const handleLocationTypeChange = (type: LocationType) => {
-        setLocationType(type);
-        setSelectedCategory(null); // Reset category when changing location type
-        if (type === 'Online') {
-            setSelectedLocation(null); // Clear location for online tasks
-        }
-    };
-
     // Location handler
     const handleLocationSelect = (location: LocationData) => {
         setSelectedLocation(location);
@@ -157,26 +140,7 @@ const LocationScreen = () => {
         console.log('Selected category:', category);
         console.log('Selected category object:', categoryObj);
         
-        // Auto-select location type based on category's locationType
-        if (categoryObj && categoryObj.locationType) {
-            const categoryLocationType = categoryObj.locationType;
-            
-            console.log('Category locationType:', categoryLocationType);
-            
-            if (categoryLocationType === 'physical') {
-                setLocationType('In-person');
-                console.log('✅ Auto-selected: In-person');
-            } else if (categoryLocationType === 'online') {
-                setLocationType('Online');
-                setSelectedLocation(null); // Clear location for online tasks
-                console.log('✅ Auto-selected: Online');
-            } else if (categoryLocationType === 'both') {
-                setLocationType('Both');
-                console.log('✅ Auto-selected: Both');
-            }
-        } else {
-            console.log('⚠️ No locationType found for category, keeping current selection');
-        }
+
         
         // Set the selected category (already a string)
         setSelectedCategory(category);
@@ -198,21 +162,20 @@ const LocationScreen = () => {
                 deliveryLocation: dropoffCode,
             });
         } else {
-            // CategoryTask - Both category and location are mandatory for In Person
+            // CategoryTask - Both category and location are mandatory
             if (!selectedCategory) {
                 alert('Please select a category for your task');
                 return;
             }
-            if (locationType === 'In-person' && !selectedLocation) {
+            if (!selectedLocation) {
                 alert('Please select a location for your task');
                 return;
             }
             updateMyTask({
                 isRemoval: false,
                 category: selectedCategory,
-                location: locationType === 'In-person' && selectedLocation ? selectedLocation.address : 'Online',
-                coordinates: locationType === 'In-person' && selectedLocation ? selectedLocation.coordinates : undefined,
-                locationType: locationType, // Store the location type
+                location: selectedLocation.address,
+                coordinates: selectedLocation.coordinates,
             });
         }
         router.push('/budget-screen' as any);
@@ -251,12 +214,6 @@ const LocationScreen = () => {
                     />
                 ) : (
                     <>
-                        {/* Location Type Selection */}
-                        <LocationTypeSelector
-                            selectedType={locationType}
-                            onTypeChange={handleLocationTypeChange}
-                        />
-
                         {/* Category Selection */}
                         <CategoryDropdown
                             isLoading={isLoadingCategories}
@@ -270,15 +227,15 @@ const LocationScreen = () => {
                             onDropdownToggle={handleDropdownToggle}
                             onCategorySelect={handleCategorySelect}
                             onSearchChange={setCategorySearchQuery}
-                            onRetry={refetchCategoriesByLocation}
+                            onRetry={refetchCategories}
                             onCloseDropdown={() => {
                                 setShowCategoryDropdown(false);
                                 setCategorySearchQuery('');
                             }}
                         />
 
-                        {/* Location Search - Only show for In Person tasks AND when category dropdown is closed */}
-                        {locationType === 'In-person' && !showCategoryDropdown && (
+                        {/* Location Search - Always show when category dropdown is closed */}
+                        {!showCategoryDropdown && (
                             <LocationInputSection
                                 selectedLocation={selectedLocation}
                                 onLocationSelect={handleLocationSelect}
