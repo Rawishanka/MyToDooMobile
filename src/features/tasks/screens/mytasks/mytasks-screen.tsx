@@ -367,14 +367,33 @@ export default function MyTasksScreen() {
 
     // For Tasker role - show available tasks and their offer status
     if (userRole === 'Tasker') {
-      // Open Tasks: All available tasks that are open and active for taskers to offer on
-      const openTasks = sortByCreatedDate(
-        filterBySearch(
-          allTasks.filter((task: Task) => 
-            task.status === 'open' || task.status === 'active'
-          )
-        )
-      );
+      // Open Tasks: Only show tasks that have at least one offer
+      // This ensures taskers only see tasks they or others have made offers on
+      const openTasksFiltered = allTasks.filter((task: Task) => {
+        const hasOffers = (task.offers && task.offers.length > 0) || (task.offerCount && task.offerCount > 0);
+        const isOpenStatus = task.status === 'open' || task.status === 'active';
+        const shouldShow = isOpenStatus && hasOffers;
+        
+        if (isOpenStatus) {
+          console.log(`📋 Tasker Open Task Filter - ${task.title}:`, {
+            status: task.status,
+            hasOffersArray: task.offers?.length || 0,
+            offerCount: task.offerCount || 0,
+            hasOffers,
+            shouldShow
+          });
+        }
+        
+        return shouldShow;
+      });
+      
+      const openTasks = sortByCreatedDate(filterBySearch(openTasksFiltered));
+      
+      console.log(`📊 Tasker Open Tasks Summary:`, {
+        totalOpenTasks: allTasks.filter(t => t.status === 'open' || t.status === 'active').length,
+        tasksWithOffers: openTasksFiltered.length,
+        afterSearch: openTasks.length
+      });
       
       // Todo Tasks: Tasks where their offers have been accepted and are in progress
       const todoTasks = filterBySearch(
