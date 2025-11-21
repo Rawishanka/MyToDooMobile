@@ -374,32 +374,22 @@ export default function MyTasksScreen() {
 
     // For Tasker role - show available tasks and their offer status
     if (userRole === 'Tasker') {
-      // Open Tasks: Available tasks posted by OTHER USERS that are open/active for taskers to offer on
-      // EXCLUDE tasks posted by the current user
-      const openTasks = sortByCreatedDate(
-        filterBySearch(
-          allTasks.filter((task: Task) => {
-            // Only show open/active tasks
-            const isOpenOrActive = task.status === 'open' || task.status === 'active';
-            
-            // Exclude tasks posted by the current user (they can't offer on their own tasks)
-            const isNotMyTask = currentUserId ? task.createdBy?._id !== currentUserId : true;
-            
-            console.log('🔍 Tasker Open Tasks filtering:', {
-              taskId: task._id,
-              title: task.title,
-              status: task.status,
-              createdBy: task.createdBy?._id,
-              currentUserId: currentUserId,
-              isOpenOrActive,
-              isNotMyTask,
-              shouldInclude: isOpenOrActive && isNotMyTask
-            });
-            
-            return isOpenOrActive && isNotMyTask;
-          })
-        )
-      );
+
+const openTasksFiltered = allTasks.filter((task: Task) => {
+  // Must be open/active
+  const isOpenStatus = task.status === 'open' || task.status === 'active';
+  
+  // Must have offers
+  const hasOffers = (task.offers && task.offers.length > 0) || 
+                    (task.offerCount && task.offerCount > 0);
+  
+  // Must NOT be created by current user
+  const isNotMyTask = currentUserId ? task.createdBy?._id !== currentUserId : true;
+  
+  // ALL three conditions must be true
+  return isOpenStatus && hasOffers && isNotMyTask;
+});
+
       
       // Todo Tasks: Tasks where their offers have been accepted and are in progress
       const todoTasks = filterBySearch(
