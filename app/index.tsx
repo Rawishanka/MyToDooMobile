@@ -14,7 +14,7 @@ import { categoryVideos, getCategoryVideo } from '@/src/shared/utils/videoLoader
 export default function WelcomeScreen() {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [currentTitle, setCurrentTitle] = useState(categoryVideos[0].title);
+  const [nextIndex, setNextIndex] = useState(1);
   const [videoLoaded, setVideoLoaded] = useState(false);
   
   useEffect(() => {
@@ -26,10 +26,10 @@ export default function WelcomeScreen() {
       const interval = setInterval(() => {
         setCurrentIndex((prev) => {
           const nextIndex = (prev + 1) % categoryVideos.length;
-          setCurrentTitle(categoryVideos[nextIndex].title);
+          setNextIndex((nextIndex + 1) % categoryVideos.length);
           return nextIndex;
         });
-      }, 3500);
+      }, 4000); // Increased interval for smoother experience
       return () => clearInterval(interval);
     }, 1000); // 1 second delay
     
@@ -40,7 +40,9 @@ export default function WelcomeScreen() {
   }, []);
 
   const currentCategory = categoryVideos[currentIndex];
+  const nextCategory = categoryVideos[nextIndex];
   const currentVideo = getCategoryVideo(currentCategory.id);
+  const nextVideo = getCategoryVideo(nextCategory.id);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -57,7 +59,6 @@ export default function WelcomeScreen() {
         <View style={styles.heroVideoWrapper}>
           {currentVideo ? (
             <Video
-              key={currentIndex}
               source={currentVideo}
               style={styles.heroVideo}
               shouldPlay
@@ -77,9 +78,22 @@ export default function WelcomeScreen() {
               <Text style={styles.placeholderText}>{currentCategory.title}</Text>
             </View>
           )}
+          
+          {/* Preload next video for smooth transitions */}
+          {nextVideo && nextVideo !== currentVideo && (
+            <Video
+              source={nextVideo}
+              style={[styles.heroVideo, { opacity: 0, zIndex: -1 }]}
+              shouldPlay={false}
+              isLooping
+              isMuted
+              useNativeControls={false}
+              resizeMode={ResizeMode.CONTAIN}
+            />
+          )}
         </View>
         {/* Show full category title below video */}
-        <Text style={styles.fullCategoryTitle}>{currentTitle}</Text>
+        <Text style={styles.fullCategoryTitle}>{currentCategory.title}</Text>
       </View>
 
       {/* Bottom Container */}
@@ -138,12 +152,7 @@ const styles = StyleSheet.create({
     aspectRatio: 16 / 9, // Landscape aspect ratio to show full video content
     borderRadius: 28,
     overflow: 'hidden',
-    backgroundColor: '#0052CC',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
+    backgroundColor: 'transparent', // Changed from #0052CC to prevent blue flash
     marginBottom: 10,
     position: 'relative',
   },
@@ -153,17 +162,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-    backgroundColor: '#0052CC',
+    backgroundColor: 'transparent', // Changed from #0052CC to prevent blue flash
   },
   videoPlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#0052CC',
+    backgroundColor: '#F5F5F5', // Changed from #0052CC to a subtle gray
     alignItems: 'center',
     justifyContent: 'center',
   },
   placeholderText: {
-    color: '#fff',
+    color: '#333', // Changed from #fff to dark text for gray background
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',

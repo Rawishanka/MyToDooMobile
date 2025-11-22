@@ -10,22 +10,22 @@ import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-    AllOffersResponse,
-    CreateOfferRequest,
-    CreateOfferResponse,
-    CreateTaskRequest,
-    CreateTaskResponse,
-    MyTasksParams,
-    PaymentStatusResponse,
-    SingleTaskResponse,
-    Task,
-    TaskCompletionStatusResponse,
-    TaskFilterParams,
-    TaskFilterResponse,
-    TaskOffersResponse,
-    TaskSearchParams,
-    TasksResponse,
-    UpdateTaskRequest
+  AllOffersResponse,
+  CreateOfferRequest,
+  CreateOfferResponse,
+  CreateTaskRequest,
+  CreateTaskResponse,
+  MyTasksParams,
+  PaymentStatusResponse,
+  SingleTaskResponse,
+  Task,
+  TaskCompletionStatusResponse,
+  TaskFilterParams,
+  TaskFilterResponse,
+  TaskOffersResponse,
+  TaskSearchParams,
+  TasksResponse,
+  UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -820,97 +820,156 @@ export async function postTask(taskData: CreateTaskRequest): Promise<CreateTaskR
 }
 
 /**
- * ⭐ Post Task with Direct Format (Matches Backend JSON exactly)
+ * ⭐ Post Task with Smart Upload (FormData + Base64 Fallback)
  * Endpoint: POST /api/tasks/
- * Auth: Required - Sends task data in the exact format backend expects
+ * Auth: Required - Tries FormData first, falls back to base64 if needed
  */
-export async function postTaskDirect(taskDataWithImages: CreateTaskRequest): Promise<CreateTaskResponse> {
+export async function postTaskDirect(taskData: CreateTaskRequest): Promise<CreateTaskResponse> {
   const api = getApi();
   try {
-    console.log("🚀 === POST TASK DIRECT (EXACT BACKEND FORMAT) ===");
-    console.log("📦 postTaskDirect called with task data:");
-    console.log("📦 Request Body Size:", JSON.stringify(taskDataWithImages).length, "characters");
-    console.log("📦 Request Body Size:", (JSON.stringify(taskDataWithImages).length / 1024).toFixed(2), "KB");
-    console.log("📦 Images included:", taskDataWithImages.images?.length || 0);
+    console.log("🚀 === POST TASK WITH SMART UPLOAD ===");
+    console.log("📤 postTaskDirect called with:");
+    console.log("📤 taskData:", JSON.stringify(taskData, null, 2));
+    console.log("📤 images count:", taskData.images?.length || 0);
     
-    if (taskDataWithImages.images && taskDataWithImages.images.length > 0) {
-      console.log("🔍 Validating images in task data...");
-      taskDataWithImages.images.forEach((img, index) => {
-        const isValidDataUri = img.startsWith('data:image/') && img.includes(';base64,');
-        const base64Part = img.split(';base64,')[1];
-        const isValidBase64 = base64Part && base64Part.length > 0;
+    if (taskData.images && taskData.images.length > 0) {
+      console.log("🔄 Trying FormData approach first (like profile upload)...");
+      
+      try {
+        // Try FormData approach first
+        const formData = new FormData();
         
-        console.log(`🔍 Image ${index + 1} validation:`, {
-          isValidDataUri,
-          isValidBase64,
-          length: img.length,
-          mimeType: img.split(';')[0],
+        // Add task fields (excluding images)
+        const taskWithoutImages = { ...taskData };
+        delete taskWithoutImages.images;
+        
+        // Add each field individually to FormData
+        Object.keys(taskWithoutImages).forEach(key => {
+          const value = (taskWithoutImages as any)[key];
+          if (value !== undefined && value !== null) {
+            if (typeof value === 'object') {
+              formData.append(key, JSON.stringify(value));
+            } else {
+              formData.append(key, String(value));
+            }
+          }
         });
-      });
+        
+        // Add images as files (backend expects 'files' parameter)
+        for (let i = 0; i < taskData.images.length; i++) {
+          const imageUri = taskData.images[i];
+          console.log(`📸 Adding image ${i + 1}/${taskData.images.length} to FormData as 'files'`);
+          
+          const filename = imageUri.split('/').pop() || `task_image_${i}.jpg`;
+          const extension = filename.split('.').pop()?.toLowerCase() || 'jpg';
+          let mimeType = 'image/jpeg';
+          if (extension === 'png') mimeType = 'image/png';
+          else if (extension === 'gif') mimeType = 'image/gif';
+          
+          // Backend expects 'files' parameter (not 'images')
+          formData.append('files', {
+            uri: imageUri,
+            name: filename,
+            type: mimeType,
+          } as any);
+        }
+        
+        console.log("📤 Attempting FormData upload with 'files' parameter...");
+        console.log("📋 API Compliance: Using 'files' parameter as specified in /tasks POST endpoint");
+        const formDataResponse = await api.post('/tasks', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        
+        console.log("✅ FormData upload successful!");
+        console.log("📦 FormData response:", JSON.stringify(formDataResponse.data, null, 2));
+        
+        if (formDataResponse.data?.data?.images && formDataResponse.data.data.images.length > 0) {
+          console.log("✅ SUCCESS: Backend saved images with FormData approach!");
+          console.log("✅ Sent", taskData.images.length, "images as 'files' parameter");
+          console.log("✅ Backend returned", formDataResponse.data.data.images.length, "images");
+          console.log("✅ Image URLs:", formDataResponse.data.data.images);
+          return formDataResponse.data;
+        } else {
+          console.error("⚠️ FormData sent successfully but no images in response");
+          console.error("⚠️ Expected images array, got:", formDataResponse.data?.data?.images);
+          throw new Error("FormData uploaded but no images in response - backend may not be processing files parameter correctly");
+        }
+        
+      } catch (formDataError: any) {
+        console.warn("⚠️ FormData approach failed, trying base64 fallback...");
+        console.warn("⚠️ FormData error:", formDataError?.message);
+        
+        // Fallback to base64 approach
+        console.log("🔄 Converting to base64 for JSON upload...");
+        
+        // Convert images to base64 data URIs
+        const base64Images: string[] = [];
+        
+        for (const imageUri of taskData.images) {
+          try {
+            const FileSystem = require('expo-file-system').default;
+            const base64Data = await FileSystem.readAsStringAsync(imageUri, { encoding: 'base64' });
+            
+            const filename = imageUri.split('/').pop() || 'image.jpg';
+            const extension = filename.split('.').pop()?.toLowerCase() || 'jpg';
+            let mimeType = 'image/jpeg';
+            if (extension === 'png') mimeType = 'image/png';
+            else if (extension === 'gif') mimeType = 'image/gif';
+            
+            const dataUri = `data:${mimeType};base64,${base64Data}`;
+            base64Images.push(dataUri);
+            console.log(`✅ Converted image to base64:`, {
+              originalSize: imageUri.length,
+              base64Size: dataUri.length,
+              mimeType
+            });
+          } catch (conversionError) {
+            console.error(`❌ Failed to convert image to base64:`, conversionError);
+          }
+        }
+        
+        if (base64Images.length === 0) {
+          throw new Error("Failed to convert any images to base64");
+        }
+        
+        // Update task data with base64 images
+        const taskDataWithBase64 = {
+          ...taskData,
+          images: base64Images
+        };
+        
+        console.log("📤 Attempting base64 JSON upload...");
+        const base64Response = await api.post('/tasks', taskDataWithBase64);
+        
+        console.log("✅ Base64 upload successful!");
+        console.log("📦 Base64 response:", JSON.stringify(base64Response.data, null, 2));
+        
+        return base64Response.data;
+      }
+    } else {
+      // No images, use regular upload
+      console.log("📤 Posting task without images");
+      const response = await api.post('/tasks', taskData);
+      return response.data;
     }
-    
-    // 🚨 LOG THE COMPLETE REQUEST BODY FOR DEBUGGING
-    console.log("🚨 === COMPLETE REQUEST BODY (DIRECT FORMAT) ===");
-    console.log("🚨 Request URL: POST /tasks");
-    console.log("🚨 Request Headers:", {
-      'Content-Type': 'application/json'
-    });
-    console.log("🚨 FULL REQUEST BODY (COMPLETE):");
-    console.log(JSON.stringify(taskDataWithImages, null, 2));
-    console.log("🚨 === END OF REQUEST BODY ===");
-    
-    const response = await api.post('/tasks', taskDataWithImages, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    console.log("✅ Task posted successfully (DIRECT) - Backend response:");
-    console.log("📦 Response status:", response.status);
-    console.log("📦 Response data (FULL):", JSON.stringify(response.data, null, 2));
-    console.log("🖼️ Images in response:", response.data?.data?.images?.length || 0);
-    
-    // CRITICAL CHECK: Did backend save the images?
-    if (taskDataWithImages.images && taskDataWithImages.images.length > 0 && (!response.data?.data?.images || response.data.data.images.length === 0)) {
-      console.error("🚨 🚨 🚨 CRITICAL: IMAGES WERE SENT BUT NOT SAVED BY BACKEND! 🚨 🚨 🚨");
-      console.error("🚨 Sent images count:", taskDataWithImages.images.length);
-      console.error("🚨 Backend saved images count:", response.data?.data?.images?.length || 0);
-      console.error("🚨 This indicates a BACKEND ISSUE - images are being received but not processed correctly!");
-    } else if (taskDataWithImages.images && taskDataWithImages.images.length > 0 && response.data?.data?.images && response.data.data.images.length > 0) {
-      console.log("✅ SUCCESS: Images were properly saved by backend!");
-      console.log("✅ Sent:", taskDataWithImages.images.length, "images");
-      console.log("✅ Backend saved:", response.data.data.images.length, "images");
-    }
-    
-    return response.data;
   } catch (error: any) {
-    console.error("❌ Task posting failed (DIRECT):", error?.response?.status);
+    console.error("❌ Task posting failed (all methods):", error?.response?.status);
     console.error("❌ Error details:", {
       status: error?.response?.status,
       statusText: error?.response?.statusText,
       data: error?.response?.data,
-      message: error?.message,
+      message: error?.message
     });
     
-    // Check for authentication errors with special handling
-    if (error?.response?.status === 401) {
-      if (error.isAuthError) {
-        throw new Error(error.message || "Authentication expired. Please login again to continue.");
-      }
-      throw error;
-    }
-    
-    // Check for validation errors  
-    if (error?.response?.status === 400) {
-      const errorMessage = error?.response?.data?.message || error?.response?.data?.error || "Invalid task data";
-      console.error("❌ Backend validation error:", errorMessage);
-      throw new Error(`Validation Error: ${errorMessage}`);
-    }
-    
-    // Check for file upload errors
-    if (error?.response?.status === 413) {
-      console.error("❌ Payload too large error - images are too big");
-      throw new Error("Images are too large. Please reduce image size and try again.");
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    } else if (error?.response?.status === 400) {
+      const errorMessage = error?.response?.data?.message || "Bad request. Please check your task data and try again.";
+      throw new Error(errorMessage);
+    } else if (error?.response?.status === 413) {
+      throw new Error("Images are too large. Please choose smaller images and try again.");
     }
     
     throw error;

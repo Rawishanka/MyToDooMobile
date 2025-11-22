@@ -3,16 +3,16 @@ import React, { useRef } from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
 import {
-    AskQuestionModal,
-    DetailHeader,
-    ErrorState,
-    LoadingState,
-    MakeOfferSection,
-    MyOfferCard,
-    OffersList,
-    QuestionsList,
-    TabsSection,
-    TaskInfoCard,
+  AskQuestionModal,
+  DetailHeader,
+  ErrorState,
+  LoadingState,
+  MakeOfferSection,
+  MyOfferCard,
+  OffersList,
+  QuestionsList,
+  TabsSection,
+  TaskInfoCard,
 } from './components';
 import { useTaskDetail } from './hooks/useTaskDetail';
 
@@ -101,6 +101,7 @@ export default function TaskDetailScreen() {
           task={task}
           getLocationIcon={getLocationIcon}
           getTimeDisplay={getTimeDisplay}
+          refetch={refetch}
         />
 
         {/* Show user's own offer if they made one */}

@@ -1,3 +1,4 @@
+import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { useAnswerTaskQuestion, useGetTaskById, useGetTaskQuestions } from '@/src/shared/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -22,6 +23,7 @@ export default function AnswerQuestionScreen() {
   }>();
   
   const [answer, setAnswer] = useState('');
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: taskData, isLoading: isTaskLoading } = useGetTaskById(taskId || '', !!taskId);
@@ -49,12 +51,25 @@ export default function AnswerQuestionScreen() {
 
       setIsSubmitting(true);
 
-      console.log('💬 Posting answer:', answer.trim());
+      console.log('💬 Posting answer with attachments:', {
+        answer: answer.trim(),
+        attachments: attachments.length
+      });
+
+      // TODO: Update API to support attachments
+      // For now, we'll include attachment info in the answer text if there are any
+      let finalAnswer = answer.trim();
+      if (attachments.length > 0) {
+        const attachmentInfo = attachments.map(att => 
+          `📎 ${att.type === 'image' ? '🖼️' : '📄'} ${att.name}`
+        ).join('\n');
+        finalAnswer += `\n\nAttached files:\n${attachmentInfo}`;
+      }
 
       const result = await answerQuestionMutation.mutateAsync({
         taskId: taskId!,
         questionId: questionId!,
-        answer: answer.trim(),
+        answer: finalAnswer,
       });
 
       console.log('✅ Answer posted successfully:', result);
@@ -90,6 +105,7 @@ export default function AnswerQuestionScreen() {
     return [
       'Be specific and clear in your response',
       'Include relevant details or instructions',
+      'Attach images or documents to help explain your answer',
       'Mention any materials or tools needed',
       'Provide timeline or schedule information',
       'Be helpful and professional'
@@ -179,6 +195,15 @@ export default function AnswerQuestionScreen() {
               {answer.length}/1000 characters
             </Text>
           </View>
+
+          {/* Attachment Picker */}
+          <AttachmentPicker
+            attachments={attachments}
+            onAttachmentsChange={setAttachments}
+            maxAttachments={3}
+            allowImages={true}
+            allowDocuments={true}
+          />
 
           {/* Answer Tips */}
           <View style={styles.tipsContainer}>

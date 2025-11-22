@@ -1,3 +1,4 @@
+import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { useGetTaskById, usePostTaskQuestion } from '@/src/shared/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -19,6 +20,7 @@ export default function AskQuestionScreen() {
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
   
   const [question, setQuestion] = useState('');
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: taskData, isLoading } = useGetTaskById(taskId || '', !!taskId);
@@ -41,11 +43,24 @@ export default function AskQuestionScreen() {
 
       setIsSubmitting(true);
 
-      console.log('❓ Posting question:', question.trim());
+      console.log('❓ Posting question with attachments:', {
+        question: question.trim(),
+        attachments: attachments.length
+      });
+
+      // TODO: Update API to support attachments
+      // For now, we'll include attachment info in the question text if there are any
+      let finalQuestion = question.trim();
+      if (attachments.length > 0) {
+        const attachmentInfo = attachments.map(att => 
+          `📎 ${att.type === 'image' ? '🖼️' : '📄'} ${att.name}`
+        ).join('\n');
+        finalQuestion += `\n\nAttached files:\n${attachmentInfo}`;
+      }
 
       const result = await postQuestionMutation.mutateAsync({
         taskId: taskId!,
-        question: question.trim(),
+        question: finalQuestion,
       });
 
       console.log('✅ Question posted successfully:', result);
@@ -162,6 +177,15 @@ export default function AskQuestionScreen() {
             </Text>
           </View>
 
+          {/* Attachment Picker */}
+          <AttachmentPicker
+            attachments={attachments}
+            onAttachmentsChange={setAttachments}
+            maxAttachments={3}
+            allowImages={true}
+            allowDocuments={true}
+          />
+
           {/* Question Suggestions */}
           <View style={styles.suggestionsContainer}>
             <Text style={styles.suggestionsTitle}>💡 Common Questions:</Text>
@@ -179,7 +203,9 @@ export default function AskQuestionScreen() {
           {/* Guidelines */}
           <View style={styles.guidelinesContainer}>
             <Text style={styles.guidelinesTitle}>📋 Question Guidelines:</Text>
-            <Text style={styles.guideline}>• Be specific and clear</Text>
+            <Text style={styles.guideline}>• Be specific and clear in your question</Text>
+            <Text style={styles.guideline}>• Include images if they help explain what you need</Text>
+            <Text style={styles.guideline}>• Attach relevant documents if helpful</Text>
             <Text style={styles.guideline}>• Ask about task details, requirements, or timeline</Text>
             <Text style={styles.guideline}>• Avoid personal or irrelevant questions</Text>
             <Text style={styles.guideline}>• Check existing Q&A first to avoid duplicates</Text>

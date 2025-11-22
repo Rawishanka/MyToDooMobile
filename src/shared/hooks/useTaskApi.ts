@@ -322,12 +322,23 @@ export function usePostTaskDirect() {
       return TaskAPI.postTaskDirect(taskData);
     },
     onSuccess: (result, variables) => {
-      // Force immediate refetch of all task-related queries
+      // Enhanced cache invalidation with specific task detail
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all });
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.lists() });
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
-      console.log("✅ Task posted successfully (DIRECT) - force refetched all task queries");
+      
+      // If we have the created task ID, invalidate its specific detail query
+      console.log("🔍 Task creation result structure:", JSON.stringify(result, null, 2));
+      const createdTaskId = (result as any)?.data?.id || (result as any)?.data?._id;
+      if (createdTaskId) {
+        console.log("✅ Invalidating specific task detail cache for ID:", createdTaskId);
+        queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(createdTaskId) });
+      } else {
+        console.log("⚠️ Could not extract task ID from result - cannot invalidate specific detail");
+      }
+      
+      console.log("✅ Task posted successfully (DIRECT) - force refetched all task queries and specific detail");
     },
     onError: (error: any) => {
       console.error("❌ Error posting task (DIRECT):", error);

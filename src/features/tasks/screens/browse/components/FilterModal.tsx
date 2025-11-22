@@ -63,15 +63,55 @@ export default function FilterModal({
   const MIN_PRICE = 0;
   const MAX_PRICE = 10000;
 
-  // Filter categories based on search text
+  // Filter categories based on search text with prioritized sorting
   const filteredCategories = useMemo(() => {
+    console.log('🔍 FilterModal: Category filtering debug:', {
+      searchText: categorySearchText,
+      totalCategories: categories.length,
+      trimmedSearch: categorySearchText.trim()
+    });
+
     if (!categorySearchText.trim()) {
+      console.log('✅ No search text, returning all categories:', categories.length);
       return categories;
     }
+
     const searchLower = categorySearchText.toLowerCase().trim();
-    return categories.filter(cat => 
-      cat.toLowerCase().includes(searchLower)
-    );
+    console.log('🔍 Searching for:', searchLower);
+
+    // Filter and categorize matches
+    const startingMatches: string[] = [];
+    const containingMatches: string[] = [];
+
+    categories.forEach(cat => {
+      if (!cat || typeof cat !== 'string') {
+        console.warn('⚠️ Invalid category found:', cat);
+        return;
+      }
+      
+      const catLower = cat.toLowerCase().trim();
+      
+      if (catLower.startsWith(searchLower)) {
+        // Category starts with the search term
+        startingMatches.push(cat);
+      } else if (catLower.includes(searchLower)) {
+        // Category contains the search term but doesn't start with it
+        containingMatches.push(cat);
+      }
+    });
+
+    // Combine results: starting matches first, then containing matches
+    const filtered = [...startingMatches, ...containingMatches];
+
+    console.log('🎯 Filtered results:', {
+      searchTerm: searchLower,
+      startingMatches: startingMatches.length,
+      containingMatches: containingMatches.length,
+      totalMatched: filtered.length,
+      orderedCategories: filtered
+    });
+
+    return filtered;
   }, [categories, categorySearchText]);
 
   const createPanResponder = (thumbType: 'min' | 'max') => {
@@ -171,6 +211,18 @@ export default function FilterModal({
 
                 {/* Category List */}
                 <ScrollView style={styles.categoryList} nestedScrollEnabled>
+                  {/* Debug info - visible in UI */}
+                  {__DEV__ && categorySearchText.trim() && (
+                    <View style={{ padding: 8, backgroundColor: '#f0f0f0', marginBottom: 4 }}>
+                      <Text style={{ fontSize: 10, color: '#666' }}>
+                        DEBUG: Searching "{categorySearchText}" - Found {filteredCategories.length} results
+                      </Text>
+                      <Text style={{ fontSize: 9, color: '#999' }}>
+                        (Categories starting with "{categorySearchText}" appear first)
+                      </Text>
+                    </View>
+                  )}
+                  
                   {filteredCategories.length > 0 ? (
                     filteredCategories.map((cat, index) => (
                       <TouchableOpacity
