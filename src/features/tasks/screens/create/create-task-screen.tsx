@@ -97,6 +97,15 @@ export default function CreateTaskScreen() {
   const [currentValidationImage, setCurrentValidationImage] = useState<string>('');
   const [isValidatingImage, setIsValidatingImage] = useState(false);
 
+  // Sync images to store whenever they change
+  useEffect(() => {
+    console.log('💾 Syncing images to store:', images.length, 'images');
+    updateMyTask({ 
+      photos: images,
+      photo: images[0] || ''
+    });
+  }, [images, updateMyTask]);
+
   // Debug validation results state changes
   useEffect(() => {
     console.log('🔍 Validation results state changed:');
@@ -379,72 +388,66 @@ export default function CreateTaskScreen() {
   // Modified image addition function - NOW WITH SMART VALIDATION
   const addImageWithValidation = async (imageUri: string) => {
     try {
-      console.log('📸 Validating image before adding:', imageUri);
-      console.log('🔧 Smart validation system active - using OpenAI Vision API');
+      console.log('📸 Adding image:', imageUri);
       
-      // Add placeholder validation result immediately
-      console.log('💾 Setting placeholder validation result');
+      // Add image immediately - NO BLOCKING
+      setImages(prevImages => {
+        const newImages = [...prevImages, imageUri];
+        console.log('✅ Image added, total images:', newImages.length);
+        return newImages;
+      });
+      
+      // Add placeholder validation result
       setValidationResults(prev => {
         const newMap = new Map(prev);
         newMap.set(imageUri, {
           isValid: true,
           confidence: 0,
-          message: 'Analyzing image...',
-          reasons: ['Analysis in progress'],
+          message: '✓ Image added',
+          reasons: ['Image ready for upload'],
           suggestions: []
         });
         return newMap;
       });
       
-      // Add image immediately with placeholder validation
-      console.log('📸 Adding image to list with placeholder validation');
-      setImages(prevImages => [...prevImages, imageUri]);
-      
+      // Validate in background WITHOUT blocking
       const taskContext = getTaskContext();
-      console.log('📋 Task context for validation:', taskContext);
       
-      // VALIDATE FIRST with smart validation - BLOCK if invalid
-      const validationResult = await validateImageSmart(imageUri, taskContext);
+      // Run validation asynchronously without awaiting
+      validateImageSmart(imageUri, taskContext)
+        .then(validationResult => {
+          console.log('🎯 Background validation completed:', validationResult.message);
+          
+          // Update validation result after background check
+          setValidationResults(prev => {
+            const newMap = new Map(prev);
+            newMap.set(imageUri, validationResult);
+            return newMap;
+          });
+        })
+        .catch(error => {
+          console.error('⚠️ Background validation failed:', error);
+          // Keep the image even if validation fails
+          setValidationResults(prev => {
+            const newMap = new Map(prev);
+            newMap.set(imageUri, {
+              isValid: true,
+              confidence: 0.5,
+              message: '✓ Image added',
+              reasons: ['Validation unavailable'],
+              suggestions: []
+            });
+            return newMap;
+          });
+        });
       
-      console.log('🎯 Validation completed:', {
-        isValid: validationResult.isValid,
-        confidence: validationResult.confidence,
-        message: validationResult.message
-      });
-      
-      // Store validation result immediately (for both success and failure)
-      console.log('💾 Storing validation result for display:', validationResult);
-      setValidationResults(prev => {
-        const newMap = new Map(prev);
-        newMap.set(imageUri, validationResult);
-        console.log('📋 Validation results map updated, size:', newMap.size);
-        console.log('📋 All validation entries:', Array.from(newMap.entries()));
-        return newMap;
-      });
-      
-      if (!validationResult.isValid) {
-        console.log('🚫 Image validation failed - removing from list');
-        
-        // Remove the image since validation failed
-        setImages(prevImages => prevImages.filter(img => img !== imageUri));
-        
-        Alert.alert(
-          'Image Not Suitable',
-          validationResult.message + '\n\nSuggestions:\n' + validationResult.suggestions.join('\n'),
-          [{ text: 'OK' }]
-        );
-        return; // Exit early
-      }
-      
-      // Validation passed - image is already in list, just update validation result
-      console.log('✅ Image APPROVED - validation completed successfully');
-      console.log('✅ Image validated and added successfully');
+      console.log('✅ Image added successfully (validation running in background)');
       
     } catch (error) {
-      console.error('❌ Error in addImageWithValidation:', error);
+      console.error('❌ Error adding image:', error);
       Alert.alert(
-        'Image Validation Error',
-        'Could not validate this image. Please try with a different image.',
+        'Error',
+        'Could not add this image. Please try again.',
         [{ text: 'OK' }]
       );
     }
@@ -468,6 +471,11 @@ export default function CreateTaskScreen() {
       return;
     }
 
+    if (isProcessing) {
+      console.log('⏳ Already processing, please wait...');
+      return;
+    }
+
     setIsProcessing(true);
     try {
       const result = await ImagePicker.launchCameraAsync({
@@ -478,14 +486,14 @@ export default function CreateTaskScreen() {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        // Use the new validation function instead of directly adding
         await addImageWithValidation(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error taking photo:', error);
       Alert.alert('Error', 'Failed to take photo. Please try again.');
     } finally {
-      setIsProcessing(false);
+      // Small delay before allowing next upload
+      setTimeout(() => setIsProcessing(false), 300);
     }
   };
 
@@ -493,6 +501,11 @@ export default function CreateTaskScreen() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permission Required', 'Photo library permission is required to select photos.', [{ text: 'OK' }]);
+      return;
+    }
+
+    if (isProcessing) {
+      console.log('⏳ Already processing, please wait...');
       return;
     }
 
@@ -505,27 +518,38 @@ export default function CreateTaskScreen() {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        // Use the new validation function instead of directly adding
         await addImageWithValidation(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error selecting image:', error);
       Alert.alert('Error', 'Failed to select image. Please try again.');
     } finally {
-      setIsProcessing(false);
+      // Small delay before allowing next upload
+      setTimeout(() => setIsProcessing(false), 300);
     }
   };
 
   const handleDeleteImage = (uri: string) => {
-    // Remove image from the list
-    setImages(images.filter(img => img !== uri));
+    console.log('🗑️ Deleting image:', uri);
+    
+    // Remove image from state
+    setImages(prevImages => {
+      const newImages = prevImages.filter(img => img !== uri);
+      console.log('✅ Image removed, remaining images:', newImages.length);
+      return newImages;
+    });
     
     // Clear validation results for this image
     setValidationResults(prev => {
       const newMap = new Map(prev);
       newMap.delete(uri);
+      console.log('✅ Validation result cleared, remaining validations:', newMap.size);
       return newMap;
     });
+    
+    // Force reset processing state to allow new uploads
+    setIsProcessing(false);
+    console.log('✅ Processing state reset - ready for new uploads');
   };
 
   const handleLocationSelect = (location: LocationData) => {

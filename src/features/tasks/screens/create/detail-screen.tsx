@@ -1,7 +1,7 @@
 import { CreateTaskRequest } from '@/src/api/types/tasks';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useStorageState } from '@/src/shared/hooks/useStorageState';
-import { usePostTask } from '@/src/shared/hooks/useTaskApi';
+import { usePostTaskWithImages } from '@/src/shared/hooks/useTaskApi';
 import { debugAuthState, forceFreshLogin } from '@/src/shared/utils/auth-utils';
 import { getCurrencyFromLocation, getCurrencySymbol } from '@/src/shared/utils/currency';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
@@ -50,8 +50,8 @@ export default function DetailScreen() {
   const { setPendingAction } = usePendingActionStore();
   const insets = useSafeAreaInsets();
   
-  // Use React Query mutation for posting task
-  const postTaskMutation = usePostTask();
+  // Use React Query mutation for posting task with images
+  const postTaskMutation = usePostTaskWithImages();
 
   // Auto-detect country for currency if no location set yet
   const { countryInfo } = useLocationCountry();
@@ -143,8 +143,11 @@ export default function DetailScreen() {
       locationType: !myTask.isRemoval ? (myTask.locationType || 'In-person') : 'In-person',
       budget: myTask.budget || 0,
       currency: "LKR",
-      images: [],
+      images: myTask.photos || [], // ✅ Include images from store
     };
+    
+    console.log('📸 Task request includes images:', taskRequest.images?.length || 0);
+    console.log('📸 Image URIs:', taskRequest.images);
     
     return taskRequest;
   };
@@ -178,8 +181,19 @@ export default function DetailScreen() {
       const taskData = convertToTaskRequest();
       console.log("📝 Task data to post:", taskData);
       
-      // Use React Query mutation to post task
-      const response = await postTaskMutation.mutateAsync(taskData);
+      // Extract image URIs from task data
+      const imageUris = taskData.images || [];
+      console.log("📸 Extracted image URIs:", imageUris.length, "images");
+      
+      // Remove images from task data (will be passed separately)
+      const taskDataWithoutImages = { ...taskData };
+      delete taskDataWithoutImages.images;
+      
+      // Use React Query mutation to post task with images
+      const response = await postTaskMutation.mutateAsync({ 
+        taskData: taskDataWithoutImages, 
+        imageUris 
+      });
       console.log("✅ Task posted successfully:", response);
       
       // Only show success alert if response is valid and successful

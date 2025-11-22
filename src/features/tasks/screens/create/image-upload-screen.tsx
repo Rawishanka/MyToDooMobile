@@ -226,68 +226,42 @@ export default function SnapPhotoScreen() {
     }
   };
 
-  // Modified image addition function with OCR validation
+  // Modified image addition function - instant upload
   const addImageWithValidation = async (imageUri: string) => {
     try {
-      console.log('📸 Adding image with validation:', imageUri);
+      console.log('📸 Adding image:', imageUri);
       
-      // Always add the image first - no blocking behavior
-      setImages(prevImages => [...prevImages, imageUri]);
-      console.log('✅ Image added successfully');
+      // Add image immediately - NO BLOCKING
+      setImages(prevImages => {
+        const newImages = [...prevImages, imageUri];
+        console.log('✅ Image added, total:', newImages.length);
+        return newImages;
+      });
       
-      // Add immediate placeholder validation result
-      const placeholderResult: SmartValidationResult = {
-        isValid: true,
-        confidence: 0,
-        message: '🔍 Analyzing image...',
-        reasons: ['Analysis in progress'],
-        suggestions: [],
-        analysis: 'Analysis in progress...'
-      };
-      
-      console.log('💾 Setting placeholder validation result');
+      // Add simple success validation result
       setValidationResults(prev => {
         const newMap = new Map(prev);
-        newMap.set(imageUri, placeholderResult);
-        console.log('📋 Updated validation results map size:', newMap.size);
-        console.log('📋 All entries:', Array.from(newMap.entries()));
+        newMap.set(imageUri, {
+          isValid: true,
+          confidence: 1,
+          message: '✓ Image added',
+          reasons: ['Image ready'],
+          suggestions: [],
+          analysis: 'Image ready for upload'
+        });
         return newMap;
       });
       
-      // Force a re-render by updating a state
-      setIsValidatingImage(true);
-      
-      // Add a small delay to ensure state updates are processed
-      setTimeout(async () => {
-        try {
-          // Then perform OCR validation for feedback only
-          console.log('🔍 Starting OCR validation for:', imageUri);
-          await validateImageWithOCR(imageUri);
-          console.log('🎯 OCR validation completed');
-        } catch (error) {
-          console.error('❌ OCR validation error:', error);
-          // Set a simple error message
-          const errorResult: SmartValidationResult = {
-            isValid: false,
-            confidence: 0,
-            message: '⚠️ Validation failed - please check your connection',
-            reasons: ['Network error'],
-            suggestions: ['Check internet connection', 'Try again'],
-            analysis: 'Unable to complete analysis'
-          };
-          setValidationResults(prev => {
-            const newMap = new Map(prev);
-            newMap.set(imageUri, errorResult);
-            return newMap;
-          });
-        } finally {
-          setIsValidatingImage(false);
-        }
-      }, 100);
+      // Optional: Run background validation without blocking
+      setTimeout(() => {
+        validateImageWithOCR(imageUri)
+          .then(() => console.log('🎯 Background validation completed'))
+          .catch(error => console.warn('⚠️ Background validation failed:', error));
+      }, 500);
       
     } catch (error) {
-      console.error('❌ Error in addImageWithValidation:', error);
-      // Still add the image even if validation fails
+      console.error('❌ Error adding image:', error);
+      // Still add the image
       setImages(prevImages => [...prevImages, imageUri]);
     }
   };
@@ -327,6 +301,11 @@ export default function SnapPhotoScreen() {
       return;
     }
 
+    if (isProcessing) {
+      console.log('⏳ Already processing...');
+      return;
+    }
+
     setIsProcessing(true);
     try {
       const result = await ImagePicker.launchCameraAsync({
@@ -344,7 +323,7 @@ export default function SnapPhotoScreen() {
       console.error('Error taking photo:', error);
       Alert.alert('Error', 'Failed to take photo. Please try again.');
     } finally {
-      setIsProcessing(false);
+      setTimeout(() => setIsProcessing(false), 300);
     }
   };
 
@@ -357,6 +336,11 @@ export default function SnapPhotoScreen() {
         'Photo library permission is required to select photos.',
         [{ text: 'OK' }]
       );
+      return;
+    }
+
+    if (isProcessing) {
+      console.log('⏳ Already processing...');
       return;
     }
 
@@ -376,20 +360,31 @@ export default function SnapPhotoScreen() {
       console.error('Error selecting image:', error);
       Alert.alert('Error', 'Failed to select image. Please try again.');
     } finally {
-      setIsProcessing(false);
+      setTimeout(() => setIsProcessing(false), 300);
     }
   };
 
   const handleDeleteImage = (uri: string) => {
-    // Remove image from the list
-    setImages(images.filter(img => img !== uri));
+    console.log('🗑️ Deleting image:', uri);
     
-    // Clear validation results for this image
+    // Remove image from state
+    setImages(prevImages => {
+      const newImages = prevImages.filter(img => img !== uri);
+      console.log('✅ Image removed, remaining:', newImages.length);
+      return newImages;
+    });
+    
+    // Clear validation results
     setValidationResults(prev => {
       const newMap = new Map(prev);
       newMap.delete(uri);
+      console.log('✅ Validation cleared, remaining validations:', newMap.size);
       return newMap;
     });
+    
+    // Reset processing state
+    setIsProcessing(false);
+    console.log('✅ Ready for new uploads');
   };
 
   // Location handler

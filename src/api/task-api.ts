@@ -1529,80 +1529,18 @@ export async function getTaskById(taskId: string): Promise<SingleTaskResponse> {
     const response = await api.get(`/tasks/${taskId}`);
     console.log("✅ Get task details success");
     
-    // Enhanced logging for image debugging
+    // Image debugging
     const taskData = response.data?.data;
-    console.log("🔍 === TASK FETCH IMAGE DEBUG ===");
-    console.log("🔍 Response status:", response.status);
-    console.log("🔍 Response has data:", !!response.data);
-    console.log("🔍 Response.data has data:", !!response.data?.data);
-    console.log("🔍 Task ID:", taskId);
-    console.log("🔍 Task title:", taskData?.title || 'No title');
-    console.log("🔍 Task created at:", taskData?.createdAt || 'No date');
-    console.log("🔍 TASK DATA STRUCTURE:", {
-      hasData: !!taskData,
-      hasImages: !!taskData?.images,
-      imagesLength: taskData?.images?.length || 0,
-      imagesType: typeof taskData?.images,
-      isArray: Array.isArray(taskData?.images),
-      allKeys: taskData ? Object.keys(taskData) : 'No data'
-    });
+    const imagesCount = taskData?.images?.length || 0;
     
-    // CRITICAL: Log the exact images field value
-    console.log("🔍 === EXACT IMAGES FIELD ANALYSIS ===");
-    console.log("🔍 taskData.images exact value:", taskData?.images);
-    console.log("🔍 taskData.images JSON:", JSON.stringify(taskData?.images, null, 2));
-    console.log("🔍 taskData.images stringified:", String(taskData?.images));
-    console.log("🔍 === END EXACT IMAGES ANALYSIS ===");
-    
-    // Check if images exist in different possible fields
-    const possibleImageFields = ['images', 'image', 'photos', 'pictures', 'attachments', 'files'];
-    possibleImageFields.forEach(field => {
-      if (taskData?.[field]) {
-        console.log(`🔍 Found ${field} field:`, {
-          type: typeof taskData[field],
-          isArray: Array.isArray(taskData[field]),
-          length: taskData[field]?.length,
-          value: Array.isArray(taskData[field]) ? taskData[field].slice(0, 2) : taskData[field]
-        });
-      }
-    });
-    
-    if (taskData?.images && taskData.images.length > 0) {
-      console.log("🖼️ === IMAGES DETAILED ANALYSIS ===");
-      taskData.images.forEach((img: any, index: number) => {
-        console.log(`📸 Image ${index + 1}/${taskData.images.length}:`, {
-          type: typeof img,
-          isString: typeof img === 'string',
-          isObject: typeof img === 'object',
-          length: typeof img === 'string' ? img.length : 'N/A',
-          preview: typeof img === 'string' ? img.substring(0, 100) + '...' : 'Not string',
-          keys: typeof img === 'object' ? Object.keys(img) : 'N/A',
-          hasUrl: typeof img === 'object' && img?.url,
-          hasData: typeof img === 'object' && img?.data,
-          isDataUri: typeof img === 'string' && img.startsWith('data:'),
-          isHttpUri: typeof img === 'string' && img.startsWith('http'),
-          fullObject: typeof img === 'object' ? JSON.stringify(img, null, 2) : 'N/A'
-        });
-      });
-      
-      console.log("🔍 === RAW IMAGES ARRAY (FULL) ===");
-      console.log(JSON.stringify(taskData.images, null, 2));
-      console.log("🔍 === END RAW IMAGES ===");
-    } else {
-      console.error("🚨 ❌ ❌ ❌ CRITICAL: Backend returned NO IMAGES! ❌ ❌ ❌ 🚨");
-      console.error("🚨 This means one of the following:");
-      console.error("🚨 1. Images were not saved to database during task creation");
-      console.error("🚨 2. Images are saved but not returned in API response"); 
-      console.error("🚨 3. Images are in a different field than 'images'");
-      console.error("🚨 4. Database/backend issue with image storage");
-      
-      if (taskData?.images && Array.isArray(taskData.images) && taskData.images.length === 0) {
-        console.error("🚨 CONFIRMED: Images field exists but is EMPTY ARRAY []");
-        console.error("🚨 This specifically means images were not saved during task creation");
-      }
-      
-      console.error("🚨 Check backend logs to see if images were received during task posting");
-      console.error("🚨 Full task data keys:", taskData ? Object.keys(taskData) : 'No data');
+    if (imagesCount > 0) {
+      console.log(`✅ Task "${taskData?.title}" has ${imagesCount} image(s)`);
+      // Log first image sample for verification
+      const firstImage = taskData.images[0];
+      const imageType = typeof firstImage === 'string' ? 'URL' : 'Object';
+      console.log(`📸 First image type: ${imageType}`);
+    } else if (taskData?.images && Array.isArray(taskData.images)) {
+      console.warn(`⚠️ Task "${taskData?.title}" has empty images array - check backend`);
     }
     
     return response.data;
