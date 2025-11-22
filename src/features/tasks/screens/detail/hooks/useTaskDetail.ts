@@ -170,14 +170,28 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     }, 500);
   };
 
-  const handleAskQuestion = async () => {
+  const handleAskQuestion = async (attachments: any[] = []) => {
     if (!questionText.trim()) return;
 
     try {
-      console.log('📝 Submitting question:', questionText);
+      console.log('📝 Submitting question with attachments:', {
+        questionText,
+        attachments: attachments.length
+      });
+
+      // TODO: Update API to support attachments
+      // For now, we'll include attachment info in the question text if there are any
+      let finalQuestion = questionText.trim();
+      if (attachments.length > 0) {
+        const attachmentInfo = attachments.map((att: any) => 
+          `📎 ${att.type === 'image' ? '🖼️' : '📄'} ${att.name}`
+        ).join('\n');
+        finalQuestion += `\n\nAttached files:\n${attachmentInfo}`;
+      }
+
       await postQuestionMutation.mutateAsync({
         taskId: taskId || '',
-        question: questionText,
+        question: finalQuestion,
       });
       
       console.log('✅ Question posted successfully');

@@ -1,12 +1,13 @@
+import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { ActivityIndicator, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface AskQuestionModalProps {
   visible: boolean;
   questionText: string;
   onChangeText: (text: string) => void;
-  onSubmit: () => void;
+  onSubmit: (attachments: AttachmentItem[]) => void;
   onClose: () => void;
   isSubmitting: boolean;
 }
@@ -19,39 +20,73 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
   onClose,
   isSubmitting,
 }) => {
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
+
+  const handleSubmit = () => {
+    onSubmit(attachments);
+  };
+
+  const handleClose = () => {
+    setAttachments([]);
+    onClose();
+  };
+
   return (
     <Modal
       visible={visible}
       animationType="slide"
       transparent={true}
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Ask a Question</Text>
-            <TouchableOpacity onPress={onClose}>
+            <TouchableOpacity onPress={handleClose}>
               <Ionicons name="close" size={24} color="#000" />
             </TouchableOpacity>
           </View>
 
-          <TextInput
-            style={styles.questionInput}
-            placeholder="Type your question here..."
-            placeholderTextColor="#999"
-            value={questionText}
-            onChangeText={onChangeText}
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-          />
+          <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+            {/* Question Input */}
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.questionInput}
+                placeholder="Type your question here..."
+                placeholderTextColor="#999"
+                value={questionText}
+                onChangeText={onChangeText}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
+            </View>
+
+            {/* Compact AttachmentPicker */}
+            <AttachmentPicker
+              attachments={attachments}
+              onAttachmentsChange={setAttachments}
+              maxAttachments={3}
+              allowImages={true}
+              allowDocuments={true}
+            />
+
+            {/* Guidelines */}
+            <View style={styles.guidelinesContainer}>
+              <Text style={styles.guidelinesTitle}>💡 Question Tips:</Text>
+              <Text style={styles.guideline}>• Be specific and clear in your question</Text>
+              <Text style={styles.guideline}>• Include images if they help explain your question</Text>
+              <Text style={styles.guideline}>• Attach relevant documents if needed</Text>
+              <Text style={styles.guideline}>• Ask about task details, requirements, or timeline</Text>
+            </View>
+          </ScrollView>
 
           <TouchableOpacity
             style={[
               styles.submitQuestionButton,
               !questionText.trim() && styles.submitQuestionButtonDisabled,
             ]}
-            onPress={onSubmit}
+            onPress={handleSubmit}
             disabled={!questionText.trim() || isSubmitting}
           >
             {isSubmitting ? (
@@ -78,6 +113,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     padding: 20,
     paddingBottom: 40,
+    maxHeight: '85%',
+    minHeight: '60%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -90,6 +127,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#000',
   },
+  scrollContainer: {
+    flex: 1,
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
   questionInput: {
     borderWidth: 1,
     borderColor: '#e0e0e0',
@@ -98,7 +141,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
     minHeight: 120,
-    marginBottom: 20,
+  },
+  guidelinesContainer: {
+    backgroundColor: '#f0f8ff',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  guidelinesTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#007AFF',
+    marginBottom: 8,
+  },
+  guideline: {
+    fontSize: 13,
+    color: '#555',
+    marginBottom: 4,
+    lineHeight: 18,
   },
   submitQuestionButton: {
     backgroundColor: '#4CAF50',

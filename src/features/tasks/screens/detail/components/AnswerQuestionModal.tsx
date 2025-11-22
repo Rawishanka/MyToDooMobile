@@ -1,3 +1,4 @@
+import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { useAnswerTaskQuestion } from '@/src/shared/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
@@ -41,6 +42,7 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
   onAnswerSubmitted,
 }) => {
   const [answer, setAnswer] = useState('');
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const answerQuestionMutation = useAnswerTaskQuestion();
 
   // Use the specific task ID from the question if available (for public questions)
@@ -58,16 +60,27 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
     }
 
     try {
-      console.log('💬 Submitting answer:', {
+      console.log('💬 Submitting answer with attachments:', {
         taskId: questionTaskId,
         questionId: question._id,
         answer: answer.trim(),
+        attachments: attachments.length,
       });
+
+      // TODO: Update API to support attachments
+      // For now, we'll include attachment info in the answer text if there are any
+      let finalAnswer = answer.trim();
+      if (attachments.length > 0) {
+        const attachmentInfo = attachments.map(att => 
+          `📎 ${att.type === 'image' ? '🖼️' : '📄'} ${att.name}`
+        ).join('\n');
+        finalAnswer += `\n\nAttached files:\n${attachmentInfo}`;
+      }
 
       await answerQuestionMutation.mutateAsync({
         taskId: questionTaskId,
         questionId: question._id,
-        answer: answer.trim(),
+        answer: finalAnswer,
       });
 
       console.log('✅ Answer posted successfully');
@@ -79,6 +92,7 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
       );
 
       setAnswer('');
+      setAttachments([]);
       onClose();
       
       // Call the refresh callback to reload questions
@@ -160,11 +174,21 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
             </Text>
           </View>
 
+          {/* Attachment Picker */}
+          <AttachmentPicker
+            attachments={attachments}
+            onAttachmentsChange={setAttachments}
+            maxAttachments={3}
+            allowImages={true}
+            allowDocuments={true}
+          />
+
           {/* Answer Tips */}
           <View style={styles.tipsContainer}>
             <Text style={styles.tipsTitle}>💡 Tips for a good answer:</Text>
             <Text style={styles.tipText}>• Be specific and clear in your response</Text>
             <Text style={styles.tipText}>• Include relevant details or instructions</Text>
+            <Text style={styles.tipText}>• Attach images or documents to help explain</Text>
             <Text style={styles.tipText}>• Mention any materials or tools needed</Text>
             <Text style={styles.tipText}>• Provide timeline or schedule information</Text>
             <Text style={styles.tipText}>• Be helpful and professional</Text>

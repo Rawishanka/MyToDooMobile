@@ -1,5 +1,5 @@
 import { Task } from '@/src/api/types/tasks';
-import { useGetMyOffers, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
+import { useGetAllTasks, useGetMyOffers, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -8,9 +8,9 @@ import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'r
 // Components
 import { Ionicons } from '@expo/vector-icons';
 import {
-  LoadingState,
-  MyTasksHeader,
-  TaskCard,
+    LoadingState,
+    MyTasksHeader,
+    TaskCard,
 } from './components';
 import SearchBar from './components/SearchModal';
 
@@ -182,6 +182,13 @@ export default function MyTasksScreen() {
     section: 'all-tasks'
   });
 
+  // For Tasker role: Fetch ALL system tasks to show available tasks from other users
+  const {
+    data: allSystemTasksData,
+    isLoading: isLoadingAllTasks,
+    refetch: refetchAllTasks,
+  } = useGetAllTasks();
+
   // Dummy data for Cancelled tab (Tasker role)
   const dummyCancelledTasks: Task[] = [
     {
@@ -318,21 +325,33 @@ export default function MyTasksScreen() {
     },
   ];
 
-  const allTasks = myTasksData?.data || [];
+  // Use different data sources based on user role
+  // For Tasker: Use all system tasks to show available tasks from other users
+  // For Poster: Use own tasks to show posted tasks
+  const allTasks = userRole === 'Tasker' 
+    ? (allSystemTasksData?.data || []) 
+    : (myTasksData?.data || []);
   const allOffers = myOffersData?.data || [];
-  const isLoading = isLoadingTasks || isLoadingOffers;
+  const isLoading = userRole === 'Tasker' 
+    ? (isLoadingTasks || isLoadingOffers || isLoadingAllTasks)
+    : (isLoadingTasks || isLoadingOffers);
 
   // Debug logging for API data
   console.log('📊 My Tasks Screen Data:', {
+    userRole,
+    dataSource: userRole === 'Tasker' ? 'All System Tasks' : 'My Tasks Only',
     totalTasks: allTasks.length,
     totalOffers: allOffers.length,
     isLoadingTasks,
     isLoadingOffers,
-    userRole,
-    sampleTasks: allTasks.slice(0, 2).map(t => ({ 
+    isLoadingAllTasks: userRole === 'Tasker' ? isLoadingAllTasks : 'N/A',
+    sampleTasks: allTasks.slice(0, 3).map(t => ({ 
       id: t._id, 
       title: t.title, 
-      status: t.status, 
+      status: t.status,
+      createdBy: t.createdBy?._id || 'unknown',
+      currentUserId: currentUserId,
+      isMyTask: t.createdBy?._id === currentUserId,
       offersArray: t.offers?.length || 0,
       offerCount: t.offerCount || 0,
       hasOffers: !!(t.offers?.length || t.offerCount)
@@ -376,19 +395,47 @@ export default function MyTasksScreen() {
     if (userRole === 'Tasker') {
 
 const openTasksFiltered = allTasks.filter((task: Task) => {
-  // Must be open/active
+  // Must be open/active - tasks available for bidding
   const isOpenStatus = task.status === 'open' || task.status === 'active';
   
-  // Must have offers
-  const hasOffers = (task.offers && task.offers.length > 0) || 
-                    (task.offerCount && task.offerCount > 0);
-  
-  // Must NOT be created by current user
+  // Must NOT be created by current user (can't bid on own tasks)
   const isNotMyTask = currentUserId ? task.createdBy?._id !== currentUserId : true;
   
-  // ALL three conditions must be true
-  return isOpenStatus && hasOffers && isNotMyTask;
+  // Debug logging for filtering
+  const shouldInclude = isOpenStatus && isNotMyTask;
+  if (allTasks.length <= 5) { // Only log for small datasets to avoid spam
+    console.log('🔍 Tasker Open Tasks Filter:', {
+      taskId: task._id,
+      title: task.title,
+      status: task.status,
+      createdBy: task.createdBy?._id,
+      currentUserId,
+      isOpenStatus,
+      isNotMyTask,
+      shouldInclude
+    });
+  }
+  
+  // For Tasker Open Tasks: Show ALL open tasks they can bid on (regardless of existing offers)
+  return shouldInclude;
 });
+
+      // Process and sort the open tasks
+      const openTasks = sortByCreatedDate(filterBySearch(openTasksFiltered));
+
+      // Debug log the final result for Tasker Open Tasks
+      console.log('🎯 Tasker Open Tasks Final Result:', {
+        totalSystemTasks: allTasks.length,
+        filteredOpenTasks: openTasksFiltered.length,
+        finalOpenTasks: openTasks.length,
+        currentUserId,
+        taskSample: openTasks.slice(0, 2).map(t => ({
+          id: t._id,
+          title: t.title,
+          status: t.status,
+          createdBy: t.createdBy?._id
+        }))
+      });
 
       
       // Todo Tasks: Tasks where their offers have been accepted and are in progress
@@ -552,7 +599,8 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
   const handleRefresh = useCallback(() => {
     refetchTasks();
     refetchOffers();
-  }, [refetchTasks, refetchOffers]);
+    refetchAllTasks(); // Also refresh all system tasks for Tasker view
+  }, [refetchTasks, refetchOffers, refetchAllTasks]);
 
   // Refresh data when screen is focused
   useFocusEffect(

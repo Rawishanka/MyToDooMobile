@@ -1,6 +1,7 @@
 import { Task } from '@/src/api/types/tasks';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
+import { TaskImageDebug } from '@/src/shared/utils/task-image-debug';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -9,12 +10,14 @@ interface TaskInfoCardProps {
   task: Task;
   getLocationIcon: () => 'location-outline' | 'desktop-outline' | 'car-outline';
   getTimeDisplay: () => string;
+  refetch?: () => void; // Added refetch function
 }
 
 export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   task,
   getLocationIcon,
   getTimeDisplay,
+  refetch, // Added refetch prop
 }) => {
   // Use current user's location for currency auto-detection
   const { countryInfo } = useLocationCountry();
@@ -37,14 +40,14 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       profilePictureUrl: task.createdBy?.profilePicture
     });
     
-    // Debug log for task images
-    console.log('🖼️ Task Images Debug:', {
-      hasImagesField: !!task.images,
-      imagesCount: task.images?.length || 0,
-      images: task.images,
-      imagesPreview: task.images?.slice(0, 2).map(img => img?.substring(0, 100))
-    });
-  }, [task.createdBy, task.images]);
+    // Enhanced debug log for task images using debug utility
+    TaskImageDebug.logTaskStructure(task, `TaskInfoCard useEffect - Task ${task._id}`);
+    
+    if (task.images && Array.isArray(task.images)) {
+      const validation = TaskImageDebug.validateImageData(task.images);
+      console.log('🖼️ Image validation result:', validation);
+    }
+  }, [task.createdBy, task.images, task._id]);
 
   const handleImageLoadStart = (index: number) => {
     setImageLoadingStates(prev => ({ ...prev, [index]: true }));
@@ -207,19 +210,19 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
     console.log('🔍 === END TASK STRUCTURE ===');
     
     if (!task.images || !Array.isArray(task.images) || task.images.length === 0) {
-      console.error('🚨 NO IMAGES FOUND IN TASK DATA!');
-      console.error('🚨 This is why Photos section is not showing');
-      console.error('🚨 task.images:', task.images);
-      console.error('🚨 All task keys:', task ? Object.keys(task) : 'No task');
-      console.error('🚨 Alternative image fields found:', foundImageFields.length);
+      console.log('🔍 NO IMAGES FOUND IN TASK DATA!');
+      console.log('🔍 This is why Photos section is not showing');
+      console.log('🔍 task.images:', task.images);
+      console.log('🔍 All task keys:', task ? Object.keys(task) : 'No task');
+      console.log('🔍 Alternative image fields found:', foundImageFields.length);
       
       // Check if images field exists but is empty
       if (task.images && Array.isArray(task.images) && task.images.length === 0) {
-        console.error('🚨 CRITICAL: Images field exists but is EMPTY ARRAY!');
-        console.error('🚨 This means either:');
-        console.error('🚨   1. Images were not saved during task creation');
-        console.error('🚨   2. Images were saved but not returned by backend');
-        console.error('🚨   3. Images were deleted after creation');
+        console.log('🔍 CRITICAL: Images field exists but is EMPTY ARRAY!');
+        console.log('🔍 This means either:');
+        console.log('🔍   1. Images were not saved during task creation');
+        console.log('🔍   2. Images were saved but not returned by backend');
+        console.log('🔍   3. Images were deleted after creation');
       }
       
       // Show debug info in development
@@ -231,6 +234,12 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
             <View style={{ marginTop: 8, padding: 8, backgroundColor: '#f5f5f5', borderRadius: 4 }}>
               <Text style={{ fontSize: 10, color: '#666', fontWeight: 'bold' }}>DEBUG INFO:</Text>
               <Text style={{ fontSize: 10, color: '#666' }}>
+                Task ID: {task._id}
+              </Text>
+              <Text style={{ fontSize: 10, color: '#666' }}>
+                Task Title: {task.title}
+              </Text>
+              <Text style={{ fontSize: 10, color: '#666' }}>
                 task.images: {task.images ? JSON.stringify(task.images) : 'undefined'}
               </Text>
               {foundImageFields.length > 0 && (
@@ -241,6 +250,25 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
               <Text style={{ fontSize: 10, color: '#666' }}>
                 All keys: {task ? Object.keys(task).slice(0, 10).join(', ') : 'No task'}
               </Text>
+              {refetch && (
+                <TouchableOpacity 
+                  onPress={() => {
+                    console.log('🔄 MANUAL REFRESH: Refetching task data for task ID:', task._id);
+                    refetch();
+                  }}
+                  style={{ 
+                    marginTop: 8, 
+                    padding: 8, 
+                    backgroundColor: '#007AFF', 
+                    borderRadius: 4, 
+                    alignItems: 'center' 
+                  }}
+                >
+                  <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                    🔄 REFRESH TASK DATA
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>
@@ -263,7 +291,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
     }
 
     if (!imageDataToProcess || imageDataToProcess.length === 0) {
-      console.error('❌ No processable image data found');
+      console.log('🔍 No processable image data found');
       return (
         <View style={styles.imageGallery}>
           <Text style={styles.imageGalleryTitle}>Photos (0)</Text>
@@ -339,7 +367,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
             const base64 = btoa(String.fromCharCode(...imageData.data));
             return `data:image/jpeg;base64,${base64}`;
           } catch (error) {
-            console.error('❌ Failed to convert buffer to base64:', error);
+            console.log('🔍 Failed to convert buffer to base64:', error);
           }
         }
         
@@ -409,8 +437,8 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
     console.log('🔄 Extracted image strings count:', imageStrings.length);
     
     if (imageStrings.length === 0 && imageDataToProcess.length > 0) {
-      console.error('❌ Failed to extract any image strings!');
-      console.error('❌ Raw images data:', JSON.stringify(imageDataToProcess.slice(0, 2), null, 2));
+      console.log('🔍 Failed to extract any image strings!');
+      console.log('🔍 Raw images data:', JSON.stringify(imageDataToProcess.slice(0, 2), null, 2));
       
       // Show debug info to user in development
       return (
@@ -553,7 +581,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                           handleImageLoadEnd(globalIndex);
                         }}
                         onError={(error) => {
-                          console.error(`❌ Loading failed for image ${globalIndex}:`, {
+                          console.log(`🔍 Loading failed for image ${globalIndex}:`, {
                             uri: finalImageUri.substring(0, 100),
                             error: error.nativeEvent?.error || error
                           });

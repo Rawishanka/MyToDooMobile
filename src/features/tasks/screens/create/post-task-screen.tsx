@@ -3,19 +3,18 @@ import { useCreateTask, usePostTaskDirect, usePostTaskWithImages } from '@/src/s
 import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 export default function PostTaskScreen() {
@@ -82,13 +81,13 @@ export default function PostTaskScreen() {
         return;
       }
 
-      // Prepare task data for API with proper backend format
+      // Prepare task data for API with EXACT backend format from documentation
       const coordinates = getTaskCoordinates(myTask);
       const imageUris = myTask.photos || [];
       
       const taskData: CreateTaskRequest = {
         title: myTask.title,
-        category: getTaskCategory(myTask),
+        category: getTaskCategory(myTask), // API expects single category string
         details: myTask.description,
         dateType: 'DoneBy',
         date: myTask.date 
@@ -99,7 +98,8 @@ export default function PostTaskScreen() {
         location: formatLocationForBackend(myTask),
         budget: myTask.budget,
         currency: 'LKR',
-        images: imageUris, // ✅ Include images directly in task data
+        // Note: images will be sent as 'files' parameter in FormData
+        images: imageUris, // Keep for internal processing, will be converted to 'files'
       };
 
       // Only add coordinates if we have valid location data
@@ -108,6 +108,15 @@ export default function PostTaskScreen() {
       }
 
       console.log('📸 Task Posting - Image URIs from store:', imageUris.length);
+      console.log('📋 API Compliance Check:');
+      console.log('  ✅ title:', taskData.title);
+      console.log('  ✅ category:', taskData.category);
+      console.log('  ✅ details:', taskData.details);
+      console.log('  ✅ budget:', taskData.budget);
+      console.log('  ✅ currency:', taskData.currency);
+      console.log('  ✅ dateType:', taskData.dateType);
+      console.log('  ✅ locationType:', taskData.locationType);
+      console.log('  ✅ files count (images):', imageUris.length);
       console.log('📸 Task Posting - myTask.photos raw:', JSON.stringify(myTask.photos, null, 2));
       console.log('📸 Task Posting - imageUris extracted:', JSON.stringify(imageUris, null, 2));
       console.log('📸 Task Posting - STORE STATE FULL myTask:', JSON.stringify(myTask, null, 2));
@@ -118,59 +127,23 @@ export default function PostTaskScreen() {
       
       if (imageUris.length > 0) {
         setUploadProgress(`Processing ${imageUris.length} image(s)...`);
-        console.log('🚀 Using DIRECT posting approach for task with images');
+        console.log('🚀 Using FormData approach for task with images (like profile upload)');
         
-        // Convert file URIs to base64 data URIs for the taskData.images field
-        console.log('🔍 === IMAGE CONVERSION DEBUG ===');
+        // Use image URIs directly (like profile upload)
+        console.log('🔍 === IMAGE FORMDATA PREPARATION ===');
         console.log('🔍 imageUris count:', imageUris.length);
         console.log('🔍 imageUris:', imageUris);
         
-        const base64Images = await Promise.all(
-          imageUris.map(async (uri, index) => {
-            try {
-              console.log(`🔄 Converting image ${index + 1}/${imageUris.length}: ${uri}`);
-              const fileInfo = await FileSystem.getInfoAsync(uri);
-              console.log(`📁 File ${index} info:`, fileInfo);
-              
-              const base64Data = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
-              console.log(`✅ Converted image ${index} - Size:`, base64Data.length, 'characters');
-              
-              const filename = uri.split('/').pop() || `image_${index}.jpg`;
-              const extension = filename.split('.').pop()?.toLowerCase() || 'jpg';
-              let mimeType = 'image/jpeg';
-              if (extension === 'png') mimeType = 'image/png';
-              else if (extension === 'gif') mimeType = 'image/gif';
-              
-              const dataUri = `data:${mimeType};base64,${base64Data}`;
-              console.log(`✅ Created data URI for image ${index}:`, {
-                mimeType,
-                filename,
-                dataUriLength: dataUri.length,
-                previewStart: dataUri.substring(0, 50),
-                isValidDataUri: dataUri.startsWith('data:image/')
-              });
-              
-              return dataUri;
-            } catch (error) {
-              console.error(`❌ Failed to convert image ${index}:`, error);
-              return null;
-            }
-          })
-        );
+        // Keep images as file URIs for FormData upload
+        taskData.images = imageUris;
         
-        // Filter out any failed conversions
-        const validImages = base64Images.filter(img => img !== null) as string[];
-        taskData.images = validImages;
-        
-        console.log('🚨 === FINAL TASK DATA BEFORE POSTING ===');
+        console.log('🚨 === FINAL TASK DATA BEFORE FORMDATA POSTING ===');
         console.log('🚨 taskData.images count:', taskData.images?.length);
-        console.log('🚨 taskData.images types:', taskData.images?.map(img => typeof img));
-        console.log('🚨 taskData.images valid format:', taskData.images?.map(img => img.startsWith('data:image/')));
-        console.log('🚨 taskData.images sizes:', taskData.images?.map(img => img.length));
+        console.log('🚨 taskData.images (URIs):', taskData.images?.map(uri => uri.substring(0, 50) + '...'));
         console.log('🚨 taskData structure:', Object.keys(taskData));
-        console.log('🚨 === ABOUT TO SEND TO BACKEND ===');
+        console.log('🚨 === ABOUT TO SEND TO BACKEND WITH FORMDATA ===');
         
-        console.log('📤 Converted', validImages.length, 'images to base64 for direct posting');
+        console.log('📤 Posting with', imageUris.length, 'image URIs using FormData (multipart/form-data)');
         result = await postTaskDirectMutation.mutateAsync(taskData);
         console.log('✅ Task posted with images (DIRECT) - Response:', result);
         
@@ -191,7 +164,7 @@ export default function PostTaskScreen() {
           });
         } else {
           console.error('🚨 CRITICAL: Backend did NOT save any images!');
-          console.error('🚨 We sent', validImages.length, 'images but got', result?.data?.images?.length || 0, 'back');
+          console.error('🚨 We sent', imageUris.length, 'images but got', result?.data?.images?.length || 0, 'back');
         }
       } else {
         setUploadProgress('Creating task...');

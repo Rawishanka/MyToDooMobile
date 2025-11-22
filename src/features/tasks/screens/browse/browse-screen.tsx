@@ -3,11 +3,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 // API and Hooks
@@ -20,13 +20,13 @@ import { TaskCard } from '@/src/features/tasks/components';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { LoadingState } from '../../components/shared';
 import {
-  FilterButton,
-  FilterModal,
-  MapView,
-  SearchBar,
-  SortButton,
-  SortModal,
-  ViewModeToggle
+    FilterButton,
+    FilterModal,
+    MapView,
+    SearchBar,
+    SortButton,
+    SortModal,
+    ViewModeToggle
 } from './components';
 
 // Custom Hooks
@@ -71,16 +71,47 @@ export default function BrowseTasksScreen() {
   
   // Memoize categories array to prevent effect dependency issues
   const categories = useMemo(
-    () => categoriesWithAll || [
-      'All Categories',
-      'Home & Garden', 
-      'Design & Creative',
-      'Technology',
-      'Cleaning',
-      'Admin & Data',
-      'Business',
-      'Writing & Translation',
-    ],
+    () => {
+      console.log('📂 BrowseScreen: Categories debug:', {
+        categoriesWithAll,
+        categoriesLoading,
+        categoriesError: categoriesError?.message
+      });
+
+      const result = categoriesWithAll || [
+        'All Categories',
+        'Appliance installation and repair',
+        'Auto Mechanic and Electrician', 
+        'Building Maintenance and Renovations',
+        'Business and Accounting',
+        'Carpentry',
+        'Cleaning and Organising',
+        'Data Entry & Admin',
+        'Design & Creative',
+        'Delivery Services',
+        'Education and Tutoring',
+        'Electrical',
+        'Event Planning',
+        'Gardening and Landscaping',
+        'Graphic Design',
+        'Handyman and Handywomen',
+        'Health & Fitness',
+        'IT & Tech',
+        'Legal Services',
+        'Marketing and Advertising',
+        'Music and Entertainment',
+        'Painting',
+        'Pet Care',
+        'Photography',
+        'Plumbing',
+        'Removalist',
+        'Something Else',
+        'Web & App Development',
+      ];
+
+      console.log('📂 Final categories being passed to FilterModal:', result);
+      return result;
+    },
     [categoriesWithAll]
   );
 
