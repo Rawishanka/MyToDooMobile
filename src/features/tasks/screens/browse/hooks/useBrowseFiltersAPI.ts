@@ -1,7 +1,8 @@
-﻿import { Task, TaskFilterParams, TaskSearchParams } from '@/src/api/types/tasks';
+﻿import { TaskAPI } from '@/src/api/task-api';
+import { Task, TaskFilterParams, TaskSearchParams } from '@/src/api/types/tasks';
 import { useFilterTasks, useSearchTasks } from '@/src/shared/hooks/useTaskApi';
 import * as Location from 'expo-location';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 export interface FilterState {
   selectedCategory: string;
@@ -149,6 +150,7 @@ export const useBrowseFiltersAPI = () => {
   const [selectedSort, setSelectedSort] = useState(0);
   const [searchText, setSearchText] = useState('');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [tasksWithOfferCounts, setTasksWithOfferCounts] = useState<Task[]>([]);
 
   React.useEffect(() => {
     const getLocation = async () => {
@@ -244,15 +246,102 @@ export const useBrowseFiltersAPI = () => {
     refetch: filterRefetch,
   } = useFilterTasks(filterParams, shouldUseFilterAPI);
 
+  // Enhance tasks with offer counts if missing
+  useEffect(() => {
+    const enhanceTasksWithOfferCounts = async () => {
+      const baseTasks = shouldUseFilterAPI 
+        ? (filterResponse?.data || [])
+        : (searchResponse?.data || []);
+
+      if (baseTasks.length === 0) {
+        setTasksWithOfferCounts([]);
+        return;
+      }
+
+      // Check if tasks already have offer count data
+      const tasksNeedingOfferCounts = baseTasks.filter(task => 
+        task.offerCount === undefined && 
+        (!task.offers || task.offers.length === 0)
+      );
+
+      if (tasksNeedingOfferCounts.length === 0) {
+        console.log('🔍 [useBrowseFiltersAPI] All tasks already have offer data');
+        setTasksWithOfferCounts(baseTasks);
+        return;
+      }
+
+      console.log('🔍 [useBrowseFiltersAPI] Fetching offer counts for tasks missing data:', {
+        totalTasks: baseTasks.length,
+        tasksNeedingOfferCounts: tasksNeedingOfferCounts.length
+      });
+
+      try {
+        // Fetch offer counts for tasks in parallel (limit to first 20 to avoid API overload)
+        const tasksToFetch = tasksNeedingOfferCounts.slice(0, 20);
+        const offerCountPromises = tasksToFetch.map(async (task) => {
+          try {
+            const offersResponse = await TaskAPI.getTaskOffers(task._id);
+            const offerCount = offersResponse.data?.offers?.length || 0;
+            return { taskId: task._id, offerCount, offers: offersResponse.data?.offers || [] };
+          } catch (error) {
+            console.warn(`Failed to fetch offers for task ${task._id}:`, error);
+            return { taskId: task._id, offerCount: 0, offers: [] };
+          }
+        });
+
+        const offerCounts = await Promise.all(offerCountPromises);
+        const offerCountMap = Object.fromEntries(
+          offerCounts.map(({ taskId, offerCount, offers }) => [taskId, { offerCount, offers }])
+        );
+
+        // Enhance tasks with offer counts
+        const enhancedTasks = baseTasks.map(task => {
+          if (offerCountMap[task._id]) {
+            return {
+              ...task,
+              offerCount: offerCountMap[task._id].offerCount,
+              offers: offerCountMap[task._id].offers
+            };
+          }
+          return task;
+        });
+
+        console.log('✅ [useBrowseFiltersAPI] Enhanced tasks with offer counts:', {
+          totalTasks: enhancedTasks.length,
+          tasksWithOffers: enhancedTasks.filter(t => (t.offerCount || 0) > 0).length
+        });
+
+        setTasksWithOfferCounts(enhancedTasks);
+      } catch (error) {
+        console.error('❌ [useBrowseFiltersAPI] Failed to enhance tasks with offer counts:', error);
+        setTasksWithOfferCounts(baseTasks);
+      }
+    };
+
+    enhanceTasksWithOfferCounts();
+  }, [shouldUseFilterAPI, filterResponse?.data, searchResponse?.data]);
+
   // Apply client-side search filter to results
   const filteredAndSortedTasks = useMemo(() => {
-    const baseTasks = shouldUseFilterAPI 
-      ? (filterResponse?.data || [])
-      : (searchResponse?.data || []);
+    const baseTasks = tasksWithOfferCounts;
+    
+    // Debug logging for API response data
+    console.log('🔍 [useBrowseFiltersAPI] Final Tasks Debug:', {
+      baseTasksLength: baseTasks.length,
+      sampleTask: baseTasks[0] ? {
+        id: baseTasks[0]._id,
+        title: baseTasks[0].title,
+        offerCount: baseTasks[0].offerCount,
+        offersLength: baseTasks[0].offers?.length,
+        offersExists: !!baseTasks[0].offers,
+        status: baseTasks[0].status
+      } : null,
+      tasksWithOffers: baseTasks.filter(t => (t.offerCount || 0) > 0).length
+    });
     
     // Apply client-side search filter for multi-field search
     return filterTasksBySearch(baseTasks, searchText);
-  }, [shouldUseFilterAPI, filterResponse?.data, searchResponse?.data, searchText]);
+  }, [tasksWithOfferCounts, searchText]);
   
   const isLoading = shouldUseFilterAPI ? filterLoading : searchLoading;
   const error = shouldUseFilterAPI ? filterError : searchError;

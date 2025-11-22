@@ -568,9 +568,13 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               {task.status === 'accepted' || task.status === 'completed' || 
                task.status === 'assigned' || task.status === 'in_progress' || task.status === 'in-progress'
                 ? task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')
-                : (task.offerCount || 0) > 0
-                  ? `${task.offerCount} Offer${task.offerCount !== 1 ? 's' : ''}`
-                  : 'Make the first offer'}
+                : (() => {
+                    // Try multiple ways to get offer count
+                    const offerCount = task.offerCount || task.offers?.length || 0;
+                    return offerCount > 0
+                      ? `${offerCount} Offer${offerCount !== 1 ? 's' : ''}`
+                      : 'Make the first offer';
+                  })()}
             </Text>
           </View>
 

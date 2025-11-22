@@ -158,8 +158,8 @@ export default function TaskDetailScreen() {
         visible={showPaymentModal}
         taskId={taskId!}
         offerId={selectedOfferId || ''}
-        offerAmount={selectedOffer?.amount || 0}
-        currency={selectedOffer?.currency || 'LKR'}
+        offerAmount={selectedOffer?.offer?.amount || selectedOffer?.amount || 0}
+        currency={selectedOffer?.offer?.currency || selectedOffer?.currency || 'LKR'}
         taskTitle={task?.title || 'Task'}
         taskCategory={task?.categories?.[0]}
         onClose={handleClosePaymentModal}

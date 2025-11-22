@@ -2225,11 +2225,10 @@ export async function acceptOffer(taskId: string, offerId: string, userId?: stri
         message: acceptError.message
       });
       
-      // If empty body fails, try with minimal user data
+      // If empty body fails, try with minimal user data (DO NOT send serviceType - causes validation errors)
       if (acceptError?.response?.status === 500 || acceptError?.response?.status === 400) {
-        console.log("🔄 Trying with minimal user data");
+        console.log("🔄 Trying with minimal user data (no serviceType)");
         const requestBody = {
-          role: "poster",
           userId: userId || ""
         };
         
@@ -2264,9 +2263,8 @@ export async function acceptOffer(taskId: string, offerId: string, userId?: stri
       status: error?.response?.status,
       data: error?.response?.data,
       requestBody: {
-        role: "poster",
-        userId: userId || "",
-        serviceType: taskCategory ? mapCategoryToServiceType(taskCategory) : undefined
+        userId: userId || ""
+        // Note: Not sending serviceType as it causes backend validation errors
       }
     });
     

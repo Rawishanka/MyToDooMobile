@@ -1,11 +1,11 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-    useAcceptOffer,
-    useGetTaskById,
-    useGetTaskOffers,
-    useGetTaskQuestions,
-    usePostTaskQuestion,
+  useAcceptOffer,
+  useGetTaskById,
+  useGetTaskOffers,
+  useGetTaskQuestions,
+  usePostTaskQuestion,
 } from '../../../../../shared/hooks/useTaskApi';
 import { useAuthStore } from '../../../../../store/auth-task-store';
 
@@ -135,8 +135,10 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
       
       console.log('✅ Payment modal opened for offer:', {
         offerId,
-        amount: offerToAccept.offer?.amount || (offerToAccept as any).amount,
-        currency: offerToAccept.offer?.currency || (offerToAccept as any).currency
+        offerStructure: offerToAccept,
+        amount: offerToAccept.offer?.amount || offerToAccept.amount,
+        currency: offerToAccept.offer?.currency || offerToAccept.currency,
+        amountPath: offerToAccept.offer?.amount ? 'offer.amount' : 'amount'
       });
       
     } catch (error) {
@@ -161,11 +163,11 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     
     // Small delay to ensure UI updates before navigation
     setTimeout(() => {
-      // Navigate to My Tasks → Poster → Posted tab (where poster can see their accepted tasks)
-      console.log('🧭 Navigating to My Tasks - Poster - Posted tab');
+      // Navigate to My Tasks → Poster → Todo tab (where in-progress/assigned tasks appear)
+      console.log('🧭 Navigating to My Tasks - Poster - Todo tab (in-progress tasks)');
       router.push({
         pathname: '/(tabs)/my-tasks' as any,
-        params: { role: 'Poster', tab: 'Posted' }
+        params: { role: 'Poster', tab: 'Todo' }
       });
     }, 500);
   };

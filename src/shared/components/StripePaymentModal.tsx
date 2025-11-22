@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { StripeProvider, usePaymentSheet } from '@stripe/stripe-react-native';
 import { router } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -7,17 +6,14 @@ import {
     Alert,
     Dimensions,
     Modal,
-    ScrollView,
     StyleSheet,
     Text,
-    TouchableOpacity,
     View
 } from 'react-native';
 import API_CONFIG from '../../api/config';
 import { useAuthStore } from '../../store/auth-task-store';
 import { useCreatePaymentIntent } from '../hooks/usePaymentApi';
 import { useAcceptOffer } from '../hooks/useTaskApi';
-import { formatNumber } from '../utils/currency';
 
 interface StripePaymentModalProps {
   visible: boolean;
@@ -47,7 +43,8 @@ const COUNTRIES = [
   { label: 'Malaysia', value: 'MY' },
 ];
 
-const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
+const PaymentForm: React.FC<StripePaymentModalProps> = ({
+  visible,
   onClose,
   onSuccess,
   taskId,
@@ -73,11 +70,11 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
   // Get current user from auth store
   const currentUser = useAuthStore((state: any) => state.user);
   
-  // Use actual service fee data from payment intent response, or fallback calculation
+  // ALWAYS use backend payment intent data for consistency between display and actual charge
   const getServiceFeeData = () => {
     if (paymentIntentData?.breakdown) {
-      // Use breakdown data from the actual backend response
-      console.log('🔍 Using backend breakdown data:', paymentIntentData.breakdown);
+      // Use breakdown data from the actual backend response - THIS IS WHAT STRIPE CHARGES
+      console.log('✅ Using backend breakdown data (this is what Stripe will charge):', paymentIntentData.breakdown);
       return {
         budgetAmount: paymentIntentData.breakdown.budgetAmount,
         serviceFee: paymentIntentData.breakdown.serviceFee,
@@ -86,8 +83,8 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
       };
     }
     
-    // Fallback calculation if no backend data
-    console.log('🔍 Using fallback calculation for amount:', offerAmount);
+    // Fallback calculation ONLY before backend response
+    console.log('⚠️ Using fallback calculation (waiting for backend):', offerAmount);
     const serviceFee = Math.round(offerAmount * 0.10 * 100) / 100;
     return {
       budgetAmount: offerAmount,
@@ -98,28 +95,40 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
   };
 
   // Make fee calculation reactive to paymentIntentData changes
-  const feeCalculation = useMemo(() => getServiceFeeData(), [paymentIntentData, offerAmount, currency]);
+  const feeCalculation = useMemo(() => {
+    const result = getServiceFeeData();
+    console.log('🔢 Fee calculation updated:', {
+      hasBackendData: !!paymentIntentData?.breakdown,
+      budgetAmount: result.budgetAmount,
+      serviceFee: result.serviceFee,
+      totalAmount: result.totalAmount,
+      source: paymentIntentData?.breakdown ? 'BACKEND' : 'FALLBACK'
+    });
+    return result;
+  }, [paymentIntentData, offerAmount, currency]);
 
-  // Initialize Payment Sheet when component mounts
+  // Initialize Payment Sheet and immediately present it when modal opens
   useEffect(() => {
-    initializePaymentSheet();
-  }, []);
+    if (visible) {
+      initializeAndPresentPaymentSheet();
+    }
+  }, [visible]);
 
-  const initializePaymentSheet = async () => {
+  const initializeAndPresentPaymentSheet = async () => {
+    setIsProcessing(true);
     try {
-      console.log('💳 Creating payment intent for Payment Sheet:', { 
+      console.log('💳 Creating payment intent and presenting Stripe sheet immediately:', { 
         taskId, 
         offerId, 
         offerAmount, 
-        currency,
-        frontendCalculatedTotal: feeCalculation.totalAmount 
+        currency
       });
       
-      // Create payment intent first
+      // Create payment intent
       const paymentResult = await createPaymentIntent.mutateAsync({
         taskId,
         offerId,
-        amount: offerAmount, // Include the actual offer amount
+        amount: offerAmount,
         currency: currency,
       });
 
@@ -127,41 +136,17 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
         throw new Error('Failed to create payment intent');
       }
 
-      console.log('✅ Payment intent created for Payment Sheet:', paymentResult);
+      console.log('✅ Payment intent created:', {
+        budgetAmount: paymentResult.breakdown?.budgetAmount,
+        serviceFee: paymentResult.breakdown?.serviceFee,
+        totalCharge: paymentResult.breakdown?.totalCharge,
+        currency: paymentResult.breakdown?.currency
+      });
+      
       setPaymentIntentData(paymentResult);
 
-      // Log the amounts for debugging
-      console.log('🔍 Payment amounts debug:', {
-        backendTotalCharge: paymentResult.breakdown?.totalCharge,
-        backendBudgetAmount: paymentResult.breakdown?.budgetAmount,
-        backendServiceFee: paymentResult.breakdown?.serviceFee,
-        frontendCalculatedTotal: feeCalculation.totalAmount,
-        clientSecret: paymentResult.clientSecret,
-        backendCurrency: paymentResult.breakdown?.currency,
-        paymentIntentRawData: paymentResult
-      });
-
-      // Also log what Stripe might see
-      console.log('💰 Stripe Payment Intent Debug:', {
-        totalChargeInCents: paymentResult.breakdown?.totalCharge * 100,
-        totalChargeFormatted: new Intl.NumberFormat('en-LK', {
-          style: 'currency',
-          currency: 'LKR',
-        }).format(paymentResult.breakdown?.totalCharge || 0),
-        originalOfferAmount: offerAmount,
-        calculatedFee: feeCalculation
-      });
-
-      console.log('⚠️ AMOUNT VERIFICATION:', {
-        'Expected Total': 7625,
-        'Backend Total': paymentResult.breakdown?.totalCharge,
-        'Frontend Display Total': feeCalculation.totalAmount,
-        'Stripe will show': `LKR ${formatNumber(paymentResult.breakdown?.totalCharge || 0, { forceDecimals: true })}`,
-        'Issue': paymentResult.breakdown?.totalCharge !== 7625 ? 'BACKEND AMOUNT MISMATCH!' : 'Amounts match correctly'
-      });
-
       // Initialize the Payment Sheet
-      const { error } = await initPaymentSheet({
+      const { error: initError } = await initPaymentSheet({
         merchantDisplayName: 'MyToDoo',
         paymentIntentClientSecret: paymentResult.clientSecret,
         defaultBillingDetails: {
@@ -173,17 +158,41 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
         returnURL: 'mytodoo://payment-return',
       });
 
-      if (error) {
-        console.log('❌ Payment Sheet initialization failed:', {
-          code: error.code,
-          message: error.message,
-          type: error.type
-        });
-        Alert.alert('Setup Error', 'Failed to initialize payment. Please try again.');
-      } else {
-        setIsPaymentSheetReady(true);
-        console.log('✅ Payment Sheet initialized successfully');
+      if (initError) {
+        console.error('❌ Payment Sheet initialization failed:', initError);
+        throw new Error(initError.message);
       }
+
+      console.log('✅ Payment Sheet initialized, presenting now...');
+      
+      // Immediately present the payment sheet
+      const { error: presentError } = await presentPaymentSheet();
+
+      if (presentError) {
+        if (presentError.code === 'Canceled') {
+          console.log('ℹ️ User canceled payment');
+          onClose();
+          return;
+        }
+        throw new Error(presentError.message);
+      }
+
+      // Payment succeeded
+      console.log('✅ Payment succeeded!');
+      Alert.alert(
+        'Payment Successful! 🎉',
+        'Your payment has been processed. The task will be assigned shortly.',
+        [{
+          text: 'View My Tasks',
+          onPress: () => {
+            onSuccess();
+            router.push({
+              pathname: '/(tabs)/my-tasks' as any,
+              params: { role: 'Poster', tab: 'Todo' }
+            });
+          }
+        }]
+      );
     } catch (error: any) {
       console.log('❌ Payment Sheet initialization error:', {
         message: error.message,
@@ -207,7 +216,7 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
           'Payment service is temporarily unavailable. Please try again in a few minutes.',
           [
             { text: 'Close', onPress: onClose },
-            { text: 'Retry', onPress: initializePaymentSheet },
+            { text: 'Retry', onPress: initializeAndPresentPaymentSheet },
             { text: 'Accept Without Payment', onPress: () => handleDirectOfferAcceptance() }
           ]
         );
@@ -217,7 +226,7 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
           'The payment service is currently unavailable. Please try again in a few minutes.',
           [
             { text: 'Close', onPress: onClose },
-            { text: 'Retry', onPress: initializePaymentSheet }
+            { text: 'Retry', onPress: initializeAndPresentPaymentSheet }
           ]
         );
       } else if (error.message?.includes('Authentication')) {
@@ -232,7 +241,7 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
           'Failed to setup payment. Please check your connection and try again.',
           [
             { text: 'Close', onPress: onClose },
-            { text: 'Retry', onPress: initializePaymentSheet }
+            { text: 'Retry', onPress: initializeAndPresentPaymentSheet }
           ]
         );
       }
@@ -289,243 +298,16 @@ const PaymentForm: React.FC<Omit<StripePaymentModalProps, 'visible'>> = ({
     }
   };
 
-  const handlePayPress = async () => {
-    if (!isPaymentSheetReady) {
-      Alert.alert('Payment Not Ready', 'Payment is still being set up. Please wait a moment.');
-      return;
-    }
+  // Payment is now handled immediately in initializeAndPresentPaymentSheet
 
-    if (!escrowAgreed) {
-      Alert.alert('Agreement Required', 'Please agree to the escrow terms to proceed.');
-      return;
-    }
-
-    setIsProcessing(true);
-
-    try {
-      // Present the Payment Sheet
-      const { error } = await presentPaymentSheet();
-
-      if (error) {
-        // Use safer logging to avoid Babel runtime issues
-        console.log('❌ Payment Sheet presentation failed:', {
-          code: error.code,
-          message: error.message,
-          localizedMessage: error.localizedMessage,
-          type: error.type
-        });
-        
-        // Don't show error for user cancellation
-        if (error.code === 'Canceled') {
-          console.log('ℹ️ User cancelled the payment');
-          return;
-        }
-        
-        // Show appropriate error message
-        if (error.code === 'Failed') {
-          Alert.alert('Payment Failed', 'Payment could not be processed. Please check your card details and try again.');
-        } else {
-          Alert.alert('Payment Error', error.message || 'An error occurred during payment. Please try again.');
-        }
-        return;
-      }
-
-      // Payment was successful
-      console.log('✅ Payment succeeded, now accepting offer');
-      
-      try {
-        // Call accept offer API after successful payment
-        if (!currentUser?._id) {
-          throw new Error('User not authenticated');
-        }
-        
-        console.log('📝 Accepting offer:', { taskId, offerId, userId: currentUser._id, taskCategory });
-        const acceptResult = await acceptOfferMutation.mutateAsync({
-          taskId,
-          offerId,
-          userId: currentUser._id,
-          taskCategory
-        });
-        
-        console.log('✅ Offer accepted successfully:', acceptResult);
-        Alert.alert(
-          'Success! 🎉', 
-          'Your payment has been processed and the offer has been accepted!',
-          [{ 
-            text: 'OK', 
-            onPress: () => {
-              onSuccess();
-              // Navigate to My Tasks → Poster → Accepted tab
-              router.push({
-                pathname: '/(tabs)/my-tasks' as any,
-                params: { role: 'Poster', tab: 'Accepted' }
-              });
-            }
-          }]
-        );
-        
-      } catch (acceptError: any) {
-        console.log('❌ Failed to accept offer after payment:', {
-          message: acceptError.message,
-          code: acceptError.code || 'Unknown'
-        });
-        
-        // Show different messages based on error type
-        if (acceptError.message?.includes('Server error')) {
-          Alert.alert(
-            'Payment Successful',
-            'Your payment was processed successfully, but there was a temporary server issue. The offer acceptance is being processed. Please check your tasks.',
-            [{ text: 'OK', onPress: onSuccess }]
-          );
-        } else if (acceptError.message?.includes('Authentication')) {
-          Alert.alert(
-            'Payment Successful',
-            'Your payment was processed but you need to login again to complete the offer acceptance.',
-            [{ text: 'OK', onPress: onSuccess }]
-          );
-        } else {
-          Alert.alert(
-            'Payment Successful',
-            'Your payment was processed but there was an issue accepting the offer. Please contact support with this payment.',
-            [{ text: 'OK', onPress: onSuccess }]
-          );
-        }
-      }
-
-    } catch (error: any) {
-      console.log('❌ Payment process failed:', {
-        message: error.message,
-        code: error.code || 'Unknown'
-      });
-      Alert.alert(
-        'Payment Error',
-        error.message || 'An error occurred while processing your payment. Please try again.'
-      );
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
+  // Show minimal loading UI - Stripe sheet will open immediately
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          <Ionicons name="close" size={24} color="#666" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Complete Payment</Text>
-        <View style={styles.placeholder} />
+    <View style={styles.container}>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#4285f4" />
+        <Text style={styles.loadingText}>Preparing secure payment...</Text>
       </View>
-
-      {/* Task Info */}
-      <View style={styles.taskInfoSection}>
-        <Text style={styles.taskTitle}>{taskTitle}</Text>
-        {offerDetails?.taskerName && (
-          <Text style={styles.taskerName}>Offered by: {offerDetails.taskerName}</Text>
-        )}
-        {offerDetails?.description && (
-          <Text style={styles.offerDescription}>{offerDetails.description}</Text>
-        )}
-      </View>
-
-      {/* Payment Summary */}
-      <View style={styles.paymentSection}>
-        <Text style={styles.sectionTitle}>Payment Summary</Text>
-        {/* Payment Summary */}
-        <View style={styles.summaryContainer}>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Offer Amount</Text>
-            <Text style={styles.summaryValue}>LKR {formatNumber(feeCalculation.budgetAmount, { forceDecimals: true })}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Service Fee (10%)</Text>
-            <Text style={styles.summaryValue}>LKR {formatNumber(feeCalculation.serviceFee, { forceDecimals: true })}</Text>
-          </View>
-          <View style={[styles.summaryRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalValue}>LKR {formatNumber(feeCalculation.totalAmount, { forceDecimals: true })}</Text>
-          </View>
-          
-          {/* Show backend data if available */}
-          {paymentIntentData?.breakdown && (
-            <View style={styles.backendDataInfo}>
-              <Text style={styles.backendDataLabel}>✅ Payment confirmed by backend</Text>
-              <Text style={styles.backendDataText}>
-                Backend calculated: LKR {formatNumber(paymentIntentData.breakdown.totalCharge, { forceDecimals: true })}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* Payment Terms */}
-        <View style={styles.termsSection}>
-          <Text style={styles.termsTitle}>Payment Terms</Text>
-          <Text style={styles.termsBullet}>• Funds will be held in escrow until task completion</Text>
-          <Text style={styles.termsBullet}>• Payment will be released to the tasker once you confirm completion</Text>
-          <Text style={styles.termsBullet}>• You can dispute if the task is not completed satisfactorily</Text>
-          <Text style={styles.termsBullet}>• Automatic release after 30 days of task completion</Text>
-        </View>
-
-        {/* Escrow Agreement */}
-        <TouchableOpacity 
-          style={styles.checkboxContainer}
-          onPress={() => setEscrowAgreed(!escrowAgreed)}
-        >
-          <View style={[styles.checkbox, escrowAgreed && styles.checkboxChecked]}>
-            {escrowAgreed && <Ionicons name="checkmark" size={16} color="white" />}
-          </View>
-          <Text style={styles.checkboxText}>
-            I authorize this payment to be held in escrow until task completion and agree to the{' '}
-            <Text style={styles.linkText}>Terms & Conditions</Text> and{' '}
-            <Text style={styles.linkText}>Community Guidelines</Text>.
-          </Text>
-        </TouchableOpacity>
-
-        {/* Payment Security Info */}
-        <View style={styles.securityInfo}>
-          <View style={styles.securityRow}>
-            <Ionicons name="checkmark-circle" size={16} color="#4285f4" />
-            <Text style={styles.securityText}>Your payment is secured by Stripe. Card details are encrypted and never stored on our servers.</Text>
-          </View>
-        </View>
-
-        {/* Payment Button */}
-        <TouchableOpacity
-          style={[
-            styles.payButton, 
-            (!escrowAgreed || isProcessing || !isPaymentSheetReady) && styles.payButtonDisabled,
-            (escrowAgreed && isPaymentSheetReady && !isProcessing) && styles.payButtonActive
-          ]}
-          onPress={handlePayPress}
-          disabled={!escrowAgreed || isProcessing || !isPaymentSheetReady}
-        >
-          {isProcessing ? (
-            <ActivityIndicator color="white" />
-          ) : !isPaymentSheetReady ? (
-            <View style={styles.payButtonContent}>
-              <ActivityIndicator color="white" size="small" style={styles.payButtonIcon} />
-              <Text style={styles.payButtonText}>Setting up payment...</Text>
-            </View>
-          ) : (
-            <View style={styles.payButtonContent}>
-              <Ionicons name="card" size={20} color="white" style={styles.payButtonIcon} />
-              <Text style={styles.payButtonText}>Pay LKR {formatNumber(feeCalculation.totalAmount, { forceDecimals: true })}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-
-        {/* Retry Button for Failed Setup */}
-        {!isPaymentSheetReady && !isProcessing && (
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={initializePaymentSheet}
-          >
-            <Ionicons name="refresh" size={20} color="#4285f4" style={styles.retryIcon} />
-            <Text style={styles.retryButtonText}>Retry Payment Setup</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -534,7 +316,19 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+    fontWeight: '500',
   },
   header: {
     flexDirection: 'row',
@@ -762,7 +556,7 @@ const StripePaymentModal: React.FC<StripePaymentModalProps> = ({ visible, ...pro
       onRequestClose={props.onClose}
     >
       <StripeProvider publishableKey={API_CONFIG.STRIPE.PUBLISHABLE_KEY || ''}>
-        <PaymentForm {...props} />
+        <PaymentForm visible={visible} {...props} />
       </StripeProvider>
     </Modal>
   );
