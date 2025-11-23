@@ -17,25 +17,45 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
 
   return (
     <TouchableOpacity 
-      style={styles.messageItem} 
+      style={[
+        styles.messageItem,
+        message.unreadCount && message.unreadCount > 0 && styles.unreadItem
+      ]} 
       onPress={handlePress}
       activeOpacity={0.7}
     >
-      <Image 
-        source={{ uri: message.avatar || 'https://randomuser.me/api/portraits/men/1.jpg' }} 
-        style={styles.avatar} 
-        defaultSource={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }}
-      />
+      <View style={styles.avatarContainer}>
+        <Image 
+          source={{ uri: message.avatar || 'https://ui-avatars.com/api/?name=User&background=007AFF&color=fff&size=100' }} 
+          style={styles.avatar}
+          resizeMode="cover"
+        />
+        {message.unreadCount && message.unreadCount > 0 && (
+          <View style={styles.unreadDot} />
+        )}
+      </View>
       
       <View style={styles.messageContent}>
         <View style={styles.messageTitleRow}>
-          <Text style={styles.messageTitle} numberOfLines={1}>
+          <Text 
+            style={[
+              styles.messageTitle,
+              message.unreadCount && message.unreadCount > 0 && styles.unreadTitle
+            ]} 
+            numberOfLines={1}
+          >
             {message.title}
           </Text>
           <Text style={styles.messageDate}>{message.date}</Text>
         </View>
         
-        <Text style={styles.messagePreview} numberOfLines={1}>
+        <Text 
+          style={[
+            styles.messagePreview,
+            message.unreadCount && message.unreadCount > 0 && styles.unreadPreview
+          ]} 
+          numberOfLines={1}
+        >
           {message.preview}
         </Text>
       </View>
@@ -72,11 +92,26 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f0f0f0',
     alignItems: 'center',
   },
+  avatarContainer: {
+    position: 'relative',
+    marginRight: 12,
+  },
   avatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    marginRight: 12,
+    backgroundColor: '#F0F0F0',
+  },
+  unreadDot: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#007AFF',
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   messageContent: {
     flex: 1,
@@ -97,23 +132,37 @@ const styles = StyleSheet.create({
   messageDate: {
     fontSize: 13,
     color: '#8E8E93',
+    flexShrink: 0,
   },
   messagePreview: {
     fontSize: 14,
     color: '#8E8E93',
+    lineHeight: 18,
+  },
+  unreadItem: {
+    backgroundColor: '#F0F7FF',
+  },
+  unreadTitle: {
+    fontWeight: '700',
+    color: '#000',
+  },
+  unreadPreview: {
+    fontWeight: '600',
+    color: '#000',
   },
   unreadBadge: {
     backgroundColor: '#007AFF',
     borderRadius: 12,
-    width: 24,
+    minWidth: 24,
     height: 24,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
+    paddingHorizontal: 6,
   },
   unreadText: {
     fontSize: 12,
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
