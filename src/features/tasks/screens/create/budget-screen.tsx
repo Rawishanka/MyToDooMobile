@@ -137,6 +137,7 @@ export default function BudgetScreen() {
     if (budgetNumber >= minimumBudget) {
       updateMyTask({
         budget: budgetNumber,
+        currency: currencyInfo.code, // Save the detected currency
       });
       router.push('/detail-screen');
     }
