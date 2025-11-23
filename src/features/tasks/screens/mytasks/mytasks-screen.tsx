@@ -1,5 +1,5 @@
 import { Task } from '@/src/api/types/tasks';
-import { useGetAllTasks, useGetMyOffers, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
+import { useGetAllOffers, useGetAllTasks, useGetMyOffers, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -178,6 +178,12 @@ export default function MyTasksScreen() {
     data: myOffersData,
     isLoading: isLoadingOffers,
     refetch: refetchOffers,
+  } = useGetAllOffers({});
+
+  // Also keep useGetMyOffers for legacy support
+  const {
+    data: legacyOffersData,
+    isLoading: isLoadingLegacyOffers,
   } = useGetMyOffers({
     section: 'all-tasks'
   });
@@ -355,6 +361,27 @@ export default function MyTasksScreen() {
       offersArray: t.offers?.length || 0,
       offerCount: t.offerCount || 0,
       hasOffers: !!(t.offers?.length || t.offerCount)
+    }))
+  });
+
+  // Debug logging for offers data structure
+  console.log('🤝 My Offers Data Structure:', {
+    totalOffers: allOffers.length,
+    sampleOffers: allOffers.slice(0, 3).map((offer: any) => ({
+      id: offer._id || offer.id,
+      status: offer.status,
+      taskId: offer.taskId || offer.task?._id,
+      hasTask: !!offer.task,
+      taskTitle: offer.task?.title,
+      taskStatus: offer.task?.status,
+      offerAmount: offer.offer?.amount || offer.amount,
+      fullStructure: JSON.stringify(offer, null, 2).substring(0, 200) + '...'
+    })),
+    acceptedOffers: allOffers.filter((offer: any) => offer.status === 'accepted').map((offer: any) => ({
+      id: offer._id || offer.id,
+      taskTitle: offer.task?.title,
+      taskStatus: offer.task?.status,
+      offerStatus: offer.status
     }))
   });
 
@@ -563,18 +590,55 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       )
     );
 
-    // For accepted offers - offers that have been accepted (sorted by creation date, newest first)
-    const acceptedTasks = sortByCreatedDate(
-      filterBySearch(
-        allOffers.filter((offer: any) => 
-          offer.status === 'accepted'
-        )
-      )
-    );
+    // For accepted offers - find tasks that have been paid for and accepted
+    // These are tasks with status 'todo' and have an acceptedOffer or assignedTo
+    const acceptedTasks = allTasks.filter((task: Task) => {
+      const hasAcceptedOffer = task.status === 'todo' && 
+                              ((task as any).acceptedOffer || (task as any).assignedTo);
+      
+      // For Poster role: Only show accepted offers for tasks they created
+      let isUsersTask = true;
+      if (userRole === 'Poster' && currentUserId) {
+        isUsersTask = task.createdBy?._id === currentUserId;
+      }
+      
+      console.log(`🔍 Task ${task._id} accepted filter check:`, {
+        title: task.title,
+        status: task.status,
+        hasAcceptedOffer: !!(task as any).acceptedOffer,
+        hasAssignedTo: !!(task as any).assignedTo,
+        taskCreatorId: task.createdBy?._id,
+        currentUserId,
+        isUsersTask,
+        shouldInclude: hasAcceptedOffer && isUsersTask
+      });
+      
+      return hasAcceptedOffer && isUsersTask;
+    });
     
-    // If no accepted offers from API, use dummy data
-    const baseAcceptedTasks = acceptedTasks.length > 0 ? acceptedTasks : dummyAcceptedOffers;
-    const finalAcceptedTasks = filterBySearch(baseAcceptedTasks);
+    console.log('🎯 Processing Accepted Tasks for Poster:', {
+      totalTasks: allTasks.length,
+      acceptedTasksCount: acceptedTasks.length,
+      acceptedTasksSample: acceptedTasks.slice(0, 2).map((task: any) => ({
+        taskId: task._id,
+        title: task.title,
+        status: task.status,
+        hasAcceptedOffer: !!task.acceptedOffer,
+        hasAssignedTo: !!task.assignedTo,
+        paymentIntentId: task.paymentIntentId
+      }))
+    });
+    
+    const finalAcceptedTasks = sortByCreatedDate(filterBySearch(acceptedTasks));
+    
+    console.log('✅ Final Accepted Tasks for Poster:', {
+      count: finalAcceptedTasks.length,
+      tasks: finalAcceptedTasks.map(task => ({
+        id: task._id,
+        title: task.title,
+        status: task.status
+      }))
+    });
 
     return {
       openTasks,
@@ -585,7 +649,7 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       postedTasks,
       acceptedTasks: finalAcceptedTasks,
     };
-  }, [allTasks, allOffers, dummyAcceptedOffers, dummyCancelledTasks, userRole, searchText]);
+  }, [allTasks, allOffers, dummyCancelledTasks, userRole, searchText, currentUserId]);
 
   // Debug log categorized data counts
   console.log(`📋 Categorized Data for ${userRole}:`, {
@@ -606,7 +670,18 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
   useFocusEffect(
     useCallback(() => {
       console.log('🔄 My Tasks screen focused, refreshing data...');
+      // Force refresh all data sources to ensure we get the latest offers after payment
       handleRefresh();
+      
+      // Additional refresh after a small delay to catch any async updates
+      const delayedRefresh = setTimeout(() => {
+        console.log('🔄 Delayed refresh for latest data...');
+        handleRefresh();
+      }, 1000);
+
+      return () => {
+        clearTimeout(delayedRefresh);
+      };
     }, [handleRefresh])
   );
 

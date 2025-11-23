@@ -198,9 +198,25 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             {task.status === 'accepted' || task.status === 'completed' || 
              task.status === 'assigned' || task.status === 'in_progress' || task.status === 'in-progress'
               ? task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')
-              : (task.offerCount || 0) > 0
-                ? `${task.offerCount} Offer${task.offerCount !== 1 ? 's' : ''}`
-                : 'Make the first offer'}
+              : (() => {
+                  // Try multiple ways to get offer count
+                  const offerCount = task.offerCount || task.offers?.length || 0;
+                  
+                  // Only log for the first few tasks to avoid spam
+                  if (task._id && task.title && Math.random() < 0.1) {
+                    console.log('🔍 [Browse TaskCard] Offer count:', {
+                      taskId: task._id,
+                      title: task.title,
+                      offerCount: task.offerCount,
+                      offersLength: task.offers?.length,
+                      calculatedCount: offerCount
+                    });
+                  }
+                  
+                  return offerCount > 0
+                    ? `${offerCount} Offer${offerCount !== 1 ? 's' : ''}`
+                    : 'Make the first offer';
+                })()}
           </Text>
         </View>
 

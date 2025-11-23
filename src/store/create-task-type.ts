@@ -3,6 +3,7 @@ type BaseTask = {
   title: string;
   description: string;
   budget: number;
+  currency: string; // Currency code (e.g., 'LKR', 'USD')
   date: string;
   time: string;
   photo: string; // Keep for backwards compatibility

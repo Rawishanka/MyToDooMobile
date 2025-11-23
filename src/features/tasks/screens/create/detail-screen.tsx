@@ -11,13 +11,13 @@ import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -56,8 +56,14 @@ export default function DetailScreen() {
   // Auto-detect country for currency if no location set yet
   const { countryInfo } = useLocationCountry();
 
-  // Get currency based on task location or detected country
+  // Get currency info - prioritize saved currency from task, fallback to location-based detection
   const getCurrencyInfo = () => {
+    // If currency is already saved in the task, use it
+    if (myTask.currency) {
+      return { code: myTask.currency, symbol: getCurrencySymbol(myTask.currency) };
+    }
+    
+    // Otherwise, fallback to location-based detection
     const location = 'location' in myTask ? myTask.location : undefined;
     // Handle both string location and object location formats
     const locationForCurrency = typeof location === 'string' 
@@ -142,7 +148,7 @@ export default function DetailScreen() {
       location: getLocationFromTask(),
       locationType: !myTask.isRemoval ? (myTask.locationType || 'In-person') : 'In-person',
       budget: myTask.budget || 0,
-      currency: "LKR",
+      currency: myTask.currency || currencyInfo.code, // Include currency in task creation
       images: myTask.photos || [], // ✅ Include images from store
     };
     

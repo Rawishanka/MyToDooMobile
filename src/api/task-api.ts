@@ -10,22 +10,22 @@ import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-  AllOffersResponse,
-  CreateOfferRequest,
-  CreateOfferResponse,
-  CreateTaskRequest,
-  CreateTaskResponse,
-  MyTasksParams,
-  PaymentStatusResponse,
-  SingleTaskResponse,
-  Task,
-  TaskCompletionStatusResponse,
-  TaskFilterParams,
-  TaskFilterResponse,
-  TaskOffersResponse,
-  TaskSearchParams,
-  TasksResponse,
-  UpdateTaskRequest
+    AllOffersResponse,
+    CreateOfferRequest,
+    CreateOfferResponse,
+    CreateTaskRequest,
+    CreateTaskResponse,
+    MyTasksParams,
+    PaymentStatusResponse,
+    SingleTaskResponse,
+    Task,
+    TaskCompletionStatusResponse,
+    TaskFilterParams,
+    TaskFilterResponse,
+    TaskOffersResponse,
+    TaskSearchParams,
+    TasksResponse,
+    UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -2163,11 +2163,10 @@ export async function acceptOffer(taskId: string, offerId: string, userId?: stri
         message: acceptError.message
       });
       
-      // If empty body fails, try with minimal user data
+      // If empty body fails, try with minimal user data (DO NOT send serviceType - causes validation errors)
       if (acceptError?.response?.status === 500 || acceptError?.response?.status === 400) {
-        console.log("🔄 Trying with minimal user data");
+        console.log("🔄 Trying with minimal user data (no serviceType)");
         const requestBody = {
-          role: "poster",
           userId: userId || ""
         };
         
@@ -2202,9 +2201,8 @@ export async function acceptOffer(taskId: string, offerId: string, userId?: stri
       status: error?.response?.status,
       data: error?.response?.data,
       requestBody: {
-        role: "poster",
-        userId: userId || "",
-        serviceType: taskCategory ? mapCategoryToServiceType(taskCategory) : undefined
+        userId: userId || ""
+        // Note: Not sending serviceType as it causes backend validation errors
       }
     });
     
@@ -2435,6 +2433,48 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
   const api = getApi();
   try {
     console.log("✅ Completing task:", taskId);
+    
+    // First, try to get the task details to check if it has an accepted offer
+    try {
+      const taskDetails = await getTaskById(taskId);
+      const task = taskDetails.data;
+      
+      // If the task has an accepted offer, we need to complete the offer first
+      if (task && task.status === 'todo' && (task as any).acceptedOffer) {
+        console.log("🎯 Task has accepted offer, completing offer first...");
+        const acceptedOffer = (task as any).acceptedOffer;
+        
+        // Try to update the offer status to 'completed' first
+        try {
+          const offerCompleteResponse = await api.put(`/tasks/${taskId}/offers/${acceptedOffer._id}`, {
+            status: 'completed'
+          });
+          console.log("✅ Completed offer successfully:", offerCompleteResponse.data);
+        } catch (offerError: any) {
+          console.log("⚠️ Offer completion failed, trying alternative approaches...");
+          
+          // Try with different status values that might be valid
+          const validStatuses = ['finished', 'done', 'complete'];
+          
+          for (const status of validStatuses) {
+            try {
+              const alternativeResponse = await api.put(`/tasks/${taskId}/offers/${acceptedOffer._id}`, {
+                status: status
+              });
+              console.log(`✅ Completed offer with status '${status}':`, alternativeResponse.data);
+              break;
+            } catch (altError) {
+              console.log(`❌ Failed to complete offer with status '${status}'`);
+              continue;
+            }
+          }
+        }
+      }
+    } catch (taskDetailsError) {
+      console.log("⚠️ Could not fetch task details, proceeding with direct completion...");
+    }
+    
+    // Now attempt to complete the task
     const response = await api.patch(`/tasks/${taskId}/complete`);
     console.log("✅ Complete task success:", response.data);
     return response.data;
@@ -2442,6 +2482,32 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
     console.error("❌ Complete task failed:", error);
     console.error("❌ Error response:", error?.response?.data);
     console.error("❌ Error status:", error?.response?.status);
+    
+    // Handle specific error about offer status validation
+    if (error?.response?.data?.message?.includes('Offer validation failed')) {
+      console.error("❌ Offer validation error - trying alternative completion approach");
+      
+      // Try the PUT method instead of PATCH
+      try {
+        const altResponse = await api.put(`/tasks/${taskId}/complete`);
+        console.log("✅ Complete task success (PUT method):", altResponse.data);
+        return altResponse.data;
+      } catch (altError: any) {
+        console.error("❌ Alternative completion method also failed:", altError?.response?.data);
+        
+        // If both methods fail, try updating task status directly
+        try {
+          const statusResponse = await api.patch(`/tasks/${taskId}`, {
+            status: 'completed'
+          });
+          console.log("✅ Complete task success (direct status update):", statusResponse.data);
+          return statusResponse.data;
+        } catch (statusError: any) {
+          console.error("❌ Direct status update also failed:", statusError?.response?.data);
+          throw error; // Throw the original error
+        }
+      }
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {

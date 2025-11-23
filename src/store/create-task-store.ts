@@ -12,6 +12,7 @@ const defaultTask: CreateTask = {
   title: '',
   description: '',
   budget: 0,
+  currency: 'LKR', // Default to Sri Lankan Rupee
   date: '',
   time: '',
   photo: '',
