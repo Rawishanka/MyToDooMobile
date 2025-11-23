@@ -1,5 +1,5 @@
 import { Task } from '@/src/api/types/tasks';
-import { useGetAllTasks, useGetMyOffers, useGetAllOffers, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
+import { useGetAllOffers, useGetAllTasks, useGetMyOffers, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
