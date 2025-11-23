@@ -1,17 +1,24 @@
 // Enhanced Message Screen with Real Chat API Integration
+// Features:
+// ✅ Real-time chat data from API
+// ✅ Profile pictures with fallback to generated avatars
+// ✅ Unread message count badges
+// ✅ Visual indicators for unread messages (blue background, bold text, blue dot)
+// ✅ Local storage integration for message previews
+// ✅ Pull-to-refresh functionality
 
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    RefreshControl,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 // Import components
@@ -102,6 +109,23 @@ const MessageScreen: React.FC = () => {
           const localPreview = localMessagePreviews[taskId];
           const preview = apiPreview || localPreview || 'Start a conversation';
           
+          // Get avatar from API or use fallback
+          const otherParticipant = chatItem.chat.otherParticipant;
+          let avatarUrl = 'https://ui-avatars.com/api/?name=User&background=007AFF&color=fff&size=100';
+          
+          if ((otherParticipant as any)?.avatar) {
+            // Use actual avatar from API
+            avatarUrl = (otherParticipant as any).avatar;
+          } else if (otherParticipant?.firstName || otherParticipant?.lastName) {
+            // Generate avatar with first letter of name using better styling
+            const firstName = otherParticipant.firstName || '';
+            const lastName = otherParticipant.lastName || '';
+            const name = `${firstName}+${lastName}`.trim();
+            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=007AFF&color=fff&size=100&bold=true&rounded=true`;
+          }
+          
+          console.log(`👤 Avatar for ${otherParticipant?.firstName}: ${avatarUrl}`);
+          
           return {
             id: chatItem.chat._id,
             title: chatItem.task?.title || 'Untitled Task',
@@ -111,10 +135,8 @@ const MessageScreen: React.FC = () => {
               month: 'short',
               year: 'numeric'
             }),
-            avatar: chatItem.chat.otherParticipant?.firstName && chatItem.chat.otherParticipant?.lastName ? 
-              `https://ui-avatars.com/api/?name=${chatItem.chat.otherParticipant.firstName}+${chatItem.chat.otherParticipant.lastName}&background=random&color=fff&size=50` : 
-              'https://randomuser.me/api/portraits/men/1.jpg',
-            unreadCount: chatItem.unreadCount > 0 ? chatItem.unreadCount : undefined,
+            avatar: avatarUrl,
+            unreadCount: chatItem.unreadCount && chatItem.unreadCount > 0 ? chatItem.unreadCount : undefined,
             taskId: chatItem.chat.taskId || '', // Store task ID for chat functionality, ensure it's not null
           };
         });
@@ -123,7 +145,7 @@ const MessageScreen: React.FC = () => {
       console.log('📱 Falling back to mock data due to processing error');
       return MESSAGES_DATA;
     }
-  }, [chatData]);
+  }, [chatData, localMessagePreviews]);
 
   // Filter messages based on search
   const filteredMessages = useMemo(() => {
