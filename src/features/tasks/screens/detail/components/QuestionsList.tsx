@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnswerQuestionModal } from './AnswerQuestionModal';
+
+const screenWidth = Dimensions.get('window').width;
 
 interface QuestionsListProps {
   questions: any[];
@@ -29,20 +31,103 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
 }) => {
   const insets = useSafeAreaInsets();
   const currentUser = useAuthStore((state) => state.user);
-  const [failedImages, setFailedImages] = React.useState<Set<string>>(new Set());
+  const [imageModalVisible, setImageModalVisible] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
 
-  // Helper function to get user profile picture
+  // Helper function to get user profile picture with fallback to generated avatar
   const getUserAvatar = (question: any) => {
     const user = question.askedBy || question.user || question.questioner;
     
     // If no user data in question, use current user's avatar
     if (!user && currentUser) {
-      return currentUser.profilePicture || currentUser.avatar;
+      const avatar = currentUser.profilePicture || currentUser.avatar;
+      if (avatar) return avatar;
+      
+      // Generate avatar for current user
+      const name = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || 'You';
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4CAF50&color=fff&size=80`;
     }
     
-    if (!user) return null;
+    if (!user) {
+      return 'https://ui-avatars.com/api/?name=User&background=999&color=fff&size=80';
+    }
     
-    return user.profilePicture || user.avatar || user.profile_picture || user.image;
+    // Check for real avatar first
+    const avatar = user.profilePicture || user.avatar || user.profile_picture || user.image;
+    if (avatar) return avatar;
+    
+    // Generate avatar from user name
+    const firstName = user.firstName || user.first_name || '';
+    const lastName = user.lastName || user.last_name || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+    const displayName = fullName || user.name || user.username || user.email?.split('@')[0] || 'User';
+    
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=007AFF&color=fff&size=80&bold=true`;
+  };
+  
+  // Helper function to extract and parse attachments from text
+  const parseAttachments = (text: string) => {
+    if (!text) return [];
+    
+    const attachments: { type: 'image' | 'file', name: string, url?: string }[] = [];
+    const lines = text.split('\n');
+    let inAttachmentsSection = false;
+    
+    for (const line of lines) {
+      if (line.includes('Attached files:')) {
+        inAttachmentsSection = true;
+        continue;
+      }
+      
+      if (inAttachmentsSection && line.trim()) {
+        // Extract Cloudinary URL from the filename if present
+        const cloudinaryMatch = line.match(/(https:\/\/res\.cloudinary\.com\/[^\s]+)/);
+        const imageMatch = line.match(/🖼️\s*(.+\.(?:jpg|jpeg|png|gif|webp))/i);
+        const fileMatch = line.match(/\s*(.+)/i);
+        
+        if (imageMatch) {
+          const imageName = imageMatch[1].trim();
+          attachments.push({ 
+            type: 'image', 
+            name: imageName,
+            url: cloudinaryMatch ? cloudinaryMatch[1] : undefined
+          });
+        } else if (fileMatch && !line.includes('Attached files:')) {
+          attachments.push({ 
+            type: 'file', 
+            name: fileMatch[1].trim(),
+            url: cloudinaryMatch ? cloudinaryMatch[1] : undefined
+          });
+        }
+      }
+    }
+    
+    return attachments;
+  };
+  
+  // Function to open image viewer
+  const openImageViewer = (imageUrl: string) => {
+    console.log('📸 Opening image viewer for:', imageUrl);
+    setSelectedImageUrl(imageUrl);
+    setImageModalVisible(true);
+  };
+  
+  // Function to close image viewer
+  const closeImageViewer = () => {
+    setImageModalVisible(false);
+    setSelectedImageUrl(null);
+  };
+  
+  // Helper function to clean text by removing attachment section
+  const cleanTextContent = (text: string) => {
+    if (!text) return '';
+    
+    const attachmentIndex = text.indexOf('Attached files:');
+    if (attachmentIndex !== -1) {
+      return text.substring(0, attachmentIndex).trim();
+    }
+    
+    return text.trim();
   };
   const [showAnswerModal, setShowAnswerModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<any>(null);
@@ -179,7 +264,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           <Text style={styles.loadingStateText}>Loading questions...</Text>
         </View>
       ) : questions.length === 0 ? (
-        <View style={[styles.emptyState, { marginBottom: 100 }]}>
+        <View style={styles.emptyState}>
           <Ionicons name="help-circle-outline" size={48} color="#ccc" />
           <Text style={styles.emptyStateText}>No questions yet</Text>
           <Text style={styles.emptyStateSubtext}>Be the first to ask a question!</Text>
@@ -189,7 +274,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           data={questions}
           scrollEnabled={false}
           keyExtractor={(item: any) => item._id}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={{ paddingBottom: 16 }}
           renderItem={({ item: question }: { item: any }) => (
             <View style={styles.questionCard}>
               {/* DEBUG: Let's check what's in the question data */}
@@ -212,9 +297,10 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
               
               <View style={styles.questionHeader}>
                 <View style={styles.questionUserSection}>
-                  <View style={styles.questionAvatar}>
-                    <Ionicons name="person" size={20} color="#666" />
-                  </View>
+                  <Image 
+                    source={{ uri: getUserAvatar(question) }}
+                    style={styles.questionAvatar}
+                  />
                   <View style={styles.questionUserInfo}>
                     <Text style={styles.questionUserName}>
                       {question.isAnonymous
@@ -270,10 +356,54 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
               </View>
 
               <Text style={styles.questionText}>
-                {typeof question.question === 'string'
-                  ? question.question
-                  : question.question?.text || 'No question text'}
+                {(() => {
+                  const questionText = typeof question.question === 'string'
+                    ? question.question
+                    : question.question?.text || 'No question text';
+                  return cleanTextContent(questionText);
+                })()}
               </Text>
+              
+              {/* Display question attachments if any */}
+              {(() => {
+                const questionText = typeof question.question === 'string'
+                  ? question.question
+                  : question.question?.text || '';
+                const attachments = parseAttachments(questionText);
+                
+                if (attachments.length > 0) {
+                  return (
+                    <View style={styles.attachmentsContainer}>
+                      <Text style={styles.attachmentsLabel}>📎 Attachments:</Text>
+                      {attachments.map((attachment, index) => (
+                        <TouchableOpacity 
+                          key={index} 
+                          style={styles.attachmentItem}
+                          onPress={() => {
+                            if (attachment.type === 'image' && attachment.url) {
+                              openImageViewer(attachment.url);
+                            } else {
+                              console.log('📎 File attachment clicked:', attachment.name);
+                            }
+                          }}
+                          activeOpacity={attachment.type === 'image' && attachment.url ? 0.7 : 1}
+                        >
+                          <Ionicons 
+                            name={attachment.type === 'image' ? 'image-outline' : 'document-outline'} 
+                            size={16} 
+                            color="#007AFF" 
+                          />
+                          <Text style={styles.attachmentName}>{attachment.name}</Text>
+                          {attachment.type === 'image' && attachment.url && (
+                            <Ionicons name="eye-outline" size={14} color="#007AFF" style={{ marginLeft: 8 }} />
+                          )}
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  );
+                }
+                return null;
+              })()}
 
               {/* Answer Section or Action Button */}
               {hasValidAnswer(question) ? (
@@ -291,10 +421,54 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                     })()}:
                   </Text>
                   <Text style={styles.answerText}>
-                    {typeof question.answer === 'string'
-                      ? question.answer
-                      : question.answer?.text || 'No answer text'}
+                    {(() => {
+                      const answerText = typeof question.answer === 'string'
+                        ? question.answer
+                        : question.answer?.text || 'No answer text';
+                      return cleanTextContent(answerText);
+                    })()}
                   </Text>
+                  
+                  {/* Display answer attachments if any */}
+                  {(() => {
+                    const answerText = typeof question.answer === 'string'
+                      ? question.answer
+                      : question.answer?.text || '';
+                    const attachments = parseAttachments(answerText);
+                    
+                    if (attachments.length > 0) {
+                      return (
+                        <View style={styles.answerAttachmentsContainer}>
+                          {attachments.map((attachment, index) => (
+                            <TouchableOpacity
+                              key={index} 
+                              style={styles.answerAttachmentItem}
+                              onPress={() => {
+                                if (attachment.type === 'image' && attachment.url) {
+                                  openImageViewer(attachment.url);
+                                } else {
+                                  console.log('📎 File attachment clicked:', attachment.name);
+                                }
+                              }}
+                              activeOpacity={attachment.type === 'image' && attachment.url ? 0.7 : 1}
+                            >
+                              <Ionicons 
+                                name={attachment.type === 'image' ? 'image' : 'document'} 
+                                size={14} 
+                                color="#4CAF50" 
+                              />
+                              <Text style={styles.answerAttachmentName}>{attachment.name}</Text>
+                              {attachment.type === 'image' && attachment.url && (
+                                <Ionicons name="eye" size={12} color="#4CAF50" style={{ marginLeft: 4 }} />
+                              )}
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      );
+                    }
+                    return null;
+                  })()}
+                  
                   {question.answeredAt && (
                     <Text style={styles.answerTime}>
                       Answered on {new Date(question.answeredAt).toLocaleDateString()}
@@ -336,17 +510,16 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
         />
       )}
 
-      {/* Ask Question Button with Safe Area */}
-      <TouchableOpacity 
-        style={[
-          styles.askQuestionButton, 
-          { marginBottom: Math.max(insets.bottom, 20) }
-        ]} 
-        onPress={onAskQuestion}
-      >
-        <Ionicons name="add-circle" size={24} color="#4CAF50" />
-        <Text style={styles.askQuestionButtonText}>ASK QUESTION</Text>
-      </TouchableOpacity>
+      {/* Ask Question Button */}
+      <View style={[styles.askQuestionButtonContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <TouchableOpacity 
+          style={styles.askQuestionButton}
+          onPress={onAskQuestion}
+        >
+          <Ionicons name="add-circle" size={24} color="#fff" />
+          <Text style={styles.askQuestionButtonText}>ASK QUESTION</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Answer Question Modal */}
       {selectedQuestion && (
@@ -367,6 +540,50 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           }}
         />
       )}
+      
+      {/* Image Viewer Modal */}
+      <Modal
+        visible={imageModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={closeImageViewer}
+      >
+        <View style={styles.imageModalContainer}>
+          <TouchableOpacity 
+            style={styles.imageModalBackdrop}
+            activeOpacity={1}
+            onPress={closeImageViewer}
+          >
+            <View style={styles.imageModalContent}>
+              <TouchableOpacity 
+                style={styles.closeButton}
+                onPress={closeImageViewer}
+              >
+                <Ionicons name="close" size={30} color="#fff" />
+              </TouchableOpacity>
+              
+              {selectedImageUrl && (
+                <ScrollView
+                  maximumZoomScale={3}
+                  minimumZoomScale={1}
+                  showsHorizontalScrollIndicator={false}
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.imageScrollContent}
+                >
+                  <Image 
+                    source={{ uri: selectedImageUrl }} 
+                    style={styles.fullImage}
+                    resizeMode="contain"
+                    onError={(error) => {
+                      console.error('❌ Failed to load image in viewer:', error);
+                    }}
+                  />
+                </ScrollView>
+              )}
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -374,7 +591,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBottom: 0, // Removed since button is now fixed
   },
   questionsHeader: {
     marginBottom: 16,
@@ -401,6 +617,7 @@ const styles = StyleSheet.create({
   emptyState: {
     paddingVertical: 60,
     alignItems: 'center',
+    marginBottom: 20,
   },
   emptyStateText: {
     fontSize: 16,
@@ -429,13 +646,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   questionAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
     backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
   },
   questionUserInfo: {
     flex: 1,
@@ -474,29 +689,32 @@ const styles = StyleSheet.create({
     color: '#333',
     lineHeight: 20,
   },
+  askQuestionButtonContainer: {
+    marginTop: 24,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    backgroundColor: '#fff',
+    marginBottom: 30,
+  },
   askQuestionButton: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: 16,
-    borderRadius: 0,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
+    paddingVertical: 14,
+    backgroundColor: '#4CAF50',
+    borderRadius: 10,
+    shadowColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 5,
+    elevation: 3,
   },
   askQuestionButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#4CAF50',
+    color: '#fff',
     marginLeft: 8,
   },
   statusBadge: {
@@ -571,6 +789,89 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     marginLeft: 4,
     fontWeight: '500',
+  },
+  attachmentsContainer: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#007AFF',
+  },
+  attachmentsLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#007AFF',
+    marginBottom: 8,
+  },
+  attachmentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+    paddingVertical: 4,
+  },
+  attachmentName: {
+    fontSize: 13,
+    color: '#333',
+    marginLeft: 8,
+    flex: 1,
+  },
+  answerAttachmentsContainer: {
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  answerAttachmentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+    paddingVertical: 2,
+  },
+  answerAttachmentName: {
+    fontSize: 12,
+    color: '#4CAF50',
+    marginLeft: 6,
+    flex: 1,
+    fontStyle: 'italic',
+  },
+  imageModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageModalBackdrop: {
+    flex: 1,
+    width: '100%',
+  },
+  imageModalContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  fullImage: {
+    width: screenWidth,
+    height: screenWidth * 1.5,
+    maxHeight: '90%',
   },
 });
 
