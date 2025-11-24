@@ -26,9 +26,9 @@ export default function MyTasksHeader({
           <Ionicons name="search-outline" size={20} color="#000" />
         </TouchableOpacity>
         
-        {/* Payment Status Button */}
+        {/* Payment Summary Button */}
         <TouchableOpacity
-          onPress={() => router.push('/payment-status' as any)}
+          onPress={() => router.push('/payment-summary' as any)}
           style={styles.iconButton}
         >
           <Ionicons name="card-outline" size={20} color="#007bff" />

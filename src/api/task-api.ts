@@ -2666,7 +2666,11 @@ export async function getPaymentStatus(): Promise<PaymentStatusResponse> {
     console.log("✅ Get payment status success:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Get payment status failed:", error);
+    // Handle 404 gracefully (endpoint not available)
+    if (error?.response?.status === 404) {
+      console.log("ℹ️ Payment status endpoint not available (404) - using fallback");
+      return { success: false, data: [] }; // Return empty data instead of throwing
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
@@ -2674,7 +2678,9 @@ export async function getPaymentStatus(): Promise<PaymentStatusResponse> {
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
-    throw error;
+    // Only log other errors, don't throw for better UX
+    console.log("ℹ️ Payment status failed:", error?.response?.status, "- using fallback data");
+    return { success: false, data: [] };
   }
 }
 

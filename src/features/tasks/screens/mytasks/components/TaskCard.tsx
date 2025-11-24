@@ -1,7 +1,7 @@
 import { Task } from '@/src/api/types/tasks';
 import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
-import { useAcceptOffer, useCancelTask, useCompleteTask, useDeleteTask } from '@/src/shared/hooks/useTaskApi';
+import { useAcceptOffer, useCancelTask, useCompleteTask, useCompleteTaskPayment, useDeleteTask } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromLocation, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -50,6 +50,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const cancelTaskMutation = useCancelTask();
   const acceptOfferMutation = useAcceptOffer();
   const completeTaskMutation = useCompleteTask();
+  const completeTaskPaymentMutation = useCompleteTaskPayment();
 
   // Debouncing helper function to prevent multiple rapid clicks
   const withDebounce = useCallback((callback: () => void, delay: number = 300) => {
@@ -68,7 +69,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   }, []);
 
   const handleMarkAsCompleted = useCallback(async () => {
-    if (completeTaskMutation.isPending || isProcessing) {
+    if (completeTaskMutation.isPending || completeTaskPaymentMutation.isPending || isProcessing) {
       console.log('🛡️ Complete operation already in progress');
       return;
     }
@@ -86,9 +87,100 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     try {
       setIsProcessing(true);
       console.log('✅ Marking task as completed:', task._id);
+      console.log('🔍 Task data:', {
+        id: task._id,
+        status: task.status,
+        userRole,
+        tabStatus: status,
+        hasOffers: !!task.offers,
+        offersCount: task.offers?.length || 0,
+        offers: task.offers,
+        hasAcceptedOffer: !!(task as any).acceptedOffer,
+        assignedTo: (task as any).assignedTo,
+        paymentIntentId: (task as any).paymentIntentId
+      });
       
-      // Call the API to mark task as completed
-      await completeTaskMutation.mutateAsync(task._id);
+      // Check if this is an accepted offer that requires payment completion
+      // This should be true when we're in the "Accepted" tab (Poster side)
+      const isAcceptedOfferTask = status === 'accepted' && userRole === 'Poster';
+      
+      if (isAcceptedOfferTask) {
+        console.log('💳 Attempting payment completion for accepted offer...');
+        
+        // Try to find payment intent ID and offer ID from task data
+        let paymentIntentId = (task as any).paymentIntentId;
+        let acceptedOfferId = null;
+        
+        // Try multiple ways to find the accepted offer information
+        if (task.offers && Array.isArray(task.offers)) {
+          const acceptedOffer = task.offers.find(offer => offer.status === 'accepted');
+          if (acceptedOffer) {
+            acceptedOfferId = acceptedOffer._id;
+            console.log('✅ Found accepted offer in task.offers:', acceptedOfferId);
+          }
+        }
+        
+        if (!acceptedOfferId && (task as any).acceptedOffer) {
+          const acceptedOffer = (task as any).acceptedOffer;
+          acceptedOfferId = acceptedOffer._id || acceptedOffer;
+          console.log('✅ Found accepted offer in task.acceptedOffer:', acceptedOfferId);
+        }
+        
+        if (paymentIntentId && acceptedOfferId) {
+          try {
+            // Use the payment completion API with proper data
+            await completeTaskPaymentMutation.mutateAsync({ 
+              taskId: task._id,
+              completionData: {
+                paymentIntentId: paymentIntentId,
+                taskId: task._id,
+                offerId: acceptedOfferId,
+              }
+            });
+            
+            console.log('✅ Task payment completed successfully');
+          } catch (paymentError: any) {
+            console.error('❌ Payment completion failed:', paymentError);
+            console.error('❌ Payment error details:', paymentError?.response?.data);
+            
+            // If payment completion fails due to missing payment intent, try regular completion
+            if (paymentError?.response?.status === 500 || 
+                paymentError?.response?.data?.message?.includes('No accepted offer found') ||
+                paymentError?.response?.data?.message?.includes('Payment has not been completed yet')) {
+              console.log('⚠️ Payment completion failed, falling back to regular task completion');
+              await completeTaskMutation.mutateAsync(task._id);
+            } else {
+              throw paymentError; // Re-throw if it's a different error
+            }
+          }
+        } else {
+          // Try payment completion without paymentIntentId first (maybe it's not required)
+          console.log('⚠️ Missing payment intent ID, trying payment completion without it');
+          
+          try {
+            await completeTaskPaymentMutation.mutateAsync({ 
+              taskId: task._id,
+              completionData: {
+                taskId: task._id,
+                offerId: acceptedOfferId,
+              }
+            });
+            console.log('✅ Task payment completed successfully without paymentIntentId');
+          } catch (paymentError: any) {
+            console.error('❌ Payment completion without paymentIntentId failed:', paymentError);
+            
+            // Fall back to regular task completion
+            console.log('⚠️ Payment completion failed, using regular task completion');
+            console.log('   PaymentIntentId:', paymentIntentId);
+            console.log('   AcceptedOfferId:', acceptedOfferId);
+            await completeTaskMutation.mutateAsync(task._id);
+          }
+        }
+      } else {
+        // Regular task completion for non-payment tasks
+        console.log('✅ Using regular task completion...');
+        await completeTaskMutation.mutateAsync(task._id);
+      }
       
       console.log('✅ Task marked as completed successfully');
       
@@ -100,7 +192,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       // Show success message
       Alert.alert(
         'Task Completed',
-        'The task has been marked as completed and moved to the Completed tab.',
+        isAcceptedOfferTask ? 
+          'Payment has been released and the task has been marked as completed.' : 
+          'The task has been marked as completed and moved to the Completed tab.',
         [{ text: 'OK' }]
       );
       
@@ -139,7 +233,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     } finally {
       setIsProcessing(false);
     }
-  }, [task._id, completeTaskMutation, onTaskCompleted, isProcessing, isValidMongoId]);
+  }, [task._id, status, userRole, completeTaskMutation, completeTaskPaymentMutation, onTaskCompleted, isProcessing, isValidMongoId]);
 
   const handleCancelTask = useCallback(() => {
     console.log('🔥 Cancel button touched!'); // Debug log
@@ -643,19 +737,19 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             <TouchableOpacity 
               style={[
                 styles.completedButton,
-                (isProcessing || completeTaskMutation.isPending) && styles.disabledButton
+                (isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) && styles.disabledButton
               ]}
               onPress={() => {
                 console.log('🔥 Mark as Completed button touched!');
-                if (!isProcessing && !completeTaskMutation.isPending) {
+                if (!isProcessing && !completeTaskMutation.isPending && !completeTaskPaymentMutation.isPending) {
                   handleMarkAsCompleted();
                 }
               }}
               activeOpacity={0.7}
               delayPressIn={0}
-              disabled={isProcessing || completeTaskMutation.isPending}
+              disabled={isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending}
             >
-              {(isProcessing || completeTaskMutation.isPending) ? (
+              {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
                   <Text style={styles.completedButtonText}>

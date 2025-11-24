@@ -93,7 +93,7 @@ export function useSearchTasks(params: TaskSearchParams, enabled = true) {
   return useQuery({
     queryKey: TASK_QUERY_KEYS.list(params),
     queryFn: () => TaskAPI.searchTasks(params),
-    enabled: enabled && Object.keys(params).length > 0,
+    enabled: enabled, // Remove the Object.keys condition that was preventing execution
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
@@ -238,6 +238,18 @@ export function useGetPaymentStatus() {
     queryKey: TASK_QUERY_KEYS.paymentStatus(),
     queryFn: () => TaskAPI.getPaymentStatus(),
     staleTime: 1 * 60 * 1000, // 1 minute
+    retry: (failureCount, error: any) => {
+      // Don't retry on 404 (endpoint doesn't exist) or 403/401 (auth issues)
+      if (error?.response?.status === 404 || 
+          error?.response?.status === 403 || 
+          error?.response?.status === 401) {
+        console.warn('🚨 Payment status endpoint not available, using fallback data');
+        return false;
+      }
+      
+      // Retry network errors up to 1 time
+      return failureCount < 1;
+    },
   });
 }
 
@@ -621,6 +633,28 @@ export function useCompletePayment() {
 }
 
 /**
+ * 💳 Complete Task Payment Mutation (Stripe)
+ */
+export function useCompleteTaskPayment() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ taskId, completionData }: { taskId: string; completionData: any }) => {
+      // Import PaymentAPI here to avoid circular dependency
+      const PaymentAPI = require('@/src/api/payment-api');
+      return PaymentAPI.completeTaskPayment(taskId, completionData);
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.paymentStatus() });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.allOffers() });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
+    },
+  });
+}
+
+/**
  * ❓ Post Task Question Mutation
  */
 export function usePostTaskQuestion() {
@@ -694,6 +728,7 @@ export const TaskHooks = {
   useUpdateTaskStatus,
   useAcceptTask,
   useCompletePayment,
+  useCompleteTaskPayment,
   usePostTaskQuestion,
   useAnswerTaskQuestion,
 };
