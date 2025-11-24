@@ -230,47 +230,6 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         <View style={styles.imageGallery}>
           <Text style={styles.imageGalleryTitle}>Photos (0)</Text>
           <Text style={styles.noImagesText}>No photos were found with this task</Text>
-          {__DEV__ && (
-            <View style={{ marginTop: 8, padding: 8, backgroundColor: '#f5f5f5', borderRadius: 4 }}>
-              <Text style={{ fontSize: 10, color: '#666', fontWeight: 'bold' }}>DEBUG INFO:</Text>
-              <Text style={{ fontSize: 10, color: '#666' }}>
-                Task ID: {task._id}
-              </Text>
-              <Text style={{ fontSize: 10, color: '#666' }}>
-                Task Title: {task.title}
-              </Text>
-              <Text style={{ fontSize: 10, color: '#666' }}>
-                task.images: {task.images ? JSON.stringify(task.images) : 'undefined'}
-              </Text>
-              {foundImageFields.length > 0 && (
-                <Text style={{ fontSize: 10, color: '#666' }}>
-                  Alternative fields: {foundImageFields.map(f => f.field).join(', ')}
-                </Text>
-              )}
-              <Text style={{ fontSize: 10, color: '#666' }}>
-                All keys: {task ? Object.keys(task).slice(0, 10).join(', ') : 'No task'}
-              </Text>
-              {refetch && (
-                <TouchableOpacity 
-                  onPress={() => {
-                    console.log('🔄 MANUAL REFRESH: Refetching task data for task ID:', task._id);
-                    refetch();
-                  }}
-                  style={{ 
-                    marginTop: 8, 
-                    padding: 8, 
-                    backgroundColor: '#007AFF', 
-                    borderRadius: 4, 
-                    alignItems: 'center' 
-                  }}
-                >
-                  <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
-                    🔄 REFRESH TASK DATA
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
         </View>
       );
     }
@@ -493,22 +452,6 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
               ? `Found ${imageDataToProcess.length} images but couldn't display them. Format may be unsupported.`
               : 'No photos were saved with this task'}
           </Text>
-          {__DEV__ && imageDataToProcess?.length > 0 && (
-            <View style={{ marginTop: 8, padding: 8, backgroundColor: '#f9f9f9', borderRadius: 4 }}>
-              <Text style={[styles.noImagesText, { fontSize: 10, color: '#666', fontWeight: 'bold' }]}>
-                DEV DEBUG:
-              </Text>
-              <Text style={[styles.noImagesText, { fontSize: 10, color: '#666' }]}>
-                Extracted: {imageStrings.length} strings
-              </Text>
-              <Text style={[styles.noImagesText, { fontSize: 10, color: '#666' }]}>
-                Valid: {validImages.length} valid URIs
-              </Text>
-              <Text style={[styles.noImagesText, { fontSize: 10, color: '#666' }]}>
-                Sample: {imageDataToProcess[0] ? JSON.stringify(imageDataToProcess[0], null, 1).substring(0, 100) : 'None'}
-              </Text>
-            </View>
-          )}
         </View>
       );
     }
