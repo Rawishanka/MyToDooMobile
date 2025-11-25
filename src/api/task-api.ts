@@ -10,22 +10,22 @@ import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-    AllOffersResponse,
-    CreateOfferRequest,
-    CreateOfferResponse,
-    CreateTaskRequest,
-    CreateTaskResponse,
-    MyTasksParams,
-    PaymentStatusResponse,
-    SingleTaskResponse,
-    Task,
-    TaskCompletionStatusResponse,
-    TaskFilterParams,
-    TaskFilterResponse,
-    TaskOffersResponse,
-    TaskSearchParams,
-    TasksResponse,
-    UpdateTaskRequest
+  AllOffersResponse,
+  CreateOfferRequest,
+  CreateOfferResponse,
+  CreateTaskRequest,
+  CreateTaskResponse,
+  MyTasksParams,
+  PaymentStatusResponse,
+  SingleTaskResponse,
+  Task,
+  TaskCompletionStatusResponse,
+  TaskFilterParams,
+  TaskFilterResponse,
+  TaskOffersResponse,
+  TaskSearchParams,
+  TasksResponse,
+  UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -2490,16 +2490,14 @@ export async function getAllOffers(params?: {
           const taskOffersResponse = await api.get(`/tasks/${task._id}/offers`);
           const taskOffers = taskOffersResponse.data?.data?.offers || [];
           
-          // Transform offers to include task information
+          // Transform offers to include FULL task information (needed for Tasker's Todoo Tasks tab)
           const enrichedOffers = taskOffers.map((offer: any) => ({
             _id: offer._id,
-            taskId: {
-              _id: task._id,
-              title: task.title,
-              categories: task.categories || []
-            },
+            taskId: task._id, // Keep backward compatibility
+            task: task, // Include FULL task object with status for filtering
             taskCreatorId: task.createdBy || offer.taskCreatorId,
             taskTakerId: offer.taskTakerId,
+            taskTaker: offer.taskTaker || offer.taskTakerId,
             offer: {
               amount: offer.amount || offer.offer?.amount || 0,
               currency: offer.currency || offer.offer?.currency || 'SGD',
