@@ -1395,6 +1395,20 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
       const response = await api.get(`/tasks/my-tasks?${searchParams.toString()}`);
       console.log("✅ Get my tasks response:", response.data);
       
+      // 🔧 FIX: Parse location for each task if returned as string
+      if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        response.data.data.forEach((task: any) => {
+          if (task.location && typeof task.location === 'string') {
+            try {
+              task.location = JSON.parse(task.location);
+              console.log('📍 MyTasks: Parsed location for task:', task._id);
+            } catch (parseError) {
+              console.warn('⚠️ MyTasks: Could not parse location for task:', task._id);
+            }
+          }
+        });
+      }
+      
       // Check if we got actual data, if not fall back to general endpoint
       if (response.data && response.data.data && response.data.data.length > 0) {
         return response.data;
@@ -1543,6 +1557,19 @@ export async function getTaskById(taskId: string): Promise<SingleTaskResponse> {
       console.warn(`⚠️ Task "${taskData?.title}" has empty images array - check backend`);
     }
     
+    // 🔧 FIX: Parse location if it's returned as a string from backend
+    if (taskData && taskData.location) {
+      if (typeof taskData.location === 'string') {
+        try {
+          console.log('📍 GET: Location returned as string, parsing:', taskData.location);
+          taskData.location = JSON.parse(taskData.location);
+          console.log('📍 GET: Parsed location:', taskData.location);
+        } catch (parseError) {
+          console.warn('⚠️ GET: Could not parse location string, keeping as-is');
+        }
+      }
+    }
+    
     return response.data;
   } catch (error: any) {
     console.error("❌ Get task details failed:", {
@@ -1604,6 +1631,19 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     
     if (!response.data || !response.data.success) {
       throw new Error("Update failed - server returned unsuccessful response");
+    }
+    
+    // 🔧 FIX: Ensure location is properly parsed if returned as string
+    if (response.data.data && response.data.data.location) {
+      if (typeof response.data.data.location === 'string') {
+        try {
+          console.log('📍 Location returned as string, parsing:', response.data.data.location);
+          response.data.data.location = JSON.parse(response.data.data.location);
+          console.log('📍 Parsed location:', response.data.data.location);
+        } catch (parseError) {
+          console.warn('⚠️ Could not parse location string, keeping as-is');
+        }
+      }
     }
     
     return response.data;
@@ -1849,10 +1889,179 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
 }
 
 /**
- * 🗑️ Delete Task
- * Endpoint: DELETE /api/tasks/:id
+ * ✏️ Update Task With Images
+ * Endpoint: PUT /api/tasks/:id (multipart/form-data)
  * Auth: Required
+ * Handles image uploads when updating tasks
  */
+export async function updateTaskWithImages(
+  taskId: string, 
+  updates: UpdateTaskRequest, 
+  newImageUris: string[] = [],
+  existingImages: string[] = [],
+  replaceImages: boolean = false
+): Promise<{ success: boolean; data: Task }> {
+  const api = getApi();
+  try {
+    console.log("✏️🖼️ Starting update task with images operation...");
+    console.log("📋 Task ID:", taskId);
+    console.log("📝 Updates payload:", JSON.stringify(updates, null, 2));
+    console.log("🖼️ New image URIs:", newImageUris.length);
+    console.log("🖼️ Existing images:", existingImages.length);
+    console.log("🔄 Replace images:", replaceImages);
+    
+    // Validate taskId format (MongoDB ObjectId is 24 hex characters)
+    if (!taskId || !/^[0-9a-fA-F]{24}$/.test(taskId)) {
+      throw new Error(`Invalid task ID format: ${taskId}`);
+    }
+    
+    // Ensure authentication
+    const authResult = await ensureAuthentication();
+    if (!authResult.success) {
+      console.error("❌ Authentication failed for update operation");
+      throw new Error(authResult.message || "Authentication required. Please log in to update tasks.");
+    }
+
+    console.log("🔐 Authentication confirmed for update with images operation");
+    
+    // Create FormData for multipart/form-data upload
+    const formData = new FormData();
+    
+    // Add all text fields from updates
+    if (updates.title) formData.append('title', updates.title);
+    if (updates.details) formData.append('details', updates.details);
+    if (updates.budget !== undefined) formData.append('budget', updates.budget.toString());
+    if (updates.currency) formData.append('currency', updates.currency);
+    if (updates.time) formData.append('time', updates.time);
+    if (updates.date) formData.append('date', updates.date);
+    if (updates.dateType) formData.append('dateType', updates.dateType);
+    
+    // Handle location - backend expects it as string or JSON
+    if (updates.location) {
+      if (typeof updates.location === 'string') {
+        formData.append('location', updates.location);
+      } else {
+        formData.append('location', JSON.stringify(updates.location));
+        // If location has coordinates, also send them separately for backend compatibility
+        if (updates.location.coordinates) {
+          formData.append('coordinates', JSON.stringify(updates.location.coordinates));
+        }
+      }
+    }
+    
+    // Add existing images as JSON array (URLs to keep)
+    if (existingImages.length > 0) {
+      formData.append('images', JSON.stringify(existingImages));
+    }
+    
+    // Add replaceImages flag
+    formData.append('replaceImages', replaceImages.toString());
+    
+    // Add new image files
+    if (newImageUris.length > 0) {
+      console.log("📤 Processing new images for upload...");
+      
+      for (let i = 0; i < newImageUris.length; i++) {
+        const uri = newImageUris[i];
+        const filename = uri.split('/').pop() || `image_${i}.jpg`;
+        
+        try {
+          // Validate file exists
+          const fileInfo = await FileSystem.getInfoAsync(uri);
+          if (!fileInfo.exists) {
+            console.error(`❌ File does not exist: ${uri}`);
+            continue;
+          }
+          
+          // Determine MIME type from extension
+          const extension = filename.split('.').pop()?.toLowerCase() || 'jpg';
+          let mimeType = 'image/jpeg';
+          switch (extension) {
+            case 'png': mimeType = 'image/png'; break;
+            case 'gif': mimeType = 'image/gif'; break;
+            case 'webp': mimeType = 'image/webp'; break;
+            default: mimeType = 'image/jpeg'; break;
+          }
+          
+          // Create file object for FormData
+          const file = {
+            uri,
+            name: filename,
+            type: mimeType
+          } as any;
+          
+          formData.append('files', file);
+          console.log(`✅ Added image ${i + 1}/${newImageUris.length}: ${filename} (${mimeType})`);
+          
+        } catch (fileError) {
+          console.error(`❌ Failed to process image ${i + 1}:`, fileError);
+        }
+      }
+    }
+    
+    console.log("📤 Sending multipart/form-data update request...");
+    
+    // Make PUT request with multipart/form-data
+    const response = await api.put(`/tasks/${taskId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+    console.log("✅ Update task with images API response:", JSON.stringify(response.data, null, 2));
+    console.log("✅ Update task HTTP status:", response.status);
+    console.log("🖼️ Images in response:", response.data?.data?.images?.length || 0);
+    
+    if (!response.data || !response.data.success) {
+      throw new Error("Update failed - server returned unsuccessful response");
+    }
+    
+    // 🔧 FIX: Parse location if it's returned as a string from multipart upload
+    if (response.data.data && response.data.data.location) {
+      if (typeof response.data.data.location === 'string') {
+        try {
+          console.log('📍 Location returned as string, parsing:', response.data.data.location);
+          response.data.data.location = JSON.parse(response.data.data.location);
+          console.log('📍 Parsed location:', response.data.data.location);
+        } catch (e) {
+          console.warn('⚠️ Could not parse location string, keeping as-is');
+        }
+      }
+    }
+    
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Update task with images failed - Full error details:");
+    console.error("   - Error message:", error?.message);
+    console.error("   - HTTP status:", error?.response?.status);
+    console.error("   - Response data:", JSON.stringify(error?.response?.data, null, 2));
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Update task failed - Authentication required (401)");
+      const retryResult = await handleAuthErrorAndRetry();
+      if (retryResult.success) {
+        console.log("🔄 Retrying update with images after auth refresh");
+        return updateTaskWithImages(taskId, updates, newImageUris, existingImages, replaceImages);
+      }
+      throw new Error("Authentication expired. Please log in again to continue.");
+    }
+    
+    // Handle other errors
+    if (error?.response?.status === 400) {
+      throw new Error(error?.response?.data?.message || "Invalid task data. Please check your inputs.");
+    }
+    if (error?.response?.status === 404) {
+      throw new Error("Task not found. It may have been deleted.");
+    }
+    if (error?.response?.status === 403) {
+      throw new Error("You don't have permission to update this task.");
+    }
+    
+    throw new Error(error?.message || "An unexpected error occurred while updating the task.");
+  }
+}
+
 /**
  * 🗑️ Delete Task
  * Endpoint: DELETE /api/tasks/:id
@@ -2917,6 +3126,7 @@ export const TaskAPI = {
   // Phase 2: Task Management
   getTaskById,
   updateTask,
+  updateTaskWithImages, // Update task with image upload support
   deleteTask,
   
   // Phase 3: Offer System

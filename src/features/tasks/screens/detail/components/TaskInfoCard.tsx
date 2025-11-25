@@ -22,6 +22,34 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   // Use current user's location for currency auto-detection
   const { countryInfo } = useLocationCountry();
   
+  // Helper function to parse location if it's a string
+  const parseLocation = (location: any) => {
+    if (!location) return null;
+    
+    // If it's already an object with address, return it
+    if (typeof location === 'object' && location.address) {
+      return location;
+    }
+    
+    // If it's a string, try to parse it
+    if (typeof location === 'string') {
+      try {
+        const parsed = JSON.parse(location);
+        console.log('📍 TaskInfoCard: Parsed stringified location:', parsed);
+        return parsed;
+      } catch (e) {
+        // If parsing fails, treat it as plain address string
+        console.warn('⚠️ TaskInfoCard: Could not parse location string:', location);
+        return { address: location, coordinates: {} };
+      }
+    }
+    
+    return null;
+  };
+  
+  // Get parsed location
+  const parsedLocation = parseLocation(task.location);
+  
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [imageLoadingStates, setImageLoadingStates] = useState<{ [key: number]: boolean }>({});
@@ -707,7 +735,20 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       <View style={styles.detailRow}>
         <Ionicons name={getLocationIcon()} size={16} color="#666" />
         <Text style={styles.detailText}>
-          {task.location?.address || 'Location not specified'}
+          {(() => {
+            const address = parsedLocation?.address || 'Location not specified';
+            // Clean up any JSON remnants from address
+            let cleanAddress = address;
+            if (typeof address === 'string' && (address.includes('{') || address.includes('"coordinates"'))) {
+              console.warn('⚠️ TaskInfoCard: Address contains JSON remnants:', address);
+              // Try to extract just the address part
+              const match = address.match(/"address":"([^"]+)"/);
+              if (match) {
+                cleanAddress = match[1];
+              }
+            }
+            return cleanAddress;
+          })()}
         </Text>
       </View>
 
