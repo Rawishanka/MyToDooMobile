@@ -551,9 +551,37 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     return new Date(task.createdAt).toLocaleDateString();
   };
 
+  // Helper function to parse location if it's a string
+  const parseLocation = (location: any) => {
+    if (!location) return null;
+    
+    // If it's already an object with address, return it
+    if (typeof location === 'object' && location.address) {
+      return location;
+    }
+    
+    // If it's a string, try to parse it
+    if (typeof location === 'string') {
+      try {
+        const parsed = JSON.parse(location);
+        console.log('📍 TaskCard: Parsed stringified location:', parsed);
+        return parsed;
+      } catch (e) {
+        // If parsing fails, treat it as plain address string
+        console.warn('⚠️ TaskCard: Could not parse location string:', location);
+        return { address: location, coordinates: {} };
+      }
+    }
+    
+    return null;
+  };
+
+  // Get parsed location
+  const parsedLocation = parseLocation(task.location);
+  
   // Helper function to get location type
   const getLocationType = () => {
-    const address = task.location?.address || '';
+    const address = parsedLocation?.address || '';
     if (address.includes(' → ') || address.includes(' to ')) {
       return '🚚 Moving/Delivery';
     }
@@ -562,12 +590,23 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   // Helper function to format location display
   const formatLocation = () => {
-    const address = task.location?.address || 'Location not specified';
-    if (address.includes(' → ') || address.includes(' to ')) {
-      const parts = address.split(/\s*(?:→|to)\s*/);
+    const address = parsedLocation?.address || 'Location not specified';
+    // Clean up any JSON remnants from address
+    let cleanAddress = address;
+    if (typeof address === 'string' && (address.includes('{') || address.includes('"coordinates"'))) {
+      console.warn('⚠️ TaskCard: Address contains JSON remnants:', address);
+      // Try to extract just the address part
+      const match = address.match(/"address":"([^"]+)"/);
+      if (match) {
+        cleanAddress = match[1];
+      }
+    }
+    
+    if (cleanAddress.includes(' → ') || cleanAddress.includes(' to ')) {
+      const parts = cleanAddress.split(/\s*(?:→|to)\s*/);
       return `${parts[0]} → ${parts[1]}`;
     }
-    return address;
+    return cleanAddress;
   };
 
   // Get status color
