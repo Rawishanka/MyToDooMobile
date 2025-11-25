@@ -287,8 +287,8 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
         const newMap = new Map(prev);
         newMap.set(imageUri, {
           isValid: true,
-          confidence: 0,
-          message: 'Analyzing image...',
+          confidence: 75,
+          message: '75% - Analyzing image...',
           reasons: ['Analysis in progress'],
           suggestions: []
         });
@@ -868,13 +868,13 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
                 {/* AI validation result display */}
                 {validationResults.get(uri) && (
                   <View style={styles.validationTextContainer}>
-                    {validationResults.get(uri)?.isValid ? (
-                      <Text style={styles.validationTextSuccess}>
-                        ✅ AI approved (confidence: {Math.round((validationResults.get(uri)?.confidence || 0) * 100)}%)
-                      </Text>
-                    ) : (
-                      <Text style={styles.validationTextWarning}>
-                        ⚠️ AI flagged: {validationResults.get(uri)?.reasons?.[0] || 'Quality concerns'}
+                    <Text style={validationResults.get(uri)?.isValid ? styles.validationTextSuccess : styles.validationTextWarning}>
+                      {validationResults.get(uri)?.message || (validationResults.get(uri)?.isValid ? '✅ Image validated' : '⚠️ Image needs improvement')}
+                    </Text>
+                    {/* Show suggestion for failed validation */}
+                    {!validationResults.get(uri)?.isValid && validationResults.get(uri)?.suggestions && (
+                      <Text style={styles.validationTextDetails}>
+                        💡 {validationResults.get(uri)?.suggestions[0] || 'Try taking a clearer photo'}
                       </Text>
                     )}
                   </View>
@@ -1611,6 +1611,13 @@ const styles = StyleSheet.create({
     color: '#F59E0B',
     fontWeight: '600',
     textAlign: 'center',
+  },
+  validationTextDetails: {
+    fontSize: 9,
+    color: '#6B7280',
+    fontWeight: '400',
+    textAlign: 'center',
+    marginTop: 2,
   },
   bottomSafeArea: {
     position: 'absolute',

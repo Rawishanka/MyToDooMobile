@@ -16,7 +16,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // Import rating components
-import { useUserRating } from '../hooks';
+import { useGetUserRatingStats } from '@/src/shared/hooks/useUserProfileApi';
 import { GetMoreReviewsSection } from './user-profile/components/GetMoreReviewsSection';
 import { OverallRatingSection } from './user-profile/components/OverallRatingSection';
 import { ReviewsList } from './user-profile/components/ReviewsList';
@@ -54,12 +54,10 @@ export default function AccountScreen() {
   // **Get rating data for the current user**
   const userId = authUser?._id || authUser?.id || '';
   const {
-    ratingData,
-    loading: ratingLoading,
+    data: ratingData,
+    isLoading: ratingLoading,
     error: ratingError,
-    loadMoreReviews,
-    refreshRatings,
-  } = useUserRating(userId);
+  } = useGetUserRatingStats(userId, !!userId);
 
   // 🔄 **Force profile refetch when user changes**
   React.useEffect(() => {
@@ -533,11 +531,11 @@ export default function AccountScreen() {
           ) : ratingData ? (
             <>
               <OverallRatingSection
-                averageRating={ratingData?.stats?.overall_rating || 0}
-                totalReviews={ratingData?.stats?.total_reviews || 0}
-                ratingDistribution={ratingData?.stats?.rating_distribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
-                completionRate={ratingData?.stats?.completion_rate || 0}
-                totalTasks={ratingData?.stats?.total_completed_tasks || 0}
+                averageRating={ratingData.averageRating || 0}
+                totalReviews={ratingData.totalReviews || 0}
+                ratingDistribution={ratingData.ratingDistribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
+                completionRate={0} // Not available in new API
+                totalTasks={0} // Not available in new API
               />
               
               <GetMoreReviewsSection 
@@ -545,10 +543,10 @@ export default function AccountScreen() {
               />
               
               <ReviewsList
-                reviews={ratingData?.reviews || []}
-                loading={ratingLoading}
-                onLoadMore={loadMoreReviews}
-                hasMore={ratingData?.pagination?.has_next || false}
+                reviews={[]} // Reviews will be handled separately
+                loading={false}
+                onLoadMore={() => {}}
+                hasMore={false}
               />
             </>
           ) : (

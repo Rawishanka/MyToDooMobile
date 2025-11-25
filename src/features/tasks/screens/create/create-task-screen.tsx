@@ -92,7 +92,7 @@ export default function CreateTaskScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
 
-  // OCR validation states - simplified (no blocking behavior)
+  // Percentage validation states - simplified (no blocking behavior)
   const [validationResults, setValidationResults] = useState<Map<string, SmartValidationResult>>(new Map());
   const [currentValidationImage, setCurrentValidationImage] = useState<string>('');
   const [isValidatingImage, setIsValidatingImage] = useState(false);
@@ -375,7 +375,7 @@ export default function CreateTaskScreen() {
       )
     : allCategories;
 
-  // Helper function to build task context for OCR validation
+  // Helper function to build task context for validation
   const getTaskContext = (): TaskContext => {
     return {
       title: title || '',
@@ -402,8 +402,8 @@ export default function CreateTaskScreen() {
         const newMap = new Map(prev);
         newMap.set(imageUri, {
           isValid: true,
-          confidence: 0,
-          message: '✓ Image added',
+          confidence: 75,
+          message: '75% - Image added',
           reasons: ['Image ready for upload'],
           suggestions: []
         });
@@ -432,8 +432,8 @@ export default function CreateTaskScreen() {
             const newMap = new Map(prev);
             newMap.set(imageUri, {
               isValid: true,
-              confidence: 0.5,
-              message: '✓ Image added',
+              confidence: 60,
+              message: '60% - Image added (validation limited)',
               reasons: ['Validation unavailable'],
               suggestions: []
             });
@@ -659,13 +659,13 @@ export default function CreateTaskScreen() {
               {/* AI validation result display */}
               {validationResults.get(item) && (
                 <View style={styles.validationTextContainer}>
-                  {validationResults.get(item)?.isValid ? (
-                    <Text style={styles.validationTextSuccess}>
-                      ✅ AI approved (confidence: {Math.round((validationResults.get(item)?.confidence || 0) * 100)}%)
-                    </Text>
-                  ) : (
-                    <Text style={styles.validationTextWarning}>
-                      ⚠️ AI flagged: {validationResults.get(item)?.reasons?.[0] || 'Quality concerns'}
+                  <Text style={validationResults.get(item)?.isValid ? styles.validationTextSuccess : styles.validationTextWarning}>
+                    {validationResults.get(item)?.message || (validationResults.get(item)?.isValid ? '✅ Image validated' : '⚠️ Image needs improvement')}
+                  </Text>
+                  {/* Show suggestion for failed validation */}
+                  {!validationResults.get(item)?.isValid && validationResults.get(item)?.suggestions && (
+                    <Text style={styles.validationTextDetails}>
+                      💡 {validationResults.get(item)?.suggestions[0] || 'Try taking a clearer photo'}
                     </Text>
                   )}
                 </View>
@@ -1140,7 +1140,7 @@ export default function CreateTaskScreen() {
         </TouchableOpacity>
       )}
 
-      {/* OCR Validation Modal - REMOVED */}
+      {/* Percentage Validation Modal - REMOVED */}
       </View>
 
       {/* Bottom safe area for Android navigation bar */}
@@ -1482,6 +1482,13 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontWeight: '600',
     textAlign: 'center',
+  },
+  validationTextDetails: {
+    fontSize: 9,
+    color: '#6B7280',
+    fontWeight: '400',
+    textAlign: 'center',
+    marginTop: 2,
   },
   bottomSafeArea: {
     position: 'absolute',

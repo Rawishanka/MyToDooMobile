@@ -53,18 +53,23 @@ export interface UpdateProfileRequest {
 }
 
 export interface RatingStats {
-  overall: {
-    average: number;
-    count: number;
-  };
-  completionRate: number;
-  totalTasks: number;
-  breakdown: {
-    "5": number;
-    "4": number;
-    "3": number;
-    "2": number;
+  userId: string;
+  averageRating: number;
+  totalReviews: number;
+  ratingDistribution: {
     "1": number;
+    "2": number;
+    "3": number;
+    "4": number;
+    "5": number;
+  };
+  asPoster: {
+    averageRating: number;
+    totalReviews: number;
+  };
+  asTasker: {
+    averageRating: number;
+    totalReviews: number;
   };
 }
 
@@ -80,9 +85,9 @@ export interface Review {
 }
 
 export interface RequestReviewRequest {
-  method: "link" | "email" | "sms";
-  recipientEmail?: string;
-  recipientPhone?: string;
+  method: "email" | "sms";
+  recipient: string; // Email address for email method, phone number for SMS method
+  message?: string; // Optional custom message
 }
 
 // ==========================================
@@ -262,18 +267,23 @@ export async function getUserRatingStats(userId: string): Promise<RatingStatsRes
       return {
         success: true,
         data: {
-          overall: {
-            average: 4.0,
-            count: 1
-          },
-          completionRate: 85,
-          totalTasks: 378,
-          breakdown: {
+          userId: userId,
+          averageRating: 4.0,
+          totalReviews: 1,
+          ratingDistribution: {
             "5": 0,
-            "4": 100,
+            "4": 1,
             "3": 0,
             "2": 0,
             "1": 0
+          },
+          asPoster: {
+            averageRating: 4.0,
+            totalReviews: 1
+          },
+          asTasker: {
+            averageRating: 0,
+            totalReviews: 0
           }
         }
       };
@@ -335,27 +345,74 @@ export async function canReviewUser(userId: string): Promise<{ success: boolean;
 }
 
 /**
- * Request a review (share review link)
+ * Request a review via email or SMS
  * POST /api/users/request-review
  */
-export async function requestReview(requestData: RequestReviewRequest): Promise<{ success: boolean; message: string; link?: string }> {
+export async function requestReview(requestData: RequestReviewRequest): Promise<{ success: boolean; message: string; sentTo: string; method: string }> {
   try {
-    console.log("📧 Requesting review:", requestData);
+    console.log("📧 Requesting review with data:", JSON.stringify(requestData, null, 2));
+    console.log("📧 Request URL: /users/request-review");
+    
     const response = await api.post('/users/request-review', requestData);
     console.log("✅ Review request sent successfully:", response.data);
     return response.data;
   } catch (error: any) {
+    // Enhanced error logging
+    console.error("❌ Request review failed with error:", error);
+    console.error("❌ Error response:", error?.response?.data);
+    console.error("❌ Error status:", error?.response?.status);
+    console.error("❌ Error config:", {
+      url: error?.config?.url,
+      method: error?.config?.method,
+      data: error?.config?.data,
+      headers: error?.config?.headers ? Object.keys(error?.config?.headers) : 'none'
+    });
+    
+    // Check for Twilio configuration errors
+    const errorMessage = error?.response?.data?.message || '';
+    if (errorMessage.includes('Twilio phone number') || errorMessage.includes('country mismatch')) {
+      console.error("🔥 Twilio configuration error detected");
+      
+      // Provide helpful error message for SMS issues
+      if (requestData.method === 'sms') {
+        throw new Error('SMS service is temporarily experiencing issues with international delivery. Please try using Email instead or contact support.');
+      } else {
+        throw new Error('Email service configuration error. Please contact support.');
+      }
+    }
+    
+    // Check if it's a 400 error (validation)
+    if (error?.response?.status === 400) {
+      const errorData = error?.response?.data;
+      if (errorData?.errors && Array.isArray(errorData.errors)) {
+        const validationError = errorData.errors[0]?.msg || 'Invalid request format';
+        throw new Error(validationError);
+      } else {
+        throw new Error(errorData?.message || 'Invalid request. Please check your input.');
+      }
+    }
+    
+    // Check if it's a 500 server error specifically
+    if (error?.response?.status === 500) {
+      console.error("🔥 Server error (500) - Backend issue detected");
+      console.error("🔥 This suggests an issue on the server side, not the client");
+      
+      // For 500 errors, return a user-friendly error message
+      throw new Error(`Server error: The review request could not be processed. Please try again later.`);
+    }
+    
     // Network error fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
       console.log("ℹ️ Network unavailable - Using mock request review");
       return {
         success: true,
-        message: "Review request sent successfully (mock)",
-        link: "https://example.com/review/mock-123"
+        message: `Review request sent successfully via ${requestData.method} (mock)`,
+        sentTo: requestData.recipient,
+        method: requestData.method
       };
     }
     
-    console.error("❌ Request review failed:", error);
+    // Re-throw the error for other cases
     throw error;
   }
 }

@@ -1,12 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import { Alert, Clipboard, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RequestReviewModal } from './RequestReviewModal';
 
 interface GetMoreReviewsProps {
   userId: string;
 }
 
 export const GetMoreReviewsSection: React.FC<GetMoreReviewsProps> = ({ userId }) => {
+  const [showRequestModal, setShowRequestModal] = useState(false);
+
   const handleShareReviewLink = async () => {
     try {
       // Generate review link - you can customize this URL based on your hosting
@@ -40,70 +43,78 @@ export const GetMoreReviewsSection: React.FC<GetMoreReviewsProps> = ({ userId })
   };
 
   const handleRequestReview = () => {
-    // Navigate to request review screen (you can implement this)
-    alert('Request Review feature will be implemented next');
+    setShowRequestModal(true);
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Get More Reviews</Text>
-      <Text style={styles.subtitle}>
-        Share your profile or request reviews from people you've worked with
-      </Text>
+    <>
+      <View style={styles.container}>
+        <Text style={styles.title}>Get More Reviews</Text>
+        <Text style={styles.subtitle}>
+          Share your profile or request reviews from people you've worked with
+        </Text>
 
-      <View style={styles.actionsContainer}>
-        {/* Share Review Link */}
-        <TouchableOpacity style={styles.shareButton} onPress={handleShareReviewLink}>
-          <View style={styles.iconContainer}>
-            <Ionicons name="link" size={24} color="#007AFF" />
-          </View>
-          <View style={styles.actionContent}>
-            <Text style={styles.actionTitle}>Share Review Link</Text>
-            <Text style={styles.actionSubtitle}>Copy link to share</Text>
-          </View>
-        </TouchableOpacity>
+        <View style={styles.actionsContainer}>
+          {/* Share Review Link */}
+          <TouchableOpacity style={styles.shareButton} onPress={handleShareReviewLink}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="link" size={24} color="#007AFF" />
+            </View>
+            <View style={styles.actionContent}>
+              <Text style={styles.actionTitle}>Share Review Link</Text>
+              <Text style={styles.actionSubtitle}>Copy link to share</Text>
+            </View>
+          </TouchableOpacity>
 
-        {/* Request Review */}
-        <TouchableOpacity style={styles.requestButton} onPress={handleRequestReview}>
-          <View style={styles.iconContainer}>
-            <Ionicons name="mail" size={24} color="#28A745" />
+          {/* Request Review */}
+          <TouchableOpacity style={styles.requestButton} onPress={handleRequestReview}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="mail" size={24} color="#28A745" />
+            </View>
+            <View style={styles.actionContent}>
+              <Text style={styles.actionTitle}>Request Review</Text>
+              <Text style={styles.actionSubtitle}>Send email/SMS request</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* How it works */}
+        <View style={styles.howItWorksContainer}>
+          <View style={styles.howItWorksHeader}>
+            <Ionicons name="information-circle" size={20} color="#007AFF" />
+            <Text style={styles.howItWorksTitle}>How it works</Text>
           </View>
-          <View style={styles.actionContent}>
-            <Text style={styles.actionTitle}>Request Review</Text>
-            <Text style={styles.actionSubtitle}>Send email/SMS request</Text>
+          
+          <View style={styles.stepsList}>
+            <View style={styles.step}>
+              <Text style={styles.stepBullet}>•</Text>
+              <Text style={styles.stepText}>
+                <Text style={styles.stepLabel}>Share Link:</Text> Anyone with the link can leave you a review
+              </Text>
+            </View>
+            <View style={styles.step}>
+              <Text style={styles.stepBullet}>•</Text>
+              <Text style={styles.stepText}>
+                <Text style={styles.stepLabel}>Request Review:</Text> Send a personalized request via email or SMS
+              </Text>
+            </View>
+            <View style={styles.step}>
+              <Text style={styles.stepBullet}>•</Text>
+              <Text style={styles.stepText}>
+                Reviews help build trust and credibility in the community
+              </Text>
+            </View>
           </View>
-        </TouchableOpacity>
+        </View>
       </View>
 
-      {/* How it works */}
-      <View style={styles.howItWorksContainer}>
-        <View style={styles.howItWorksHeader}>
-          <Ionicons name="information-circle" size={20} color="#007AFF" />
-          <Text style={styles.howItWorksTitle}>How it works</Text>
-        </View>
-        
-        <View style={styles.stepsList}>
-          <View style={styles.step}>
-            <Text style={styles.stepBullet}>•</Text>
-            <Text style={styles.stepText}>
-              <Text style={styles.stepLabel}>Share Link:</Text> Anyone with the link can leave you a review
-            </Text>
-          </View>
-          <View style={styles.step}>
-            <Text style={styles.stepBullet}>•</Text>
-            <Text style={styles.stepText}>
-              <Text style={styles.stepLabel}>Request Review:</Text> Send a personalized request via email or SMS
-            </Text>
-          </View>
-          <View style={styles.step}>
-            <Text style={styles.stepBullet}>•</Text>
-            <Text style={styles.stepText}>
-              Reviews help build trust and credibility in the community
-            </Text>
-          </View>
-        </View>
-      </View>
-    </View>
+      {/* Request Review Modal */}
+      <RequestReviewModal
+        visible={showRequestModal}
+        onClose={() => setShowRequestModal(false)}
+        userId={userId}
+      />
+    </>
   );
 };
 
