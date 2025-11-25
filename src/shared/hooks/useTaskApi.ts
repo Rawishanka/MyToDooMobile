@@ -4,13 +4,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TaskAPI } from '../../api/task-api';
 import {
-  CreateOfferRequest,
-  CreateTaskRequest,
-  MyTasksParams,
-  TaskFilterParams,
-  TaskOffer,
-  TaskSearchParams,
-  UpdateTaskRequest
+    CreateOfferRequest,
+    CreateTaskRequest,
+    MyTasksParams,
+    TaskFilterParams,
+    TaskOffer,
+    TaskSearchParams,
+    UpdateTaskRequest
 } from '../../api/types/tasks';
 import { handleAuthenticationError, isAuthError } from '../utils/auth-utils';
 
@@ -475,6 +475,69 @@ export function useUpdateTask() {
 }
 
 /**
+ * ✏️🖼️ Update Task With Images Mutation
+ * Handles updating tasks with new image uploads
+ */
+export function useUpdateTaskWithImages() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ 
+      taskId, 
+      updates, 
+      newImageUris = [], 
+      existingImages = [], 
+      replaceImages = false 
+    }: { 
+      taskId: string; 
+      updates: UpdateTaskRequest;
+      newImageUris?: string[];
+      existingImages?: string[];
+      replaceImages?: boolean;
+    }) => {
+      console.log('🔄 useUpdateTaskWithImages: Starting mutation for taskId:', taskId);
+      console.log('🔄 useUpdateTaskWithImages: Update payload:', JSON.stringify(updates, null, 2));
+      console.log('🔄 useUpdateTaskWithImages: New images:', newImageUris.length);
+      console.log('🔄 useUpdateTaskWithImages: Existing images:', existingImages.length);
+      console.log('🔄 useUpdateTaskWithImages: Replace images:', replaceImages);
+      return TaskAPI.updateTaskWithImages(taskId, updates, newImageUris, existingImages, replaceImages);
+    },
+    onSuccess: (data, variables) => {
+      console.log('✅ useUpdateTaskWithImages: Mutation successful!');
+      console.log('✅ useUpdateTaskWithImages: Response data:', JSON.stringify(data, null, 2));
+      console.log('🔄 useUpdateTaskWithImages: Starting cache invalidation and refetch...');
+      
+      // Force immediate refetch of all task-related queries
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
+      console.log('✅ Invalidated task detail query for:', variables.taskId);
+      
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all }); // All views
+      console.log('✅ Invalidated all task queries');
+      
+      queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.lists() }); // Force immediate refetch of browse tasks
+      console.log('✅ Refetching browse tasks list...');
+      
+      queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() }); // Force immediate refetch of my tasks
+      console.log('✅ Refetching my tasks list...');
+      
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers
+      console.log('✅ Invalidated my offers query');
+      
+      console.log("✅ useUpdateTaskWithImages: All cache operations completed - UI should update immediately");
+    },
+    onError: (error: any, variables) => {
+      console.error('❌ useUpdateTaskWithImages: Mutation failed!');
+      console.error('❌ useUpdateTaskWithImages: TaskId:', variables.taskId);
+      console.error('❌ useUpdateTaskWithImages: Updates payload:', JSON.stringify(variables.updates, null, 2));
+      console.error('❌ useUpdateTaskWithImages: New images count:', variables.newImageUris?.length || 0);
+      console.error('❌ useUpdateTaskWithImages: Error details:', error);
+      console.error('❌ useUpdateTaskWithImages: Error message:', error?.message);
+      console.error('❌ useUpdateTaskWithImages: Error response:', error?.response?.data);
+    },
+  });
+}
+
+/**
  * 🗑️ Delete Task Mutation
  */
 export function useDeleteTask() {
@@ -719,6 +782,7 @@ export const TaskHooks = {
   useCreateTask,
   usePostTask,
   useUpdateTask,
+  useUpdateTaskWithImages,
   useDeleteTask,
   useCreateOffer,
   useAcceptOffer,

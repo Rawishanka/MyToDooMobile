@@ -1,5 +1,5 @@
 import { LocationAutocomplete, LocationData } from '@/src/shared/components/LocationAutocomplete';
-import { useGetCategories, useUpdateTask } from '@/src/shared/hooks/useTaskApi';
+import { useGetCategories, useUpdateTask, useUpdateTaskWithImages } from '@/src/shared/hooks/useTaskApi';
 import { formatNumber, getCurrencyFromLocation, getMinimumBudget } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -8,26 +8,26 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import smart image validation (same as Create Task)
 import {
-    SmartValidationResult,
-    TaskContext,
-    validateImageSmart
+  SmartValidationResult,
+  TaskContext,
+  validateImageSmart
 } from '@/src/services/smartImageValidator';
 
 interface EditTaskScreenProps {
@@ -60,26 +60,90 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   const taskId = route?.params?.taskId || params.taskId;
 
   console.log('📝 Edit Task Screen - Task ID:', taskId);
-  console.log('📝 Edit Task Screen - Task Data:', taskData);
+  console.log('📝 Edit Task Screen - Task Data:', JSON.stringify(taskData, null, 2));
+  console.log('📝 Edit Task Screen - Location field:', taskData?.location);
+  console.log('📝 Edit Task Screen - Location type:', typeof taskData?.location);
 
   // Map task data to form fields - MEMOIZED to prevent recreation
   const initialLocation = useMemo(() => {
-    if (!taskData?.location) return null;
+    if (!taskData?.location) {
+      console.log('📍 No location data in taskData');
+      return null;
+    }
     
-    const coords = taskData.location.coordinates;
+    // Handle case where location might be a stringified JSON
+    let locationData = taskData.location;
+    if (typeof locationData === 'string') {
+      try {
+        console.log('📍 Location is a string, attempting to parse:', locationData);
+        locationData = JSON.parse(locationData);
+        console.log('📍 Parsed location:', locationData);
+      } catch (e) {
+        console.error('📍 Failed to parse location string:', e);
+        // If it's just a plain address string, use it as-is
+        return {
+          address: locationData,
+          coordinates: { lat: 0, lng: 0 }
+        };
+      }
+    }
+    
+    console.log('📍 Raw location data:', JSON.stringify(locationData, null, 2));
+    
     let lat = 0, lng = 0;
-    if (coords && typeof coords === 'object') {
-      if ('coordinates' in coords && Array.isArray(coords.coordinates)) {
+    const coords = locationData.coordinates;
+    
+    if (coords) {
+      console.log('📍 Coordinates object:', JSON.stringify(coords, null, 2));
+      
+      // Check for GeoJSON format: { type: "Point", coordinates: [lng, lat] }
+      if (coords.type === 'Point' && Array.isArray(coords.coordinates)) {
         lng = coords.coordinates[0];
         lat = coords.coordinates[1];
-      } else if ('lat' in coords && 'lng' in coords) {
+        console.log('📍 Parsed GeoJSON format: lat=', lat, 'lng=', lng);
+      }
+      // Check for nested coordinates: { coordinates: [lng, lat] }
+      else if ('coordinates' in coords && Array.isArray(coords.coordinates)) {
+        lng = coords.coordinates[0];
+        lat = coords.coordinates[1];
+        console.log('📍 Parsed nested array format: lat=', lat, 'lng=', lng);
+      }
+      // Check for object format: { lat: number, lng: number }
+      else if ('lat' in coords && 'lng' in coords) {
         lat = coords.lat;
         lng = coords.lng;
+        console.log('📍 Parsed object format: lat=', lat, 'lng=', lng);
+      }
+      // Check if coords itself is an array: [lng, lat]
+      else if (Array.isArray(coords)) {
+        lng = coords[0];
+        lat = coords[1];
+        console.log('📍 Parsed direct array format: lat=', lat, 'lng=', lng);
+      }
+    }
+    
+    const address = locationData.address || '';
+    console.log('📍 Final parsed location:', { address, lat, lng });
+    
+    // Additional validation - if address is still JSON-like, extract just the address field
+    let cleanAddress = address;
+    if (typeof address === 'string' && (address.includes('{') || address.includes('coordinates'))) {
+      console.warn('📍 Address appears to contain JSON remnants:', address);
+      try {
+        const parsed = JSON.parse(address);
+        cleanAddress = parsed.address || address;
+      } catch (e) {
+        // Try to extract address using regex if it's malformed JSON
+        const match = address.match(/"address":"([^"]+)"/);
+        if (match) {
+          cleanAddress = match[1];
+          console.log('📍 Extracted address from malformed JSON:', cleanAddress);
+        }
       }
     }
     
     return {
-      address: taskData.location.address || '',
+      address: cleanAddress,
       coordinates: { lat, lng }
     };
   }, [taskData]);
@@ -93,6 +157,8 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   const [title, setTitle] = useState(() => taskData?.title || '');
   const [description, setDescription] = useState(() => taskData?.details || '');
   const [images, setImages] = useState<string[]>(() => taskData?.images || []);
+  // Track which images are new (local URIs) vs existing (Cloudinary URLs)
+  const [existingImages] = useState<string[]>(() => taskData?.images || []);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(initialLocation);
   
   // When/Time states - match Create Task screen
@@ -130,8 +196,9 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   const { data: categoriesResponse, isLoading: loadingCategories } = useGetCategories();
   const categories = categoriesResponse?.data || [];
 
-  // Update task mutation
+  // Update task mutations
   const updateTaskMutation = useUpdateTask();
+  const updateTaskWithImagesMutation = useUpdateTaskWithImages();
 
   // Initialize date states from task data
   useEffect(() => {
@@ -629,13 +696,58 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
 
       console.log('\n📤 EDIT TASK: Final update request payload:');
       console.log(JSON.stringify(updateRequest, null, 2));
-      console.log('\n🚀 EDIT TASK: Calling mutation API...');
-
-      // Call the update API
-      const result = await updateTaskMutation.mutateAsync({
-        taskId: taskId as string,
-        updates: updateRequest
-      });
+      
+      // 🖼️ HANDLE IMAGES: Separate new uploads from existing URLs
+      console.log('\n🖼️ EDIT TASK: Processing images...');
+      console.log('🖼️ Current images array:', images);
+      console.log('🖼️ Original existing images:', existingImages);
+      
+      // Detect which images are new (local file:// URIs) vs existing (https:// Cloudinary URLs)
+      const newImageUris = images.filter(img => 
+        img.startsWith('file://') || 
+        img.startsWith('content://') || 
+        (!img.startsWith('http://') && !img.startsWith('https://'))
+      );
+      
+      const keptExistingImages = images.filter(img => 
+        img.startsWith('http://') || img.startsWith('https://')
+      );
+      
+      const hasNewImages = newImageUris.length > 0;
+      const imagesChanged = images.length !== existingImages.length || 
+                           !images.every((img, idx) => img === existingImages[idx]);
+      
+      // 🔧 FIX: Calculate if images were removed to determine replaceImages flag
+      const imagesWereRemoved = keptExistingImages.length < existingImages.length;
+      const shouldReplaceImages = imagesWereRemoved || (imagesChanged && !hasNewImages);
+      
+      console.log('🖼️ New image URIs to upload:', newImageUris.length, newImageUris);
+      console.log('🖼️ Existing images to keep:', keptExistingImages.length, keptExistingImages);
+      console.log('🖼️ Has new images:', hasNewImages);
+      console.log('🖼️ Images changed:', imagesChanged);
+      console.log('🖼️ Images were removed:', imagesWereRemoved, `(${existingImages.length} → ${keptExistingImages.length})`);
+      console.log('🖼️ Should replace images:', shouldReplaceImages);
+      
+      let result;
+      
+      if (hasNewImages || imagesChanged) {
+        // Use updateTaskWithImages for multipart upload
+        console.log('\n🚀 EDIT TASK: Using updateTaskWithImages (with image upload support)...');
+        result = await updateTaskWithImagesMutation.mutateAsync({
+          taskId: taskId as string,
+          updates: updateRequest,
+          newImageUris,
+          existingImages: keptExistingImages,
+          replaceImages: shouldReplaceImages // TRUE when images removed, FALSE when only adding
+        });
+      } else {
+        // Use regular updateTask (no images changed)
+        console.log('\n🚀 EDIT TASK: Using regular updateTask (no image changes)...');
+        result = await updateTaskMutation.mutateAsync({
+          taskId: taskId as string,
+          updates: updateRequest
+        });
+      }
 
       console.log('\n✅ EDIT TASK: Mutation completed successfully!');
       console.log('✅ EDIT TASK: API Response:');
@@ -1098,12 +1210,12 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
             styles.saveButton,
             isFormValid && styles.saveButtonEnabled,
             { bottom: Math.max(insets.bottom, 20) },
-            updateTaskMutation.isPending && styles.saveButtonDisabled
+            (updateTaskMutation.isPending || updateTaskWithImagesMutation.isPending) && styles.saveButtonDisabled
           ]}
           onPress={handleSave}
-          disabled={!isFormValid || updateTaskMutation.isPending}
+          disabled={!isFormValid || updateTaskMutation.isPending || updateTaskWithImagesMutation.isPending}
         >
-          {updateTaskMutation.isPending ? (
+          {(updateTaskMutation.isPending || updateTaskWithImagesMutation.isPending) ? (
             <View style={styles.saveButtonContent}>
               <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
               <Text style={styles.saveButtonText}>Saving...</Text>

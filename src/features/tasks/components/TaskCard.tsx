@@ -32,10 +32,48 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   // Use current user's location for currency auto-detection
   const { countryInfo } = useLocationCountry();
   
+  // Helper function to parse location if it's a string
+  const parseLocation = (location: any) => {
+    if (!location) return null;
+    
+    // If it's already an object with address, return it
+    if (typeof location === 'object' && location.address) {
+      return location;
+    }
+    
+    // If it's a string, try to parse it
+    if (typeof location === 'string') {
+      try {
+        const parsed = JSON.parse(location);
+        console.log('📍 TaskCard (general): Parsed stringified location:', parsed);
+        return parsed;
+      } catch (e) {
+        // If parsing fails, treat it as plain address string
+        console.warn('⚠️ TaskCard (general): Could not parse location string:', location);
+        return { address: location, coordinates: {} };
+      }
+    }
+    
+    return null;
+  };
+  
+  // Get parsed location
+  const parsedLocation = parseLocation(task.location);
+  
   // Helper: Get location type with icon
   const getLocationInfo = () => {
-    const address = task.location?.address || '';
-    if (address.includes(' → ') || address.includes(' to ')) {
+    const address = parsedLocation?.address || '';
+    // Clean up any JSON remnants from address
+    let cleanAddress = address;
+    if (typeof address === 'string' && (address.includes('{') || address.includes('"coordinates"'))) {
+      console.warn('⚠️ TaskCard (general): Address contains JSON remnants:', address);
+      const match = address.match(/"address":"([^"]+)"/);
+      if (match) {
+        cleanAddress = match[1];
+      }
+    }
+    
+    if (cleanAddress.includes(' → ') || cleanAddress.includes(' to ')) {
       return { icon: 'car-outline', text: 'Moving' };
     }
     return { icon: 'location-outline', text: '' }; // Just show icon, address will be displayed elsewhere
@@ -85,7 +123,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               {task.title}
             </Text>
             <Text style={styles.compactLocation} numberOfLines={1}>
-              {task.location?.address || 'Location not specified'}
+              {(() => {
+                const address = parsedLocation?.address || 'Location not specified';
+                if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
+                  const match = address.match(/\"address\":\"([^\"]+)\"/);
+                  return match ? match[1] : address;
+                }
+                return address;
+              })()}
             </Text>
           </View>
           <View style={styles.compactRight}>
@@ -113,7 +158,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               {task.title}
             </Text>
             <Text style={styles.taskLocation} numberOfLines={1}>
-              {task.location?.address || 'Location not specified'}
+              {(() => {
+                const address = parsedLocation?.address || 'Location not specified';
+                if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
+                  const match = address.match(/\"address\":\"([^\"]+)\"/);
+                  return match ? match[1] : address;
+                }
+                return address;
+              })()}
             </Text>
             <View style={styles.taskMeta}>
               <Text style={[styles.statusBadge, { color: getStatusColor(task.status) }]}>
@@ -153,7 +205,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       <View style={styles.taskRow}>
         <Ionicons name={locationInfo.icon as any} size={16} color={colors.textSecondary} />
         <Text style={styles.taskRowText} numberOfLines={1}>
-          {task.location?.address || 'Location not specified'}
+          {(() => {
+            const address = parsedLocation?.address || 'Location not specified';
+            if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
+              const match = address.match(/\"address\":\"([^\"]+)\"/);
+              return match ? match[1] : address;
+            }
+            return address;
+          })()}
         </Text>
       </View>
 
