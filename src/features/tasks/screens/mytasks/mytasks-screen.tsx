@@ -1,5 +1,5 @@
 import { Task } from '@/src/api/types/tasks';
-import { useGetAllOffers, useGetAllTasks, useGetMyOffers, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
+import { useGetAllOffers, useGetAllTasks, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -8,9 +8,9 @@ import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'r
 // Components
 import { Ionicons } from '@expo/vector-icons';
 import {
-    LoadingState,
-    MyTasksHeader,
-    TaskCard,
+  LoadingState,
+  MyTasksHeader,
+  TaskCard,
 } from './components';
 import SearchBar from './components/SearchModal';
 
@@ -174,18 +174,24 @@ export default function MyTasksScreen() {
     section: 'all-tasks'
   });
 
+  // For Tasker role: Get tasks assigned to current user (after offer accepted & paid)
+  // This uses /api/tasks/my-tasks?role=tasker endpoint which returns tasks assigned to user
   const {
-    data: myOffersData,
-    isLoading: isLoadingOffers,
-    refetch: refetchOffers,
-  } = useGetAllOffers({});
-
-  // Also keep useGetMyOffers for legacy support
-  const {
-    data: legacyOffersData,
-    isLoading: isLoadingLegacyOffers,
-  } = useGetMyOffers({
+    data: taskerAssignedTasksData,
+    isLoading: isLoadingTaskerTasks,
+    refetch: refetchTaskerTasks,
+  } = useGetMyTasks({
+    role: 'tasker',
     section: 'all-tasks'
+  });
+  
+  // Also get all offers for additional data (for Poster view)
+  const {
+    data: allOffersData,
+    isLoading: isLoadingAllOffers,
+    refetch: refetchAllOffers,
+  } = useGetAllOffers({
+    limit: 100
   });
 
   // For Tasker role: Fetch ALL system tasks to show available tasks from other users
@@ -196,7 +202,7 @@ export default function MyTasksScreen() {
   } = useGetAllTasks();
 
   // Dummy data for Cancelled tab (Tasker role)
-  const dummyCancelledTasks: Task[] = [
+  const dummyCancelledTasks: Task[] = React.useMemo(() => [
     {
       _id: 'cancelled-1',
       title: 'House Cleaning Service',
@@ -261,86 +267,32 @@ export default function MyTasksScreen() {
       __v: 0,
       formattedBudget: 'LKR 2800',
     },
-  ];
+  ], []);
 
-  // Dummy data for Accepted Offers tab
-  const dummyAcceptedOffers: Task[] = [
-    {
-      _id: 'dummy-1',
-      title: 'Good Task 1',
-      categories: ['General'],
-      dateType: 'specific',
-      dateRange: {
-        start: '2025-10-25T00:00:00.000Z',
-        end: '2025-10-25T23:59:59.999Z',
-      },
-      time: 'Afternoon',
-      location: {
-        address: 'Colombo to Negombo',
-        coordinates: {},
-      },
-      details: 'Need help with moving items from Colombo to Negombo',
-      budget: 1200,
-      currency: 'LKR',
-      images: [],
-      status: 'In Progress',
-      createdBy: {
-        _id: 'user-1',
-        firstName: 'John',
-        lastName: 'Doe',
-        rating: 4.5,
-        email: 'john@example.com',
-      },
-      statusHistory: [],
-      createdAt: '2025-10-20T10:00:00.000Z',
-      updatedAt: '2025-10-25T10:00:00.000Z',
-      __v: 0,
-      formattedBudget: 'LKR 1200',
-    },
-    {
-      _id: 'dummy-2',
-      title: 'Good Task 2',
-      categories: ['Appliance Installation & Repair'],
-      dateType: 'specific',
-      dateRange: {
-        start: '2025-10-22T00:00:00.000Z',
-        end: '2025-10-22T23:59:59.999Z',
-      },
-      time: 'Evening',
-      location: {
-        address: 'Colombo',
-        coordinates: {},
-      },
-      details: 'Need to install and repair washing machine',
-      budget: 5600,
-      currency: 'LKR',
-      images: [],
-      status: 'Open',
-      createdBy: {
-        _id: 'user-2',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        rating: 4.8,
-        email: 'jane@example.com',
-      },
-      statusHistory: [],
-      createdAt: '2025-10-15T10:00:00.000Z',
-      updatedAt: '2025-10-22T10:00:00.000Z',
-      __v: 0,
-      formattedBudget: 'LKR 5600',
-    },
-  ];
+  // Note: dummyAcceptedOffers removed - using real data from API
 
   // Use different data sources based on user role
   // For Tasker: Use all system tasks to show available tasks from other users
   // For Poster: Use own tasks to show posted tasks
-  const allTasks = userRole === 'Tasker' 
-    ? (allSystemTasksData?.data || []) 
-    : (myTasksData?.data || []);
-  const allOffers = myOffersData?.data || [];
+  const allTasks = React.useMemo(() => {
+    return userRole === 'Tasker' 
+      ? (allSystemTasksData?.data || []) 
+      : (myTasksData?.data || []);
+  }, [userRole, allSystemTasksData?.data, myTasksData?.data]);
+  
+  // For Tasker: Use tasks from my-offers endpoint (tasks where user made offers)
+  // For Poster: Use all offers data
+  const taskerAssignedTasks = React.useMemo(() => {
+    return taskerAssignedTasksData?.data || [];
+  }, [taskerAssignedTasksData?.data]);
+  
+  const allOffers = React.useMemo(() => {
+    return allOffersData?.data || [];
+  }, [allOffersData?.data]);
+  
   const isLoading = userRole === 'Tasker' 
-    ? (isLoadingTasks || isLoadingOffers || isLoadingAllTasks)
-    : (isLoadingTasks || isLoadingOffers);
+    ? (isLoadingTasks || isLoadingTaskerTasks || isLoadingAllTasks)
+    : (isLoadingTasks || isLoadingAllOffers);
 
   // Debug logging for API data
   console.log('📊 My Tasks Screen Data:', {
@@ -348,8 +300,10 @@ export default function MyTasksScreen() {
     dataSource: userRole === 'Tasker' ? 'All System Tasks' : 'My Tasks Only',
     totalTasks: allTasks.length,
     totalOffers: allOffers.length,
+    taskerAssignedTasksCount: taskerAssignedTasks.length,
     isLoadingTasks,
-    isLoadingOffers,
+    isLoadingTaskerTasks,
+    isLoadingAllOffers,
     isLoadingAllTasks: userRole === 'Tasker' ? isLoadingAllTasks : 'N/A',
     sampleTasks: allTasks.slice(0, 3).map(t => ({ 
       id: t._id, 
@@ -465,37 +419,92 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       });
 
       
-      // Todo Tasks: Tasks where their offers have been accepted and are in progress
-      const todoTasks = filterBySearch(
-        allOffers.filter((offer: any) => 
-          offer.status === 'accepted' && 
-          (offer.task?.status === 'assigned' || offer.task?.status === 'in_progress' || offer.task?.status === 'accepted')
-        ).map((offer: any) => offer.task).filter(Boolean)
-      );
+      // Todo Tasks: Use /api/tasks/my-tasks?role=tasker endpoint which returns tasks assigned to user
+      // CRITICAL: Only show tasks where offer was ACCEPTED AND PAID (backend sets assignedTo after payment)
+      console.log('🔍 Tasker Assigned Tasks (from /api/tasks/my-tasks?role=tasker):', {
+        totalAssignedTasks: taskerAssignedTasks.length,
+        allStatuses: taskerAssignedTasks.map((t: Task) => t.status),
+        sampleTasks: taskerAssignedTasks.slice(0, 5).map((task: Task) => ({
+          id: task._id,
+          title: task.title,
+          status: task.status,
+          budget: task.budget,
+          userRole: (task as any).userRole,
+          assignedTo: (task as any).assignedTo?._id
+        }))
+      });
       
-      const completedTasks = filterBySearch(
-        allOffers.filter((offer: any) => 
-          offer.task?.status === 'completed'
-        ).map((offer: any) => offer.task).filter(Boolean)
-      );
+      const todoTasksFiltered = taskerAssignedTasks.filter((task: Task) => {
+        // IMPORTANT: After payment, backend sets status to "todo", "assigned", or "in_progress"
+        // and assigns the task to the tasker (assignedTo field set, userRole = "assignee")
+        // We show tasks that are ready to work on (not completed, overdue, or cancelled)
+        const isActiveTask = task.status === 'todo' || 
+                            task.status === 'assigned' || 
+                            task.status === 'in_progress';
+        
+        // Verify task is actually assigned to current user (userRole should be 'assignee')
+        const isAssignedToMe = (task as any).userRole === 'assignee';
+        
+        const shouldInclude = isActiveTask && isAssignedToMe;
+        
+        if (taskerAssignedTasks.length <= 10) {
+          console.log('🎯 Tasker Todoo Tasks Filter (from my-tasks?role=tasker):', {
+            taskId: task._id,
+            title: task.title,
+            status: task.status,
+            budget: task.budget,
+            userRole: (task as any).userRole,
+            isActiveTask,
+            isAssignedToMe,
+            shouldInclude,
+            reason: shouldInclude ? 'INCLUDED: Task assigned and active' : 
+                   !isActiveTask ? 'EXCLUDED: Task not active (completed/cancelled/overdue)' :
+                   !isAssignedToMe ? 'EXCLUDED: Not assigned to current user' :
+                   'EXCLUDED: Unknown reason'
+          });
+        }
+        
+        return shouldInclude;
+      });
       
-      const overdueTasks = filterBySearch(
-        allOffers.filter((offer: any) => 
-          offer.task?.status === 'overdue'
-        ).map((offer: any) => offer.task).filter(Boolean)
-      );
+      const todoTasks = sortByCreatedDate(filterBySearch(todoTasksFiltered));
       
-      // Cancelled Tasks: Combine tasks from offers and all tasks that are cancelled
-      const cancelledTasksFromOffers = allOffers.filter((offer: any) => 
-        offer.task?.status === 'cancelled'
-      ).map((offer: any) => offer.task).filter(Boolean);
+      console.log('✅ Tasker Todoo Tasks Result:', {
+        totalAssignedTasks: taskerAssignedTasks.length,
+        activeTasks: taskerAssignedTasks.filter((t: Task) => 
+          t.status === 'todo' || t.status === 'assigned' || t.status === 'in_progress'
+        ).length,
+        completedTasks: taskerAssignedTasks.filter((t: Task) => t.status === 'completed').length,
+        filteredTodoTasks: todoTasksFiltered.length,
+        finalTodoTasks: todoTasks.length,
+        taskSample: todoTasks.slice(0, 2).map(t => ({
+          id: t._id,
+          title: t.title,
+          status: t.status,
+          budget: t.budget,
+          userRole: (t as any).userRole
+        }))
+      });
+      
+      const completedTasks = sortByCreatedDate(filterBySearch(
+        taskerAssignedTasks.filter((task: Task) => task.status === 'completed')
+      ));
+      
+      const overdueTasks = sortByCreatedDate(filterBySearch(
+        taskerAssignedTasks.filter((task: Task) => task.status === 'overdue')
+      ));
+      
+      // Cancelled Tasks: Combine tasks from assigned tasks and all tasks that are cancelled
+      const cancelledTasksFromAssigned = taskerAssignedTasks.filter((task: Task) => 
+        task.status === 'cancelled'
+      );
       
       const cancelledTasksFromAll = allTasks.filter((task: Task) => 
         task.status === 'cancelled'
       );
       
       // Merge and deduplicate cancelled tasks by _id
-      const allCancelledTasks = [...cancelledTasksFromOffers, ...cancelledTasksFromAll];
+      const allCancelledTasks = [...cancelledTasksFromAssigned, ...cancelledTasksFromAll];
       const uniqueCancelledTasks = Array.from(
         new Map(allCancelledTasks.map(task => [task._id, task])).values()
       );
@@ -510,7 +519,7 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       const finalCancelledTasks = filterBySearch(baseCancelledTasks);
       
       console.log('📋 Tasker Cancelled Tasks:', {
-        fromOffers: cancelledTasksFromOffers.length,
+        fromAssigned: cancelledTasksFromAssigned.length,
         fromAllTasks: cancelledTasksFromAll.length,
         uniqueTotal: uniqueCancelledTasks.length,
         finalCount: finalCancelledTasks.length
@@ -590,30 +599,40 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       )
     );
 
-    // For accepted offers - find tasks that have been paid for and accepted
-    // These are tasks with status 'todo' and have an acceptedOffer or assignedTo
+    // For Poster's Accepted tab - find tasks they created that have accepted offers
+    // After payment, task status becomes 'assigned', 'in_progress', 'todo', or 'accepted'
+    // These tasks should show the accepted tasker who will complete the work
     const acceptedTasks = allTasks.filter((task: Task) => {
-      const hasAcceptedOffer = task.status === 'todo' && 
-                              ((task as any).acceptedOffer || (task as any).assignedTo);
+      // Check if task is in a post-acceptance state
+      const isAcceptedStatus = task.status === 'assigned' || 
+                              task.status === 'in_progress' || 
+                              task.status === 'todo' ||
+                              task.status === 'accepted';
       
-      // For Poster role: Only show accepted offers for tasks they created
-      let isUsersTask = true;
-      if (userRole === 'Poster' && currentUserId) {
-        isUsersTask = task.createdBy?._id === currentUserId;
+      // Must be created by current user (Poster)
+      const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+      
+      // Additional check: Has acceptedOffer or assignedTo field
+      const hasAcceptedOffer = !!(task as any).acceptedOffer || !!(task as any).assignedTo;
+      
+      const shouldInclude = isAcceptedStatus && isUsersTask;
+      
+      if (allTasks.length <= 10) { // Log for debugging
+        console.log(`🔍 Poster Accepted Tab Filter:`, {
+          taskId: task._id,
+          title: task.title,
+          status: task.status,
+          createdBy: task.createdBy?._id,
+          currentUserId,
+          isAcceptedStatus,
+          isUsersTask,
+          hasAcceptedOffer,
+          hasAssignedTo: !!(task as any).assignedTo,
+          shouldInclude
+        });
       }
       
-      console.log(`🔍 Task ${task._id} accepted filter check:`, {
-        title: task.title,
-        status: task.status,
-        hasAcceptedOffer: !!(task as any).acceptedOffer,
-        hasAssignedTo: !!(task as any).assignedTo,
-        taskCreatorId: task.createdBy?._id,
-        currentUserId,
-        isUsersTask,
-        shouldInclude: hasAcceptedOffer && isUsersTask
-      });
-      
-      return hasAcceptedOffer && isUsersTask;
+      return shouldInclude;
     });
     
     console.log('🎯 Processing Accepted Tasks for Poster:', {
@@ -649,7 +668,7 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       postedTasks,
       acceptedTasks: finalAcceptedTasks,
     };
-  }, [allTasks, allOffers, dummyCancelledTasks, userRole, searchText, currentUserId]);
+  }, [allTasks, taskerAssignedTasks, dummyCancelledTasks, userRole, searchText, currentUserId]);
 
   // Debug log categorized data counts
   console.log(`📋 Categorized Data for ${userRole}:`, {
@@ -662,9 +681,10 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
 
   const handleRefresh = useCallback(() => {
     refetchTasks();
-    refetchOffers();
+    refetchTaskerTasks();
+    refetchAllOffers();
     refetchAllTasks(); // Also refresh all system tasks for Tasker view
-  }, [refetchTasks, refetchOffers, refetchAllTasks]);
+  }, [refetchTasks, refetchTaskerTasks, refetchAllOffers, refetchAllTasks]);
 
   // Refresh data when screen is focused
   useFocusEffect(
