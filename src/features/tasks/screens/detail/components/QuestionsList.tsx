@@ -16,7 +16,8 @@ interface QuestionsListProps {
   currentUserId?: string;
   taskCreatorId?: string;
   onRefreshQuestions?: () => void;
-  taskOffers?: any[]; // Add task offers to check if user is a participant
+  taskOffers?: any[];
+  hideAskButton?: boolean; // Add task offers to check if user is a participant
 }
 
 export const QuestionsList: React.FC<QuestionsListProps> = ({
@@ -27,7 +28,8 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   currentUserId,
   taskCreatorId,
   onRefreshQuestions,
-  taskOffers = [], // Default to empty array
+  taskOffers = [],
+  hideAskButton = false, // Default to empty array
 }) => {
   const insets = useSafeAreaInsets();
   const currentUser = useAuthStore((state) => state.user);
@@ -510,16 +512,18 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
         />
       )}
 
-      {/* Ask Question Button */}
-      <View style={[styles.askQuestionButtonContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-        <TouchableOpacity 
-          style={styles.askQuestionButton}
-          onPress={onAskQuestion}
-        >
-          <Ionicons name="add-circle" size={24} color="#fff" />
-          <Text style={styles.askQuestionButtonText}>ASK QUESTION</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Ask Question Button - Hidden when viewing assigned/completed tasks */}
+      {!hideAskButton && (
+        <View style={[styles.askQuestionButtonContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <TouchableOpacity 
+            style={styles.askQuestionButton}
+            onPress={onAskQuestion}
+          >
+            <Ionicons name="add-circle" size={24} color="#fff" />
+            <Text style={styles.askQuestionButtonText}>ASK QUESTION</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Answer Question Modal */}
       {selectedQuestion && (
