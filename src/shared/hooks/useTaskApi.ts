@@ -254,6 +254,32 @@ export function useGetPaymentStatus() {
 }
 
 /**
+ * 💰 Get Tasker Payments Hook
+ */
+export function useGetTaskerPayments() {
+  return useQuery({
+    queryKey: [...TASK_QUERY_KEYS.all, 'tasker-payments'],
+    queryFn: () => TaskAPI.getTaskerPayments(),
+    staleTime: 1 * 60 * 1000, // 1 minute
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  });
+}
+
+/**
+ * 💵 Get Poster Payments Hook
+ */
+export function useGetPosterPayments() {
+  return useQuery({
+    queryKey: [...TASK_QUERY_KEYS.all, 'poster-payments'],
+    queryFn: () => TaskAPI.getPosterPayments(),
+    staleTime: 1 * 60 * 1000, // 1 minute
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+  });
+}
+
+/**
  * ❓ Get Task Questions Hook
  */
 export function useGetTaskQuestions(taskId: string, enabled = true) {
@@ -775,6 +801,8 @@ export const TaskHooks = {
   useGetAcceptedOffer,
   useGetTaskCompletionStatus,
   useGetPaymentStatus,
+  useGetTaskerPayments,
+  useGetPosterPayments,
   useGetTaskQuestions,
   useGetUserTasks,
   
