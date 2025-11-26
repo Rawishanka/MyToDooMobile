@@ -3,23 +3,39 @@ import React, { useRef } from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
 import {
-  AskQuestionModal,
-  DetailHeader,
-  ErrorState,
-  LoadingState,
-  MakeOfferSection,
-  MyOfferCard,
-  OffersList,
-  QuestionsList,
-  TabsSection,
-  TaskInfoCard,
+    AskQuestionModal,
+    DetailHeader,
+    ErrorState,
+    LoadingState,
+    MakeOfferSection,
+    MyOfferCard,
+    OffersList,
+    QuestionsList,
+    TabsSection,
+    TaskInfoCard,
 } from './components';
 import { useTaskDetail } from './hooks/useTaskDetail';
 
 export default function TaskDetailScreen() {
-  const { taskId } = useLocalSearchParams<{ taskId: string }>();
+  const { taskId, fromUserRole, fromStatus } = useLocalSearchParams<{ 
+    taskId: string; 
+    fromUserRole?: string; 
+    fromStatus?: string; 
+  }>();
   const scrollViewRef = useRef<ScrollView>(null);
   const tabsSectionRef = useRef<View>(null);
+  
+  // Check if user came from Tasker's Todoo Tasks or Completed tab
+  // These are tasks where the current user is the assignee (tasker role)
+  const isFromTaskerAssignedOrCompleted = 
+    fromUserRole === 'Tasker' && (fromStatus === 'assigned' || fromStatus === 'completed');
+  
+  console.log('🔍 Task Detail Screen - Navigation Context:', {
+    fromUserRole,
+    fromStatus,
+    isFromTaskerAssignedOrCompleted,
+    shouldHideMakeOfferAndAskQuestion: isFromTaskerAssignedOrCompleted
+  });
 
   const {
     task,
@@ -77,6 +93,29 @@ export default function TaskDetailScreen() {
     return <ErrorState onRetry={refetch} />;
   }
 
+  // Additional check: Verify if current user is actually assigned to this task
+  // This is a safety check in addition to navigation params
+  const isCurrentUserAssignee = (task as any)?.userRole === 'assignee' || 
+                                 (task as any)?.assignedTo?._id === currentUser?._id;
+  
+  // Final decision: Hide Make Offer and Ask Question if:
+  // 1. Came from Tasker's assigned/completed tab, OR
+  // 2. Task shows current user as assignee
+  const shouldHideSections = isFromTaskerAssignedOrCompleted || 
+                            (isCurrentUserAssignee && (task.status === 'assigned' || 
+                                                       task.status === 'in_progress' || 
+                                                       task.status === 'todo' ||
+                                                       task.status === 'completed'));
+  
+  console.log('🎯 Task Detail - Hide Sections Decision:', {
+    taskId: task._id,
+    taskStatus: task.status,
+    userRole: (task as any)?.userRole,
+    isCurrentUserAssignee,
+    isFromTaskerAssignedOrCompleted,
+    shouldHideSections
+  });
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.container}>
@@ -90,7 +129,8 @@ export default function TaskDetailScreen() {
           showsVerticalScrollIndicator={false}
         >
         {/* Only show Make Offer section to taskers (not the task creator) */}
-        {task?.createdBy?._id !== currentUser?._id && (
+        {/* Hide if user is assigned to this task (Todoo Tasks or Completed) */}
+        {task?.createdBy?._id !== currentUser?._id && !shouldHideSections && (
           <MakeOfferSection 
             onMakeOffer={handleMakeOffer} 
             offerCount={task?.offerCount || taskOffers.length}
@@ -140,6 +180,7 @@ export default function TaskDetailScreen() {
               taskCreatorId={task?.createdBy?._id}
               onRefreshQuestions={refetchQuestions}
               taskOffers={taskOffers}
+              hideAskButton={shouldHideSections}
             />
           )}
         </View>

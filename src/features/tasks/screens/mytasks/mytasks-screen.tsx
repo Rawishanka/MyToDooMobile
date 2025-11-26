@@ -87,11 +87,14 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             onPress={(taskId: string) => {
               console.log('👁️ Navigating to task-detail with taskId:', taskId);
               console.log('   Task data:', item);
+              console.log('   From tab:', status, 'Role:', userRole);
               // Navigate to task detail screen to view task and make offers
               router.push({
                 pathname: '/task-detail',
                 params: {
-                  taskId: taskId
+                  taskId: taskId,
+                  fromUserRole: userRole,
+                  fromStatus: status
                 }
               } as any);
             }}
