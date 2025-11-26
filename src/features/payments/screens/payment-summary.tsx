@@ -136,9 +136,39 @@ export default function PaymentSummaryScreen() {
         } else if (locationType === 'object' && task.location !== null) {
           // If it's an object, extract the address or city
           if (task.location.address) {
-            locationText = task.location.address;
+            // Check if the address itself is a JSON string (nested JSON issue)
+            const addressValue = task.location.address;
+            if (typeof addressValue === 'string' && (addressValue.startsWith('{') || addressValue.startsWith('['))) {
+              try {
+                // Parse the nested JSON string
+                const nestedParsed = JSON.parse(addressValue);
+                if (nestedParsed.address) {
+                  locationText = nestedParsed.address;
+                } else if (nestedParsed.city) {
+                  locationText = nestedParsed.city;
+                } else {
+                  // Construct from parts
+                  const parts = [];
+                  if (nestedParsed.street) parts.push(nestedParsed.street);
+                  if (nestedParsed.city) parts.push(nestedParsed.city);
+                  if (nestedParsed.state) parts.push(nestedParsed.state);
+                  if (nestedParsed.country) parts.push(nestedParsed.country);
+                  locationText = parts.length > 0 ? parts.join(', ') : addressValue;
+                }
+                console.log('✅ Parsed nested JSON in object.address:', locationText);
+              } catch (error) {
+                // If parsing fails, use the address value as-is
+                locationText = addressValue;
+                console.log('⚠️ Failed to parse nested JSON in object.address, using raw value:', error);
+              }
+            } else {
+              // Regular string address
+              locationText = addressValue;
+              console.log('✅ Using object.address directly:', locationText);
+            }
           } else if (task.location.city) {
             locationText = task.location.city;
+            console.log('✅ Using object.city:', locationText);
           } else {
             // Fallback: try to construct from available fields
             const parts = [];
@@ -147,8 +177,8 @@ export default function PaymentSummaryScreen() {
             if (task.location.state) parts.push(task.location.state);
             if (task.location.country) parts.push(task.location.country);
             locationText = parts.length > 0 ? parts.join(', ') : 'Location not specified';
+            console.log('✅ Constructed location from object parts:', locationText);
           }
-          console.log('✅ Using object location:', locationText);
         }
       }
       
