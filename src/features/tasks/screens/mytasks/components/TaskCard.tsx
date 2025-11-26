@@ -770,7 +770,65 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
       {/* Action Buttons - Separate from Card Content */}
       <View style={styles.actionButtons} pointerEvents="box-none">
-        {status === 'accepted' ? (
+        {status === 'completed' ? (
+          // Completed tab (Both Tasker and Poster): Only Delete button
+          <TouchableOpacity 
+            style={[
+              styles.actionButton, 
+              styles.deleteButton, 
+              (deleteTaskMutation.isPending || isProcessing) && styles.disabledButton
+            ]} 
+            activeOpacity={0.6}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            onPress={handleDeleteTask}
+            disabled={deleteTaskMutation.isPending || isProcessing}
+          >
+            <MaterialIcons 
+              name="delete" 
+              size={20} 
+              color={(deleteTaskMutation.isPending || isProcessing) ? "#999" : "#dc3545"} 
+            />
+          </TouchableOpacity>
+        ) : status === 'cancelled' ? (
+          // Cancelled tab (Both Tasker and Poster): No buttons at all
+          null
+        ) : status === 'open' && userRole === 'Tasker' ? (
+          // Tasker Open Tasks: Only Cancel button
+          <TouchableOpacity 
+            style={[
+              styles.actionButton,
+              isProcessing && styles.disabledButton
+            ]} 
+            activeOpacity={0.6}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            onPress={handleCancelTask}
+            disabled={isProcessing}
+          >
+            <MaterialIcons 
+              name="cancel" 
+              size={20} 
+              color={isProcessing ? "#999" : "#dc3545"} 
+            />
+          </TouchableOpacity>
+        ) : status === 'assigned' && userRole === 'Tasker' ? (
+          // Tasker Todoo Tasks: Only Cancel button
+          <TouchableOpacity 
+            style={[
+              styles.actionButton,
+              isProcessing && styles.disabledButton
+            ]} 
+            activeOpacity={0.6}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            onPress={handleCancelTask}
+            disabled={isProcessing}
+          >
+            <MaterialIcons 
+              name="cancel" 
+              size={20} 
+              color={isProcessing ? "#999" : "#dc3545"} 
+            />
+          </TouchableOpacity>
+        ) : status === 'accepted' ? (
           // Accepted Offers tab: Mark as Completed + Cancel
           <>
             <TouchableOpacity 
@@ -824,7 +882,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             </TouchableOpacity>
           </>
         ) : (
-          // Posted tab: Edit + Delete + Cancel
+          // Posted tab or other tabs: Edit + Delete + Cancel
           <>
             {/* Edit Button */}
             <TouchableOpacity 
