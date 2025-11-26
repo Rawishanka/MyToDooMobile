@@ -1,5 +1,5 @@
 import { Task } from '@/src/api/types/tasks';
-import { useGetAllOffers, useGetAllTasks, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
+import { useGetAllOffers, useGetAllTasks, useGetMyOffers, useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -185,6 +185,16 @@ export default function MyTasksScreen() {
     section: 'all-tasks'
   });
   
+  // For Tasker Open Tasks: Get user's offers to filter tasks
+  // This uses /api/tasks/my-offers endpoint which returns offers made by user
+  const {
+    data: myOffersData,
+    isLoading: isLoadingMyOffers,
+    refetch: refetchMyOffers,
+  } = useGetMyOffers({
+    section: 'all-tasks'
+  });
+  
   // Also get all offers for additional data (for Poster view)
   const {
     data: allOffersData,
@@ -286,12 +296,29 @@ export default function MyTasksScreen() {
     return taskerAssignedTasksData?.data || [];
   }, [taskerAssignedTasksData?.data]);
   
+  // For Tasker: Extract offers data and create a map of taskIds where user has made offers
+  const myOffers = React.useMemo(() => {
+    return myOffersData?.data || [];
+  }, [myOffersData?.data]);
+  
+  // Create a map of taskId -> offer for quick lookup in Open Tasks filter
+  const myOffersMap = React.useMemo(() => {
+    const map = new Map();
+    myOffers.forEach((offer: any) => {
+      const taskId = offer.taskId?._id || offer.taskId;
+      if (taskId) {
+        map.set(taskId, offer);
+      }
+    });
+    return map;
+  }, [myOffers]);
+  
   const allOffers = React.useMemo(() => {
     return allOffersData?.data || [];
   }, [allOffersData?.data]);
   
   const isLoading = userRole === 'Tasker' 
-    ? (isLoadingTasks || isLoadingTaskerTasks || isLoadingAllTasks)
+    ? (isLoadingTasks || isLoadingTaskerTasks || isLoadingAllTasks || isLoadingMyOffers)
     : (isLoadingTasks || isLoadingAllOffers);
 
   // Debug logging for API data
@@ -301,8 +328,11 @@ export default function MyTasksScreen() {
     totalTasks: allTasks.length,
     totalOffers: allOffers.length,
     taskerAssignedTasksCount: taskerAssignedTasks.length,
+    myOffersCount: myOffers.length,
+    myOffersMapSize: myOffersMap.size,
     isLoadingTasks,
     isLoadingTaskerTasks,
+    isLoadingMyOffers,
     isLoadingAllOffers,
     isLoadingAllTasks: userRole === 'Tasker' ? isLoadingAllTasks : 'N/A',
     sampleTasks: allTasks.slice(0, 3).map(t => ({ 
@@ -382,9 +412,16 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
   // Must NOT be created by current user (can't bid on own tasks)
   const isNotMyTask = currentUserId ? task.createdBy?._id !== currentUserId : true;
   
+  // Check if user has made an offer on this task
+  const myOffer = myOffersMap.get(task._id);
+  const hasMyOffer = !!myOffer;
+  
+  // For Open Tasks: Only show tasks where user has made an offer AND offer is still pending
+  const isOfferPending = myOffer?.status === 'pending';
+  
   // Debug logging for filtering
-  const shouldInclude = isOpenStatus && isNotMyTask;
-  if (allTasks.length <= 5) { // Only log for small datasets to avoid spam
+  const shouldInclude = isOpenStatus && isNotMyTask && hasMyOffer && isOfferPending;
+  if (allTasks.length <= 10) { // Only log for small datasets to avoid spam
     console.log('🔍 Tasker Open Tasks Filter:', {
       taskId: task._id,
       title: task.title,
@@ -393,29 +430,63 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       currentUserId,
       isOpenStatus,
       isNotMyTask,
-      shouldInclude
+      hasMyOffer,
+      offerStatus: myOffer?.status,
+      isOfferPending,
+      shouldInclude,
+      reason: shouldInclude ? 'INCLUDED: Open task with pending offer' :
+             !isOpenStatus ? 'EXCLUDED: Task not open' :
+             !isNotMyTask ? 'EXCLUDED: User created this task' :
+             !hasMyOffer ? 'EXCLUDED: No offer made on this task' :
+             !isOfferPending ? `EXCLUDED: Offer status is ${myOffer?.status}` :
+             'EXCLUDED: Unknown reason'
     });
   }
   
-  // For Tasker Open Tasks: Show ALL open tasks they can bid on (regardless of existing offers)
+  // For Tasker Open Tasks: Show ONLY open tasks where user has made a PENDING offer
   return shouldInclude;
 });
 
-      // Process and sort the open tasks
-      const openTasks = sortByCreatedDate(filterBySearch(openTasksFiltered));
+      // Sort Open Tasks by offer creation date (newest offers first)
+      // This ensures newly made offers appear at the top
+      const sortedOpenTasks = [...openTasksFiltered].sort((a: Task, b: Task) => {
+        const offerA = myOffersMap.get(a._id);
+        const offerB = myOffersMap.get(b._id);
+        
+        // Get offer creation dates
+        const dateA = offerA?.createdAt ? new Date(offerA.createdAt).getTime() : 0;
+        const dateB = offerB?.createdAt ? new Date(offerB.createdAt).getTime() : 0;
+        
+        // Sort descending (newest offers first)
+        return dateB - dateA;
+      });
+      
+      // Apply search filter after sorting
+      const openTasks = filterBySearch(sortedOpenTasks);
 
       // Debug log the final result for Tasker Open Tasks
       console.log('🎯 Tasker Open Tasks Final Result:', {
         totalSystemTasks: allTasks.length,
+        myOffersCount: myOffers.length,
+        pendingOffersCount: myOffers.filter((o: any) => o.status === 'pending').length,
         filteredOpenTasks: openTasksFiltered.length,
+        sortedOpenTasks: sortedOpenTasks.length,
         finalOpenTasks: openTasks.length,
         currentUserId,
-        taskSample: openTasks.slice(0, 2).map(t => ({
-          id: t._id,
-          title: t.title,
-          status: t.status,
-          createdBy: t.createdBy?._id
-        }))
+        sortOrder: 'By offer createdAt (newest first)',
+        taskSample: openTasks.slice(0, 3).map(t => {
+          const offer = myOffersMap.get(t._id);
+          return {
+            id: t._id,
+            title: t.title,
+            status: t.status,
+            createdBy: t.createdBy?._id,
+            offerStatus: offer?.status,
+            offerAmount: offer?.offer?.amount,
+            offerCreatedAt: offer?.createdAt,
+            taskCreatedAt: t.createdAt
+          };
+        })
       });
 
       
@@ -668,7 +739,7 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       postedTasks,
       acceptedTasks: finalAcceptedTasks,
     };
-  }, [allTasks, taskerAssignedTasks, dummyCancelledTasks, userRole, searchText, currentUserId]);
+  }, [allTasks, taskerAssignedTasks, myOffers, myOffersMap, dummyCancelledTasks, userRole, searchText, currentUserId]);
 
   // Debug log categorized data counts
   console.log(`📋 Categorized Data for ${userRole}:`, {
@@ -682,9 +753,10 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
   const handleRefresh = useCallback(() => {
     refetchTasks();
     refetchTaskerTasks();
+    refetchMyOffers();
     refetchAllOffers();
     refetchAllTasks(); // Also refresh all system tasks for Tasker view
-  }, [refetchTasks, refetchTaskerTasks, refetchAllOffers, refetchAllTasks]);
+  }, [refetchTasks, refetchTaskerTasks, refetchMyOffers, refetchAllOffers, refetchAllTasks]);
 
   // Refresh data when screen is focused
   useFocusEffect(
