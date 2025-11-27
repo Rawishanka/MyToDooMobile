@@ -12,6 +12,7 @@ interface LocationInputProps {
   onLocationSelect: (location: LocationData) => void;
   hasError?: boolean;
   onDropdownStateChange?: (isOpen: boolean) => void;
+  onFocus?: () => void;
 }
 
 export const LocationInput: React.FC<LocationInputProps> = ({
@@ -20,6 +21,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
   onLocationSelect,
   hasError = false,
   onDropdownStateChange,
+  onFocus,
 }) => {
   return (
     <>
@@ -29,6 +31,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
         style={{ marginBottom: 4 }}
         country={countryCode}
         onDropdownStateChange={onDropdownStateChange}
+        onFocus={onFocus}
         initialValue={selectedLocation?.address || ''}
       />
       {selectedLocation && (
