@@ -72,6 +72,9 @@ interface SignupFormProps {
   handleSignUp: () => void;
   handleDateChange: (event: DateTimePickerEvent, selectedDate?: Date) => void;
   handleGoogleSignIn?: () => void;
+  
+  // Scroll control
+  scrollViewRef?: React.RefObject<ScrollView>;
 }
 
 export const SignupForm: React.FC<SignupFormProps> = ({
@@ -106,11 +109,20 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   handleSignUp,
   handleDateChange,
   handleGoogleSignIn,
+  scrollViewRef,
 }) => {
   const router = useRouter();
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+  
+  // Effect to disable parent scroll when dropdown is open
+  React.useEffect(() => {
+    if (scrollViewRef?.current) {
+      scrollViewRef.current.setNativeProps({ scrollEnabled: !isLocationDropdownOpen });
+    }
+  }, [isLocationDropdownOpen, scrollViewRef]);
   
   // Refs for input fields to enable scrolling to error
   const firstNameRef = useRef<TextInput>(null);
@@ -119,7 +131,6 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   const phoneRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
-  const scrollViewRef = useRef<ScrollView>(null);
 
   const validateField = (field: string, value: any) => {
     const newErrors = { ...errors };
@@ -522,6 +533,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         countryCode={selectedCountry.code}
         onLocationSelect={(loc) => setSelectedLocation(loc)}
         hasError={!!(touched.location && errors.location)}
+        onDropdownStateChange={setIsLocationDropdownOpen}
       />
       {touched.location && errors.location && (
         <Text style={styles.errorText}>{errors.location}</Text>

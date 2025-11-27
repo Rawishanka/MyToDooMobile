@@ -26,7 +26,7 @@ const API_CONFIG = {
     TIMEOUT: 30000, // Increased timeout to 30 seconds for chat endpoints
     RETRY_ATTEMPTS: 3, // Number of retry attempts
     RETRY_DELAY: 1000, // Delay between retries in milliseconds
-    DEVELOPMENT_MODE: __DEV__,
+    DEVELOPMENT_MODE: false, // ✅ FIXED: Disabled to prevent mock tokens in APK builds
     ENDPOINTS: {
         NOTIFICATIONS: '/notifications',
         TASKS: '/tasks',

@@ -3,17 +3,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import React from 'react';
+import { useRef } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { OTPModal } from '../components/OTPModal';
 import { SignupForm } from '../components/SignupForm';
@@ -27,6 +27,7 @@ WebBrowser.warmUpAsync();
 export default function SignUpScreen() {
   const router = useRouter();
   const signup = useSignup();
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
@@ -69,7 +70,8 @@ export default function SignUpScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.innerContainer}
       >
-        <ScrollView 
+        <ScrollView
+          ref={scrollViewRef}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -106,6 +108,7 @@ export default function SignUpScreen() {
             handleSignUp={signup.handleSignUp}
             handleDateChange={handleDateChange}
             handleGoogleSignIn={signup.handleGoogleSignIn}
+            scrollViewRef={scrollViewRef}
           />
 
           <View style={styles.footer}>

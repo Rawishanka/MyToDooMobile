@@ -19,7 +19,7 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
     <TouchableOpacity 
       style={[
         styles.messageItem,
-        message.unreadCount && message.unreadCount > 0 && styles.unreadItem
+        (message.unreadCount && message.unreadCount > 0) ? styles.unreadItem : undefined
       ]} 
       onPress={handlePress}
       activeOpacity={0.7}
@@ -40,7 +40,7 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
           <Text 
             style={[
               styles.messageTitle,
-              message.unreadCount && message.unreadCount > 0 && styles.unreadTitle
+              (message.unreadCount && message.unreadCount > 0) ? styles.unreadTitle : undefined
             ]} 
             numberOfLines={1}
           >
@@ -52,7 +52,7 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
         <Text 
           style={[
             styles.messagePreview,
-            message.unreadCount && message.unreadCount > 0 && styles.unreadPreview
+            (message.unreadCount && message.unreadCount > 0) ? styles.unreadPreview : undefined
           ]} 
           numberOfLines={1}
         >

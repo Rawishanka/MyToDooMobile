@@ -4,13 +4,14 @@ import axios from 'axios';
 import * as Location from 'expo-location';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 export interface Coordinates {
@@ -39,6 +40,7 @@ interface LocationAutocompleteProps {
   placeholder?: string;
   style?: any;
   country?: string; // ISO country code (e.g., 'AU', 'LK', 'US')
+  onDropdownStateChange?: (isOpen: boolean) => void;
 }
 
 // Mapbox Access Token Configuration
@@ -54,6 +56,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   placeholder = "Enter suburb, city or address",
   style,
   country, // Optional override - if not provided, will auto-detect
+  onDropdownStateChange,
 }) => {
   // Auto-detect country if not provided
   const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
@@ -68,6 +71,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState<'unknown' | 'granted' | 'denied'>('unknown');
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     setQuery(initialValue);
@@ -247,6 +251,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     if (searchQuery.length < 2) {
       setSuggestions([]);
       setShowSuggestions(false);
+      onDropdownStateChange?.(false);
       return;
     }
 
@@ -255,6 +260,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       console.warn("⚠️ Mapbox access token not configured");
       setError("Configure Mapbox token for location search");
       setShowSuggestions(true);
+      onDropdownStateChange?.(true);
       
       // Provide manual input option
       setSuggestions([{
@@ -270,6 +276,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     setLoading(true);
     setError(null);
     setShowSuggestions(true);
+    onDropdownStateChange?.(true);
 
     try {
       // Use Mapbox Geocoding API exactly like your web implementation
@@ -341,6 +348,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       console.log('   Input too short, clearing suggestions');
       setSuggestions([]);
       setShowSuggestions(false);
+      onDropdownStateChange?.(false);
       return;
     }
     
@@ -367,10 +375,11 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     setQuery(suggestion.place_name);
     setSuggestions([]);
     setShowSuggestions(false);
+    onDropdownStateChange?.(false);
     setError(null);
   };
 
-  const renderSuggestion = ({ item }: { item: LocationResult }) => {
+  const renderSuggestion = (item: LocationResult, index: number) => {
     // Extract location components for better display
     const isManual = item.place_type?.includes('manual');
     const locationParts = item.place_name.split(',');
@@ -380,20 +389,24 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     return (
       <TouchableOpacity
         key={item.id}
-        style={styles.suggestionItem}
+        style={[
+          styles.suggestionItem,
+          index === suggestions.length - 1 && styles.suggestionItemLast
+        ]}
         onPress={() => handleSelect(item)}
+        activeOpacity={0.7}
       >
         <View style={styles.suggestionContent}>
           <Ionicons 
             name={isManual ? "create-outline" : "location-outline"} 
-            size={18} 
+            size={20} 
             color="#666" 
             style={styles.suggestionIcon} 
           />
           <View style={styles.suggestionTextContainer}>
-            <Text style={styles.suggestionMainText}>{mainLocation}</Text>
+            <Text style={styles.suggestionMainText} numberOfLines={1}>{mainLocation}</Text>
             {subLocation && !isManual && (
-              <Text style={styles.suggestionSubText}>{subLocation}</Text>
+              <Text style={styles.suggestionSubText} numberOfLines={2}>{subLocation}</Text>
             )}
             {isManual && (
               <Text style={styles.manualEntryText}>Tap to enter manually</Text>
@@ -458,13 +471,17 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
             console.log('📍 Location input focused');
             if (query.length >= 2) {
               setShowSuggestions(true);
+              onDropdownStateChange?.(true);
             }
             onFocus?.();
           }}
           onBlur={() => {
             console.log('📍 Location input blurred');
             // Delay hiding suggestions to allow tap
-            setTimeout(() => setShowSuggestions(false), 200);
+            setTimeout(() => {
+              setShowSuggestions(false);
+              onDropdownStateChange?.(false);
+            }, 200);
           }}
         />
         {loading && (
@@ -474,9 +491,16 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
       {showSuggestions && suggestions.length > 0 && (
         <View style={styles.suggestionsContainer}>
-          <View style={styles.suggestionsList}>
-            {suggestions.map((item) => renderSuggestion({ item }))}
-          </View>
+          <ScrollView
+            ref={scrollViewRef}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={true}
+            scrollEnabled={true}
+            nestedScrollEnabled={true}
+            style={styles.suggestionsScrollView}
+          >
+            {suggestions.map((item, index) => renderSuggestion(item, index))}
+          </ScrollView>
         </View>
       )}
       
@@ -556,24 +580,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     marginTop: 4,
-    maxHeight: 300,
-    elevation: 8,
+    maxHeight: 200,
+    elevation: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    zIndex: 1000,
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    zIndex: 9999,
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
-  suggestionsList: {
-    paddingVertical: 8,
+  suggestionsScrollView: {
+    maxHeight: 200,
   },
   suggestionItem: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#E8E8E8',
+    backgroundColor: '#fff',
+  },
+  suggestionItemLast: {
+    borderBottomWidth: 0,
   },
   suggestionContent: {
     flexDirection: 'row',
@@ -581,22 +609,27 @@ const styles = StyleSheet.create({
   },
   suggestionIcon: {
     marginRight: 12,
-    marginTop: 2,
+    marginTop: 3,
     color: '#666',
+    flexShrink: 0,
   },
   suggestionTextContainer: {
     flex: 1,
+    flexShrink: 1,
+    paddingRight: 8,
   },
   suggestionMainText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#000',
-    marginBottom: 2,
+    marginBottom: 4,
+    lineHeight: 20,
   },
   suggestionSubText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
-    lineHeight: 18,
+    lineHeight: 16,
+    marginTop: 2,
   },
   manualEntryText: {
     fontSize: 14,

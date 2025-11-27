@@ -1,15 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
 import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useUserRating } from '../../hooks';
 import {
-  ErrorState,
-  LoadingState,
-  StatsCard,
-  TasksTabsSection,
-  UserInfoCard,
-  UserProfileHeader,
-  UserTasksList,
+    ErrorState,
+    LoadingState,
+    StatsCard,
+    TasksTabsSection,
+    UserInfoCard,
+    UserProfileHeader,
+    UserTasksList,
 } from './components';
 import { GetMoreReviewsSection } from './components/GetMoreReviewsSection';
 import { OverallRatingSection } from './components/OverallRatingSection';
@@ -33,12 +32,12 @@ export default function UserProfileScreen() {
   // Get the user ID from userData
   const userId = userData?.user?._id || '';
   
+  // Use the user rating hook
   const {
     ratingData,
     loading: ratingLoading,
     error: ratingError,
-    loadMoreReviews,
-    refreshRatings,
+    loadMoreReviews
   } = useUserRating(userId);
 
   if (isLoading) {
@@ -89,11 +88,11 @@ export default function UserProfileScreen() {
         {ratingData && (
           <>
             <OverallRatingSection
-              averageRating={ratingData?.stats?.overall_rating || 0}
-              totalReviews={ratingData?.stats?.total_reviews || 0}
-              ratingDistribution={ratingData?.stats?.rating_distribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
-              completionRate={ratingData?.stats?.completion_rate || 0}
-              totalTasks={ratingData?.stats?.total_completed_tasks || 0}
+              averageRating={ratingData.stats.overall_rating || 0}
+              totalReviews={ratingData.stats.total_reviews || 0}
+              ratingDistribution={ratingData.stats.rating_distribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
+              completionRate={0} // Not available in new API
+              totalTasks={0} // Not available in new API
             />
             
             <GetMoreReviewsSection 

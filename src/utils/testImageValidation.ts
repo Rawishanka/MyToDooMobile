@@ -3,7 +3,7 @@
  * Use this to test the smartImageValidator with different image types
  */
 
-import { smartImageValidator } from '../services/smartImageValidator';
+import { smartValidator } from '../services/smartImageValidator';
 
 export interface ValidationTestResult {
   testName: string;
@@ -35,7 +35,7 @@ export const runValidationTests = async (
         location: 'Test Location'
       };
       
-      const validationResult = await smartImageValidator.validateImage(testImage.path, taskContext);
+      const validationResult = await smartValidator.validateImage(testImage.path, taskContext);
       
       const actualOutcome: 'block' | 'allow' = validationResult.isValid ? 'allow' : 'block';
       const expectedOutcome: 'block' | 'allow' = testImage.shouldPass ? 'allow' : 'block';

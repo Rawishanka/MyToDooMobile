@@ -3,7 +3,7 @@
 import { LocationAutocomplete } from '@/src/shared/components/LocationAutocomplete';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { LocationData } from './signup-types';
 
 interface LocationInputProps {
@@ -11,6 +11,7 @@ interface LocationInputProps {
   countryCode: string;
   onLocationSelect: (location: LocationData) => void;
   hasError?: boolean;
+  onDropdownStateChange?: (isOpen: boolean) => void;
 }
 
 export const LocationInput: React.FC<LocationInputProps> = ({
@@ -18,6 +19,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
   countryCode,
   onLocationSelect,
   hasError = false,
+  onDropdownStateChange,
 }) => {
   return (
     <>
@@ -26,6 +28,8 @@ export const LocationInput: React.FC<LocationInputProps> = ({
         placeholder="Search for suburb, city or address..."
         style={{ marginBottom: 4 }}
         country={countryCode}
+        onDropdownStateChange={onDropdownStateChange}
+        initialValue={selectedLocation?.address || ''}
       />
       {selectedLocation && (
         <View style={styles.selectedLocationContainer}>
@@ -33,6 +37,12 @@ export const LocationInput: React.FC<LocationInputProps> = ({
           <Text style={styles.selectedLocationText}>
             {selectedLocation.address}
           </Text>
+          <TouchableOpacity 
+            onPress={() => onLocationSelect(null as any)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="close-circle" size={20} color="#0057FF" />
+          </TouchableOpacity>
         </View>
       )}
     </>

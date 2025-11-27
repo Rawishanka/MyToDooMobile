@@ -1,4 +1,4 @@
-// // api/user-api.ts
+﻿// // api/user-api.ts
 // import { createApi } from '@/src/shared/utils/api';
 // import API_CONFIG from './config';
 // import { User } from './types/user';
@@ -678,4 +678,5 @@ export async function getUserProfile(): Promise<User> {
     throw error;
   }
 }
+
 
