@@ -2892,6 +2892,56 @@ export async function getPaymentStatus(): Promise<PaymentStatusResponse> {
 }
 
 /**
+ * 💰 Get Payments for Tasker
+ * Endpoint: GET /api/payments/tasker
+ * Auth: Required
+ */
+export async function getTaskerPayments(): Promise<{ success: boolean; payments: any[] }> {
+  const api = getApi();
+  try {
+    console.log("💰 Getting tasker payments...");
+    const response = await api.get('/payments/tasker');
+    console.log("✅ Get tasker payments success:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Get tasker payments failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    // Return empty data for other errors
+    return { success: false, payments: [] };
+  }
+}
+
+/**
+ * 💵 Get Payments for Poster
+ * Endpoint: GET /api/payments/poster
+ * Auth: Required
+ */
+export async function getPosterPayments(): Promise<{ success: boolean; payments: any[] }> {
+  const api = getApi();
+  try {
+    console.log("💵 Getting poster payments...");
+    const response = await api.get('/payments/poster');
+    console.log("✅ Get poster payments success:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Get poster payments failed:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    // Return empty data for other errors
+    return { success: false, payments: [] };
+  }
+}
+
+/**
  * ❓ Get Task Questions
  * Endpoint: GET /api/tasks/:taskId/questions
  * Auth: No
@@ -3145,6 +3195,8 @@ export const TaskAPI = {
   // Phase 5: Advanced Features
   completePayment,
   getPaymentStatus,
+  getTaskerPayments,
+  getPosterPayments,
   getTaskQuestions,
   getAllPublicQuestions,
   postTaskQuestion,

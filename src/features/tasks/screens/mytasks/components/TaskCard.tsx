@@ -770,8 +770,11 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
       {/* Action Buttons - Separate from Card Content */}
       <View style={styles.actionButtons} pointerEvents="box-none">
-        {status === 'completed' ? (
-          // Completed tab (Both Tasker and Poster): Only Delete button
+        {status === 'completed' && userRole === 'Tasker' ? (
+          // Completed tab (Tasker): No buttons
+          null
+        ) : status === 'completed' && userRole === 'Poster' ? (
+          // Completed tab (Poster): Only Delete button
           <TouchableOpacity 
             style={[
               styles.actionButton, 

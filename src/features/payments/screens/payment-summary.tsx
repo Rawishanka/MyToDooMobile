@@ -1,20 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  FlatList,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // API and Hooks
-import { useGetAllOffers, useGetMyTasks, useGetPaymentStatus } from '@/src/shared/hooks/useTaskApi';
+import { useGetPosterPayments, useGetTaskerPayments } from '@/src/shared/hooks/useTaskApi';
 import { useAuthStore } from '@/src/store/auth-task-store';
 
 // Utils
@@ -22,6 +22,7 @@ import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 
 interface PaymentSummaryItem {
+  paymentId: string;
   taskId: string;
   taskTitle: string;
   taskLocation: string;
@@ -42,123 +43,177 @@ export default function PaymentSummaryScreen() {
   const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
   const currentUser = useAuthStore((state: any) => state.user);
   
-  // Fetch payment status data (for actual payment information) - with better error handling
+  // Role state management
+  const [userRole, setUserRole] = useState<'Tasker' | 'Poster'>('Tasker');
+  
+  // Fetch Tasker payments
   const { 
-    data: paymentStatusData, 
-    isLoading: isPaymentStatusLoading,
-    error: paymentStatusError,
-    refetch: refetchPaymentStatus 
-  } = useGetPaymentStatus();
+    data: taskerPaymentsData, 
+    isLoading: isTaskerPaymentsLoading,
+    error: taskerPaymentsError,
+    refetch: refetchTaskerPayments 
+  } = useGetTaskerPayments();
   
-  // Suppress error logging for known 404 errors
-  React.useEffect(() => {
-    if (paymentStatusError && paymentStatusError.message.includes('404')) {
-      console.log('ℹ️ Payment status endpoint not available (expected), using fallback data');
-    }
-  }, [paymentStatusError]);
-  
-  // Fetch accepted offers data
+  // Fetch Poster payments
   const { 
-    data: offersData, 
-    isLoading: isOffersLoading, 
-    error: offersError,
-    refetch: refetchOffers 
-  } = useGetAllOffers({});
+    data: posterPaymentsData, 
+    isLoading: isPosterPaymentsLoading,
+    error: posterPaymentsError,
+    refetch: refetchPosterPayments 
+  } = useGetPosterPayments();
   
-  // Fetch my tasks data
-  const { 
-    data: myTasksData, 
-    isLoading: isTasksLoading,
-    refetch: refetchTasks 
-  } = useGetMyTasks({});
+  // Determine which data to use based on selected role
+  const isLoading = userRole === 'Tasker' ? isTaskerPaymentsLoading : isPosterPaymentsLoading;
+  const paymentsError = userRole === 'Tasker' ? taskerPaymentsError : posterPaymentsError;
   
-  const isLoading = isOffersLoading || isTasksLoading || isPaymentStatusLoading;
-  const allOffers = offersData?.data || [];
-  const myTasks = myTasksData?.data || [];
-  const paymentStatus = paymentStatusData?.data || [];
-  
-  // Process accepted offers into payment summary items
+  // Process payments into payment summary items
   const paymentSummaryItems: PaymentSummaryItem[] = React.useMemo(() => {
+    const paymentsData = userRole === 'Tasker' 
+      ? (taskerPaymentsData?.payments || []) 
+      : (posterPaymentsData?.payments || []);
+      
     console.log('🔍 Payment Summary Debug:', {
-      totalOffers: allOffers.length,
-      totalTasks: myTasks.length,
-      paymentStatusCount: Array.isArray(paymentStatus) ? paymentStatus.length : 0,
-      offersData: allOffers.slice(0, 3),
-      tasksData: myTasks.slice(0, 3),
-      paymentStatusData: paymentStatus,
-      currentUserId: currentUser?._id || currentUser?.id,
-      paymentStatusError: paymentStatusError?.message || 'No error'
+      userRole,
+      paymentsCount: paymentsData.length,
+      samplePayments: paymentsData.slice(0, 2),
+      currentUserId: currentUser?._id || currentUser?.id
     });
     
-    // Try to use payment status data if available, otherwise fall back to offers
-    if (Array.isArray(paymentStatus) && paymentStatus.length > 0) {
-      console.log('✅ Using Payment Status Data');
-      return paymentStatus.map((payment: any) => ({
-        taskId: payment.taskId || payment._id || 'unknown',
-        taskTitle: payment.taskTitle || payment.title || 'Task',
-        taskLocation: payment.taskLocation || payment.location?.address || 'Location not specified',
-        offerAmount: payment.amount || payment.offerAmount || 0,
-        currency: payment.currency || userCurrencyInfo.code,
-        formattedAmount: formatCurrency(
-          payment.amount || payment.offerAmount || 0, 
-          { 
-            code: payment.currency || userCurrencyInfo.code, 
-            symbol: userCurrencyInfo.symbol 
+    // Process payment data from dedicated endpoints
+    return paymentsData.map((payment: any) => {
+      const task = payment.task || {};
+      const offer = payment.offer || {};
+      
+      // Enhanced location parsing to handle ALL possible formats
+      let locationText = 'Location not specified';
+      
+      if (task.location) {
+        const locationType = typeof task.location;
+        
+        console.log('🔍 RAW Location Debug:', {
+          taskId: task._id,
+          taskTitle: task.title,
+          locationType: locationType,
+          locationValue: task.location,
+          isString: locationType === 'string',
+          isObject: locationType === 'object',
+          stringified: JSON.stringify(task.location)
+        });
+        
+        if (locationType === 'string') {
+          // If it's already a string, check if it's a JSON string
+          const trimmedLocation = task.location.trim();
+          
+          // Check if string starts with { or [ (JSON format)
+          if (trimmedLocation.startsWith('{') || trimmedLocation.startsWith('[')) {
+            try {
+              // Try to parse JSON string
+              const parsedLocation = JSON.parse(trimmedLocation);
+              if (parsedLocation.address) {
+                locationText = parsedLocation.address;
+              } else if (parsedLocation.city) {
+                locationText = parsedLocation.city;
+              } else {
+                // Construct from parts
+                const parts = [];
+                if (parsedLocation.street) parts.push(parsedLocation.street);
+                if (parsedLocation.city) parts.push(parsedLocation.city);
+                if (parsedLocation.state) parts.push(parsedLocation.state);
+                if (parsedLocation.country) parts.push(parsedLocation.country);
+                locationText = parts.length > 0 ? parts.join(', ') : trimmedLocation;
+              }
+              console.log('✅ Parsed JSON string location:', locationText);
+            } catch (error) {
+              // If JSON parsing fails, use the string as-is
+              locationText = trimmedLocation;
+              console.log('⚠️ Failed to parse JSON, using raw string:', locationText, error);
+            }
+          } else {
+            // Regular string location
+            locationText = trimmedLocation;
+            console.log('✅ Using string location:', locationText);
           }
-        ),
-        taskerName: payment.taskerName || `${payment.taskTaker?.firstName || 'Unknown'} ${payment.taskTaker?.lastName || ''}`.trim(),
-        posterName: payment.posterName || `${payment.taskCreator?.firstName || 'Unknown'} ${payment.taskCreator?.lastName || ''}`.trim(),
-        acceptedDate: payment.completedAt || payment.paidAt || payment.updatedAt || payment.createdAt,
-        status: payment.status || 'completed',
-        paymentStatus: 'completed'
-      }));
-    }
-    
-    // Fallback to offers data - show all offers with payment activity, not just accepted
-    console.log('⚠️ Falling back to Offers Data');
-    
-    // Filter offers that have payment-related status or significant activity
-    const relevantOffers = allOffers.filter((offer: any) => {
-      const status = offer.status?.toLowerCase() || '';
-      return status === 'accepted' || 
-             status === 'payment_completed' || 
-             status === 'payment_failed' || 
-             status === 'completed' ||
-             (offer.amount && offer.amount > 0); // Any offer with amount is relevant
-    });
-    
-    console.log('✅ Relevant Offers Found:', {
-      total: relevantOffers.length,
-      relevantOffers: relevantOffers.slice(0, 3),
-      allStatuses: allOffers.map(o => o.status)
-    });
-    
-    return relevantOffers.map((offer: any) => {
-      // Find the associated task
-      const associatedTask = myTasks.find((task: any) => task._id === offer.taskId?._id) || offer.task;
+        } else if (locationType === 'object' && task.location !== null) {
+          // If it's an object, extract the address or city
+          if (task.location.address) {
+            // Check if the address itself is a JSON string (nested JSON issue)
+            const addressValue = task.location.address;
+            if (typeof addressValue === 'string' && (addressValue.startsWith('{') || addressValue.startsWith('['))) {
+              try {
+                // Parse the nested JSON string
+                const nestedParsed = JSON.parse(addressValue);
+                if (nestedParsed.address) {
+                  locationText = nestedParsed.address;
+                } else if (nestedParsed.city) {
+                  locationText = nestedParsed.city;
+                } else {
+                  // Construct from parts
+                  const parts = [];
+                  if (nestedParsed.street) parts.push(nestedParsed.street);
+                  if (nestedParsed.city) parts.push(nestedParsed.city);
+                  if (nestedParsed.state) parts.push(nestedParsed.state);
+                  if (nestedParsed.country) parts.push(nestedParsed.country);
+                  locationText = parts.length > 0 ? parts.join(', ') : addressValue;
+                }
+                console.log('✅ Parsed nested JSON in object.address:', locationText);
+              } catch (error) {
+                // If parsing fails, use the address value as-is
+                locationText = addressValue;
+                console.log('⚠️ Failed to parse nested JSON in object.address, using raw value:', error);
+              }
+            } else {
+              // Regular string address
+              locationText = addressValue;
+              console.log('✅ Using object.address directly:', locationText);
+            }
+          } else if (task.location.city) {
+            locationText = task.location.city;
+            console.log('✅ Using object.city:', locationText);
+          } else {
+            // Fallback: try to construct from available fields
+            const parts = [];
+            if (task.location.street) parts.push(task.location.street);
+            if (task.location.city) parts.push(task.location.city);
+            if (task.location.state) parts.push(task.location.state);
+            if (task.location.country) parts.push(task.location.country);
+            locationText = parts.length > 0 ? parts.join(', ') : 'Location not specified';
+            console.log('✅ Constructed location from object parts:', locationText);
+          }
+        }
+      }
+      
+      console.log('📍 Final Location:', {
+        taskId: task._id,
+        finalLocation: locationText
+      });
       
       return {
-        taskId: offer.taskId?._id || offer.task?._id || 'unknown',
-        taskTitle: offer.taskId?.title || offer.task?.title || 'Task',
-        taskLocation: associatedTask?.location?.address || 'Location not specified',
-        offerAmount: offer.offer?.amount || offer.amount || 0,
-        currency: offer.offer?.currency || offer.currency || userCurrencyInfo.code,
+        paymentId: payment._id || `payment-${Date.now()}-${Math.random()}`,
+        taskId: task._id || payment.task || 'unknown',
+        taskTitle: task.title || 'Task',
+        taskLocation: locationText,
+        offerAmount: payment.amount || offer.offer?.amount || 0,
+        currency: payment.currency || offer.offer?.currency || userCurrencyInfo.code,
         formattedAmount: formatCurrency(
-          offer.offer?.amount || offer.amount || 0, 
-          { 
-            code: offer.offer?.currency || offer.currency || userCurrencyInfo.code, 
-            symbol: userCurrencyInfo.symbol 
+          payment.amount || offer.offer?.amount || 0,
+          {
+            code: payment.currency || offer.offer?.currency || userCurrencyInfo.code,
+            symbol: userCurrencyInfo.symbol
           }
         ),
-        taskerName: `${offer.taskTakerId?.firstName || offer.taskTaker?.firstName || 'Unknown'} ${offer.taskTakerId?.lastName || offer.taskTaker?.lastName || ''}`.trim(),
-        posterName: `${offer.taskCreatorId?.firstName || 'Unknown'} ${offer.taskCreatorId?.lastName || ''}`.trim(),
-        acceptedDate: offer.updatedAt || offer.createdAt,
-        status: offer.status,
-        paymentStatus: offer.status === 'payment_completed' || offer.status === 'completed' ? 'completed' : 
-                      offer.status === 'payment_failed' ? 'failed' : 'pending'
+        taskerName: userRole === 'Tasker' 
+          ? `${currentUser?.firstName || 'You'} ${currentUser?.lastName || ''}`.trim()
+          : `${task.assignedTo?.firstName || 'Tasker'} ${task.assignedTo?.lastName || ''}`.trim(),
+        posterName: userRole === 'Poster'
+          ? `${currentUser?.firstName || 'You'} ${currentUser?.lastName || ''}`.trim()
+          : `${task.createdBy?.firstName || 'Poster'} ${task.createdBy?.lastName || ''}`.trim(),
+        acceptedDate: payment.releasedAt || payment.updatedAt || payment.createdAt,
+        status: payment.status,
+        paymentStatus: payment.status === 'completed' || payment.status === 'released' ? 'completed' :
+                      payment.status === 'failed' ? 'failed' : 'pending'
       };
     }).sort((a, b) => new Date(b.acceptedDate).getTime() - new Date(a.acceptedDate).getTime());
-  }, [allOffers, myTasks, paymentStatus, userCurrencyInfo, paymentStatusError]);
+  }, [taskerPaymentsData?.payments, posterPaymentsData?.payments, userCurrencyInfo, currentUser, userRole]);
   
   // Calculate totals
   const totalAmount = paymentSummaryItems.reduce((sum, item) => sum + item.offerAmount, 0);
@@ -175,9 +230,11 @@ export default function PaymentSummaryScreen() {
   };
   
   const handleRefresh = () => {
-    refetchOffers();
-    refetchTasks();
-    refetchPaymentStatus();
+    if (userRole === 'Tasker') {
+      refetchTaskerPayments();
+    } else {
+      refetchPosterPayments();
+    }
   };
   
   const renderPaymentItem = ({ item }: { item: PaymentSummaryItem }) => (
@@ -192,25 +249,40 @@ export default function PaymentSummaryScreen() {
       }}
       activeOpacity={0.7}
     >
-      <View style={styles.paymentCardHeader}>
-        <View style={styles.cardInfo}>
-          <Text style={styles.taskTitle} numberOfLines={2}>
-            {item.taskTitle}
-          </Text>
-          <Text style={styles.taskLocation} numberOfLines={1}>
-            📍 {item.taskLocation}
-          </Text>
-          <Text style={styles.taskParticipants}>
-            👤 {item.taskerName} → 🏠 {item.posterName}
-          </Text>
-          <Text style={styles.acceptedDate}>
-            Accepted {formatDate(item.acceptedDate)}
-          </Text>
+      <View style={styles.paymentCardContent}>
+        {/* Top Section - Title and Amount */}
+        <View style={styles.cardTopSection}>
+          <View style={styles.cardTitleContainer}>
+            <Text style={styles.taskTitle} numberOfLines={2}>
+              {item.taskTitle}
+            </Text>
+          </View>
+          <View style={styles.cardAmountContainer}>
+            <Text style={styles.amount} numberOfLines={1}>
+              {item.formattedAmount}
+            </Text>
+          </View>
         </View>
-        <View style={styles.cardAmountSection}>
-          <Text style={styles.amount}>
-            {item.formattedAmount}
-          </Text>
+
+        {/* Middle Section - Details */}
+        <View style={styles.cardDetailsSection}>
+          <View style={styles.detailRow}>
+            <Ionicons name="location" size={14} color="#666" style={styles.detailIcon} />
+            <Text style={styles.taskLocation} numberOfLines={1}>
+              {typeof item.taskLocation === 'string' ? item.taskLocation : 'Location not specified'}
+            </Text>
+          </View>
+          
+          <View style={styles.detailRow}>
+            <Ionicons name="people" size={14} color="#666" style={styles.detailIcon} />
+            <Text style={styles.taskParticipants} numberOfLines={1}>
+              {item.taskerName} → {item.posterName}
+            </Text>
+          </View>
+        </View>
+
+        {/* Bottom Section - Status and Date */}
+        <View style={styles.cardBottomSection}>
           <View style={[
             styles.statusBadge,
             { 
@@ -221,12 +293,19 @@ export default function PaymentSummaryScreen() {
             <Ionicons 
               name={item.paymentStatus === 'completed' ? 'checkmark-circle' : 
                    item.paymentStatus === 'failed' ? 'close-circle' : 'time'} 
-              size={12} 
+              size={14} 
               color="#fff" 
             />
             <Text style={styles.statusText}>
               {item.paymentStatus === 'completed' ? 'Paid' : 
                item.paymentStatus === 'failed' ? 'Failed' : 'Pending'}
+            </Text>
+          </View>
+          
+          <View style={styles.dateContainer}>
+            <Ionicons name="calendar-outline" size={12} color="#999" style={styles.dateIcon} />
+            <Text style={styles.acceptedDate}>
+              {formatDate(item.acceptedDate)}
             </Text>
           </View>
         </View>
@@ -265,6 +344,22 @@ export default function PaymentSummaryScreen() {
           <Text style={styles.headerTitle}>Payment Summary</Text>
           <TouchableOpacity onPress={handleRefresh} style={styles.refreshButton}>
             <Ionicons name="refresh" size={20} color="#007bff" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Role Selector */}
+        <View style={styles.roleSelectorContainer}>
+          <TouchableOpacity
+            style={[styles.roleButton, userRole === 'Tasker' && styles.activeRole]}
+            onPress={() => setUserRole('Tasker')}
+          >
+            <Text style={[styles.roleText, userRole === 'Tasker' && styles.activeRoleText]}>Tasker</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.roleButton, userRole === 'Poster' && styles.activeRole]}
+            onPress={() => setUserRole('Poster')}
+          >
+            <Text style={[styles.roleText, userRole === 'Poster' && styles.activeRoleText]}>Poster</Text>
           </TouchableOpacity>
         </View>
       
@@ -321,9 +416,11 @@ export default function PaymentSummaryScreen() {
           <Ionicons name="card-outline" size={64} color="#ccc" />
           <Text style={styles.emptyTitle}>No Payment Activity</Text>
           <Text style={styles.emptySubtitle}>
-            {paymentStatusError ? 
+            {paymentsError ? 
               "Payment data is currently unavailable. Check your connection and try refreshing." :
-              "You don't have any offers with payment activity yet. Start accepting offers to see payment information here."
+              userRole === 'Tasker' 
+                ? "You don't have any payments as a Tasker yet. Start completing tasks to see payment information here."
+                : "You don't have any payments as a Poster yet. Start posting tasks to see payment information here."
             }
           </Text>
           <TouchableOpacity style={styles.refreshButton2} onPress={handleRefresh}>
@@ -333,7 +430,7 @@ export default function PaymentSummaryScreen() {
       ) : (
         <FlatList
           data={paymentSummaryItems}
-          keyExtractor={(item) => `${item.taskId}-${item.acceptedDate}`}
+          keyExtractor={(item) => item.paymentId}
           renderItem={renderPaymentItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -349,7 +446,7 @@ export default function PaymentSummaryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#fff',
   },
   loadingContainer: {
     flex: 1,
@@ -367,49 +464,81 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e8e8e8',
+  },
+  backButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1a1a1a',
+    flex: 1,
+    textAlign: 'center',
+    letterSpacing: -0.5,
+  },
+  refreshButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  roleSelectorContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
-  backButton: {
-    padding: 5,
+  roleButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    marginHorizontal: 5,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
   },
-  headerTitle: {
-    fontSize: 18,
+  activeRole: {
+    backgroundColor: '#007AFF',
+  },
+  roleText: {
+    fontSize: 14,
     fontWeight: '600',
-    color: '#000',
-    flex: 1,
-    textAlign: 'center',
+    color: '#666',
   },
-  refreshButton: {
-    padding: 5,
+  activeRoleText: {
+    color: '#fff',
   },
   summaryContainer: {
-    padding: 20,
-    backgroundColor: '#fff',
-    marginBottom: 10,
+    padding: 16,
+    backgroundColor: '#fafafa',
+    marginBottom: 8,
   },
   // Debit Card Styles
   debitCard: {
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     marginBottom: 16,
-    minHeight: 180,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    minHeight: 190,
+    shadowColor: '#667eea',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 10,
   },
   cardHeader: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   cardLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#fff',
-    letterSpacing: 2,
+    fontSize: 11,
+    fontWeight: '700',
+    color: 'rgba(255, 255, 255, 0.9)',
+    letterSpacing: 2.5,
   },
   cardBody: {
     flex: 1,
@@ -417,139 +546,207 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   cardAmount: {
-    fontSize: 32,
-    fontWeight: '700',
+    fontSize: 36,
+    fontWeight: '800',
     color: '#fff',
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: -1,
   },
   cardSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontWeight: '500',
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
   summaryCard: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 18,
     marginBottom: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   summaryCardSmall: {
     flex: 1,
     marginBottom: 0,
+    minWidth: 100,
   },
   summaryRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
   summaryLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+    fontSize: 13,
+    color: '#888',
+    marginBottom: 8,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+    textAlign: 'center',
+    flexWrap: 'nowrap',
   },
   summaryAmount: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#007bff',
   },
   summaryNumber: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -0.5,
   },
   listContent: {
-    padding: 20,
-    paddingTop: 0,
+    padding: 16,
+    paddingTop: 8,
+    paddingBottom: 120, // Extra padding for bottom navigation
+    backgroundColor: '#f8f9fa',
   },
   paymentCard: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 16,
+    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+    overflow: 'hidden',
   },
-  paymentCardHeader: {
+  paymentCardContent: {
+    padding: 16,
+  },
+  cardTopSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+    gap: 12,
   },
-  cardInfo: {
+  cardTitleContainer: {
     flex: 1,
-    marginRight: 12,
+  },
+  cardAmountContainer: {
+    alignItems: 'flex-end',
+    minWidth: 100,
   },
   taskTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 4,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    lineHeight: 24,
+    letterSpacing: -0.3,
+  },
+  amount: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#007bff',
+    letterSpacing: -0.5,
+  },
+  cardDetailsSection: {
+    gap: 8,
+    marginBottom: 12,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#f5f5f5',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f5f5f5',
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  detailIcon: {
+    marginRight: 6,
   },
   taskLocation: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 4,
+    flex: 1,
+    lineHeight: 20,
   },
   taskParticipants: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#888',
-    marginBottom: 4,
+    flex: 1,
+    lineHeight: 20,
+  },
+  cardBottomSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 4,
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateIcon: {
+    marginRight: 4,
   },
   acceptedDate: {
     fontSize: 12,
     color: '#999',
-  },
-  cardAmountSection: {
-    alignItems: 'flex-end',
-  },
-  amount: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#007bff',
-    marginBottom: 8,
+    fontWeight: '500',
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
+    gap: 5,
   },
   statusText: {
     color: '#fff',
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
+    paddingBottom: 100, // Account for bottom navigation
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginTop: 16,
-    marginBottom: 8,
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginTop: 20,
+    marginBottom: 12,
+    letterSpacing: -0.5,
   },
   emptySubtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#666',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
+    marginBottom: 8,
   },
   refreshButton2: {
     backgroundColor: '#007bff',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 16,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 20,
+    shadowColor: '#007bff',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   refreshButtonText: {
     color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
 });
