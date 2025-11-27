@@ -89,6 +89,8 @@ const MessageScreen: React.FC = () => {
   }, []);
 
   // Convert API chat data to display format
+  // BUSINESS RULE: Only show chats for tasks where an offer has been ACCEPTED
+  // Workflow: Tasker makes offer → Poster accepts offer → Chat becomes visible
   const chatMessages: Message[] = useMemo(() => {
     if (!chatData?.data) {
       // Fallback to mock data if API not available
@@ -97,12 +99,47 @@ const MessageScreen: React.FC = () => {
     }
 
     try {
-      return chatData.data
+      console.log(`💬 Processing ${chatData.data.length} chats from API...`);
+      
+      const filteredChats = chatData.data
         .filter((chatItem: ChatListItem) => {
           // Filter out invalid chat items
-          return chatItem && chatItem.chat && chatItem.chat._id;
-        })
-        .map((chatItem: ChatListItem) => {
+          if (!chatItem || !chatItem.chat || !chatItem.chat._id) {
+            console.log('❌ Invalid chat item - missing required fields');
+            return false;
+          }
+          
+          // ✅ ACCEPTANCE FILTER: Only show chats where the offer has been accepted
+          // After a poster accepts a tasker's offer, task status changes to one of:
+          // - 'accepted': Immediately after acceptance
+          // - 'assigned': Task assigned to tasker
+          // - 'todo': Task is ready to start
+          // - 'in_progress': Task is being worked on
+          // - 'completed': Task finished
+          // 
+          // Task statuses that mean offer NOT accepted yet:
+          // - 'open': No offers accepted
+          // - 'pending': Offers submitted but none accepted
+          const task = chatItem.task;
+          const taskStatus = task?.status?.toLowerCase();
+          
+          // Only show chats for tasks with accepted offers
+          // Valid statuses after offer acceptance: 'accepted', 'assigned', 'todo', 'in_progress', 'completed'
+          const validStatuses = ['accepted', 'assigned', 'todo', 'in_progress', 'completed'];
+          const isAcceptedOffer = taskStatus && validStatuses.includes(taskStatus);
+          
+          if (!isAcceptedOffer) {
+            console.log(`⏭️ Skipping chat: "${task?.title || 'Unknown'}" | Status: "${taskStatus}" (offer not accepted)`);
+            return false;
+          }
+          
+          console.log(`✅ Including chat: "${task?.title || 'Unknown'}" | Status: "${taskStatus}" (offer accepted)`);
+          return true;
+        });
+      
+      console.log(`📊 Filtered ${filteredChats.length} chats with accepted offers out of ${chatData.data.length} total chats`);
+      
+      return filteredChats.map((chatItem: ChatListItem) => {
           // Get preview from local storage if API doesn't have lastMessage
           const taskId = chatItem.chat.taskId;
           const apiPreview = chatItem.lastMessage?.text;
