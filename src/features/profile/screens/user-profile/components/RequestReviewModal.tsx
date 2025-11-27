@@ -33,12 +33,14 @@ interface RequestReviewModalProps {
   visible: boolean;
   onClose: () => void;
   userId: string;
+  userName?: string;
 }
 
 export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({ 
   visible, 
   onClose, 
-  userId 
+  userId,
+  userName = 'User'
 }) => {
   const [method, setMethod] = useState<'email' | 'sms'>('email');
   const [recipient, setRecipient] = useState('');
@@ -46,7 +48,18 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
   const [countryCode, setCountryCode] = useState('+94'); // Default to Sri Lanka
   const [detectedCountry, setDetectedCountry] = useState('LK');
   
+  // Review link using hosted frontend
+  const reviewLink = `http://134.199.172.167:3000/review/${userId}`;
+  
   const requestReviewMutation = useRequestReview();
+
+  // Auto-fill default message when modal opens
+  useEffect(() => {
+    if (visible && !message) {
+      const defaultMessage = `Hi! I'd love to get your feedback on our experience working together. Could you please leave me a review? Here's the link: ${reviewLink}\n\nThank you!\n${userName}`;
+      setMessage(defaultMessage);
+    }
+  }, [visible, reviewLink, userName]);
 
   // Auto-detect country based on location
   useEffect(() => {
@@ -95,7 +108,8 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
     }
 
     try {
-      const defaultMessage = `Hi! I'd love for you to leave a review of our work together. Your feedback helps build trust in the community. Thanks!`;
+      // Use current message or fallback
+      const messageToSend = message.trim() || `Hi! I'd love to get your feedback on our experience working together. Could you please leave me a review? Here's the link: ${reviewLink}\n\nThank you!\n${userName}`;
       
       // Format phone number if SMS - support all countries
       let formattedRecipient = recipient.trim();
@@ -119,7 +133,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
       await requestReviewMutation.mutateAsync({
         method,
         recipient: formattedRecipient,
-        message: message.trim() || defaultMessage
+        message: messageToSend
       });
 
       Alert.alert(
@@ -156,13 +170,16 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#333" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Request Review</Text>
+          <View style={styles.headerTitleContainer}>
+            <Text style={styles.headerTitle}>Request a Review</Text>
+            <Text style={styles.headerSubtitle}>Send a review request to someone you've worked with</Text>
+          </View>
           <View style={styles.placeholder} />
         </View>
 
         <View style={styles.content}>
           {/* Method Selection */}
-          <Text style={styles.sectionTitle}>Send via:</Text>
+          <Text style={styles.sectionTitle}>How would you like to send the request?</Text>
           <View style={styles.methodContainer}>
             <TouchableOpacity 
               style={[styles.methodButton, method === 'email' && styles.methodButtonActive]}
@@ -195,23 +212,26 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
 
           {/* Recipient Input */}
           <Text style={styles.sectionTitle}>
-            {method === 'email' ? 'Email Address:' : `Phone Number (${countryCode}):`}
+            {method === 'email' ? 'Email Address *' : `Phone Number *`}
           </Text>
           
           {method === 'sms' ? (
-            <View style={styles.phoneInputContainer}>
-              <View style={styles.countryCodeContainer}>
-                <Text style={styles.countryCodeText}>{countryCode}</Text>
+            <View>
+              <View style={styles.phoneInputContainer}>
+                <View style={styles.countryCodeContainer}>
+                  <Text style={styles.countryCodeText}>{countryCode}</Text>
+                </View>
+                <TextInput
+                  style={[styles.input, styles.phoneInput]}
+                  value={recipient}
+                  onChangeText={setRecipient}
+                  placeholder={detectedCountry === 'LK' ? '754640658' : '123456789'}
+                  keyboardType="phone-pad"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
               </View>
-              <TextInput
-                style={[styles.input, styles.phoneInput]}
-                value={recipient}
-                onChangeText={setRecipient}
-                placeholder={detectedCountry === 'LK' ? '754640658' : '123456789'}
-                keyboardType="phone-pad"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
+              <Text style={styles.phoneHintText}>Enter number without country code</Text>
             </View>
           ) : (
             <TextInput
@@ -225,17 +245,18 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
             />
           )}
 
-          {/* Custom Message */}
-          <Text style={styles.sectionTitle}>Custom Message (Optional):</Text>
+          {/* Message */}
+          <Text style={styles.sectionTitle}>Message *</Text>
           <TextInput
             style={[styles.input, styles.messageInput]}
             value={message}
             onChangeText={setMessage}
-            placeholder="Hi! I'd love for you to leave a review of our work together..."
+            placeholder="Hi! I'd love to get your feedback on our experience working together..."
             multiline
-            numberOfLines={4}
+            numberOfLines={6}
             textAlignVertical="top"
           />
+          <Text style={styles.messageInfoText}>The review link is automatically included in your message</Text>
 
           {/* Send Button */}
           <TouchableOpacity 
@@ -286,13 +307,24 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E5E5E5',
     paddingTop: Platform.OS === 'ios' ? 60 : 15,
   },
-  closeButton: {
-    padding: 5,
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#333',
+    textAlign: 'center',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  closeButton: {
+    padding: 5,
   },
   placeholder: {
     width: 34, // Same width as close button
@@ -346,7 +378,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
   },
   messageInput: {
-    minHeight: 80,
+    minHeight: 120,
+  },
+  messageInfoText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 6,
+    fontStyle: 'italic',
   },
   sendButton: {
     flexDirection: 'row',
@@ -413,5 +451,11 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 8,
     borderTopLeftRadius: 0,
     borderBottomLeftRadius: 0,
+  },
+  phoneHintText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+    marginLeft: 8,
   },
 });

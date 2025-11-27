@@ -542,6 +542,7 @@ export default function AccountScreen() {
               
               <GetMoreReviewsSection 
                 userId={userId}
+                userName={userData?.firstName || 'User'}
               />
               
               <ReviewsList

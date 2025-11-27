@@ -1,5 +1,5 @@
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const PaymentOptionsScreen = ({ onNavigate, onBackToAccount }) => (
@@ -15,6 +15,17 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount }) => (
     </View>
     
     <View style={styles.content}>
+      <TouchableOpacity 
+        style={styles.menuItem}
+        onPress={() => {
+          // TODO: Navigate to payout account setup
+          console.log('Setup Payout Account clicked');
+        }}
+      >
+        <Text style={styles.menuText}>Setup Payout Account</Text>
+        <Ionicons name="chevron-forward" size={20} color="#999" />
+      </TouchableOpacity>
+      
       <TouchableOpacity 
         style={styles.menuItem}
         onPress={() => onNavigate('paymentHistory')}

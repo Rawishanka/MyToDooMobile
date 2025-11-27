@@ -5,15 +5,16 @@ import { RequestReviewModal } from './RequestReviewModal';
 
 interface GetMoreReviewsProps {
   userId: string;
+  userName?: string;
 }
 
-export const GetMoreReviewsSection: React.FC<GetMoreReviewsProps> = ({ userId }) => {
+export const GetMoreReviewsSection: React.FC<GetMoreReviewsProps> = ({ userId, userName = 'User' }) => {
   const [showRequestModal, setShowRequestModal] = useState(false);
 
   const handleShareReviewLink = async () => {
     try {
-      // Generate review link - you can customize this URL based on your hosting
-      const reviewLink = `${__DEV__ ? 'http://localhost:5173' : 'https://mytodoo.app'}/review/${userId}`;
+      // Generate review link - using hosted frontend
+      const reviewLink = `http://134.199.172.167:3000/review/${userId}`;
       
       // Try to share using React Native's built-in Share API
       const result = await Share.share({
@@ -33,7 +34,7 @@ export const GetMoreReviewsSection: React.FC<GetMoreReviewsProps> = ({ userId })
       console.error('Share error:', error);
       // Fallback: try to copy to clipboard
       try {
-        const reviewLink = `${__DEV__ ? 'http://localhost:5173' : 'https://mytodoo.app'}/review/${userId}`;
+        const reviewLink = `http://134.199.172.167:3000/review/${userId}`;
         await Clipboard.setString(reviewLink);
         Alert.alert('Link Copied', 'Review link copied to clipboard!');
       } catch (clipboardError) {
@@ -113,6 +114,7 @@ export const GetMoreReviewsSection: React.FC<GetMoreReviewsProps> = ({ userId })
         visible={showRequestModal}
         onClose={() => setShowRequestModal(false)}
         userId={userId}
+        userName={userName}
       />
     </>
   );
