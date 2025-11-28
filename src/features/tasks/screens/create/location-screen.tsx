@@ -45,6 +45,7 @@ const LocationScreen = () => {
     const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
     const [dropdownPosition, setDropdownPosition] = useState<'below' | 'above'>('below');
     const [categorySearchQuery, setCategorySearchQuery] = useState('');
+    const scrollViewRef = React.useRef<ScrollView>(null);
 
     const { myTask, updateMyTask } = useCreateTaskStore();
     
@@ -192,6 +193,7 @@ const LocationScreen = () => {
             </TouchableOpacity>
 
             <ScrollView 
+                ref={scrollViewRef}
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
@@ -239,6 +241,7 @@ const LocationScreen = () => {
                             <LocationInputSection
                                 selectedLocation={selectedLocation}
                                 onLocationSelect={handleLocationSelect}
+                                scrollViewRef={scrollViewRef}
                             />
                         )}
                     </>

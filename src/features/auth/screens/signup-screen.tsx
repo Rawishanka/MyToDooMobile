@@ -3,7 +3,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { useRef } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -27,7 +26,6 @@ WebBrowser.warmUpAsync();
 export default function SignUpScreen() {
   const router = useRouter();
   const signup = useSignup();
-  const scrollViewRef = useRef<ScrollView>(null);
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
@@ -70,8 +68,7 @@ export default function SignUpScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.innerContainer}
       >
-        <ScrollView
-          ref={scrollViewRef}
+        <ScrollView 
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -108,7 +105,6 @@ export default function SignUpScreen() {
             handleSignUp={signup.handleSignUp}
             handleDateChange={handleDateChange}
             handleGoogleSignIn={signup.handleGoogleSignIn}
-            scrollViewRef={scrollViewRef}
           />
 
           <View style={styles.footer}>

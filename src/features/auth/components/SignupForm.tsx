@@ -74,7 +74,7 @@ interface SignupFormProps {
   handleGoogleSignIn?: () => void;
   
   // Scroll control
-  scrollViewRef?: React.RefObject<ScrollView>;
+  scrollViewRef?: React.RefObject<ScrollView | null>;
 }
 
 export const SignupForm: React.FC<SignupFormProps> = ({
@@ -119,7 +119,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   
   // Effect to disable parent scroll when dropdown is open
   React.useEffect(() => {
-    if (scrollViewRef?.current) {
+    if (scrollViewRef?.current && scrollViewRef.current !== null) {
       scrollViewRef.current.setNativeProps({ scrollEnabled: !isLocationDropdownOpen });
     }
   }, [isLocationDropdownOpen, scrollViewRef]);
