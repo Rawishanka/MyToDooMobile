@@ -6,9 +6,9 @@ export interface UserRatingData {
   reviews: Review[] | undefined;
   pagination: {
     page: number;
-    total_pages: number;
-    total_reviews: number;
-    has_next: boolean;
+    totalPages: number;
+    totalReviews: number;
+    hasMore: boolean;
   };
 }
 
@@ -50,9 +50,9 @@ export const useUserRating = (userId: string): UseUserRatingResult => {
             : reviewsResponse.reviews,
           pagination: {
             page: reviewsResponse.page,
-            total_pages: reviewsResponse.total_pages,
-            total_reviews: reviewsResponse.total_reviews,
-            has_next: reviewsResponse.has_next,
+            totalPages: reviewsResponse.totalPages,
+            totalReviews: reviewsResponse.totalReviews,
+            hasMore: reviewsResponse.hasMore,
           }
         };
 
@@ -64,24 +64,31 @@ export const useUserRating = (userId: string): UseUserRatingResult => {
         // Fallback data when API is not available
         const fallbackData: UserRatingData = {
           stats: {
-            overall_rating: 0,
-            total_reviews: 0,
-            rating_distribution: {
+            userId: userId,
+            averageRating: 0,
+            totalReviews: 0,
+            ratingDistribution: {
               "5": 0,
               "4": 0,
               "3": 0,
               "2": 0,
               "1": 0,
             },
-            completion_rate: 0,
-            total_completed_tasks: 0,
+            asPoster: {
+              averageRating: 0,
+              totalReviews: 0,
+            },
+            asTasker: {
+              averageRating: 0,
+              totalReviews: 0,
+            },
           },
           reviews: [],
           pagination: {
             page: 1,
-            total_pages: 0,
-            total_reviews: 0,
-            has_next: false,
+            totalPages: 0,
+            totalReviews: 0,
+            hasMore: false,
           }
         };
 
@@ -99,7 +106,7 @@ export const useUserRating = (userId: string): UseUserRatingResult => {
   };
 
   const loadMoreReviews = async () => {
-    if (!ratingData?.pagination.has_next || loading) return;
+    if (!ratingData?.pagination.hasMore || loading) return;
     
     const nextPage = currentPage + 1;
     await fetchRatings(nextPage, true);

@@ -621,6 +621,13 @@ export const useSignup = () => {
     }
   };
 
+  const handleCloseVerification = () => {
+    setVerificationStep(null);
+    // Clear OTP inputs
+    setEmailOtp(['', '', '', '', '', '']);
+    setSmsOtp(['', '', '', '', '', '']);
+  };
+
   return {
     // Form state
     firstName,
@@ -674,6 +681,7 @@ export const useSignup = () => {
     handleVerifySms,
     handleResendEmail,
     handleResendSms,
+    handleCloseVerification,
     handleGoogleSignIn,
   };
 };

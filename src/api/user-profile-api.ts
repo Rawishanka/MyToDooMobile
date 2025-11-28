@@ -79,6 +79,43 @@ export interface RatingStatsResponse {
 }
 
 export interface Review {
+  _id: string;
+  reviewedUser: string;
+  reviewer: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  };
+  rating: number;
+  reviewText: string;
+  taskId?: string;
+  task?: {
+    _id: string;
+    title: string;
+    status: string;
+  };
+  role: "poster" | "tasker";
+  response?: {
+    text: string;
+    respondedAt: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReviewsListResponse {
+  success: boolean;
+  data: Review[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalReviews: number;
+    hasMore: boolean;
+  };
+}
+
+export interface SubmitReviewData {
   rating: number;
   reviewText: string;
   taskId?: string;
@@ -295,10 +332,51 @@ export async function getUserRatingStats(userId: string): Promise<RatingStatsRes
 }
 
 /**
+ * Get user reviews (paginated)
+ * GET /api/users/{userId}/reviews
+ */
+export async function getUserReviews(
+  userId: string,
+  page: number = 1,
+  limit: number = 10,
+  role?: "poster" | "tasker",
+  populate?: string
+): Promise<ReviewsListResponse> {
+  try {
+    console.log(`📝 Fetching reviews for user ${userId}, page: ${page}`);
+    const params: any = { page, limit };
+    if (role) params.role = role;
+    if (populate) params.populate = populate;
+    
+    const response = await api.get(`/users/${userId}/reviews`, { params });
+    console.log("✅ Reviews fetched successfully:", response.data);
+    return response.data;
+  } catch (error: any) {
+    // Network error fallback
+    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+      console.log("ℹ️ Network unavailable - Using mock reviews");
+      return {
+        success: true,
+        data: [],
+        pagination: {
+          currentPage: page,
+          totalPages: 0,
+          totalReviews: 0,
+          hasMore: false
+        }
+      };
+    }
+    
+    console.error("❌ Get reviews failed:", error);
+    throw error;
+  }
+}
+
+/**
  * Submit a review for a user
  * POST /api/users/{userId}/reviews
  */
-export async function submitUserReview(userId: string, review: Review): Promise<{ success: boolean; message: string }> {
+export async function submitUserReview(userId: string, review: SubmitReviewData): Promise<{ success: boolean; message: string }> {
   try {
     console.log(`✍️ Submitting review for user ${userId}:`, review);
     const response = await api.post(`/users/${userId}/reviews`, review);
@@ -368,21 +446,27 @@ export async function requestReview(requestData: RequestReviewRequest): Promise<
       headers: error?.config?.headers ? Object.keys(error?.config?.headers) : 'none'
     });
     
-    // Check for Twilio configuration errors
+    // Get error details
     const errorMessage = error?.response?.data?.message || '';
-    if (errorMessage.includes('Twilio phone number') || errorMessage.includes('country mismatch')) {
-      console.error("🔥 Twilio configuration error detected");
+    const errorStatus = error?.response?.status;
+    
+    // Check for Twilio/SMS configuration errors (500 or any status)
+    if (errorMessage.includes('Twilio') || 
+        errorMessage.includes('country mismatch') || 
+        errorMessage.includes('not a Twilio phone number')) {
+      console.error("🔥 SMS/Twilio configuration error detected");
+      console.error("🔥 Backend Twilio issue:", errorMessage);
       
       // Provide helpful error message for SMS issues
       if (requestData.method === 'sms') {
-        throw new Error('SMS service is temporarily experiencing issues with international delivery. Please try using Email instead or contact support.');
+        throw new Error('SMS service is currently unavailable due to backend configuration. Please use Email instead.');
       } else {
         throw new Error('Email service configuration error. Please contact support.');
       }
     }
     
     // Check if it's a 400 error (validation)
-    if (error?.response?.status === 400) {
+    if (errorStatus === 400) {
       const errorData = error?.response?.data;
       if (errorData?.errors && Array.isArray(errorData.errors)) {
         const validationError = errorData.errors[0]?.msg || 'Invalid request format';
@@ -392,13 +476,17 @@ export async function requestReview(requestData: RequestReviewRequest): Promise<
       }
     }
     
-    // Check if it's a 500 server error specifically
-    if (error?.response?.status === 500) {
+    // Check if it's a 500 server error
+    if (errorStatus === 500) {
       console.error("🔥 Server error (500) - Backend issue detected");
       console.error("🔥 This suggests an issue on the server side, not the client");
       
-      // For 500 errors, return a user-friendly error message
-      throw new Error(`Server error: The review request could not be processed. Please try again later.`);
+      // For 500 errors, provide helpful message
+      if (requestData.method === 'sms') {
+        throw new Error('SMS service is currently unavailable. Please use Email instead or try again later.');
+      } else {
+        throw new Error('Service temporarily unavailable. Please try again later.');
+      }
     }
     
     // Network error fallback
@@ -422,6 +510,7 @@ export const UserProfileAPI = {
   updateUserProfile,
   uploadUserAvatar,
   getUserRatingStats,
+  getUserReviews,
   submitUserReview,
   canReviewUser,
   requestReview

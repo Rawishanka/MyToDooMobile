@@ -47,6 +47,7 @@ interface OTPModalProps {
   handleVerifySms: () => void;
   handleResendEmail: () => void;
   handleResendSms: () => void;
+  onClose?: () => void;
 }
 
 export const OTPModal: React.FC<OTPModalProps> = ({
@@ -69,7 +70,20 @@ export const OTPModal: React.FC<OTPModalProps> = ({
   handleVerifySms,
   handleResendEmail,
   handleResendSms,
+  onClose,
 }) => {
+  const handleClose = () => {
+    if (onClose) {
+      Alert.alert(
+        'Cancel Verification?',
+        'You can complete verification later from your account settings. Continue without verifying?',
+        [
+          { text: 'Stay', style: 'cancel' },
+          { text: 'Close', style: 'destructive', onPress: onClose }
+        ]
+      );
+    }
+  };
   return (
     <>
       {/* Email Verification Modal */}
@@ -87,6 +101,11 @@ export const OTPModal: React.FC<OTPModalProps> = ({
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
+            {onClose && (
+              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                <Ionicons name="close-circle" size={28} color="#999" />
+              </TouchableOpacity>
+            )}
             <View style={styles.modalHeader}>
               <View style={styles.iconCircle}>
                 <Ionicons name="shield-checkmark-outline" size={32} color="#007BFF" />
@@ -167,6 +186,11 @@ export const OTPModal: React.FC<OTPModalProps> = ({
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
+            {onClose && (
+              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                <Ionicons name="close-circle" size={28} color="#999" />
+              </TouchableOpacity>
+            )}
             <View style={styles.modalHeader}>
               <View style={styles.iconCircle}>
                 <Ionicons name="shield-checkmark-outline" size={32} color="#007BFF" />
@@ -271,6 +295,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    zIndex: 10,
+    padding: 4,
   },
   modalHeader: {
     alignItems: 'center',

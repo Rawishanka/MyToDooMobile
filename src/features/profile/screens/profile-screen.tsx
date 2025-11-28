@@ -6,6 +6,7 @@ import FAQ from '@/src/shared/components/custom_components/faq-screen';
 import LegalScreen from '@/src/shared/components/custom_components/legal-screen';
 import Logout from '@/src/shared/components/custom_components/Logout';
 import ProfileUpdateForm from '@/src/shared/components/custom_components/profile-update-form';
+import ZendeskHelp from '@/src/shared/components/custom_components/zendesk-help';
 import { useGetUserProfile, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
 import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
 import { useAuthStore } from '@/src/store/auth-task-store';
@@ -334,7 +335,7 @@ export default function AccountScreen() {
   };
 
   const navigateToFAQ = () => {
-    setCurrentScreen('faq');
+    setCurrentScreen('zendesk');
   };
 
   const navigateToCommunityGuidelines = () => {
@@ -405,6 +406,10 @@ export default function AccountScreen() {
   if (currentScreen === 'faq') {
     return <FAQ visible={true} onClose={navigateToAccount} />;
   } 
+
+  if (currentScreen === 'zendesk') {
+    return <ZendeskHelp visible={true} onClose={navigateToAccount} />;
+  }
 
   if (currentScreen === 'community-guidelines') {
     return <CommunityGuideLines visible={true} onClose={navigateToAccount} />;
