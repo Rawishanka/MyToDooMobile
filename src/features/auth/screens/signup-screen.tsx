@@ -4,15 +4,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { OTPModal } from '../components/OTPModal';
 import { SignupForm } from '../components/SignupForm';
@@ -141,6 +141,7 @@ export default function SignUpScreen() {
         handleVerifySms={signup.handleVerifySms}
         handleResendEmail={signup.handleResendEmail}
         handleResendSms={signup.handleResendSms}
+        onClose={signup.handleCloseVerification}
       />
       </SafeAreaView>
       {/* Bottom Safe Area for System Navigation Bar */}

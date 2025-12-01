@@ -147,10 +147,33 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
       setMessage('');
       
     } catch (error: any) {
-      Alert.alert(
-        'Error', 
-        error.message || `Failed to send review request via ${method}`
-      );
+      console.error('❌ Review request failed:', error);
+      
+      // Check if it's a Twilio/SMS configuration error
+      const errorMsg = error.message || '';
+      if (errorMsg.includes('SMS service') && method === 'sms') {
+        Alert.alert(
+          'SMS Unavailable', 
+          'SMS service is currently unavailable due to backend configuration. Would you like to switch to Email instead?',
+          [
+            { 
+              text: 'Switch to Email', 
+              onPress: () => setMethod('email'),
+              style: 'default'
+            },
+            { 
+              text: 'Cancel', 
+              style: 'cancel'
+            }
+          ]
+        );
+      } else {
+        // Show generic error
+        Alert.alert(
+          'Error', 
+          errorMsg || `Failed to send review request via ${method}`
+        );
+      }
     }
   };
 

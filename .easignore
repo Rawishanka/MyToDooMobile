@@ -1,0 +1,18 @@
+# Ignore build artifacts to reduce upload size and prevent disk space issues
+android/app/build/
+android/app/.cxx/
+android/build/
+.expo/
+ios/build/
+*.apk
+*.aab
+
+# Ignore large dependency folders that will be reinstalled on EAS
+node_modules/.cache/
+
+# Ignore local environment files
+.env.local
+
+# Ignore temp files
+*.log
+*.tmp

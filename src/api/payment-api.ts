@@ -74,11 +74,12 @@ export interface ServiceFeeRequest {
 
 export interface ServiceFeeResponse {
   success: boolean;
-  data: {
-    originalAmount: number;
+  calculation: {
+    budgetAmount: number;
     serviceFee: number;
     totalAmount: number;
-    feePercentage: number;
+    currency: string;
+    breakdown: any;
   };
 }
 
@@ -230,7 +231,16 @@ export async function calculateServiceFee(
     
     return response.data;
   } catch (error: any) {
-    console.error("❌ Failed to calculate service fee:", error);
+    // Check if this is an expected error that should use fallback
+    const isExpectedFallbackError = 
+      error?.response?.status === 403 || 
+      error?.response?.status === 404 || 
+      error?.response?.status === 503;
+    
+    // Only log errors for unexpected failures
+    if (!isExpectedFallbackError) {
+      console.error("❌ Failed to calculate service fee:", error);
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
@@ -245,9 +255,14 @@ export async function calculateServiceFee(
       throw new Error(errorMessage);
     }
     
-    // Fallback calculation if API is not available
-    if (error?.response?.status === 404 || error?.response?.status === 503 || error?.response?.status === 403) {
-      console.log("⚠️ Service fee API not available - using fallback calculation (10%)");
+    // Fallback calculation if API is not available or returns 403/404/503
+    if (isExpectedFallbackError) {
+      const statusCode = error?.response?.status;
+      const reason = statusCode === 403 ? 'Forbidden (admin only)' : 
+                     statusCode === 404 ? 'Endpoint not found' : 
+                     'Service unavailable';
+      
+      console.log(`ℹ️ Service fee API returned ${statusCode} (${reason}) - using fallback calculation (10%)`);
       
       const amount = feeData.amount;
       const serviceFee = Math.round(amount * 0.10 * 100) / 100; // 10% fee
@@ -255,16 +270,46 @@ export async function calculateServiceFee(
       
       return {
         success: true,
-        data: {
-          originalAmount: amount,
+        calculation: {
+          budgetAmount: amount,
           serviceFee,
           totalAmount,
-          feePercentage: 10,
+          currency: feeData.currency || 'USD',
+          breakdown: {},
         },
       };
     }
     
     throw new Error(error?.response?.data?.message || "Failed to calculate service fee. Please try again.");
+  }
+}
+
+/**
+ * 🧪 Test Service Fee Calculation
+ * Endpoint: GET /api/service-fee/test
+ * Auth: Required
+ * Runs backend service fee calculation tests
+ */
+export async function testServiceFeeCalculation(): Promise<{
+  success: boolean;
+  testOutput: string;
+}> {
+  try {
+    console.log("🧪 Running service fee calculation tests");
+    
+    const response = await api.get('/service-fee/test');
+    console.log("✅ Service fee tests completed:", response.data);
+    
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Failed to run service fee tests:", error);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    throw new Error(error?.response?.data?.message || "Failed to run service fee tests.");
   }
 }
 
@@ -306,8 +351,116 @@ export async function retryPaymentIntent(
   }
 }
 
+/**
+ * 📊 Get Service Fee Configuration
+ * Endpoint: GET /api/service-fee/config
+ * Auth: Required
+ * Returns current service fee configuration
+ */
+export async function getServiceFeeConfig(): Promise<{
+  success: boolean;
+  config: {
+    BASE_PERCENTAGE: number;
+    MIN_FEE_USD: number;
+    MAX_FEE_USD: number;
+    CURRENCY_RATES: Record<string, number>;
+    minFees: Record<string, number>;
+    maxFees: Record<string, number>;
+  };
+}> {
+  try {
+    console.log("📊 Fetching service fee configuration");
+    
+    const response = await api.get('/service-fee/config');
+    console.log("✅ Service fee config retrieved successfully:", response.data);
+    
+    return response.data;
+  } catch (error: any) {
+    // Suppress console errors for expected 403 (non-admin users)
+    const isExpectedError = error?.response?.status === 403;
+    
+    if (!isExpectedError) {
+      console.error("❌ Failed to get service fee config:", error);
+      console.error("   Error status:", error?.response?.status);
+      console.error("   Error message:", error?.response?.data?.message || error?.message);
+    } else {
+      console.log("ℹ️ Service fee config access denied (403) - Admin access required");
+    }
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    // Handle forbidden errors (non-admin user) - throw specific error
+    if (error?.response?.status === 403) {
+      throw new Error("Admin access required to view service fee configuration.");
+    }
+    
+    throw new Error(error?.response?.data?.message || "Failed to fetch service fee configuration.");
+  }
+}
+
+/**
+ * ⚙️ Update Service Fee Configuration (Admin Only)
+ * Endpoint: PUT /api/service-fee/config
+ * Auth: Required (Admin only)
+ * Updates service fee configuration
+ */
+export async function updateServiceFeeConfig(configData: {
+  BASE_PERCENTAGE?: number;
+  MIN_FEE_USD?: number;
+  MAX_FEE_USD?: number;
+}): Promise<{
+  success: boolean;
+  message: string;
+  config: {
+    BASE_PERCENTAGE: number;
+    MIN_FEE_USD: number;
+    MAX_FEE_USD: number;
+    CURRENCY_RATES: Record<string, number>;
+    minFees: Record<string, number>;
+    maxFees: Record<string, number>;
+  };
+}> {
+  try {
+    console.log("⚙️ Updating service fee configuration:", configData);
+    
+    const response = await api.put('/service-fee/config', configData);
+    console.log("✅ Service fee config updated successfully:", response.data);
+    
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Failed to update service fee config:", error);
+    console.error("   Error status:", error?.response?.status);
+    console.error("   Error message:", error?.response?.data?.message || error?.message);
+    console.error("   Config data:", configData);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    // Handle forbidden errors (non-admin user)
+    if (error?.response?.status === 403) {
+      console.error("❌ Forbidden - Admin access required (403)");
+      throw new Error("Only administrators can update service fee configuration.");
+    }
+    
+    // Handle validation errors
+    if (error?.response?.status === 400) {
+      const errorMsg = error?.response?.data?.message || "Invalid configuration data.";
+      console.error("❌ Bad request (400):", errorMsg);
+      throw new Error(errorMsg);
+    }
+    
+    throw new Error(error?.response?.data?.message || "Failed to update service fee configuration.");
+  }
+}
+
 // Export all payment functions
 export {
-    createPaymentIntent as default
+  createPaymentIntent as default
 };
 

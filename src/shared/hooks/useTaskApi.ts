@@ -657,15 +657,85 @@ export function useCompleteTask() {
 }
 
 /**
- * ❌ Cancel Task Mutation
+ * 📋 Get Cancellation Reasons Query
+ */
+export function useGetCancellationReasons(type: 'poster' | 'tasker') {
+  return useQuery({
+    queryKey: ['cancellation-reasons', type],
+    queryFn: () => TaskAPI.getCancellationReasons(type),
+    staleTime: 1000 * 60 * 60, // 1 hour - reasons don't change frequently
+  });
+}
+
+/**
+ * ❌ Cancel Task Mutation (Legacy - Pre-payment)
  */
 export function useCancelTask() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (taskId: string) => TaskAPI.cancelTask(taskId),
-    onSuccess: (data, taskId) => {
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(taskId) });
+    mutationFn: ({ taskId, reason, reasonId }: { taskId: string; reason?: string; reasonId?: string }) => 
+      TaskAPI.cancelTask(taskId, reason, reasonId),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
+    },
+  });
+}
+
+/**
+ * 📝 Create Cancellation Request Mutation (Post-payment)
+ */
+export function useCreateCancellationRequest() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ taskId, reason }: { taskId: string; reason: string }) => 
+      TaskAPI.createCancellationRequest(taskId, reason),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['cancellation-request', variables.taskId] });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
+    },
+  });
+}
+
+/**
+ * 🔍 Get Cancellation Request Query (Post-payment)
+ */
+export function useGetCancellationRequest(taskId: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: ['cancellation-request', taskId],
+    queryFn: () => TaskAPI.getCancellationRequest(taskId),
+    enabled: enabled && !!taskId,
+    staleTime: 1000 * 30, // 30 seconds - check frequently for updates
+    retry: 1, // Only retry once to avoid spam
+    retryDelay: 1000, // Wait 1 second before retry
+    // Suppress errors in UI - 400/404 are expected for tasks without cancellation requests
+    meta: {
+      errorMessage: false, // Don't show error toast/alert
+    },
+  });
+}
+
+/**
+ * ✅ Respond to Cancellation Request Mutation (Post-payment)
+ */
+export function useRespondToCancellationRequest() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ requestId, action }: { requestId: string; action: 'accept' | 'reject' }) => 
+      TaskAPI.respondToCancellationRequest(requestId, action),
+    onSuccess: (data) => {
+      // Invalidate the task details and cancellation request
+      const taskId = data?.data?.task?._id;
+      if (taskId) {
+        queryClient.invalidateQueries({ queryKey: ['cancellation-request', taskId] });
+        queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(taskId) });
+      }
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
     },
@@ -816,7 +886,9 @@ export const TaskHooks = {
   useAcceptOffer,
   useUpdateOffer,
   useCompleteTask,
-  useCancelTask,
+  useCancelTask, // Legacy: Pre-payment cancellation
+  useCreateCancellationRequest, // NEW: Post-payment cancellation request
+  useRespondToCancellationRequest, // NEW: Accept/Reject cancellation request
   useUpdateTaskStatus,
   useAcceptTask,
   useCompletePayment,

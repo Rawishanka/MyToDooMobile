@@ -6,6 +6,7 @@ import FAQ from '@/src/shared/components/custom_components/faq-screen';
 import LegalScreen from '@/src/shared/components/custom_components/legal-screen';
 import Logout from '@/src/shared/components/custom_components/Logout';
 import ProfileUpdateForm from '@/src/shared/components/custom_components/profile-update-form';
+import ZendeskHelp from '@/src/shared/components/custom_components/zendesk-help';
 import { useGetUserProfile, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
 import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
 import { useAuthStore } from '@/src/store/auth-task-store';
@@ -27,6 +28,7 @@ import IDVerificationScreen from './id-verification-screen';
 import InsuranceProtection from './isuranceprotection';
 import NotificationPreferences from './notificationpreferences';
 import PaymentScreensApp from './paymentscreens';
+import ServiceFeeConfigScreen from './service-fee-config';
 import TaskAlerts from './taskalerts';
 
 export default function AccountScreen() {
@@ -279,6 +281,10 @@ export default function AccountScreen() {
     setCurrentScreen('payment');
   };
 
+  const navigateToServiceFeeConfig = () => {
+    setCurrentScreen('service-fee-config');
+  };
+
   const navigateToAccount = () => {
     setCurrentScreen('account');
     // Refresh user profile when returning to account screen
@@ -334,7 +340,7 @@ export default function AccountScreen() {
   };
 
   const navigateToFAQ = () => {
-    setCurrentScreen('faq');
+    setCurrentScreen('zendesk');
   };
 
   const navigateToCommunityGuidelines = () => {
@@ -378,6 +384,11 @@ export default function AccountScreen() {
     return <PaymentScreensApp onBackToAccount={navigateToAccount} />;
   }
 
+  // If service fee config screen is selected, show service fee configuration (Admin only)
+  if (currentScreen === 'service-fee-config') {
+    return <ServiceFeeConfigScreen onBackToAccount={navigateToAccount} />;
+  }
+
   // If account info screen is selected, show account information
   if (currentScreen === 'account-info') {
     return <AccountInformation onBack={navigateToAccount} />;
@@ -405,6 +416,10 @@ export default function AccountScreen() {
   if (currentScreen === 'faq') {
     return <FAQ visible={true} onClose={navigateToAccount} />;
   } 
+
+  if (currentScreen === 'zendesk') {
+    return <ZendeskHelp visible={true} onClose={navigateToAccount} />;
+  }
 
   if (currentScreen === 'community-guidelines') {
     return <CommunityGuideLines visible={true} onClose={navigateToAccount} />;
@@ -600,6 +615,12 @@ export default function AccountScreen() {
           text="Payment options"
           onPress={navigateToPayment} 
           subtext={undefined}        
+        />
+        <MenuItem 
+          icon={<MaterialIcons name="settings" size={20} color="#0052A2" />}
+          text="Service Fee Configuration"
+          onPress={navigateToServiceFeeConfig} 
+          subtext="Configure platform service fee settings (Admin only)"        
         />
         <MenuItem 
           icon={<Feather name="lock" size={20} color="#0052A2" />}

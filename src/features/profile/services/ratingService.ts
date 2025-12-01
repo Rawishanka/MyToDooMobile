@@ -1,44 +1,64 @@
 import API_CONFIG, { createApi } from '@/src/api/config';
 
 export interface RatingStats {
-  overall_rating: number | null | undefined;
-  total_reviews: number;
-  rating_distribution: {
+  userId: string;
+  averageRating: number;
+  totalReviews: number;
+  ratingDistribution: {
     "1": number;
     "2": number;
     "3": number;
     "4": number;
     "5": number;
   };
-  completion_rate: number | null | undefined;
-  total_completed_tasks: number | null | undefined;
+  asPoster: {
+    averageRating: number;
+    totalReviews: number;
+  };
+  asTasker: {
+    averageRating: number;
+    totalReviews: number;
+  };
 }
 
 export interface Review {
-  id: string;
-  reviewer_id: string;
-  reviewer_name: string;
-  reviewer_avatar?: string;
+  _id: string;
+  reviewedUser: string;
+  reviewer: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  };
   rating: number;
-  comment: string;
-  task_title: string;
-  created_at: string;
-  is_verified?: boolean;
+  reviewText: string;
+  taskId?: string;
+  task?: {
+    _id: string;
+    title: string;
+    status: string;
+  };
+  role: "poster" | "tasker";
+  response?: {
+    text: string;
+    respondedAt: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ReviewsResponse {
   reviews: Review[];
   page: number;
-  total_pages: number;
-  total_reviews: number;
-  has_next: boolean;
+  totalPages: number;
+  totalReviews: number;
+  hasMore: boolean;
 }
 
 export interface SubmitReviewRequest {
-  task_id: string;
-  tasker_id: string;
   rating: number;
-  comment?: string;
+  reviewText: string;
+  taskId?: string;
 }
 
 export class RatingService {
@@ -52,6 +72,11 @@ export class RatingService {
       console.log(`📊 Fetching rating stats for user: ${userId}`);
       const response = await this.api.get(`${API_CONFIG.ENDPOINTS.USERS}/${userId}/rating-stats`);
       console.log('✅ Rating stats fetched successfully:', response.data);
+      
+      // Unwrap the response structure {success: true, data: {...}}
+      if (response.data && response.data.data) {
+        return response.data.data;
+      }
       return response.data;
     } catch (error: any) {
       console.warn('⚠️ Failed to fetch rating stats from API:', error?.message);
@@ -67,15 +92,40 @@ export class RatingService {
   static async getUserReviews(
     userId: string, 
     page: number = 1, 
-    limit: number = 10
+    limit: number = 10,
+    role?: "poster" | "tasker",
+    populate?: string
   ): Promise<ReviewsResponse> {
     try {
       console.log(`📝 Fetching reviews for user: ${userId}, page: ${page}`);
+      const params: any = { page, limit };
+      if (role) params.role = role;
+      if (populate) params.populate = populate;
+      
       const response = await this.api.get(`${API_CONFIG.ENDPOINTS.USERS}/${userId}/reviews`, {
-        params: { page, limit }
+        params
       });
       console.log('✅ Reviews fetched successfully:', response.data);
-      return response.data;
+      
+      // Unwrap the response structure {success: true, data: [...], pagination: {...}}
+      if (response.data && response.data.success) {
+        return {
+          reviews: response.data.data || [],
+          page: response.data.pagination?.currentPage || page,
+          totalPages: response.data.pagination?.totalPages || 0,
+          totalReviews: response.data.pagination?.totalReviews || 0,
+          hasMore: response.data.pagination?.hasMore || false
+        };
+      }
+      
+      // Fallback if response structure is different
+      return {
+        reviews: [],
+        page,
+        totalPages: 0,
+        totalReviews: 0,
+        hasMore: false
+      };
     } catch (error: any) {
       console.warn('⚠️ Failed to fetch reviews from API:', error?.message);
       
@@ -87,10 +137,10 @@ export class RatingService {
   /**
    * Submit a review for a completed task
    */
-  static async submitReview(reviewData: SubmitReviewRequest): Promise<Review> {
+  static async submitReview(userId: string, reviewData: SubmitReviewRequest): Promise<{ success: boolean; message: string }> {
     try {
       console.log('📝 Submitting review:', reviewData);
-      const response = await this.api.post(`${API_CONFIG.ENDPOINTS.USERS}/reviews`, reviewData);
+      const response = await this.api.post(`${API_CONFIG.ENDPOINTS.USERS}/${userId}/reviews`, reviewData);
       console.log('✅ Review submitted successfully:', response.data);
       return response.data;
     } catch (error: any) {

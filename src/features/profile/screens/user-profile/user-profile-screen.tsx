@@ -88,11 +88,11 @@ export default function UserProfileScreen() {
         {ratingData && (
           <>
             <OverallRatingSection
-              averageRating={ratingData.stats.overall_rating || 0}
-              totalReviews={ratingData.stats.total_reviews || 0}
-              ratingDistribution={ratingData.stats.rating_distribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
-              completionRate={0} // Not available in new API
-              totalTasks={0} // Not available in new API
+              averageRating={ratingData.stats.averageRating || 0}
+              totalReviews={ratingData.stats.totalReviews || 0}
+              ratingDistribution={ratingData.stats.ratingDistribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
+              completionRate={userData?.user?.completionRate || 90}
+              totalTasks={userData?.user?.completedTasks || 0}
             />
             
             <GetMoreReviewsSection 
@@ -103,7 +103,7 @@ export default function UserProfileScreen() {
               reviews={ratingData?.reviews || []}
               loading={ratingLoading}
               onLoadMore={loadMoreReviews}
-              hasMore={ratingData?.pagination?.has_next || false}
+              hasMore={ratingData?.pagination?.hasMore || false}
             />
           </>
         )}

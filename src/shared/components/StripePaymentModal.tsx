@@ -11,6 +11,7 @@ import {
     View
 } from 'react-native';
 import API_CONFIG from '../../api/config';
+import * as PaymentAPI from '../../api/payment-api';
 import { useAuthStore } from '../../store/auth-task-store';
 import { useCreatePaymentIntent } from '../hooks/usePaymentApi';
 import { useAcceptOffer } from '../hooks/useTaskApi';
@@ -117,19 +118,41 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
   const initializeAndPresentPaymentSheet = async () => {
     setIsProcessing(true);
     try {
-      console.log('💳 Creating payment intent and presenting Stripe sheet immediately:', { 
+      console.log('💳 Starting payment process:', { 
         taskId, 
         offerId, 
         offerAmount, 
         currency
       });
       
-      // Create payment intent
+      // STEP 1: Calculate service fee using the new endpoint (with fallback)
+      console.log('📊 Step 1: Calculating service fee...');
+      let serviceFeeResult;
+      try {
+        serviceFeeResult = await PaymentAPI.calculateServiceFee({
+          amount: offerAmount,
+          currency: currency || 'LKR',
+        });
+
+        console.log('✅ Service fee calculated:', {
+          budgetAmount: serviceFeeResult.calculation.budgetAmount,
+          serviceFee: serviceFeeResult.calculation.serviceFee,
+          totalAmount: serviceFeeResult.calculation.totalAmount,
+          currency: serviceFeeResult.calculation.currency
+        });
+      } catch (feeError: any) {
+        // If service fee calculation fails completely, log it but continue
+        // The backend payment intent will handle fee calculation as backup
+        console.log('ℹ️ Service fee pre-calculation unavailable, backend will calculate:', feeError.message);
+      }
+
+      // STEP 2: Create payment intent with the calculated amounts
+      console.log('💳 Step 2: Creating payment intent...');
       const paymentResult = await createPaymentIntent.mutateAsync({
         taskId,
         offerId,
         amount: offerAmount,
-        currency: currency,
+        currency: currency || 'LKR',
       });
 
       if (!paymentResult.success || !paymentResult.clientSecret) {

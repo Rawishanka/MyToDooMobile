@@ -3,15 +3,29 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 interface Review {
-  id: string;
-  reviewer_id: string;
-  reviewer_name: string;
-  reviewer_avatar?: string;
+  _id: string;
+  reviewedUser: string;
+  reviewer: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    avatar?: string;
+  };
   rating: number;
-  comment: string;
-  task_title: string;
-  created_at: string;
-  is_verified?: boolean;
+  reviewText: string;
+  taskId?: string;
+  task?: {
+    _id: string;
+    title: string;
+    status: string;
+  };
+  role: "poster" | "tasker";
+  response?: {
+    text: string;
+    respondedAt: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ReviewsListProps {
@@ -44,6 +58,9 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
       />
     ));
   };
+  
+  const reviewerName = `${review.reviewer.firstName} ${review.reviewer.lastName}`;
+  const taskTitle = review.task?.title || 'Task';
 
   return (
     <View style={styles.reviewItem}>
@@ -52,17 +69,14 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
         <View style={styles.reviewerInfo}>
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.avatarText}>
-              {review.reviewer_name.charAt(0).toUpperCase()}
+              {review.reviewer.firstName.charAt(0).toUpperCase()}
             </Text>
           </View>
           <View style={styles.reviewerDetails}>
             <View style={styles.nameContainer}>
-              <Text style={styles.reviewerName}>{review.reviewer_name}</Text>
-              {review.is_verified && (
-                <Ionicons name="checkmark-circle" size={16} color="#28A745" style={styles.verifiedIcon} />
-              )}
+              <Text style={styles.reviewerName}>{reviewerName}</Text>
             </View>
-            <Text style={styles.reviewDate}>{formatDate(review.created_at)}</Text>
+            <Text style={styles.reviewDate}>{formatDate(review.createdAt)}</Text>
           </View>
         </View>
         
@@ -72,14 +86,24 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
       </View>
 
       {/* Task Reference */}
-      <View style={styles.taskReference}>
-        <Ionicons name="briefcase-outline" size={14} color="#666" />
-        <Text style={styles.taskTitle} numberOfLines={1}>{review.task_title}</Text>
-      </View>
+      {review.task && (
+        <View style={styles.taskReference}>
+          <Ionicons name="briefcase-outline" size={14} color="#666" />
+          <Text style={styles.taskTitle} numberOfLines={1}>{taskTitle}</Text>
+        </View>
+      )}
 
       {/* Review Comment */}
-      {review.comment && review.comment.trim() && (
-        <Text style={styles.reviewComment}>{review.comment}</Text>
+      {review.reviewText && review.reviewText.trim() && (
+        <Text style={styles.reviewComment}>{review.reviewText}</Text>
+      )}
+      
+      {/* Response */}
+      {review.response && (
+        <View style={styles.responseContainer}>
+          <Text style={styles.responseLabel}>Response:</Text>
+          <Text style={styles.responseText}>{review.response.text}</Text>
+        </View>
       )}
     </View>
   );
@@ -136,7 +160,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
         nestedScrollEnabled={true}
       >
         {(reviews || []).map((review) => (
-          <ReviewItem key={review.id} review={review} />
+          <ReviewItem key={review._id} review={review} />
         ))}
         {renderFooter()}
       </ScrollView>
@@ -251,6 +275,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     lineHeight: 22,
+  },
+  responseContainer: {
+    backgroundColor: '#F8F9FA',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: '#007AFF',
+  },
+  responseLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#007AFF',
+    marginBottom: 4,
+  },
+  responseText: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 20,
   },
   emptyState: {
     alignItems: 'center',

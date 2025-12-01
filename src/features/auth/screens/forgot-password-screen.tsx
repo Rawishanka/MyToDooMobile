@@ -1,7 +1,8 @@
+import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
 import { forgotPassword } from '@/src/api/auth-api';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -118,7 +119,15 @@ export default function ForgotPasswordScreen() {
         >
           <View style={styles.innerContainer}>
             <View style={styles.header}>
-              <Ionicons name="lock-closed-outline" size={64} color="#007BFF" style={styles.lockIcon} />
+              {/* MyToDoo SVG Logo in Blue Container */}
+              <View style={styles.logoContainer}>
+                <View style={styles.logoBackground}>
+                  <MyToDooLogo 
+                    width={80}
+                    height={80}
+                  />
+                </View>
+              </View>
               <Text style={styles.title}>Forgot Password?</Text>
               <Text style={styles.subtitle}>
                 Enter your email address and we&apos;ll send you instructions to reset your password.
@@ -195,8 +204,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  lockIcon: {
-    marginBottom: 16,
+  logoContainer: {
+    marginBottom: 24,
+  },
+  logoBackground: {
+    backgroundColor: '#0a2d5c',
+    borderRadius: 24,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
   },
   title: {
     fontSize: 28,

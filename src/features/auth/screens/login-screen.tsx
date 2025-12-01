@@ -1,3 +1,4 @@
+import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
 import { useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
 import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
 import { USER_PROFILE_QUERY_KEYS } from '@/src/shared/hooks/useUserProfileApi';
@@ -12,19 +13,19 @@ import * as Google from 'expo-auth-session/providers/google';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -588,6 +589,15 @@ export default function LoginScreen() {
         style={styles.innerContainer}
       >
         <View style={styles.header}>
+          {/* MyToDoo SVG Logo in Blue Container */}
+          <View style={styles.logoContainer}>
+            <View style={styles.logoBackground}>
+              <MyToDooLogo 
+                width={60}
+                height={60}
+              />
+            </View>
+          </View>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to your account</Text>
           {pendingAction && (
@@ -699,6 +709,21 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: 32,
+  },
+  logoContainer: {
+    marginBottom: 16,
+  },
+  logoBackground: {
+    backgroundColor: '#0a2d5c',
+    borderRadius: 20,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 6,
   },
   title: {
     fontSize: 28,

@@ -3,17 +3,18 @@ import NotificationModal from '@/src/features/messages/screens/notification-scre
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { Bell, ChevronRight } from 'lucide-react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
   Dimensions,
   FlatList,
   Image,
+  Linking,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -77,6 +78,7 @@ export default function WelcomeScreen() {
   const [taskInput, setTaskInput] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [socialMenuOpen, setSocialMenuOpen] = useState(false);
   const { data: categories, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
   const { data: unreadCountData } = useUnreadCount();
   const { updateMyTask, myTask } = useCreateTaskStore();
@@ -307,6 +309,67 @@ export default function WelcomeScreen() {
         </View>
       </View>
 
+      {/* Social Media Section - Fixed at Bottom */}
+      <View style={styles.socialMediaSection}>
+        {/* Social Media Icons - Only show when menu is open */}
+        {socialMenuOpen && (
+          <View style={styles.socialIconsContainer}>
+            <TouchableOpacity 
+              style={[styles.socialIconWrapper, styles.whatsappBg]} 
+              activeOpacity={0.8}
+              onPress={() => Linking.openURL('https://wa.me/your-number')}
+            >
+              <Ionicons name="logo-whatsapp" size={22} color="#fff" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.socialIconWrapper, styles.facebookBg]} 
+              activeOpacity={0.8}
+              onPress={() => Linking.openURL('https://facebook.com/mytodoo')}
+            >
+              <Ionicons name="logo-facebook" size={22} color="#fff" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.socialIconWrapper, styles.instagramBg]} 
+              activeOpacity={0.8}
+              onPress={() => Linking.openURL('https://instagram.com/mytodoo')}
+            >
+              <Ionicons name="logo-instagram" size={22} color="#fff" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.socialIconWrapper, styles.linkedinBg]} 
+              activeOpacity={0.8}
+              onPress={() => Linking.openURL('https://linkedin.com/company/mytodoo')}
+            >
+              <Ionicons name="logo-linkedin" size={22} color="#fff" />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.socialIconWrapper, styles.tiktokBg]} 
+              activeOpacity={0.8}
+              onPress={() => Linking.openURL('https://tiktok.com/@mytodoo')}
+            >
+              <Ionicons name="logo-tiktok" size={22} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        )}
+        
+        {/* Main FAB Button */}
+        <TouchableOpacity 
+          style={styles.fabButton}
+          activeOpacity={0.8}
+          onPress={() => setSocialMenuOpen(!socialMenuOpen)}
+        >
+          <Ionicons 
+            name={socialMenuOpen ? "close" : "share-social"} 
+            size={24} 
+            color="#fff" 
+          />
+        </TouchableOpacity>
+      </View>
+
       {/* Notification Modal */}
       <NotificationModal
         visible={showNotifications}
@@ -526,5 +589,66 @@ const styles = StyleSheet.create({
   paginationDotActive: {
     backgroundColor: '#003399',
     width: 18,
+  },
+  // Social Media Section - Fixed at Bottom
+  socialMediaSection: {
+    position: 'absolute',
+    right: 14,
+    bottom: 207,
+    backgroundColor: 'transparent',
+    zIndex: 12,
+    alignItems: 'center',
+  },
+  fabButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 24,
+    backgroundColor: '#00993bf2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  socialIconsContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  socialIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  whatsappBg: {
+    backgroundColor: '#25D366',
+  },
+  facebookBg: {
+    backgroundColor: '#1877F2',
+  },
+  instagramBg: {
+    backgroundColor: '#E1306C',
+  },
+  linkedinBg: {
+    backgroundColor: '#0A66C2',
+  },
+  tiktokBg: {
+    backgroundColor: '#000000',
   },
 });

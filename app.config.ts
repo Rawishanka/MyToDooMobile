@@ -3,15 +3,20 @@ import 'dotenv/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'MyToDooMobile',
+  name: 'MyToDoo',
   slug: 'MyToDooMobile',
-  owner: 'chandani1234',
+  owner: 'rusith123',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/mytodoo-icon.png',
-  scheme: 'mytodoomobile',
+  scheme: 'mytodoo',
   userInterfaceStyle: 'automatic',
   newArchEnabled: true,
+  splash: {
+    image: './assets/images/mytodoo-icon.png',
+    resizeMode: 'contain',
+    backgroundColor: '#004aad',
+  },
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.nowanya.mytodoomobile',
@@ -21,6 +26,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     package: 'com.nowanya.mytodoomobile',
     adaptiveIcon: {
       foregroundImage: './assets/images/mytodoo-adaptive-icon.png',
+      backgroundColor: '#004aad',
+    },
+    splash: {
+      image: './assets/images/mytodoo-adaptive-icon.png',
+      resizeMode: 'contain',
       backgroundColor: '#004aad',
     },
     intentFilters: [
@@ -48,18 +58,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-font',
     'expo-video',
     [
-      'expo-location',
-      {
-        locationAlwaysAndWhenInUsePermission: 'Allow MyToDoo to use your location to show nearby tasks and provide location-based services.',
-      },
-    ],
-    [
       'expo-splash-screen',
       {
-        image: './assets/images/mytodoo-icon.png',
+        image: './assets/images/mytodoo-adaptive-icon.png',
         imageWidth: 200,
         resizeMode: 'contain',
         backgroundColor: '#004aad',
+      },
+    ],
+    [
+      'expo-location',
+      {
+        locationAlwaysAndWhenInUsePermission: 'Allow MyToDoo to use your location to show nearby tasks and provide location-based services.',
       },
     ],
   ],
@@ -73,7 +83,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
     googleClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
     eas: {
-      projectId: "95e8fb4d-6af6-4a0b-b0f9-b84275fa9d5b"
+      projectId: "29db80f5-37c0-49d6-82ac-507560f16c71"
     },
   },
 });
