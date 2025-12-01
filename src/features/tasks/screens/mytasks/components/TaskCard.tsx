@@ -1,11 +1,22 @@
 import { Task } from '@/src/api/types/tasks';
 import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
-import { useAcceptOffer, useCancelTask, useCompleteTask, useCompleteTaskPayment, useDeleteTask } from '@/src/shared/hooks/useTaskApi';
+import {
+    useAcceptOffer,
+    useCancelTask,
+    useCompleteTask,
+    useCompleteTaskPayment,
+    useCreateCancellationRequest,
+    useDeleteTask,
+    useGetCancellationReasons,
+    useGetCancellationRequest,
+    useRespondToCancellationRequest
+} from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromLocation, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
+import { useAuthStore } from '@/src/store/auth-task-store';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface TaskCardProps {
@@ -24,13 +35,19 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   // Use current user's location for currency auto-detection
   const { countryInfo } = useLocationCountry();
   
-  const [showCancellationModal, setShowCancellationModal] = useState(false);
+  // Get current user from auth store
+  const { user: currentUser } = useAuthStore();
+  
+  
   const [showPosterCancelModal, setShowPosterCancelModal] = useState(false);
+  const [showTaskerCancelModal, setShowTaskerCancelModal] = useState(false);
+  const [showCancelRequestModal, setShowCancelRequestModal] = useState(false); // NEW: Post-payment cancellation request modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showOffersModal, setShowOffersModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [selectedCancelReason, setSelectedCancelReason] = useState<number | null>(null);
+  const [selectedCancelReasonData, setSelectedCancelReasonData] = useState<any | null>(null);
   
   // Debug logging for offer data
   console.log(`💳 TaskCard [${task._id}] offer data:`, {
@@ -47,10 +64,115 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   // API hooks
   const deleteTaskMutation = useDeleteTask();
-  const cancelTaskMutation = useCancelTask();
+  const cancelTaskMutation = useCancelTask(); // Legacy: Pre-payment cancellation
+  const createCancellationRequestMutation = useCreateCancellationRequest(); // NEW: Post-payment cancellation request
+  const respondToCancellationRequestMutation = useRespondToCancellationRequest(); // NEW: Respond to request
   const acceptOfferMutation = useAcceptOffer();
   const completeTaskMutation = useCompleteTask();
   const completeTaskPaymentMutation = useCompleteTaskPayment();
+  
+  // Check if there's a pending cancellation request for this task (only for assigned/accepted/completed/cancelled tasks)
+  const isPostPaymentTask = status === 'accepted' || status === 'assigned' || status === 'completed';
+  const shouldFetchCancellationRequest = isPostPaymentTask || status === 'cancelled';
+  const { data: cancellationRequestData, refetch: refetchCancellationRequest } = useGetCancellationRequest(
+    task._id, 
+    shouldFetchCancellationRequest // Fetch for post-payment tasks AND cancelled tasks
+  );
+  const pendingCancellationRequest = cancellationRequestData?.data;
+  
+  // Enhanced logging for cancelled tasks
+  if (status === 'cancelled') {
+    console.log('🔍 CANCELLED TASK - Cancellation Request Details:', {
+      taskId: task._id.substring(0, 8),
+      taskTitle: task.title.substring(0, 30),
+      status,
+      shouldFetch: shouldFetchCancellationRequest,
+      queryData: cancellationRequestData,
+      hasCancellationRequest: !!pendingCancellationRequest,
+      requestStatus: pendingCancellationRequest?.status,
+      requestedBy: pendingCancellationRequest?.requestedBy,
+      requestedById: typeof pendingCancellationRequest?.requestedBy === 'string' 
+        ? pendingCancellationRequest.requestedBy 
+        : pendingCancellationRequest?.requestedBy?._id,
+      currentUserId: currentUser?._id || currentUser?.id,
+      taskCreatedById: task.createdBy?._id,
+      reason: pendingCancellationRequest?.reason
+    });
+  }
+  
+  console.log('🔍 Cancellation Request Query:', {
+    taskId: task._id.substring(0, 8),
+    taskTitle: task.title.substring(0, 30),
+    status,
+    isPostPaymentTask,
+    shouldFetch: shouldFetchCancellationRequest,
+    hasCancellationRequest: !!pendingCancellationRequest,
+    requestStatus: pendingCancellationRequest?.status,
+    requestedBy: pendingCancellationRequest?.requestedBy,
+    currentUserId: currentUser?._id || currentUser?.id,
+    taskCreatedById: task.createdBy?._id
+  });
+  
+  // Fetch cancellation reasons based on user role
+  const cancellationType = userRole === 'Poster' ? 'poster' : 'tasker';
+  const { data: cancellationReasonsData, isLoading: loadingReasons } = useGetCancellationReasons(cancellationType);
+  
+  // Extract reasons array from API response
+  const cancellationReasons = cancellationReasonsData?.data || [];
+  
+  console.log(`📋 Cancellation reasons for ${cancellationType}:`, {
+    count: cancellationReasons.length,
+    reasons: cancellationReasons.map((r: any) => r.reason)
+  });
+
+  // Auto-show cancellation request modal when there's a pending request from the other party
+  useEffect(() => {
+    if (pendingCancellationRequest && pendingCancellationRequest.status === 'pending') {
+      console.log('🔍 Checking pending cancellation request:', {
+        requestId: pendingCancellationRequest._id,
+        requestedBy: pendingCancellationRequest.requestedBy,
+        requestedById: pendingCancellationRequest.requestedBy?._id,
+        currentUserId: currentUser?._id || currentUser?.id,
+        taskCreatedBy: task.createdBy?._id,
+        userRole,
+        status: pendingCancellationRequest.status,
+        reason: pendingCancellationRequest.reason
+      });
+      
+      // Get the ID of who requested the cancellation
+      const requesterId = typeof pendingCancellationRequest.requestedBy === 'string' 
+        ? pendingCancellationRequest.requestedBy 
+        : pendingCancellationRequest.requestedBy?._id;
+      
+      // Get current user's ID
+      const currentUserId = currentUser?._id || currentUser?.id;
+      
+      if (!currentUserId) {
+        console.warn('⚠️ No current user ID found, cannot determine if modal should show');
+        return;
+      }
+      
+      // Only show modal if the request was made by the OTHER party (not current user)
+      const requestedByCurrentUser = requesterId === currentUserId;
+      
+      console.log('🔍 Modal display logic:', {
+        requesterId,
+        currentUserId,
+        requestedByCurrentUser,
+        userRole,
+        shouldShowModal: !requestedByCurrentUser
+      });
+      
+      if (!requestedByCurrentUser) {
+        console.log('🔔 Pending cancellation request from OTHER party detected, showing modal');
+        setShowCancelRequestModal(true);
+      } else {
+        console.log('ℹ️ Current user made the request, not showing modal');
+      }
+    } else if (pendingCancellationRequest) {
+      console.log('ℹ️ Cancellation request exists but status is not pending:', pendingCancellationRequest.status);
+    }
+  }, [pendingCancellationRequest, currentUser, userRole, task.createdBy]);
 
   // Debouncing helper function to prevent multiple rapid clicks
   const withDebounce = useCallback((callback: () => void, delay: number = 300) => {
@@ -67,6 +189,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const isValidMongoId = useCallback((id: string): boolean => {
     return /^[0-9a-fA-F]{24}$/.test(id);
   }, []);
+
 
   const handleMarkAsCompleted = useCallback(async () => {
     if (completeTaskMutation.isPending || completeTaskPaymentMutation.isPending || isProcessing) {
@@ -253,19 +376,31 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     }
     
     console.log('❌ Handling cancel task:', task._id);
+    console.log('   Task status:', status);
+    console.log('   User role:', userRole);
+    console.log('   Is post-payment task:', isPostPaymentTask);
     
-    // Check if this is a Poster cancelling their own posted task
-    if (userRole === 'Poster' && (status === 'open' || status === 'posted' || !status)) {
-      setShowPosterCancelModal(true);
+    // Check if this is a post-payment task (accepted/assigned/completed)
+    // These require cancellation REQUEST flow (needs other party's approval)
+    if (isPostPaymentTask) {
+      console.log('📝 Post-payment task - showing cancellation REQUEST modal');
+      // Show the appropriate modal for creating a cancellation request
+      if (userRole === 'Poster') {
+        setShowPosterCancelModal(true);
+      } else {
+        setShowTaskerCancelModal(true);
+      }
     } else {
-      // For Tasker role or other cases
-      console.log('❌ Cancel task:', task._id);
-      // TODO: API call to cancel task
-      if (onTaskCancelled) {
-        onTaskCancelled(task._id);
+      // Pre-payment task (open/posted) - use legacy direct cancellation
+      console.log('❌ Pre-payment task - showing direct cancellation modal');
+      if (userRole === 'Poster' && (status === 'open' || status === 'posted' || !status)) {
+        setShowPosterCancelModal(true);
+      } else {
+        console.log('❌ Tasker cancelling task:', task._id);
+        setShowTaskerCancelModal(true);
       }
     }
-  }, [userRole, status, task._id, onTaskCancelled, isProcessing, isValidMongoId]);
+  }, [userRole, status, task._id, isProcessing, isValidMongoId, isPostPaymentTask]);
 
   const handleDeleteTask = useCallback(() => {
     console.log('🔥 Delete button touched!'); // Debug log
@@ -383,51 +518,84 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   }, [task._id, task.status, task.title, deleteTaskMutation, onTaskDeleted, isProcessing, isValidMongoId]);
 
   const handleConfirmPosterCancel = async () => {
-    if (selectedCancelReason === null) {
+    if (selectedCancelReason === null || !selectedCancelReasonData) {
       Alert.alert('Reason Required', 'Please select a reason for cancelling this task.');
       return;
     }
     
-    if (cancelTaskMutation.isPending || isProcessing) {
+    if (cancelTaskMutation.isPending || createCancellationRequestMutation.isPending || isProcessing) {
       console.log('🛡️ Cancel operation already in progress');
       return;
     }
     
     try {
       setIsProcessing(true);
-      const reasonText = cancelReasons[selectedCancelReason];
+      const reasonText = selectedCancelReasonData.reason;
+      const reasonId = selectedCancelReasonData._id;
+      
       console.log('❌ Poster cancelling task:', task._id);
       console.log('   Reason:', reasonText);
-      console.log('   Reason Index:', selectedCancelReason);
+      console.log('   Reason ID:', reasonId);
+      console.log('   Is post-payment task:', isPostPaymentTask);
       
-      // Call the API to cancel the task
-      await cancelTaskMutation.mutateAsync(task._id);
-      
-      console.log('✅ Task cancelled successfully via API');
-      
-      // Close modal and reset state
-      setShowPosterCancelModal(false);
-      setSelectedCancelReason(null);
-      
-      // Notify parent component to refresh task list
-      if (onTaskCancelled) {
-        onTaskCancelled(task._id);
+      // Check if this is a post-payment task (requires cancellation request)
+      if (isPostPaymentTask) {
+        console.log('📝 Creating cancellation REQUEST for post-payment task');
+        await createCancellationRequestMutation.mutateAsync({ 
+          taskId: task._id,
+          reason: reasonText
+        });
+        
+        console.log('✅ Cancellation request created successfully');
+        
+        // Close modal and reset state
+        setShowPosterCancelModal(false);
+        setSelectedCancelReason(null);
+        setSelectedCancelReasonData(null);
+        
+        // Show success message
+        Alert.alert(
+          'Cancellation Request Sent',
+          'Your cancellation request has been sent to the Tasker. The task will be cancelled if they approve.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        // Pre-payment task - use legacy direct cancellation
+        console.log('❌ Direct cancellation for pre-payment task');
+        await cancelTaskMutation.mutateAsync({ 
+          taskId: task._id,
+          reason: reasonText,
+          reasonId: reasonId
+        });
+        
+        console.log('✅ Task cancelled successfully via API');
+        
+        // Close modal and reset state
+        setShowPosterCancelModal(false);
+        setSelectedCancelReason(null);
+        setSelectedCancelReasonData(null);
+        
+        // Notify parent component to refresh task list
+        if (onTaskCancelled) {
+          onTaskCancelled(task._id);
+        }
+        
+        // Show success message
+        Alert.alert(
+          'Task Cancelled',
+          'Your task has been cancelled successfully and moved to the Cancelled tab.',
+          [{ text: 'OK' }]
+        );
       }
       
-      // Show success message
-      Alert.alert(
-        'Task Cancelled',
-        'Your task has been cancelled successfully and moved to the Cancelled tab.',
-        [{ text: 'OK' }]
-      );
-      
-      console.log('✅ Task moved to Cancelled tab');
+      console.log('✅ Cancellation completed');
     } catch (error: any) {
       console.error('❌ Error cancelling task:', error);
       
       // Close modal on error
       setShowPosterCancelModal(false);
       setSelectedCancelReason(null);
+      setSelectedCancelReasonData(null);
       
       // Show error message to user
       let errorMessage = 'Failed to cancel task. Please try again.';
@@ -455,24 +623,213 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     }
   };
 
-  const cancelReasons = [
-    'The MyToDoo task is not longer needed',
-    'The Tasker did not communicate in a timely manner.',
-    'The tasker did not show up.',
-    'The tasker did not have the right tools or the right skills for the job.',
-    'Could not agree on a date and time that was convenient to complete the job.',
-  ];
-
-  const handleAcceptCancellation = () => {
-    console.log('Accept cancellation:', task._id);
-    // TODO: API call to accept cancellation
-    setShowCancellationModal(false);
+  const handleConfirmTaskerCancel = async () => {
+    if (selectedCancelReason === null || !selectedCancelReasonData) {
+      Alert.alert('Reason Required', 'Please select a reason for cancelling this task.');
+      return;
+    }
+    
+    if (cancelTaskMutation.isPending || createCancellationRequestMutation.isPending || isProcessing) {
+      console.log('🛡️ Cancel operation already in progress');
+      return;
+    }
+    
+    try {
+      setIsProcessing(true);
+      const reasonText = selectedCancelReasonData.reason;
+      const reasonId = selectedCancelReasonData._id;
+      
+      console.log('❌ Tasker cancelling task:', task._id);
+      console.log('   Is post-payment task:', isPostPaymentTask);
+      console.log('   Reason:', reasonText);
+      console.log('   Reason ID:', reasonId);
+      console.log('   Reason Index:', selectedCancelReason);
+      
+      if (isPostPaymentTask) {
+        // Post-payment task - create cancellation REQUEST
+        console.log('📤 Creating cancellation request (post-payment task)');
+        await createCancellationRequestMutation.mutateAsync({ 
+          taskId: task._id,
+          reason: reasonText
+        });
+        
+        console.log('✅ Cancellation request created successfully');
+        
+        // Close modal and reset state
+        setShowTaskerCancelModal(false);
+        setSelectedCancelReason(null);
+        setSelectedCancelReasonData(null);
+        
+        // Notify parent component
+        if (onTaskCancelled) {
+          onTaskCancelled(task._id);
+        }
+        
+        // Show success message for REQUEST
+        Alert.alert(
+          'Cancellation Request Sent',
+          'Your cancellation request has been sent to the Poster for approval.',
+          [{ text: 'OK' }]
+        );
+        
+        console.log('✅ Cancellation request sent to Poster');
+      } else {
+        // Pre-payment task - direct cancellation
+        console.log('❌ Direct task cancellation (pre-payment task)');
+        await cancelTaskMutation.mutateAsync({ 
+          taskId: task._id,
+          reason: reasonText,
+          reasonId: reasonId
+        });
+        
+        console.log('✅ Task cancelled successfully via API');
+        
+        // Close modal and reset state
+        setShowTaskerCancelModal(false);
+        setSelectedCancelReason(null);
+        setSelectedCancelReasonData(null);
+        
+        // Notify parent component
+        if (onTaskCancelled) {
+          onTaskCancelled(task._id);
+        }
+        
+        // Show success message for DIRECT CANCEL
+        Alert.alert(
+          'Task Cancelled',
+          'You have cancelled this task successfully. It has been moved to the Cancelled tab.',
+          [{ text: 'OK' }]
+        );
+        
+        console.log('✅ Task moved to Cancelled tab');
+      }
+    } catch (error: any) {
+      console.error('❌ Error cancelling task:', error);
+      
+      // Close modal on error
+      setShowTaskerCancelModal(false);
+      setSelectedCancelReason(null);
+      setSelectedCancelReasonData(null);
+      
+      // Show error message to user
+      let errorMessage = isPostPaymentTask 
+        ? 'Failed to send cancellation request. Please try again.'
+        : 'Failed to cancel task. Please try again.';
+      let errorTitle = isPostPaymentTask ? 'Request Failed' : 'Cancellation Failed';
+      
+      if (error?.message?.includes('Authentication') || error?.isAuthError || error?.response?.status === 401) {
+        errorMessage = 'Your session has expired. Please login again to cancel this task.';
+        errorTitle = 'Authentication Required';
+      } else if (error?.message?.includes('Network') || error?.code === 'NETWORK_ERROR') {
+        errorMessage = 'Network error. Please check your internet connection and try again.';
+        errorTitle = 'Connection Error';
+      } else if (error?.response?.status === 404) {
+        errorMessage = 'This task was not found. It may have already been cancelled or deleted.';
+        errorTitle = 'Task Not Found';
+      } else if (error?.response?.status === 403) {
+        errorMessage = 'You don\'t have permission to cancel this task.';
+        errorTitle = 'Permission Denied';
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleRejectCancellation = () => {
-    console.log('Reject cancellation:', task._id);
-    // TODO: API call to reject cancellation
-    setShowCancellationModal(false);
+  const handleAcceptCancellation = async () => {
+    if (!pendingCancellationRequest?._id) {
+      console.warn('⚠️ No pending cancellation request found');
+      setShowCancelRequestModal(false);
+      return;
+    }
+
+    if (respondToCancellationRequestMutation.isPending) {
+      console.log('🛡️ Response already in progress');
+      return;
+    }
+
+    try {
+      console.log('✅ Accepting cancellation request:', pendingCancellationRequest._id);
+      
+      await respondToCancellationRequestMutation.mutateAsync({
+        requestId: pendingCancellationRequest._id,
+        action: 'accept'
+      });
+
+      console.log('✅ Cancellation request accepted successfully');
+
+      // Close modal
+      setShowCancelRequestModal(false);
+
+      // Notify parent component
+      if (onTaskCancelled) {
+        onTaskCancelled(task._id);
+      }
+
+      // Show success message
+      Alert.alert(
+        'Cancellation Accepted',
+        'The task has been cancelled successfully.',
+        [{ text: 'OK' }]
+      );
+    } catch (error: any) {
+      console.error('❌ Error accepting cancellation:', error);
+
+      // Show error message
+      let errorMessage = 'Failed to accept cancellation. Please try again.';
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      Alert.alert('Error', errorMessage, [{ text: 'OK' }]);
+    }
+  };
+
+  const handleRejectCancellation = async () => {
+    if (!pendingCancellationRequest?._id) {
+      console.warn('⚠️ No pending cancellation request found');
+      setShowCancelRequestModal(false);
+      return;
+    }
+
+    if (respondToCancellationRequestMutation.isPending) {
+      console.log('🛡️ Response already in progress');
+      return;
+    }
+
+    try {
+      console.log('❌ Rejecting cancellation request:', pendingCancellationRequest._id);
+      
+      await respondToCancellationRequestMutation.mutateAsync({
+        requestId: pendingCancellationRequest._id,
+        action: 'reject'
+      });
+
+      console.log('✅ Cancellation request rejected successfully');
+
+      // Close modal
+      setShowCancelRequestModal(false);
+
+      // Show success message
+      Alert.alert(
+        'Cancellation Rejected',
+        'The cancellation request has been rejected and sent to admin for review.',
+        [{ text: 'OK' }]
+      );
+    } catch (error: any) {
+      console.error('❌ Error rejecting cancellation:', error);
+
+      // Show error message
+      let errorMessage = 'Failed to reject cancellation. Please try again.';
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      Alert.alert('Error', errorMessage, [{ text: 'OK' }]);
+    }
   };
 
   // Accept Offer functionality - now integrates with Stripe payment
@@ -961,54 +1318,46 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         )} 
       </View>
 
-      {/* Cancellation Notice for Cancelled Tab - Only for Tasker role */}
-      {status === 'cancelled' && userRole === 'Tasker' && (
-        <TouchableOpacity 
-          style={styles.cancellationNotice}
-          onPress={() => setShowCancellationModal(true)}
-        >
+      {/* Cancellation Notice for Cancelled Tab */}
+      {status === 'cancelled' && pendingCancellationRequest && (
+        <View style={styles.cancellationNotice}>
+          <MaterialIcons name="info-outline" size={16} color="#dc3545" />
+          <Text style={styles.cancellationText}>
+            {(() => {
+              const requesterId = typeof pendingCancellationRequest.requestedBy === 'string' 
+                ? pendingCancellationRequest.requestedBy 
+                : pendingCancellationRequest.requestedBy?._id;
+              const currentUserId = currentUser?._id || currentUser?.id;
+              const posterId = task.createdBy?._id;
+              
+              if (requesterId === currentUserId) {
+                // Current user requested cancellation
+                return pendingCancellationRequest.status === 'accepted' 
+                  ? 'You requested cancellation - Accepted by other party'
+                  : 'You requested cancellation - Pending approval';
+              } else if (requesterId === posterId) {
+                // Poster requested cancellation
+                return pendingCancellationRequest.status === 'accepted'
+                  ? 'Poster requested cancellation - You accepted'
+                  : 'Poster requested cancellation';
+              } else {
+                // Tasker requested cancellation
+                return pendingCancellationRequest.status === 'accepted'
+                  ? 'Tasker requested cancellation - You accepted'
+                  : 'Tasker requested cancellation';
+              }
+            })()}
+          </Text>
+        </View>
+      )}
+      
+      {/* Fallback for old cancelled tasks without cancellation request data */}
+      {status === 'cancelled' && !pendingCancellationRequest && userRole === 'Tasker' && (
+        <View style={styles.cancellationNotice}>
           <MaterialIcons name="info-outline" size={16} color="#dc3545" />
           <Text style={styles.cancellationText}>Poster cancelled the task</Text>
-        </TouchableOpacity>
-      )}
-
-      {/* Cancellation Confirmation Modal */}
-      <Modal
-        visible={showCancellationModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowCancellationModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <MaterialIcons name="cancel" size={48} color="#dc3545" style={styles.modalIcon} />
-            
-            <Text style={styles.modalTitle}>Task Cancelled</Text>
-            <Text style={styles.modalMessage}>
-              Poster has cancelled the task.
-            </Text>
-            <Text style={styles.modalQuestion}>
-              Do you accept the cancellation?
-            </Text>
-            
-            <View style={styles.modalButtons}>
-              <TouchableOpacity 
-                style={styles.modalNoButton}
-                onPress={handleRejectCancellation}
-              >
-                <Text style={styles.modalNoText}>No</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.modalYesButton}
-                onPress={handleAcceptCancellation}
-              >
-                <Text style={styles.modalYesText}>Yes</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
         </View>
-      </Modal>
+      )}
 
       {/* Poster Cancellation Reason Modal */}
       <Modal
@@ -1046,29 +1395,123 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               </Text>
             </View>
 
-            <View style={styles.reasonsList}>
-              {cancelReasons.map((reason, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.reasonItem,
-                    selectedCancelReason === index && styles.reasonItemSelected
-                  ]}
-                  onPress={() => setSelectedCancelReason(index)}
-                >
-                  <Text style={styles.reasonNumber}>{index + 1}.</Text>
-                  <Text style={styles.reasonText}>{reason}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {loadingReasons ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#1a237e" />
+                <Text style={styles.loadingText}>Loading cancellation reasons...</Text>
+              </View>
+            ) : cancellationReasons.length === 0 ? (
+              <View style={styles.emptyReasonsContainer}>
+                <Text style={styles.emptyReasonsText}>No cancellation reasons available.</Text>
+              </View>
+            ) : (
+              <View style={styles.reasonsList}>
+                {cancellationReasons.map((reasonData: any, index: number) => (
+                  <TouchableOpacity
+                    key={reasonData._id || index}
+                    style={[
+                      styles.reasonItem,
+                      selectedCancelReason === index && styles.reasonItemSelected
+                    ]}
+                    onPress={() => {
+                      setSelectedCancelReason(index);
+                      setSelectedCancelReasonData(reasonData);
+                    }}
+                  >
+                    <Text style={styles.reasonNumber}>{index + 1}.</Text>
+                    <Text style={styles.reasonText}>{reasonData.reason}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
 
             <TouchableOpacity
               style={[
                 styles.confirmCancelButton,
-                selectedCancelReason === null && styles.confirmCancelButtonDisabled
+                (selectedCancelReason === null || loadingReasons) && styles.confirmCancelButtonDisabled
               ]}
               onPress={handleConfirmPosterCancel}
-              disabled={selectedCancelReason === null}
+              disabled={selectedCancelReason === null || loadingReasons}
+            >
+              <Text style={styles.confirmCancelButtonText}>
+                Confirm Cancellation
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Tasker Cancellation Reason Modal */}
+      <Modal
+        visible={showTaskerCancelModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => {
+          setShowTaskerCancelModal(false);
+          setSelectedCancelReason(null);
+          setSelectedCancelReasonData(null);
+        }}
+      >
+        <View style={styles.posterCancelOverlay}>
+          <View style={styles.posterCancelContent}>
+            <View style={styles.posterCancelHeader}>
+              <Text style={styles.posterCancelTitle}>Choose a reason</Text>
+              <TouchableOpacity 
+                onPress={() => {
+                  setShowTaskerCancelModal(false);
+                  setSelectedCancelReason(null);
+                  setSelectedCancelReasonData(null);
+                }}
+                style={styles.closeButton}
+              >
+                <MaterialIcons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.warningContainer}>
+              <MaterialIcons name="info-outline" size={20} color="#ff8c00" />
+              <Text style={styles.warningText}>
+                Please select a reason for cancelling this task.
+              </Text>
+            </View>
+
+            {loadingReasons ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#1a237e" />
+                <Text style={styles.loadingText}>Loading cancellation reasons...</Text>
+              </View>
+            ) : cancellationReasons.length === 0 ? (
+              <View style={styles.emptyReasonsContainer}>
+                <Text style={styles.emptyReasonsText}>No cancellation reasons available.</Text>
+              </View>
+            ) : (
+              <View style={styles.reasonsList}>
+                {cancellationReasons.map((reasonData: any, index: number) => (
+                  <TouchableOpacity
+                    key={reasonData._id || index}
+                    style={[
+                      styles.reasonItem,
+                      selectedCancelReason === index && styles.reasonItemSelected
+                    ]}
+                    onPress={() => {
+                      setSelectedCancelReason(index);
+                      setSelectedCancelReasonData(reasonData);
+                    }}
+                  >
+                    <Text style={styles.reasonNumber}>{index + 1}.</Text>
+                    <Text style={styles.reasonText}>{reasonData.reason}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={[
+                styles.confirmCancelButton,
+                (selectedCancelReason === null || loadingReasons) && styles.confirmCancelButtonDisabled
+              ]}
+              onPress={handleConfirmTaskerCancel}
+              disabled={selectedCancelReason === null || loadingReasons}
             >
               <Text style={styles.confirmCancelButtonText}>
                 Confirm Cancellation
@@ -1114,6 +1557,71 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               >
                 <Text style={styles.deleteConfirmButtonText}>
                   {deleteTaskMutation.isPending ? "Deleting..." : "Delete"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Cancellation Request Response Modal */}
+      <Modal
+        visible={showCancelRequestModal && !!pendingCancellationRequest}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowCancelRequestModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.deleteModalContent}>
+            <View style={styles.deleteIconContainer}>
+              <MaterialIcons name="cancel" size={48} color="#ff8c00" />
+            </View>
+            
+            <Text style={styles.deleteModalTitle}>Cancellation Request</Text>
+            <Text style={styles.deleteModalMessage}>
+              {pendingCancellationRequest?.requestedBy === task.createdBy._id 
+                ? 'The Poster has requested to cancel this task.' 
+                : 'The Tasker has requested to cancel this task.'}
+            </Text>
+
+            {pendingCancellationRequest?.reason && (
+              <View style={styles.warningContainer}>
+                <MaterialIcons name="info-outline" size={20} color="#ff8c00" />
+                <Text style={styles.warningText}>
+                  <Text style={{ fontWeight: 'bold' }}>Reason: </Text>
+                  {pendingCancellationRequest.reason}
+                </Text>
+              </View>
+            )}
+
+            <Text style={styles.deleteModalMessage}>
+              Do you accept the cancellation?
+            </Text>
+            
+            <View style={styles.deleteModalButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.deleteCancelButton,
+                  (!pendingCancellationRequest || respondToCancellationRequestMutation.isPending) && styles.deleteConfirmButtonDisabled
+                ]}
+                onPress={handleRejectCancellation}
+                disabled={!pendingCancellationRequest || respondToCancellationRequestMutation.isPending}
+              >
+                <Text style={styles.deleteCancelButtonText}>
+                  {respondToCancellationRequestMutation.isPending ? 'Processing...' : 'Reject'}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[
+                  styles.deleteConfirmButton,
+                  (!pendingCancellationRequest || respondToCancellationRequestMutation.isPending) && styles.deleteConfirmButtonDisabled
+                ]}
+                onPress={handleAcceptCancellation}
+                disabled={!pendingCancellationRequest || respondToCancellationRequestMutation.isPending}
+              >
+                <Text style={styles.deleteConfirmButtonText}>
+                  {respondToCancellationRequestMutation.isPending ? 'Processing...' : 'Accept'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1573,6 +2081,26 @@ const styles = StyleSheet.create({
   reasonsList: {
     paddingHorizontal: 20,
     paddingTop: 16,
+  },
+  loadingContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#666',
+  },
+  emptyReasonsContainer: {
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  emptyReasonsText: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
   },
   reasonItem: {
     flexDirection: 'row',

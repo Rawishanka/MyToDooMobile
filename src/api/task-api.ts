@@ -10,22 +10,22 @@ import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-  AllOffersResponse,
-  CreateOfferRequest,
-  CreateOfferResponse,
-  CreateTaskRequest,
-  CreateTaskResponse,
-  MyTasksParams,
-  PaymentStatusResponse,
-  SingleTaskResponse,
-  Task,
-  TaskCompletionStatusResponse,
-  TaskFilterParams,
-  TaskFilterResponse,
-  TaskOffersResponse,
-  TaskSearchParams,
-  TasksResponse,
-  UpdateTaskRequest
+    AllOffersResponse,
+    CreateOfferRequest,
+    CreateOfferResponse,
+    CreateTaskRequest,
+    CreateTaskResponse,
+    MyTasksParams,
+    PaymentStatusResponse,
+    SingleTaskResponse,
+    Task,
+    TaskCompletionStatusResponse,
+    TaskFilterParams,
+    TaskFilterResponse,
+    TaskOffersResponse,
+    TaskSearchParams,
+    TasksResponse,
+    UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -2759,15 +2759,42 @@ export async function completeTaskAlt(taskId: string): Promise<{ success: boolea
 }
 
 /**
- * ❌ Cancel Task
+ * 📋 Get Cancellation Reasons
+ * Endpoint: GET /api/tasks/cancellation-reasons?type=poster|tasker
+ * Auth: No - Public endpoint
+ */
+export async function getCancellationReasons(type: 'poster' | 'tasker'): Promise<{ success: boolean; data: any[] }> {
+  const api = getApi();
+  try {
+    console.log("📋 Getting cancellation reasons for:", type);
+    const response = await api.get(`/tasks/cancellation-reasons?type=${type}`);
+    console.log("✅ Get cancellation reasons success:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Get cancellation reasons failed:", error);
+    
+    // Return empty array on failure rather than throwing
+    return { success: false, data: [] };
+  }
+}
+
+/**
+ * ❌ Cancel Task (Legacy - for pre-payment cancellation)
  * Endpoint: PUT /api/tasks/:taskId/cancel
  * Auth: Required
  */
-export async function cancelTask(taskId: string): Promise<{ success: boolean; data: any }> {
+export async function cancelTask(taskId: string, reason?: string, reasonId?: string): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
     console.log("❌ Canceling task:", taskId);
-    const response = await api.put(`/tasks/${taskId}/cancel`);
+    console.log("   Reason:", reason);
+    console.log("   Reason ID:", reasonId);
+    
+    const payload: any = {};
+    if (reason) payload.reason = reason;
+    if (reasonId) payload.reasonId = reasonId;
+    
+    const response = await api.put(`/tasks/${taskId}/cancel`, payload);
     console.log("✅ Cancel task success:", response.data);
     return response.data;
   } catch (error: any) {
@@ -2777,6 +2804,143 @@ export async function cancelTask(taskId: string): Promise<{ success: boolean; da
     if (error?.response?.status === 401 || error?.isAuthError) {
       console.error("❌ Cancel task failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    throw error;
+  }
+}
+
+/**
+ * 📝 Create Cancellation Request (Post-Payment)
+ * Endpoint: POST /api/tasks/:taskId/cancel-request
+ * Auth: Required
+ * Used when: Poster or Tasker wants to cancel a task AFTER payment has been made
+ */
+export async function createCancellationRequest(taskId: string, reason: string): Promise<{ success: boolean; data: any }> {
+  const api = getApi();
+  try {
+    console.log("📝 Creating cancellation request for task:", taskId);
+    console.log("   Reason:", reason);
+    
+    const response = await api.post(`/tasks/${taskId}/cancel-request`, { reason });
+    console.log("✅ Cancellation request created successfully:", response.data);
+    console.log("   Request ID:", response.data?.data?._id);
+    console.log("   Requester ID:", response.data?.data?.requesterId);
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Create cancellation request failed:", error);
+    console.error("   Error status:", error?.response?.status);
+    console.error("   Error message:", error?.response?.data?.message || error?.message);
+    console.error("   Task ID:", taskId);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    // Handle duplicate request errors (400) - may happen if request already exists
+    if (error?.response?.status === 400) {
+      const errorMsg = error?.response?.data?.message || "Bad request";
+      console.error("❌ Bad request (400):", errorMsg);
+      throw new Error(errorMsg);
+    }
+    
+    throw error;
+  }
+}
+
+/**
+ * 🔍 Get Cancellation Request (Post-Payment)
+ * Endpoint: GET /api/tasks/:taskId/cancel-request
+ * Auth: Required
+ * Used when: Check if there's a pending cancellation request for a task
+ */
+export async function getCancellationRequest(taskId: string): Promise<{ success: boolean; data: any }> {
+  const api = getApi();
+  try {
+    console.log("🔍 Getting cancellation request for task:", taskId);
+    
+    const response = await api.get(`/tasks/${taskId}/cancel-request`);
+    console.log("✅ Cancellation request retrieved:", response.data);
+    return response.data;
+  } catch (error: any) {
+    // Suppress console errors for expected 400/404 responses (no cancellation request exists)
+    const isExpectedError = error?.response?.status === 400 || error?.response?.status === 404;
+    
+    if (!isExpectedError) {
+      console.error("❌ Get cancellation request failed:", error);
+      console.error("   Error status:", error?.response?.status);
+      console.error("   Error data:", error?.response?.data);
+      console.error("   Error message:", error?.message);
+      console.error("   Request URL:", `/tasks/${taskId}/cancel-request`);
+    }
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Get cancellation request failed - Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    // Return null data if no cancellation request found (404)
+    if (error?.response?.status === 404) {
+      console.log("ℹ️ No cancellation request found for task (404) - returning null");
+      return { success: true, data: null };
+    }
+    
+    // Handle 400 Bad Request - Backend returns this when no cancellation request exists
+    // This is expected behavior for tasks without pending cancellation requests
+    if (error?.response?.status === 400) {
+      console.log("ℹ️ No cancellation request found for task (400) - returning null");
+      return { success: true, data: null };
+    }
+    
+    throw error;
+  }
+}
+
+/**
+ * ✅ Respond to Cancellation Request (Post-Payment)
+ * Endpoint: PUT /api/tasks/cancel-requests/:requestId/respond
+ * Auth: Required
+ * Used when: Other party accepts or rejects the cancellation request
+ */
+export async function respondToCancellationRequest(requestId: string, action: 'accept' | 'reject'): Promise<{ success: boolean; data: any }> {
+  const api = getApi();
+  try {
+    console.log("✅ Responding to cancellation request:", requestId);
+    console.log("   Action:", action);
+    
+    const response = await api.put(`/tasks/cancel-requests/${requestId}/respond`, { action });
+    console.log("✅ Cancellation request response successful:", response.data);
+    console.log("   Task ID:", response.data?.data?.task?._id);
+    console.log("   New status:", response.data?.data?.task?.status);
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Respond to cancellation request failed:", error);
+    console.error("   Error status:", error?.response?.status);
+    console.error("   Error message:", error?.response?.data?.message || error?.message);
+    console.error("   Request ID:", requestId);
+    console.error("   Action:", action);
+    
+    // Handle authentication errors
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      console.error("❌ Authentication required (401)");
+      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+    }
+    
+    // Handle not found errors (404) - request may have been already processed
+    if (error?.response?.status === 404) {
+      const errorMsg = error?.response?.data?.message || "Cancellation request not found or already processed";
+      console.error("❌ Not found (404):", errorMsg);
+      throw new Error(errorMsg);
+    }
+    
+    // Handle bad request errors (400) - invalid action or request state
+    if (error?.response?.status === 400) {
+      const errorMsg = error?.response?.data?.message || "Invalid request";
+      console.error("❌ Bad request (400):", errorMsg);
+      throw new Error(errorMsg);
     }
     
     throw error;
@@ -3188,7 +3352,11 @@ export const TaskAPI = {
   getTaskCompletionStatus,
   completeTask,
   completeTaskAlt,
-  cancelTask,
+  getCancellationReasons, // NEW: Get cancellation reasons
+  cancelTask, // Legacy: Pre-payment cancellation
+  createCancellationRequest, // NEW: Post-payment cancellation request
+  getCancellationRequest, // NEW: Get pending cancellation request
+  respondToCancellationRequest, // NEW: Accept/Reject cancellation request
   updateTaskStatus,
   acceptTask,
   

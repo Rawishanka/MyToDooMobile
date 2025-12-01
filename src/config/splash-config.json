@@ -1,0 +1,30 @@
+{
+  "splash": {
+    "duration": 3500,
+    "showAnimations": true,
+    "logoSize": {
+      "width": 120,
+      "height": 120
+    },
+    "backgroundColor": "#004aad",
+    "logoBackgroundColor": "#ffffff",
+    "loadingDotsColor": "#ffffff",
+    "floatingElementsEnabled": true,
+    "progressBarEnabled": true
+  },
+  "production": {
+    "splash": {
+      "duration": 2500,
+      "showAnimations": true,
+      "logoSize": {
+        "width": 100,
+        "height": 100
+      },
+      "backgroundColor": "#004aad",
+      "logoBackgroundColor": "#ffffff",
+      "loadingDotsColor": "#ffffff",
+      "floatingElementsEnabled": false,
+      "progressBarEnabled": true
+    }
+  }
+}

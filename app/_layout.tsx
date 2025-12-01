@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from '@/src/shared/AuthProvider';
 import { DeepLinkHandler } from '@/src/shared/components/DeepLinkHandler';
+import ProfessionalSplashScreen from '@/src/shared/components/ProfessionalSplashScreen';
 import { useColorScheme } from '@/src/shared/hooks/useColorScheme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
@@ -46,30 +47,33 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
-  const [appReady, setAppReady] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     const prepareApp = async () => {
       try {
-        // Wait for fonts to load
-        if (loaded) {
-          setAppReady(true);
-          await SplashScreen.hideAsync();
-        }
+        // Hide native splash immediately - our custom splash will show
+        await SplashScreen.hideAsync();
       } catch (e) {
-        console.warn('Error preparing app:', e);
-        setAppReady(true);
+        console.warn('Error hiding splash:', e);
         SplashScreen.hideAsync().catch(() => {});
       }
     };
 
-    if (loaded) {
-      prepareApp();
-    }
-  }, [loaded]);
+    prepareApp();
+  }, []);
 
-  if (!loaded || !appReady) {
-    // Show nothing while loading - splash screen is still visible
+  const handleSplashFinish = () => {
+    setShowSplash(false);
+  };
+
+  // Always show custom splash first
+  if (showSplash) {
+    return <ProfessionalSplashScreen onFinish={handleSplashFinish} duration={3000} />;
+  }
+
+  // After splash, check if fonts are loaded
+  if (!loaded) {
     return null;
   }
 

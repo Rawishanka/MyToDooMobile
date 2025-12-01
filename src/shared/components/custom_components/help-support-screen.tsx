@@ -135,13 +135,15 @@ You can track all payments in Profile → Payment options → Payment history.`
           question: 'What are the tasker fees?',
           answer: `Tasker fees:
 
-- Service fee: 15% of the task price
+- Service fee: Platform service fee applies to each task
 - This covers insurance, payment processing, and platform maintenance
 - You'll see the exact fee before accepting a task
 
-Example: For a $100 task, you receive $85.
+Example: For a $100 task, the service fee will be deducted from your earnings.
 
-Building your reputation can unlock lower fees through our tier system!`
+Building your reputation can unlock lower fees through our tier system! 
+
+Note: Service fee rates are set by platform administrators and may vary.`
         },
         {
           id: 't5',

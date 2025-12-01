@@ -28,6 +28,7 @@ import IDVerificationScreen from './id-verification-screen';
 import InsuranceProtection from './isuranceprotection';
 import NotificationPreferences from './notificationpreferences';
 import PaymentScreensApp from './paymentscreens';
+import ServiceFeeConfigScreen from './service-fee-config';
 import TaskAlerts from './taskalerts';
 
 export default function AccountScreen() {
@@ -280,6 +281,10 @@ export default function AccountScreen() {
     setCurrentScreen('payment');
   };
 
+  const navigateToServiceFeeConfig = () => {
+    setCurrentScreen('service-fee-config');
+  };
+
   const navigateToAccount = () => {
     setCurrentScreen('account');
     // Refresh user profile when returning to account screen
@@ -377,6 +382,11 @@ export default function AccountScreen() {
   // If payment screen is selected, show payment screens
   if (currentScreen === 'payment') {
     return <PaymentScreensApp onBackToAccount={navigateToAccount} />;
+  }
+
+  // If service fee config screen is selected, show service fee configuration (Admin only)
+  if (currentScreen === 'service-fee-config') {
+    return <ServiceFeeConfigScreen onBackToAccount={navigateToAccount} />;
   }
 
   // If account info screen is selected, show account information
@@ -605,6 +615,12 @@ export default function AccountScreen() {
           text="Payment options"
           onPress={navigateToPayment} 
           subtext={undefined}        
+        />
+        <MenuItem 
+          icon={<MaterialIcons name="settings" size={20} color="#0052A2" />}
+          text="Service Fee Configuration"
+          onPress={navigateToServiceFeeConfig} 
+          subtext="Configure platform service fee settings (Admin only)"        
         />
         <MenuItem 
           icon={<Feather name="lock" size={20} color="#0052A2" />}
