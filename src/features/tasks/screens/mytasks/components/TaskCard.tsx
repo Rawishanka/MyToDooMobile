@@ -1127,14 +1127,48 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             <Text style={styles.priceText}>
               {formattedBudgetDisplay}
             </Text>
-            {task.createdBy && (
-              <Image
-                source={{
-                  uri: `https://ui-avatars.com/api/?name=${task.createdBy.firstName}+${task.createdBy.lastName}&background=random`,
-                }}
-                style={styles.userAvatar}
-              />
-            )}
+            {(() => {
+              // Determine which user profile to show based on role and task status
+              let displayUser = null;
+
+              // For Poster viewing their tasks - always show poster (createdBy)
+              if (userRole === 'Poster') {
+                displayUser = task.createdBy;
+              } 
+              // For Tasker viewing tasks
+              else if (userRole === 'Tasker') {
+                // For assigned/in-progress/todo tasks, show the poster (task creator)
+                if (task.status === 'assigned' || task.status === 'in_progress' || 
+                    task.status === 'todo' || task.status === 'in-progress') {
+                  displayUser = task.createdBy;
+                }
+                // For open tasks or tasks with pending offers, show the poster
+                else {
+                  displayUser = task.createdBy;
+                }
+              } 
+              // Default to showing poster
+              else {
+                displayUser = task.createdBy;
+              }
+
+              // Render the profile picture if user exists
+              if (displayUser) {
+                const firstName = displayUser.firstName || 'User';
+                const lastName = displayUser.lastName || '';
+                const profileUri = displayUser.avatar || 
+                                 displayUser.profilePicture ||
+                                 `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=0052A2&color=fff&size=80`;
+                
+                return (
+                  <Image
+                    source={{ uri: profileUri }}
+                    style={styles.userAvatar}
+                  />
+                );
+              }
+              return null;
+            })()}
           </View>
         </View>
 
@@ -1756,19 +1790,25 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                   fullOffer: offer
                 });
                 
+                // Get user data from offer
+                const offerUser = offer.taskTaker || offer.taskTakerId;
+                const firstName = offerUser?.firstName || 'User';
+                const lastName = offerUser?.lastName || '';
+                const profileUri = (offerUser as any)?.avatar || 
+                                 (offerUser as any)?.profilePicture ||
+                                 `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=0052A2&color=fff&size=80`;
+                
                 return (
                 <View style={styles.offerItem}>
                   <View style={styles.offerHeader}>
                     <View style={styles.offerUserInfo}>
                       <Image
-                        source={{
-                          uri: `https://ui-avatars.com/api/?name=${offer.taskTaker?.firstName || offer.taskTakerId?.firstName || 'User'}+${offer.taskTaker?.lastName || offer.taskTakerId?.lastName || ''}&background=random`,
-                        }}
+                        source={{ uri: profileUri }}
                         style={styles.offerAvatar}
                       />
                       <View style={styles.offerUserDetails}>
                         <Text style={styles.offerUserName}>
-                          {offer.taskTaker?.firstName || offer.taskTakerId?.firstName || 'Unknown'} {offer.taskTaker?.lastName || offer.taskTakerId?.lastName || 'User'}
+                          {firstName} {lastName}
                         </Text>
                         <View style={styles.offerRating}>
                           <MaterialIcons name="star" size={16} color="#ffd700" />

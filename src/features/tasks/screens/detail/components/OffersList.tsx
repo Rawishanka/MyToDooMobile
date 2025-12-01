@@ -107,15 +107,22 @@ export const OffersList: React.FC<OffersListProps> = ({
                           `${user.firstName} ${user.lastName || ''}`.trim() : 
                           'Tasker');
         
-        // Get avatar URL - use actual avatar or generate one
-        let avatarUrl = 'https://ui-avatars.com/api/?name=User&background=007AFF&color=fff&size=100';
-        if (user?.avatar) {
-          avatarUrl = user.avatar;
-        } else if (user?.firstName || user?.lastName) {
-          const firstName = user.firstName || '';
-          const lastName = user.lastName || '';
+        // Get avatar URL - check for real profile pictures first
+        const firstName = user?.firstName || 'User';
+        const lastName = user?.lastName || '';
+        let avatarUrl: string;
+        
+        // Priority: 1. Base64 avatar, 2. Profile picture URL, 3. Generated avatar
+        if ((user as any)?.avatar?.startsWith?.('data:')) {
+          avatarUrl = (user as any).avatar; // Base64 image
+        } else if ((user as any)?.avatar && !(user as any).avatar.includes('ui-avatars.com')) {
+          avatarUrl = (user as any).avatar; // URL image from backend
+        } else if ((user as any)?.profilePicture) {
+          avatarUrl = (user as any).profilePicture; // Profile picture URL
+        } else {
+          // Fallback to generated avatar
           const name = `${firstName}+${lastName}`.trim();
-          avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=007AFF&color=fff&size=100&bold=true&rounded=true`;
+          avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0052A2&color=fff&size=100`;
         }
         
         // Get real rating and stats from user object
