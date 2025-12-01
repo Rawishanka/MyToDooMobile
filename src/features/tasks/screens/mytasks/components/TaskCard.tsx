@@ -2,15 +2,15 @@ import { Task } from '@/src/api/types/tasks';
 import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import {
-    useAcceptOffer,
-    useCancelTask,
-    useCompleteTask,
-    useCompleteTaskPayment,
-    useCreateCancellationRequest,
-    useDeleteTask,
-    useGetCancellationReasons,
-    useGetCancellationRequest,
-    useRespondToCancellationRequest
+  useAcceptOffer,
+  useCancelTask,
+  useCompleteTask,
+  useCompleteTaskPayment,
+  useCreateCancellationRequest,
+  useDeleteTask,
+  useGetCancellationReasons,
+  useGetCancellationRequest,
+  useRespondToCancellationRequest
 } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromLocation, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { useAuthStore } from '@/src/store/auth-task-store';
@@ -74,7 +74,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   // Check if there's a pending cancellation request for this task (only for assigned/accepted/completed/cancelled tasks)
   const isPostPaymentTask = status === 'accepted' || status === 'assigned' || status === 'completed' || status === 'todo';
   const shouldFetchCancellationRequest = isPostPaymentTask || status === 'cancelled';
-  const { data: cancellationRequestData, refetch: refetchCancellationRequest } = useGetCancellationRequest(
+  const { data: cancellationRequestData } = useGetCancellationRequest(
     task._id, 
     shouldFetchCancellationRequest // Fetch for post-payment tasks AND cancelled tasks
   );
@@ -356,7 +356,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     } finally {
       setIsProcessing(false);
     }
-  }, [task._id, status, userRole, completeTaskMutation, completeTaskPaymentMutation, onTaskCompleted, isProcessing, isValidMongoId]);
+  }, [task, status, userRole, completeTaskMutation, completeTaskPaymentMutation, onTaskCompleted, isProcessing, isValidMongoId]);
 
   const handleCancelTask = useCallback(() => {
     console.log('🔥 Cancel button touched!'); // Debug log
@@ -748,6 +748,60 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     }
   };
 
+  const handleViewReceipt = useCallback(() => {
+    console.log('📄 Viewing payment receipt for task:', task._id);
+    
+    // Get tasker and poster names
+    const taskerName = (task as any).assignedTo?.firstName 
+      ? `${(task as any).assignedTo.firstName} ${(task as any).assignedTo.lastName || ''}`.trim()
+      : 'Tasker';
+    
+    const posterName = task.createdBy?.firstName
+      ? `${task.createdBy.firstName} ${task.createdBy.lastName || ''}`.trim()
+      : 'Poster';
+    
+    // Get offer details - try multiple sources
+    let offerAmount = task.budget || 0;
+    let currency = task.currency || 'USD';
+    let acceptedDate = task.createdAt;
+    
+    // Try to get accepted offer details
+    if (task.offers && Array.isArray(task.offers)) {
+      const acceptedOffer = task.offers.find(o => o.status === 'accepted');
+      if (acceptedOffer) {
+        offerAmount = acceptedOffer.amount || acceptedOffer.offer?.amount || offerAmount;
+        currency = acceptedOffer.currency || acceptedOffer.offer?.currency || currency;
+        acceptedDate = acceptedOffer.createdAt || acceptedDate;
+      }
+    }
+    
+    // Parse location
+    const parsedLocation = parseLocation(task.location);
+    const taskLocation = parsedLocation?.address || 'Location not specified';
+    
+    // Navigate to receipt screen
+    router.push({
+      pathname: '/payment-receipt',
+      params: {
+        taskId: task._id,
+        taskTitle: task.title,
+        taskLocation: taskLocation,
+        offerAmount: offerAmount.toString(),
+        currency: currency,
+        taskerName: taskerName,
+        posterName: posterName,
+        acceptedDate: acceptedDate,
+        completedDate: task.updatedAt || task.createdAt,
+        paymentId: (task as any).paymentIntentId || task._id,
+        userRole: userRole,
+      }
+    } as any);
+  }, [task, userRole, router]);
+
+
+
+
+
   const handleAcceptCancellation = async () => {
     if (!pendingCancellationRequest?._id) {
       console.warn('⚠️ No pending cancellation request found');
@@ -935,7 +989,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         const parsed = JSON.parse(location);
         console.log('📍 TaskCard: Parsed stringified location:', parsed);
         return parsed;
-      } catch (e) {
+      } catch {
         // If parsing fails, treat it as plain address string
         console.warn('⚠️ TaskCard: Could not parse location string:', location);
         return { address: location, coordinates: {} };
@@ -1140,27 +1194,62 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       {/* Action Buttons - Separate from Card Content */}
       <View style={styles.actionButtons} pointerEvents="box-none">
         {status === 'completed' && userRole === 'Tasker' ? (
-          // Completed tab (Tasker): No buttons
-          null
-        ) : status === 'completed' && userRole === 'Poster' ? (
-          // Completed tab (Poster): Only Delete button
+          // Completed tab (Tasker): View Receipt button
           <TouchableOpacity 
             style={[
-              styles.actionButton, 
-              styles.deleteButton, 
-              (deleteTaskMutation.isPending || isProcessing) && styles.disabledButton
+              styles.actionButton,
+              styles.receiptButton,
+              isProcessing && styles.disabledButton
             ]} 
             activeOpacity={0.6}
             hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            onPress={handleDeleteTask}
-            disabled={deleteTaskMutation.isPending || isProcessing}
+            onPress={handleViewReceipt}
+            disabled={isProcessing}
           >
             <MaterialIcons 
-              name="delete" 
+              name="receipt" 
               size={20} 
-              color={(deleteTaskMutation.isPending || isProcessing) ? "#999" : "#dc3545"} 
+              color={isProcessing ? "#999" : "#007AFF"} 
             />
           </TouchableOpacity>
+        ) : status === 'completed' && userRole === 'Poster' ? (
+          // Completed tab (Poster): View Receipt + Delete button
+          <>
+            <TouchableOpacity 
+              style={[
+                styles.actionButton,
+                styles.receiptButton,
+                isProcessing && styles.disabledButton
+              ]} 
+              activeOpacity={0.6}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              onPress={handleViewReceipt}
+              disabled={isProcessing}
+            >
+              <MaterialIcons 
+                name="receipt" 
+                size={20} 
+                color={isProcessing ? "#999" : "#007AFF"} 
+              />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[
+                styles.actionButton, 
+                styles.deleteButton, 
+                (deleteTaskMutation.isPending || isProcessing) && styles.disabledButton
+              ]} 
+              activeOpacity={0.6}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              onPress={handleDeleteTask}
+              disabled={deleteTaskMutation.isPending || isProcessing}
+            >
+              <MaterialIcons 
+                name="delete" 
+                size={20} 
+                color={(deleteTaskMutation.isPending || isProcessing) ? "#999" : "#dc3545"} 
+              />
+            </TouchableOpacity>
+          </>
         ) : status === 'cancelled' ? (
           // Cancelled tab (Both Tasker and Poster): No buttons at all
           null
@@ -2162,6 +2251,9 @@ const styles = StyleSheet.create({
   deleteButton: {
     // Additional styles for delete button if needed
   },
+  receiptButton: {
+    backgroundColor: '#e3f2fd',
+  },
   deleteModalContent: {
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -2375,3 +2467,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+
