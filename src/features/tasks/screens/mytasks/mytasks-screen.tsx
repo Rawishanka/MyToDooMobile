@@ -214,73 +214,7 @@ export default function MyTasksScreen() {
     refetch: refetchAllTasks,
   } = useGetAllTasks();
 
-  // Dummy data for Cancelled tab (Tasker role)
-  const dummyCancelledTasks: Task[] = React.useMemo(() => [
-    {
-      _id: 'cancelled-1',
-      title: 'House Cleaning Service',
-      categories: ['Cleaning'],
-      dateType: 'specific',
-      dateRange: {
-        start: '2025-11-05T00:00:00.000Z',
-        end: '2025-11-05T23:59:59.999Z',
-      },
-      time: 'Morning',
-      location: {
-        address: 'Kandy',
-        coordinates: {},
-      },
-      details: 'Deep cleaning required for 3 bedroom house',
-      budget: 3500,
-      currency: 'LKR',
-      images: [],
-      status: 'cancelled',
-      createdBy: {
-        _id: 'poster-1',
-        firstName: 'Sarah',
-        lastName: 'Johnson',
-        rating: 4.2,
-        email: 'sarah@example.com',
-      },
-      statusHistory: [],
-      createdAt: '2025-11-01T10:00:00.000Z',
-      updatedAt: '2025-11-04T10:00:00.000Z',
-      __v: 0,
-      formattedBudget: 'LKR 3500',
-    },
-    {
-      _id: 'cancelled-2',
-      title: 'Furniture Assembly',
-      categories: ['Handyman'],
-      dateType: 'specific',
-      dateRange: {
-        start: '2025-11-08T00:00:00.000Z',
-        end: '2025-11-08T23:59:59.999Z',
-      },
-      time: 'Afternoon',
-      location: {
-        address: 'Galle',
-        coordinates: {},
-      },
-      details: 'Need help assembling IKEA furniture - wardrobe and bed frame',
-      budget: 2800,
-      currency: 'LKR',
-      images: [],
-      status: 'cancelled',
-      createdBy: {
-        _id: 'poster-2',
-        firstName: 'Michael',
-        lastName: 'Brown',
-        rating: 4.6,
-        email: 'michael@example.com',
-      },
-      statusHistory: [],
-      createdAt: '2025-11-02T10:00:00.000Z',
-      updatedAt: '2025-11-06T10:00:00.000Z',
-      __v: 0,
-      formattedBudget: 'LKR 2800',
-    },
-  ], []);
+  // Removed hardcoded dummy cancelled tasks - only show real user cancelled tasks from API
 
   // Note: dummyAcceptedOffers removed - using real data from API
 
@@ -512,14 +446,23 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
         // IMPORTANT: After payment, backend sets status to "todo", "assigned", or "in_progress"
         // and assigns the task to the tasker (assignedTo field set, userRole = "assignee")
         // We show tasks that are ready to work on (not completed, overdue, or cancelled)
+        // NOTE: Tasks with pending cancellation requests keep status until approved
         const isActiveTask = task.status === 'todo' || 
                             task.status === 'assigned' || 
-                            task.status === 'in_progress';
+                            task.status === 'in_progress' ||
+                            task.status === 'pending_cancellation' || // Backend might add this
+                            task.status === 'awaiting_cancellation'; // Backend might add this
+        
+        // Alternative: Exclude only completed, cancelled, overdue, and open tasks
+        const isExcluded = task.status === 'completed' || 
+                          task.status === 'cancelled' || 
+                          task.status === 'overdue' ||
+                          task.status === 'open';
         
         // Verify task is actually assigned to current user (userRole should be 'assignee')
         const isAssignedToMe = (task as any).userRole === 'assignee';
         
-        const shouldInclude = isActiveTask && isAssignedToMe;
+        const shouldInclude = !isExcluded && isAssignedToMe;
         
         if (taskerAssignedTasks.length <= 10) {
           console.log('🎯 Tasker Todoo Tasks Filter (from my-tasks?role=tasker):', {
@@ -585,12 +528,8 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       
       const sortedCancelledTasks = sortByCreatedDate(uniqueCancelledTasks);
       
-      // Use real cancelled tasks if available, otherwise use dummy data
-      const baseCancelledTasks = sortedCancelledTasks.length > 0 
-        ? sortedCancelledTasks 
-        : dummyCancelledTasks;
-      
-      const finalCancelledTasks = filterBySearch(baseCancelledTasks);
+      // Only show real cancelled tasks from API - no dummy data
+      const finalCancelledTasks = filterBySearch(sortedCancelledTasks);
       
       console.log('📋 Tasker Cancelled Tasks:', {
         fromAssigned: cancelledTasksFromAssigned.length,
@@ -613,9 +552,11 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
     // For Poster role - filter based on tasks posted by current user
     const openTasks = sortByCreatedDate(
       filterBySearch(
-        allTasks.filter((task: Task) => 
-          task.status === 'open' || task.status === 'active'
-        )
+        allTasks.filter((task: Task) => {
+          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+          const isOpenStatus = task.status === 'open' || task.status === 'active';
+          return isUsersTask && isOpenStatus;
+        })
       )
     );
     
@@ -630,103 +571,93 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
     
     const todoTasks = sortByCreatedDate(
       filterBySearch(
-        allTasks.filter((task: Task) => 
-          task.status === 'assigned' || task.status === 'in_progress'
-        )
+        allTasks.filter((task: Task) => {
+          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+          const isTodoStatus = task.status === 'assigned' || task.status === 'in_progress';
+          return isUsersTask && isTodoStatus;
+        })
       )
     );
     
     const completedTasks = sortByCreatedDate(
       filterBySearch(
-        allTasks.filter((task: Task) => 
-          task.status === 'completed'
-        )
+        allTasks.filter((task: Task) => {
+          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+          return isUsersTask && task.status === 'completed';
+        })
       )
     );
     
     const overdueTasks = sortByCreatedDate(
       filterBySearch(
-        allTasks.filter((task: Task) => 
-          task.status === 'overdue'
-        )
+        allTasks.filter((task: Task) => {
+          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+          return isUsersTask && task.status === 'overdue';
+        })
       )
     );
     
     const cancelledTasks = sortByCreatedDate(
       filterBySearch(
-        allTasks.filter((task: Task) => 
-          task.status === 'cancelled'
-        )
+        allTasks.filter((task: Task) => {
+          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+          return isUsersTask && task.status === 'cancelled';
+        })
       )
     );
     
-    // If no cancelled tasks from API, use dummy data
-    const baseCancelledTasksForPoster = cancelledTasks.length > 0 ? cancelledTasks : dummyCancelledTasks;
-    const finalCancelledTasks = filterBySearch(baseCancelledTasksForPoster);
+    // Only show real cancelled tasks from API - no hardcoded dummy data
+    const finalCancelledTasks = filterBySearch(cancelledTasks);
 
     // For Poster role - tasks they've posted (sorted by creation date, newest first)
+    // Posted tab shows only PRE-PAYMENT tasks that are waiting for offers
+    // Once payment is made, task moves to Accepted tab with status: assigned/accepted/todo/in_progress
     const postedTasks = sortByCreatedDate(
       filterBySearch(
-        allTasks.filter((task: Task) => 
-          task.status === 'open' || task.status === 'active' || task.status === 'assigned'
-        )
+        allTasks.filter((task: Task) => {
+          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+          // Only show open/active tasks (pre-payment) - NOT assigned (post-payment)
+          const isPostedStatus = task.status === 'open' || task.status === 'active';
+          return isUsersTask && isPostedStatus;
+        })
       )
     );
 
-    // For Poster's Accepted tab - find tasks they created that have accepted offers
-    // After payment, task status becomes 'assigned', 'in_progress', 'todo', or 'accepted'
-    // These tasks should show the accepted tasker who will complete the work
-    const acceptedTasks = allTasks.filter((task: Task) => {
-      // Check if task is in a post-acceptance state
-      const isAcceptedStatus = task.status === 'assigned' || 
-                              task.status === 'in_progress' || 
-                              task.status === 'todo' ||
-                              task.status === 'accepted';
-      
-      // Must be created by current user (Poster)
-      const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
-      
-      // Additional check: Has acceptedOffer or assignedTo field
-      const hasAcceptedOffer = !!(task as any).acceptedOffer || !!(task as any).assignedTo;
-      
-      const shouldInclude = isAcceptedStatus && isUsersTask;
-      
-      if (allTasks.length <= 10) { // Log for debugging
-        console.log(`🔍 Poster Accepted Tab Filter:`, {
-          taskId: task._id,
-          title: task.title,
-          status: task.status,
-          createdBy: task.createdBy?._id,
-          currentUserId,
-          isAcceptedStatus,
-          isUsersTask,
-          hasAcceptedOffer,
-          hasAssignedTo: !!(task as any).assignedTo,
-          shouldInclude
-        });
-      }
-      
-      return shouldInclude;
-    });
+    // For Poster's Accepted tab - tasks they created that have been accepted/assigned
+    // After payment, task status changes to 'assigned', 'in_progress', 'todo', or 'accepted'
+    // These tasks should show in the Accepted tab until work is completed
+    // NOTE: Tasks with pending cancellation requests keep their original status until approved
+    // Only when cancellation is ACCEPTED does status change to 'cancelled' (moves to Cancelled tab)
+    const acceptedTasks = sortByCreatedDate(
+      filterBySearch(
+        allTasks.filter((task: Task) => {
+          // Check if task is in a post-acceptance state
+          // Include ALL post-payment statuses to ensure tasks don't disappear
+          const isAcceptedStatus = task.status === 'assigned' || 
+                                  task.status === 'in_progress' || 
+                                  task.status === 'todo' ||
+                                  task.status === 'accepted' ||
+                                  task.status === 'pending_cancellation' || // Backend might add this
+                                  task.status === 'awaiting_cancellation'; // Backend might add this
+          
+          // Must be created by current user (Poster)
+          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+          
+          // CRITICAL: Exclude only completed, cancelled, and overdue tasks
+          // Everything else should stay in Accepted tab
+          const isExcluded = task.status === 'completed' || 
+                            task.status === 'cancelled' || 
+                            task.status === 'overdue' ||
+                            task.status === 'open'; // Open = pre-payment, goes in Posted tab
+          
+          return isUsersTask && !isExcluded;
+        })
+      )
+    );
     
-    console.log('🎯 Processing Accepted Tasks for Poster:', {
-      totalTasks: allTasks.length,
-      acceptedTasksCount: acceptedTasks.length,
-      acceptedTasksSample: acceptedTasks.slice(0, 2).map((task: any) => ({
-        taskId: task._id,
-        title: task.title,
-        status: task.status,
-        hasAcceptedOffer: !!task.acceptedOffer,
-        hasAssignedTo: !!task.assignedTo,
-        paymentIntentId: task.paymentIntentId
-      }))
-    });
-    
-    const finalAcceptedTasks = sortByCreatedDate(filterBySearch(acceptedTasks));
-    
-    console.log('✅ Final Accepted Tasks for Poster:', {
-      count: finalAcceptedTasks.length,
-      tasks: finalAcceptedTasks.map(task => ({
+    console.log('✅ Poster Accepted Tasks (from myTasks API):', {
+      count: acceptedTasks.length,
+      tasks: acceptedTasks.map(task => ({
         id: task._id,
         title: task.title,
         status: task.status
@@ -740,9 +671,9 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       overdueTasks,
       cancelledTasks: finalCancelledTasks,
       postedTasks,
-      acceptedTasks: finalAcceptedTasks,
+      acceptedTasks: acceptedTasks,
     };
-  }, [allTasks, taskerAssignedTasks, myOffers, myOffersMap, dummyCancelledTasks, userRole, searchText, currentUserId]);
+  }, [allTasks, taskerAssignedTasks, myOffers, myOffersMap, userRole, searchText, currentUserId]);
 
   // Debug log categorized data counts
   console.log(`📋 Categorized Data for ${userRole}:`, {

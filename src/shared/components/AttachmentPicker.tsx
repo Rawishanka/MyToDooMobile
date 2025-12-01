@@ -1,3 +1,4 @@
+import { OCRAPI } from '@/src/api/ocr-api';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
@@ -58,6 +59,7 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission Denied', 'We need permission to access your photos to attach images.');
+        setIsProcessing(false);
         return;
       }
 
@@ -71,6 +73,23 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
 
       if (!result.canceled && result.assets?.[0]) {
         const asset = result.assets[0];
+        
+        // ✅ OCR: Validate image for sensitive data
+        console.log('🔍 Analyzing image for sensitive data...');
+        const validation = await OCRAPI.validateImageForUpload(asset.uri);
+        
+        if (!validation.isValid) {
+          console.warn('❌ Image contains sensitive data:', validation.reason);
+          Alert.alert(
+            'Sensitive Data Detected',
+            `This image contains sensitive information and cannot be uploaded:\n\n${validation.reason}\n\nPlease remove phone numbers and addresses before uploading.`,
+            [{ text: 'OK' }]
+          );
+          setIsProcessing(false);
+          return;
+        }
+        
+        console.log('✅ Image passed OCR validation');
         const newAttachment: AttachmentItem = {
           id: Date.now().toString(),
           uri: asset.uri,
@@ -95,6 +114,7 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission Denied', 'We need permission to access your camera to take photos.');
+        setIsProcessing(false);
         return;
       }
 
@@ -106,6 +126,23 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
 
       if (!result.canceled && result.assets?.[0]) {
         const asset = result.assets[0];
+        
+        // ✅ OCR: Validate image for sensitive data
+        console.log('🔍 Analyzing photo for sensitive data...');
+        const validation = await OCRAPI.validateImageForUpload(asset.uri);
+        
+        if (!validation.isValid) {
+          console.warn('❌ Photo contains sensitive data:', validation.reason);
+          Alert.alert(
+            'Sensitive Data Detected',
+            `This photo contains sensitive information and cannot be uploaded:\n\n${validation.reason}\n\nPlease remove phone numbers and addresses before uploading.`,
+            [{ text: 'OK' }]
+          );
+          setIsProcessing(false);
+          return;
+        }
+        
+        console.log('✅ Photo passed OCR validation');
         const newAttachment: AttachmentItem = {
           id: Date.now().toString(),
           uri: asset.uri,

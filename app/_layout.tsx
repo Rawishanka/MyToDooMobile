@@ -33,7 +33,8 @@ const queryClient = new QueryClient({
         // Retry other errors up to 2 times
         return failureCount < 2;
       },
-      refetchOnWindowFocus: false, // Prevent unnecessary refetches
+      refetchOnWindowFocus: false, // Prevent refetch when returning to app - preserves screen state
+      refetchOnMount: false, // Prevent refetch on component mount - preserves screen state
       staleTime: 5 * 60 * 1000, // 5 minutes - data considered fresh for 5 minutes
     },
     mutations: {

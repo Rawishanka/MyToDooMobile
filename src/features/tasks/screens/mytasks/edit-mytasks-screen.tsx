@@ -6,7 +6,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -23,12 +23,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Import smart image validation (same as Create Task)
-import {
-    SmartValidationResult,
-    TaskContext,
-    validateImageSmart
-} from '@/src/services/smartImageValidator';
+// ✅ NEW: Use OCR API for sensitive data detection
+import { OCRAPI } from '@/src/api/ocr-api';
 
 interface EditTaskScreenProps {
   route?: {
@@ -189,9 +185,6 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   // Keyboard visibility
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
-  // Smart validation states (same as Create Task)
-  const [validationResults, setValidationResults] = useState<Map<string, SmartValidationResult>>(new Map());
-
   // Fetch categories
   const { data: categoriesResponse, isLoading: loadingCategories } = useGetCategories();
   const categories = categoriesResponse?.data || [];
@@ -334,76 +327,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     }
   }, [description]);
 
-  // Helper function to build task context - MEMOIZED
-  const getTaskContext = useCallback((): TaskContext => {
-    return {
-      title: title || '',
-      description: description || '',
-      category: selectedCategory || '',
-      location: selectedLocation?.address || ''
-    };
-  }, [title, description, selectedCategory, selectedLocation?.address]);
-
-  // Smart image validation (same as Create Task)
-  const addImageWithValidation = async (imageUri: string) => {
-    try {
-      console.log('📸 Validating image:', imageUri);
-      
-      // Add placeholder validation result
-      setValidationResults(prev => {
-        const newMap = new Map(prev);
-        newMap.set(imageUri, {
-          isValid: true,
-          confidence: 75,
-          message: '75% - Analyzing image...',
-          reasons: ['Analysis in progress'],
-          suggestions: []
-        });
-        return newMap;
-      });
-      
-      // Add image immediately
-      setImages(prevImages => [...prevImages, imageUri]);
-      
-      const taskContext = getTaskContext();
-      
-      // Validate with smart validation
-      const validationResult = await validateImageSmart(imageUri, taskContext);
-      
-      console.log('🎯 Validation completed:', validationResult);
-      
-      // Store validation result
-      setValidationResults(prev => {
-        const newMap = new Map(prev);
-        newMap.set(imageUri, validationResult);
-        return newMap;
-      });
-      
-      if (!validationResult.isValid) {
-        console.log('🚫 Image validation failed - removing');
-        setImages(prevImages => prevImages.filter(img => img !== imageUri));
-        
-        Alert.alert(
-          'Image Not Suitable',
-          validationResult.message + '\n\nSuggestions:\n' + validationResult.suggestions.join('\n'),
-          [{ text: 'OK' }]
-        );
-        return;
-      }
-      
-      console.log('✅ Image validated and added successfully');
-      
-    } catch (error) {
-      console.error('❌ Error in addImageWithValidation:', error);
-      Alert.alert(
-        'Image Validation Error',
-        'Could not validate this image. Please try with a different image.',
-        [{ text: 'OK' }]
-      );
-    }
-  };
-
-  // Image picker function
+  // Image picker function with OCR validation
   const pickImage = async () => {
     if (images.length >= 10) return;
 
@@ -422,7 +346,28 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        await addImageWithValidation(result.assets[0].uri);
+        const imageUri = result.assets[0].uri;
+        
+        // ✅ Validate with OCR API
+        console.log('🔍 Validating image with OCR API:', imageUri);
+        const validation = await OCRAPI.validateImageForUpload(imageUri);
+        
+        if (!validation.isValid) {
+          console.warn('❌ Image contains sensitive data:', validation.reason);
+          Alert.alert(
+            'Sensitive Data Detected',
+            `This image contains sensitive information and cannot be uploaded:
+
+${validation.reason}
+
+Please remove phone numbers and addresses from the image.`,
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+        
+        console.log('✅ Image passed OCR validation');
+        setImages(prevImages => [...prevImages, imageUri]);
       }
     } catch (error) {
       console.error('Error selecting image:', error);
@@ -433,13 +378,6 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   // Remove image function - MEMOIZED
   const removeImage = useCallback((uri: string) => {
     setImages(prevImages => prevImages.filter(img => img !== uri));
-    
-    // Clear validation results for this image
-    setValidationResults(prev => {
-      const newMap = new Map(prev);
-      newMap.delete(uri);
-      return newMap;
-    });
   }, []);
 
   // Location handlers - MEMOIZED
@@ -976,21 +914,6 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
                 <TouchableOpacity style={styles.deleteBtn} onPress={() => removeImage(uri)}>
                   <Ionicons name="close-circle" size={22} color="#FF4D4F" />
                 </TouchableOpacity>
-                
-                {/* AI validation result display */}
-                {validationResults.get(uri) && (
-                  <View style={styles.validationTextContainer}>
-                    <Text style={validationResults.get(uri)?.isValid ? styles.validationTextSuccess : styles.validationTextWarning}>
-                      {validationResults.get(uri)?.message || (validationResults.get(uri)?.isValid ? '✅ Image validated' : '⚠️ Image needs improvement')}
-                    </Text>
-                    {/* Show suggestion for failed validation */}
-                    {!validationResults.get(uri)?.isValid && validationResults.get(uri)?.suggestions && (
-                      <Text style={styles.validationTextDetails}>
-                        💡 {validationResults.get(uri)?.suggestions[0] || 'Try taking a clearer photo'}
-                      </Text>
-                    )}
-                  </View>
-                )}
               </View>
             ))}
             {images.length < 10 && (

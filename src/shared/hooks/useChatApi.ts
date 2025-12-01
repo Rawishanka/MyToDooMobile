@@ -25,8 +25,9 @@ export function useGetAllChats() {
     queryKey: CHAT_QUERY_KEYS.lists(),
     queryFn: () => ChatAPI.getAllChats(),
     staleTime: 30000, // 30 seconds
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchInterval: 30000, // Auto-refresh every 30 seconds for new chats
     retry: (failureCount, error) => {
       // Don't retry on client errors (4xx) or auth errors
       if (error?.message?.includes('404') || 
@@ -65,8 +66,8 @@ export function useGetGroupChatMessages(taskId: string, limit: number = 50, enab
     enabled: enabled && !!taskId,
     staleTime: 10000, // 10 seconds
     refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
-    refetchOnMount: true,
-    refetchOnWindowFocus: false, // Prevent excessive refetching
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     retry: (failureCount, error) => {
       if (error?.message?.includes('404') || 
           error?.message?.includes('Authentication failed') ||

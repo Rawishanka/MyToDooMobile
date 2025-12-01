@@ -6,23 +6,19 @@ import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
-// Import smart image validation (the working one)
-import {
-    SmartValidationResult,
-    TaskContext,
-    validateImageSmart
-} from '@/src/services/smartImageValidator';
+// ✅ NEW: Use OCR API for sensitive data detection
+import { OCRAPI } from '@/src/api/ocr-api';
 
 interface LocationData {
     address: string;
@@ -36,72 +32,14 @@ export default function SnapPhotoScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
-  const { myTask, updateMyTask } = useCreateTaskStore();
-
-  // Smart validation states (using the working validation system)
-  const [validationResults, setValidationResults] = useState<Map<string, SmartValidationResult>>(new Map());
-  const [currentValidationImage, setCurrentValidationImage] = useState<string>('');
-  const [isValidatingImage, setIsValidatingImage] = useState(false);
-
-  // Debug function to test validation with detailed logging
-  const testValidation = async () => {
-    console.log('🧪 Testing OCR validation system...');
-    console.log('🔧 Environment check:');
-    console.log('  - __DEV__:', __DEV__);
-    console.log('  - Platform:', Platform.OS);
-    
-    const taskContext = getTaskContext();
-    console.log('📋 Current task context:', JSON.stringify(taskContext, null, 2));
-    
-    // Test with first image if available
-    if (images.length > 0) {
-      const testImageUri = images[0];
-      console.log('🖼️ Testing OCR with image:', testImageUri.substring(0, 50) + '...');
-      
-      try {
-        console.log('🔄 Starting validation test...');
-        await validateImageWithPercentage(testImageUri);
-        console.log('✅ Validation test completed');
-        
-        // Log the result
-        const result = validationResults.get(testImageUri);
-        if (result) {
-          console.log('📊 Test Result:');
-          console.log(`  - Confidence: ${result.confidence}%`);
-          console.log(`  - Message: ${result.message}`);
-          console.log(`  - Valid: ${result.isValid}`);
-          console.log(`  - Analysis: ${result.analysis || 'N/A'}`);
-        } else {
-          console.log('❌ No result found for test image');
-        }
-      } catch (error) {
-        console.error('❌ Validation test failed:', error);
-      }
-    } else {
-      console.log('⚠️ No images available for testing - please add an image first');
-    }
-  };
+  const { myTask, updateMyTask} = useCreateTaskStore();
 
   // Initialize with existing photos from store
   useEffect(() => {
     if (myTask.photos && myTask.photos.length > 0) {
       setImages(myTask.photos.filter(photo => photo));
-      
-      // Validate existing images with real OCR
-      myTask.photos.forEach(async (photo) => {
-        if (photo) {
-          console.log('🔄 Running validation for existing image:', photo);
-          await validateImageWithPercentage(photo);
-        }
-      });
     } else if (myTask.photo) {
       setImages([myTask.photo].filter(photo => photo));
-      
-      // Validate single photo with real OCR
-      if (myTask.photo) {
-        console.log('🔄 Running validation for existing single photo:', myTask.photo);
-        setTimeout(() => validateImageWithPercentage(myTask.photo), 500);
-      }
     }
     
     // Initialize location if exists (only for CategoryTask)
@@ -113,29 +51,6 @@ export default function SnapPhotoScreen() {
     }
   }, [myTask]);
 
-  // Debug logging for validation state
-  useEffect(() => {
-    console.log('🔍 Validation state updated:');
-    console.log('🖼️ Images:', images.length);
-    console.log('📋 Validation results:', validationResults.size);
-    images.forEach((image, index) => {
-      const result = validationResults.get(image);
-      console.log(`🔍 Image ${index + 1}: ${result ? result.message : 'No validation result'}`);
-    });
-  }, [validationResults, images]);
-
-  // Make test function available globally for debugging
-  useEffect(() => {
-    // @ts-ignore - Add to window for debugging
-    global.testValidation = testValidation;
-    console.log('🧪 Test validation function available as global.testValidation()');
-    
-    return () => {
-      // @ts-ignore - Cleanup
-      delete global.testValidation;
-    };
-  }, [myTask.photos, myTask.photo]);
-
   // Update store when images change
   useEffect(() => {
     updateMyTask({ 
@@ -144,122 +59,34 @@ export default function SnapPhotoScreen() {
     });
   }, [images, updateMyTask]);
 
-  // Helper function to build task context for validation
-  const getTaskContext = (): TaskContext => {
-    return {
-      title: myTask.title || '',
-      description: myTask.description || '',
-      category: myTask.isRemoval ? 'Moving' : (myTask as any)?.category || '',
-      location: selectedLocation?.address || ''
-    };
-  };
-
-  // Real OCR-powered validation function
-  const validateImageWithPercentage = async (imageUri: string) => {
+  // ✅ NEW: Validate image using OCR API for sensitive data
+  const validateAndAddImage = async (imageUri: string): Promise<boolean> => {
     try {
-      setIsValidatingImage(true);
-      setCurrentValidationImage(imageUri);
+      console.log('🔍 Validating image with OCR API:', imageUri);
+      const validation = await OCRAPI.validateImageForUpload(imageUri);
       
-      console.log('🔍 Starting real OCR validation for:', imageUri);
-      
-      // Show loading state immediately
-      setValidationResults(prev => {
-        const newMap = new Map(prev);
-        newMap.set(imageUri, {
-          isValid: true,
-          confidence: 0,
-          message: '🔄 Analyzing with OCR...',
-          reasons: ['OCR analysis in progress'],
-          suggestions: [],
-          analysis: 'Processing'
-        });
-        return newMap;
-      });
-      
-      const taskContext = getTaskContext();
-      console.log('📋 Task context for validation:', taskContext);
-      
-      // Use the advanced OCR validation system
-      const validationResult = await validateImageSmart(imageUri, taskContext);
-      
-      console.log('✅ Real validation result received:', validationResult);
-      console.log(`📝 Final message: ${validationResult.message} (${validationResult.confidence}%)`);
-      
-      // Store the validation result for display purposes
-      console.log('💾 Setting validation result for:', imageUri);
-      console.log('🔍 Validation details:', {
-        confidence: validationResult.confidence,
-        message: validationResult.message,
-        isValid: validationResult.isValid,
-        reasons: validationResult.reasons,
-        analysis: validationResult.analysis
-      });
-      
-      setValidationResults(prev => {
-        const newMap = new Map(prev);
-        newMap.set(imageUri, validationResult);
-        console.log('📋 Updated validation results map size:', newMap.size);
-        return newMap;
-      });
-      
-      // Never block image upload - just provide feedback
-      return true;
-      
-    } catch (error) {
-      console.error('❌ Smart validation failed:', error);
-      
-      // Create a meaningful error result
-      const errorResult = {
-        isValid: false,
-        confidence: 50,
-        message: '50% - Unable to analyze image content',
-        reasons: ['Validation service error'],
-        suggestions: ['Try taking a clearer photo', 'Ensure good lighting'],
-        analysis: 'Validation service temporarily unavailable'
-      };
-      setValidationResults(prev => new Map(prev.set(imageUri, errorResult)));
-      
-      // Always allow image upload even on error
-      return true;
-      
-    } finally {
-      setIsValidatingImage(false);
-      setCurrentValidationImage('');
-    }
-  };
+      if (!validation.isValid) {
+        console.warn('❌ Image contains sensitive data:', validation.reason);
+        Alert.alert(
+          'Sensitive Data Detected',
+          `This image contains sensitive information and cannot be uploaded:
 
-  // Enhanced image addition function with real OCR validation
-  const addImageWithValidation = async (imageUri: string) => {
-    try {
-      console.log('📸 Adding image with real validation:', imageUri);
+${validation.reason}
+
+Please remove phone numbers and addresses from the image.`,
+          [{ text: 'OK' }]
+        );
+        return false;
+      }
       
-      // Add image immediately
-      setImages(prevImages => {
-        const newImages = [...prevImages, imageUri];
-        console.log('✅ Image added, total:', newImages.length);
-        return newImages;
-      });
-      
-      // Start real OCR validation immediately
-      console.log('🔍 Starting immediate OCR validation...');
-      await validateImageWithPercentage(imageUri);
-      
+      console.log('✅ Image passed OCR validation - adding to list');
+      setImages(prevImages => [...prevImages, imageUri]);
+      return true;
     } catch (error) {
-      console.error('❌ Error adding image with validation:', error);
-      
-      // Set error state for this image
-      setValidationResults(prev => {
-        const newMap = new Map(prev);
-        newMap.set(imageUri, {
-          isValid: false,
-          confidence: 20,
-          message: '20% - Validation failed',
-          reasons: ['OCR analysis error'],
-          suggestions: ['Try taking another photo'],
-          analysis: `Error: ${error instanceof Error ? error.message : String(error)}`
-        });
-        return newMap;
-      });
+      console.error('❌ OCR validation error:', error);
+      // Allow upload if OCR service fails
+      setImages(prevImages => [...prevImages, imageUri]);
+      return true;
     }
   };
 
@@ -313,8 +140,8 @@ export default function SnapPhotoScreen() {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        // Use the new validation function instead of directly adding
-        await addImageWithValidation(result.assets[0].uri);
+        // ✅ Validate with OCR before adding
+        await validateAndAddImage(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error taking photo:', error);
@@ -350,8 +177,8 @@ export default function SnapPhotoScreen() {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        // Use the new validation function instead of directly adding
-        await addImageWithValidation(result.assets[0].uri);
+        // ✅ Validate with OCR before adding
+        await validateAndAddImage(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error selecting image:', error);
@@ -363,25 +190,8 @@ export default function SnapPhotoScreen() {
 
   const handleDeleteImage = (uri: string) => {
     console.log('🗑️ Deleting image:', uri);
-    
-    // Remove image from state
-    setImages(prevImages => {
-      const newImages = prevImages.filter(img => img !== uri);
-      console.log('✅ Image removed, remaining:', newImages.length);
-      return newImages;
-    });
-    
-    // Clear validation results
-    setValidationResults(prev => {
-      const newMap = new Map(prev);
-      newMap.delete(uri);
-      console.log('✅ Validation cleared, remaining validations:', newMap.size);
-      return newMap;
-    });
-    
-    // Reset processing state
+    setImages(prevImages => prevImages.filter(img => img !== uri));
     setIsProcessing(false);
-    console.log('✅ Ready for new uploads');
   };
 
   // Location handler
@@ -448,40 +258,6 @@ export default function SnapPhotoScreen() {
               >
                 <Ionicons name="close-circle" size={22} color="#FF4D4F" />
               </TouchableOpacity>
-              
-              {/* Dynamic validation message display - REAL OCR RESULTS */}
-              <View style={styles.validationTextContainer}>
-                {isValidatingImage && currentValidationImage === item ? (
-                  <Text style={styles.validationTextLoading}>
-                    🔄 Running OCR analysis...
-                  </Text>
-                ) : validationResults.get(item) ? (
-                  <>
-                    <Text style={validationResults.get(item)?.isValid ? styles.validationTextSuccess : styles.validationTextWarning}>
-                      {validationResults.get(item)?.message || '✅ Validated'}
-                    </Text>
-                    {/* Show OCR method used */}
-                    {validationResults.get(item)?.analysis && validationResults.get(item)?.analysis?.includes('OCR') && (
-                      <Text style={styles.validationTextDetails}>
-                        🧠 {validationResults.get(item)?.analysis?.includes('tesseract') ? 'Tesseract OCR' : 'Intelligent OCR'}
-                      </Text>
-                    )}
-                    {/* Show error details if available */}
-                    {(() => {
-                      const result = validationResults.get(item);
-                      return !result?.isValid && result?.suggestions && result.suggestions.length > 0;
-                    })() && (
-                      <Text style={styles.validationTextDetails}>
-                        💡 {validationResults.get(item)?.suggestions?.[0]}
-                      </Text>
-                    )}
-                  </>
-                ) : (
-                  <Text style={styles.validationTextWarning}>
-                    ⏳ Queued for OCR analysis...
-                  </Text>
-                )}
-              </View>
             </View>
           );
         })}

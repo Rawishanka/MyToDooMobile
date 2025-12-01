@@ -4,7 +4,7 @@ import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/curr
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -98,9 +98,13 @@ export default function PostTaskScreen() {
         location: formatLocationForBackend(myTask),
         budget: myTask.budget,
         currency: 'LKR',
-        // Note: images will be sent as 'files' parameter in FormData
-        images: imageUris, // Keep for internal processing, will be converted to 'files'
+        // Only include images if we have them - backend requires images if field is present
       };
+      
+      // Only add images if we have them (backend validates images if present)
+      if (imageUris.length > 0) {
+        taskData.images = imageUris;
+      }
 
       // Only add coordinates if we have valid location data
       if (coordinates) {
