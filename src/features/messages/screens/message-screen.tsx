@@ -30,7 +30,10 @@ import { SearchBar } from '@/src/features/messages/components/SearchBar';
 
 // Import notification modal and chat API
 import type { ChatListItem } from '@/src/api/types/chat';
+import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
+import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
 import { useGetAllChats } from '@/src/shared/hooks/useChatApi';
+import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import NotificationModal from './notification-screen-api';
 
@@ -41,6 +44,11 @@ const MessageScreen: React.FC = () => {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [localMessagePreviews, setLocalMessagePreviews] = useState<Record<string, string>>({});
+  const [showNetworkAlert, setShowNetworkAlert] = useState(false);
+  const [networkAlertMessage, setNetworkAlertMessage] = useState('');
+
+  // Network status monitoring
+  const { isConnected } = useNetworkStatus();
 
   // Get real chat data from API
   const { 
@@ -53,6 +61,9 @@ const MessageScreen: React.FC = () => {
   // Get real notification count from API
   const { data: unreadCountData } = useUnreadCount();
   const notificationCount = (unreadCountData as any)?.unreadCount || 0;
+
+  // Don't show network alert automatically - OfflineBanner handles that
+  // Only show alert when user tries to interact (e.g., refresh) while offline
 
   // Load local message previews on mount
   useEffect(() => {
@@ -73,15 +84,17 @@ const MessageScreen: React.FC = () => {
                 previews[taskId] = lastMessage.text;
               }
             }
-          } catch (error) {
-            console.error(`❌ Error loading preview for ${key}:`, error);
+          } catch {
+            // Silently handle preview loading errors
+            if (__DEV__) console.warn(`Preview load issue for ${key}`);
           }
         }
         
-        console.log(`📱 Loaded ${Object.keys(previews).length} local message previews`);
+        if (__DEV__) console.log(`📱 Loaded ${Object.keys(previews).length} local message previews`);
         setLocalMessagePreviews(previews);
-      } catch (error) {
-        console.error('❌ Failed to load local message previews:', error);
+      } catch {
+        // Silently handle errors
+        if (__DEV__) console.warn('Failed to load local message previews');
       }
     };
     
@@ -210,6 +223,12 @@ const MessageScreen: React.FC = () => {
   };
 
   const handleRefresh = () => {
+    if (!isConnected) {
+      setNetworkAlertMessage('Unable to connect to chat. Please check your internet connection.');
+      setShowNetworkAlert(true);
+      return;
+    }
+
     refetchChats();
     // Also reload local previews when refreshing
     const loadLocalPreviews = async () => {
@@ -229,14 +248,14 @@ const MessageScreen: React.FC = () => {
                 previews[taskId] = lastMessage.text;
               }
             }
-          } catch (error) {
-            console.error(`❌ Error loading preview for ${key}:`, error);
+          } catch {
+            // Silently handle errors
           }
         }
         
         setLocalMessagePreviews(previews);
-      } catch (error) {
-        console.error('❌ Failed to load local message previews:', error);
+      } catch {
+        // Silently handle errors
       }
     };
     loadLocalPreviews();
@@ -245,6 +264,9 @@ const MessageScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      
+      {/* Offline Banner */}
+      <OfflineBanner />
       
       {/* Header */}
       <View style={styles.header}>
@@ -325,6 +347,14 @@ const MessageScreen: React.FC = () => {
         onClose={handleCloseChat}
         message={selectedMessage}
         taskId={selectedChatId}
+      />
+
+      {/* Network Alert */}
+      <NetworkAlert
+        visible={showNetworkAlert}
+        onClose={() => setShowNetworkAlert(false)}
+        message={networkAlertMessage}
+        actionText="OK"
       />
     </View>
   );

@@ -2,18 +2,19 @@
 
 import API_CONFIG from '@/src/api/config';
 import {
-    ChatListResponse,
-    ChatMessage,
-    ChatParticipantsResponse,
-    CreateOrUpdateChatRequest,
-    CreateOrUpdateChatResponse,
-    GroupChatResponse,
-    SendGroupMessageRequest,
-    SendGroupMessageResponse,
-    SendMessageRequest,
-    SendMessageResponse,
-    SendSystemMessageRequest
+  ChatListResponse,
+  ChatMessage,
+  ChatParticipantsResponse,
+  CreateOrUpdateChatRequest,
+  CreateOrUpdateChatResponse,
+  GroupChatResponse,
+  SendGroupMessageRequest,
+  SendGroupMessageResponse,
+  SendMessageRequest,
+  SendMessageResponse,
+  SendSystemMessageRequest
 } from '@/src/api/types/chat';
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class ChatAPIService {
@@ -41,7 +42,6 @@ class ChatAPIService {
       // This is a placeholder - you'll need to implement actual token refresh
       // For now, we'll just check if we have valid credentials to re-login
       const userEmail = await AsyncStorage.getItem('userEmail');
-      const userPassword = await AsyncStorage.getItem('userPassword'); // Only if you store it securely
       
       if (userEmail) {
         console.log('💡 Token refresh would happen here with your auth endpoint');
@@ -50,8 +50,10 @@ class ChatAPIService {
       }
       
       return false;
-    } catch (error) {
-      console.error('❌ Token refresh failed:', error);
+    } catch (error: any) {
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Token refresh failed:', error?.message);
+      }
       return false;
     }
   }
@@ -126,7 +128,10 @@ class ChatAPIService {
 
         return responseText ? JSON.parse(responseText) : ({} as T);
       } catch (error: any) {
-        console.error(`❌ Chat API Error (attempt ${attempt}/${retries + 1}):`, error);
+        // Silent network error handling - only log non-network errors in dev
+        if (!isNetworkError(error) && __DEV__) {
+          console.warn(`⚠️ Chat API Error (attempt ${attempt}/${retries + 1}):`, error?.message);
+        }
         
         // Handle abort errors with graceful message
         if (error.name === 'AbortError') {
@@ -236,8 +241,10 @@ class ChatAPIService {
         participantCount: 2
       };
       
-    } catch (error) {
-      console.error(`❌ Error getting group chat messages:`, error);
+    } catch (error: any) {
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn(`⚠️ Error getting group chat messages:`, error?.message);
+      }
       return {
         success: false,
         groupChatId: taskId,
@@ -273,8 +280,10 @@ class ChatAPIService {
         message: 'Message sent successfully'
       };
       
-    } catch (error) {
-      console.error(`❌ Error sending group chat message:`, error);
+    } catch (error: any) {
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn(`⚠️ Error sending group chat message:`, error?.message);
+      }
       throw new Error(`Failed to send message: ${error}`);
     }
   }

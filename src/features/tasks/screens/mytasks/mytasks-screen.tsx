@@ -18,6 +18,11 @@ import SearchBar from './components/SearchModal';
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 
+// Network components
+import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
+import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
+import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
+
 // Auth Store
 import { useAuthStore } from '@/src/store/auth-task-store';
 
@@ -131,6 +136,11 @@ export default function MyTasksScreen() {
   const [userRole, setUserRole] = useState('Tasker'); // 'Tasker' or 'Poster'
   const [searchText, setSearchText] = useState('');
   const [isRoleSwitching, setIsRoleSwitching] = useState(false); // FIX: Track role switching
+  const [showNetworkAlert, setShowNetworkAlert] = useState(false);
+  const [networkAlertMessage, setNetworkAlertMessage] = useState('');
+  
+  // Network status monitoring
+  const { isConnected } = useNetworkStatus();
   
   // Get current user from auth store
   const currentUser = useAuthStore((state) => state.user);
@@ -685,12 +695,18 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
   });
 
   const handleRefresh = useCallback(() => {
+    if (!isConnected) {
+      setNetworkAlertMessage('You are offline. Please check your internet connection.');
+      setShowNetworkAlert(true);
+      return;
+    }
+
     refetchTasks();
     refetchTaskerTasks();
     refetchMyOffers();
     refetchAllOffers();
     refetchAllTasks(); // Also refresh all system tasks for Tasker view
-  }, [refetchTasks, refetchTaskerTasks, refetchMyOffers, refetchAllOffers, refetchAllTasks]);
+  }, [isConnected, refetchTasks, refetchTaskerTasks, refetchMyOffers, refetchAllOffers, refetchAllTasks]);
 
   // Refresh data when screen is focused
   useFocusEffect(
@@ -951,6 +967,9 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       </Tab.Navigator>
       </View>
 
+      {/* Offline Banner */}
+      <OfflineBanner />
+
       {/* Notification Modal - Only render when visible to prevent blocking touches */}
       {showNotifications && (
         <NotificationModal
@@ -958,6 +977,14 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
           onClose={() => setShowNotifications(false)}
         />
       )}
+
+      {/* Network Alert */}
+      <NetworkAlert
+        visible={showNetworkAlert}
+        onClose={() => setShowNetworkAlert(false)}
+        message={networkAlertMessage}
+        actionText="OK"
+      />
     </View>
   );
 }

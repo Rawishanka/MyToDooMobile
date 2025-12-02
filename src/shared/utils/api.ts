@@ -2,6 +2,7 @@
 import { useAuthStore } from '@/src/store/auth-task-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { isNetworkError } from './networkErrorHandler';
 
 export function createApi(baseURL: string) {
     const axiosInstance = axios.create({
@@ -31,8 +32,10 @@ export function createApi(baseURL: string) {
                     token = storedToken;
                     console.log("🔄 Retrieved token from AsyncStorage for API request");
                 }
-            } catch (error) {
-                console.error("❌ Error retrieving token from AsyncStorage:", error);
+            } catch (error: any) {
+                if (__DEV__ && !isNetworkError(error)) {
+                    console.warn("⚠️ Error retrieving token from AsyncStorage:", error?.message);
+                }
             }
         }
         
@@ -56,13 +59,24 @@ export function createApi(baseURL: string) {
             return response;
         },
         async (error) => {
+            // Silent network error handling - don't log network errors
+            if (isNetworkError(error)) {
+                return Promise.reject({
+                    isNetworkError: true,
+                    message: "Unable to connect. Please check your internet connection.",
+                    originalError: error
+                });
+            }
+            
             const originalRequest = error.config;
             
             // If we get 401 and haven't already retried this request
             if (error.response?.status === 401 && !originalRequest._retry) {
                 originalRequest._retry = true;
                 
-                console.log("⚠️ 401 Unauthorized - Authentication may have expired");
+                if (__DEV__) {
+                    console.warn("⚠️ 401 Unauthorized - Authentication may have expired");
+                }
                 
                 // Return a user-friendly auth error without auto-redirect
                 // Let the UI handle showing appropriate message

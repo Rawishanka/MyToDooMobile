@@ -2,6 +2,7 @@
 // This file handles category-related API operations
 
 import { createApi } from "@/src/shared/utils/api";
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import API_CONFIG from "./config";
 
 // 🔧 **API HELPER FUNCTION**
@@ -107,7 +108,10 @@ export async function getAllCategories(): Promise<CategoriesResponse> {
     return getDefaultCategories();
     
   } catch (error: any) {
-    console.error("❌ Get categories failed:", error?.message || error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get categories failed:", error?.message || error);
+    }
     
     // Check for network connection errors or timeouts - use mock service as fallback
     if (error.code === 'ERR_NETWORK' || 

@@ -1,6 +1,7 @@
 // OCR API Service - Google Gemini Image Analysis for Sensitive Data Detection
 
 import API_CONFIG from '@/src/api/config';
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
 
@@ -39,13 +40,12 @@ class OCRAPIService {
     try {
       console.log('🔍 Starting OCR analysis for image:', imageUri);
 
-      // Read image file as base64
-      const base64Image = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: 'base64',
-      });
-
-      // Get file info to determine mime type
+      // Validate file exists before processing
       const fileInfo = await FileSystem.getInfoAsync(imageUri);
+      if (!fileInfo.exists) {
+        throw new Error(`Image file not found: ${imageUri}`);
+      }
+
       const fileName = imageUri.split('/').pop() || 'image.jpg';
       const fileExtension = fileName.split('.').pop()?.toLowerCase() || 'jpg';
       
@@ -91,7 +91,10 @@ class OCRAPIService {
 
       return result;
     } catch (error: any) {
-      console.error('❌ OCR analysis failed:', error);
+      // Only log non-network errors in development
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ OCR analysis failed:', error);
+      }
       throw new Error(error.message || 'Failed to analyze image for sensitive data');
     }
   }
@@ -137,7 +140,10 @@ class OCRAPIService {
 
       return { isValid: true };
     } catch (error: any) {
-      console.error('❌ Image validation failed:', error);
+      // Only log non-network errors in development
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Image validation failed:', error);
+      }
       // On error, we'll allow the upload but log the error
       // You can change this behavior to block on errors if needed
       return {

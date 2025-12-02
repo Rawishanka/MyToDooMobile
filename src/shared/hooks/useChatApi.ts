@@ -2,12 +2,13 @@
 
 import { ChatAPI } from '@/src/api/chat-api';
 import {
-    CreateOrUpdateChatRequest,
-    SendGroupMessageRequest,
-    SendMessageRequest,
-    SendSystemMessageRequest
+  CreateOrUpdateChatRequest,
+  SendGroupMessageRequest,
+  SendMessageRequest,
+  SendSystemMessageRequest
 } from '@/src/api/types/chat';
 import { handleAuthenticationError, isAuthError } from '@/src/shared/utils/auth-utils';
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 // 🔑 Query Keys
@@ -37,7 +38,10 @@ export function useGetAllChats() {
         console.log('🚫 Not retrying chat list due to client error');
         return false;
       }
-      console.error('❌ Failed to load chat list:', error);
+      // Silent network error handling - only log non-network errors in dev
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Failed to load chat list:', error?.message);
+      }
       return failureCount < 2;
     },
   });
@@ -107,11 +111,14 @@ export function useSendChatMessage() {
       queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.lists() });
     },
     onError: (error) => {
-      console.error('❌ Failed to send chat message:', error);
+      // Silent network error handling
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Failed to send chat message:', error?.message);
+      }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        console.error("❌ Authentication error in send chat message - handling automatically");
+        if (__DEV__) console.warn("⚠️ Authentication error in send chat message - handling automatically");
         handleAuthenticationError(error);
       }
     },
@@ -135,11 +142,14 @@ export function useSendGroupChatMessage() {
       }, 200);
     },
     onError: (error) => {
-      console.error('❌ Failed to send group chat message:', error);
+      // Silent network error handling
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Failed to send group chat message:', error?.message);
+      }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        console.error("❌ Authentication error in send group chat message - handling automatically");
+        if (__DEV__) console.warn("⚠️ Authentication error in send group chat message - handling automatically");
         handleAuthenticationError(error);
       }
     },
@@ -159,11 +169,14 @@ export function useSendSystemMessage() {
       queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.lists() });
     },
     onError: (error) => {
-      console.error('❌ Failed to send system message:', error);
+      // Silent network error handling
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Failed to send system message:', error?.message);
+      }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        console.error("❌ Authentication error in send system message - handling automatically");
+        if (__DEV__) console.warn("⚠️ Authentication error in send system message - handling automatically");
         handleAuthenticationError(error);
       }
     },
@@ -182,11 +195,14 @@ export function useCreateOrUpdateChat() {
       queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.lists() });
     },
     onError: (error) => {
-      console.error('❌ Failed to create/update chat:', error);
+      // Silent network error handling
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Failed to create/update chat:', error?.message);
+      }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        console.error("❌ Authentication error in create/update chat - handling automatically");
+        if (__DEV__) console.warn("⚠️ Authentication error in create/update chat - handling automatically");
         handleAuthenticationError(error);
       }
     },

@@ -1,13 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 // API and Hooks
@@ -20,14 +20,19 @@ import { TaskCard } from '@/src/features/tasks/components';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { LoadingState } from '../../components/shared';
 import {
-    FilterButton,
-    FilterModal,
-    MapView,
-    SearchBar,
-    SortButton,
-    SortModal,
-    ViewModeToggle
+  FilterButton,
+  FilterModal,
+  MapView,
+  SearchBar,
+  SortButton,
+  SortModal,
+  ViewModeToggle
 } from './components';
+
+// Network components
+import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
+import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
+import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 
 // Custom Hooks
 import { useBrowseFiltersAPI } from './hooks/useBrowseFiltersAPI';
@@ -41,6 +46,11 @@ export default function BrowseTasksScreen() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showNetworkAlert, setShowNetworkAlert] = useState(false);
+  const [networkAlertMessage, setNetworkAlertMessage] = useState('');
+
+  // Network status monitoring
+  const { isConnected } = useNetworkStatus();
   
   // Track selectedTaskId changes
   useEffect(() => {
@@ -238,6 +248,9 @@ export default function BrowseTasksScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Offline Banner */}
+      <OfflineBanner />
+      
       {/* Header */}
       <View style={styles.header}>
         <ViewModeToggle 
@@ -410,6 +423,14 @@ export default function BrowseTasksScreen() {
       <NotificationModal
         visible={showNotifications}
         onClose={() => setShowNotifications(false)}
+      />
+
+      {/* Network Alert */}
+      <NetworkAlert
+        visible={showNetworkAlert}
+        onClose={() => setShowNetworkAlert(false)}
+        message={networkAlertMessage}
+        actionText="OK"
       />
     </View>
   );
