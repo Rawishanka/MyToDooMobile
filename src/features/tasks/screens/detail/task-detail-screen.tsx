@@ -1,18 +1,21 @@
+import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
+import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
+import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { useLocalSearchParams } from 'expo-router';
-import React, { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
 import {
-    AskQuestionModal,
-    DetailHeader,
-    ErrorState,
-    LoadingState,
-    MakeOfferSection,
-    MyOfferCard,
-    OffersList,
-    QuestionsList,
-    TabsSection,
-    TaskInfoCard,
+  AskQuestionModal,
+  DetailHeader,
+  ErrorState,
+  LoadingState,
+  MakeOfferSection,
+  MyOfferCard,
+  OffersList,
+  QuestionsList,
+  TabsSection,
+  TaskInfoCard,
 } from './components';
 import { useTaskDetail } from './hooks/useTaskDetail';
 
@@ -24,6 +27,11 @@ export default function TaskDetailScreen() {
   }>();
   const scrollViewRef = useRef<ScrollView>(null);
   const tabsSectionRef = useRef<View>(null);
+  
+  // Network state
+  const [showNetworkAlert, setShowNetworkAlert] = useState(false);
+  // Network status is monitored by OfflineBanner component
+  useNetworkStatus();
   
   // Check if user came from Tasker's Todoo Tasks or Completed tab
   // These are tasks where the current user is the assignee (tasker role)
@@ -118,6 +126,7 @@ export default function TaskDetailScreen() {
 
   return (
     <View style={styles.wrapper}>
+      <OfflineBanner />
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
@@ -210,6 +219,13 @@ export default function TaskDetailScreen() {
 
       {/* Bottom safe area for Android navigation bar */}
       <View style={styles.bottomSafeArea} />
+      
+      <NetworkAlert
+        visible={showNetworkAlert}
+        onClose={() => setShowNetworkAlert(false)}
+        message="Network connection lost. Please check your internet."
+        actionText="OK"
+      />
     </View>
   );
 }

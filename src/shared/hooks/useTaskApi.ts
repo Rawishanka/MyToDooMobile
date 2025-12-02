@@ -4,15 +4,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TaskAPI } from '../../api/task-api';
 import {
-    CreateOfferRequest,
-    CreateTaskRequest,
-    MyTasksParams,
-    TaskFilterParams,
-    TaskOffer,
-    TaskSearchParams,
-    UpdateTaskRequest
+  CreateOfferRequest,
+  CreateTaskRequest,
+  MyTasksParams,
+  TaskFilterParams,
+  TaskOffer,
+  TaskSearchParams,
+  UpdateTaskRequest
 } from '../../api/types/tasks';
 import { handleAuthenticationError, isAuthError } from '../utils/auth-utils';
+import { isNetworkError } from '../utils/networkErrorHandler';
 
 // 🔑 **QUERY KEYS**
 export const TASK_QUERY_KEYS = {
@@ -383,15 +384,17 @@ export function usePostTaskDirect() {
       console.log("✅ Task posted successfully (DIRECT) - force refetched all task queries and specific detail");
     },
     onError: (error: any) => {
-      console.error("❌ Error posting task (DIRECT):", error);
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Error posting task (DIRECT):", error?.message);
+      }
       
       if (isAuthError(error)) {
-        console.error("❌ Authentication error detected - handling automatically");
+        if (__DEV__) console.warn("⚠️ Authentication error detected - handling automatically");
         handleAuthenticationError(error);
       } else if (error?.message?.includes("Images are too large")) {
-        console.error("❌ Image upload failed - files too large");
-      } else {
-        console.error("❌ Task posting failed with unknown error:", error);
+        if (__DEV__) console.warn("⚠️ Image upload failed - files too large");
+      } else if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Task posting failed with unknown error:", error?.message);
       }
     }
   });
@@ -416,16 +419,18 @@ export function usePostTaskWithImages() {
       console.log("✅ Task with images posted successfully - force refetched all task queries");
     },
     onError: (error: any) => {
-      console.error("❌ Error posting task with images:", error);
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Error posting task with images:", error?.message);
+      }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        console.error("❌ Authentication error detected - handling automatically");
+        if (__DEV__) console.warn("⚠️ Authentication error detected - handling automatically");
         handleAuthenticationError(error);
       } else if (error?.message?.includes("Images are too large")) {
-        console.error("❌ Image upload failed - files too large");
-      } else {
-        console.error("❌ Task posting with images failed with unknown error:", error);
+        if (__DEV__) console.warn("⚠️ Image upload failed - files too large");
+      } else if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Task posting with images failed:", error?.message);
       }
     }
   });
@@ -445,14 +450,16 @@ export function usePostTask() {
       console.log("✅ Task posted successfully");
     },
     onError: (error: any) => {
-      console.error("❌ Error posting task:", error);
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Error posting task:", error?.message);
+      }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        console.error("❌ Authentication error detected - handling automatically");
+        if (__DEV__) console.warn("⚠️ Authentication error detected - handling automatically");
         handleAuthenticationError(error);
-      } else {
-        console.error("❌ Task posting failed with unknown error:", error);
+      } else if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Task posting failed:", error?.message);
       }
     }
   });
@@ -494,12 +501,12 @@ export function useUpdateTask() {
       console.log("✅ useUpdateTask: All cache operations completed - UI should update immediately");
     },
     onError: (error: any, variables) => {
-      console.error('❌ useUpdateTask: Mutation failed!');
-      console.error('❌ useUpdateTask: TaskId:', variables.taskId);
-      console.error('❌ useUpdateTask: Updates payload:', JSON.stringify(variables.updates, null, 2));
-      console.error('❌ useUpdateTask: Error details:', error);
-      console.error('❌ useUpdateTask: Error message:', error?.message);
-      console.error('❌ useUpdateTask: Error response:', error?.response?.data);
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ useUpdateTask: Mutation failed!');
+        console.warn('⚠️ useUpdateTask: TaskId:', variables.taskId);
+        console.warn('⚠️ useUpdateTask: Updates payload:', JSON.stringify(variables.updates, null, 2));
+        console.warn('⚠️ useUpdateTask: Error message:', error?.message);
+      }
     },
   });
 }
@@ -556,13 +563,12 @@ export function useUpdateTaskWithImages() {
       console.log("✅ useUpdateTaskWithImages: All cache operations completed - UI should update immediately");
     },
     onError: (error: any, variables) => {
-      console.error('❌ useUpdateTaskWithImages: Mutation failed!');
-      console.error('❌ useUpdateTaskWithImages: TaskId:', variables.taskId);
-      console.error('❌ useUpdateTaskWithImages: Updates payload:', JSON.stringify(variables.updates, null, 2));
-      console.error('❌ useUpdateTaskWithImages: New images count:', variables.newImageUris?.length || 0);
-      console.error('❌ useUpdateTaskWithImages: Error details:', error);
-      console.error('❌ useUpdateTaskWithImages: Error message:', error?.message);
-      console.error('❌ useUpdateTaskWithImages: Error response:', error?.response?.data);
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ useUpdateTaskWithImages: Mutation failed!');
+        console.warn('⚠️ useUpdateTaskWithImages: TaskId:', variables.taskId);
+        console.warn('⚠️ useUpdateTaskWithImages: New images count:', variables.newImageUris?.length || 0);
+        console.warn('⚠️ useUpdateTaskWithImages: Error message:', error?.message);
+      }
     },
   });
 }
@@ -838,14 +844,16 @@ export function usePostTaskQuestion() {
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
     },
     onError: (error: any) => {
-      console.error("❌ Error posting question:", error);
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Error posting question:", error?.message);
+      }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        console.error("❌ Authentication error detected - handling automatically");
+        if (__DEV__) console.warn("⚠️ Authentication error detected - handling automatically");
         handleAuthenticationError(error);
-      } else {
-        console.error("❌ Question posting failed with unknown error:", error);
+      } else if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Question posting failed:", error?.message);
       }
     }
   });

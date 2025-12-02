@@ -4,6 +4,7 @@
 import { createApi } from "@/src/shared/utils/api";
 import { handleAuthenticationError } from '@/src/shared/utils/auth-utils';
 import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useAuthStore } from "@/src/store/auth-task-store";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -54,13 +55,15 @@ async function ensureAuthentication(): Promise<{ success: boolean; token?: strin
           const user = JSON.parse(storedUser);
           authState.setAuthData(storedToken, user, 3600);
           return { success: true, token: storedToken };
-        } catch (e) {
+        } catch {
           console.warn("⚠️ Failed to parse stored user, using auto-login");
         }
       }
     }
   } catch (error) {
-    console.error("❌ Error accessing AsyncStorage:", error);
+    if (__DEV__) {
+      console.warn("⚠️ Error accessing AsyncStorage:", error);
+    }
   }
   
   // Try development auto-login
@@ -75,7 +78,9 @@ async function ensureAuthentication(): Promise<{ success: boolean; token?: strin
         return { success: true, token: newAuthState.token };
       }
     } catch (error) {
-      console.error("❌ Auto-login failed:", error);
+      if (__DEV__) {
+        console.warn("⚠️ Auto-login failed:", error);
+      }
     }
   }
   
@@ -112,7 +117,9 @@ async function handleAuthErrorAndRetry(): Promise<{ success: boolean; token?: st
       message: "Authentication session expired. Please log in again."
     };
   } catch (error) {
-    console.error("❌ Error handling auth retry:", error);
+    if (__DEV__) {
+      console.warn("⚠️ Error handling auth retry:", error);
+    }
     return { 
       success: false, 
       message: "Failed to refresh authentication."
@@ -152,10 +159,15 @@ export async function getCategories(): Promise<{ success: boolean; data: any[] }
       throw new Error('Invalid categories response format');
     }
   } catch (error: any) {
-    console.error("❌ Get categories failed:", error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get categories failed:", error);
+    }
     
     // Fallback to predefined categories if API fails
-    console.warn("🔄 Using fallback categories due to API error");
+    if (__DEV__) {
+      console.warn("🔄 Using fallback categories due to API error");
+    }
     const fallbackCategories = [
       'Appliance installation and repair',
       'Auto Michanic and Electrician',
@@ -209,11 +221,16 @@ export async function getCategoriesByLocation(locationType: string): Promise<{ s
     
     return response.data;
   } catch (error: any) {
-    console.error("❌ Get categories by location failed:", error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get categories by location failed:", error);
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Get categories by location failed - Authentication required (401)");
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Get categories by location failed - Authentication required (401)");
+      }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
@@ -283,7 +300,10 @@ export async function getAllTasks(): Promise<TasksResponse> {
     console.log(`✅ Single page response: ${allTasksData.length} tasks`);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Get all tasks failed:", error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get all tasks failed:", error);
+    }
     
     // Check for network connection errors - use mock service as fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
@@ -355,7 +375,10 @@ export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskF
     
     return response.data;
   } catch (error: any) {
-    console.error("❌ Filter endpoint failed:", error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Filter endpoint failed:", error);
+    }
     
     // If filter endpoint fails (500 error or not found), fallback to getAllTasks with client-side filtering
     if (error.response?.status === 500 || error.response?.status === 404 || error.code === 'ERR_NETWORK') {
@@ -548,7 +571,9 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
           // Validate the file exists and is accessible
           const fileInfo = await FileSystem.getInfoAsync(uri);
           if (!fileInfo.exists) {
-            throw new Error(`File does not exist: ${uri}`);
+            console.error(`❌ File does not exist: ${uri}`);
+            console.error('This might happen if the image was deleted or moved after selection.');
+            throw new Error(`Failed to read image ${filename}: Error: File does not exist: ${uri}`);
           }
 
           // Read the file as base64 binary data
@@ -592,9 +617,14 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
           });
           
           return dataUri;
-        } catch (fileError) {
+        } catch (fileError: any) {
           console.error(`❌ Failed to read image ${i + 1}:`, fileError);
-          throw new Error(`Failed to read image ${filename}: ${fileError}`);
+          console.error(`Image URI: ${uri}`);
+          console.error(`This error typically occurs when:`);
+          console.error(`  1. The image was deleted from cache after selection`);
+          console.error(`  2. The image was moved to a different location`);
+          console.error(`  3. The app doesn't have permission to access the file`);
+          throw new Error(`Failed to read image ${filename}: ${fileError.message || fileError}`);
         }
       });
 
@@ -714,19 +744,22 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
       return response.data;
     }
   } catch (error: any) {
-    console.error("❌ Task posting failed:", error?.response?.status);
-    console.error("❌ Error details:", {
-      status: error?.response?.status,
-      statusText: error?.response?.statusText,
-      data: error?.response?.data,
-      message: error?.message,
-      config: {
-        url: error?.config?.url,
-        method: error?.config?.method,
-        headers: error?.config?.headers,
-        dataLength: error?.config?.data?.length
-      }
-    });
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Task posting failed:", error?.response?.status);
+      console.warn("⚠️ Error details:", {
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+        message: error?.message,
+        config: {
+          url: error?.config?.url,
+          method: error?.config?.method,
+          headers: error?.config?.headers,
+          dataLength: error?.config?.data?.length
+        }
+      });
+    }
     
     // Check for authentication errors with special handling
     if (error?.response?.status === 401) {
@@ -916,7 +949,7 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
         
         for (const imageUri of images) {
           try {
-            const FileSystem = require('expo-file-system').default;
+            // FileSystem is already imported at top of file
             const base64Data = await FileSystem.readAsStringAsync(imageUri, { encoding: 'base64' });
             
             const filename = imageUri.split('/').pop() || 'image.jpg';
@@ -962,13 +995,16 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
       return response.data;
     }
   } catch (error: any) {
-    console.error("❌ Task posting failed (all methods):", error?.response?.status);
-    console.error("❌ Error details:", {
-      status: error?.response?.status,
-      statusText: error?.response?.statusText,
-      data: error?.response?.data,
-      message: error?.message
-    });
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Task posting failed (all methods):", error?.response?.status);
+      console.warn("⚠️ Error details:", {
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+        message: error?.message
+      });
+    }
     
     if (error?.response?.status === 401 || error?.isAuthError) {
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
@@ -1077,13 +1113,16 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
     }
     
   } catch (error: any) {
-    console.error("❌ All search approaches failed:", error);
-    console.error("❌ Error details:", {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message
-    });
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ All search approaches failed:", error);
+      console.warn("⚠️ Error details:", {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
+    }
     
     // Check for network connection errors - use mock service as fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
@@ -1333,19 +1372,22 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
     }
 
   } catch (error: any) {
-    console.error("❌ Filter API failed:", {
-      message: error?.message,
-      status: error?.response?.status,
-      statusText: error?.response?.statusText,
-      data: error?.response?.data
-    });
-    
-    // Check for backend routing conflict (ObjectId casting error)
-    if (error?.response?.status === 500 && 
-        (error?.response?.data?.message?.includes('Cast to ObjectId failed') ||
-         error?.response?.data?.message?.includes('filter'))) {
-      console.error('🚨 BACKEND ROUTING CONFLICT: /tasks/filter is being treated as /tasks/:id');
-      console.error('Backend needs: router.get("/filter", ...) BEFORE router.get("/:id", ...)');
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Filter API failed:", {
+        message: error?.message,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data
+      });
+      
+      // Check for backend routing conflict (ObjectId casting error)
+      if (error?.response?.status === 500 && 
+          (error?.response?.data?.message?.includes('Cast to ObjectId failed') ||
+           error?.response?.data?.message?.includes('filter'))) {
+        console.warn('🚨 BACKEND ROUTING CONFLICT: /tasks/filter is being treated as /tasks/:id');
+        console.warn('Backend needs: router.get("/filter", ...) BEFORE router.get("/:id", ...)');
+      }
     }
     
     // Only fallback to mock if we actually have an error that prevents getting data
@@ -1409,7 +1451,7 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
             try {
               task.location = JSON.parse(task.location);
               console.log('📍 MyTasks: Parsed location for task:', task._id);
-            } catch (parseError) {
+            } catch {
               console.warn('⚠️ MyTasks: Could not parse location for task:', task._id);
             }
           }
@@ -1423,7 +1465,7 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
         console.log("📝 my-tasks endpoint returned empty data, using general tasks endpoint");
         throw new Error("Empty data from my-tasks endpoint");
       }
-    } catch (myTasksError) {
+    } catch {
       console.log("📝 my-tasks endpoint not available or empty, using general tasks endpoint");
       // Fallback to general tasks endpoint - use getAllTasks function
       const tasksResponse = await getAllTasks();
@@ -1493,7 +1535,10 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
       return mockMyTasks;
     }
     
-    console.error("❌ Get my tasks failed:", error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get my tasks failed:", error);
+    }
     throw error;
   }
 }
@@ -1523,7 +1568,7 @@ export async function getMyOffers(params?: MyTasksParams): Promise<{ success: bo
         console.log("📝 my-offers endpoint returned empty data, using general tasks endpoint");
         throw new Error("Empty data from my-offers endpoint");
       }
-    } catch (myOffersError) {
+    } catch {
       console.log("📝 my-offers endpoint not available or empty, using general tasks endpoint");
       // Fallback to general tasks endpoint - use getAllTasks function
       const tasksResponse = await getAllTasks();
@@ -1531,7 +1576,10 @@ export async function getMyOffers(params?: MyTasksParams): Promise<{ success: bo
       return { success: true, data: tasksResponse.data };
     }
   } catch (error) {
-    console.error("❌ Get my offers failed:", error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get my offers failed:", error);
+    }
     throw error;
   }
 }
@@ -1571,7 +1619,7 @@ export async function getTaskById(taskId: string): Promise<SingleTaskResponse> {
           console.log('📍 GET: Location returned as string, parsing:', taskData.location);
           taskData.location = JSON.parse(taskData.location);
           console.log('📍 GET: Parsed location:', taskData.location);
-        } catch (parseError) {
+        } catch {
           console.warn('⚠️ GET: Could not parse location string, keeping as-is');
         }
       }
@@ -1579,23 +1627,30 @@ export async function getTaskById(taskId: string): Promise<SingleTaskResponse> {
     
     return response.data;
   } catch (error: any) {
-    console.error("❌ Get task details failed:", {
-      taskId,
-      status: error?.response?.status,
-      message: error?.message,
-      data: error?.response?.data
-    });
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get task details failed:", {
+        taskId,
+        status: error?.response?.status,
+        message: error?.message,
+        data: error?.response?.data
+      });
+    }
     
     // Handle 400 errors - bad request (invalid task ID, etc.)
     if (error?.response?.status === 400) {
       const errorMessage = error?.response?.data?.message || `Invalid task ID or task not found: ${taskId}`;
-      console.error("❌ Get task details failed - Bad request (400):", errorMessage);
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Get task details failed - Bad request (400):", errorMessage);
+      }
       throw new Error(errorMessage);
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Get task details failed - Authentication required (401)");
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Get task details failed - Authentication required (401)");
+      }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
@@ -1647,7 +1702,7 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
           console.log('📍 Location returned as string, parsing:', response.data.data.location);
           response.data.data.location = JSON.parse(response.data.data.location);
           console.log('📍 Parsed location:', response.data.data.location);
-        } catch (parseError) {
+        } catch {
           console.warn('⚠️ Could not parse location string, keeping as-is');
         }
       }
@@ -1655,13 +1710,16 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     
     return response.data;
   } catch (error: any) {
-    console.error("❌ Update task failed - Full error details:");
-    console.error("   - Error message:", error?.message);
-    console.error("   - HTTP status:", error?.response?.status);
-    console.error("   - Response data:", JSON.stringify(error?.response?.data, null, 2));
-    console.error("   - Request URL:", error?.config?.url);
-    console.error("   - Request method:", error?.config?.method);
-    console.error("   - Request payload:", JSON.stringify(updates, null, 2));
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Update task failed - Full error details:");
+      console.warn("   - Error message:", error?.message);
+      console.warn("   - HTTP status:", error?.response?.status);
+      console.warn("   - Response data:", JSON.stringify(error?.response?.data, null, 2));
+      console.warn("   - Request URL:", error?.config?.url);
+      console.warn("   - Request method:", error?.config?.method);
+      console.warn("   - Request payload:", JSON.stringify(updates, null, 2));
+    }
     
     // Handle validation errors (400)
     if (error?.response?.status === 400) {
@@ -2030,7 +2088,7 @@ export async function updateTaskWithImages(
           console.log('📍 Location returned as string, parsing:', response.data.data.location);
           response.data.data.location = JSON.parse(response.data.data.location);
           console.log('📍 Parsed location:', response.data.data.location);
-        } catch (e) {
+        } catch {
           console.warn('⚠️ Could not parse location string, keeping as-is');
         }
       }
@@ -2038,10 +2096,13 @@ export async function updateTaskWithImages(
     
     return response.data;
   } catch (error: any) {
-    console.error("❌ Update task with images failed - Full error details:");
-    console.error("   - Error message:", error?.message);
-    console.error("   - HTTP status:", error?.response?.status);
-    console.error("   - Response data:", JSON.stringify(error?.response?.data, null, 2));
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Update task with images failed - Full error details:");
+      console.warn("   - Error message:", error?.message);
+      console.warn("   - HTTP status:", error?.response?.status);
+      console.warn("   - Response data:", JSON.stringify(error?.response?.data, null, 2));
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
@@ -2100,13 +2161,16 @@ export async function deleteTask(taskId: string): Promise<{ success: boolean; me
     
     return response.data;
   } catch (error: any) {
-    console.error("❌ Delete task failed - Full error details:");
-    console.error("   - Error message:", error?.message);
-    console.error("   - HTTP status:", error?.response?.status);
-    console.error("   - Response data:", error?.response?.data);
-    console.error("   - Request URL:", error?.config?.url);
-    console.error("   - Request method:", error?.config?.method);
-    console.error("   - Request headers:", error?.config?.headers);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Delete task failed - Full error details:");
+      console.warn("   - Error message:", error?.message);
+      console.warn("   - HTTP status:", error?.response?.status);
+      console.warn("   - Response data:", error?.response?.data);
+      console.warn("   - Request URL:", error?.config?.url);
+      console.warn("   - Request method:", error?.config?.method);
+      console.warn("   - Request headers:", error?.config?.headers);
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
@@ -2222,11 +2286,16 @@ export async function getTaskOffers(taskId: string): Promise<TaskOffersResponse>
     
     return response.data;
   } catch (error: any) {
-    console.error("❌ Get task offers failed:", error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get task offers failed:", error);
+    }
     
     // Handle authentication errors - return empty offers instead of throwing
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.warn("⚠️ Get task offers failed - Authentication required, returning empty offers");
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Get task offers failed - Authentication required, returning empty offers");
+      }
       console.warn("💡 Please login again to view offers");
       return {
         success: false,
@@ -2279,14 +2348,17 @@ export async function createOffer(taskId: string, offerData: CreateOfferRequest)
     console.log("✅ Create offer success:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Create offer failed:", error);
-    console.error("❌ Error details:", {
-      status: error?.response?.status,
-      statusText: error?.response?.statusText,
-      data: error?.response?.data,
-      message: error.message,
-      requestData: offerData
-    });
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Create offer failed:", error);
+      console.warn("⚠️ Error details:", {
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+        message: error.message,
+        requestData: offerData
+      });
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
@@ -2311,7 +2383,9 @@ export async function createOffer(taskId: string, offerData: CreateOfferRequest)
  * 🔄 Map Category Display Name to ServiceType Enum
  * Maps user-friendly category names to backend enum values
  * Backend expects exact category display names, not kebab-case
+ * @deprecated Currently unused but kept for potential future use
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function mapCategoryToServiceType(categoryName: string): string {
   // Create mapping for common variations and typos to standardized display names
   const categoryMappings: { [key: string]: string } = {
@@ -2664,7 +2738,7 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
             status: 'completed'
           });
           console.log("✅ Completed offer successfully:", offerCompleteResponse.data);
-        } catch (offerError: any) {
+        } catch {
           console.log("⚠️ Offer completion failed, trying alternative approaches...");
           
           // Try with different status values that might be valid
@@ -2677,14 +2751,14 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
               });
               console.log(`✅ Completed offer with status '${status}':`, alternativeResponse.data);
               break;
-            } catch (altError) {
+            } catch {
               console.log(`❌ Failed to complete offer with status '${status}'`);
               continue;
             }
           }
         }
       }
-    } catch (taskDetailsError) {
+    } catch {
       console.log("⚠️ Could not fetch task details, proceeding with direct completion...");
     }
     
@@ -2805,11 +2879,13 @@ export async function cancelTask(taskId: string, reason?: string, reasonId?: str
     console.log("✅ Cancel task success:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Cancel task failed:", error);
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Cancel task failed:", error?.message);
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Cancel task failed - Authentication required (401)");
+      if (__DEV__) console.warn("⚠️ Cancel task failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
@@ -2839,14 +2915,15 @@ export async function createCancellationRequest(taskId: string, reason: string):
     console.log("   🎯 Request status:", response.data?.data?.status);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Create cancellation request failed:", error);
-    console.error("   Error status:", error?.response?.status);
-    console.error("   Error message:", error?.response?.data?.message || error?.message);
-    console.error("   Task ID:", taskId);
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Create cancellation request failed:", error?.message);
+      console.warn("   Error status:", error?.response?.status);
+      console.warn("   Task ID:", taskId);
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Authentication required (401)");
+      if (__DEV__) console.warn("⚠️ Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
@@ -2928,15 +3005,16 @@ export async function respondToCancellationRequest(requestId: string, action: 'a
     console.log("   New status:", response.data?.data?.task?.status);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Respond to cancellation request failed:", error);
-    console.error("   Error status:", error?.response?.status);
-    console.error("   Error message:", error?.response?.data?.message || error?.message);
-    console.error("   Request ID:", requestId);
-    console.error("   Action:", action);
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Respond to cancellation request failed:", error?.message);
+      console.warn("   Error status:", error?.response?.status);
+      console.warn("   Request ID:", requestId);
+      console.warn("   Action:", action);
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Authentication required (401)");
+      if (__DEV__) console.warn("⚠️ Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
@@ -3129,7 +3207,10 @@ export async function getTaskQuestions(taskId: string): Promise<{ success: boole
     console.log("✅ Get task questions success:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Get task questions failed:", error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get task questions failed:", error);
+    }
     
     // Handle authentication errors (even though this endpoint doesn't require auth)
     if (error?.response?.status === 401 || error?.isAuthError) {
@@ -3211,7 +3292,7 @@ export async function answerTaskQuestion(taskId: string, questionId: string, ans
           });
           console.log("✅ Answer task question success (alt method):", altResponse.data);
           return altResponse.data;
-        } catch (altError: any) {
+        } catch {
           console.warn("⚠️ Alternative endpoint also failed, trying PATCH method");
           
           // Try PATCH method as final fallback
@@ -3289,7 +3370,7 @@ export async function getAllPublicQuestions(): Promise<{ success: boolean; data:
             }));
             
             allQuestions.push(...questionsWithContext);
-          } catch (taskQuestionError) {
+          } catch {
             console.log(`Failed to get questions for task ${task._id}, skipping...`);
           }
         }

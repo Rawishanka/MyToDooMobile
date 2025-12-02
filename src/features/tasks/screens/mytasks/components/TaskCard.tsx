@@ -13,6 +13,7 @@ import {
   useRespondToCancellationRequest
 } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromLocation, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -263,8 +264,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             
             console.log('✅ Task payment completed successfully');
           } catch (paymentError: any) {
-            console.error('❌ Payment completion failed:', paymentError);
-            console.error('❌ Payment error details:', paymentError?.response?.data);
+            if (!isNetworkError(paymentError) && __DEV__) {
+              console.warn('⚠️ Payment completion failed:', paymentError?.message);
+            }
             
             // If payment completion fails due to missing payment intent, try regular completion
             if (paymentError?.response?.status === 500 || 
@@ -290,7 +292,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             });
             console.log('✅ Task payment completed successfully without paymentIntentId');
           } catch (paymentError: any) {
-            console.error('❌ Payment completion without paymentIntentId failed:', paymentError);
+            if (!isNetworkError(paymentError) && __DEV__) {
+              console.warn('⚠️ Payment completion failed:', paymentError?.message);
+            }
             
             // Fall back to regular task completion
             console.log('⚠️ Payment completion failed, using regular task completion');
@@ -477,13 +481,15 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       );
       
     } catch (error: any) {
-      console.error('❌ Error deleting task:', error);
-      console.error('❌ Error details:', {
-        message: error?.message,
-        status: error?.response?.status,
-        data: error?.response?.data,
-        isAuthError: error?.isAuthError
-      });
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Task deletion failed:', error?.message);
+        console.warn('⚠️ Error details:', {
+          message: error?.message,
+          status: error?.response?.status,
+          data: error?.response?.data,
+          isAuthError: error?.isAuthError
+        });
+      }
       
       setShowDeleteModal(false);
       
@@ -597,7 +603,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       
       console.log('✅ Cancellation completed');
     } catch (error: any) {
-      console.error('❌ Error cancelling task:', error);
+      // Silent network error handling - only log if not a network error
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Task cancellation failed:', error?.message);
+      }
       
       // Close modal on error
       setShowPosterCancelModal(false);
@@ -713,7 +722,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         console.log('✅ Task moved to Cancelled tab');
       }
     } catch (error: any) {
-      console.error('❌ Error cancelling task:', error);
+      // Silent network error handling - only log if not a network error
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Task cancellation failed:', error?.message);
+      }
       
       // Close modal on error
       setShowTaskerCancelModal(false);
@@ -842,7 +854,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         [{ text: 'OK' }]
       );
     } catch (error: any) {
-      console.error('❌ Error accepting cancellation:', error);
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Accept cancellation failed:', error?.message);
+      }
 
       // Show error message
       let errorMessage = 'Failed to accept cancellation. Please try again.';
@@ -886,7 +900,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         [{ text: 'OK' }]
       );
     } catch (error: any) {
-      console.error('❌ Error rejecting cancellation:', error);
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Reject cancellation failed:', error?.message);
+      }
 
       // Show error message
       let errorMessage = 'Failed to reject cancellation. Please try again.';
@@ -934,8 +950,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         currency: offer.currency || offer.offer?.currency
       });
       
-    } catch (error) {
-      console.error('❌ Error preparing offer acceptance:', error);
+    } catch (error: any) {
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Offer acceptance preparation failed:', error?.message);
+      }
       Alert.alert('Error', 'Failed to prepare payment. Please try again.');
     } finally {
       setIsProcessing(false);

@@ -1,5 +1,6 @@
 // API functions for user profile management
 import { createApi } from '@/src/shared/utils/api';
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import API_CONFIG from './config';
 
 const api = createApi(API_CONFIG.BASE_URL);
@@ -143,24 +144,33 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
     return response.data;
   } catch (error: any) {
     // 🚨 CRITICAL FIX: Don't return mock data to prevent cache persistence
-    console.error("❌ Get user profile failed:", error?.response?.status || error?.code || error?.message);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get user profile failed:", error?.response?.status || error?.code || error?.message);
+    }
     
     // For auth errors, throw the error to prevent cache pollution
     if (error?.isAuthError || 
         error?.response?.status === 401 || 
         error?.status === 401) {
-      console.log("⚠️ 401 Unauthorized - Authentication may have expired");
+      if (__DEV__) {
+        console.log("⚠️ 401 Unauthorized - Authentication may have expired");
+      }
       throw error; // Let the UI handle the auth error
     }
     
     // For network errors, also throw to prevent mock data cache persistence
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.log("⚠️ Network error - no mock data to prevent cache pollution");
+      if (__DEV__) {
+        console.log("⚠️ Network error - no mock data to prevent cache pollution");
+      }
       throw error; // Let the UI handle the network error
     }
     
     // For other errors, log and throw
-    console.error("❌ Get user profile failed:", error);
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get user profile failed:", error);
+    }
     throw error;
   }
 }
@@ -211,7 +221,9 @@ export async function updateUserProfile(profileData: UpdateProfileRequest): Prom
     }
     
     // For other errors, log and throw
-    console.error("❌ Update user profile failed:", error);
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Update user profile failed:", error);
+    }
     throw error;
   }
 }
@@ -282,7 +294,9 @@ export async function uploadUserAvatar(formData: FormData): Promise<UserProfileR
     }
     
     // For other errors, log and throw
-    console.error("❌ Upload avatar failed:", error);
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Upload avatar failed:", error);
+    }
     throw error;
   }
 }
@@ -326,7 +340,9 @@ export async function getUserRatingStats(userId: string): Promise<RatingStatsRes
       };
     }
     
-    console.error("❌ Get rating stats failed:", error);
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get rating stats failed:", error);
+    }
     throw error;
   }
 }
@@ -367,7 +383,9 @@ export async function getUserReviews(
       };
     }
     
-    console.error("❌ Get reviews failed:", error);
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Get reviews failed:", error);
+    }
     throw error;
   }
 }
@@ -392,7 +410,9 @@ export async function submitUserReview(userId: string, review: SubmitReviewData)
       };
     }
     
-    console.error("❌ Submit review failed:", error);
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Submit review failed:", error);
+    }
     throw error;
   }
 }
@@ -417,7 +437,9 @@ export async function canReviewUser(userId: string): Promise<{ success: boolean;
       };
     }
     
-    console.error("❌ Can review check failed:", error);
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Can review check failed:", error);
+    }
     throw error;
   }
 }
@@ -435,16 +457,18 @@ export async function requestReview(requestData: RequestReviewRequest): Promise<
     console.log("✅ Review request sent successfully:", response.data);
     return response.data;
   } catch (error: any) {
-    // Enhanced error logging
-    console.error("❌ Request review failed with error:", error);
-    console.error("❌ Error response:", error?.response?.data);
-    console.error("❌ Error status:", error?.response?.status);
-    console.error("❌ Error config:", {
-      url: error?.config?.url,
-      method: error?.config?.method,
-      data: error?.config?.data,
-      headers: error?.config?.headers ? Object.keys(error?.config?.headers) : 'none'
-    });
+    // Enhanced error logging - only for non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn("⚠️ Request review failed with error:", error);
+      console.warn("⚠️ Error response:", error?.response?.data);
+      console.warn("⚠️ Error status:", error?.response?.status);
+      console.warn("⚠️ Error config:", {
+        url: error?.config?.url,
+        method: error?.config?.method,
+        data: error?.config?.data,
+        headers: error?.config?.headers ? Object.keys(error?.config?.headers) : 'none'
+      });
+    }
     
     // Get error details
     const errorMessage = error?.response?.data?.message || '';

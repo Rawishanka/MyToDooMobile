@@ -4,6 +4,7 @@ import { useStorageState } from '@/src/shared/hooks/useStorageState';
 import { usePostTaskWithImages } from '@/src/shared/hooks/useTaskApi';
 import { debugAuthState, forceFreshLogin } from '@/src/shared/utils/auth-utils';
 import { getCurrencyFromLocation, getCurrencySymbol } from '@/src/shared/utils/currency';
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
@@ -11,13 +12,13 @@ import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -231,7 +232,10 @@ export default function DetailScreen() {
       }
       
     } catch (error: any) {
-      console.error('❌ Error posting task:', error);
+      // Only log non-network errors in development
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Error posting task:', error);
+      }
       
       // Handle authentication errors specifically
       if (error?.message?.includes("Authentication expired") || 

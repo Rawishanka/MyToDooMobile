@@ -1,20 +1,21 @@
 import { CreateTaskRequest } from '@/src/api/types/tasks';
 import { useCreateTask, usePostTaskDirect, usePostTaskWithImages } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function PostTaskScreen() {
@@ -167,8 +168,10 @@ export default function PostTaskScreen() {
             });
           });
         } else {
-          console.error('🚨 CRITICAL: Backend did NOT save any images!');
-          console.error('🚨 We sent', imageUris.length, 'images but got', result?.data?.images?.length || 0, 'back');
+          if (__DEV__) {
+            console.warn('🚨 CRITICAL: Backend did NOT save any images!');
+            console.warn('🚨 We sent', imageUris.length, 'images but got', result?.data?.images?.length || 0, 'back');
+          }
         }
       } else {
         setUploadProgress('Creating task...');
@@ -190,7 +193,10 @@ export default function PostTaskScreen() {
       router.push('/' as any);
       
     } catch (error: any) {
-      console.error('❌ Failed to create task:', error);
+      // Only log non-network errors in development
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Failed to create task:', error);
+      }
       
       let errorMessage = 'Something went wrong. Please try again.';
       

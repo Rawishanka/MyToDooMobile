@@ -9,6 +9,7 @@ import ProfileUpdateForm from '@/src/shared/components/custom_components/profile
 import ZendeskHelp from '@/src/shared/components/custom_components/zendesk-help';
 import { useGetUserProfile, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
 import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { Entypo, Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -229,7 +230,9 @@ export default function AccountScreen() {
           }
         },
         onError: (error: any) => {
-          console.error('Avatar upload error:', error);
+          if (!isNetworkError(error) && __DEV__) {
+            console.warn('⚠️ Avatar upload error:', error?.message);
+          }
           setSelectedImageUri(null); // Reset preview on error
           Alert.alert(
             'Upload Failed', 

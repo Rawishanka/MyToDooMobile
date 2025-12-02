@@ -1,5 +1,6 @@
 ﻿import { useStorageState } from "@/src/shared/hooks/useStorageState";
 import { createApi } from "@/src/shared/utils/api";
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useAuthStore } from "@/src/store/auth-task-store";
 import { useCreateTaskStore } from "@/src/store/create-task-store";
 import { CreateTask } from "@/src/store/create-task-type";
@@ -696,7 +697,10 @@ export function useApiFunctions() {
         return mockMyTasks;
       }
       
-      console.error("❌ Get my tasks failed:", error);
+      // Only log non-network errors in development
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Get my tasks failed:", error);
+      }
       throw error;
     }
   }
@@ -744,10 +748,15 @@ export function useApiFunctions() {
       console.log("✅ Categories API response:", response.data);
       return response.data;
     } catch (error: any) {
-      console.error("❌ Get categories failed:", error);
+      // Only log non-network errors in development
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn("⚠️ Get categories failed:", error);
+      }
       
       // If categories endpoint doesn't exist, try extracting from tasks
-      console.log("⚠️ Trying to extract categories from tasks...");
+      if (__DEV__) {
+        console.log("⚠️ Trying to extract categories from tasks...");
+      }
       try {
         const tasksResponse = await api.get('/tasks');
         const tasks = tasksResponse.data?.data || [];

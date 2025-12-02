@@ -1,6 +1,8 @@
 import { LocationAutocomplete } from '@/src/shared/components/LocationAutocomplete';
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
@@ -19,6 +21,27 @@ import {
 
 // ✅ NEW: Use OCR API for sensitive data detection
 import { OCRAPI } from '@/src/api/ocr-api';
+
+// Helper function to copy image to persistent storage
+const copyImageToPersistentStorage = async (sourceUri: string): Promise<string> => {
+  try {
+    const filename = sourceUri.split('/').pop() || `image_${Date.now()}.jpg`;
+    const destinationUri = `${FileSystem.documentDirectory}${filename}`;
+    
+    // Copy the file to a persistent location
+    await FileSystem.copyAsync({
+      from: sourceUri,
+      to: destinationUri,
+    });
+    
+    console.log('💾 Image copied to persistent storage:', destinationUri);
+    return destinationUri;
+  } catch (error) {
+    console.error('❌ Failed to copy image:', error);
+    // If copy fails, return original URI as fallback
+    return sourceUri;
+  }
+};
 
 interface LocationData {
     address: string;
@@ -83,7 +106,10 @@ Please remove phone numbers and addresses from the image.`,
       setImages(prevImages => [...prevImages, imageUri]);
       return true;
     } catch (error) {
-      console.error('❌ OCR validation error:', error);
+      // Only log non-network errors in development
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ OCR validation error:', error);
+      }
       // Allow upload if OCR service fails
       setImages(prevImages => [...prevImages, imageUri]);
       return true;
@@ -140,11 +166,16 @@ Please remove phone numbers and addresses from the image.`,
       });
 
       if (!result.canceled && result.assets?.[0]) {
+        // Copy image to persistent storage to prevent cache deletion
+        const persistentUri = await copyImageToPersistentStorage(result.assets[0].uri);
         // ✅ Validate with OCR before adding
-        await validateAndAddImage(result.assets[0].uri);
+        await validateAndAddImage(persistentUri);
       }
     } catch (error) {
-      console.error('Error taking photo:', error);
+      // Only log non-network errors in development
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Error taking photo:', error);
+      }
       Alert.alert('Error', 'Failed to take photo. Please try again.');
     } finally {
       setTimeout(() => setIsProcessing(false), 300);
@@ -177,11 +208,16 @@ Please remove phone numbers and addresses from the image.`,
       });
 
       if (!result.canceled && result.assets?.[0]) {
+        // Copy image to persistent storage to prevent cache deletion
+        const persistentUri = await copyImageToPersistentStorage(result.assets[0].uri);
         // ✅ Validate with OCR before adding
-        await validateAndAddImage(result.assets[0].uri);
+        await validateAndAddImage(persistentUri);
       }
     } catch (error) {
-      console.error('Error selecting image:', error);
+      // Only log non-network errors in development
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Error selecting image:', error);
+      }
       Alert.alert('Error', 'Failed to select image. Please try again.');
     } finally {
       setTimeout(() => setIsProcessing(false), 300);

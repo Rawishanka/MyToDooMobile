@@ -1,9 +1,10 @@
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useAcceptOffer, useGetTaskById, useGetTaskOffers } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -73,7 +74,9 @@ export default function AcceptOfferScreen() {
       );
 
     } catch (error: any) {
-      console.error('❌ Failed to accept offer:', error);
+      if (!isNetworkError(error) && __DEV__) {
+        console.warn('⚠️ Failed to accept offer:', error?.message);
+      }
       Alert.alert(
         'Failed to Accept Offer',
         error?.message || 'Something went wrong. Please try again.',
