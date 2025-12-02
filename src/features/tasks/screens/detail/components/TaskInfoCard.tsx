@@ -681,23 +681,30 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
           <Image 
             source={{ 
               uri: (() => {
-                // Priority: 1. Base64 avatar, 2. Profile picture URL, 3. Generated avatar
-                if (task.createdBy?.avatar?.startsWith('data:')) {
+                const firstName = task.createdBy?.firstName || 'User';
+                const lastName = task.createdBy?.lastName || '';
+                
+                // Priority: 1. Base64 avatar, 2. Avatar URL, 3. Profile picture URL, 4. Generated avatar
+                if (task.createdBy?.avatar?.startsWith?.('data:')) {
+                  console.log('✅ Using base64 avatar');
                   return task.createdBy.avatar; // Base64 image
+                } else if (task.createdBy?.avatar && !task.createdBy.avatar.includes('ui-avatars.com')) {
+                  console.log('✅ Using avatar URL:', task.createdBy.avatar);
+                  return task.createdBy.avatar; // URL from backend
                 } else if (task.createdBy?.profilePicture) {
-                  return task.createdBy.profilePicture; // URL image
+                  console.log('✅ Using profilePicture URL:', task.createdBy.profilePicture);
+                  return task.createdBy.profilePicture; // Profile picture URL
                 } else {
-                  // Always fallback to generated avatar
-                  const firstName = task.createdBy?.firstName || 'User';
-                  const lastName = task.createdBy?.lastName || '';
+                  // Fallback to generated avatar
+                  console.log('⚠️ Using generated avatar for:', firstName, lastName);
                   return `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=0052A2&color=fff&size=120`;
                 }
               })()
             }}
             style={styles.avatarImage}
             onError={(error) => {
-              console.log('Avatar image failed to load:', error);
-              // Even on error, the UI avatar service should still work
+              console.log('❌ Avatar image failed to load:', error);
+              console.log('Task creator data:', task.createdBy);
             }}
           />
         </View>

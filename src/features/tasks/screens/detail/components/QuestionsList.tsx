@@ -54,17 +54,34 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
       return 'https://ui-avatars.com/api/?name=User&background=999&color=fff&size=80';
     }
     
-    // Check for real avatar first
-    const avatar = user.profilePicture || user.avatar || user.profile_picture || user.image;
-    if (avatar) return avatar;
-    
-    // Generate avatar from user name
+    // Check for real avatar first - Priority: Base64 avatar, profile picture URL, avatar URL
     const firstName = user.firstName || user.first_name || '';
     const lastName = user.lastName || user.last_name || '';
     const fullName = `${firstName} ${lastName}`.trim();
     const displayName = fullName || user.name || user.username || user.email?.split('@')[0] || 'User';
     
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=007AFF&color=fff&size=80&bold=true`;
+    // Check for base64 avatar first
+    if (user.avatar?.startsWith?.('data:')) {
+      return user.avatar;
+    }
+    
+    // Check for profile picture URL
+    if (user.profilePicture || user.profile_picture) {
+      return user.profilePicture || user.profile_picture;
+    }
+    
+    // Check for regular avatar URL (but not ui-avatars generated ones)
+    if (user.avatar && !user.avatar.includes('ui-avatars.com')) {
+      return user.avatar;
+    }
+    
+    // Check for image field
+    if (user.image) {
+      return user.image;
+    }
+    
+    // Fallback to generated avatar with consistent styling
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=0052A2&color=fff&size=80`;
   };
   
   // Helper function to extract and parse attachments from text
