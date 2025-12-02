@@ -10,22 +10,22 @@ import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-    AllOffersResponse,
-    CreateOfferRequest,
-    CreateOfferResponse,
-    CreateTaskRequest,
-    CreateTaskResponse,
-    MyTasksParams,
-    PaymentStatusResponse,
-    SingleTaskResponse,
-    Task,
-    TaskCompletionStatusResponse,
-    TaskFilterParams,
-    TaskFilterResponse,
-    TaskOffersResponse,
-    TaskSearchParams,
-    TasksResponse,
-    UpdateTaskRequest
+  AllOffersResponse,
+  CreateOfferRequest,
+  CreateOfferResponse,
+  CreateTaskRequest,
+  CreateTaskResponse,
+  MyTasksParams,
+  PaymentStatusResponse,
+  SingleTaskResponse,
+  Task,
+  TaskCompletionStatusResponse,
+  TaskFilterParams,
+  TaskFilterResponse,
+  TaskOffersResponse,
+  TaskSearchParams,
+  TasksResponse,
+  UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -831,9 +831,16 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
     console.log("📤 postTaskDirect called with:");
     console.log("📤 taskData:", JSON.stringify(taskData, null, 2));
     console.log("📤 images count:", taskData.images?.length || 0);
+    console.log("📤 has images field:", 'images' in taskData);
     
-    if (taskData.images && taskData.images.length > 0) {
+    // Check if images exist and have content
+    const hasImages = taskData.images && taskData.images.length > 0;
+    
+    if (hasImages) {
       console.log("🔄 Trying FormData approach first (like profile upload)...");
+      
+      // Extract images array for use in both try and catch blocks
+      const images = taskData.images!; // Already validated hasImages above
       
       try {
         // Try FormData approach first
@@ -856,9 +863,9 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
         });
         
         // Add images as files (backend expects 'files' parameter)
-        for (let i = 0; i < taskData.images.length; i++) {
-          const imageUri = taskData.images[i];
-          console.log(`📸 Adding image ${i + 1}/${taskData.images.length} to FormData as 'files'`);
+        for (let i = 0; i < images.length; i++) {
+          const imageUri = images[i];
+          console.log(`📸 Adding image ${i + 1}/${images.length} to FormData as 'files'`);
           
           const filename = imageUri.split('/').pop() || `task_image_${i}.jpg`;
           const extension = filename.split('.').pop()?.toLowerCase() || 'jpg';
@@ -887,7 +894,7 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
         
         if (formDataResponse.data?.data?.images && formDataResponse.data.data.images.length > 0) {
           console.log("✅ SUCCESS: Backend saved images with FormData approach!");
-          console.log("✅ Sent", taskData.images.length, "images as 'files' parameter");
+          console.log("✅ Sent", images.length, "images as 'files' parameter");
           console.log("✅ Backend returned", formDataResponse.data.data.images.length, "images");
           console.log("✅ Image URLs:", formDataResponse.data.data.images);
           return formDataResponse.data;
@@ -907,7 +914,7 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
         // Convert images to base64 data URIs
         const base64Images: string[] = [];
         
-        for (const imageUri of taskData.images) {
+        for (const imageUri of images) {
           try {
             const FileSystem = require('expo-file-system').default;
             const base64Data = await FileSystem.readAsStringAsync(imageUri, { encoding: 'base64' });
@@ -2826,6 +2833,10 @@ export async function createCancellationRequest(taskId: string, reason: string):
     console.log("✅ Cancellation request created successfully:", response.data);
     console.log("   Request ID:", response.data?.data?._id);
     console.log("   Requester ID:", response.data?.data?.requesterId);
+    console.log("   📊 FULL RESPONSE DATA:", JSON.stringify(response.data, null, 2));
+    console.log("   🎯 Task data in response:", response.data?.data?.task);
+    console.log("   🎯 Task status after request:", response.data?.data?.task?.status);
+    console.log("   🎯 Request status:", response.data?.data?.status);
     return response.data;
   } catch (error: any) {
     console.error("❌ Create cancellation request failed:", error);

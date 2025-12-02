@@ -6,35 +6,31 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Import smart image validation
-import {
-  SmartValidationResult,
-  TaskContext,
-  validateImageSmart
-} from '@/src/services/smartImageValidator';
+// ✅ NEW: Use OCR API for sensitive data detection
+import { OCRAPI } from '@/src/api/ocr-api';
 import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
 
 import {
-  DateOptionSelector,
-  TimeOfDayGrid,
-  TimeToggle,
+    DateOptionSelector,
+    TimeOfDayGrid,
+    TimeToggle,
 } from './components';
 
 interface Category {
@@ -92,11 +88,6 @@ export default function CreateTaskScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
 
-  // Percentage validation states - simplified (no blocking behavior)
-  const [validationResults, setValidationResults] = useState<Map<string, SmartValidationResult>>(new Map());
-  const [currentValidationImage, setCurrentValidationImage] = useState<string>('');
-  const [isValidatingImage, setIsValidatingImage] = useState(false);
-
   // Sync images to store whenever they change
   useEffect(() => {
     console.log('💾 Syncing images to store:', images.length, 'images');
@@ -105,16 +96,6 @@ export default function CreateTaskScreen() {
       photo: images[0] || ''
     });
   }, [images, updateMyTask]);
-
-  // Debug validation results state changes
-  useEffect(() => {
-    console.log('🔍 Validation results state changed:');
-    console.log('📋 Results count:', validationResults.size);
-    console.log('📋 Images count:', images.length);
-    Array.from(validationResults.entries()).forEach(([imageUri, result]) => {
-      console.log(`📋 ${imageUri.substring(imageUri.length - 20)}: ${result.message}`);
-    });
-  }, [validationResults, images]);
 
   // Section 3: Time
   const [selectedOption, setSelectedOption] = useState('');
@@ -376,80 +357,34 @@ export default function CreateTaskScreen() {
     : allCategories;
 
   // Helper function to build task context for validation
-  const getTaskContext = (): TaskContext => {
-    return {
-      title: title || '',
-      description: description || '',
-      category: selectedCategory || '',
-      location: selectedLocation?.address || ''
-    };
-  };
-
-  // Modified image addition function - NOW WITH SMART VALIDATION
-  const addImageWithValidation = async (imageUri: string) => {
+  // ✅ NEW: Validate image using OCR API for sensitive data
+  const validateAndAddImage = async (imageUri: string): Promise<boolean> => {
     try {
-      console.log('📸 Adding image:', imageUri);
+      console.log('🔍 Validating image with OCR API:', imageUri);
+      const validation = await OCRAPI.validateImageForUpload(imageUri);
       
-      // Add image immediately - NO BLOCKING
-      setImages(prevImages => {
-        const newImages = [...prevImages, imageUri];
-        console.log('✅ Image added, total images:', newImages.length);
-        return newImages;
-      });
+      if (!validation.isValid) {
+        console.warn('❌ Image contains sensitive data:', validation.reason);
+        Alert.alert(
+          'Sensitive Data Detected',
+          `This image contains sensitive information and cannot be uploaded:
+
+${validation.reason}
+
+Please remove phone numbers and addresses from the image.`,
+          [{ text: 'OK' }]
+        );
+        return false;
+      }
       
-      // Add placeholder validation result
-      setValidationResults(prev => {
-        const newMap = new Map(prev);
-        newMap.set(imageUri, {
-          isValid: true,
-          confidence: 75,
-          message: '75% - Image added',
-          reasons: ['Image ready for upload'],
-          suggestions: []
-        });
-        return newMap;
-      });
-      
-      // Validate in background WITHOUT blocking
-      const taskContext = getTaskContext();
-      
-      // Run validation asynchronously without awaiting
-      validateImageSmart(imageUri, taskContext)
-        .then(validationResult => {
-          console.log('🎯 Background validation completed:', validationResult.message);
-          
-          // Update validation result after background check
-          setValidationResults(prev => {
-            const newMap = new Map(prev);
-            newMap.set(imageUri, validationResult);
-            return newMap;
-          });
-        })
-        .catch(error => {
-          console.error('⚠️ Background validation failed:', error);
-          // Keep the image even if validation fails
-          setValidationResults(prev => {
-            const newMap = new Map(prev);
-            newMap.set(imageUri, {
-              isValid: true,
-              confidence: 60,
-              message: '60% - Image added (validation limited)',
-              reasons: ['Validation unavailable'],
-              suggestions: []
-            });
-            return newMap;
-          });
-        });
-      
-      console.log('✅ Image added successfully (validation running in background)');
-      
+      console.log('✅ Image passed OCR validation - adding to list');
+      setImages(prevImages => [...prevImages, imageUri]);
+      return true;
     } catch (error) {
-      console.error('❌ Error adding image:', error);
-      Alert.alert(
-        'Error',
-        'Could not add this image. Please try again.',
-        [{ text: 'OK' }]
-      );
+      console.error('❌ OCR validation error:', error);
+      // Allow upload if OCR service fails
+      setImages(prevImages => [...prevImages, imageUri]);
+      return true;
     }
   };
 
@@ -486,7 +421,7 @@ export default function CreateTaskScreen() {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        await addImageWithValidation(result.assets[0].uri);
+        await validateAndAddImage(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error taking photo:', error);
@@ -518,7 +453,7 @@ export default function CreateTaskScreen() {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        await addImageWithValidation(result.assets[0].uri);
+        await validateAndAddImage(result.assets[0].uri);
       }
     } catch (error) {
       console.error('Error selecting image:', error);
@@ -537,14 +472,6 @@ export default function CreateTaskScreen() {
       const newImages = prevImages.filter(img => img !== uri);
       console.log('✅ Image removed, remaining images:', newImages.length);
       return newImages;
-    });
-    
-    // Clear validation results for this image
-    setValidationResults(prev => {
-      const newMap = new Map(prev);
-      newMap.delete(uri);
-      console.log('✅ Validation result cleared, remaining validations:', newMap.size);
-      return newMap;
     });
     
     // Force reset processing state to allow new uploads
@@ -655,30 +582,6 @@ export default function CreateTaskScreen() {
               <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDeleteImage(item)}>
                 <Ionicons name="close-circle" size={22} color="#FF4D4F" />
               </TouchableOpacity>
-              
-              {/* AI validation result display */}
-              {validationResults.get(item) && (
-                <View style={styles.validationTextContainer}>
-                  <Text style={validationResults.get(item)?.isValid ? styles.validationTextSuccess : styles.validationTextWarning}>
-                    {validationResults.get(item)?.message || (validationResults.get(item)?.isValid ? '✅ Image validated' : '⚠️ Image needs improvement')}
-                  </Text>
-                  {/* Show suggestion for failed validation */}
-                  {!validationResults.get(item)?.isValid && validationResults.get(item)?.suggestions && (
-                    <Text style={styles.validationTextDetails}>
-                      💡 {validationResults.get(item)?.suggestions[0] || 'Try taking a clearer photo'}
-                    </Text>
-                  )}
-                </View>
-              )}
-              
-              {/* Show loading for image being validated */}
-              {isValidatingImage && currentValidationImage === item && (
-                <View style={styles.validationTextContainer}>
-                  <Text style={styles.validationTextLoading}>
-                    🔍 Checking image...
-                  </Text>
-                </View>
-              )}
             </View>
           );
         })}

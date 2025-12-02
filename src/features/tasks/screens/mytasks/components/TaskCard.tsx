@@ -72,9 +72,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const completeTaskPaymentMutation = useCompleteTaskPayment();
   
   // Check if there's a pending cancellation request for this task (only for assigned/accepted/completed/cancelled tasks)
-  const isPostPaymentTask = status === 'accepted' || status === 'assigned' || status === 'completed';
+  const isPostPaymentTask = status === 'accepted' || status === 'assigned' || status === 'completed' || status === 'todo';
   const shouldFetchCancellationRequest = isPostPaymentTask || status === 'cancelled';
-  const { data: cancellationRequestData } = useGetCancellationRequest(
+  const { data: cancellationRequestData, refetch: refetchCancellationRequest } = useGetCancellationRequest(
     task._id, 
     shouldFetchCancellationRequest // Fetch for post-payment tasks AND cancelled tasks
   );
@@ -547,16 +547,23 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         });
         
         console.log('✅ Cancellation request created successfully');
+        console.log('   Task should stay in Accepted tab with pending request indicator');
         
         // Close modal and reset state
         setShowPosterCancelModal(false);
         setSelectedCancelReason(null);
         setSelectedCancelReasonData(null);
         
+        // Refetch cancellation request to show the pending status
+        await refetchCancellationRequest();
+        
+        // DON'T call onTaskCancelled here - task should stay in Accepted tab
+        // The task will only move to Cancelled when the request is ACCEPTED by Tasker
+        
         // Show success message
         Alert.alert(
           'Cancellation Request Sent',
-          'Your cancellation request has been sent to the Tasker. The task will be cancelled if they approve.',
+          'Your cancellation request has been sent to the Tasker. The task will remain in the Accepted tab until they respond.',
           [{ text: 'OK' }]
         );
       } else {
@@ -654,25 +661,27 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         });
         
         console.log('✅ Cancellation request created successfully');
+        console.log('   Task should stay in Todoo tab with pending request indicator');
         
         // Close modal and reset state
         setShowTaskerCancelModal(false);
         setSelectedCancelReason(null);
         setSelectedCancelReasonData(null);
         
-        // Notify parent component
-        if (onTaskCancelled) {
-          onTaskCancelled(task._id);
-        }
+        // Refetch cancellation request to show the pending status
+        await refetchCancellationRequest();
+        
+        // DON'T call onTaskCancelled here - task should stay in Todoo tab
+        // The task will only move to Cancelled when the request is ACCEPTED by Poster
         
         // Show success message for REQUEST
         Alert.alert(
           'Cancellation Request Sent',
-          'Your cancellation request has been sent to the Poster for approval.',
+          'Your cancellation request has been sent to the Poster. The task will remain in the Todoo tab until they respond.',
           [{ text: 'OK' }]
         );
         
-        console.log('✅ Cancellation request sent to Poster');
+        console.log('✅ Cancellation request sent to Poster - task stays in Todoo tab');
       } else {
         // Pre-payment task - direct cancellation
         console.log('❌ Direct task cancellation (pre-payment task)');
@@ -815,10 +824,13 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
       console.log('✅ Cancellation request accepted successfully');
 
-      // Close modal
+      // Close modal first
       setShowCancelRequestModal(false);
 
-      // Notify parent component
+      // Refetch cancellation request to get updated status
+      await refetchCancellationRequest();
+
+      // Notify parent component to refresh task list
       if (onTaskCancelled) {
         onTaskCancelled(task._id);
       }
@@ -826,7 +838,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       // Show success message
       Alert.alert(
         'Cancellation Accepted',
-        'The task has been cancelled successfully.',
+        'The task has been cancelled successfully and moved to the Cancelled tab.',
         [{ text: 'OK' }]
       );
     } catch (error: any) {

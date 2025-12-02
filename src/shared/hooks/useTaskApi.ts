@@ -43,11 +43,11 @@ export function useGetAllTasks() {
   return useQuery({
     queryKey: TASK_QUERY_KEYS.lists(),
     queryFn: () => TaskAPI.getAllTasks(),
-    staleTime: 0, // Always consider data stale - fetch fresh data immediately
-    refetchOnMount: true, // Always refetch when component mounts
-    refetchOnWindowFocus: true, // Refetch when user returns to app
+    staleTime: 1 * 60 * 1000, // 1 minute cache - prevents excessive refetching
+    refetchOnMount: false, // Don't refetch on every mount - use cache
+    refetchOnWindowFocus: false, // Don't refetch on window focus - prevents navigation reset
     refetchOnReconnect: true, // Refetch when network reconnects
-    refetchInterval: 30000, // Refetch every 30 seconds to ensure fresh data
+    refetchInterval: false, // Disable automatic polling - use manual refresh instead
   });
 }
 
@@ -59,9 +59,9 @@ export function useGetFilteredTasks(params?: import('@/src/api/types/tasks').Tas
     queryKey: [...TASK_QUERY_KEYS.lists(), 'filtered', params],
     queryFn: () => TaskAPI.getFilteredTasks(params),
     enabled,
-    staleTime: 0, // Always consider data stale
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 2 * 60 * 1000, // 2 minutes cache
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     refetchOnReconnect: true,
   });
 }
@@ -134,7 +134,9 @@ export function useGetMyTasks(params?: MyTasksParams) {
   return useQuery({
     queryKey: TASK_QUERY_KEYS.myTasks(params),
     queryFn: () => TaskAPI.getMyTasks(params),
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 2 * 60 * 1000, // 2 minutes cache
+    refetchOnMount: false, // Don't refetch on mount - preserves screen state
+    refetchOnWindowFocus: false, // Don't refetch on focus - prevents navigation reset
   });
 }
 
@@ -145,7 +147,9 @@ export function useGetMyOffers(params?: MyTasksParams) {
   return useQuery({
     queryKey: TASK_QUERY_KEYS.myOffers(params),
     queryFn: () => TaskAPI.getMyOffers(params),
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 2 * 60 * 1000, // 2 minutes cache
+    refetchOnMount: false, // Don't refetch on mount - preserves screen state
+    refetchOnWindowFocus: false, // Don't refetch on focus - prevents navigation reset
   });
 }
 
@@ -192,9 +196,9 @@ export function useGetAllOffers(params?: {
     queryKey: TASK_QUERY_KEYS.allOffers(params?.taskId),
     queryFn: () => TaskAPI.getAllOffers(params),
     enabled: enabled,
-    staleTime: 30 * 1000, // 30 seconds - keep fresh for real-time updates
-    refetchOnMount: true, // Always refetch when component mounts
-    refetchOnWindowFocus: true, // Refetch when user returns to app
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -260,9 +264,9 @@ export function useGetTaskerPayments() {
   return useQuery({
     queryKey: [...TASK_QUERY_KEYS.all, 'tasker-payments'],
     queryFn: () => TaskAPI.getTaskerPayments(),
-    staleTime: 1 * 60 * 1000, // 1 minute
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -273,9 +277,9 @@ export function useGetPosterPayments() {
   return useQuery({
     queryKey: [...TASK_QUERY_KEYS.all, 'poster-payments'],
     queryFn: () => TaskAPI.getPosterPayments(),
-    staleTime: 1 * 60 * 1000, // 1 minute
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -300,7 +304,7 @@ export function useGetAllPublicQuestions(enabled = true) {
     queryFn: () => TaskAPI.getAllPublicQuestions(),
     enabled: enabled,
     staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchOnMount: true,
+    refetchOnMount: false,
     retry: (failureCount, error: any) => {
       // Don't retry if it's a 404 or 500 error
       if (error?.response?.status === 404 || error?.response?.status === 500) {
@@ -694,10 +698,15 @@ export function useCreateCancellationRequest() {
     mutationFn: ({ taskId, reason }: { taskId: string; reason: string }) => 
       TaskAPI.createCancellationRequest(taskId, reason),
     onSuccess: (data, variables) => {
+      // Only invalidate cancellation request query - DON'T invalidate task lists
+      // Task should stay in current tab (Accepted/Todoo) until request is accepted
       queryClient.invalidateQueries({ queryKey: ['cancellation-request', variables.taskId] });
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
+      
+      // Don't invalidate myTasks or myOffers - this causes task to disappear
+      // queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
+      // queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
+      
+      console.log('✅ Cancellation request created - task should stay visible in current tab');
     },
   });
 }
