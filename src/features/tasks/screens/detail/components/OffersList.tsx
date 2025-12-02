@@ -9,9 +9,9 @@
 // ✅ Rebooked statistics
 // ✅ Accept offer functionality for task creators
 
-import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
-import { getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
+import { getUserRatingStats } from '@/src/api/user-profile-api';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +26,27 @@ interface OffersListProps {
   taskLocation?: { address?: string };
 }
 
+// Custom hook to fetch REAL rating stats from backend API
+const useUserRatingStats = (userId: string | undefined) => {
+  return useQuery({
+    queryKey: ['userRatingStats', userId],
+    queryFn: () => getUserRatingStats(userId!),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000, // Keep cache for 10 minutes
+    retry: (failureCount, error: any) => {
+      // Don't retry on auth errors
+      if (error?.status === 401 || error?.response?.status === 401) {
+        return false;
+      }
+      // Retry once for network errors
+      return failureCount < 1;
+    },
+    // Return previous data on error to avoid breaking UI
+    placeholderData: (previousData) => previousData,
+  });
+};
+
 export const OffersList: React.FC<OffersListProps> = ({ 
   offers, 
   isLoading, 
@@ -36,9 +57,6 @@ export const OffersList: React.FC<OffersListProps> = ({
   taskLocation
 }) => {
   const insets = useSafeAreaInsets();
-  // Use user's current location for currency display (auto geo-location)
-  const { countryInfo } = useLocationCountry();
-  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
   
   // Filter out:
   // 1. The current user's offer (shown separately in MyOfferCard)
@@ -78,28 +96,49 @@ export const OffersList: React.FC<OffersListProps> = ({
       scrollEnabled={false}
       keyExtractor={(item: any) => item._id}
       contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20), marginBottom: 100 }}
-      renderItem={({ item: offer }: { item: any }) => {
-        // Handle both nested and flat offer structures
-        const offerAmount = offer.offer?.amount || offer.amount || 0;
-        const offerCurrency = offer.offer?.currency || offer.currency || 'SGD';
-        const taskTitle = offer.taskId?.title || 'Task';
-        
-        // Debug logging
-        console.log('OffersList - Raw offer data:', JSON.stringify(offer, null, 2));
-        
-        // Extract user information - handle multiple API response structures
-        // Priority: offer.user > offer.taskTaker > offer.taskTakerId
-        const user = offer.user || offer.taskTaker || offer.taskTakerId;
-        
-        console.log('OffersList - User data:', {
-          'offer.user': offer.user,
-          'offer.taskTaker': offer.taskTaker,
-          'offer.taskTakerId': offer.taskTakerId,
-          'selected user': user,
-          'user.rating': user?.rating,
-          'user.completedTasks': user?.completedTasks,
-          'user.isVerified': user?.isVerified,
-        });
+      renderItem={({ item: offer }: { item: any }) => (
+        <OfferCard
+          offer={offer}
+          taskCreatorId={taskCreatorId}
+          currentUserId={currentUserId}
+          onAcceptOffer={onAcceptOffer}
+        />
+      )}
+    />
+  );
+};
+
+// Separate component for each offer to properly use hooks
+interface OfferCardProps {
+  offer: any;
+  taskCreatorId?: string;
+  currentUserId?: string;
+  onAcceptOffer?: (offerId: string) => void;
+}
+
+const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUserId, onAcceptOffer }) => {
+  const taskTitle = offer.taskId?.title || 'Task';
+  
+  // Extract user information
+  const user = offer.user || offer.taskTaker || offer.taskTakerId;
+  const userId = user?._id;
+  
+  // 🔥 FETCH REAL RATING STATS FROM BACKEND API
+  const { data: ratingStatsData, isLoading: isLoadingRatingStats, error: ratingStatsError } = useUserRatingStats(userId);
+  
+  // Safe logging - only log when data exists and in development mode
+  if (__DEV__ && ratingStatsData && !ratingStatsError) {
+    try {
+      console.log('✅ OffersList - Rating stats loaded:', {
+        userId,
+        userName: user?.firstName,
+        hasData: !!ratingStatsData,
+        completedTasks: user?.completedTasks,
+      });
+    } catch {
+      // Ignore logging errors in offline mode
+    }
+  }
         
         // Get user name
         const userName = user?.name || 
@@ -125,10 +164,16 @@ export const OffersList: React.FC<OffersListProps> = ({
           avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0052A2&color=fff&size=100`;
         }
         
-        // Get real rating and stats from user object
-        // Check multiple possible field names for rating
-        const rating = user?.rating ?? user?.averageRating ?? user?.overall_rating ?? 0;
-        const completedTasks = user?.completedTasks || user?.taskCount || user?.total_completed_tasks || 0;
+        // 🔥 USE REAL DATA FROM RATING STATS API
+        const realRatingStats = ratingStatsData?.data;
+        const rating = realRatingStats?.averageRating || 0;
+        const totalReviews = realRatingStats?.totalReviews || 0;
+        
+        // ⚠️ IMPORTANT: completedTasks should come from user profile, NOT from totalReviews
+        // totalReviews is the number of reviews, NOT the number of completed tasks
+        // Backend should provide user.completedTasks or user.taskCount
+        const completedTasks = user?.completedTasks || user?.taskCount || 0;
+        
         const isVerified = user?.isVerified || user?.verified || false;
         const rebookedCount = user?.rebookedCount || user?.rebooked || 0;
         
@@ -145,26 +190,34 @@ export const OffersList: React.FC<OffersListProps> = ({
           completionRate = null; // Don't show for new users
         }
         
-        console.log('OffersList - Final data:', { 
-          userName, 
-          avatarUrl, 
-          rating, 
-          completedTasks, 
-          completionRate,
-          isVerified,
-          rebookedCount
-        });
+        // Safe logging in development mode only
+        if (__DEV__) {
+          try {
+            console.log('🎯 OffersList - User data:', userName, {
+              rating,
+              totalReviews,
+              completedTasks,
+              completionRate,
+            });
+          } catch {
+            // Ignore logging errors in offline mode
+          }
+        }
         
-        console.log('⚠️ RATING DATA MISMATCH CHECK:', {
-          offerId: offer._id,
-          userName,
-          'user._id': user?._id,
-          'user.rating': user?.rating,
-          'user.completedTasks': user?.completedTasks,
-          'extracted rating': rating,
-          'extracted completedTasks': completedTasks,
-          note: 'If rating is 0 but user has completed tasks, there may be a backend data inconsistency'
-        });
+        // ⚠️ DATA VALIDATION: Check for inconsistencies (only in development)
+        if (__DEV__ && !ratingStatsError) {
+          try {
+            if (completedTasks > 0 && rating === 0) {
+              console.log(`⚠️ Data inconsistency for ${userName}: ${completedTasks} tasks but 0 rating`);
+            }
+            
+            if (completedTasks >= 100 && totalReviews === 0) {
+              console.log(`🚨 Critical data issue for ${userName}: 100+ tasks but 0 reviews`);
+            }
+          } catch {
+            // Ignore logging errors in offline mode
+          }
+        }
         
         return (
           <View style={styles.offerCard}>
@@ -200,21 +253,27 @@ export const OffersList: React.FC<OffersListProps> = ({
 
                   {/* Rating and Stats Row */}
                   <View style={styles.offerStatsRow}>
-                    <View style={styles.offerRatingContainer}>
-                      <Ionicons name="star" size={14} color="#FFD700" />
-                      <Text style={styles.offerRatingText}>
-                        {rating != null ? Number(rating).toFixed(1) : '0.0'}
-                      </Text>
-                      <Text style={styles.offerRatingCount}>
-                        ({completedTasks})
-                      </Text>
-                    </View>
-                    {completionRate != null && (
-                      <View style={styles.offerCompletionContainer}>
-                        <Text style={styles.offerCompletionRate}>
-                          {completionRate} Completion Rate
-                        </Text>
-                      </View>
+                    {isLoadingRatingStats ? (
+                      <ActivityIndicator size="small" color="#FFD700" />
+                    ) : (
+                      <>
+                        <View style={styles.offerRatingContainer}>
+                          <Ionicons name="star" size={14} color="#FFD700" />
+                          <Text style={styles.offerRatingText}>
+                            {Number(rating).toFixed(1)}
+                          </Text>
+                          <Text style={styles.offerRatingCount}>
+                            ({totalReviews})
+                          </Text>
+                        </View>
+                        {completionRate != null && (
+                          <View style={styles.offerCompletionContainer}>
+                            <Text style={styles.offerCompletionRate}>
+                              {completionRate} Completion Rate
+                            </Text>
+                          </View>
+                        )}
+                      </>
                     )}
                   </View>
 
@@ -280,9 +339,6 @@ export const OffersList: React.FC<OffersListProps> = ({
               </View>
             )}
           </View>
-        );
-      }}
-    />
   );
 };
 
@@ -385,6 +441,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginTop: 4,
     marginBottom: 4,
+    minHeight: 20,
   },
   offerRatingContainer: {
     flexDirection: 'row',

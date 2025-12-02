@@ -4,14 +4,14 @@ import axios from 'axios';
 import * as Location from 'expo-location';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 export interface Coordinates {
@@ -149,7 +149,9 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       
       return false;
     } catch (error) {
-      console.error('❌ Error requesting location permission:', error);
+      if (__DEV__) {
+        console.log('⚠️ Error requesting location permission:', error);
+      }
       setPermissionStatus('denied');
       return false;
     }
@@ -225,7 +227,9 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       }
       
     } catch (error: any) {
-      console.error('❌ Error getting current location:', error);
+      if (__DEV__) {
+        console.log('⚠️ Error getting current location:', error?.message || error);
+      }
       
       // Provide specific error messages
       let errorMessage = 'Failed to get current location. ';
@@ -315,8 +319,26 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       }
       
     } catch (error: any) {
-      console.error('❌ Mapbox API error:', error);
-      setError("Failed to fetch locations");
+      // Only log non-network errors in development
+      if (__DEV__) {
+        const isNetworkError = error?.code === 'ERR_NETWORK' || 
+                              error?.message?.includes('Network Error') ||
+                              error?.message?.includes('timeout');
+        if (!isNetworkError) {
+          console.log('⚠️ Mapbox API error:', error?.message || error);
+        }
+      }
+      
+      // Handle network errors gracefully
+      const isNetworkError = error?.code === 'ERR_NETWORK' || 
+                            error?.message?.includes('Network Error') ||
+                            error?.message?.includes('timeout');
+      
+      if (isNetworkError) {
+        setError("No internet connection. Please check your network.");
+      } else {
+        setError("Failed to fetch locations");
+      }
       
       // Provide fallback manual input
       setSuggestions([{
