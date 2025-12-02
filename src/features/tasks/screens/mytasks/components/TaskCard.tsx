@@ -74,7 +74,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   // Check if there's a pending cancellation request for this task (only for assigned/accepted/completed/cancelled tasks)
   const isPostPaymentTask = status === 'accepted' || status === 'assigned' || status === 'completed' || status === 'todo';
   const shouldFetchCancellationRequest = isPostPaymentTask || status === 'cancelled';
-  const { data: cancellationRequestData } = useGetCancellationRequest(
+  const { data: cancellationRequestData, refetch: refetchCancellationRequest } = useGetCancellationRequest(
     task._id, 
     shouldFetchCancellationRequest // Fetch for post-payment tasks AND cancelled tasks
   );
