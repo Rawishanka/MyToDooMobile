@@ -1724,13 +1724,17 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     // Handle validation errors (400)
     if (error?.response?.status === 400) {
       const errorMessage = error?.response?.data?.message || error?.response?.data?.error;
-      console.error("❌ Update task failed - Validation error (400):", errorMessage);
+      if (__DEV__) {
+        console.log("❌ Update task validation error (400):", errorMessage);
+      }
       throw new Error(errorMessage || "Invalid task data. Please check your inputs.");
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Update task failed - Authentication required (401)");
+      if (__DEV__) {
+        console.log("❌ Update task - Authentication required (401)");
+      }
       
       // Try to handle auth error and retry once
       const retryResult = await handleAuthErrorAndRetry();
@@ -1744,20 +1748,26 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     
     // Handle not found errors
     if (error?.response?.status === 404) {
-      console.error("❌ Update task failed - Task not found (404)");
+      if (__DEV__) {
+        console.log("❌ Update task - Task not found (404)");
+      }
       throw new Error("Task not found. It may have been deleted.");
     }
     
     // Handle permission denied errors
     if (error?.response?.status === 403) {
-      console.error("❌ Update task failed - Permission denied (403)");
+      if (__DEV__) {
+        console.log("❌ Update task - Permission denied (403)");
+      }
       throw new Error("You don't have permission to update this task.");
     }
     
     // Handle server errors
     if (error?.response?.status >= 500) {
-      console.error("❌ Update task failed - Server error:", error?.response?.status);
-      console.warn("🔄 Server error detected, using development fallback");
+      if (__DEV__) {
+        console.log("❌ Update task - Server error:", error?.response?.status);
+        console.log("🔄 Server error detected, using development fallback");
+      }
       
       // Development fallback for server errors
       if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
@@ -1906,7 +1916,9 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     }
     
     // Catch-all error handler with development fallback
-    console.error("❌ Update task failed with unexpected error:", error?.message);
+    if (__DEV__) {
+      console.log("❌ Update task - Unexpected error:", error?.message);
+    }
     
     // Provide development fallback for any other errors
     if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
@@ -2106,7 +2118,9 @@ export async function updateTaskWithImages(
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Update task failed - Authentication required (401)");
+      if (__DEV__) {
+        console.log("❌ Update task with images - Authentication required (401)");
+      }
       const retryResult = await handleAuthErrorAndRetry();
       if (retryResult.success) {
         console.log("🔄 Retrying update with images after auth refresh");
@@ -2174,7 +2188,9 @@ export async function deleteTask(taskId: string): Promise<{ success: boolean; me
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Delete task failed - Authentication required (401)");
+      if (__DEV__) {
+        console.log("❌ Delete task - Authentication required (401)");
+      }
       
       // Try to handle auth error and retry once
       const retryResult = await handleAuthErrorAndRetry();
@@ -2199,7 +2215,9 @@ export async function deleteTask(taskId: string): Promise<{ success: boolean; me
     }
     
     if (error?.response?.status === 403) {
-      console.error("❌ Delete task failed - Permission denied (403)");
+      if (__DEV__) {
+        console.log("❌ Delete task - Permission denied (403)");
+      }
       return {
         success: false,
         message: "You don't have permission to delete this task."
@@ -2207,7 +2225,9 @@ export async function deleteTask(taskId: string): Promise<{ success: boolean; me
     }
     
     if (error?.response?.status >= 500) {
-      console.error("❌ Delete task failed - Server error:", error?.response?.status);
+      if (__DEV__) {
+        console.log("❌ Delete task - Server error:", error?.response?.status);
+      }
       return {
         success: false,
         message: "Server error. Please try again later."
@@ -2362,13 +2382,17 @@ export async function createOffer(taskId: string, offerData: CreateOfferRequest)
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Create offer failed - Authentication required (401)");
+      if (__DEV__) {
+        console.log("❌ Create offer - Authentication required (401)");
+      }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
     // Handle validation errors (400 Bad Request)
     if (error?.response?.status === 400) {
-      console.error("❌ Create offer failed - Bad Request (400)");
+      if (__DEV__) {
+        console.log("❌ Create offer - Bad Request (400)");
+      }
       const errorMessage = error?.response?.data?.message || 
                           error?.response?.data?.error || 
                           "Invalid offer data. Please check your amount and message.";
@@ -2526,11 +2550,16 @@ export async function updateOffer(taskId: string, offerId: string, updates: Part
     console.log("✅ Update offer success:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Update offer failed:", error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.log("⚠️ Update offer failed:", error?.message);
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Update offer failed - Authentication required (401)");
+      if (__DEV__) {
+        console.log("❌ Update offer - Authentication required (401)");
+      }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
@@ -2637,7 +2666,10 @@ export async function getAllOffers(params?: {
     };
     
   } catch (error: any) {
-    console.error("❌ Get all offers failed:", error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.log("⚠️ Get all offers failed:", error?.message || error);
+    }
     
     // Handle authentication errors - return empty data instead of throwing
     if (error?.response?.status === 401 || error?.isAuthError) {
@@ -2700,11 +2732,16 @@ export async function getTaskCompletionStatus(taskId: string): Promise<TaskCompl
     console.log("✅ Get completion status success:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Get completion status failed:", error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.log("⚠️ Get completion status failed:", error?.message);
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Get completion status failed - Authentication required (401)");
+      if (__DEV__) {
+        console.log("❌ Get completion status - Authentication required (401)");
+      }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
@@ -2767,13 +2804,18 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
     console.log("✅ Complete task success:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Complete task failed:", error);
-    console.error("❌ Error response:", error?.response?.data);
-    console.error("❌ Error status:", error?.response?.status);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.log("⚠️ Complete task failed:", error?.message);
+      console.log("⚠️ Error response:", error?.response?.data);
+      console.log("⚠️ Error status:", error?.response?.status);
+    }
     
     // Handle specific error about offer status validation
     if (error?.response?.data?.message?.includes('Offer validation failed')) {
-      console.error("❌ Offer validation error - trying alternative completion approach");
+      if (__DEV__) {
+        console.log("❌ Offer validation error - trying alternative completion approach");
+      }
       
       // Try the PUT method instead of PATCH
       try {
@@ -2799,14 +2841,18 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Complete task failed - Authentication required (401)");
+      if (__DEV__) {
+        console.log("❌ Complete task - Authentication required (401)");
+      }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
     // Handle 400 Bad Request with backend message
     if (error?.response?.status === 400) {
       const backendMessage = error?.response?.data?.message || error?.response?.data?.error;
-      console.error("❌ Complete task failed - Bad Request (400):", backendMessage);
+      if (__DEV__) {
+        console.log("❌ Complete task - Bad Request (400):", backendMessage);
+      }
       throw new Error(backendMessage || "Cannot complete task. Please check the task status.");
     }
     
@@ -2827,11 +2873,16 @@ export async function completeTaskAlt(taskId: string): Promise<{ success: boolea
     console.log("✅ Complete task (alt) success:", response.data);
     return response.data;
   } catch (error: any) {
-    console.error("❌ Complete task (alt) failed:", error);
+    // Only log non-network errors in development
+    if (!isNetworkError(error) && __DEV__) {
+      console.log("⚠️ Complete task (alt) failed:", error?.message);
+    }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Complete task (alt) failed - Authentication required (401)");
+      if (__DEV__) {
+        console.log("❌ Complete task (alt) - Authentication required (401)");
+      }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
