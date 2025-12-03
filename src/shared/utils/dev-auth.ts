@@ -49,6 +49,8 @@ export async function autoLoginForDevelopment() {
  */
 export async function clearAuthAndRestart() {
   const { clearAuth } = useAuthStore.getState();
+  const { resetTask } = await import('@/src/store/create-task-store').then(m => m.useCreateTaskStore.getState());
   await clearAuth();
+  resetTask();
   console.log("🔄 Authentication cleared - app will need fresh login");
 }
