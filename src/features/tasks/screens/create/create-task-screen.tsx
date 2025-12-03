@@ -6,12 +6,13 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  BackHandler,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -28,6 +29,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // ✅ NEW: Use OCR API for sensitive data detection
 import { OCRAPI } from '@/src/api/ocr-api';
 import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
+
+import {
+  DateOptionSelector,
+  TimeOfDayGrid,
+  TimeToggle,
+} from './components';
 
 // Helper function to copy image to persistent storage
 const copyImageToPersistentStorage = async (sourceUri: string): Promise<string> => {
@@ -50,12 +57,6 @@ const copyImageToPersistentStorage = async (sourceUri: string): Promise<string> 
   }
 };
 
-import {
-  DateOptionSelector,
-  TimeOfDayGrid,
-  TimeToggle,
-} from './components';
-
 interface Category {
   _id: string;
   name: string;
@@ -77,7 +78,7 @@ interface LocationData {
 export default function CreateTaskScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { myTask, updateMyTask } = useCreateTaskStore();
+  const { myTask, updateMyTask, resetTask } = useCreateTaskStore();
   const insets = useSafeAreaInsets();
 
   // Refs for sections
@@ -178,6 +179,55 @@ export default function CreateTaskScreen() {
       keyboardDidHideListener.remove();
     };
   }, []);
+
+  // Handle Android hardware back button
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        // Check if user has entered any data (local state or store)
+        const hasLocalData = title.trim() || description.trim() || images.length > 0 || selectedCategory || selectedLocation || selectedOption;
+        const hasStoreData = myTask.title || myTask.description || myTask.photos?.length > 0 || 
+                            ('category' in myTask && myTask.category) || 
+                            ('location' in myTask && myTask.location);
+        const hasData = hasLocalData || hasStoreData;
+        
+        if (hasData) {
+          // Show confirmation dialog
+          Alert.alert(
+            'Discard Changes?',
+            'You have unsaved changes. Do you want to discard them?',
+            [
+              {
+                text: 'Cancel',
+                style: 'cancel',
+                onPress: () => {} // Do nothing, stay on screen
+              },
+              {
+                text: 'Discard',
+                style: 'destructive',
+                onPress: () => {
+                  console.log('🗑️ User confirmed discard via hardware back');
+                  resetTask();
+                  router.back();
+                }
+              }
+            ]
+          );
+          return true; // Prevent default back behavior
+        } else {
+          // No data, allow default back behavior
+          resetTask();
+          return false;
+        }
+      };
+
+      // Add event listener and get subscription
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      // Cleanup using subscription.remove()
+      return () => subscription.remove();
+    }, [title, description, images, selectedCategory, selectedLocation, selectedOption, myTask, resetTask, router])
+  );
 
   // Scroll to specific section if requested
   useEffect(() => {
@@ -766,7 +816,47 @@ Please remove phone numbers and addresses from the image.`,
       <View style={styles.container}>
         {/* Fixed Header */}
         <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => {
+          // Check if user has entered any data (local state or store)
+          const hasLocalData = title.trim() || description.trim() || images.length > 0 || selectedCategory || selectedLocation || selectedOption;
+          const hasStoreData = myTask.title || myTask.description || myTask.photos?.length > 0 || 
+                              ('category' in myTask && myTask.category) || 
+                              ('location' in myTask && myTask.location);
+          const hasData = hasLocalData || hasStoreData;
+          
+          console.log('🔙 Back button pressed - Data check:');
+          console.log('   Local data exists:', hasLocalData);
+          console.log('   Store data exists:', hasStoreData);
+          console.log('   Has data:', hasData);
+          
+          if (hasData) {
+            // Prompt user to confirm discarding changes
+            Alert.alert(
+              'Discard Changes?',
+              'You have unsaved changes. Do you want to discard them?',
+              [
+                {
+                  text: 'Cancel',
+                  style: 'cancel'
+                },
+                {
+                  text: 'Discard',
+                  style: 'destructive',
+                  onPress: () => {
+                    console.log('🗑️ User confirmed discard - resetting task form');
+                    resetTask();
+                    router.back();
+                  }
+                }
+              ]
+            );
+          } else {
+            // No data entered, just go back
+            console.log('✅ No data to discard, going back');
+            resetTask();
+            router.back();
+          }
+        }}>
           <ChevronLeft size={24} color="#333" />
         </TouchableOpacity>
         
