@@ -1,19 +1,21 @@
 import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  BackHandler,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
 
@@ -35,7 +37,7 @@ export default function TitleInputScreen() {
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
   
   const router = useRouter();
-  const { myTask, updateMyTask } = useCreateTaskStore();
+  const { myTask, updateMyTask, resetTask } = useCreateTaskStore();
 
   // Fetch categories
   const { data: categoriesResponse, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
@@ -86,13 +88,98 @@ export default function TitleInputScreen() {
     }
   };
 
+  // Handle Android hardware back button
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        // Check if user has entered any data (local state or store)
+        const hasLocalData = title.trim() || description.trim() || selectedCategory;
+        const hasStoreData = myTask.title || myTask.description || ('category' in myTask && myTask.category);
+        const hasData = hasLocalData || hasStoreData;
+        
+        if (hasData) {
+          // Show confirmation dialog
+          Alert.alert(
+            'Discard Changes?',
+            'You have unsaved changes. Do you want to discard them?',
+            [
+              {
+                text: 'Cancel',
+                style: 'cancel',
+                onPress: () => {} // Do nothing, stay on screen
+              },
+              {
+                text: 'Discard',
+                style: 'destructive',
+                onPress: () => {
+                  console.log('🗑️ User confirmed discard via hardware back');
+                  resetTask();
+                  router.back();
+                }
+              }
+            ]
+          );
+          return true; // Prevent default back behavior
+        } else {
+          // No data, allow default back behavior
+          resetTask();
+          return false;
+        }
+      };
+
+      // Add event listener and get subscription
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      // Cleanup using subscription.remove()
+      return () => subscription.remove();
+    }, [title, description, selectedCategory, myTask, resetTask, router])
+  );
+
   return (
     <KeyboardAvoidingView 
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+      <TouchableOpacity style={styles.backButton} onPress={() => {
+        // Check if user has entered any data (local state or store)
+        const hasLocalData = title.trim() || description.trim() || selectedCategory;
+        const hasStoreData = myTask.title || myTask.description || ('category' in myTask && myTask.category);
+        const hasData = hasLocalData || hasStoreData;
+        
+        console.log('🔙 Back button pressed - Data check:');
+        console.log('   Local data:', { title: title.trim(), description: description.trim(), category: selectedCategory });
+        console.log('   Store data:', { title: myTask.title, description: myTask.description, category: ('category' in myTask ? myTask.category : null) });
+        console.log('   Has data:', hasData);
+        
+        if (hasData) {
+          // Prompt user to confirm discarding changes
+          Alert.alert(
+            'Discard Changes?',
+            'You have unsaved changes. Do you want to discard them?',
+            [
+              {
+                text: 'Cancel',
+                style: 'cancel'
+              },
+              {
+                text: 'Discard',
+                style: 'destructive',
+                onPress: () => {
+                  console.log('🗑️ User confirmed discard - resetting task form');
+                  resetTask();
+                  router.back();
+                }
+              }
+            ]
+          );
+        } else {
+          // No data entered, just go back
+          console.log('✅ No data to discard, going back');
+          resetTask();
+          router.back();
+        }
+      }}>
         <ChevronLeft size={24} color="#333" />
       </TouchableOpacity>
 
