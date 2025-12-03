@@ -117,8 +117,14 @@ export const useLocationCountry = () => {
         setCountryInfo(DEFAULT_COUNTRY);
       }
       
-    } catch (error) {
-      console.error('❌ Error detecting country:', error);
+    } catch (error: any) {
+      if (__DEV__) {
+        const isLocationError = error?.code?.includes('E_LOCATION') || 
+                               error?.message?.includes('Location');
+        if (!isLocationError) {
+          console.log('⚠️ Error detecting country:', error?.message || error);
+        }
+      }
       setError('Unable to detect location');
       setCountryInfo(DEFAULT_COUNTRY);
     } finally {
