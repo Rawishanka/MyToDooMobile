@@ -72,8 +72,8 @@ export const useSignup = () => {
   const [smsTimer, setSmsTimer] = useState(57);
   
   // Refs for OTP inputs
-  const emailOtpRefs = useRef<Array<TextInput | null>>([]);
-  const smsOtpRefs = useRef<Array<TextInput | null>>([]);
+  const emailOtpRefs = useRef<(TextInput | null)[]>([]);
+  const smsOtpRefs = useRef<(TextInput | null)[]>([]);
   
   // API hooks
   const { mutateAsync: signUp } = useCreateSignUpToken();
