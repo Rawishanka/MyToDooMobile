@@ -1,5 +1,6 @@
 import { useClearAllCaches } from '@/src/shared/utils/cache-utils';
 import { useAuthStore } from '@/src/store/auth-task-store';
+import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -8,6 +9,7 @@ export default function LogoutPopup({ onBack }) {
   const [showPopup, setShowPopup] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { clearAuth } = useAuthStore();
+  const { resetTask } = useCreateTaskStore();
   const clearAllCaches = useClearAllCaches();
   const router = useRouter();
 
@@ -27,15 +29,19 @@ export default function LogoutPopup({ onBack }) {
       console.log("🧹 Clearing all caches...");
       clearAllCaches();
       
-      // STEP 2: Wait a moment for cache clearing to complete
+      // STEP 2: Reset task creation form to clear any unsaved data
+      console.log("🧹 Resetting task creation form...");
+      resetTask();
+      
+      // STEP 3: Wait a moment for cache clearing to complete
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // STEP 3: Disable auth queries
+      // STEP 4: Disable auth queries
       console.log("🚫 Disabling all React Query hooks...");
       const { disableAuth } = useAuthStore.getState();
       disableAuth();
       
-      // STEP 4: Clear all authentication data
+      // STEP 5: Clear all authentication data
       await clearAuth();
       
       console.log("✅ Logout successful, redirecting to login...");

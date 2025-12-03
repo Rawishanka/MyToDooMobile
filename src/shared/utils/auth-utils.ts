@@ -10,6 +10,7 @@ import { Alert } from 'react-native';
  * 🧹 Clear All Authentication Data
  * Removes all stored tokens and credentials from both AsyncStorage and auth store
  * Also clears React Query cache to prevent data persistence
+ * Also resets task creation form to clear any unsaved user data
  */
 export async function clearAllAuthData() {
   try {
@@ -25,6 +26,11 @@ export async function clearAllAuthData() {
     
     // Clear auth store
     useAuthStore.getState().clearAuth();
+    
+    // Clear task creation store to prevent form data persistence
+    const { resetTask } = await import('@/src/store/create-task-store').then(m => m.useCreateTaskStore.getState());
+    resetTask();
+    console.log("✅ Task creation form reset");
     
     // Clear all authentication-related items from AsyncStorage
     await AsyncStorage.multiRemove([
