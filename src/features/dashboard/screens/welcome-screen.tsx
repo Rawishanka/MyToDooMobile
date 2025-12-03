@@ -155,6 +155,20 @@ export default function WelcomeScreen() {
       return;
     }
     
+    // Check for numbers
+    const hasNumbers = /\d/.test(trimmedInput);
+    if (hasNumbers) {
+      setErrorMessage('Numbers are not allowed. Only letters, spaces, and basic punctuation.');
+      return;
+    }
+    
+    // Check for invalid special characters (allow only letters, spaces, apostrophes, hyphens, commas, periods)
+    const hasInvalidChars = /[^a-zA-Z\s'\-,.]/.test(trimmedInput);
+    if (hasInvalidChars) {
+      setErrorMessage('Only letters, spaces, and basic punctuation (\' - , .) are allowed.');
+      return;
+    }
+    
     // Clear error and proceed
     setErrorMessage('');
     updateMyTask({
@@ -219,18 +233,10 @@ export default function WelcomeScreen() {
             placeholderTextColor="#999"
             value={taskInput}
             onChangeText={(text) => {
-              // Check if user is trying to type numbers
-              const hasNumbers = /\d/.test(text);
-              
-              // Remove numbers and special characters
-              const cleanedText = text.replace(/[^a-zA-Z\s'\-,.]/g, '');
-              setTaskInput(cleanedText);
-              
-              // Show error message if numbers were detected
-              if (hasNumbers && text !== cleanedText) {
-                setErrorMessage('Numbers are not allowed. Only letters, spaces, and basic punctuation.');
-              } else if (errorMessage) {
-                setErrorMessage(''); // Clear error on typing
+              setTaskInput(text);
+              // Clear error message while typing
+              if (errorMessage) {
+                setErrorMessage('');
               }
             }}
             maxLength={100}
