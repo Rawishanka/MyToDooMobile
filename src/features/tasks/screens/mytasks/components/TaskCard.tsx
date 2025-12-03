@@ -2,15 +2,15 @@ import { Task } from '@/src/api/types/tasks';
 import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import {
-  useAcceptOffer,
-  useCancelTask,
-  useCompleteTask,
-  useCompleteTaskPayment,
-  useCreateCancellationRequest,
-  useDeleteTask,
-  useGetCancellationReasons,
-  useGetCancellationRequest,
-  useRespondToCancellationRequest
+    useAcceptOffer,
+    useCancelTask,
+    useCompleteTask,
+    useCompleteTaskPayment,
+    useCreateCancellationRequest,
+    useDeleteTask,
+    useGetCancellationReasons,
+    useGetCancellationRequest,
+    useRespondToCancellationRequest
 } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromLocation, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
@@ -1395,7 +1395,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             </TouchableOpacity>
           </>
         ) : (
-          // Posted tab or other tabs: Edit + Delete + Cancel
+          // Posted tab or other tabs: Edit + Delete + Cancel (except Cancel for Poster in Posted tab)
           <>
             {/* Edit Button */}
             <TouchableOpacity 
@@ -1450,23 +1450,25 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               />
             </TouchableOpacity>
             
-            {/* Cancel Button */}
-            <TouchableOpacity 
-              style={[
-                styles.actionButton,
-                isProcessing && styles.disabledButton
-              ]} 
-              activeOpacity={0.6}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-              onPress={handleCancelTask}
-              disabled={isProcessing}
-            >
-              <MaterialIcons 
-                name="cancel" 
-                size={20} 
-                color={isProcessing ? "#999" : "#dc3545"} 
-              />
-            </TouchableOpacity>
+            {/* Cancel Button - Hidden for Poster role in Posted tab */}
+            {!(userRole === 'Poster' && !status) && (
+              <TouchableOpacity 
+                style={[
+                  styles.actionButton,
+                  isProcessing && styles.disabledButton
+                ]} 
+                activeOpacity={0.6}
+                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                onPress={handleCancelTask}
+                disabled={isProcessing}
+              >
+                <MaterialIcons 
+                  name="cancel" 
+                  size={20} 
+                  color={isProcessing ? "#999" : "#dc3545"} 
+                />
+              </TouchableOpacity>
+            )}
           </>
         )} 
       </View>
