@@ -42,7 +42,13 @@ export interface UpdateProfileRequest {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  location?: string;
+  location?: {
+    country?: string;
+    countryCode?: string;
+    region?: string;
+    city?: string;
+    suburb?: string;
+  };
   bio?: string;
   skills?: {
     goodAt?: string[];
@@ -181,11 +187,20 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
  */
 export async function updateUserProfile(profileData: UpdateProfileRequest): Promise<UserProfileResponse> {
   try {
-    console.log("📝 Updating user profile:", profileData);
+    console.log("📝 Updating user profile with data:", JSON.stringify(profileData, null, 2));
     const response = await api.put('/users/profile', profileData);
     console.log("✅ User profile updated successfully:", response.data);
     return response.data;
   } catch (error: any) {
+    // Log detailed error information
+    console.error("❌ Update profile API error details:", {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      message: error?.message,
+      requestData: profileData,
+    });
+    
     // Handle auth errors
     if (error?.isAuthError || error?.status === 401) {
       console.log("ℹ️ Authentication required to update profile");
@@ -203,7 +218,9 @@ export async function updateUserProfile(profileData: UpdateProfileRequest): Prom
           lastName: profileData.lastName || "Doe",
           email: "john@example.com",
           phone: profileData.phone || "+1234567890",
-          location: profileData.location || "Sydney, NSW",
+          location: typeof profileData.location === 'string' 
+            ? profileData.location 
+            : profileData.location?.city || "Sydney, NSW",
           bio: profileData.bio || "Hi I'm John",
           skills: {
             goodAt: profileData.skills?.goodAt || [],

@@ -50,15 +50,45 @@ export function createApi(baseURL: string) {
             console.log("✅ Auth endpoint - no token required:", config.url);
         }
         
+        // 🔍 Log full request details for debugging
+        console.log("📤 API Request:", {
+            method: config.method?.toUpperCase(),
+            url: config.url,
+            baseURL: config.baseURL,
+            fullURL: `${config.baseURL || ''}${config.url || ''}`,
+            data: config.data,
+            params: config.params,
+            headers: {
+                'Content-Type': config.headers['Content-Type'],
+                'Authorization': config.headers.Authorization ? '✓ Present' : '✗ Missing',
+            }
+        });
+        
         return config;
     });
 
     // Add response interceptor to handle 401 errors globally
     axiosInstance.interceptors.response.use(
         (response) => {
+            // 🔍 Log successful response
+            console.log("📥 API Response:", {
+                status: response.status,
+                statusText: response.statusText,
+                url: response.config.url,
+                data: response.data,
+            });
             return response;
         },
         async (error) => {
+            // 🔍 Log error response details
+            console.error("❌ API Error Response:", {
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                url: error.config?.url,
+                data: error.response?.data,
+                message: error.message,
+            });
+            
             // Silent network error handling - don't log network errors
             if (isNetworkError(error)) {
                 return Promise.reject({

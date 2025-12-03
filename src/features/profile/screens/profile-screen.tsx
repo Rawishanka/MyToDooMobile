@@ -34,7 +34,7 @@ import TaskAlerts from './taskalerts';
 
 export default function AccountScreen() {
   const [currentScreen, setCurrentScreen] = useState('account');
-  const [editAccessStatus, setEditAccessStatus] = useState<'locked' | 'pending' | 'approved'>('locked');
+  const [editAccessStatus, setEditAccessStatus] = useState<'locked' | 'pending' | 'approved'>('approved');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
 
@@ -315,18 +315,7 @@ export default function AccountScreen() {
   };
 
   const navigateToProfileUpdate = () => {
-    // Check if profile editing is locked
-    if (editAccessStatus === 'locked') {
-      setShowRequestModal(true);
-      return;
-    }
-    
-    if (editAccessStatus === 'pending') {
-      setShowPendingModal(true);
-      return;
-    }
-    
-    // If approved, allow editing
+    // Allow editing for all users
     setCurrentScreen('profile-update');
   };
 
@@ -599,11 +588,11 @@ export default function AccountScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>PROFILE</Text>
         <MenuItem 
-          icon={<Ionicons name="person-outline" size={20} color={editAccessStatus === 'approved' ? "#0052A2" : "#999"} />}
+          icon={<Ionicons name="person-outline" size={20} color="#0052A2" />}
           text="Edit Profile"
           onPress={navigateToProfileUpdate} 
-          subtext={editAccessStatus === 'locked' ? "Editing is disabled until approved by admin" : editAccessStatus === 'pending' ? "Request pending approval" : "Update your personal information"}
-          disabled={editAccessStatus !== 'approved'}
+          subtext="Update your personal information"
+          disabled={false}
         />
         <MenuItem 
           icon={<Ionicons name="shield-checkmark-outline" size={20} color="#0052A2" />}

@@ -1,11 +1,13 @@
 // components/custom_components/profile-update-form.tsx
 import { User } from '@/src/api/types/user';
 import { UserProfile } from '@/src/api/user-profile-api';
-import { updateUserProfile } from '@/src/shared/hooks/useUserApi';
+import { useUpdateUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     Alert,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -23,21 +25,30 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
   const [firstName, setFirstName] = useState(userData?.firstName || '');
   const [lastName, setLastName] = useState(userData?.lastName || '');
   const [phone, setPhone] = useState(userData?.phone || '');
-  const [location, setLocation] = useState(userData?.location || '');
+  const [city, setCity] = useState(
+    typeof userData?.location === 'string' 
+      ? userData.location 
+      : userData?.location?.city || userData?.location?.suburb || ''
+  );
   const [bio, setBio] = useState(userData?.bio || '');
   
-  const [isPending, setIsPending] = useState(false);
+  const updateProfile = useUpdateUserProfile();
 
   const handleSaveProfile = async () => {
-    setIsPending(true);
     try {
-      await updateUserProfile({
+      const profileData = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         phone: phone.trim(),
-        location: location.trim(),
+        location: {
+          city: city.trim(),
+        },
         bio: bio.trim(),
-      });
+      };
+
+      console.log("📤 Profile form sending data:", JSON.stringify(profileData, null, 2));
+      
+      await updateProfile.mutateAsync(profileData);
 
       Alert.alert(
         'Success',
@@ -45,18 +56,26 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
         [{ text: 'OK', onPress: onBack }]
       );
     } catch (error: any) {
+      console.error('❌ Profile update error:', error);
+      console.error('❌ Error details:', {
+        message: error?.message,
+        response: error?.response?.data,
+        status: error?.response?.status,
+      });
       Alert.alert(
         'Error',
         error?.message || 'Failed to update profile. Please try again.',
         [{ text: 'OK' }]
       );
-    } finally {
-      setIsPending(false);
     }
   };
   
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
@@ -66,7 +85,12 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
         <View style={styles.placeholder} />
       </View>
       
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.form}>
           <Text style={styles.sectionTitle}>Personal Information</Text>
           
@@ -78,6 +102,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
               onChangeText={setFirstName}
               placeholder="Enter your first name"
               autoCapitalize="words"
+              placeholderTextColor="#999"
             />
           </View>
           
@@ -89,6 +114,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
               onChangeText={setLastName}
               placeholder="Enter your last name"
               autoCapitalize="words"
+              placeholderTextColor="#999"
             />
           </View>
           
@@ -100,17 +126,19 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
               onChangeText={setPhone}
               placeholder="Enter your phone number"
               keyboardType="phone-pad"
+              placeholderTextColor="#999"
             />
           </View>
           
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Location</Text>
+            <Text style={styles.label}>City/Location</Text>
             <TextInput
               style={styles.input}
-              value={location}
-              onChangeText={setLocation}
-              placeholder="Enter your location"
+              value={city}
+              onChangeText={setCity}
+              placeholder="Enter your city"
               autoCapitalize="words"
+              placeholderTextColor="#999"
             />
           </View>
           
@@ -124,24 +152,28 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
               multiline
               numberOfLines={4}
               textAlignVertical="top"
+              placeholderTextColor="#999"
             />
           </View>
+          
+          {/* Extra padding to ensure fields are visible above keyboard */}
+          <View style={{ height: 100 }} />
         </View>
       </ScrollView>
       
       {/* Save Button */}
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.saveButton, isPending && styles.saveButtonDisabled]}
+          style={[styles.saveButton, updateProfile.isPending && styles.saveButtonDisabled]}
           onPress={handleSaveProfile}
-          disabled={isPending}
+          disabled={updateProfile.isPending}
         >
           <Text style={styles.saveButtonText}>
-            {isPending ? 'Saving...' : 'Save Changes'}
+            {updateProfile.isPending ? 'Saving...' : 'Save Changes'}
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -173,6 +205,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   form: {
     padding: 20,
