@@ -106,14 +106,35 @@ export default function WelcomeScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  // Reset task input when task is completed
+  // Reset task input and form when user returns to dashboard
+  // This clears abandoned task creation forms
   useFocusEffect(
     useCallback(() => {
-      if (!myTask.title || myTask.title === '') {
+      console.log('📱 Dashboard focused - checking task state');
+      console.log('   Current task title:', myTask.title);
+      console.log('   Current task input:', taskInput);
+      
+      // Sync the input with store title if they differ
+      // This handles cases where user navigated away and came back
+      if (myTask.title && myTask.title !== taskInput) {
+        setTaskInput(myTask.title);
+        console.log('🔄 Synced task input with store title');
+      } else if (!myTask.title && taskInput) {
+        // If store is empty but input has value, clear the input
         setTaskInput('');
+        console.log('🧹 Cleared task input (store is empty)');
       }
     }, [myTask.title])
   );
+
+  // Add a function to reset the form completely
+  const resetTaskForm = useCallback(() => {
+    const { resetTask } = useCreateTaskStore.getState();
+    resetTask();
+    setTaskInput('');
+    setErrorMessage('');
+    console.log('✅ Task form completely reset');
+  }, []);
 
   const handlePostTask = () => {
     const trimmedInput = taskInput.trim();
