@@ -620,6 +620,7 @@ export default function LoginScreen() {
             value={email}
             onChangeText={setEmail}
             placeholder="Enter your email"
+            placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -631,6 +632,7 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               placeholder="Enter your password"
+              placeholderTextColor="#999"
               secureTextEntry={!showPassword}
             />
             <TouchableOpacity 
@@ -750,6 +752,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 16,
+    color: '#333',
+    backgroundColor: '#fff',
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -764,6 +768,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,
+    color: '#333',
   },
   passwordToggle: {
     padding: 8,

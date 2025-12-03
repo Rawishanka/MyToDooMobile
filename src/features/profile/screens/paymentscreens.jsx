@@ -1,6 +1,8 @@
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import PayoutAccountScreen from './payout-account-screen';
+import PayoutHistoryScreen from './payout-history-screen';
 
 const PaymentOptionsScreen = ({ onNavigate, onBackToAccount }) => (
   <View style={styles.container}>
@@ -17,12 +19,17 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount }) => (
     <View style={styles.content}>
       <TouchableOpacity 
         style={styles.menuItem}
-        onPress={() => {
-          // TODO: Navigate to payout account setup
-          console.log('Setup Payout Account clicked');
-        }}
+        onPress={() => onNavigate('payoutAccount')}
       >
         <Text style={styles.menuText}>Setup Payout Account</Text>
+        <Ionicons name="chevron-forward" size={20} color="#999" />
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={styles.menuItem}
+        onPress={() => onNavigate('payoutHistory')}
+      >
+        <Text style={styles.menuText}>View Payout History</Text>
         <Ionicons name="chevron-forward" size={20} color="#999" />
       </TouchableOpacity>
       
@@ -266,6 +273,10 @@ const PaymentScreensApp = ({ onBackToAccount }) => {
         return <PaymentHistoryScreen onNavigate={navigateToScreen} />;
       case 'paymentMethods':
         return <PaymentMethodsScreen onNavigate={navigateToScreen} />;
+      case 'payoutAccount':
+        return <PayoutAccountScreen navigation={{ goBack: () => navigateToScreen('paymentOptions') }} />;
+      case 'payoutHistory':
+        return <PayoutHistoryScreen onNavigate={navigateToScreen} />;
       default:
         return (
           <PaymentOptionsScreen 
