@@ -268,11 +268,35 @@ export const useSignup = () => {
       setEmailTimer(57);
       
     } catch (error: any) {
-      console.error('Sign up Error:', error);
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to create account. Please try again.';
-      Alert.alert('Error', errorMessage);
+      // Parse backend error message for specific issues
+      let errorMessage = 'Failed to create account. Please try again.';
+      
+      if (error?.response?.data?.message) {
+        const backendMessage = error.response.data.message;
+        
+        // Check for specific error patterns
+        if (backendMessage.toLowerCase().includes('phone') && 
+            (backendMessage.toLowerCase().includes('already') || 
+             backendMessage.toLowerCase().includes('exists') ||
+             backendMessage.toLowerCase().includes('registered'))) {
+          errorMessage = 'Phone number already registered. Please use a different number or login.';
+        } else if (backendMessage.toLowerCase().includes('email') && 
+                   (backendMessage.toLowerCase().includes('already') || 
+                    backendMessage.toLowerCase().includes('exists') ||
+                    backendMessage.toLowerCase().includes('registered'))) {
+          errorMessage = 'Email already registered. Please use a different email or login.';
+        } else {
+          errorMessage = backendMessage;
+        }
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      if (__DEV__) {
+        console.log('ℹ️ Signup failed:', errorMessage);
+      }
+      
+      Alert.alert('Sign Up Error', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -341,7 +365,9 @@ export const useSignup = () => {
       console.log('📱 SMS OTP should be sent by backend automatically');
       
     } catch (error: any) {
-      console.error('Email verification error:', error);
+      if (__DEV__) {
+        console.log('ℹ️ Email verification error:', error?.response?.data?.message || error?.message);
+      }
       
       // Extract the actual error message from the backend
       let errorMessage = 'Invalid verification code. Please try again.';
@@ -500,11 +526,9 @@ export const useSignup = () => {
         );
       }
     } catch (error: any) {
-      console.error('❌ Failed to resend SMS code:', {
-        error: error.message,
-        phone: `${selectedCountry.phoneCode}${phone}`,
-        endpoint: `${API_CONFIG.BASE_URL}/two-factor-auth/send-sms`
-      });
+      if (__DEV__) {
+        console.log('ℹ️ Failed to resend SMS code:', error?.message);
+      }
       Alert.alert(
         'Info',
         'The SMS code was already sent. Please check your messages or wait for the timer to try again.',
@@ -573,7 +597,9 @@ export const useSignup = () => {
       }
       
     } catch (error: any) {
-      console.error('❌ Google Sign-In backend error:', error);
+      if (__DEV__) {
+        console.log('ℹ️ Google Sign-In backend error:', error?.response?.data?.message || error?.message);
+      }
       Alert.alert(
         'Authentication Error',
         error?.response?.data?.message || 'Failed to authenticate with Google. Please try again.',
@@ -614,8 +640,10 @@ export const useSignup = () => {
       const result = await promptGoogleAsync();
       console.log('Google Sign-In result:', result);
       
-    } catch (error) {
-      console.error('❌ Google Sign-In error:', error);
+    } catch (error: any) {
+      if (__DEV__) {
+        console.log('ℹ️ Google Sign-In error:', error?.message);
+      }
       Alert.alert('Error', 'Failed to start Google Sign-In. Please try again.');
       setGoogleLoading(false);
     }

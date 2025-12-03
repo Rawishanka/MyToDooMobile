@@ -255,7 +255,9 @@ export function useCreateSignUpToken() {
         console.log('✅ Signup API response:', response.data);
         return response.data;
       } catch (error: any) {
-        console.error('❌ Signup API error:', error);
+        if (__DEV__) {
+          console.log('ℹ️ Signup API error:', error?.response?.data?.message || error?.message);
+        }
         
         // Enhanced server error detection for 500-level errors
         const statusCode = error?.response?.status || error?.status;
@@ -299,8 +301,10 @@ export function useCreateSignUpToken() {
     onSuccess: (data) => {
       console.log('✅ Signup mutation success:', data);
     },
-    onError: (error) => {
-      console.error('❌ Signup mutation error:', error);
+    onError: (error: any) => {
+      if (__DEV__) {
+        console.log('ℹ️ Signup mutation error:', error?.response?.data?.message || error?.message);
+      }
     }
   });
 }
@@ -322,7 +326,9 @@ export function useVerifyOTP() {
         console.log('✅ Email OTP verification response:', response.data);
         return response.data;
       } catch (error: any) {
-        console.error('❌ Email OTP verification error:', error);
+        if (__DEV__) {
+          console.log('ℹ️ Email OTP verification error:', error?.response?.data?.message || error?.message);
+        }
         
         // Enhanced server error detection for 500-level errors
         const statusCode = error?.response?.status || error?.status;
@@ -364,8 +370,10 @@ export function useVerifyOTP() {
     onSuccess: (data) => {
       console.log('✅ Email verification mutation success:', data);
     },
-    onError: (error) => {
-      console.error('❌ Email verification mutation error:', error);
+    onError: (error: any) => {
+      if (__DEV__) {
+        console.log('ℹ️ Email verification mutation error:', error?.response?.data?.message || error?.message);
+      }
     }
   });
 }
@@ -391,13 +399,13 @@ export function useVerifySMS() {
         console.log('✅ SMS verification response:', response.data);
         return response.data;
       } catch (error: any) {
-        console.error('❌ SMS verification error:', {
-          error,
-          status: error?.response?.status,
-          message: error?.message,
-          responseData: error?.response?.data,
-          name: error?.name
-        });
+        if (__DEV__) {
+          console.log('ℹ️ SMS verification error:', {
+            status: error?.response?.status,
+            message: error?.response?.data?.message || error?.message,
+            name: error?.name
+          });
+        }
         
         // Enhanced server error detection for 500-level errors
         const errorMessage = error?.message || '';
@@ -479,8 +487,10 @@ export function useVerifySMS() {
         console.log('✅ User auto-logged in after verification');
       }
     },
-    onError: (error) => {
-      console.error('❌ SMS verification mutation error:', error);
+    onError: (error: any) => {
+      if (__DEV__) {
+        console.log('ℹ️ SMS verification mutation error:', error?.response?.data?.message || error?.message);
+      }
     }
   });
 }
@@ -498,7 +508,9 @@ export function useResendEmailOTP() {
         console.log('✅ Email OTP resent:', response.data);
         return response.data;
       } catch (error: any) {
-        console.error('❌ Resend email OTP error:', error);
+        if (__DEV__) {
+          console.log('ℹ️ Resend email OTP error:', error?.response?.data?.message || error?.message);
+        }
         
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
@@ -528,7 +540,9 @@ export function useResendSMSOTP() {
         console.log('✅ SMS OTP resent:', response.data);
         return response.data;
       } catch (error: any) {
-        console.error('❌ Resend SMS OTP error:', error);
+        if (__DEV__) {
+          console.log('ℹ️ Resend SMS OTP error:', error?.response?.data?.message || error?.message);
+        }
         
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
@@ -574,7 +588,9 @@ export function useCreateAuthToken() {
         console.log('✅ Login response:', response.data);
         return response.data;
       } catch (error: any) {
-        console.error('❌ Login error:', error);
+        if (__DEV__) {
+          console.log('ℹ️ Login error:', error?.response?.data?.message || error?.message);
+        }
         
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
@@ -605,8 +621,10 @@ export function useCreateAuthToken() {
       console.log('✅ Login mutation success');
       setAuthData(data.token, data.user, data.expiresIn);
     },
-    onError: (error) => {
-      console.error('❌ Login mutation error:', error);
+    onError: (error: any) => {
+      if (__DEV__) {
+        console.log('ℹ️ Login mutation error:', error?.response?.data?.message || error?.message);
+      }
     }
   });
 }
@@ -635,8 +653,8 @@ export async function getUserProfile(): Promise<User> {
     // Don't log auth errors as errors - they're expected when not logged in
     if (error?.isAuthError || error?.status === 401) {
       console.log('⚠️ Auth required - User not logged in, using mock profile');
-    } else {
-      console.error('❌ Get user profile error:', error);
+    } else if (__DEV__) {
+      console.log('ℹ️ Get user profile error:', error?.response?.data?.message || error?.message);
     }
     
     // Auth error - user not logged in, return mock user
