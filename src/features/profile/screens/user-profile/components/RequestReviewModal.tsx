@@ -4,6 +4,7 @@ import * as Location from 'expo-location';
 import React, { useEffect, useState } from 'react';
 import {
     Alert,
+    Keyboard,
     KeyboardAvoidingView,
     Modal,
     Platform,
@@ -11,6 +12,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View
 } from 'react-native';
 
@@ -188,6 +190,8 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -249,6 +253,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
                   value={recipient}
                   onChangeText={setRecipient}
                   placeholder={detectedCountry === 'LK' ? '754640658' : '123456789'}
+                  placeholderTextColor="#999"
                   keyboardType="phone-pad"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -262,6 +267,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
               value={recipient}
               onChangeText={setRecipient}
               placeholder="Enter email address"
+              placeholderTextColor="#999"
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -275,6 +281,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
             value={message}
             onChangeText={setMessage}
             placeholder="Hi! I'd love to get your feedback on our experience working together..."
+            placeholderTextColor="#999"
             multiline
             numberOfLines={6}
             textAlignVertical="top"
@@ -310,6 +317,8 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
             </Text>
           </View>
         </View>
+          </View>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </Modal>
   );

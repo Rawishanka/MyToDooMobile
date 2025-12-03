@@ -7,19 +7,21 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
-  ActionSheetIOS,
-  Alert,
-  FlatList,
-  Image,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActionSheetIOS,
+    Alert,
+    FlatList,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from 'react-native';
 import type { ChatMessage, Message } from './message-types';
 
@@ -407,6 +409,8 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.contentWrapper}>
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
               <TouchableOpacity onPress={handleAttachment} style={styles.attachButton}>
@@ -415,6 +419,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
               <TextInput
                 style={styles.messageInput}
                 placeholder="Type a message..."
+                placeholderTextColor="#999"
                 value={newMessage}
                 onChangeText={setNewMessage}
                 multiline
@@ -429,6 +434,8 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
               </TouchableOpacity>
             </View>
           </View>
+            </View>
+          </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
       </View>
     </Modal>
@@ -439,6 +446,9 @@ const styles = StyleSheet.create({
   chatContainer: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  contentWrapper: {
+    flex: 1,
   },
   chatHeader: {
     flexDirection: 'row',

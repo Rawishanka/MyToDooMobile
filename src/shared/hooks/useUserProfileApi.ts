@@ -10,10 +10,11 @@ import React from 'react';
 // ==========================================
 
 export const USER_PROFILE_QUERY_KEYS = {
-  all: ['userProfile'] as const,
+  all: ['user-profile'] as const,
   profile: () => [...USER_PROFILE_QUERY_KEYS.all, 'profile'] as const,
-  ratingStats: (userId: string) => [...USER_PROFILE_QUERY_KEYS.all, 'ratingStats', userId] as const,
-  canReview: (userId: string) => [...USER_PROFILE_QUERY_KEYS.all, 'canReview', userId] as const,
+  ratingStats: (userId: string) => [...USER_PROFILE_QUERY_KEYS.all, 'rating-stats', userId] as const,
+  reviews: (userId: string) => [...USER_PROFILE_QUERY_KEYS.all, 'reviews', userId] as const,
+  canReview: (userId: string) => [...USER_PROFILE_QUERY_KEYS.all, 'can-review', userId] as const,
 };
 
 // ==========================================
@@ -74,6 +75,33 @@ export function useGetUserRatingStats(userId: string, enabled = true) {
     enabled: enabled && !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     select: (response) => response.data,
+  });
+}
+
+/**
+ * Hook to fetch user reviews (paginated)
+ */
+export function useGetUserReviews(
+  userId: string,
+  page: number = 1,
+  limit: number = 10,
+  role?: 'poster' | 'tasker',
+  enabled = true
+) {
+  return useQuery({
+    queryKey: [...USER_PROFILE_QUERY_KEYS.reviews(userId), page, limit, role],
+    queryFn: () => UserProfileAPI.getUserReviews(userId, page, limit, role),
+    enabled: enabled && !!userId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    select: (response) => ({
+      reviews: response?.data || [],
+      pagination: response?.pagination || {
+        currentPage: 1,
+        totalPages: 0,
+        totalReviews: 0,
+        hasMore: false,
+      },
+    }),
   });
 }
 

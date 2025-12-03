@@ -5,15 +5,15 @@ import { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { CountryPicker } from './CountryPicker';
 import { DatePickerInput } from './DatePickerInput';
@@ -454,6 +454,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             }}
             onBlur={() => handleBlur('firstName')}
             placeholder="Enter first name"
+            placeholderTextColor="#999"
             autoCapitalize="words"
             maxLength={50}
             returnKeyType="next"
@@ -481,6 +482,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             }}
             onBlur={() => handleBlur('lastName')}
             placeholder="Enter last name"
+            placeholderTextColor="#999"
             autoCapitalize="words"
             maxLength={50}
             returnKeyType="next"
@@ -506,6 +508,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         }}
         onBlur={() => handleBlur('email')}
         placeholder="Enter your email"
+        placeholderTextColor="#999"
         keyboardType="email-address"
         autoCapitalize="none"
         returnKeyType="next"
@@ -572,6 +575,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           }}
           onBlur={() => handleBlur('phone')}
           placeholder="Mobile number"
+          placeholderTextColor="#999"
           keyboardType="phone-pad"
           returnKeyType="next"
           onSubmitEditing={() => passwordRef.current?.focus()}
@@ -596,6 +600,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           }}
           onBlur={() => handleBlur('password')}
           placeholder="Create a password"
+          placeholderTextColor="#999"
           secureTextEntry={!showPassword}
           returnKeyType="next"
           onSubmitEditing={() => confirmPasswordRef.current?.focus()}
@@ -631,6 +636,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           }}
           onBlur={() => handleBlur('confirmPassword')}
           placeholder="Confirm your password"
+          placeholderTextColor="#999"
           secureTextEntry={!showConfirmPassword}
           returnKeyType="done"
         />

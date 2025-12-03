@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
 import {
     SafeAreaView,
     ScrollView,
@@ -11,11 +10,19 @@ import {
     View
 } from 'react-native';
 
-export default function TermsConditionsScreen() {
+interface TermsConditionsScreenProps {
+  onBack?: () => void;
+}
+
+export default function TermsConditionsScreen({ onBack }: TermsConditionsScreenProps) {
   const router = useRouter();
 
   const handleBackPress = () => {
-    router.back();
+    if (onBack) {
+      onBack();
+    } else {
+      router.back();
+    }
   };
 
   return (

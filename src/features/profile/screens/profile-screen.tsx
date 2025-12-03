@@ -1,4 +1,6 @@
 import TaskerDashboard from '@/src/features/dashboard/screens/dashboard';
+import PrivacyPolicyScreen from '@/src/features/legal/screens/PrivacyPolicyScreen';
+import TermsConditionsScreen from '@/src/features/legal/screens/TermsConditionsScreen';
 import CommunityGuideLines from '@/src/shared/components/custom_components/community-guidelines';
 import ContactUs from '@/src/shared/components/custom_components/contact-us';
 import EditProfileScreen from '@/src/shared/components/custom_components/editprofilescreen';
@@ -7,7 +9,7 @@ import LegalScreen from '@/src/shared/components/custom_components/legal-screen'
 import Logout from '@/src/shared/components/custom_components/Logout';
 import ProfileUpdateForm from '@/src/shared/components/custom_components/profile-update-form';
 import ZendeskHelp from '@/src/shared/components/custom_components/zendesk-help';
-import { useGetUserProfile, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
+import { useGetUserProfile, useGetUserRatingStats, useGetUserReviews, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
 import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useAuthStore } from '@/src/store/auth-task-store';
@@ -18,7 +20,6 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // Import rating components
-import { useGetUserRatingStats } from '@/src/shared/hooks/useUserProfileApi';
 import { GetMoreReviewsSection } from './user-profile/components/GetMoreReviewsSection';
 import { OverallRatingSection } from './user-profile/components/OverallRatingSection';
 import { ReviewsList } from './user-profile/components/ReviewsList';
@@ -34,7 +35,7 @@ import TaskAlerts from './taskalerts';
 
 export default function AccountScreen() {
   const [currentScreen, setCurrentScreen] = useState('account');
-  const [editAccessStatus, setEditAccessStatus] = useState<'locked' | 'pending' | 'approved'>('approved');
+  const [editAccessStatus, setEditAccessStatus] = useState<'locked' | 'pending' | 'approved'>('locked');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
 
@@ -61,6 +62,30 @@ export default function AccountScreen() {
     isLoading: ratingLoading,
     error: ratingError,
   } = useGetUserRatingStats(userId, !!userId);
+
+  // **Debug: Log rating data to understand the issue**
+  React.useEffect(() => {
+    if (ratingData) {
+      console.log('📊 ===== RATING DATA DEBUG =====');
+      console.log('📊 Average Rating:', ratingData.averageRating);
+      console.log('📊 Total Reviews:', ratingData.totalReviews);
+      console.log('📊 Rating Distribution:', ratingData.ratingDistribution);
+      console.log('📊 As Poster:', ratingData.asPoster);
+      console.log('📊 As Tasker:', ratingData.asTasker);
+      console.log('📊 ===========================');
+      
+      // Calculate total reviews from asPoster + asTasker
+      const totalFromRoles = (ratingData.asPoster?.totalReviews || 0) + (ratingData.asTasker?.totalReviews || 0);
+      console.log('📊 Total from Roles (poster + tasker):', totalFromRoles);
+    }
+  }, [ratingData]);
+
+  // **Get reviews for the current user**
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const {
+    data: reviewsData,
+    isLoading: reviewsLoading,
+  } = useGetUserReviews(userId, reviewsPage, 10, undefined, !!userId);
 
   // 🔄 **Force profile refetch when user changes**
   React.useEffect(() => {
@@ -315,8 +340,17 @@ export default function AccountScreen() {
   };
 
   const navigateToProfileUpdate = () => {
-    // Allow editing for all users
-    setCurrentScreen('profile-update');
+    // Check edit access status
+    if (editAccessStatus === 'locked') {
+      // Show request modal if locked
+      setShowRequestModal(true);
+    } else if (editAccessStatus === 'pending') {
+      // Show pending modal if already requested
+      setShowPendingModal(true);
+    } else {
+      // Only allow editing if approved
+      setCurrentScreen('profile-update');
+    }
   };
 
   const handleSendRequest = () => {
@@ -337,6 +371,14 @@ export default function AccountScreen() {
 
   const navigateToCommunityGuidelines = () => {
     setCurrentScreen('community-guidelines');
+  };
+
+  const navigateToPrivacyPolicy = () => {
+    setCurrentScreen('privacy-policy');
+  };
+
+  const navigateToTermsConditions = () => {
+    setCurrentScreen('terms-conditions');
   };
 
   const navigateToLegalScreen = () => {
@@ -415,6 +457,14 @@ export default function AccountScreen() {
 
   if (currentScreen === 'community-guidelines') {
     return <CommunityGuideLines visible={true} onClose={navigateToAccount} />;
+  }
+
+  if (currentScreen === 'privacy-policy') {
+    return <PrivacyPolicyScreen onBack={navigateToAccount} />;
+  }
+
+  if (currentScreen === 'terms-conditions') {
+    return <TermsConditionsScreen onBack={navigateToAccount} />;
   }
 
   if (currentScreen === 'legal') {
@@ -539,13 +589,32 @@ export default function AccountScreen() {
             </View>
           ) : ratingData ? (
             <>
-              <OverallRatingSection
-                averageRating={ratingData?.averageRating ?? userData?.rating ?? 0}
-                totalReviews={ratingData?.totalReviews || 0}
-                ratingDistribution={ratingData?.ratingDistribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
-                completionRate={90} // Default completion rate since it's not in this stats object
-                totalTasks={userData?.completedTasks ?? 0}
-              />
+              {(() => {
+                // Calculate actual total reviews (use asPoster + asTasker if main totalReviews is 0)
+                const actualTotalReviews = ratingData.totalReviews > 0 
+                  ? ratingData.totalReviews 
+                  : (ratingData.asPoster?.totalReviews || 0) + (ratingData.asTasker?.totalReviews || 0);
+                
+                console.log('📊 Displaying Total Reviews:', actualTotalReviews);
+                
+                return (
+                  <OverallRatingSection
+                    averageRating={ratingData?.averageRating ?? userData?.rating ?? 0}
+                    totalReviews={actualTotalReviews}
+                    ratingDistribution={ratingData?.ratingDistribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
+                    completionRate={
+                      // If we have both completed tasks and reviews, calculate review rate
+                      // Otherwise, if we have completed tasks, assume high completion rate
+                      userData?.completedTasks && userData.completedTasks > 0
+                        ? actualTotalReviews > 0
+                          ? Math.min(Math.round((actualTotalReviews / userData.completedTasks) * 100), 100)
+                          : 95 // Default high completion rate if tasks exist but no reviews yet
+                        : 0
+                    }
+                    totalTasks={userData?.completedTasks ?? 0}
+                  />
+                );
+              })()}
               
               <GetMoreReviewsSection 
                 userId={userId}
@@ -553,10 +622,14 @@ export default function AccountScreen() {
               />
               
               <ReviewsList
-                reviews={[]} // Reviews will be handled separately
-                loading={false}
-                onLoadMore={() => {}}
-                hasMore={false}
+                reviews={reviewsData?.reviews ?? []}
+                loading={reviewsLoading}
+                onLoadMore={() => {
+                  if (reviewsData?.pagination?.hasMore) {
+                    setReviewsPage((prev) => prev + 1);
+                  }
+                }}
+                hasMore={reviewsData?.pagination?.hasMore ?? false}
               />
             </>
           ) : userData ? (
@@ -591,7 +664,11 @@ export default function AccountScreen() {
           icon={<Ionicons name="person-outline" size={20} color="#0052A2" />}
           text="Edit Profile"
           onPress={navigateToProfileUpdate} 
-          subtext="Update your personal information"
+          subtext={editAccessStatus === 'locked' 
+            ? "Request access to edit" 
+            : editAccessStatus === 'pending' 
+            ? "Pending admin approval" 
+            : "Update your personal information"}
           disabled={false}
         />
         <MenuItem 
@@ -670,19 +747,27 @@ export default function AccountScreen() {
           onPress={navigateToContactUs}        
         />
 
-        <Text style={styles.sectionTitle}>SAFETY</Text>
+        <Text style={styles.sectionTitle}>LEGAL & SAFETY</Text>
         <MenuItem 
           icon={<Ionicons name="shield-outline" size={20} color="#0052A2" />}
-          text="Insurance Protection" 
-          subtext={undefined} 
+          text="Insurance protection" 
+          subtext="Learn about coverage and terms" 
           onPress={navigateToInsuranceProtection}        
         />
         <MenuItem 
           icon={<Ionicons name="document-text-outline" size={20} color="#0052A2" />}
-          text="Legal" 
-          subtext={undefined} 
-          onPress={navigateToLegalScreen}        
+          text="Privacy policy" 
+          subtext="How we handle your data" 
+          onPress={navigateToPrivacyPolicy}        
         />
+        <MenuItem 
+          icon={<Ionicons name="shield-checkmark-outline" size={20} color="#0052A2" />}
+          text="Terms & conditions" 
+          subtext="Platform usage agreement" 
+          onPress={navigateToTermsConditions}        
+        />
+        
+        <Text style={styles.sectionTitle}>ACCOUNT</Text>
         <MenuItem 
           icon={<Ionicons name="log-out-outline" size={20} color="#0052A2" />}
           text="Logout" 

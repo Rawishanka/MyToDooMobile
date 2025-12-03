@@ -54,6 +54,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
               value={taskTitle}
               onChangeText={setTaskTitle}
               placeholder="Enter task title"
+              placeholderTextColor="#999"
             />
           </View>
 

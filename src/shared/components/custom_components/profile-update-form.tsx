@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
     Alert,
+    Keyboard,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -13,6 +14,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 
@@ -25,24 +27,34 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
   const [firstName, setFirstName] = useState(userData?.firstName || '');
   const [lastName, setLastName] = useState(userData?.lastName || '');
   const [phone, setPhone] = useState(userData?.phone || '');
-  const [city, setCity] = useState(
-    typeof userData?.location === 'string' 
-      ? userData.location 
-      : userData?.location?.city || userData?.location?.suburb || ''
-  );
+  
+  // Extract existing location data
+  const existingLocation = typeof userData?.location === 'string' 
+    ? { city: userData.location } 
+    : userData?.location || {};
+  
+  const [country, setCountry] = useState(existingLocation.country || '');
+  const [countryCode, setCountryCode] = useState(existingLocation.countryCode || '');
+  const [region, setRegion] = useState(existingLocation.region || '');
+  const [city, setCity] = useState(existingLocation.city || existingLocation.suburb || '');
   const [bio, setBio] = useState(userData?.bio || '');
   
   const updateProfile = useUpdateUserProfile();
 
   const handleSaveProfile = async () => {
     try {
+      // Build location object with all available fields
+      const locationData: any = {};
+      if (country.trim()) locationData.country = country.trim();
+      if (countryCode.trim()) locationData.countryCode = countryCode.trim();
+      if (region.trim()) locationData.region = region.trim();
+      if (city.trim()) locationData.city = city.trim();
+
       const profileData = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         phone: phone.trim(),
-        location: {
-          city: city.trim(),
-        },
+        location: locationData,
         bio: bio.trim(),
       };
 
@@ -85,6 +97,8 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
         <View style={styles.placeholder} />
       </View>
       
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.contentWrapper}>
       <ScrollView 
         style={styles.content}
         contentContainerStyle={styles.scrollContent}
@@ -130,8 +144,47 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
             />
           </View>
           
+          <Text style={styles.sectionTitle}>Location</Text>
+          
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>City/Location</Text>
+            <Text style={styles.label}>Country</Text>
+            <TextInput
+              style={styles.input}
+              value={country}
+              onChangeText={setCountry}
+              placeholder="Enter your country"
+              autoCapitalize="words"
+              placeholderTextColor="#999"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Country Code</Text>
+            <TextInput
+              style={styles.input}
+              value={countryCode}
+              onChangeText={setCountryCode}
+              placeholder="e.g., AU, US, UK"
+              autoCapitalize="characters"
+              maxLength={2}
+              placeholderTextColor="#999"
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>State/Region</Text>
+            <TextInput
+              style={styles.input}
+              value={region}
+              onChangeText={setRegion}
+              placeholder="Enter your state or region"
+              autoCapitalize="words"
+              placeholderTextColor="#999"
+            />
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>City</Text>
             <TextInput
               style={styles.input}
               value={city}
@@ -141,6 +194,8 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
               placeholderTextColor="#999"
             />
           </View>
+          
+          <Text style={styles.sectionTitle}>About</Text>
           
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Bio</Text>
@@ -160,6 +215,8 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           <View style={{ height: 100 }} />
         </View>
       </ScrollView>
+        </View>
+      </TouchableWithoutFeedback>
       
       {/* Save Button */}
       <View style={styles.footer}>
@@ -204,6 +261,9 @@ const styles = StyleSheet.create({
     width: 34, // Same as back button to center the title
   },
   content: {
+    flex: 1,
+  },
+  contentWrapper: {
     flex: 1,
   },
   scrollContent: {

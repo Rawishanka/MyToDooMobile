@@ -18,13 +18,16 @@ import {
     ActivityIndicator,
     Alert,
     Image,
+    Keyboard,
     KeyboardAvoidingView,
     Platform,
     SafeAreaView,
+    ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 
@@ -585,16 +588,23 @@ export default function LoginScreen() {
         <Ionicons name="close" size={28} color="#333" />
       </TouchableOpacity>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.innerContainer}
       >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.contentWrapper}>
         <View style={styles.header}>
           {/* MyToDoo SVG Logo in Blue Container */}
           <View style={styles.logoContainer}>
             <View style={styles.logoBackground}>
               <MyToDooLogo 
-                width={60}
-                height={60}
+                width={50}
+                height={50}
               />
             </View>
           </View>
@@ -693,6 +703,9 @@ export default function LoginScreen() {
             <Text style={styles.registerText}>Sign Up</Text>
           </TouchableOpacity>
         </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -705,55 +718,64 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
+    paddingVertical: 20,
+  },
+  contentWrapper: {
+    width: '100%',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
+    marginTop: 20,
   },
   logoContainer: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   logoBackground: {
     backgroundColor: '#0a2d5c',
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: 16,
+    padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 6,
     color: '#333',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
   },
   form: {
-    marginBottom: 24,
+    marginBottom: 16,
   },
   label: {
     fontSize: 14,
     color: '#333',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 16,
+    paddingVertical: 12,
+    marginBottom: 12,
     color: '#333',
     backgroundColor: '#fff',
+    fontSize: 15,
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -761,14 +783,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
-    marginBottom: 16,
+    marginBottom: 12,
     paddingRight: 8,
   },
   passwordInput: {
     flex: 1,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     color: '#333',
+    fontSize: 15,
   },
   passwordToggle: {
     padding: 8,
@@ -779,21 +802,23 @@ const styles = StyleSheet.create({
     color: '#007BFF',
     textAlign: 'right',
     marginBottom: 16,
+    fontSize: 14,
   },
   loginButton: {
     backgroundColor: '#007BFF',
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
   },
   loginButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 16,
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 16,
   },
   divider: {
     flex: 1,
@@ -811,11 +836,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   googleIcon: {
     width: 20,
