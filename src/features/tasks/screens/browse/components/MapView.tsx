@@ -1,6 +1,5 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
-import WebView from 'react-native-webview';
+import { StyleSheet } from "react-native";
+import WebView from "react-native-webview";
 
 interface Task {
   _id: string;
@@ -23,7 +22,12 @@ interface MapViewProps {
   onMapAction?: (action: string, taskId: string) => void;
 }
 
-export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: MapViewProps) {
+export default function MapView({
+  tasks,
+  iconUrl,
+  focusTaskId,
+  onMapAction,
+}: MapViewProps) {
   const generateMapHTML = () => {
     // Add comprehensive API data logging
     if (tasks.length > 0) {
@@ -44,7 +48,6 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
     // Process tasks - convert addresses to coordinates
     tasks.forEach((task, index) => {
       if (!task.location) {
-
         return;
       }
 
@@ -53,143 +56,209 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
 
       // Try to get coordinates from existing task data first
       const coords = task.location.coordinates;
-      
 
       if (coords && Object.keys(coords).length > 0) {
         // Handle different coordinate formats from the API
-        
-        // Format 1: GeoJSON format { type: "Point", coordinates: [lng, lat] }
-        if (typeof coords === 'object' && 'coordinates' in coords && Array.isArray(coords.coordinates)) {
-          if (coords.coordinates.length === 2) {
-            lng = typeof coords.coordinates[0] === 'number' ? coords.coordinates[0] : parseFloat(coords.coordinates[0]);
-            lat = typeof coords.coordinates[1] === 'number' ? coords.coordinates[1] : parseFloat(coords.coordinates[1]);
 
+        // Format 1: GeoJSON format { type: "Point", coordinates: [lng, lat] }
+        if (
+          typeof coords === "object" &&
+          "coordinates" in coords &&
+          Array.isArray(coords.coordinates)
+        ) {
+          if (coords.coordinates.length === 2) {
+            lng =
+              typeof coords.coordinates[0] === "number"
+                ? coords.coordinates[0]
+                : parseFloat(coords.coordinates[0]);
+            lat =
+              typeof coords.coordinates[1] === "number"
+                ? coords.coordinates[1]
+                : parseFloat(coords.coordinates[1]);
           }
         }
         // Format 2: Object format { lat: number, lng: number }
-        else if (typeof coords === 'object' && 'lat' in coords && 'lng' in coords) {
+        else if (
+          typeof coords === "object" &&
+          "lat" in coords &&
+          "lng" in coords
+        ) {
           const coordsObj = coords as any;
-          lat = typeof coordsObj.lat === 'number' ? coordsObj.lat : parseFloat(coordsObj.lat);
-          lng = typeof coordsObj.lng === 'number' ? coordsObj.lng : parseFloat(coordsObj.lng);
-
+          lat =
+            typeof coordsObj.lat === "number"
+              ? coordsObj.lat
+              : parseFloat(coordsObj.lat);
+          lng =
+            typeof coordsObj.lng === "number"
+              ? coordsObj.lng
+              : parseFloat(coordsObj.lng);
         }
         // Format 3: Alternative object format { latitude: number, longitude: number }
-        else if (typeof coords === 'object' && 'latitude' in coords && 'longitude' in coords) {
+        else if (
+          typeof coords === "object" &&
+          "latitude" in coords &&
+          "longitude" in coords
+        ) {
           const coordsObj = coords as any;
-          lat = typeof coordsObj.latitude === 'number' ? coordsObj.latitude : parseFloat(coordsObj.latitude);
-          lng = typeof coordsObj.longitude === 'number' ? coordsObj.longitude : parseFloat(coordsObj.longitude);
-
+          lat =
+            typeof coordsObj.latitude === "number"
+              ? coordsObj.latitude
+              : parseFloat(coordsObj.latitude);
+          lng =
+            typeof coordsObj.longitude === "number"
+              ? coordsObj.longitude
+              : parseFloat(coordsObj.longitude);
         }
         // Format 4: Direct array format [lng, lat]
         else if (Array.isArray(coords) && coords.length === 2) {
-          lng = typeof coords[0] === 'number' ? coords[0] : parseFloat(coords[0]);
-          lat = typeof coords[1] === 'number' ? coords[1] : parseFloat(coords[1]);
-
-        }
-        else {
+          lng =
+            typeof coords[0] === "number" ? coords[0] : parseFloat(coords[0]);
+          lat =
+            typeof coords[1] === "number" ? coords[1] : parseFloat(coords[1]);
+        } else {
         }
       }
 
       // If no coordinates found OR coordinates are (0,0), try to geocode the address using known locations
-      if ((lat === null || lng === null || isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) && task.location.address) {
+      if (
+        (lat === null ||
+          lng === null ||
+          isNaN(lat) ||
+          isNaN(lng) ||
+          (lat === 0 && lng === 0)) &&
+        task.location.address
+      ) {
         const geocodedCoords = geocodeAddressSync(task.location.address);
         if (geocodedCoords) {
           lat = geocodedCoords.lat;
           lng = geocodedCoords.lng;
-
         } else {
-
         }
       }
 
       // Add marker if we have valid coordinates
       if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
         // Validate coordinates are reasonable and NOT (0, 0) which indicates missing data
-        if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 && !(lat === 0 && lng === 0)) {
-          const coordinateSource = task.location.coordinates && Object.keys(task.location.coordinates).length > 0 ? 'API' : 'Geocoded';
-          
+        if (
+          lat >= -90 &&
+          lat <= 90 &&
+          lng >= -180 &&
+          lng <= 180 &&
+          !(lat === 0 && lng === 0)
+        ) {
+          const coordinateSource =
+            task.location.coordinates &&
+            Object.keys(task.location.coordinates).length > 0
+              ? "API"
+              : "Geocoded";
+
           markers.push({
             id: task._id,
             lat: lat,
             lng: lng,
             title: task.title,
             price: task.formattedBudget || `${task.currency} ${task.budget}`,
-            location: task.location.address || 'Location not specified',
+            location: task.location.address || "Location not specified",
             status: task.status,
             offers: task.offerCount || 0,
           });
         }
       }
     });
-    
+
     return generateHTMLContent(markers);
   };
 
   // Enhanced synchronous geocoding function with better address patterns
-  const geocodeAddressSync = (address: string): { lat: number; lng: number } | null => {
+  const geocodeAddressSync = (
+    address: string
+  ): { lat: number; lng: number } | null => {
     if (!address) return null;
 
     const addressLower = address.toLowerCase();
     const locationMap = getLocationCoordinatesMap();
-    
+
     // Check for exact matches first
     for (const [location, coords] of locationMap) {
       if (addressLower.includes(location.toLowerCase())) {
-
         return coords;
       }
     }
 
     // Enhanced pattern matching for Australian addresses
-    if (addressLower.includes('langhorne creek') || addressLower.includes('kangaroo road')) {
-
-      return { lat: -35.3100, lng: 139.0500 };
+    if (
+      addressLower.includes("langhorne creek") ||
+      addressLower.includes("kangaroo road")
+    ) {
+      return { lat: -35.31, lng: 139.05 };
     }
 
     // New: Enhanced suburb/street patterns
-    if (addressLower.includes('adelaide') || addressLower.includes('sa ') || addressLower.includes('south australia')) {
-
+    if (
+      addressLower.includes("adelaide") ||
+      addressLower.includes("sa ") ||
+      addressLower.includes("south australia")
+    ) {
       return { lat: -34.9285, lng: 138.6007 };
     }
 
-    if (addressLower.includes('sydney') || addressLower.includes('nsw') || addressLower.includes('new south wales')) {
-
+    if (
+      addressLower.includes("sydney") ||
+      addressLower.includes("nsw") ||
+      addressLower.includes("new south wales")
+    ) {
       return { lat: -33.8688, lng: 151.2093 };
     }
 
-    if (addressLower.includes('melbourne') || addressLower.includes('vic') || addressLower.includes('victoria')) {
-
+    if (
+      addressLower.includes("melbourne") ||
+      addressLower.includes("vic") ||
+      addressLower.includes("victoria")
+    ) {
       return { lat: -37.8136, lng: 144.9631 };
     }
 
-    if (addressLower.includes('brisbane') || addressLower.includes('qld') || addressLower.includes('queensland')) {
-
+    if (
+      addressLower.includes("brisbane") ||
+      addressLower.includes("qld") ||
+      addressLower.includes("queensland")
+    ) {
       return { lat: -27.4698, lng: 153.0251 };
     }
 
-    if (addressLower.includes('perth') || addressLower.includes('wa') || addressLower.includes('western australia')) {
-
+    if (
+      addressLower.includes("perth") ||
+      addressLower.includes("wa") ||
+      addressLower.includes("western australia")
+    ) {
       return { lat: -31.9505, lng: 115.8613 };
     }
 
     // Sri Lankan patterns
-    if (addressLower.includes('colombo') || addressLower.includes('sri lanka') || addressLower.includes('lanka')) {
-
+    if (
+      addressLower.includes("colombo") ||
+      addressLower.includes("sri lanka") ||
+      addressLower.includes("lanka")
+    ) {
       return { lat: 6.9271, lng: 79.8612 };
     }
 
-    // New Zealand patterns  
-    if (addressLower.includes('auckland') || addressLower.includes('new zealand') || addressLower.includes('nz')) {
-
+    // New Zealand patterns
+    if (
+      addressLower.includes("auckland") ||
+      addressLower.includes("new zealand") ||
+      addressLower.includes("nz")
+    ) {
       return { lat: -36.8485, lng: 174.7633 };
     }
 
     // Fallback: Use address as search pattern in our location database
     for (const [location, coords] of locationMap) {
-      if (address.toLowerCase().includes(location.toLowerCase()) || 
-          location.toLowerCase().includes(addressLower.split(' ')[0]) ||
-          location.toLowerCase().includes(addressLower.split(',')[0])) {
-
+      if (
+        address.toLowerCase().includes(location.toLowerCase()) ||
+        location.toLowerCase().includes(addressLower.split(" ")[0]) ||
+        location.toLowerCase().includes(addressLower.split(",")[0])
+      ) {
         return coords;
       }
     }
@@ -198,134 +267,142 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
   };
 
   // Enhanced location coordinates database for better geocoding coverage
-  const getLocationCoordinatesMap = (): Map<string, { lat: number; lng: number }> => {
+  const getLocationCoordinatesMap = (): Map<
+    string,
+    { lat: number; lng: number }
+  > => {
     return new Map([
       // Australia - Major Cities
-      ['sydney', { lat: -33.8688, lng: 151.2093 }],
-      ['melbourne', { lat: -37.8136, lng: 144.9631 }],
-      ['brisbane', { lat: -27.4698, lng: 153.0251 }],
-      ['perth', { lat: -31.9505, lng: 115.8613 }],
-      ['adelaide', { lat: -34.9285, lng: 138.6007 }],
-      ['darwin', { lat: -12.4634, lng: 130.8456 }],
-      ['canberra', { lat: -35.2809, lng: 149.1300 }],
-      ['hobart', { lat: -42.8821, lng: 147.3272 }],
-      
+      ["sydney", { lat: -33.8688, lng: 151.2093 }],
+      ["melbourne", { lat: -37.8136, lng: 144.9631 }],
+      ["brisbane", { lat: -27.4698, lng: 153.0251 }],
+      ["perth", { lat: -31.9505, lng: 115.8613 }],
+      ["adelaide", { lat: -34.9285, lng: 138.6007 }],
+      ["darwin", { lat: -12.4634, lng: 130.8456 }],
+      ["canberra", { lat: -35.2809, lng: 149.13 }],
+      ["hobart", { lat: -42.8821, lng: 147.3272 }],
+
       // South Australia - Regional & Suburbs
-      ['langhorne creek', { lat: -35.3100, lng: 139.0500 }],
-      ['kangaroo road', { lat: -35.3100, lng: 139.0500 }],
-      ['strathalbyn', { lat: -35.2606, lng: 138.8906 }],
-      ['mount barker', { lat: -35.0706, lng: 138.8606 }],
-      ['murray bridge', { lat: -35.1197, lng: 139.2756 }],
-      ['victor harbor', { lat: -35.5528, lng: 138.6156 }],
-      ['goolwa', { lat: -35.5067, lng: 138.7847 }],
-      ['norwood', { lat: -34.9219, lng: 138.6264 }],
-      ['unley', { lat: -34.9504, lng: 138.6063 }],
-      ['glenelg', { lat: -35.0067, lng: 138.5144 }],
-      ['port adelaide', { lat: -34.8467, lng: 138.5089 }],
-      ['elizabeth', { lat: -34.7183, lng: 138.6744 }],
-      ['salisbury', { lat: -34.7606, lng: 138.6428 }],
-      ['modbury', { lat: -34.8333, lng: 138.6833 }],
-      
+      ["langhorne creek", { lat: -35.31, lng: 139.05 }],
+      ["kangaroo road", { lat: -35.31, lng: 139.05 }],
+      ["strathalbyn", { lat: -35.2606, lng: 138.8906 }],
+      ["mount barker", { lat: -35.0706, lng: 138.8606 }],
+      ["murray bridge", { lat: -35.1197, lng: 139.2756 }],
+      ["victor harbor", { lat: -35.5528, lng: 138.6156 }],
+      ["goolwa", { lat: -35.5067, lng: 138.7847 }],
+      ["norwood", { lat: -34.9219, lng: 138.6264 }],
+      ["unley", { lat: -34.9504, lng: 138.6063 }],
+      ["glenelg", { lat: -35.0067, lng: 138.5144 }],
+      ["port adelaide", { lat: -34.8467, lng: 138.5089 }],
+      ["elizabeth", { lat: -34.7183, lng: 138.6744 }],
+      ["salisbury", { lat: -34.7606, lng: 138.6428 }],
+      ["modbury", { lat: -34.8333, lng: 138.6833 }],
+
       // Western Australia
-      ['australind', { lat: -33.2839, lng: 115.7289 }],
-      ['bunbury', { lat: -33.3267, lng: 115.6378 }],
-      ['mandurah', { lat: -32.5269, lng: 115.7214 }],
-      ['fremantle', { lat: -32.0569, lng: 115.7439 }],
-      ['joondalup', { lat: -31.7500, lng: 115.7667 }],
-      ['rockingham', { lat: -32.2794, lng: 115.7328 }],
-      
+      ["australind", { lat: -33.2839, lng: 115.7289 }],
+      ["bunbury", { lat: -33.3267, lng: 115.6378 }],
+      ["mandurah", { lat: -32.5269, lng: 115.7214 }],
+      ["fremantle", { lat: -32.0569, lng: 115.7439 }],
+      ["joondalup", { lat: -31.75, lng: 115.7667 }],
+      ["rockingham", { lat: -32.2794, lng: 115.7328 }],
+
       // Victoria - Melbourne Suburbs
-      ['geelong', { lat: -38.1499, lng: 144.3617 }],
-      ['ballarat', { lat: -37.5622, lng: 143.8503 }],
-      ['bendigo', { lat: -36.7570, lng: 144.2794 }],
-      ['frankston', { lat: -38.1432, lng: 145.1286 }],
-      ['dandenong', { lat: -37.9881, lng: 145.2169 }],
-      ['box hill', { lat: -37.8167, lng: 145.1233 }],
-      ['richmond', { lat: -37.8264, lng: 144.9881 }],
-      ['st kilda', { lat: -37.8667, lng: 144.9833 }],
-      
-      // New South Wales - Sydney Suburbs  
-      ['newcastle', { lat: -32.9283, lng: 151.7817 }],
-      ['wollongong', { lat: -34.4278, lng: 150.8931 }],
-      ['central coast', { lat: -33.4269, lng: 151.3428 }],
-      ['parramatta', { lat: -33.8153, lng: 151.0000 }],
-      ['penrith', { lat: -33.7508, lng: 150.6944 }],
-      ['liverpool', { lat: -33.9267, lng: 150.9233 }],
-      ['cronulla', { lat: -34.0581, lng: 151.1517 }],
-      ['manly', { lat: -33.7969, lng: 151.2897 }],
-      ['bondi', { lat: -33.8908, lng: 151.2743 }],
-      
+      ["geelong", { lat: -38.1499, lng: 144.3617 }],
+      ["ballarat", { lat: -37.5622, lng: 143.8503 }],
+      ["bendigo", { lat: -36.757, lng: 144.2794 }],
+      ["frankston", { lat: -38.1432, lng: 145.1286 }],
+      ["dandenong", { lat: -37.9881, lng: 145.2169 }],
+      ["box hill", { lat: -37.8167, lng: 145.1233 }],
+      ["richmond", { lat: -37.8264, lng: 144.9881 }],
+      ["st kilda", { lat: -37.8667, lng: 144.9833 }],
+
+      // New South Wales - Sydney Suburbs
+      ["newcastle", { lat: -32.9283, lng: 151.7817 }],
+      ["wollongong", { lat: -34.4278, lng: 150.8931 }],
+      ["central coast", { lat: -33.4269, lng: 151.3428 }],
+      ["parramatta", { lat: -33.8153, lng: 151.0 }],
+      ["penrith", { lat: -33.7508, lng: 150.6944 }],
+      ["liverpool", { lat: -33.9267, lng: 150.9233 }],
+      ["cronulla", { lat: -34.0581, lng: 151.1517 }],
+      ["manly", { lat: -33.7969, lng: 151.2897 }],
+      ["bondi", { lat: -33.8908, lng: 151.2743 }],
+
       // Queensland - Brisbane Suburbs
-      ['gold coast', { lat: -28.0167, lng: 153.4000 }],
-      ['sunshine coast', { lat: -26.6500, lng: 153.0667 }],
-      ['townsville', { lat: -19.2590, lng: 146.8169 }],
-      ['cairns', { lat: -16.9186, lng: 145.7781 }],
-      ['toowoomba', { lat: -27.5598, lng: 151.9507 }],
-      ['ipswich', { lat: -27.6167, lng: 152.7667 }],
-      
+      ["gold coast", { lat: -28.0167, lng: 153.4 }],
+      ["sunshine coast", { lat: -26.65, lng: 153.0667 }],
+      ["townsville", { lat: -19.259, lng: 146.8169 }],
+      ["cairns", { lat: -16.9186, lng: 145.7781 }],
+      ["toowoomba", { lat: -27.5598, lng: 151.9507 }],
+      ["ipswich", { lat: -27.6167, lng: 152.7667 }],
+
       // Sri Lanka - Major Cities and Suburbs
-      ['colombo', { lat: 6.9271, lng: 79.8612 }],
-      ['kandy', { lat: 7.2906, lng: 80.6337 }],
-      ['galle', { lat: 6.0535, lng: 80.2210 }],
-      ['jaffna', { lat: 9.6615, lng: 80.0255 }],
-      ['negombo', { lat: 7.2083, lng: 79.8358 }],
-      ['anuradhapura', { lat: 8.3114, lng: 80.4037 }],
-      ['trincomalee', { lat: 8.5874, lng: 81.2152 }],
-      ['batticaloa', { lat: 7.7102, lng: 81.7088 }],
-      ['kurunegala', { lat: 7.4863, lng: 80.3647 }],
-      ['ratnapura', { lat: 6.6828, lng: 80.3992 }],
-      ['matara', { lat: 5.9549, lng: 80.5550 }],
-      ['dehiwala', { lat: 6.8569, lng: 79.8658 }],
-      ['moratuwa', { lat: 6.7731, lng: 79.8828 }],
-      ['kotte', { lat: 6.8905, lng: 79.9075 }],
-      ['mirigama', { lat: 7.2417, lng: 80.1283 }],
-      ['gampaha', { lat: 7.0917, lng: 80.0000 }],
-      ['kalutara', { lat: 6.5854, lng: 79.9607 }],
-      
+      ["colombo", { lat: 6.9271, lng: 79.8612 }],
+      ["kandy", { lat: 7.2906, lng: 80.6337 }],
+      ["galle", { lat: 6.0535, lng: 80.221 }],
+      ["jaffna", { lat: 9.6615, lng: 80.0255 }],
+      ["negombo", { lat: 7.2083, lng: 79.8358 }],
+      ["anuradhapura", { lat: 8.3114, lng: 80.4037 }],
+      ["trincomalee", { lat: 8.5874, lng: 81.2152 }],
+      ["batticaloa", { lat: 7.7102, lng: 81.7088 }],
+      ["kurunegala", { lat: 7.4863, lng: 80.3647 }],
+      ["ratnapura", { lat: 6.6828, lng: 80.3992 }],
+      ["matara", { lat: 5.9549, lng: 80.555 }],
+      ["dehiwala", { lat: 6.8569, lng: 79.8658 }],
+      ["moratuwa", { lat: 6.7731, lng: 79.8828 }],
+      ["kotte", { lat: 6.8905, lng: 79.9075 }],
+      ["mirigama", { lat: 7.2417, lng: 80.1283 }],
+      ["gampaha", { lat: 7.0917, lng: 80.0 }],
+      ["kalutara", { lat: 6.5854, lng: 79.9607 }],
+
       // New Zealand - Major Cities
-      ['auckland', { lat: -36.8485, lng: 174.7633 }],
-      ['wellington', { lat: -41.2865, lng: 174.7762 }],
-      ['christchurch', { lat: -43.5321, lng: 172.6362 }],
-      ['hamilton', { lat: -37.7870, lng: 175.2793 }],
-      ['dunedin', { lat: -45.8788, lng: 170.5028 }],
-      ['tauranga', { lat: -37.6878, lng: 176.1651 }],
-      ['napier', { lat: -39.4928, lng: 176.9120 }],
-      ['palmerston north', { lat: -40.3523, lng: 175.6082 }],
+      ["auckland", { lat: -36.8485, lng: 174.7633 }],
+      ["wellington", { lat: -41.2865, lng: 174.7762 }],
+      ["christchurch", { lat: -43.5321, lng: 172.6362 }],
+      ["hamilton", { lat: -37.787, lng: 175.2793 }],
+      ["dunedin", { lat: -45.8788, lng: 170.5028 }],
+      ["tauranga", { lat: -37.6878, lng: 176.1651 }],
+      ["napier", { lat: -39.4928, lng: 176.912 }],
+      ["palmerston north", { lat: -40.3523, lng: 175.6082 }],
     ]);
   };
 
-  const generateHTMLContent = (markers: {
-    id: string;
-    lat: number;
-    lng: number;
-    title: string;
-    price: string;
-    location: string;
-    status: string;
-    offers: number;
-  }[]) => {
+  const generateHTMLContent = (
+    markers: {
+      id: string;
+      lat: number;
+      lng: number;
+      title: string;
+      price: string;
+      location: string;
+      status: string;
+      offers: number;
+    }[]
+  ) => {
     // Calculate center based on focus task or markers
     let centerLat = -34.9285; // Adelaide default
     let centerLng = 138.6007;
-    
+
     // If focusing on a specific task, use its coordinates as center
     if (focusTaskId) {
-      const focusMarker = markers.find(m => m.id === focusTaskId);
+      const focusMarker = markers.find((m) => m.id === focusTaskId);
       if (focusMarker) {
         centerLat = focusMarker.lat;
         centerLng = focusMarker.lng;
-
       } else {
-
         if (markers.length > 0) {
-          centerLat = markers.reduce((sum, marker) => sum + marker.lat, 0) / markers.length;
-          centerLng = markers.reduce((sum, marker) => sum + marker.lng, 0) / markers.length;
+          centerLat =
+            markers.reduce((sum, marker) => sum + marker.lat, 0) /
+            markers.length;
+          centerLng =
+            markers.reduce((sum, marker) => sum + marker.lng, 0) /
+            markers.length;
         }
       }
     } else if (markers.length > 0) {
-      centerLat = markers.reduce((sum, marker) => sum + marker.lat, 0) / markers.length;
-      centerLng = markers.reduce((sum, marker) => sum + marker.lng, 0) / markers.length;
-
+      centerLat =
+        markers.reduce((sum, marker) => sum + marker.lat, 0) / markers.length;
+      centerLng =
+        markers.reduce((sum, marker) => sum + marker.lng, 0) / markers.length;
     }
 
     return `
@@ -431,7 +508,9 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       <div id="map"></div>
       <script>
         // Initialize the map with appropriate zoom level and constraints
-        const initialZoom = ${focusTaskId ? '14' : markers.length > 0 ? '10' : '6'};
+        const initialZoom = ${
+          focusTaskId ? "14" : markers.length > 0 ? "10" : "6"
+        };
         const map = L.map('map', {
           center: [${centerLat}, ${centerLng}],
           zoom: initialZoom,
@@ -485,7 +564,9 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         });
 
         // Add markers for each task
-        const markers = [${markers.map(marker => `
+        const markers = [${markers
+          .map(
+            (marker) => `
           {
             id: '${marker.id}',
             lat: ${marker.lat},
@@ -495,7 +576,9 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
             location: '${marker.location.replace(/'/g, "\\'")}',
             status: '${marker.status}',
             offers: ${marker.offers}
-          }`).join(',')}
+          }`
+          )
+          .join(",")}
         ];
 
         // Keep track of created markers for focus functionality
@@ -532,7 +615,9 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         });
 
         // Handle specific task focus
-        ${focusTaskId ? `
+        ${
+          focusTaskId
+            ? `
 
         const focusMarker = markers.find(m => m.id === '${focusTaskId}');
         if (focusMarker) {
@@ -562,7 +647,8 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
             }
           }
         }
-        ` : `
+        `
+            : `
         // Fit map to show all markers if no specific focus
         if (markers.length > 0) {
           if (markers.length === 1) {
@@ -575,7 +661,8 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
 
           map.setView([-34.9285, 138.6007], 10);
         }
-        `}
+        `
+        }
 
         // Handle action buttons
         function handleAction(action, taskId) {
@@ -603,9 +690,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           if (onMapAction) {
             onMapAction(data.action, data.taskId);
           }
-        } catch (error) {
-
-        }
+        } catch (error) {}
       }}
       javaScriptEnabled={true}
       domStorageEnabled={true}

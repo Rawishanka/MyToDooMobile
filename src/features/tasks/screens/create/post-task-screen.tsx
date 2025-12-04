@@ -1,11 +1,18 @@
-import { CreateTaskRequest } from '@/src/api/types/tasks';
-import { useCreateTask, usePostTaskDirect, usePostTaskWithImages } from '@/src/shared/hooks/useTaskApi';
-import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
-import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
-import { useCreateTaskStore } from '@/src/store/create-task-store';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { CreateTaskRequest } from "@/src/api/types/tasks";
+import {
+  useCreateTask,
+  usePostTaskDirect,
+  usePostTaskWithImages,
+} from "@/src/shared/hooks/useTaskApi";
+import {
+  formatCurrency,
+  getCurrencyFromLocation,
+} from "@/src/shared/utils/currency";
+import { isNetworkError } from "@/src/shared/utils/networkErrorHandler";
+import { useCreateTaskStore } from "@/src/store/create-task-store";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,14 +23,14 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
 export default function PostTaskScreen() {
   const router = useRouter();
   const { myTask, resetTask } = useCreateTaskStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState('');
-  
+  const [uploadProgress, setUploadProgress] = useState("");
+
   const createTaskMutation = useCreateTask();
   const postTaskWithImagesMutation = usePostTaskWithImages();
   const postTaskDirectMutation = usePostTaskDirect(); // ✅ NEW: Direct posting approach
@@ -33,7 +40,7 @@ export default function PostTaskScreen() {
     if (!task.isRemoval && task.category) {
       return task.category; // ✅ Return as string, not array
     }
-    return task.isRemoval ? 'Removalist' : 'General';
+    return task.isRemoval ? "Removalist" : "General";
   };
 
   const getTaskLocation = (task: any): string => {
@@ -43,23 +50,32 @@ export default function PostTaskScreen() {
     if (task.isRemoval && task.pickupLocation && task.deliveryLocation) {
       return `From ${task.pickupLocation} to ${task.deliveryLocation}`;
     }
-    return task.description || 'Location to be determined';
+    return task.description || "Location to be determined";
   };
 
   // ✅ NEW: Format location for backend (string format with separate coordinates)
   const formatLocationForBackend = (task: any): string => {
     if (task.isRemoval) {
-      return `From ${task.pickupLocation || 'Unknown'} to ${task.deliveryLocation || 'Unknown'}`;
+      return `From ${task.pickupLocation || "Unknown"} to ${
+        task.deliveryLocation || "Unknown"
+      }`;
     }
-    return task.location || 'Location not specified';
+    return task.location || "Location not specified";
   };
 
-  const getTaskCoordinates = (task: any): { lat: number; lng: number } | undefined => {
+  const getTaskCoordinates = (
+    task: any
+  ): { lat: number; lng: number } | undefined => {
     // Only return coordinates if we have valid location data from the user
-    if (!task.isRemoval && task.coordinates && task.coordinates.lat && task.coordinates.lng) {
+    if (
+      !task.isRemoval &&
+      task.coordinates &&
+      task.coordinates.lat &&
+      task.coordinates.lng
+    ) {
       return {
         lat: task.coordinates.lat,
-        lng: task.coordinates.lng
+        lng: task.coordinates.lng,
       };
     }
     // Don't send coordinates if we don't have real location data
@@ -69,39 +85,42 @@ export default function PostTaskScreen() {
   const handlePostTask = async () => {
     // Prevent double-clicks
     if (isSubmitting) return;
-    
+
     try {
       setIsSubmitting(true);
-      setUploadProgress('Validating task data...');
-      
+      setUploadProgress("Validating task data...");
+
       // Validate required fields
       if (!myTask.title || !myTask.description || !myTask.budget) {
         setIsSubmitting(false);
-        setUploadProgress('');
-        Alert.alert('Missing Information', 'Please fill in all required fields.');
+        setUploadProgress("");
+        Alert.alert(
+          "Missing Information",
+          "Please fill in all required fields."
+        );
         return;
       }
 
       // Prepare task data for API with EXACT backend format from documentation
       const coordinates = getTaskCoordinates(myTask);
       const imageUris = myTask.photos || [];
-      
+
       const taskData: CreateTaskRequest = {
         title: myTask.title,
         category: getTaskCategory(myTask), // API expects single category string
         details: myTask.description,
-        dateType: 'DoneBy',
-        date: myTask.date 
-          ? new Date(myTask.date).toISOString().split('T')[0] 
+        dateType: "DoneBy",
+        date: myTask.date
+          ? new Date(myTask.date).toISOString().split("T")[0]
           : undefined,
-        time: myTask.time || 'Anytime',
-        locationType: myTask.locationType || 'In-person',
+        time: myTask.time || "Anytime",
+        locationType: myTask.locationType || "In-person",
         location: formatLocationForBackend(myTask),
         budget: myTask.budget,
-        currency: 'LKR',
+        currency: "LKR",
         // Only include images if we have them - backend requires images if field is present
       };
-      
+
       // Only add images if we have them (backend validates images if present)
       if (imageUris.length > 0) {
         taskData.images = imageUris;
@@ -112,102 +131,84 @@ export default function PostTaskScreen() {
         taskData.coordinates = coordinates;
       }
 
-
-
-
-
-
-
-
-
-
       let result;
-      
+
       if (imageUris.length > 0) {
         setUploadProgress(`Processing ${imageUris.length} image(s)...`);
-        
+
         // Use image URIs directly (like profile upload)
-
-
 
         // Keep images as file URIs for FormData upload
         taskData.images = imageUris;
 
-
-
         result = await postTaskDirectMutation.mutateAsync(taskData);
-        
+
         // CRITICAL: Log the response to see if backend saved images
 
         if (result?.data?.images && result.data.images.length > 0) {
           // Backend successfully saved images
         }
       } else {
-        setUploadProgress('Creating task...');
+        setUploadProgress("Creating task...");
 
         result = await createTaskMutation.mutateAsync(taskData);
-
       }
-      
+
       // Reset the task store immediately
       resetTask();
-      
+
       // Hide loading state
       setIsSubmitting(false);
-      setUploadProgress('');
-      
+      setUploadProgress("");
+
       // Navigate to the welcome/dashboard screen (Get Done tab)
       // Use router.push to index which is the Get Done screen
       router.dismissAll();
-      router.push('/' as any);
-      
+      router.push("/" as any);
     } catch (error: any) {
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
+      }
 
-      }
-      
-      let errorMessage = 'Something went wrong. Please try again.';
-      
-      if (error?.message?.includes('Images are too large')) {
-        errorMessage = 'The selected images are too large. Please choose smaller images and try again.';
-      } else if (error?.message?.includes('Authentication expired')) {
-        errorMessage = 'Your session has expired. Please login again.';
-      } else if (error?.message?.includes('Validation Error')) {
+      let errorMessage = "Something went wrong. Please try again.";
+
+      if (error?.message?.includes("Images are too large")) {
+        errorMessage =
+          "The selected images are too large. Please choose smaller images and try again.";
+      } else if (error?.message?.includes("Authentication expired")) {
+        errorMessage = "Your session has expired. Please login again.";
+      } else if (error?.message?.includes("Validation Error")) {
         errorMessage = error.message;
-      } else if (error?.message?.includes('Failed to read image')) {
-        errorMessage = 'Failed to process one or more images. Please try selecting different images.';
+      } else if (error?.message?.includes("Failed to read image")) {
+        errorMessage =
+          "Failed to process one or more images. Please try selecting different images.";
       }
-      
-      Alert.alert(
-        'Failed to Post Task',
-        errorMessage,
-        [{ text: 'OK' }]
-      );
+
+      Alert.alert("Failed to Post Task", errorMessage, [{ text: "OK" }]);
     } finally {
       setIsSubmitting(false);
-      setUploadProgress('');
+      setUploadProgress("");
     }
   };
 
   const formatBudget = () => {
     if (myTask.budget) {
       // Handle different task types for location
-      let address = '';
+      let address = "";
       if (!myTask.isRemoval && myTask.location) {
         address = myTask.location;
       } else if (myTask.isRemoval && myTask.pickupLocation) {
         address = myTask.pickupLocation;
       }
-      
+
       const currencyInfo = getCurrencyFromLocation({ address });
       return formatCurrency(myTask.budget, currencyInfo);
     }
-    return 'Not set';
+    return "Not set";
   };
 
   const formatCategories = () => {
-    return 'No categories selected';
+    return "No categories selected";
   };
 
   if (isSubmitting) {
@@ -215,9 +216,9 @@ export default function PostTaskScreen() {
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#007bff" />
         <Text style={styles.loadingText}>
-          {uploadProgress || 'Posting your task...'}
+          {uploadProgress || "Posting your task..."}
         </Text>
-        {uploadProgress.includes('Converting') && (
+        {uploadProgress.includes("Converting") && (
           <Text style={styles.subLoadingText}>
             This may take a moment for multiple images
           </Text>
@@ -229,10 +230,13 @@ export default function PostTaskScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
+
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Review & Post Task</Text>
@@ -243,18 +247,18 @@ export default function PostTaskScreen() {
         {/* Task Summary Card */}
         <View style={styles.summaryCard}>
           <Text style={styles.sectionTitle}>Task Summary</Text>
-          
+
           {/* Title */}
           <View style={styles.summaryItem}>
             <Text style={styles.label}>Title</Text>
-            <Text style={styles.value}>{myTask.title || 'Not set'}</Text>
+            <Text style={styles.value}>{myTask.title || "Not set"}</Text>
           </View>
 
           {/* Description */}
           <View style={styles.summaryItem}>
             <Text style={styles.label}>Description</Text>
             <Text style={styles.value} numberOfLines={3}>
-              {myTask.description || 'Not set'}
+              {myTask.description || "Not set"}
             </Text>
           </View>
 
@@ -267,13 +271,15 @@ export default function PostTaskScreen() {
           {/* Location */}
           <View style={styles.summaryItem}>
             <Text style={styles.label}>Location</Text>
-            <Text style={styles.value}>{myTask.description || 'Not set'}</Text>
+            <Text style={styles.value}>{myTask.description || "Not set"}</Text>
           </View>
 
           {/* Budget */}
           <View style={styles.summaryItem}>
             <Text style={styles.label}>Budget</Text>
-            <Text style={[styles.value, styles.budgetValue]}>{formatBudget()}</Text>
+            <Text style={[styles.value, styles.budgetValue]}>
+              {formatBudget()}
+            </Text>
           </View>
 
           {/* Date & Time */}
@@ -284,19 +290,23 @@ export default function PostTaskScreen() {
 
           <View style={styles.summaryItem}>
             <Text style={styles.label}>Time</Text>
-            <Text style={styles.value}>{myTask.time || 'Anytime'}</Text>
+            <Text style={styles.value}>{myTask.time || "Anytime"}</Text>
           </View>
 
           {/* Images */}
-          {(myTask.photos && myTask.photos.length > 0) && (
+          {myTask.photos && myTask.photos.length > 0 && (
             <View style={styles.summaryItem}>
               <Text style={styles.label}>Images ({myTask.photos.length})</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageContainer}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.imageContainer}
+              >
                 {myTask.photos.map((uri, index) => (
-                  <Image 
-                    key={index} 
-                    source={{ uri }} 
-                    style={[styles.taskImage, index > 0 && { marginLeft: 8 }]} 
+                  <Image
+                    key={index}
+                    source={{ uri }}
+                    style={[styles.taskImage, index > 0 && { marginLeft: 8 }]}
                   />
                 ))}
               </ScrollView>
@@ -308,22 +318,23 @@ export default function PostTaskScreen() {
         <View style={styles.infoBox}>
           <Ionicons name="information-circle" size={20} color="#007bff" />
           <Text style={styles.infoText}>
-            Once posted, your task will be visible to all users. You'll receive notifications when users make offers.
+            Once posted, your task will be visible to all users. You'll receive
+            notifications when users make offers.
           </Text>
         </View>
       </ScrollView>
 
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.editButton}
-          onPress={() => router.push('/(welcome-screen)/title-screen')}
+          onPress={() => router.push("/(welcome-screen)/title-screen")}
         >
           <Ionicons name="create-outline" size={20} color="#007bff" />
           <Text style={styles.editButtonText}>Edit Task</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={[styles.postButton, isSubmitting && styles.postButtonDisabled]}
           onPress={handlePostTask}
           disabled={isSubmitting}
@@ -331,7 +342,7 @@ export default function PostTaskScreen() {
         >
           <Ionicons name="send" size={20} color="#fff" />
           <Text style={styles.postButtonText}>
-            {isSubmitting ? 'Posting...' : 'Post Task'}
+            {isSubmitting ? "Posting..." : "Post Task"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -342,44 +353,44 @@ export default function PostTaskScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   subLoadingText: {
     marginTop: 8,
     fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
+    color: "#999",
+    textAlign: "center",
     paddingHorizontal: 20,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 15,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: "#f0f0f0",
   },
   backButton: {
     padding: 5,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: "600",
+    color: "#000",
   },
   placeholder: {
     width: 34,
@@ -389,11 +400,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   summaryCard: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 20,
     marginTop: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -401,8 +412,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#000',
+    fontWeight: "700",
+    color: "#000",
     marginBottom: 16,
   },
   summaryItem: {
@@ -410,19 +421,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: "600",
+    color: "#666",
     marginBottom: 4,
   },
   value: {
     fontSize: 16,
-    color: '#000',
+    color: "#000",
     lineHeight: 22,
   },
   budgetValue: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#007bff',
+    fontWeight: "700",
+    color: "#007bff",
   },
   imageContainer: {
     marginTop: 8,
@@ -432,11 +443,11 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 8,
     marginRight: 12,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
   },
   infoBox: {
-    flexDirection: 'row',
-    backgroundColor: '#e3f2fd',
+    flexDirection: "row",
+    backgroundColor: "#e3f2fd",
     borderRadius: 8,
     padding: 16,
     marginTop: 20,
@@ -445,52 +456,52 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 14,
-    color: '#1976d2',
+    color: "#1976d2",
     marginLeft: 8,
     lineHeight: 20,
   },
   actionButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: "#f0f0f0",
     gap: 12,
   },
   editButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 14,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#007bff',
+    borderColor: "#007bff",
     gap: 6,
   },
   editButtonText: {
-    color: '#007bff',
+    color: "#007bff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   postButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: '#007bff',
+    backgroundColor: "#007bff",
     gap: 6,
   },
   postButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
     opacity: 0.6,
   },
   postButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

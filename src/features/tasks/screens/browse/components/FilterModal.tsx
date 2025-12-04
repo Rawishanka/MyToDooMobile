@@ -1,7 +1,7 @@
-import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
-import { getCurrencySymbol } from '@/src/shared/utils/currency';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
+import { useLocationCountry } from "@/src/shared/hooks/useLocationCountry";
+import { getCurrencySymbol } from "@/src/shared/utils/currency";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useMemo, useState } from "react";
 import {
   Modal,
   PanResponder,
@@ -11,8 +11,8 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
-} from 'react-native';
+  View,
+} from "react-native";
 
 interface FilterModalProps {
   visible: boolean;
@@ -22,8 +22,8 @@ interface FilterModalProps {
   categoriesError?: any;
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
-  taskType: 'all' | 'in-person' | 'remote';
-  onTaskTypeChange: (type: 'all' | 'in-person' | 'remote') => void;
+  taskType: "all" | "in-person" | "remote";
+  onTaskTypeChange: (type: "all" | "in-person" | "remote") => void;
   priceRange: [number, number];
   onPriceRangeChange: (range: [number, number]) => void;
   availableTasksOnly: boolean;
@@ -54,11 +54,11 @@ export default function FilterModal({
   // Get geolocation-based currency
   const { countryInfo } = useLocationCountry();
   const currencySymbol = getCurrencySymbol(countryInfo.currency);
-  
+
   const [categoryDropdownVisible, setCategoryDropdownVisible] = useState(false);
-  const [categorySearchText, setCategorySearchText] = useState('');
+  const [categorySearchText, setCategorySearchText] = useState("");
   const [sliderWidth, setSliderWidth] = useState(300);
-  const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null);
+  const [activeThumb, setActiveThumb] = useState<"min" | "max" | null>(null);
 
   const MIN_PRICE = 0;
   const MAX_PRICE = 10000;
@@ -75,14 +75,13 @@ export default function FilterModal({
     const startingMatches: string[] = [];
     const containingMatches: string[] = [];
 
-    categories.forEach(cat => {
-      if (!cat || typeof cat !== 'string') {
-
+    categories.forEach((cat) => {
+      if (!cat || typeof cat !== "string") {
         return;
       }
-      
+
       const catLower = cat.toLowerCase().trim();
-      
+
       if (catLower.startsWith(searchLower)) {
         // Category starts with the search term
         startingMatches.push(cat);
@@ -98,7 +97,7 @@ export default function FilterModal({
     return filtered;
   }, [categories, categorySearchText]);
 
-  const createPanResponder = (thumbType: 'min' | 'max') => {
+  const createPanResponder = (thumbType: "min" | "max") => {
     return PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
@@ -109,12 +108,18 @@ export default function FilterModal({
         const { dx } = gestureState;
         const percentage = dx / sliderWidth;
         const priceChange = percentage * MAX_PRICE;
-        
-        if (thumbType === 'min') {
-          const newMin = Math.max(MIN_PRICE, Math.min(priceRange[1] - 100, priceRange[0] + priceChange));
+
+        if (thumbType === "min") {
+          const newMin = Math.max(
+            MIN_PRICE,
+            Math.min(priceRange[1] - 100, priceRange[0] + priceChange)
+          );
           onPriceRangeChange([Math.round(newMin), priceRange[1]]);
         } else {
-          const newMax = Math.min(MAX_PRICE, Math.max(priceRange[0] + 100, priceRange[1] + priceChange));
+          const newMax = Math.min(
+            MAX_PRICE,
+            Math.max(priceRange[0] + 100, priceRange[1] + priceChange)
+          );
           onPriceRangeChange([priceRange[0], Math.round(newMax)]);
         }
       },
@@ -124,8 +129,8 @@ export default function FilterModal({
     });
   };
 
-  const minThumbPanResponder = createPanResponder('min');
-  const maxThumbPanResponder = createPanResponder('max');
+  const minThumbPanResponder = createPanResponder("min");
+  const maxThumbPanResponder = createPanResponder("max");
 
   return (
     <Modal
@@ -148,33 +153,43 @@ export default function FilterModal({
 
         <ScrollView style={styles.filterContent}>
           {/* Category Filter */}
-          <View style={[styles.filterSection, { zIndex: categoryDropdownVisible ? 1000 : 1 }]}>
+          <View
+            style={[
+              styles.filterSection,
+              { zIndex: categoryDropdownVisible ? 1000 : 1 },
+            ]}
+          >
             <Text style={styles.sectionTitle}>Categories</Text>
             <TouchableOpacity
               style={styles.categorySelector}
               onPress={() => {
                 setCategoryDropdownVisible(!categoryDropdownVisible);
                 if (!categoryDropdownVisible) {
-                  setCategorySearchText(''); // Clear search when opening
+                  setCategorySearchText(""); // Clear search when opening
                 }
               }}
               disabled={categoriesLoading}
             >
               <Text style={styles.categorySelectorText}>
-                {categoriesLoading ? 'Loading categories...' : selectedCategory}
+                {categoriesLoading ? "Loading categories..." : selectedCategory}
               </Text>
-              <MaterialCommunityIcons 
+              <MaterialCommunityIcons
                 name={categoryDropdownVisible ? "chevron-up" : "chevron-down"}
-                size={20} 
-                color="#666" 
+                size={20}
+                color="#666"
               />
             </TouchableOpacity>
-            
+
             {categoryDropdownVisible && !categoriesLoading && (
               <View style={styles.categoryDropdown}>
                 {/* Search Input */}
                 <View style={styles.categorySearchContainer}>
-                  <Ionicons name="search-outline" size={18} color="#999" style={styles.searchIcon} />
+                  <Ionicons
+                    name="search-outline"
+                    size={18}
+                    color="#999"
+                    style={styles.searchIcon}
+                  />
                   <TextInput
                     style={styles.categorySearchInput}
                     placeholder="Search categories..."
@@ -184,8 +199,8 @@ export default function FilterModal({
                     autoFocus={false}
                   />
                   {categorySearchText.length > 0 && (
-                    <TouchableOpacity 
-                      onPress={() => setCategorySearchText('')}
+                    <TouchableOpacity
+                      onPress={() => setCategorySearchText("")}
                       style={styles.clearSearchIcon}
                     >
                       <Ionicons name="close-circle" size={18} color="#999" />
@@ -197,53 +212,75 @@ export default function FilterModal({
                 <ScrollView style={styles.categoryList} nestedScrollEnabled>
                   {/* Debug info - visible in UI */}
                   {__DEV__ && categorySearchText.trim() && (
-                    <View style={{ padding: 8, backgroundColor: '#f0f0f0', marginBottom: 4 }}>
-                      <Text style={{ fontSize: 10, color: '#666' }}>
-                        DEBUG: Searching "{categorySearchText}" - Found {filteredCategories.length} results
+                    <View
+                      style={{
+                        padding: 8,
+                        backgroundColor: "#f0f0f0",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <Text style={{ fontSize: 10, color: "#666" }}>
+                        DEBUG: Searching "{categorySearchText}" - Found{" "}
+                        {filteredCategories.length} results
                       </Text>
-                      <Text style={{ fontSize: 9, color: '#999' }}>
-                        (Categories starting with "{categorySearchText}" appear first)
+                      <Text style={{ fontSize: 9, color: "#999" }}>
+                        (Categories starting with "{categorySearchText}" appear
+                        first)
                       </Text>
                     </View>
                   )}
-                  
+
                   {filteredCategories.length > 0 ? (
                     filteredCategories.map((cat, index) => (
                       <TouchableOpacity
                         key={index}
                         style={[
                           styles.categoryOption,
-                          selectedCategory === cat && styles.categoryOptionSelected,
-                          index === filteredCategories.length - 1 && { borderBottomWidth: 0 }
+                          selectedCategory === cat &&
+                            styles.categoryOptionSelected,
+                          index === filteredCategories.length - 1 && {
+                            borderBottomWidth: 0,
+                          },
                         ]}
                         onPress={() => {
                           onCategoryChange(cat);
                           setCategoryDropdownVisible(false);
-                          setCategorySearchText('');
+                          setCategorySearchText("");
                         }}
                       >
-                        <Text style={[
-                          styles.categoryOptionText,
-                          selectedCategory === cat && styles.categoryOptionTextSelected
-                        ]}>
+                        <Text
+                          style={[
+                            styles.categoryOptionText,
+                            selectedCategory === cat &&
+                              styles.categoryOptionTextSelected,
+                          ]}
+                        >
                           {cat}
                         </Text>
                         {selectedCategory === cat && (
-                          <Ionicons name="checkmark" size={20} color="#007bff" />
+                          <Ionicons
+                            name="checkmark"
+                            size={20}
+                            color="#007bff"
+                          />
                         )}
                       </TouchableOpacity>
                     ))
                   ) : (
                     <View style={styles.noResultsContainer}>
                       <Ionicons name="search-outline" size={32} color="#ccc" />
-                      <Text style={styles.noResultsText}>No categories found</Text>
-                      <Text style={styles.noResultsSubtext}>Try a different search term</Text>
+                      <Text style={styles.noResultsText}>
+                        No categories found
+                      </Text>
+                      <Text style={styles.noResultsSubtext}>
+                        Try a different search term
+                      </Text>
                     </View>
                   )}
                 </ScrollView>
               </View>
             )}
-            
+
             {categoriesError && (
               <Text style={styles.categoryErrorText}>
                 Failed to load categories. Using defaults.
@@ -257,48 +294,58 @@ export default function FilterModal({
             <View style={styles.priceRangeDisplay}>
               <View style={styles.priceBox}>
                 <Text style={styles.priceBoxLabel}>Min</Text>
-                <Text style={styles.priceBoxValue}>{currencySymbol}{priceRange[0].toLocaleString()}</Text>
+                <Text style={styles.priceBoxValue}>
+                  {currencySymbol}
+                  {priceRange[0].toLocaleString()}
+                </Text>
               </View>
               <Text style={styles.priceSeparator}>-</Text>
               <View style={styles.priceBox}>
                 <Text style={styles.priceBoxLabel}>Max</Text>
-                <Text style={styles.priceBoxValue}>{currencySymbol}{priceRange[1].toLocaleString()}</Text>
+                <Text style={styles.priceBoxValue}>
+                  {currencySymbol}
+                  {priceRange[1].toLocaleString()}
+                </Text>
               </View>
             </View>
             <View style={styles.sliderContainer}>
               <View
                 style={styles.sliderTrack}
-                onLayout={(event) => setSliderWidth(event.nativeEvent.layout.width)}
+                onLayout={(event) =>
+                  setSliderWidth(event.nativeEvent.layout.width)
+                }
               >
-                <View 
+                <View
                   style={[
                     styles.sliderFill,
                     {
                       left: `${(priceRange[0] / MAX_PRICE) * 100}%`,
-                      width: `${((priceRange[1] - priceRange[0]) / MAX_PRICE) * 100}%`
-                    }
+                      width: `${
+                        ((priceRange[1] - priceRange[0]) / MAX_PRICE) * 100
+                      }%`,
+                    },
                   ]}
                 />
-                <View 
+                <View
                   {...minThumbPanResponder.panHandlers}
                   style={[
                     styles.sliderThumb,
-                    activeThumb === 'min' && styles.sliderThumbActive,
+                    activeThumb === "min" && styles.sliderThumbActive,
                     {
                       left: `${(priceRange[0] / MAX_PRICE) * 100}%`,
-                    }
+                    },
                   ]}
                 >
                   <View style={styles.thumbInner} />
                 </View>
-                <View 
+                <View
                   {...maxThumbPanResponder.panHandlers}
                   style={[
                     styles.sliderThumb,
-                    activeThumb === 'max' && styles.sliderThumbActive,
+                    activeThumb === "max" && styles.sliderThumbActive,
                     {
                       left: `${(priceRange[1] / MAX_PRICE) * 100}%`,
-                    }
+                    },
                   ]}
                 >
                   <View style={styles.thumbInner} />
@@ -314,29 +361,37 @@ export default function FilterModal({
           {/* Toggle Filters */}
           <View style={styles.filterSection}>
             <Text style={styles.sectionTitle}>Other filters</Text>
-            
+
             <View style={styles.toggleRow}>
               <View style={styles.toggleTextContainer}>
-                <Text style={styles.toggleLabel}>Available Mytodoo tasks only</Text>
-                <Text style={styles.toggleSubtitle}>Hide tasks that are already assigned</Text>
+                <Text style={styles.toggleLabel}>
+                  Available Mytodoo tasks only
+                </Text>
+                <Text style={styles.toggleSubtitle}>
+                  Hide tasks that are already assigned
+                </Text>
               </View>
               <Switch
                 value={availableTasksOnly}
                 onValueChange={onAvailableTasksChange}
-                trackColor={{ false: '#e0e0e0', true: '#007bff' }}
+                trackColor={{ false: "#e0e0e0", true: "#007bff" }}
                 thumbColor="#ffffff"
               />
             </View>
-            
+
             <View style={styles.toggleRow}>
               <View style={styles.toggleTextContainer}>
-                <Text style={styles.toggleLabel}>Show tasks with no offers</Text>
-                <Text style={styles.toggleSubtitle}>Hide tasks that have offers</Text>
+                <Text style={styles.toggleLabel}>
+                  Show tasks with no offers
+                </Text>
+                <Text style={styles.toggleSubtitle}>
+                  Hide tasks that have offers
+                </Text>
               </View>
               <Switch
                 value={showTasksWithNoOffers}
                 onValueChange={onShowTasksWithNoOffersChange}
-                trackColor={{ false: '#e0e0e0', true: '#007bff' }}
+                trackColor={{ false: "#e0e0e0", true: "#007bff" }}
                 thumbColor="#ffffff"
               />
             </View>
@@ -348,10 +403,7 @@ export default function FilterModal({
           <TouchableOpacity style={styles.resetButton} onPress={onResetFilters}>
             <Text style={styles.resetButtonText}>Reset</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.applyButton} 
-            onPress={onClose}
-          >
+          <TouchableOpacity style={styles.applyButton} onPress={onClose}>
             <Text style={styles.applyButtonText}>Apply</Text>
           </TouchableOpacity>
         </View>
@@ -363,24 +415,24 @@ export default function FilterModal({
 const styles = StyleSheet.create({
   filterModal: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingTop: 50,
   },
   filterHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   filterTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   resetText: {
-    color: '#007bff',
+    color: "#007bff",
     fontSize: 16,
   },
   filterContent: {
@@ -392,43 +444,43 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
+    fontWeight: "600",
+    color: "#1a1a1a",
     marginBottom: 16,
   },
   categorySelector: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     padding: 16,
     borderRadius: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   categorySelectorText: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   categoryDropdown: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 8,
     marginTop: 4,
     maxHeight: 300,
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     zIndex: 1000,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   categorySearchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-    backgroundColor: '#fafafa',
+    borderBottomColor: "#e5e5e5",
+    backgroundColor: "#fafafa",
   },
   searchIcon: {
     marginRight: 8,
@@ -436,7 +488,7 @@ const styles = StyleSheet.create({
   categorySearchInput: {
     flex: 1,
     fontSize: 15,
-    color: '#333',
+    color: "#333",
     paddingVertical: 4,
   },
   clearSearchIcon: {
@@ -446,101 +498,101 @@ const styles = StyleSheet.create({
     maxHeight: 250,
   },
   categoryOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    backgroundColor: '#fff',
+    borderBottomColor: "#f0f0f0",
+    backgroundColor: "#fff",
   },
   categoryOptionSelected: {
-    backgroundColor: '#f0f8ff',
+    backgroundColor: "#f0f8ff",
   },
   categoryOptionText: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   categoryOptionTextSelected: {
-    color: '#007bff',
-    fontWeight: '600',
+    color: "#007bff",
+    fontWeight: "600",
   },
   noResultsContainer: {
     paddingVertical: 40,
     paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   noResultsText: {
     fontSize: 16,
-    color: '#666',
-    fontWeight: '500',
+    color: "#666",
+    fontWeight: "500",
     marginTop: 12,
   },
   noResultsSubtext: {
     fontSize: 14,
-    color: '#999',
+    color: "#999",
     marginTop: 4,
   },
   categoryErrorText: {
     fontSize: 12,
-    color: '#ff6b35',
+    color: "#ff6b35",
     marginTop: 8,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   taskTypeButtons: {
     gap: 12,
   },
   taskTypeBtn: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   taskTypeBtnActive: {
-    backgroundColor: '#1a237e',
+    backgroundColor: "#1a237e",
   },
   taskTypeBtnText: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   taskTypeBtnTextActive: {
-    color: '#fff',
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "600",
   },
   priceRangeDisplay: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 24,
     gap: 16,
   },
   priceBox: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: "#e0e0e0",
     minWidth: 120,
-    alignItems: 'center',
+    alignItems: "center",
   },
   priceBoxLabel: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
     marginBottom: 4,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   priceBoxValue: {
     fontSize: 18,
-    color: '#007bff',
-    fontWeight: '700',
+    color: "#007bff",
+    fontWeight: "700",
   },
   priceSeparator: {
     fontSize: 20,
-    color: '#999',
-    fontWeight: '300',
+    color: "#999",
+    fontWeight: "300",
   },
   sliderContainer: {
     marginTop: 8,
@@ -548,34 +600,34 @@ const styles = StyleSheet.create({
   },
   sliderTrack: {
     height: 6,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0",
     borderRadius: 3,
-    position: 'relative',
+    position: "relative",
     marginVertical: 20,
   },
   sliderFill: {
     height: 6,
-    backgroundColor: '#007bff',
+    backgroundColor: "#007bff",
     borderRadius: 3,
-    position: 'absolute',
+    position: "absolute",
   },
   sliderThumb: {
     width: 28,
     height: 28,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 14,
-    position: 'absolute',
+    position: "absolute",
     top: -11,
     marginLeft: -14,
     borderWidth: 3,
-    borderColor: '#007bff',
+    borderColor: "#007bff",
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   sliderThumbActive: {
     transform: [{ scale: 1.2 }],
@@ -585,23 +637,23 @@ const styles = StyleSheet.create({
   thumbInner: {
     width: 8,
     height: 8,
-    backgroundColor: '#007bff',
+    backgroundColor: "#007bff",
     borderRadius: 4,
   },
   sliderLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 8,
   },
   sliderLabel: {
     fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
+    color: "#666",
+    fontWeight: "500",
   },
   toggleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
   },
   toggleTextContainer: {
@@ -610,44 +662,44 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     marginBottom: 4,
   },
   toggleSubtitle: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   filterFooter: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     paddingBottom: 52,
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
-    backgroundColor: '#fff',
+    borderTopColor: "#eee",
+    backgroundColor: "#fff",
   },
   resetButton: {
     flex: 1,
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
   },
   resetButtonText: {
     fontSize: 16,
-    color: '#007bff',
-    fontWeight: '600',
+    color: "#007bff",
+    fontWeight: "600",
   },
   applyButton: {
     flex: 1,
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
-    backgroundColor: '#007bff',
+    alignItems: "center",
+    backgroundColor: "#007bff",
   },
   applyButtonText: {
     fontSize: 16,
-    color: '#fff',
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "600",
   },
 });

@@ -1,6 +1,6 @@
-import { Task } from '@/src/api/types/tasks';
-import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
-import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { Task } from "@/src/api/types/tasks";
+import StripePaymentModal from "@/src/shared/components/StripePaymentModal";
+import { useLocationCountry } from "@/src/shared/hooks/useLocationCountry";
 import {
   useAcceptOffer,
   useCancelTask,
@@ -10,15 +10,29 @@ import {
   useDeleteTask,
   useGetCancellationReasons,
   useGetCancellationRequest,
-  useRespondToCancellationRequest
-} from '@/src/shared/hooks/useTaskApi';
-import { formatCurrency, getCurrencyFromLocation, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
-import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
-import { useAuthStore } from '@/src/store/auth-task-store';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+  useRespondToCancellationRequest,
+} from "@/src/shared/hooks/useTaskApi";
+import {
+  formatCurrency,
+  getCurrencyFromLocation,
+  getCurrencyFromUserLocation,
+} from "@/src/shared/utils/currency";
+import { isNetworkError } from "@/src/shared/utils/networkErrorHandler";
+import { useAuthStore } from "@/src/store/auth-task-store";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface TaskCardProps {
   task: Task;
@@ -30,16 +44,23 @@ interface TaskCardProps {
   onTaskCompleted?: (taskId: string) => void;
 }
 
-export default function TaskCard({ task, onPress, status, userRole, onTaskCancelled, onTaskDeleted, onTaskCompleted }: TaskCardProps) {
+export default function TaskCard({
+  task,
+  onPress,
+  status,
+  userRole,
+  onTaskCancelled,
+  onTaskDeleted,
+  onTaskCompleted,
+}: TaskCardProps) {
   const router = useRouter();
-  
+
   // Use current user's location for currency auto-detection
   const { countryInfo } = useLocationCountry();
-  
+
   // Get current user from auth store
   const { user: currentUser } = useAuthStore();
-  
-  
+
   const [showPosterCancelModal, setShowPosterCancelModal] = useState(false);
   const [showTaskerCancelModal, setShowTaskerCancelModal] = useState(false);
   const [showCancelRequestModal, setShowCancelRequestModal] = useState(false); // NEW: Post-payment cancellation request modal
@@ -47,11 +68,15 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const [showOffersModal, setShowOffersModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
-  const [selectedCancelReason, setSelectedCancelReason] = useState<number | null>(null);
-  const [selectedCancelReasonData, setSelectedCancelReasonData] = useState<any | null>(null);
-  
+  const [selectedCancelReason, setSelectedCancelReason] = useState<
+    number | null
+  >(null);
+  const [selectedCancelReasonData, setSelectedCancelReasonData] = useState<
+    any | null
+  >(null);
+
   // Debug logging for offer data
-  
+
   // Debouncing state to prevent multiple rapid clicks
   const lastClickTime = useRef<number>(0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -60,53 +85,61 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const deleteTaskMutation = useDeleteTask();
   const cancelTaskMutation = useCancelTask(); // Legacy: Pre-payment cancellation
   const createCancellationRequestMutation = useCreateCancellationRequest(); // NEW: Post-payment cancellation request
-  const respondToCancellationRequestMutation = useRespondToCancellationRequest(); // NEW: Respond to request
+  const respondToCancellationRequestMutation =
+    useRespondToCancellationRequest(); // NEW: Respond to request
   const acceptOfferMutation = useAcceptOffer();
   const completeTaskMutation = useCompleteTask();
   const completeTaskPaymentMutation = useCompleteTaskPayment();
-  
+
   // Check if there's a pending cancellation request for this task (only for assigned/accepted/completed/cancelled tasks)
-  const isPostPaymentTask = status === 'accepted' || status === 'assigned' || status === 'completed' || status === 'todo';
-  const shouldFetchCancellationRequest = isPostPaymentTask || status === 'cancelled';
-  const { data: cancellationRequestData, refetch: refetchCancellationRequest } = useGetCancellationRequest(
-    task._id, 
-    shouldFetchCancellationRequest // Fetch for post-payment tasks AND cancelled tasks
-  );
+  const isPostPaymentTask =
+    status === "accepted" ||
+    status === "assigned" ||
+    status === "completed" ||
+    status === "todo";
+  const shouldFetchCancellationRequest =
+    isPostPaymentTask || status === "cancelled";
+  const { data: cancellationRequestData, refetch: refetchCancellationRequest } =
+    useGetCancellationRequest(
+      task._id,
+      shouldFetchCancellationRequest // Fetch for post-payment tasks AND cancelled tasks
+    );
   const pendingCancellationRequest = cancellationRequestData?.data;
-  
+
   // Enhanced logging for cancelled tasks
-  if (status === 'cancelled') {
+  if (status === "cancelled") {
   }
-  
-  
+
   // Fetch cancellation reasons based on user role
-  const cancellationType = userRole === 'Poster' ? 'poster' : 'tasker';
-  const { data: cancellationReasonsData, isLoading: loadingReasons } = useGetCancellationReasons(cancellationType);
-  
+  const cancellationType = userRole === "Poster" ? "poster" : "tasker";
+  const { data: cancellationReasonsData, isLoading: loadingReasons } =
+    useGetCancellationReasons(cancellationType);
+
   // Extract reasons array from API response
   const cancellationReasons = cancellationReasonsData?.data || [];
-  
 
   // Auto-show cancellation request modal when there's a pending request from the other party
   useEffect(() => {
-    if (pendingCancellationRequest && pendingCancellationRequest.status === 'pending') {
-      
+    if (
+      pendingCancellationRequest &&
+      pendingCancellationRequest.status === "pending"
+    ) {
       // Get the ID of who requested the cancellation
-      const requesterId = typeof pendingCancellationRequest.requestedBy === 'string' 
-        ? pendingCancellationRequest.requestedBy 
-        : pendingCancellationRequest.requestedBy?._id;
-      
+      const requesterId =
+        typeof pendingCancellationRequest.requestedBy === "string"
+          ? pendingCancellationRequest.requestedBy
+          : pendingCancellationRequest.requestedBy?._id;
+
       // Get current user's ID
       const currentUserId = currentUser?._id || currentUser?.id;
-      
+
       if (!currentUserId) {
         return;
       }
-      
+
       // Only show modal if the request was made by the OTHER party (not current user)
       const requestedByCurrentUser = requesterId === currentUserId;
-      
-      
+
       if (!requestedByCurrentUser) {
         setShowCancelRequestModal(true);
       } else {
@@ -116,82 +149,95 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   }, [pendingCancellationRequest, currentUser, userRole, task.createdBy]);
 
   // Debouncing helper function to prevent multiple rapid clicks
-  const withDebounce = useCallback((callback: () => void, delay: number = 300) => {
-    const now = Date.now();
-    if (now - lastClickTime.current < delay) {
-      return;
-    }
-    lastClickTime.current = now;
-    callback();
-  }, []);
+  const withDebounce = useCallback(
+    (callback: () => void, delay: number = 300) => {
+      const now = Date.now();
+      if (now - lastClickTime.current < delay) {
+        return;
+      }
+      lastClickTime.current = now;
+      callback();
+    },
+    []
+  );
 
   // Helper function to validate MongoDB ObjectId format (24-character hexadecimal)
   const isValidMongoId = useCallback((id: string): boolean => {
     return /^[0-9a-fA-F]{24}$/.test(id);
   }, []);
 
-
   const handleMarkAsCompleted = useCallback(async () => {
-    if (completeTaskMutation.isPending || completeTaskPaymentMutation.isPending || isProcessing) {
+    if (
+      completeTaskMutation.isPending ||
+      completeTaskPaymentMutation.isPending ||
+      isProcessing
+    ) {
       return;
     }
 
     // Validate task ID format before making API call
     if (!isValidMongoId(task._id)) {
       Alert.alert(
-        'Invalid Task',
-        'This is a demo/placeholder task and cannot be completed. Please use real tasks from the backend.',
-        [{ text: 'OK' }]
+        "Invalid Task",
+        "This is a demo/placeholder task and cannot be completed. Please use real tasks from the backend.",
+        [{ text: "OK" }]
       );
       return;
     }
 
     try {
       setIsProcessing(true);
-      
+
       // Check if this is an accepted offer that requires payment completion
       // This should be true when we're in the "Accepted" tab (Poster side)
-      const isAcceptedOfferTask = status === 'accepted' && userRole === 'Poster';
-      
+      const isAcceptedOfferTask =
+        status === "accepted" && userRole === "Poster";
+
       if (isAcceptedOfferTask) {
-        
         // Try to find payment intent ID and offer ID from task data
         let paymentIntentId = (task as any).paymentIntentId;
         let acceptedOfferId = null;
-        
+
         // Try multiple ways to find the accepted offer information
         if (task.offers && Array.isArray(task.offers)) {
-          const acceptedOffer = task.offers.find(offer => offer.status === 'accepted');
+          const acceptedOffer = task.offers.find(
+            (offer) => offer.status === "accepted"
+          );
           if (acceptedOffer) {
             acceptedOfferId = acceptedOffer._id;
           }
         }
-        
+
         if (!acceptedOfferId && (task as any).acceptedOffer) {
           const acceptedOffer = (task as any).acceptedOffer;
           acceptedOfferId = acceptedOffer._id || acceptedOffer;
         }
-        
+
         if (paymentIntentId && acceptedOfferId) {
           try {
             // Use the payment completion API with proper data
-            await completeTaskPaymentMutation.mutateAsync({ 
+            await completeTaskPaymentMutation.mutateAsync({
               taskId: task._id,
               completionData: {
                 paymentIntentId: paymentIntentId,
                 taskId: task._id,
                 offerId: acceptedOfferId,
-              }
+              },
             });
-            
           } catch (paymentError: any) {
             if (!isNetworkError(paymentError) && __DEV__) {
             }
-            
+
             // If payment completion fails due to missing payment intent, try regular completion
-            if (paymentError?.response?.status === 500 || 
-                paymentError?.response?.data?.message?.includes('No accepted offer found') ||
-                paymentError?.response?.data?.message?.includes('Payment has not been completed yet')) {
+            if (
+              paymentError?.response?.status === 500 ||
+              paymentError?.response?.data?.message?.includes(
+                "No accepted offer found"
+              ) ||
+              paymentError?.response?.data?.message?.includes(
+                "Payment has not been completed yet"
+              )
+            ) {
               await completeTaskMutation.mutateAsync(task._id);
             } else {
               throw paymentError; // Re-throw if it's a different error
@@ -199,19 +245,19 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           }
         } else {
           // Try payment completion without paymentIntentId first (maybe it's not required)
-          
+
           try {
-            await completeTaskPaymentMutation.mutateAsync({ 
+            await completeTaskPaymentMutation.mutateAsync({
               taskId: task._id,
               completionData: {
                 taskId: task._id,
                 offerId: acceptedOfferId,
-              }
+              },
             });
           } catch (paymentError: any) {
             if (!isNetworkError(paymentError) && __DEV__) {
             }
-            
+
             // Fall back to regular task completion
             await completeTaskMutation.mutateAsync(task._id);
           }
@@ -220,90 +266,115 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         // Regular task completion for non-payment tasks
         await completeTaskMutation.mutateAsync(task._id);
       }
-      
-      
+
       // Notify parent component to refresh and move to Completed tab
       if (onTaskCompleted) {
         onTaskCompleted(task._id);
       }
-      
+
       // Show success message
       Alert.alert(
-        'Task Completed',
-        isAcceptedOfferTask ? 
-          'Payment has been released and the task has been marked as completed.' : 
-          'The task has been marked as completed and moved to the Completed tab.',
-        [{ text: 'OK' }]
+        "Task Completed",
+        isAcceptedOfferTask
+          ? "Payment has been released and the task has been marked as completed."
+          : "The task has been marked as completed and moved to the Completed tab.",
+        [{ text: "OK" }]
       );
-      
     } catch (error: any) {
-      
-      let errorMessage = 'Failed to mark task as completed. Please try again.';
-      let errorTitle = 'Completion Failed';
-      
+      let errorMessage = "Failed to mark task as completed. Please try again.";
+      let errorTitle = "Completion Failed";
+
       // Check for backend error message first (most specific)
       if (error?.response?.data?.message || error?.response?.data?.error) {
         errorMessage = error.response.data.message || error.response.data.error;
-        errorTitle = 'Cannot Complete Task';
-      } else if (error?.message?.includes('Authentication') || error?.isAuthError || error?.response?.status === 401) {
-        errorMessage = 'Your session has expired. Please login again to complete this task.';
-        errorTitle = 'Authentication Required';
+        errorTitle = "Cannot Complete Task";
+      } else if (
+        error?.message?.includes("Authentication") ||
+        error?.isAuthError ||
+        error?.response?.status === 401
+      ) {
+        errorMessage =
+          "Your session has expired. Please login again to complete this task.";
+        errorTitle = "Authentication Required";
       } else if (error?.response?.status === 400) {
-        errorMessage = 'This task cannot be completed in its current state. Please ensure the task has been accepted first.';
-        errorTitle = 'Invalid Task Status';
-      } else if (error?.message?.includes('Network') || error?.code === 'NETWORK_ERROR') {
-        errorMessage = 'Network error. Please check your internet connection and try again.';
-        errorTitle = 'Connection Error';
+        errorMessage =
+          "This task cannot be completed in its current state. Please ensure the task has been accepted first.";
+        errorTitle = "Invalid Task Status";
+      } else if (
+        error?.message?.includes("Network") ||
+        error?.code === "NETWORK_ERROR"
+      ) {
+        errorMessage =
+          "Network error. Please check your internet connection and try again.";
+        errorTitle = "Connection Error";
       } else if (error?.response?.status === 404) {
-        errorMessage = 'This task was not found. It may have been deleted.';
-        errorTitle = 'Task Not Found';
+        errorMessage = "This task was not found. It may have been deleted.";
+        errorTitle = "Task Not Found";
       } else if (error?.response?.status === 403) {
-        errorMessage = 'You don\'t have permission to complete this task.';
-        errorTitle = 'Permission Denied';
+        errorMessage = "You don't have permission to complete this task.";
+        errorTitle = "Permission Denied";
       } else if (error?.message) {
         errorMessage = error.message;
       }
-      
-      Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
+
+      Alert.alert(errorTitle, errorMessage, [{ text: "OK" }]);
     } finally {
       setIsProcessing(false);
     }
-  }, [task, status, userRole, completeTaskMutation, completeTaskPaymentMutation, onTaskCompleted, isProcessing, isValidMongoId]);
+  }, [
+    task,
+    status,
+    userRole,
+    completeTaskMutation,
+    completeTaskPaymentMutation,
+    onTaskCompleted,
+    isProcessing,
+    isValidMongoId,
+  ]);
 
   const handleCancelTask = useCallback(() => {
     if (isProcessing) {
       return;
     }
-    
+
     // Validate task ID format before making API call
     if (!isValidMongoId(task._id)) {
       Alert.alert(
-        'Invalid Task',
-        'This is a demo/placeholder task and cannot be cancelled. Please use real tasks from the backend.',
-        [{ text: 'OK' }]
+        "Invalid Task",
+        "This is a demo/placeholder task and cannot be cancelled. Please use real tasks from the backend.",
+        [{ text: "OK" }]
       );
       return;
     }
-    
-    
+
     // Check if this is a post-payment task (accepted/assigned/completed)
     // These require cancellation REQUEST flow (needs other party's approval)
     if (isPostPaymentTask) {
       // Show the appropriate modal for creating a cancellation request
-      if (userRole === 'Poster') {
+      if (userRole === "Poster") {
         setShowPosterCancelModal(true);
       } else {
         setShowTaskerCancelModal(true);
       }
     } else {
       // Pre-payment task (open/posted) - use legacy direct cancellation
-      if (userRole === 'Poster' && (status === 'open' || status === 'posted' || !status)) {
+      if (
+        userRole === "Poster" &&
+        (status === "open" || status === "posted" || !status)
+      ) {
         setShowPosterCancelModal(true);
       } else {
         setShowTaskerCancelModal(true);
       }
     }
-  }, [userRole, status, task._id, isProcessing, isValidMongoId, isPostPaymentTask]);
+  }, [
+    userRole,
+    status,
+    task._id,
+    isProcessing,
+    isValidMongoId,
+    isPostPaymentTask,
+  ]);
 
   const handleDeleteTask = useCallback(() => {
     if (deleteTaskMutation.isPending || isProcessing) {
@@ -313,9 +384,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     // Validate task ID format before making API call
     if (!isValidMongoId(task._id)) {
       Alert.alert(
-        'Demo Task',
-        'This is a demo/placeholder task and cannot be deleted. Please use real tasks from your backend.',
-        [{ text: 'OK' }]
+        "Demo Task",
+        "This is a demo/placeholder task and cannot be deleted. Please use real tasks from your backend.",
+        [{ text: "OK" }]
       );
       return;
     }
@@ -332,53 +403,62 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       // Validate task ID format before making API call
       if (!isValidMongoId(task._id)) {
         Alert.alert(
-          'Demo Task',
-          'This is a demo/placeholder task and cannot be deleted. Please use real tasks from your backend.',
-          [{ text: 'OK' }]
+          "Demo Task",
+          "This is a demo/placeholder task and cannot be deleted. Please use real tasks from your backend.",
+          [{ text: "OK" }]
         );
         setShowDeleteModal(false);
         return;
       }
 
       setIsProcessing(true);
-      
+
       // Check mutation state before calling
-      
+
       // Use the React Query mutation to delete the task
       const result = await deleteTaskMutation.mutateAsync(task._id);
-      
+
       setShowDeleteModal(false);
-      
+
       // Notify parent component to refresh the task list
       if (onTaskDeleted) {
         onTaskDeleted(task._id);
       }
-      
+
       // Show success message
       Alert.alert(
         "Task Deleted",
         result?.message || "Your task has been deleted successfully.",
         [{ text: "OK" }]
       );
-      
     } catch (error: any) {
       if (!isNetworkError(error) && __DEV__) {
       }
-      
+
       setShowDeleteModal(false);
-      
+
       // Show detailed error message to user
       let errorMessage = "Failed to delete task. Please try again.";
       let errorTitle = "Delete Failed";
-      
-      if (error?.message?.includes("Authentication") || error?.isAuthError || error?.response?.status === 401) {
-        errorMessage = "Your session has expired. Please login again to delete this task.";
+
+      if (
+        error?.message?.includes("Authentication") ||
+        error?.isAuthError ||
+        error?.response?.status === 401
+      ) {
+        errorMessage =
+          "Your session has expired. Please login again to delete this task.";
         errorTitle = "Authentication Required";
-      } else if (error?.message?.includes("Network") || error?.code === 'NETWORK_ERROR') {
-        errorMessage = "Network error. Please check your internet connection and try again.";
+      } else if (
+        error?.message?.includes("Network") ||
+        error?.code === "NETWORK_ERROR"
+      ) {
+        errorMessage =
+          "Network error. Please check your internet connection and try again.";
         errorTitle = "Connection Error";
       } else if (error?.response?.status === 404) {
-        errorMessage = "This task was not found. It may have already been deleted.";
+        errorMessage =
+          "This task was not found. It may have already been deleted.";
         errorTitle = "Task Not Found";
       } else if (error?.response?.status === 403) {
         errorMessage = "You don't have permission to delete this task.";
@@ -386,116 +466,133 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       } else if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       }
-      
-      Alert.alert(
-        errorTitle,
-        errorMessage,
-        [{ text: "OK" }]
-      );
+
+      Alert.alert(errorTitle, errorMessage, [{ text: "OK" }]);
     } finally {
       setIsProcessing(false);
     }
-  }, [task._id, task.status, task.title, deleteTaskMutation, onTaskDeleted, isProcessing, isValidMongoId]);
+  }, [
+    task._id,
+    task.status,
+    task.title,
+    deleteTaskMutation,
+    onTaskDeleted,
+    isProcessing,
+    isValidMongoId,
+  ]);
 
   const handleConfirmPosterCancel = async () => {
     if (selectedCancelReason === null || !selectedCancelReasonData) {
-      Alert.alert('Reason Required', 'Please select a reason for cancelling this task.');
+      Alert.alert(
+        "Reason Required",
+        "Please select a reason for cancelling this task."
+      );
       return;
     }
-    
-    if (cancelTaskMutation.isPending || createCancellationRequestMutation.isPending || isProcessing) {
+
+    if (
+      cancelTaskMutation.isPending ||
+      createCancellationRequestMutation.isPending ||
+      isProcessing
+    ) {
       return;
     }
-    
+
     try {
       setIsProcessing(true);
       const reasonText = selectedCancelReasonData.reason;
       const reasonId = selectedCancelReasonData._id;
-      
-      
+
       // Check if this is a post-payment task (requires cancellation request)
       if (isPostPaymentTask) {
-        await createCancellationRequestMutation.mutateAsync({ 
+        await createCancellationRequestMutation.mutateAsync({
           taskId: task._id,
-          reason: reasonText
+          reason: reasonText,
         });
-        
-        
+
         // Close modal and reset state
         setShowPosterCancelModal(false);
         setSelectedCancelReason(null);
         setSelectedCancelReasonData(null);
-        
+
         // Refetch cancellation request to show the pending status
         await refetchCancellationRequest();
-        
+
         // DON'T call onTaskCancelled here - task should stay in Accepted tab
         // The task will only move to Cancelled when the request is ACCEPTED by Tasker
-        
+
         // Show success message
         Alert.alert(
-          'Cancellation Request Sent',
-          'Your cancellation request has been sent to the Tasker. The task will remain in the Accepted tab until they respond.',
-          [{ text: 'OK' }]
+          "Cancellation Request Sent",
+          "Your cancellation request has been sent to the Tasker. The task will remain in the Accepted tab until they respond.",
+          [{ text: "OK" }]
         );
       } else {
         // Pre-payment task - use legacy direct cancellation
-        await cancelTaskMutation.mutateAsync({ 
+        await cancelTaskMutation.mutateAsync({
           taskId: task._id,
           reason: reasonText,
-          reasonId: reasonId
+          reasonId: reasonId,
         });
-        
-        
+
         // Close modal and reset state
         setShowPosterCancelModal(false);
         setSelectedCancelReason(null);
         setSelectedCancelReasonData(null);
-        
+
         // Notify parent component to refresh task list
         if (onTaskCancelled) {
           onTaskCancelled(task._id);
         }
-        
+
         // Show success message
         Alert.alert(
-          'Task Cancelled',
-          'Your task has been cancelled successfully and moved to the Cancelled tab.',
-          [{ text: 'OK' }]
+          "Task Cancelled",
+          "Your task has been cancelled successfully and moved to the Cancelled tab.",
+          [{ text: "OK" }]
         );
       }
-      
     } catch (error: any) {
       // Silent network error handling - only log if not a network error
       if (!isNetworkError(error) && __DEV__) {
       }
-      
+
       // Close modal on error
       setShowPosterCancelModal(false);
       setSelectedCancelReason(null);
       setSelectedCancelReasonData(null);
-      
+
       // Show error message to user
-      let errorMessage = 'Failed to cancel task. Please try again.';
-      let errorTitle = 'Cancellation Failed';
-      
-      if (error?.message?.includes('Authentication') || error?.isAuthError || error?.response?.status === 401) {
-        errorMessage = 'Your session has expired. Please login again to cancel this task.';
-        errorTitle = 'Authentication Required';
-      } else if (error?.message?.includes('Network') || error?.code === 'NETWORK_ERROR') {
-        errorMessage = 'Network error. Please check your internet connection and try again.';
-        errorTitle = 'Connection Error';
+      let errorMessage = "Failed to cancel task. Please try again.";
+      let errorTitle = "Cancellation Failed";
+
+      if (
+        error?.message?.includes("Authentication") ||
+        error?.isAuthError ||
+        error?.response?.status === 401
+      ) {
+        errorMessage =
+          "Your session has expired. Please login again to cancel this task.";
+        errorTitle = "Authentication Required";
+      } else if (
+        error?.message?.includes("Network") ||
+        error?.code === "NETWORK_ERROR"
+      ) {
+        errorMessage =
+          "Network error. Please check your internet connection and try again.";
+        errorTitle = "Connection Error";
       } else if (error?.response?.status === 404) {
-        errorMessage = 'This task was not found. It may have already been cancelled or deleted.';
-        errorTitle = 'Task Not Found';
+        errorMessage =
+          "This task was not found. It may have already been cancelled or deleted.";
+        errorTitle = "Task Not Found";
       } else if (error?.response?.status === 403) {
-        errorMessage = 'You don\'t have permission to cancel this task.';
-        errorTitle = 'Permission Denied';
+        errorMessage = "You don't have permission to cancel this task.";
+        errorTitle = "Permission Denied";
       } else if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       }
-      
-      Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
+
+      Alert.alert(errorTitle, errorMessage, [{ text: "OK" }]);
     } finally {
       setIsProcessing(false);
     }
@@ -503,144 +600,161 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   const handleConfirmTaskerCancel = async () => {
     if (selectedCancelReason === null || !selectedCancelReasonData) {
-      Alert.alert('Reason Required', 'Please select a reason for cancelling this task.');
+      Alert.alert(
+        "Reason Required",
+        "Please select a reason for cancelling this task."
+      );
       return;
     }
-    
-    if (cancelTaskMutation.isPending || createCancellationRequestMutation.isPending || isProcessing) {
+
+    if (
+      cancelTaskMutation.isPending ||
+      createCancellationRequestMutation.isPending ||
+      isProcessing
+    ) {
       return;
     }
-    
+
     try {
       setIsProcessing(true);
       const reasonText = selectedCancelReasonData.reason;
       const reasonId = selectedCancelReasonData._id;
-      
-      
+
       if (isPostPaymentTask) {
         // Post-payment task - create cancellation REQUEST
-        await createCancellationRequestMutation.mutateAsync({ 
-          taskId: task._id,
-          reason: reasonText
-        });
-        
-        
-        // Close modal and reset state
-        setShowTaskerCancelModal(false);
-        setSelectedCancelReason(null);
-        setSelectedCancelReasonData(null);
-        
-        // Refetch cancellation request to show the pending status
-        await refetchCancellationRequest();
-        
-        // DON'T call onTaskCancelled here - task should stay in Todoo tab
-        // The task will only move to Cancelled when the request is ACCEPTED by Poster
-        
-        // Show success message for REQUEST
-        Alert.alert(
-          'Cancellation Request Sent',
-          'Your cancellation request has been sent to the Poster. The task will remain in the Todoo tab until they respond.',
-          [{ text: 'OK' }]
-        );
-        
-      } else {
-        // Pre-payment task - direct cancellation
-        await cancelTaskMutation.mutateAsync({ 
+        await createCancellationRequestMutation.mutateAsync({
           taskId: task._id,
           reason: reasonText,
-          reasonId: reasonId
         });
-        
-        
+
         // Close modal and reset state
         setShowTaskerCancelModal(false);
         setSelectedCancelReason(null);
         setSelectedCancelReasonData(null);
-        
+
+        // Refetch cancellation request to show the pending status
+        await refetchCancellationRequest();
+
+        // DON'T call onTaskCancelled here - task should stay in Todoo tab
+        // The task will only move to Cancelled when the request is ACCEPTED by Poster
+
+        // Show success message for REQUEST
+        Alert.alert(
+          "Cancellation Request Sent",
+          "Your cancellation request has been sent to the Poster. The task will remain in the Todoo tab until they respond.",
+          [{ text: "OK" }]
+        );
+      } else {
+        // Pre-payment task - direct cancellation
+        await cancelTaskMutation.mutateAsync({
+          taskId: task._id,
+          reason: reasonText,
+          reasonId: reasonId,
+        });
+
+        // Close modal and reset state
+        setShowTaskerCancelModal(false);
+        setSelectedCancelReason(null);
+        setSelectedCancelReasonData(null);
+
         // Notify parent component
         if (onTaskCancelled) {
           onTaskCancelled(task._id);
         }
-        
+
         // Show success message for DIRECT CANCEL
         Alert.alert(
-          'Task Cancelled',
-          'You have cancelled this task successfully. It has been moved to the Cancelled tab.',
-          [{ text: 'OK' }]
+          "Task Cancelled",
+          "You have cancelled this task successfully. It has been moved to the Cancelled tab.",
+          [{ text: "OK" }]
         );
-        
       }
     } catch (error: any) {
       // Silent network error handling - only log if not a network error
       if (!isNetworkError(error) && __DEV__) {
       }
-      
+
       // Close modal on error
       setShowTaskerCancelModal(false);
       setSelectedCancelReason(null);
       setSelectedCancelReasonData(null);
-      
+
       // Show error message to user
-      let errorMessage = isPostPaymentTask 
-        ? 'Failed to send cancellation request. Please try again.'
-        : 'Failed to cancel task. Please try again.';
-      let errorTitle = isPostPaymentTask ? 'Request Failed' : 'Cancellation Failed';
-      
-      if (error?.message?.includes('Authentication') || error?.isAuthError || error?.response?.status === 401) {
-        errorMessage = 'Your session has expired. Please login again to cancel this task.';
-        errorTitle = 'Authentication Required';
-      } else if (error?.message?.includes('Network') || error?.code === 'NETWORK_ERROR') {
-        errorMessage = 'Network error. Please check your internet connection and try again.';
-        errorTitle = 'Connection Error';
+      let errorMessage = isPostPaymentTask
+        ? "Failed to send cancellation request. Please try again."
+        : "Failed to cancel task. Please try again.";
+      let errorTitle = isPostPaymentTask
+        ? "Request Failed"
+        : "Cancellation Failed";
+
+      if (
+        error?.message?.includes("Authentication") ||
+        error?.isAuthError ||
+        error?.response?.status === 401
+      ) {
+        errorMessage =
+          "Your session has expired. Please login again to cancel this task.";
+        errorTitle = "Authentication Required";
+      } else if (
+        error?.message?.includes("Network") ||
+        error?.code === "NETWORK_ERROR"
+      ) {
+        errorMessage =
+          "Network error. Please check your internet connection and try again.";
+        errorTitle = "Connection Error";
       } else if (error?.response?.status === 404) {
-        errorMessage = 'This task was not found. It may have already been cancelled or deleted.';
-        errorTitle = 'Task Not Found';
+        errorMessage =
+          "This task was not found. It may have already been cancelled or deleted.";
+        errorTitle = "Task Not Found";
       } else if (error?.response?.status === 403) {
-        errorMessage = 'You don\'t have permission to cancel this task.';
-        errorTitle = 'Permission Denied';
+        errorMessage = "You don't have permission to cancel this task.";
+        errorTitle = "Permission Denied";
       } else if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       }
-      
-      Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
+
+      Alert.alert(errorTitle, errorMessage, [{ text: "OK" }]);
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleViewReceipt = useCallback(() => {
-    
     // Get tasker and poster names
-    const taskerName = (task as any).assignedTo?.firstName 
-      ? `${(task as any).assignedTo.firstName} ${(task as any).assignedTo.lastName || ''}`.trim()
-      : 'Tasker';
-    
+    const taskerName = (task as any).assignedTo?.firstName
+      ? `${(task as any).assignedTo.firstName} ${
+          (task as any).assignedTo.lastName || ""
+        }`.trim()
+      : "Tasker";
+
     const posterName = task.createdBy?.firstName
-      ? `${task.createdBy.firstName} ${task.createdBy.lastName || ''}`.trim()
-      : 'Poster';
-    
+      ? `${task.createdBy.firstName} ${task.createdBy.lastName || ""}`.trim()
+      : "Poster";
+
     // Get offer details - try multiple sources
     let offerAmount = task.budget || 0;
-    let currency = task.currency || 'USD';
+    let currency = task.currency || "USD";
     let acceptedDate = task.createdAt;
-    
+
     // Try to get accepted offer details
     if (task.offers && Array.isArray(task.offers)) {
-      const acceptedOffer = task.offers.find(o => o.status === 'accepted');
+      const acceptedOffer = task.offers.find((o) => o.status === "accepted");
       if (acceptedOffer) {
-        offerAmount = acceptedOffer.amount || acceptedOffer.offer?.amount || offerAmount;
-        currency = acceptedOffer.currency || acceptedOffer.offer?.currency || currency;
+        offerAmount =
+          acceptedOffer.amount || acceptedOffer.offer?.amount || offerAmount;
+        currency =
+          acceptedOffer.currency || acceptedOffer.offer?.currency || currency;
         acceptedDate = acceptedOffer.createdAt || acceptedDate;
       }
     }
-    
+
     // Parse location
     const parsedLocation = parseLocation(task.location);
-    const taskLocation = parsedLocation?.address || 'Location not specified';
-    
+    const taskLocation = parsedLocation?.address || "Location not specified";
+
     // Navigate to receipt screen
     router.push({
-      pathname: '/payment-receipt',
+      pathname: "/payment-receipt",
       params: {
         taskId: task._id,
         taskTitle: task.title,
@@ -653,13 +767,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         completedDate: task.updatedAt || task.createdAt,
         paymentId: (task as any).paymentIntentId || task._id,
         userRole: userRole,
-      }
+      },
     } as any);
   }, [task, userRole, router]);
-
-
-
-
 
   const handleAcceptCancellation = async () => {
     if (!pendingCancellationRequest?._id) {
@@ -672,12 +782,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     }
 
     try {
-      
       await respondToCancellationRequestMutation.mutateAsync({
         requestId: pendingCancellationRequest._id,
-        action: 'accept'
+        action: "accept",
       });
-
 
       // Close modal first
       setShowCancelRequestModal(false);
@@ -692,21 +800,21 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
       // Show success message
       Alert.alert(
-        'Cancellation Accepted',
-        'The task has been cancelled successfully and moved to the Cancelled tab.',
-        [{ text: 'OK' }]
+        "Cancellation Accepted",
+        "The task has been cancelled successfully and moved to the Cancelled tab.",
+        [{ text: "OK" }]
       );
     } catch (error: any) {
       if (!isNetworkError(error) && __DEV__) {
       }
 
       // Show error message
-      let errorMessage = 'Failed to accept cancellation. Please try again.';
+      let errorMessage = "Failed to accept cancellation. Please try again.";
       if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       }
 
-      Alert.alert('Error', errorMessage, [{ text: 'OK' }]);
+      Alert.alert("Error", errorMessage, [{ text: "OK" }]);
     }
   };
 
@@ -721,33 +829,31 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     }
 
     try {
-      
       await respondToCancellationRequestMutation.mutateAsync({
         requestId: pendingCancellationRequest._id,
-        action: 'reject'
+        action: "reject",
       });
-
 
       // Close modal
       setShowCancelRequestModal(false);
 
       // Show success message
       Alert.alert(
-        'Cancellation Rejected',
-        'The cancellation request has been rejected and sent to admin for review.',
-        [{ text: 'OK' }]
+        "Cancellation Rejected",
+        "The cancellation request has been rejected and sent to admin for review.",
+        [{ text: "OK" }]
       );
     } catch (error: any) {
       if (!isNetworkError(error) && __DEV__) {
       }
 
       // Show error message
-      let errorMessage = 'Failed to reject cancellation. Please try again.';
+      let errorMessage = "Failed to reject cancellation. Please try again.";
       if (error?.response?.data?.message) {
         errorMessage = error.response.data.message;
       }
 
-      Alert.alert('Error', errorMessage, [{ text: 'OK' }]);
+      Alert.alert("Error", errorMessage, [{ text: "OK" }]);
     }
   };
 
@@ -755,35 +861,33 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const handleAcceptOffer = async (offerId: string, taskerId: string) => {
     try {
       setIsProcessing(true);
-      
+
       if (!offerId || !taskerId) {
-        throw new Error('Missing offer ID or tasker ID');
+        throw new Error("Missing offer ID or tasker ID");
       }
-      
+
       // Find the offer details
-      const offer = task.offers?.find(o => o._id === offerId);
+      const offer = task.offers?.find((o) => o._id === offerId);
       if (!offer) {
-        throw new Error('Offer not found');
+        throw new Error("Offer not found");
       }
-      
+
       // Set selected offer and show payment modal
       setSelectedOffer({
         ...offer,
         taskId: task._id,
-        taskCategory: task.categories?.[0] || 'General'
+        taskCategory: task.categories?.[0] || "General",
       });
       setShowPaymentModal(true);
-      
-      
     } catch (error: any) {
       if (!isNetworkError(error) && __DEV__) {
       }
-      Alert.alert('Error', 'Failed to prepare payment. Please try again.');
+      Alert.alert("Error", "Failed to prepare payment. Please try again.");
     } finally {
       setIsProcessing(false);
     }
   };
-  
+
   // Handle payment modal close
   const handleClosePaymentModal = () => {
     setShowPaymentModal(false);
@@ -796,11 +900,18 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   // Helper function to get time preference display
   const getTimePreference = () => {
-    if (task.dateType === 'before' || task.dateType === 'DoneBy') return '🕐 Before specific date';
-    if (task.dateType === 'no-rush' || task.dateType === 'Easy' || task.dateType === 'Flexible') return '⏰ No rush';
-    if (task.dateType === 'on_time' || task.dateType === 'Specific') return '📅 Specific date';
-    if (task.time && task.time !== 'Anytime') return `🕒 ${task.time}`;
-    return '⏰ Flexible timing';
+    if (task.dateType === "before" || task.dateType === "DoneBy")
+      return "🕐 Before specific date";
+    if (
+      task.dateType === "no-rush" ||
+      task.dateType === "Easy" ||
+      task.dateType === "Flexible"
+    )
+      return "⏰ No rush";
+    if (task.dateType === "on_time" || task.dateType === "Specific")
+      return "📅 Specific date";
+    if (task.time && task.time !== "Anytime") return `🕒 ${task.time}`;
+    return "⏰ Flexible timing";
   };
 
   // Helper function to format task date
@@ -818,14 +929,14 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   // Helper function to parse location if it's a string
   const parseLocation = (location: any) => {
     if (!location) return null;
-    
+
     // If it's already an object with address, return it
-    if (typeof location === 'object' && location.address) {
+    if (typeof location === "object" && location.address) {
       return location;
     }
-    
+
     // If it's a string, try to parse it
-    if (typeof location === 'string') {
+    if (typeof location === "string") {
       try {
         const parsed = JSON.parse(location);
         return parsed;
@@ -834,36 +945,39 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         return { address: location, coordinates: {} };
       }
     }
-    
+
     return null;
   };
 
   // Get parsed location
   const parsedLocation = parseLocation(task.location);
-  
+
   // Helper function to get location type
   const getLocationType = () => {
-    const address = parsedLocation?.address || '';
-    if (address.includes(' → ') || address.includes(' to ')) {
-      return '🚚 Moving/Delivery';
+    const address = parsedLocation?.address || "";
+    if (address.includes(" → ") || address.includes(" to ")) {
+      return "🚚 Moving/Delivery";
     }
-    return '📍'; // Just show location pin, location address will be shown separately
+    return "📍"; // Just show location pin, location address will be shown separately
   };
 
   // Helper function to format location display
   const formatLocation = () => {
-    const address = parsedLocation?.address || 'Location not specified';
+    const address = parsedLocation?.address || "Location not specified";
     // Clean up any JSON remnants from address
     let cleanAddress = address;
-    if (typeof address === 'string' && (address.includes('{') || address.includes('"coordinates"'))) {
+    if (
+      typeof address === "string" &&
+      (address.includes("{") || address.includes('"coordinates"'))
+    ) {
       // Try to extract just the address part
       const match = address.match(/"address":"([^"]+)"/);
       if (match) {
         cleanAddress = match[1];
       }
     }
-    
-    if (cleanAddress.includes(' → ') || cleanAddress.includes(' to ')) {
+
+    if (cleanAddress.includes(" → ") || cleanAddress.includes(" to ")) {
       const parts = cleanAddress.split(/\s*(?:→|to)\s*/);
       return `${parts[0]} → ${parts[1]}`;
     }
@@ -873,14 +987,14 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   // Get status color
   const getStatusColor = () => {
     switch (task.status) {
-      case 'completed':
-        return '#28a745';
-      case 'assigned':
-        return '#007bff';
-      case 'open':
-        return '#ffc107';
+      case "completed":
+        return "#28a745";
+      case "assigned":
+        return "#007bff";
+      case "open":
+        return "#ffc107";
       default:
-        return '#6c757d';
+        return "#6c757d";
     }
   };
 
@@ -888,12 +1002,13 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   // Use user's current location for currency display (auto geo-location feature)
   const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
   const taskLocationCurrencyInfo = getCurrencyFromLocation(task.location);
-  
+
   // Prioritize user's current location currency for auto geo-location
-  const formattedBudgetDisplay = task.formattedBudget || 
-    (task.budget ? formatCurrency(task.budget, userCurrencyInfo) : 
-    `${userCurrencyInfo.symbol}0.00`);
-    
+  const formattedBudgetDisplay =
+    task.formattedBudget ||
+    (task.budget
+      ? formatCurrency(task.budget, userCurrencyInfo)
+      : `${userCurrencyInfo.symbol}0.00`);
 
   return (
     <View style={styles.card} pointerEvents="auto">
@@ -927,65 +1042,72 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               <Text style={[styles.status, { color: getStatusColor() }]}>
                 {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
               </Text>
-              <Text style={styles.date}>
-                {getTaskDate()}
-              </Text>
+              <Text style={styles.date}>{getTaskDate()}</Text>
             </View>
 
             {/* Category */}
-            {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
-              <View style={styles.categoryContainer}>
-                <Text style={styles.categoryLabel}>
-                  Category - {task.categories[0]}
-                </Text>
-                {task.categories.length > 1 && (
-                  <Text style={styles.moreCategoriesText}>
-                    +{task.categories.length - 1} more
+            {task.categories &&
+              Array.isArray(task.categories) &&
+              task.categories.length > 0 && (
+                <View style={styles.categoryContainer}>
+                  <Text style={styles.categoryLabel}>
+                    Category - {task.categories[0]}
                   </Text>
-                )}
-              </View>
-            )}
+                  {task.categories.length > 1 && (
+                    <Text style={styles.moreCategoriesText}>
+                      +{task.categories.length - 1} more
+                    </Text>
+                  )}
+                </View>
+              )}
 
             {/* Offer Count Display - Same as Browse screen */}
             <Text style={styles.offerCountText}>
-              {task.status === 'accepted' || task.status === 'completed' || 
-               task.status === 'assigned' || task.status === 'in_progress' || task.status === 'in-progress'
-                ? task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')
+              {task.status === "accepted" ||
+              task.status === "completed" ||
+              task.status === "assigned" ||
+              task.status === "in_progress" ||
+              task.status === "in-progress"
+                ? task.status.charAt(0).toUpperCase() +
+                  task.status.slice(1).replace("_", " ").replace("-", " ")
                 : (() => {
                     // Try multiple ways to get offer count
-                    const offerCount = task.offerCount || task.offers?.length || 0;
+                    const offerCount =
+                      task.offerCount || task.offers?.length || 0;
                     return offerCount > 0
-                      ? `${offerCount} Offer${offerCount !== 1 ? 's' : ''}`
-                      : 'Make the first offer';
+                      ? `${offerCount} Offer${offerCount !== 1 ? "s" : ""}`
+                      : "Make the first offer";
                   })()}
             </Text>
           </View>
 
           {/* Price and User Info */}
           <View style={styles.price}>
-            <Text style={styles.priceText}>
-              {formattedBudgetDisplay}
-            </Text>
+            <Text style={styles.priceText}>{formattedBudgetDisplay}</Text>
             {(() => {
               // Determine which user profile to show based on role and task status
               let displayUser = null;
 
               // For Poster viewing their tasks - always show poster (createdBy)
-              if (userRole === 'Poster') {
+              if (userRole === "Poster") {
                 displayUser = task.createdBy;
-              } 
+              }
               // For Tasker viewing tasks
-              else if (userRole === 'Tasker') {
+              else if (userRole === "Tasker") {
                 // For assigned/in-progress/todo tasks, show the poster (task creator)
-                if (task.status === 'assigned' || task.status === 'in_progress' || 
-                    task.status === 'todo' || task.status === 'in-progress') {
+                if (
+                  task.status === "assigned" ||
+                  task.status === "in_progress" ||
+                  task.status === "todo" ||
+                  task.status === "in-progress"
+                ) {
                   displayUser = task.createdBy;
                 }
                 // For open tasks or tasks with pending offers, show the poster
                 else {
                   displayUser = task.createdBy;
                 }
-              } 
+              }
               // Default to showing poster
               else {
                 displayUser = task.createdBy;
@@ -993,12 +1115,13 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
               // Render the profile picture if user exists
               if (displayUser) {
-                const firstName = displayUser.firstName || 'User';
-                const lastName = displayUser.lastName || '';
-                const profileUri = displayUser.avatar || 
-                                 displayUser.profilePicture ||
-                                 `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=0052A2&color=fff&size=80`;
-                
+                const firstName = displayUser.firstName || "User";
+                const lastName = displayUser.lastName || "";
+                const profileUri =
+                  displayUser.avatar ||
+                  displayUser.profilePicture ||
+                  `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=0052A2&color=fff&size=80`;
+
                 return (
                   <Image
                     source={{ uri: profileUri }}
@@ -1025,8 +1148,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         return offerCount > 0;
       })() && (
         <View style={styles.offersSection}>
-          {userRole === 'Poster' ? (
-            <TouchableOpacity 
+          {userRole === "Poster" ? (
+            <TouchableOpacity
               style={styles.offersButton}
               onPress={handleViewOffers}
             >
@@ -1054,126 +1177,138 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
       {/* Action Buttons - Separate from Card Content */}
       <View style={styles.actionButtons} pointerEvents="box-none">
-        {status === 'completed' && userRole === 'Tasker' ? (
+        {status === "completed" && userRole === "Tasker" ? (
           // Completed tab (Tasker): View Receipt button
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.actionButton,
               styles.receiptButton,
-              isProcessing && styles.disabledButton
-            ]} 
+              isProcessing && styles.disabledButton,
+            ]}
             activeOpacity={0.6}
             hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
             onPress={handleViewReceipt}
             disabled={isProcessing}
           >
-            <MaterialIcons 
-              name="receipt" 
-              size={20} 
-              color={isProcessing ? "#999" : "#007AFF"} 
+            <MaterialIcons
+              name="receipt"
+              size={20}
+              color={isProcessing ? "#999" : "#007AFF"}
             />
           </TouchableOpacity>
-        ) : status === 'completed' && userRole === 'Poster' ? (
+        ) : status === "completed" && userRole === "Poster" ? (
           // Completed tab (Poster): View Receipt + Delete button
           <>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.actionButton,
                 styles.receiptButton,
-                isProcessing && styles.disabledButton
-              ]} 
+                isProcessing && styles.disabledButton,
+              ]}
               activeOpacity={0.6}
               hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
               onPress={handleViewReceipt}
               disabled={isProcessing}
             >
-              <MaterialIcons 
-                name="receipt" 
-                size={20} 
-                color={isProcessing ? "#999" : "#007AFF"} 
+              <MaterialIcons
+                name="receipt"
+                size={20}
+                color={isProcessing ? "#999" : "#007AFF"}
               />
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
-                styles.actionButton, 
-                styles.deleteButton, 
-                (deleteTaskMutation.isPending || isProcessing) && styles.disabledButton
-              ]} 
+                styles.actionButton,
+                styles.deleteButton,
+                (deleteTaskMutation.isPending || isProcessing) &&
+                  styles.disabledButton,
+              ]}
               activeOpacity={0.6}
               hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
               onPress={handleDeleteTask}
               disabled={deleteTaskMutation.isPending || isProcessing}
             >
-              <MaterialIcons 
-                name="delete" 
-                size={20} 
-                color={(deleteTaskMutation.isPending || isProcessing) ? "#999" : "#dc3545"} 
+              <MaterialIcons
+                name="delete"
+                size={20}
+                color={
+                  deleteTaskMutation.isPending || isProcessing
+                    ? "#999"
+                    : "#dc3545"
+                }
               />
             </TouchableOpacity>
           </>
-        ) : status === 'cancelled' ? (
-          // Cancelled tab (Both Tasker and Poster): No buttons at all
-          null
-        ) : status === 'open' && userRole === 'Tasker' ? (
+        ) : status ===
+          "cancelled" ? // Cancelled tab (Both Tasker and Poster): No buttons at all
+        null : status === "open" && userRole === "Tasker" ? (
           // Tasker Open Tasks: Only Cancel button
-          <TouchableOpacity 
-            style={[
-              styles.actionButton,
-              isProcessing && styles.disabledButton
-            ]} 
+          <TouchableOpacity
+            style={[styles.actionButton, isProcessing && styles.disabledButton]}
             activeOpacity={0.6}
             hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
             onPress={handleCancelTask}
             disabled={isProcessing}
           >
-            <MaterialIcons 
-              name="cancel" 
-              size={20} 
-              color={isProcessing ? "#999" : "#dc3545"} 
+            <MaterialIcons
+              name="cancel"
+              size={20}
+              color={isProcessing ? "#999" : "#dc3545"}
             />
           </TouchableOpacity>
-        ) : status === 'assigned' && userRole === 'Tasker' ? (
+        ) : status === "assigned" && userRole === "Tasker" ? (
           // Tasker Todoo Tasks: Only Cancel button
-          <TouchableOpacity 
-            style={[
-              styles.actionButton,
-              isProcessing && styles.disabledButton
-            ]} 
+          <TouchableOpacity
+            style={[styles.actionButton, isProcessing && styles.disabledButton]}
             activeOpacity={0.6}
             hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
             onPress={handleCancelTask}
             disabled={isProcessing}
           >
-            <MaterialIcons 
-              name="cancel" 
-              size={20} 
-              color={isProcessing ? "#999" : "#dc3545"} 
+            <MaterialIcons
+              name="cancel"
+              size={20}
+              color={isProcessing ? "#999" : "#dc3545"}
             />
           </TouchableOpacity>
-        ) : status === 'accepted' ? (
+        ) : status === "accepted" ? (
           // Accepted Offers tab: Mark as Completed + Cancel
           <>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.completedButton,
-                (isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) && styles.disabledButton
+                (isProcessing ||
+                  completeTaskMutation.isPending ||
+                  completeTaskPaymentMutation.isPending) &&
+                  styles.disabledButton,
               ]}
               onPress={() => {
-
-                if (!isProcessing && !completeTaskMutation.isPending && !completeTaskPaymentMutation.isPending) {
+                if (
+                  !isProcessing &&
+                  !completeTaskMutation.isPending &&
+                  !completeTaskPaymentMutation.isPending
+                ) {
                   handleMarkAsCompleted();
                 }
               }}
               activeOpacity={0.7}
               delayPressIn={0}
-              disabled={isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending}
+              disabled={
+                isProcessing ||
+                completeTaskMutation.isPending ||
+                completeTaskPaymentMutation.isPending
+              }
             >
-              {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-                  <Text style={styles.completedButtonText}>
-                    Completing...
-                  </Text>
+              {isProcessing ||
+              completeTaskMutation.isPending ||
+              completeTaskPaymentMutation.isPending ? (
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <ActivityIndicator
+                    size="small"
+                    color="#fff"
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text style={styles.completedButtonText}>Completing...</Text>
                 </View>
               ) : (
                 <Text style={styles.completedButtonText}>
@@ -1181,10 +1316,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 </Text>
               )}
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.cancelButton,
-                isProcessing && styles.disabledButton
+                isProcessing && styles.disabledButton,
               ]}
               onPress={() => {
                 if (!isProcessing) {
@@ -1195,10 +1330,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               delayPressIn={0}
               disabled={isProcessing}
             >
-              <MaterialIcons 
-                name="close" 
-                size={20} 
-                color={isProcessing ? "#999" : "#fff"} 
+              <MaterialIcons
+                name="close"
+                size={20}
+                color={isProcessing ? "#999" : "#fff"}
               />
             </TouchableOpacity>
           </>
@@ -1206,108 +1341,123 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           // Posted tab or other tabs: Edit + Delete + Cancel
           <>
             {/* Edit Button */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.actionButton,
-                (isProcessing || deleteTaskMutation.isPending) && styles.disabledButton
-              ]} 
+                (isProcessing || deleteTaskMutation.isPending) &&
+                  styles.disabledButton,
+              ]}
               activeOpacity={0.6}
               hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
               disabled={isProcessing || deleteTaskMutation.isPending}
               onPress={() => {
                 router.push({
-                  pathname: '/edit-task',
-                  params: { taskId: task._id }
+                  pathname: "/edit-task",
+                  params: { taskId: task._id },
                 } as any);
               }}
             >
-              <MaterialIcons 
-                name="edit" 
-                size={20} 
-                color={(isProcessing || deleteTaskMutation.isPending) ? "#999" : "#007bff"} 
+              <MaterialIcons
+                name="edit"
+                size={20}
+                color={
+                  isProcessing || deleteTaskMutation.isPending
+                    ? "#999"
+                    : "#007bff"
+                }
               />
             </TouchableOpacity>
-            
+
             {/* Delete Button */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
-                styles.actionButton, 
-                styles.deleteButton, 
-                (deleteTaskMutation.isPending || isProcessing) && styles.disabledButton
-              ]} 
+                styles.actionButton,
+                styles.deleteButton,
+                (deleteTaskMutation.isPending || isProcessing) &&
+                  styles.disabledButton,
+              ]}
               activeOpacity={0.6}
               hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
               onPress={handleDeleteTask}
               disabled={deleteTaskMutation.isPending || isProcessing}
             >
-              <MaterialIcons 
-                name="delete" 
-                size={20} 
-                color={(deleteTaskMutation.isPending || isProcessing) ? "#999" : "#dc3545"} 
+              <MaterialIcons
+                name="delete"
+                size={20}
+                color={
+                  deleteTaskMutation.isPending || isProcessing
+                    ? "#999"
+                    : "#dc3545"
+                }
               />
             </TouchableOpacity>
-            
+
             {/* Cancel Button */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.actionButton,
-                isProcessing && styles.disabledButton
-              ]} 
+                isProcessing && styles.disabledButton,
+              ]}
               activeOpacity={0.6}
               hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
               onPress={handleCancelTask}
               disabled={isProcessing}
             >
-              <MaterialIcons 
-                name="cancel" 
-                size={20} 
-                color={isProcessing ? "#999" : "#dc3545"} 
+              <MaterialIcons
+                name="cancel"
+                size={20}
+                color={isProcessing ? "#999" : "#dc3545"}
               />
             </TouchableOpacity>
           </>
-        )} 
+        )}
       </View>
 
       {/* Cancellation Notice for Cancelled Tab */}
-      {status === 'cancelled' && pendingCancellationRequest && (
+      {status === "cancelled" && pendingCancellationRequest && (
         <View style={styles.cancellationNotice}>
           <MaterialIcons name="info-outline" size={16} color="#dc3545" />
           <Text style={styles.cancellationText}>
             {(() => {
-              const requesterId = typeof pendingCancellationRequest.requestedBy === 'string' 
-                ? pendingCancellationRequest.requestedBy 
-                : pendingCancellationRequest.requestedBy?._id;
+              const requesterId =
+                typeof pendingCancellationRequest.requestedBy === "string"
+                  ? pendingCancellationRequest.requestedBy
+                  : pendingCancellationRequest.requestedBy?._id;
               const currentUserId = currentUser?._id || currentUser?.id;
               const posterId = task.createdBy?._id;
-              
+
               if (requesterId === currentUserId) {
                 // Current user requested cancellation
-                return pendingCancellationRequest.status === 'accepted' 
-                  ? 'You requested cancellation - Accepted by other party'
-                  : 'You requested cancellation - Pending approval';
+                return pendingCancellationRequest.status === "accepted"
+                  ? "You requested cancellation - Accepted by other party"
+                  : "You requested cancellation - Pending approval";
               } else if (requesterId === posterId) {
                 // Poster requested cancellation
-                return pendingCancellationRequest.status === 'accepted'
-                  ? 'Poster requested cancellation - You accepted'
-                  : 'Poster requested cancellation';
+                return pendingCancellationRequest.status === "accepted"
+                  ? "Poster requested cancellation - You accepted"
+                  : "Poster requested cancellation";
               } else {
                 // Tasker requested cancellation
-                return pendingCancellationRequest.status === 'accepted'
-                  ? 'Tasker requested cancellation - You accepted'
-                  : 'Tasker requested cancellation';
+                return pendingCancellationRequest.status === "accepted"
+                  ? "Tasker requested cancellation - You accepted"
+                  : "Tasker requested cancellation";
               }
             })()}
           </Text>
         </View>
       )}
-      
+
       {/* Fallback for old cancelled tasks without cancellation request data */}
-      {status === 'cancelled' && !pendingCancellationRequest && userRole === 'Tasker' && (
-        <View style={styles.cancellationNotice}>
-          <MaterialIcons name="info-outline" size={16} color="#dc3545" />
-          <Text style={styles.cancellationText}>Poster cancelled the task</Text>
-        </View>
-      )}
+      {status === "cancelled" &&
+        !pendingCancellationRequest &&
+        userRole === "Tasker" && (
+          <View style={styles.cancellationNotice}>
+            <MaterialIcons name="info-outline" size={16} color="#dc3545" />
+            <Text style={styles.cancellationText}>
+              Poster cancelled the task
+            </Text>
+          </View>
+        )}
 
       {/* Poster Cancellation Reason Modal */}
       <Modal
@@ -1323,7 +1473,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           <View style={styles.posterCancelContent}>
             <View style={styles.posterCancelHeader}>
               <Text style={styles.posterCancelTitle}>Choose a reason</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => {
                   setShowPosterCancelModal(false);
                   setSelectedCancelReason(null);
@@ -1337,7 +1487,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             <View style={styles.warningContainer}>
               <MaterialIcons name="info-outline" size={20} color="#ff8c00" />
               <Text style={styles.warningText}>
-                Cancelling tasks will incur fees.{' '}
+                Cancelling tasks will incur fees.{" "}
                 <Text style={styles.warningLink}>
                   Learn more about our Cancellation Policy
                 </Text>
@@ -1348,11 +1498,15 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             {loadingReasons ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#1a237e" />
-                <Text style={styles.loadingText}>Loading cancellation reasons...</Text>
+                <Text style={styles.loadingText}>
+                  Loading cancellation reasons...
+                </Text>
               </View>
             ) : cancellationReasons.length === 0 ? (
               <View style={styles.emptyReasonsContainer}>
-                <Text style={styles.emptyReasonsText}>No cancellation reasons available.</Text>
+                <Text style={styles.emptyReasonsText}>
+                  No cancellation reasons available.
+                </Text>
               </View>
             ) : (
               <View style={styles.reasonsList}>
@@ -1361,7 +1515,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                     key={reasonData._id || index}
                     style={[
                       styles.reasonItem,
-                      selectedCancelReason === index && styles.reasonItemSelected
+                      selectedCancelReason === index &&
+                        styles.reasonItemSelected,
                     ]}
                     onPress={() => {
                       setSelectedCancelReason(index);
@@ -1378,7 +1533,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             <TouchableOpacity
               style={[
                 styles.confirmCancelButton,
-                (selectedCancelReason === null || loadingReasons) && styles.confirmCancelButtonDisabled
+                (selectedCancelReason === null || loadingReasons) &&
+                  styles.confirmCancelButtonDisabled,
               ]}
               onPress={handleConfirmPosterCancel}
               disabled={selectedCancelReason === null || loadingReasons}
@@ -1406,7 +1562,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           <View style={styles.posterCancelContent}>
             <View style={styles.posterCancelHeader}>
               <Text style={styles.posterCancelTitle}>Choose a reason</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => {
                   setShowTaskerCancelModal(false);
                   setSelectedCancelReason(null);
@@ -1428,11 +1584,15 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             {loadingReasons ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#1a237e" />
-                <Text style={styles.loadingText}>Loading cancellation reasons...</Text>
+                <Text style={styles.loadingText}>
+                  Loading cancellation reasons...
+                </Text>
               </View>
             ) : cancellationReasons.length === 0 ? (
               <View style={styles.emptyReasonsContainer}>
-                <Text style={styles.emptyReasonsText}>No cancellation reasons available.</Text>
+                <Text style={styles.emptyReasonsText}>
+                  No cancellation reasons available.
+                </Text>
               </View>
             ) : (
               <View style={styles.reasonsList}>
@@ -1441,7 +1601,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                     key={reasonData._id || index}
                     style={[
                       styles.reasonItem,
-                      selectedCancelReason === index && styles.reasonItemSelected
+                      selectedCancelReason === index &&
+                        styles.reasonItemSelected,
                     ]}
                     onPress={() => {
                       setSelectedCancelReason(index);
@@ -1458,7 +1619,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             <TouchableOpacity
               style={[
                 styles.confirmCancelButton,
-                (selectedCancelReason === null || loadingReasons) && styles.confirmCancelButtonDisabled
+                (selectedCancelReason === null || loadingReasons) &&
+                  styles.confirmCancelButtonDisabled,
               ]}
               onPress={handleConfirmTaskerCancel}
               disabled={selectedCancelReason === null || loadingReasons}
@@ -1483,12 +1645,13 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             <View style={styles.deleteIconContainer}>
               <MaterialIcons name="delete-forever" size={48} color="#dc3545" />
             </View>
-            
+
             <Text style={styles.deleteModalTitle}>Delete Task?</Text>
             <Text style={styles.deleteModalMessage}>
-              Are you sure you want to delete this task? This action cannot be undone.
+              Are you sure you want to delete this task? This action cannot be
+              undone.
             </Text>
-            
+
             <View style={styles.deleteModalButtons}>
               <TouchableOpacity
                 style={styles.deleteCancelButton}
@@ -1496,11 +1659,12 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               >
                 <Text style={styles.deleteCancelButtonText}>Cancel</Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 style={[
                   styles.deleteConfirmButton,
-                  deleteTaskMutation.isPending && styles.deleteConfirmButtonDisabled
+                  deleteTaskMutation.isPending &&
+                    styles.deleteConfirmButtonDisabled,
                 ]}
                 onPress={confirmDeleteTask}
                 disabled={deleteTaskMutation.isPending}
@@ -1526,19 +1690,19 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             <View style={styles.deleteIconContainer}>
               <MaterialIcons name="cancel" size={48} color="#ff8c00" />
             </View>
-            
+
             <Text style={styles.deleteModalTitle}>Cancellation Request</Text>
             <Text style={styles.deleteModalMessage}>
-              {pendingCancellationRequest?.requestedBy === task.createdBy._id 
-                ? 'The Poster has requested to cancel this task.' 
-                : 'The Tasker has requested to cancel this task.'}
+              {pendingCancellationRequest?.requestedBy === task.createdBy._id
+                ? "The Poster has requested to cancel this task."
+                : "The Tasker has requested to cancel this task."}
             </Text>
 
             {pendingCancellationRequest?.reason && (
               <View style={styles.warningContainer}>
                 <MaterialIcons name="info-outline" size={20} color="#ff8c00" />
                 <Text style={styles.warningText}>
-                  <Text style={{ fontWeight: 'bold' }}>Reason: </Text>
+                  <Text style={{ fontWeight: "bold" }}>Reason: </Text>
                   {pendingCancellationRequest.reason}
                 </Text>
               </View>
@@ -1547,31 +1711,45 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             <Text style={styles.deleteModalMessage}>
               Do you accept the cancellation?
             </Text>
-            
+
             <View style={styles.deleteModalButtons}>
               <TouchableOpacity
                 style={[
                   styles.deleteCancelButton,
-                  (!pendingCancellationRequest || respondToCancellationRequestMutation.isPending) && styles.deleteConfirmButtonDisabled
+                  (!pendingCancellationRequest ||
+                    respondToCancellationRequestMutation.isPending) &&
+                    styles.deleteConfirmButtonDisabled,
                 ]}
                 onPress={handleRejectCancellation}
-                disabled={!pendingCancellationRequest || respondToCancellationRequestMutation.isPending}
+                disabled={
+                  !pendingCancellationRequest ||
+                  respondToCancellationRequestMutation.isPending
+                }
               >
                 <Text style={styles.deleteCancelButtonText}>
-                  {respondToCancellationRequestMutation.isPending ? 'Processing...' : 'Reject'}
+                  {respondToCancellationRequestMutation.isPending
+                    ? "Processing..."
+                    : "Reject"}
                 </Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 style={[
                   styles.deleteConfirmButton,
-                  (!pendingCancellationRequest || respondToCancellationRequestMutation.isPending) && styles.deleteConfirmButtonDisabled
+                  (!pendingCancellationRequest ||
+                    respondToCancellationRequestMutation.isPending) &&
+                    styles.deleteConfirmButtonDisabled,
                 ]}
                 onPress={handleAcceptCancellation}
-                disabled={!pendingCancellationRequest || respondToCancellationRequestMutation.isPending}
+                disabled={
+                  !pendingCancellationRequest ||
+                  respondToCancellationRequestMutation.isPending
+                }
               >
                 <Text style={styles.deleteConfirmButtonText}>
-                  {respondToCancellationRequestMutation.isPending ? 'Processing...' : 'Accept'}
+                  {respondToCancellationRequestMutation.isPending
+                    ? "Processing..."
+                    : "Accept"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1592,7 +1770,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               <Text style={styles.offersModalTitle}>
                 Offers for &quot;{task.title}&quot;
               </Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.offersCloseButton}
                 onPress={() => setShowOffersModal(false)}
               >
@@ -1604,70 +1782,91 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               data={task.offers || []}
               keyExtractor={(offer) => offer._id}
               renderItem={({ item: offer }) => {
-                
                 // Get user data from offer
                 const offerUser = offer.taskTaker || offer.taskTakerId;
-                const firstName = offerUser?.firstName || 'User';
-                const lastName = offerUser?.lastName || '';
-                const profileUri = (offerUser as any)?.avatar || 
-                                 (offerUser as any)?.profilePicture ||
-                                 `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=0052A2&color=fff&size=80`;
-                
+                const firstName = offerUser?.firstName || "User";
+                const lastName = offerUser?.lastName || "";
+                const profileUri =
+                  (offerUser as any)?.avatar ||
+                  (offerUser as any)?.profilePicture ||
+                  `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=0052A2&color=fff&size=80`;
+
                 return (
-                <View style={styles.offerItem}>
-                  <View style={styles.offerHeader}>
-                    <View style={styles.offerUserInfo}>
-                      <Image
-                        source={{ uri: profileUri }}
-                        style={styles.offerAvatar}
-                      />
-                      <View style={styles.offerUserDetails}>
-                        <Text style={styles.offerUserName}>
-                          {firstName} {lastName}
-                        </Text>
-                        <View style={styles.offerRating}>
-                          <MaterialIcons name="star" size={16} color="#ffd700" />
-                          <Text style={styles.offerRatingText}>
-                            {offer.taskTaker?.rating?.toFixed(1) || offer.taskTakerId?.rating?.toFixed(1) || '0.0'}
+                  <View style={styles.offerItem}>
+                    <View style={styles.offerHeader}>
+                      <View style={styles.offerUserInfo}>
+                        <Image
+                          source={{ uri: profileUri }}
+                          style={styles.offerAvatar}
+                        />
+                        <View style={styles.offerUserDetails}>
+                          <Text style={styles.offerUserName}>
+                            {firstName} {lastName}
                           </Text>
+                          <View style={styles.offerRating}>
+                            <MaterialIcons
+                              name="star"
+                              size={16}
+                              color="#ffd700"
+                            />
+                            <Text style={styles.offerRatingText}>
+                              {offer.taskTaker?.rating?.toFixed(1) ||
+                                offer.taskTakerId?.rating?.toFixed(1) ||
+                                "0.0"}
+                            </Text>
+                          </View>
                         </View>
                       </View>
+                      <View style={styles.offerAmount}>
+                        <Text style={styles.offerPrice}>
+                          {formatCurrency(
+                            offer.amount || offer.offer?.amount || 0,
+                            userCurrencyInfo
+                          )}
+                        </Text>
+                      </View>
                     </View>
-                    <View style={styles.offerAmount}>
-                      <Text style={styles.offerPrice}>
-                        {formatCurrency(offer.amount || offer.offer?.amount || 0, userCurrencyInfo)}
+
+                    {(offer.message || offer.offer?.message) && (
+                      <Text style={styles.offerMessage}>
+                        {offer.message || offer.offer?.message}
                       </Text>
+                    )}
+
+                    <View style={styles.offerFooter}>
+                      <Text style={styles.offerDate}>
+                        {new Date(offer.createdAt).toLocaleDateString()}
+                      </Text>
+                      {userRole === "Poster" &&
+                        offer.status === "pending" &&
+                        (offer.taskTaker?._id || offer.taskTakerId?._id) && (
+                          <TouchableOpacity
+                            style={[
+                              styles.acceptOfferButton,
+                              (acceptOfferMutation.isPending || isProcessing) &&
+                                styles.acceptOfferDisabledButton,
+                            ]}
+                            onPress={() =>
+                              handleAcceptOffer(
+                                offer._id,
+                                offer.taskTaker?._id || offer.taskTakerId?._id!
+                              )
+                            }
+                            disabled={
+                              acceptOfferMutation.isPending || isProcessing
+                            }
+                          >
+                            {acceptOfferMutation.isPending || isProcessing ? (
+                              <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                              <Text style={styles.acceptOfferText}>
+                                Accept Offer
+                              </Text>
+                            )}
+                          </TouchableOpacity>
+                        )}
                     </View>
                   </View>
-
-                  {(offer.message || offer.offer?.message) && (
-                    <Text style={styles.offerMessage}>
-                      {offer.message || offer.offer?.message}
-                    </Text>
-                  )}
-
-                  <View style={styles.offerFooter}>
-                    <Text style={styles.offerDate}>
-                      {new Date(offer.createdAt).toLocaleDateString()}
-                    </Text>
-                    {userRole === 'Poster' && offer.status === 'pending' && (offer.taskTaker?._id || offer.taskTakerId?._id) && (
-                      <TouchableOpacity
-                        style={[
-                          styles.acceptOfferButton,
-                          (acceptOfferMutation.isPending || isProcessing) && styles.acceptOfferDisabledButton
-                        ]}
-                        onPress={() => handleAcceptOffer(offer._id, offer.taskTaker?._id || offer.taskTakerId?._id!)}
-                        disabled={acceptOfferMutation.isPending || isProcessing}
-                      >
-                        {acceptOfferMutation.isPending || isProcessing ? (
-                          <ActivityIndicator size="small" color="#fff" />
-                        ) : (
-                          <Text style={styles.acceptOfferText}>Accept Offer</Text>
-                        )}
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
                 );
               }}
               showsVerticalScrollIndicator={false}
@@ -1676,14 +1875,16 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           </View>
         </View>
       </Modal>
-      
+
       {/* Stripe Payment Modal */}
       <StripePaymentModal
         visible={showPaymentModal}
         taskId={task._id}
         offerId={selectedOffer?._id}
         offerAmount={selectedOffer?.amount || selectedOffer?.offer?.amount || 0}
-        currency={selectedOffer?.currency || selectedOffer?.offer?.currency || 'USD'}
+        currency={
+          selectedOffer?.currency || selectedOffer?.offer?.currency || "USD"
+        }
         taskTitle={task.title}
         taskCategory={selectedOffer?.taskCategory}
         onClose={handleClosePaymentModal}
@@ -1696,7 +1897,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: "#F9F9F9",
     padding: 16,
     borderRadius: 10,
     marginBottom: 12,
@@ -1705,8 +1906,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "flex-end",
     marginTop: 12,
     gap: 8,
     zIndex: 10,
@@ -1716,10 +1917,10 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -1731,128 +1932,128 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.5,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   completedButton: {
     flex: 1,
-    backgroundColor: '#FFA500',
+    backgroundColor: "#FFA500",
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginRight: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   completedButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   cancelButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#dc3545',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#dc3545",
+    justifyContent: "center",
+    alignItems: "center",
   },
   cancellationNotice: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 12,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#fff5f5',
+    backgroundColor: "#fff5f5",
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#ffcccc',
+    borderColor: "#ffcccc",
   },
   cancellationText: {
     fontSize: 13,
-    color: '#dc3545',
+    color: "#dc3545",
     marginLeft: 6,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 24,
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalIcon: {
     marginBottom: 16,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 12,
-    textAlign: 'center',
+    textAlign: "center",
   },
   modalMessage: {
     fontSize: 15,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     marginBottom: 8,
     lineHeight: 22,
   },
   modalQuestion: {
     fontSize: 15,
-    color: '#333',
-    textAlign: 'center',
+    color: "#333",
+    textAlign: "center",
     marginBottom: 24,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   modalButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
-    width: '100%',
+    width: "100%",
   },
   modalNoButton: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-    alignItems: 'center',
+    backgroundColor: "#f0f0f0",
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
   },
   modalNoText: {
     fontSize: 16,
-    color: '#666',
-    fontWeight: '600',
+    color: "#666",
+    fontWeight: "600",
   },
   modalYesButton: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: '#dc3545',
-    alignItems: 'center',
+    backgroundColor: "#dc3545",
+    alignItems: "center",
   },
   modalYesText: {
     fontSize: 16,
-    color: '#fff',
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "600",
   },
   actionIcon: {
     width: 20,
     height: 20,
-    tintColor: '#666',
+    tintColor: "#666",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 8,
   },
   info: {
@@ -1861,166 +2062,166 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 8,
-    color: '#1a1a1a',
+    color: "#1a1a1a",
   },
   metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 4,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   timePreference: {
     fontSize: 12,
-    color: '#007bff',
-    fontWeight: '500',
+    color: "#007bff",
+    fontWeight: "500",
   },
   locationType: {
     fontSize: 12,
-    color: '#28a745',
-    fontWeight: '500',
+    color: "#28a745",
+    fontWeight: "500",
   },
   locationDivider: {
     marginHorizontal: 6,
-    color: '#ccc',
+    color: "#ccc",
     fontSize: 12,
   },
   locationText: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
     flex: 1,
   },
   meta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 4,
   },
   status: {
     fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'capitalize',
+    fontWeight: "600",
+    textTransform: "capitalize",
   },
   date: {
     fontSize: 12,
-    color: '#999',
+    color: "#999",
   },
   offerCountText: {
     fontSize: 12,
-    color: '#007bff',
-    fontWeight: '600',
+    color: "#007bff",
+    fontWeight: "600",
     marginTop: 4,
   },
   price: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   priceText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#007bff',
+    fontWeight: "700",
+    color: "#007bff",
     marginBottom: 8,
   },
   userAvatar: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
   },
   description: {
     fontSize: 14,
-    color: '#555',
+    color: "#555",
     lineHeight: 20,
     marginTop: 8,
   },
   categoryContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
     gap: 8,
     marginTop: 10,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: "#f0f0f0",
   },
   categoryLabel: {
     fontSize: 13,
-    color: '#4a5568',
-    fontWeight: '600',
+    color: "#4a5568",
+    fontWeight: "600",
     lineHeight: 18,
   },
   categoryTag: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: "#e3f2fd",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   categoryText: {
     fontSize: 11,
-    color: '#1976d2',
-    fontWeight: '500',
+    color: "#1976d2",
+    fontWeight: "500",
   },
   moreCategoriesText: {
     fontSize: 12,
-    color: '#718096',
-    fontWeight: '500',
-    fontStyle: 'italic',
+    color: "#718096",
+    fontWeight: "500",
+    fontStyle: "italic",
     marginLeft: 4,
   },
   posterCancelOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
   },
   posterCancelContent: {
-    backgroundColor: '#f5f5f9',
+    backgroundColor: "#f5f5f9",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: 40,
-    maxHeight: '96%',
+    maxHeight: "96%",
   },
   posterCancelHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: "#e0e0e0",
   },
   posterCancelTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   closeButton: {
     padding: 4,
   },
   warningContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#fff8e1',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#fff8e1",
     padding: 16,
     marginHorizontal: 20,
     marginTop: 16,
     borderRadius: 8,
     borderLeftWidth: 4,
-    borderLeftColor: '#ff8c00',
+    borderLeftColor: "#ff8c00",
   },
   warningText: {
     flex: 1,
     fontSize: 13,
-    color: '#333',
+    color: "#333",
     marginLeft: 12,
     lineHeight: 20,
   },
   warningLink: {
-    color: '#2563eb',
-    textDecorationLine: 'underline',
-    fontWeight: '500',
+    color: "#2563eb",
+    textDecorationLine: "underline",
+    fontWeight: "500",
   },
   reasonsList: {
     paddingHorizontal: 20,
@@ -2028,221 +2229,221 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     paddingVertical: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   emptyReasonsContainer: {
     paddingVertical: 40,
     paddingHorizontal: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyReasonsText: {
     fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
+    color: "#999",
+    textAlign: "center",
   },
   reasonItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
     borderWidth: 2,
-    borderColor: '#2563eb',
+    borderColor: "#2563eb",
   },
   reasonItemSelected: {
-    backgroundColor: '#e3f2fd',
-    borderColor: '#2563eb',
+    backgroundColor: "#e3f2fd",
+    borderColor: "#2563eb",
     borderWidth: 2,
   },
   reasonNumber: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginRight: 8,
     minWidth: 24,
   },
   reasonText: {
     flex: 1,
     fontSize: 15,
-    color: '#333',
+    color: "#333",
     lineHeight: 22,
   },
   confirmCancelButton: {
-    backgroundColor: '#dc3545',
+    backgroundColor: "#dc3545",
     marginHorizontal: 20,
     marginTop: 20,
     paddingVertical: 16,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   confirmCancelButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
     opacity: 0.6,
   },
   confirmCancelButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   deleteButton: {
     // Additional styles for delete button if needed
   },
   receiptButton: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: "#e3f2fd",
   },
   deleteModalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 24,
-    width: '85%',
+    width: "85%",
     maxWidth: 400,
-    alignItems: 'center',
+    alignItems: "center",
   },
   deleteIconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#fee',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#fee",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
   },
   deleteModalTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 12,
-    textAlign: 'center',
+    textAlign: "center",
   },
   deleteModalMessage: {
     fontSize: 15,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     lineHeight: 22,
     marginBottom: 24,
   },
   deleteModalButtons: {
-    flexDirection: 'row',
-    width: '100%',
+    flexDirection: "row",
+    width: "100%",
     gap: 12,
   },
   deleteCancelButton: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-    alignItems: 'center',
+    backgroundColor: "#f0f0f0",
+    alignItems: "center",
   },
   deleteCancelButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
   },
   deleteConfirmButton: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: '#dc3545',
-    alignItems: 'center',
+    backgroundColor: "#dc3545",
+    alignItems: "center",
   },
   deleteConfirmButtonDisabled: {
-    backgroundColor: '#aaa',
+    backgroundColor: "#aaa",
     opacity: 0.7,
   },
   deleteConfirmButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
   },
   // Offers section styles
   offersSection: {
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: "#f0f0f0",
     paddingTop: 12,
     marginTop: 12,
   },
   offersButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 8,
   },
   offersInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   offersLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginLeft: 8,
   },
   offersCount: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginLeft: 4,
   },
   // Offers modal styles
   offersModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
   },
   offersModalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: '80%',
+    maxHeight: "80%",
     paddingTop: 20,
   },
   offersModalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: "#f0f0f0",
   },
   offersModalTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     flex: 1,
     marginRight: 16,
   },
   offersCloseButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   offersListContent: {
     padding: 20,
   },
   offerItem: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
+    borderLeftColor: "#007AFF",
   },
   offerHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 8,
   },
   offerUserInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
   offerAvatar: {
@@ -2256,59 +2457,57 @@ const styles = StyleSheet.create({
   },
   offerUserName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 2,
   },
   offerRating: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   offerRatingText: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginLeft: 4,
   },
   offerAmount: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   offerPrice: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#007AFF',
+    fontWeight: "700",
+    color: "#007AFF",
   },
   offerMessage: {
     fontSize: 14,
-    color: '#666',
-    fontStyle: 'italic',
+    color: "#666",
+    fontStyle: "italic",
     marginBottom: 12,
     lineHeight: 20,
   },
   offerFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   offerDate: {
     fontSize: 12,
-    color: '#999',
+    color: "#999",
   },
   acceptOfferButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     minWidth: 100,
-    alignItems: 'center',
+    alignItems: "center",
   },
   acceptOfferDisabledButton: {
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
   },
   acceptOfferText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
-
-

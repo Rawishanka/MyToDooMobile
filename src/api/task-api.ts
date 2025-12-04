@@ -2,12 +2,12 @@
 // This file contains ALL task-related API endpoints from your API documentation
 
 import { createApi } from "@/src/shared/utils/api";
-import { handleAuthenticationError } from '@/src/shared/utils/auth-utils';
-import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
-import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
+import { handleAuthenticationError } from "@/src/shared/utils/auth-utils";
+import { autoLoginForDevelopment } from "@/src/shared/utils/dev-auth";
+import { isNetworkError } from "@/src/shared/utils/networkErrorHandler";
 import { useAuthStore } from "@/src/store/auth-task-store";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system/legacy';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as FileSystem from "expo-file-system/legacy";
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
@@ -26,7 +26,7 @@ import {
   TaskOffersResponse,
   TaskSearchParams,
   TasksResponse,
-  UpdateTaskRequest
+  UpdateTaskRequest,
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -35,39 +35,42 @@ import {
  * Ensures user is authenticated for API operations
  * Automatically handles development auto-login
  */
-async function ensureAuthentication(): Promise<{ success: boolean; token?: string; message?: string }> {
+async function ensureAuthentication(): Promise<{
+  success: boolean;
+  token?: string;
+  message?: string;
+}> {
   const authState = useAuthStore.getState();
-  
+
   // Check auth store first
   if (authState.token && authState.isAuthenticated) {
     return { success: true, token: authState.token };
   }
-  
+
   // Check AsyncStorage for stored token
   try {
-    const storedToken = await AsyncStorage.getItem('token');
+    const storedToken = await AsyncStorage.getItem("token");
     if (storedToken) {
       // Restore auth state if we have a stored token
-      const storedUser = await AsyncStorage.getItem('user');
+      const storedUser = await AsyncStorage.getItem("user");
       if (storedUser) {
         try {
           const user = JSON.parse(storedUser);
           authState.setAuthData(storedToken, user, 3600);
           return { success: true, token: storedToken };
-        } catch {
-        }
+        } catch {}
       }
     }
   } catch (error) {
     if (__DEV__) {
     }
   }
-  
+
   // Try development auto-login
   if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
     try {
       await autoLoginForDevelopment();
-      
+
       // Re-check auth state after auto-login
       const newAuthState = useAuthStore.getState();
       if (newAuthState.token && newAuthState.isAuthenticated) {
@@ -78,22 +81,25 @@ async function ensureAuthentication(): Promise<{ success: boolean; token?: strin
       }
     }
   }
-  
-  return { 
-    success: false, 
-    message: "Authentication required. Please log in to continue."
+
+  return {
+    success: false,
+    message: "Authentication required. Please log in to continue.",
   };
 }
 
 /**
  * Handles authentication errors and attempts retry
  */
-async function handleAuthErrorAndRetry(): Promise<{ success: boolean; token?: string; message?: string }> {
+async function handleAuthErrorAndRetry(): Promise<{
+  success: boolean;
+  token?: string;
+  message?: string;
+}> {
   try {
-    
     // Clear invalid auth data
     await useAuthStore.getState().clearAuth();
-    
+
     // Try to re-authenticate in development mode
     if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
       await autoLoginForDevelopment();
@@ -102,20 +108,20 @@ async function handleAuthErrorAndRetry(): Promise<{ success: boolean; token?: st
         return { success: true, token: authState.token };
       }
     }
-    
+
     // If not development or auto-login failed, handle globally
     handleAuthenticationError(new Error("Authentication expired"), false);
-    
-    return { 
-      success: false, 
-      message: "Authentication session expired. Please log in again."
+
+    return {
+      success: false,
+      message: "Authentication session expired. Please log in again.",
     };
   } catch (error) {
     if (__DEV__) {
     }
-    return { 
-      success: false, 
-      message: "Failed to refresh authentication."
+    return {
+      success: false,
+      message: "Failed to refresh authentication.",
     };
   }
 }
@@ -131,67 +137,70 @@ function getApi() {
  * Endpoint: GET /api/categories
  * Fetches categories from the database category collection
  */
-export async function getCategories(): Promise<{ success: boolean; data: any[] }> {
+export async function getCategories(): Promise<{
+  success: boolean;
+  data: any[];
+}> {
   const api = getApi();
   try {
-    const response = await api.get('/categories');
-    
+    const response = await api.get("/categories");
+
     // Handle the actual API response format
     if (response.data.success && Array.isArray(response.data.data)) {
       // Return full category objects with locationType
       return {
         success: true,
-        data: response.data.data
+        data: response.data.data,
       };
     } else if (Array.isArray(response.data)) {
       // If direct array of categories
       return { success: true, data: response.data };
     } else {
-      throw new Error('Invalid categories response format');
+      throw new Error("Invalid categories response format");
     }
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
     }
-    
+
     // Fallback to predefined categories if API fails
     if (__DEV__) {
     }
     const fallbackCategories = [
-      'Appliance installation and repair',
-      'Auto Michanic and Electrician',
-      'Buliding Maintatance and Renovations',
-      'Business and Accounting',
-      'Carpentry',
-      'Cleaning and Organising',
-      'Removalist',
-      'Education and Tutoring',
-      'Electrical',
-      'Event Planning',
-      'Furniture repair and Flatpack Assemply',
-      'Gardening and Landscaping',
-      'Graphic Design',
-      'Handyman and Handywomen',
-      'Health & Fitness',
-      'IT & Tech',
-      'Legal Services',
-      'Marketting and Advertising',
-      'Music and Entertainment',
-      'Painting',
-      'Pet Care',
-      'Photography',
-      'Plumbing',
-      'Something Else',
-      'Web & App Development',
-      'Personal Assistance',
-      'Tours and Transport',
-      'Delivery',
-      'Realestate',
+      "Appliance installation and repair",
+      "Auto Michanic and Electrician",
+      "Buliding Maintatance and Renovations",
+      "Business and Accounting",
+      "Carpentry",
+      "Cleaning and Organising",
+      "Removalist",
+      "Education and Tutoring",
+      "Electrical",
+      "Event Planning",
+      "Furniture repair and Flatpack Assemply",
+      "Gardening and Landscaping",
+      "Graphic Design",
+      "Handyman and Handywomen",
+      "Health & Fitness",
+      "IT & Tech",
+      "Legal Services",
+      "Marketting and Advertising",
+      "Music and Entertainment",
+      "Painting",
+      "Pet Care",
+      "Photography",
+      "Plumbing",
+      "Something Else",
+      "Web & App Development",
+      "Personal Assistance",
+      "Tours and Transport",
+      "Delivery",
+      "Realestate",
     ];
-    
+
     return {
       success: true,
-      data: fallbackCategories
+      data: fallbackCategories,
     };
   }
 }
@@ -201,24 +210,31 @@ export async function getCategories(): Promise<{ success: boolean; data: any[] }
  * Endpoint: GET /api/categories/by-location?type={locationType}
  * Fetches categories filtered by location type (In-person, Online, or Both)
  */
-export async function getCategoriesByLocation(locationType: string): Promise<{ success: boolean; locationType: string; data: any[] }> {
+export async function getCategoriesByLocation(
+  locationType: string
+): Promise<{ success: boolean; locationType: string; data: any[] }> {
   const api = getApi();
   try {
-    const response = await api.get(`/categories/by-location?type=${locationType}`);
-    
+    const response = await api.get(
+      `/categories/by-location?type=${locationType}`
+    );
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (!isNetworkError(error) && __DEV__) {
       }
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     throw error;
   }
 }
@@ -235,18 +251,16 @@ export async function getAllTasks(): Promise<TasksResponse> {
   if (API_CONFIG.USE_MOCK_ONLY) {
     return await MockApiService.getAllTasks();
   }
-  
+
   const api = getApi();
   try {
-    
     // Start with a reasonable limit to get most tasks in first request
-    const response = await api.get('/tasks?limit=50&page=1');
-    
+    const response = await api.get("/tasks?limit=50&page=1");
+
     let allTasksData = [...(response.data.data || [])];
-    
+
     // Check if we have pagination and need to fetch more pages
     if (response.data.pages && response.data.pages > 1) {
-      
       // Fetch remaining pages
       for (let page = 2; page <= response.data.pages; page++) {
         try {
@@ -254,31 +268,29 @@ export async function getAllTasks(): Promise<TasksResponse> {
           if (pageResponse.data.data && pageResponse.data.data.length > 0) {
             allTasksData.push(...pageResponse.data.data);
           }
-        } catch (pageError) {
-        }
+        } catch (pageError) {}
       }
-      
-      
+
       // Return combined results
       return {
         ...response.data,
         data: allTasksData,
         count: allTasksData.length,
-        total: response.data.total
+        total: response.data.total,
       };
     }
-    
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
     }
-    
+
     // Check for network connection errors - use mock service as fallback
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+    if (error.code === "ERR_NETWORK" || error.message === "Network Error") {
       return await MockApiService.getAllTasks();
     }
-    
+
     throw error;
   }
 }
@@ -289,7 +301,9 @@ export async function getAllTasks(): Promise<TasksResponse> {
  * Auth: No - Supports comprehensive filtering and sorting
  * Fallback: Uses /api/tasks/ if filter endpoint fails
  */
-export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskFilterResponse> {
+export async function getFilteredTasks(
+  params?: TaskFilterParams
+): Promise<TaskFilterResponse> {
   // Check if we should use mock API only
   if (API_CONFIG.USE_MOCK_ONLY) {
     const mockResponse = await MockApiService.getAllTasks();
@@ -303,131 +317,157 @@ export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskF
         totalItems: mockResponse.data?.length || 0,
         itemsPerPage: mockResponse.data?.length || 20,
         hasNextPage: false,
-        hasPreviousPage: false
-      }
+        hasPreviousPage: false,
+      },
     };
   }
-  
+
   const api = getApi();
-  
+
   try {
     // Build query string from params
     const queryParams = new URLSearchParams();
-    
-    if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
-    if (params?.lat !== undefined) queryParams.append('lat', params.lat.toString());
-    if (params?.lng !== undefined) queryParams.append('lng', params.lng.toString());
-    if (params?.radius !== undefined) queryParams.append('radius', params.radius.toString());
-    if (params?.categories) queryParams.append('categories', params.categories);
-    if (params?.minBudget !== undefined) queryParams.append('minBudget', params.minBudget.toString());
-    if (params?.maxBudget !== undefined) queryParams.append('maxBudget', params.maxBudget.toString());
-    if (params?.status) queryParams.append('status', params.status);
-    if (params?.locationType) queryParams.append('locationType', params.locationType);
-    if (params?.search) queryParams.append('search', params.search);
-    if (params?.page !== undefined) queryParams.append('page', params.page.toString());
-    if (params?.limit !== undefined) queryParams.append('limit', params.limit.toString());
-    
+
+    if (params?.sortBy) queryParams.append("sortBy", params.sortBy);
+    if (params?.lat !== undefined)
+      queryParams.append("lat", params.lat.toString());
+    if (params?.lng !== undefined)
+      queryParams.append("lng", params.lng.toString());
+    if (params?.radius !== undefined)
+      queryParams.append("radius", params.radius.toString());
+    if (params?.categories) queryParams.append("categories", params.categories);
+    if (params?.minBudget !== undefined)
+      queryParams.append("minBudget", params.minBudget.toString());
+    if (params?.maxBudget !== undefined)
+      queryParams.append("maxBudget", params.maxBudget.toString());
+    if (params?.status) queryParams.append("status", params.status);
+    if (params?.locationType)
+      queryParams.append("locationType", params.locationType);
+    if (params?.search) queryParams.append("search", params.search);
+    if (params?.page !== undefined)
+      queryParams.append("page", params.page.toString());
+    if (params?.limit !== undefined)
+      queryParams.append("limit", params.limit.toString());
+
     const queryString = queryParams.toString();
-    const url = `/tasks/filter${queryString ? `?${queryString}` : ''}`;
-    
-    
+    const url = `/tasks/filter${queryString ? `?${queryString}` : ""}`;
+
     const response = await api.get(url);
-    
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
     }
-    
+
     // If filter endpoint fails (500 error or not found), fallback to getAllTasks with client-side filtering
-    if (error.response?.status === 500 || error.response?.status === 404 || error.code === 'ERR_NETWORK') {
-      
+    if (
+      error.response?.status === 500 ||
+      error.response?.status === 404 ||
+      error.code === "ERR_NETWORK"
+    ) {
       try {
         // Use the working getAllTasks endpoint
         const fallbackResponse = await getAllTasks();
         let filteredTasks = fallbackResponse.data || [];
-        
+
         // Apply client-side filters based on params
         if (params) {
           // Search filter
           if (params.search) {
             const searchLower = params.search.toLowerCase();
-            filteredTasks = filteredTasks.filter((task: any) =>
-              task.title.toLowerCase().includes(searchLower) ||
-              task.details.toLowerCase().includes(searchLower)
+            filteredTasks = filteredTasks.filter(
+              (task: any) =>
+                task.title.toLowerCase().includes(searchLower) ||
+                task.details.toLowerCase().includes(searchLower)
             );
           }
-          
+
           // Category filter
           if (params.categories) {
             const categoryLower = params.categories.toLowerCase();
             filteredTasks = filteredTasks.filter((task: any) =>
-              task.categories.some((cat: string) => cat.toLowerCase().includes(categoryLower))
+              task.categories.some((cat: string) =>
+                cat.toLowerCase().includes(categoryLower)
+              )
             );
           }
-          
+
           // Price range filters
           if (params.minBudget !== undefined) {
-            filteredTasks = filteredTasks.filter((task: any) => task.budget >= params.minBudget!);
+            filteredTasks = filteredTasks.filter(
+              (task: any) => task.budget >= params.minBudget!
+            );
           }
           if (params.maxBudget !== undefined) {
-            filteredTasks = filteredTasks.filter((task: any) => task.budget <= params.maxBudget!);
+            filteredTasks = filteredTasks.filter(
+              (task: any) => task.budget <= params.maxBudget!
+            );
           }
-          
+
           // Status filter
           if (params.status) {
-            filteredTasks = filteredTasks.filter((task: any) => task.status === params.status);
+            filteredTasks = filteredTasks.filter(
+              (task: any) => task.status === params.status
+            );
           }
-          
+
           // Location type filter
           if (params.locationType) {
-            if (params.locationType === 'Online') {
-              filteredTasks = filteredTasks.filter((task: any) =>
-                task.location?.address?.toLowerCase().includes('online') ||
-                task.location?.address?.toLowerCase().includes('remote')
+            if (params.locationType === "Online") {
+              filteredTasks = filteredTasks.filter(
+                (task: any) =>
+                  task.location?.address?.toLowerCase().includes("online") ||
+                  task.location?.address?.toLowerCase().includes("remote")
               );
-            } else if (params.locationType === 'In-person') {
-              filteredTasks = filteredTasks.filter((task: any) =>
-                !task.location?.address?.toLowerCase().includes('online') &&
-                !task.location?.address?.toLowerCase().includes('remote')
+            } else if (params.locationType === "In-person") {
+              filteredTasks = filteredTasks.filter(
+                (task: any) =>
+                  !task.location?.address?.toLowerCase().includes("online") &&
+                  !task.location?.address?.toLowerCase().includes("remote")
               );
             }
           }
-          
+
           // Basic sorting (client-side)
           if (params.sortBy) {
             switch (params.sortBy) {
-              case 'highest-budget':
-              case 'price-high':
+              case "highest-budget":
+              case "price-high":
                 filteredTasks.sort((a: any, b: any) => b.budget - a.budget);
                 break;
-              case 'lowest-budget':
-              case 'price-low':
+              case "lowest-budget":
+              case "price-low":
                 filteredTasks.sort((a: any, b: any) => a.budget - b.budget);
                 break;
-              case 'newest':
-              case 'latest':
-                filteredTasks.sort((a: any, b: any) => 
-                  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              case "newest":
+              case "latest":
+                filteredTasks.sort(
+                  (a: any, b: any) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
                 );
                 break;
-              case 'oldest':
-                filteredTasks.sort((a: any, b: any) => 
-                  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+              case "oldest":
+                filteredTasks.sort(
+                  (a: any, b: any) =>
+                    new Date(a.createdAt).getTime() -
+                    new Date(b.createdAt).getTime()
                 );
                 break;
               // Note: 'closest' sorting would require GPS coordinates and distance calculation
               // For now, we'll leave these unsorted or sort by date as fallback
               default:
-                filteredTasks.sort((a: any, b: any) => 
-                  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                filteredTasks.sort(
+                  (a: any, b: any) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
                 );
                 break;
             }
           }
         }
-        
-        
+
         // Convert to filter response format
         return {
           success: true,
@@ -438,12 +478,10 @@ export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskF
             totalItems: filteredTasks.length,
             itemsPerPage: filteredTasks.length,
             hasNextPage: false,
-            hasPreviousPage: false
-          }
+            hasPreviousPage: false,
+          },
         };
-        
       } catch (fallbackError) {
-        
         // Last resort: use mock data
         const mockResponse = await MockApiService.getAllTasks();
         return {
@@ -455,12 +493,12 @@ export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskF
             totalItems: mockResponse.data?.length || 0,
             itemsPerPage: mockResponse.data?.length || 20,
             hasNextPage: false,
-            hasPreviousPage: false
-          }
+            hasPreviousPage: false,
+          },
         };
       }
     }
-    
+
     throw error;
   }
 }
@@ -470,13 +508,14 @@ export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskF
  * Endpoint: POST /api/tasks/
  * Auth: Required
  */
-export async function createTask(taskData: CreateTaskRequest): Promise<CreateTaskResponse> {
+export async function createTask(
+  taskData: CreateTaskRequest
+): Promise<CreateTaskResponse> {
   const api = getApi();
   try {
-    
     // 🚀 CONSOLE LOG THE COMPLETE REQUEST BODY (CREATE TASK)
-    
-    const response = await api.post('/tasks', taskData);
+
+    const response = await api.post("/tasks", taskData);
     return response.data;
   } catch (error) {
     throw error;
@@ -488,84 +527,89 @@ export async function createTask(taskData: CreateTaskRequest): Promise<CreateTas
  * Endpoint: POST /api/tasks/
  * Auth: Required - Enhanced version that handles binary image data in JSON
  */
-export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris: string[] = []): Promise<CreateTaskResponse> {
+export async function postTaskWithImages(
+  taskData: CreateTaskRequest,
+  imageUris: string[] = []
+): Promise<CreateTaskResponse> {
   const api = getApi();
   try {
-    
     if (imageUris.length > 0) {
     } else {
     }
-    
 
     if (imageUris.length > 0) {
       // Convert images to binary data in parallel for better performance
       const imagePromises = imageUris.map(async (uri, i) => {
-        const filename = uri.split('/').pop() || `image_${i}.jpg`;
-        
+        const filename = uri.split("/").pop() || `image_${i}.jpg`;
+
         try {
           // Validate the file exists and is accessible
           const fileInfo = await FileSystem.getInfoAsync(uri);
           if (!fileInfo.exists) {
-            throw new Error(`Failed to read image ${filename}: Error: File does not exist: ${uri}`);
+            throw new Error(
+              `Failed to read image ${filename}: Error: File does not exist: ${uri}`
+            );
           }
 
           // Read the file as base64 binary data
           const base64Data = await FileSystem.readAsStringAsync(uri, {
-            encoding: 'base64',
+            encoding: "base64",
           });
-          
+
           // Validate base64 data
           if (!base64Data || base64Data.length === 0) {
             throw new Error(`Failed to read file data: ${filename}`);
           }
-          
-          const extension = filename.split('.').pop()?.toLowerCase() || 'jpg';
-          
-          let mimeType = 'image/jpeg';
+
+          const extension = filename.split(".").pop()?.toLowerCase() || "jpg";
+
+          let mimeType = "image/jpeg";
           switch (extension) {
-            case 'png':
-              mimeType = 'image/png';
+            case "png":
+              mimeType = "image/png";
               break;
-            case 'gif':
-              mimeType = 'image/gif';
+            case "gif":
+              mimeType = "image/gif";
               break;
-            case 'webp':
-              mimeType = 'image/webp';
+            case "webp":
+              mimeType = "image/webp";
               break;
             default:
-              mimeType = 'image/jpeg';
+              mimeType = "image/jpeg";
               break;
           }
 
           // Create data URI with binary data
           const dataUri = `data:${mimeType};base64,${base64Data}`;
-          
-          
+
           return dataUri;
         } catch (fileError: any) {
-          throw new Error(`Failed to read image ${filename}: ${fileError.message || fileError}`);
+          throw new Error(
+            `Failed to read image ${filename}: ${
+              fileError.message || fileError
+            }`
+          );
         }
       });
 
       // Wait for all images to be processed in parallel
       const binaryImages = await Promise.all(imagePromises);
-      
+
       // VALIDATE ALL IMAGES BEFORE SENDING
       binaryImages.forEach((img, index) => {
-        const isValidDataUri = img.startsWith('data:image/') && img.includes(';base64,');
-        const base64Part = img.split(';base64,')[1];
+        const isValidDataUri =
+          img.startsWith("data:image/") && img.includes(";base64,");
+        const base64Part = img.split(";base64,")[1];
         const isValidBase64 = base64Part && base64Part.length > 0;
-        
-        
+
         if (!isValidDataUri || !isValidBase64) {
         }
       });
-      
-      const imageSizes = binaryImages.map(img => img.length / 1024);
+
+      const imageSizes = binaryImages.map((img) => img.length / 1024);
       const totalSizeKB = imageSizes.reduce((sum, size) => sum + size, 0);
       const totalSizeMB = totalSizeKB / 1024;
-      
-      
+
       // Warn if images might be too large
       if (totalSizeMB > 10) {
       }
@@ -573,57 +617,71 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
       // Create enhanced task data with binary images in JSON - EXACTLY like the required format
       const taskDataWithImages = {
         ...taskData,
-        images: binaryImages
+        images: binaryImages,
       };
-      
-      
+
       // 🚨 LOG THE COMPLETE REQUEST BODY FOR DEBUGGING
-      
-      const response = await api.post('/tasks', taskDataWithImages, {
+
+      const response = await api.post("/tasks", taskDataWithImages, {
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
-      
+
       // CRITICAL CHECK: Did backend save the images?
-      if (binaryImages.length > 0 && (!response.data?.data?.images || response.data.data.images.length === 0)) {
-      } else if (binaryImages.length > 0 && response.data?.data?.images && response.data.data.images.length > 0) {
+      if (
+        binaryImages.length > 0 &&
+        (!response.data?.data?.images || response.data.data.images.length === 0)
+      ) {
+      } else if (
+        binaryImages.length > 0 &&
+        response.data?.data?.images &&
+        response.data.data.images.length > 0
+      ) {
       }
-      
+
       return response.data;
     } else {
       // No images, use regular JSON upload
-      const response = await api.post('/tasks', taskData);
+      const response = await api.post("/tasks", taskData);
       return response.data;
     }
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
     }
-    
+
     // Check for authentication errors with special handling
     if (error?.response?.status === 401) {
       if (error.isAuthError) {
-        throw new Error(error.message || "Authentication expired. Please login again to continue.");
+        throw new Error(
+          error.message ||
+            "Authentication expired. Please login again to continue."
+        );
       }
       throw error;
     }
-    
-    // Check for validation errors  
+
+    // Check for validation errors
     if (error?.response?.status === 400) {
-      const errorMessage = error?.response?.data?.message || error?.response?.data?.error || "Invalid task data";
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Invalid task data";
       throw new Error(`Validation Error: ${errorMessage}`);
     }
-    
+
     // Check for file upload errors
     if (error?.response?.status === 413) {
-      throw new Error("Images are too large. Please reduce image size and try again.");
+      throw new Error(
+        "Images are too large. Please reduce image size and try again."
+      );
     }
-    
+
     // Check for server errors that might indicate image processing issues
     if (error?.response?.status >= 500) {
     }
-    
+
     throw error;
   }
 }
@@ -633,40 +691,46 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
  * Endpoint: POST /api/tasks/
  * Auth: Required - This is the main endpoint that stores tasks properly
  */
-export async function postTask(taskData: CreateTaskRequest): Promise<CreateTaskResponse> {
+export async function postTask(
+  taskData: CreateTaskRequest
+): Promise<CreateTaskResponse> {
   const api = getApi();
   try {
-    
     // 🚀 CONSOLE LOG THE COMPLETE REQUEST BODY (REGULAR POST TASK)
-    
-    const response = await api.post('/tasks', taskData);
+
+    const response = await api.post("/tasks", taskData);
     return response.data;
   } catch (error: any) {
     // Enhanced error logging for debugging
-    
+
     // Check for network connection errors - use mock service as fallback
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+    if (error.code === "ERR_NETWORK" || error.message === "Network Error") {
       return await MockApiService.postTask(taskData);
     }
-    
+
     // Check for authentication errors with special handling
     if (error?.response?.status === 401) {
-      
       // If this is an auth error from the interceptor, provide user-friendly message
       if (error.isAuthError) {
-        throw new Error(error.message || "Authentication expired. Please login again to continue.");
+        throw new Error(
+          error.message ||
+            "Authentication expired. Please login again to continue."
+        );
       }
-      
+
       // Otherwise, it's a regular 401 that should be handled by interceptor
       throw error;
     }
-    
-    // Check for validation errors  
+
+    // Check for validation errors
     if (error?.response?.status === 400) {
-      const errorMessage = error?.response?.data?.message || error?.response?.data?.error || "Invalid task data";
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Invalid task data";
       throw new Error(`Validation Error: ${errorMessage}`);
     }
-    
+
     throw error;
   }
 }
@@ -676,127 +740,136 @@ export async function postTask(taskData: CreateTaskRequest): Promise<CreateTaskR
  * Endpoint: POST /api/tasks/
  * Auth: Required - Tries FormData first, falls back to base64 if needed
  */
-export async function postTaskDirect(taskData: CreateTaskRequest): Promise<CreateTaskResponse> {
+export async function postTaskDirect(
+  taskData: CreateTaskRequest
+): Promise<CreateTaskResponse> {
   const api = getApi();
   try {
-    
     // Check if images exist and have content
     const hasImages = taskData.images && taskData.images.length > 0;
-    
+
     if (hasImages) {
-      
       // Extract images array for use in both try and catch blocks
       const images = taskData.images!; // Already validated hasImages above
-      
+
       try {
         // Try FormData approach first
         const formData = new FormData();
-        
+
         // Add task fields (excluding images)
         const taskWithoutImages = { ...taskData };
         delete taskWithoutImages.images;
-        
+
         // Add each field individually to FormData
-        Object.keys(taskWithoutImages).forEach(key => {
+        Object.keys(taskWithoutImages).forEach((key) => {
           const value = (taskWithoutImages as any)[key];
           if (value !== undefined && value !== null) {
-            if (typeof value === 'object') {
+            if (typeof value === "object") {
               formData.append(key, JSON.stringify(value));
             } else {
               formData.append(key, String(value));
             }
           }
         });
-        
+
         // Add images as files (backend expects 'files' parameter)
         for (let i = 0; i < images.length; i++) {
           const imageUri = images[i];
-          
-          const filename = imageUri.split('/').pop() || `task_image_${i}.jpg`;
-          const extension = filename.split('.').pop()?.toLowerCase() || 'jpg';
-          let mimeType = 'image/jpeg';
-          if (extension === 'png') mimeType = 'image/png';
-          else if (extension === 'gif') mimeType = 'image/gif';
-          
+
+          const filename = imageUri.split("/").pop() || `task_image_${i}.jpg`;
+          const extension = filename.split(".").pop()?.toLowerCase() || "jpg";
+          let mimeType = "image/jpeg";
+          if (extension === "png") mimeType = "image/png";
+          else if (extension === "gif") mimeType = "image/gif";
+
           // Backend expects 'files' parameter (not 'images')
-          formData.append('files', {
+          formData.append("files", {
             uri: imageUri,
             name: filename,
             type: mimeType,
           } as any);
         }
-        
-        const formDataResponse = await api.post('/tasks', formData, {
+
+        const formDataResponse = await api.post("/tasks", formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         });
-        
-        
-        if (formDataResponse.data?.data?.images && formDataResponse.data.data.images.length > 0) {
+
+        if (
+          formDataResponse.data?.data?.images &&
+          formDataResponse.data.data.images.length > 0
+        ) {
           return formDataResponse.data;
         } else {
-          throw new Error("FormData uploaded but no images in response - backend may not be processing files parameter correctly");
+          throw new Error(
+            "FormData uploaded but no images in response - backend may not be processing files parameter correctly"
+          );
         }
-        
       } catch (formDataError: any) {
-        
         // Fallback to base64 approach
-        
+
         // Convert images to base64 data URIs
         const base64Images: string[] = [];
-        
+
         for (const imageUri of images) {
           try {
             // FileSystem is already imported at top of file
-            const base64Data = await FileSystem.readAsStringAsync(imageUri, { encoding: 'base64' });
-            
-            const filename = imageUri.split('/').pop() || 'image.jpg';
-            const extension = filename.split('.').pop()?.toLowerCase() || 'jpg';
-            let mimeType = 'image/jpeg';
-            if (extension === 'png') mimeType = 'image/png';
-            else if (extension === 'gif') mimeType = 'image/gif';
-            
+            const base64Data = await FileSystem.readAsStringAsync(imageUri, {
+              encoding: "base64",
+            });
+
+            const filename = imageUri.split("/").pop() || "image.jpg";
+            const extension = filename.split(".").pop()?.toLowerCase() || "jpg";
+            let mimeType = "image/jpeg";
+            if (extension === "png") mimeType = "image/png";
+            else if (extension === "gif") mimeType = "image/gif";
+
             const dataUri = `data:${mimeType};base64,${base64Data}`;
             base64Images.push(dataUri);
-          } catch (conversionError) {
-          }
+          } catch (conversionError) {}
         }
-        
+
         if (base64Images.length === 0) {
           throw new Error("Failed to convert any images to base64");
         }
-        
+
         // Update task data with base64 images
         const taskDataWithBase64 = {
           ...taskData,
-          images: base64Images
+          images: base64Images,
         };
-        
-        const base64Response = await api.post('/tasks', taskDataWithBase64);
-        
-        
+
+        const base64Response = await api.post("/tasks", taskDataWithBase64);
+
         return base64Response.data;
       }
     } else {
       // No images, use regular upload
-      const response = await api.post('/tasks', taskData);
+      const response = await api.post("/tasks", taskData);
       return response.data;
     }
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
     }
-    
+
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     } else if (error?.response?.status === 400) {
-      const errorMessage = error?.response?.data?.message || "Bad request. Please check your task data and try again.";
+      const errorMessage =
+        error?.response?.data?.message ||
+        "Bad request. Please check your task data and try again.";
       throw new Error(errorMessage);
     } else if (error?.response?.status === 413) {
-      throw new Error("Images are too large. Please choose smaller images and try again.");
+      throw new Error(
+        "Images are too large. Please choose smaller images and try again."
+      );
     }
-    
+
     throw error;
   }
 }
@@ -806,64 +879,65 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
  * Endpoint: GET /api/tasks/search
  * Auth: No
  */
-export async function searchTasks(params: TaskSearchParams): Promise<TasksResponse> {
+export async function searchTasks(
+  params: TaskSearchParams
+): Promise<TasksResponse> {
   const api = getApi();
   try {
-    
     // Try multiple GET approaches only (POST is not supported)
     const getApproaches = [
       // Approach 1: Standard search with all parameters
       () => {
         const searchParams = new URLSearchParams();
-        
+
         if (params.search || params.q) {
-          searchParams.append('q', params.search || params.q!);
+          searchParams.append("q", params.search || params.q!);
         }
         if (params.category) {
-          searchParams.append('category', params.category);
+          searchParams.append("category", params.category);
         }
         if (params.categories && params.categories.length > 0) {
-          searchParams.append('category', params.categories[0]);
+          searchParams.append("category", params.categories[0]);
         }
         if (params.location) {
-          searchParams.append('location', params.location);
+          searchParams.append("location", params.location);
         }
         if (params.minBudget !== undefined && params.minBudget > 0) {
-          searchParams.append('minBudget', params.minBudget.toString());
+          searchParams.append("minBudget", params.minBudget.toString());
         }
         if (params.maxBudget !== undefined && params.maxBudget < 10000) {
-          searchParams.append('maxBudget', params.maxBudget.toString());
+          searchParams.append("maxBudget", params.maxBudget.toString());
         }
         if (params.sort) {
-          searchParams.append('sort', params.sort);
+          searchParams.append("sort", params.sort);
         }
-        
-        searchParams.append('page', '1');
-        searchParams.append('limit', '20');
-        
+
+        searchParams.append("page", "1");
+        searchParams.append("limit", "20");
+
         return `/tasks/search?${searchParams.toString()}`;
       },
-      
+
       // Approach 2: Minimal parameters (just sort)
       () => {
         const searchParams = new URLSearchParams();
         if (params.sort) {
-          searchParams.append('sort', params.sort);
+          searchParams.append("sort", params.sort);
         } else {
-          searchParams.append('sort', 'latest');
+          searchParams.append("sort", "latest");
         }
         return `/tasks/search?${searchParams.toString()}`;
       },
-      
+
       // Approach 3: Just basic search endpoint without parameters
       () => {
         return `/tasks/search`;
       },
-      
+
       // Approach 4: Fallback to general tasks endpoint
       () => {
         return `/tasks`;
-      }
+      },
     ];
 
     // Try each GET approach
@@ -871,45 +945,51 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
       try {
         const url = getApproaches[i]();
         const response = await api.get(url);
-        
+
         return response.data;
-        
       } catch (approachError: any) {
-        
         // If this isn't the last approach, try the next one
         if (i < getApproaches.length - 1) {
           continue;
         }
-        
+
         // If all GET approaches failed, throw the last error
         throw approachError;
       }
     }
-    
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
     }
-    
+
     // Check for network connection errors - use mock service as fallback
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+    if (error.code === "ERR_NETWORK" || error.message === "Network Error") {
       return await MockApiService.searchTasks(params);
     }
-    
+
     // Try the filter endpoint as final fallback
     try {
       const filterParams: TaskFilterParams = {
-        sortBy: params.sort as 'latest' | 'newest' | 'oldest' | 'highest-budget' | 'lowest-budget' | 'earliest' | 'price-high' | 'price-low' | undefined,
+        sortBy: params.sort as
+          | "latest"
+          | "newest"
+          | "oldest"
+          | "highest-budget"
+          | "lowest-budget"
+          | "earliest"
+          | "price-high"
+          | "price-low"
+          | undefined,
         categories: params.category,
         search: params.q || params.search,
         minBudget: params.minBudget,
         maxBudget: params.maxBudget,
-        locationType: params.location as 'In-person' | 'Online' | undefined,
+        locationType: params.location as "In-person" | "Online" | undefined,
         page: 1,
-        limit: 20
+        limit: 20,
       };
       const filterResult = await getFilteredTasks(filterParams);
-      
+
       // Convert TaskFilterResponse to TasksResponse
       const tasksResponse: TasksResponse = {
         success: filterResult.success,
@@ -917,15 +997,15 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
         total: filterResult.pagination.totalItems,
         pages: filterResult.pagination.totalPages,
         currentPage: filterResult.pagination.currentPage,
-        data: filterResult.data
+        data: filterResult.data,
       };
-      
+
       return tasksResponse;
     } catch (filterError) {
       return await MockApiService.searchTasks(params);
     }
   }
-  
+
   // This should never be reached due to the try-catch structure above
   throw new Error("All search approaches failed");
 }
@@ -935,126 +1015,134 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
  * Endpoint: GET /api/tasks/filter
  * Auth: No
  */
-export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterResponse> {
+export async function filterTasks(
+  params: TaskFilterParams
+): Promise<TaskFilterResponse> {
   const api = getApi();
   try {
-    
     // Build query parameters for the filter endpoint
     const searchParams = new URLSearchParams();
-    
+
     if (params.sortBy) {
-      searchParams.append('sortBy', params.sortBy);
+      searchParams.append("sortBy", params.sortBy);
     }
-    
+
     if (params.lat !== undefined) {
-      searchParams.append('lat', params.lat.toString());
+      searchParams.append("lat", params.lat.toString());
     }
-    
+
     if (params.lng !== undefined) {
-      searchParams.append('lng', params.lng.toString());
+      searchParams.append("lng", params.lng.toString());
     }
-    
+
     if (params.radius !== undefined) {
-      searchParams.append('radius', params.radius.toString());
+      searchParams.append("radius", params.radius.toString());
     }
-    
+
     if (params.categories && params.categories.trim()) {
-      searchParams.append('categories', params.categories);
+      searchParams.append("categories", params.categories);
     }
-    
+
     if (params.minBudget !== undefined) {
-      searchParams.append('minBudget', params.minBudget.toString());
+      searchParams.append("minBudget", params.minBudget.toString());
     }
-    
+
     if (params.maxBudget !== undefined) {
-      searchParams.append('maxBudget', params.maxBudget.toString());
+      searchParams.append("maxBudget", params.maxBudget.toString());
     }
-    
+
     if (params.status) {
-      searchParams.append('status', params.status);
+      searchParams.append("status", params.status);
     } else {
-      searchParams.append('status', 'open'); // Default to open tasks
+      searchParams.append("status", "open"); // Default to open tasks
     }
-    
+
     if (params.locationType) {
-      searchParams.append('locationType', params.locationType);
+      searchParams.append("locationType", params.locationType);
     }
-    
+
     if (params.search && params.search.trim()) {
-      searchParams.append('search', params.search.trim());
+      searchParams.append("search", params.search.trim());
     }
-    
+
     if (params.page !== undefined) {
-      searchParams.append('page', params.page.toString());
+      searchParams.append("page", params.page.toString());
     } else {
-      searchParams.append('page', '1');
+      searchParams.append("page", "1");
     }
-    
+
     if (params.limit !== undefined) {
-      searchParams.append('limit', params.limit.toString());
+      searchParams.append("limit", params.limit.toString());
     } else {
-      searchParams.append('limit', '20');
+      searchParams.append("limit", "20");
     }
 
     // Try multiple endpoints to work around backend routing conflicts
     const endpoints = [
-      `/tasks/filter?${searchParams.toString()}`,      // Primary endpoint
-      `/filter/tasks?${searchParams.toString()}`,      // Alternative routing
-      `/tasks/filter-all?${searchParams.toString()}`,  // Alternative name
+      `/tasks/filter?${searchParams.toString()}`, // Primary endpoint
+      `/filter/tasks?${searchParams.toString()}`, // Alternative routing
+      `/tasks/filter-all?${searchParams.toString()}`, // Alternative name
     ];
-    
+
     // Add search endpoint with correct parameters (search API has different params)
     const searchParams2 = new URLSearchParams();
     if (params.search && params.search.trim()) {
-      searchParams2.append('q', params.search.trim());
+      searchParams2.append("q", params.search.trim());
     }
     if (params.categories && params.categories.trim()) {
-      searchParams2.append('category', params.categories.trim());
+      searchParams2.append("category", params.categories.trim());
     }
     if (params.minBudget !== undefined) {
-      searchParams2.append('minBudget', params.minBudget.toString());
+      searchParams2.append("minBudget", params.minBudget.toString());
     }
     if (params.maxBudget !== undefined) {
-      searchParams2.append('maxBudget', params.maxBudget.toString());
+      searchParams2.append("maxBudget", params.maxBudget.toString());
     }
     if (params.locationType) {
-      searchParams2.append('location', params.locationType);
+      searchParams2.append("location", params.locationType);
     }
-    
+
     endpoints.push(`/tasks/search?${searchParams2.toString()}`); // Search as final fallback
-    
+
     let response: any;
     let lastError: any;
-    
+
     for (let i = 0; i < endpoints.length; i++) {
       try {
         response = await api.get<any>(endpoints[i]);
-        
+
         if (response.data && response.data.success) {
           break;
         } else {
         }
       } catch (error: any) {
         lastError = error;
-        
+
         // If this is the routing conflict error, continue to next endpoint
-        if (error?.response?.status === 500 && 
-            (error?.response?.data?.message?.includes('Cast to ObjectId failed') ||
-             error?.response?.data?.message?.includes('filter'))) {
+        if (
+          error?.response?.status === 500 &&
+          (error?.response?.data?.message?.includes(
+            "Cast to ObjectId failed"
+          ) ||
+            error?.response?.data?.message?.includes("filter"))
+        ) {
           continue;
         }
       }
     }
-    
+
     if (!response || !response.data || !response.data.success) {
-      throw lastError || new Error('All filter endpoints failed');
+      throw lastError || new Error("All filter endpoints failed");
     }
-    
+
     // Handle different response formats
     if (response.data && response.data.success) {
       // Check if this is a search response (TasksResponse) that needs conversion
-      if ('count' in response.data && 'total' in response.data && !('pagination' in response.data)) {
-        
+      if (
+        "count" in response.data &&
+        "total" in response.data &&
+        !("pagination" in response.data)
+      ) {
         // Convert TasksResponse to TaskFilterResponse
         const filterResponse: TaskFilterResponse = {
           success: true,
@@ -1064,20 +1152,20 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
             totalPages: response.data.pages || 1,
             totalItems: response.data.total || response.data.count || 0,
             itemsPerPage: response.data.data?.length || 20,
-            hasNextPage: (response.data.currentPage || 1) < (response.data.pages || 1),
-            hasPreviousPage: (response.data.currentPage || 1) > 1
-          }
+            hasNextPage:
+              (response.data.currentPage || 1) < (response.data.pages || 1),
+            hasPreviousPage: (response.data.currentPage || 1) > 1,
+          },
         };
-        
+
         return filterResponse;
-      } 
+      }
       // This is already a filter response
-      else if ('pagination' in response.data) {
+      else if ("pagination" in response.data) {
         return response.data;
       }
       // Handle edge case where response format is unexpected
       else {
-        
         const filterResponse: TaskFilterResponse = {
           success: true,
           data: response.data.data || [],
@@ -1087,34 +1175,33 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
             totalItems: response.data.data?.length || 0,
             itemsPerPage: response.data.data?.length || 20,
             hasNextPage: false,
-            hasPreviousPage: false
-          }
+            hasPreviousPage: false,
+          },
         };
-        
+
         return filterResponse;
       }
     } else {
       throw new Error("API returned unsuccessful response");
     }
-
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      
       // Check for backend routing conflict (ObjectId casting error)
-      if (error?.response?.status === 500 && 
-          (error?.response?.data?.message?.includes('Cast to ObjectId failed') ||
-           error?.response?.data?.message?.includes('filter'))) {
+      if (
+        error?.response?.status === 500 &&
+        (error?.response?.data?.message?.includes("Cast to ObjectId failed") ||
+          error?.response?.data?.message?.includes("filter"))
+      ) {
       }
     }
-    
+
     // Only fallback to mock if we actually have an error that prevents getting data
-    if (error?.response?.status || error?.message?.includes('failed')) {
+    if (error?.response?.status || error?.message?.includes("failed")) {
       try {
         const mockResponse = await MockApiService.filterTasks(params);
         return mockResponse;
       } catch (mockError) {
-        
         // Final fallback: return empty successful response
         return {
           success: true,
@@ -1125,12 +1212,12 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
             totalItems: 0,
             itemsPerPage: 0,
             hasNextPage: false,
-            hasPreviousPage: false
-          }
+            hasPreviousPage: false,
+          },
         };
       }
     }
-    
+
     // If we get here, something unexpected happened
     throw error;
   }
@@ -1141,33 +1228,44 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
  * Endpoint: GET /api/tasks/my-tasks
  * Auth: Required
  */
-export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boolean; data: Task[] }> {
+export async function getMyTasks(
+  params?: MyTasksParams
+): Promise<{ success: boolean; data: Task[] }> {
   const api = getApi();
   try {
-    
     // Try my-tasks endpoint first, fallback to general tasks endpoint
     try {
       const searchParams = new URLSearchParams();
-      if (params?.section) searchParams.append('section', params.section);
-      if (params?.subsection) searchParams.append('subsection', params.subsection);
-      if (params?.role) searchParams.append('role', params.role);
-      
-      const response = await api.get(`/tasks/my-tasks?${searchParams.toString()}`);
-      
+      if (params?.section) searchParams.append("section", params.section);
+      if (params?.subsection)
+        searchParams.append("subsection", params.subsection);
+      if (params?.role) searchParams.append("role", params.role);
+
+      const response = await api.get(
+        `/tasks/my-tasks?${searchParams.toString()}`
+      );
+
       // 🔧 FIX: Parse location for each task if returned as string
-      if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      if (
+        response.data &&
+        response.data.data &&
+        Array.isArray(response.data.data)
+      ) {
         response.data.data.forEach((task: any) => {
-          if (task.location && typeof task.location === 'string') {
+          if (task.location && typeof task.location === "string") {
             try {
               task.location = JSON.parse(task.location);
-            } catch {
-            }
+            } catch {}
           }
         });
       }
-      
+
       // Check if we got actual data, if not fall back to general endpoint
-      if (response.data && response.data.data && response.data.data.length > 0) {
+      if (
+        response.data &&
+        response.data.data &&
+        response.data.data.length > 0
+      ) {
         return response.data;
       } else {
         throw new Error("Empty data from my-tasks endpoint");
@@ -1179,8 +1277,11 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
     }
   } catch (error: any) {
     // Development fallback - if server is not available, use mock data
-    if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.code === 'ENOTFOUND') {
-      
+    if (
+      error.code === "ECONNREFUSED" ||
+      error.message?.includes("Network Error") ||
+      error.code === "ENOTFOUND"
+    ) {
       // Create mock my tasks response that matches API format
       const mockMyTasks = {
         success: true,
@@ -1192,12 +1293,14 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
             dateType: "Easy",
             dateRange: {
               start: new Date().toISOString(),
-              end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+              end: new Date(
+                Date.now() + 30 * 24 * 60 * 60 * 1000
+              ).toISOString(),
             },
             time: "Anytime",
             location: {
               address: "Remote/Online",
-              coordinates: {}
+              coordinates: {},
             },
             details: "This is a sample task created for development testing",
             budget: 150,
@@ -1209,7 +1312,7 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
               firstName: "Dev",
               lastName: "User",
               email: "dev@example.com",
-              rating: 4
+              rating: 4,
             },
             statusHistory: [],
             createdAt: new Date().toISOString(),
@@ -1229,15 +1332,15 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
               canEdit: true,
               canCancel: true,
               canView: true,
-              canComplete: false
-            }
-          }
-        ]
+              canComplete: false,
+            },
+          },
+        ],
       };
-      
+
       return mockMyTasks;
     }
-    
+
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
     }
@@ -1250,19 +1353,26 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
  * Endpoint: GET /api/tasks/my-offers
  * Auth: Required
  */
-export async function getMyOffers(params?: MyTasksParams): Promise<{ success: boolean; data: Task[] }> {
+export async function getMyOffers(
+  params?: MyTasksParams
+): Promise<{ success: boolean; data: Task[] }> {
   const api = getApi();
   try {
-    
     // Try my-offers endpoint first, fallback to general tasks endpoint
     try {
       const searchParams = new URLSearchParams();
-      if (params?.section) searchParams.append('section', params.section);
-      
-      const response = await api.get(`/tasks/my-offers?${searchParams.toString()}`);
-      
+      if (params?.section) searchParams.append("section", params.section);
+
+      const response = await api.get(
+        `/tasks/my-offers?${searchParams.toString()}`
+      );
+
       // Check if we got actual data, if not fall back to general endpoint
-      if (response.data && response.data.data && response.data.data.length > 0) {
+      if (
+        response.data &&
+        response.data.data &&
+        response.data.data.length > 0
+      ) {
         return response.data;
       } else {
         throw new Error("Empty data from my-offers endpoint");
@@ -1291,49 +1401,53 @@ export async function getTaskById(taskId: string): Promise<SingleTaskResponse> {
   const api = getApi();
   try {
     const response = await api.get(`/tasks/${taskId}`);
-    
+
     // Image debugging
     const taskData = response.data?.data;
     const imagesCount = taskData?.images?.length || 0;
-    
+
     if (imagesCount > 0) {
       // Log first image sample for verification
       const firstImage = taskData.images[0];
-      const imageType = typeof firstImage === 'string' ? 'URL' : 'Object';
+      const imageType = typeof firstImage === "string" ? "URL" : "Object";
     } else if (taskData?.images && Array.isArray(taskData.images)) {
     }
-    
+
     // 🔧 FIX: Parse location if it's returned as a string from backend
     if (taskData && taskData.location) {
-      if (typeof taskData.location === 'string') {
+      if (typeof taskData.location === "string") {
         try {
           taskData.location = JSON.parse(taskData.location);
-        } catch {
-        }
+        } catch {}
       }
     }
-    
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
     }
-    
+
     // Handle 400 errors - bad request (invalid task ID, etc.)
     if (error?.response?.status === 400) {
-      const errorMessage = error?.response?.data?.message || `Invalid task ID or task not found: ${taskId}`;
+      const errorMessage =
+        error?.response?.data?.message ||
+        `Invalid task ID or task not found: ${taskId}`;
       if (!isNetworkError(error) && __DEV__) {
       }
       throw new Error(errorMessage);
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (!isNetworkError(error) && __DEV__) {
       }
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     throw error;
   }
 }
@@ -1343,91 +1457,99 @@ export async function getTaskById(taskId: string): Promise<SingleTaskResponse> {
  * Endpoint: PUT /api/tasks/:id
  * Auth: Required
  */
-export async function updateTask(taskId: string, updates: UpdateTaskRequest): Promise<{ success: boolean; data: Task }> {
+export async function updateTask(
+  taskId: string,
+  updates: UpdateTaskRequest
+): Promise<{ success: boolean; data: Task }> {
   const api = getApi();
   try {
-    
     // Validate taskId format (MongoDB ObjectId is 24 hex characters)
     if (!taskId || !/^[0-9a-fA-F]{24}$/.test(taskId)) {
       throw new Error(`Invalid task ID format: ${taskId}`);
     }
-    
+
     // Ensure authentication
     const authResult = await ensureAuthentication();
     if (!authResult.success) {
-      throw new Error(authResult.message || "Authentication required. Please log in to update tasks.");
+      throw new Error(
+        authResult.message ||
+          "Authentication required. Please log in to update tasks."
+      );
     }
 
-    
     // Make PUT request to /tasks/:id endpoint
     const response = await api.put(`/tasks/${taskId}`, updates);
-    
+
     if (!response.data || !response.data.success) {
       throw new Error("Update failed - server returned unsuccessful response");
     }
-    
+
     // 🔧 FIX: Ensure location is properly parsed if returned as string
     if (response.data.data && response.data.data.location) {
-      if (typeof response.data.data.location === 'string') {
+      if (typeof response.data.data.location === "string") {
         try {
           response.data.data.location = JSON.parse(response.data.data.location);
-        } catch {
-        }
+        } catch {}
       }
     }
-    
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
     }
-    
+
     // Handle validation errors (400)
     if (error?.response?.status === 400) {
-      const errorMessage = error?.response?.data?.message || error?.response?.data?.error;
+      const errorMessage =
+        error?.response?.data?.message || error?.response?.data?.error;
       if (__DEV__) {
       }
-      throw new Error(errorMessage || "Invalid task data. Please check your inputs.");
+      throw new Error(
+        errorMessage || "Invalid task data. Please check your inputs."
+      );
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
       }
-      
+
       // Try to handle auth error and retry once
       const retryResult = await handleAuthErrorAndRetry();
       if (retryResult.success) {
         return updateTask(taskId, updates); // Retry once with fresh auth
       }
-      
-      throw new Error("Authentication expired. Please log in again to continue.");
+
+      throw new Error(
+        "Authentication expired. Please log in again to continue."
+      );
     }
-    
+
     // Handle not found errors
     if (error?.response?.status === 404) {
       if (__DEV__) {
       }
       throw new Error("Task not found. It may have been deleted.");
     }
-    
+
     // Handle permission denied errors
     if (error?.response?.status === 403) {
       if (__DEV__) {
       }
       throw new Error("You don't have permission to update this task.");
     }
-    
+
     // Handle server errors
     if (error?.response?.status >= 500) {
       if (__DEV__) {
       }
-      
+
       // Development fallback for server errors
       if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
         // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         // Create mock updated task response
         const mockUpdatedTask = {
           _id: taskId,
@@ -1440,9 +1562,12 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
           dateType: updates.dateType || "Easy",
           dateRange: {
             start: new Date().toISOString(),
-            end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
           },
-          location: updates.location || { address: "Updated location", coordinates: { lat: 0, lng: 0 } },
+          location: updates.location || {
+            address: "Updated location",
+            coordinates: { lat: 0, lng: 0 },
+          },
           status: "open",
           categories: updates.category ? [updates.category] : ["General"],
           images: updates.images || [],
@@ -1451,31 +1576,30 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
             firstName: "Mock",
             lastName: "User",
             email: "mock@example.com",
-            rating: 5
+            rating: 5,
           },
           statusHistory: [],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          __v: 0
+          __v: 0,
         };
-        
+
         return {
           success: true,
-          data: mockUpdatedTask as Task
+          data: mockUpdatedTask as Task,
         };
       }
-      
+
       throw new Error("Server error. Please try again later.");
     }
-    
+
     // Check if this is a "method not allowed" or "endpoint not found" error
     if (error?.response?.status === 405 || error?.response?.status === 404) {
-      
       // Development fallback: simulate successful update
       if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
         // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         // Create mock updated task response
         const mockUpdatedTask = {
           _id: taskId,
@@ -1488,9 +1612,12 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
           dateType: updates.dateType || "Easy",
           dateRange: {
             start: new Date().toISOString(),
-            end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
+            end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
           },
-          location: updates.location || { address: "Updated location", coordinates: { lat: 0, lng: 0 } },
+          location: updates.location || {
+            address: "Updated location",
+            coordinates: { lat: 0, lng: 0 },
+          },
           status: "open",
           categories: ["General"],
           images: updates.images || [],
@@ -1499,30 +1626,35 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
             firstName: "Mock",
             lastName: "User",
             email: "mock@example.com",
-            rating: 5
+            rating: 5,
           },
           statusHistory: [],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          __v: 0
+          __v: 0,
         };
-        
+
         return {
           success: true,
-          data: mockUpdatedTask as Task
+          data: mockUpdatedTask as Task,
         };
       }
-      
-      throw new Error("Update functionality is not available. Backend PUT endpoint needs to be implemented.");
+
+      throw new Error(
+        "Update functionality is not available. Backend PUT endpoint needs to be implemented."
+      );
     }
-    
+
     // Network errors (server not available)
-    if (error?.code === 'ECONNREFUSED' || error?.message?.includes('Network Error') || error?.code === 'ENOTFOUND') {
-      
+    if (
+      error?.code === "ECONNREFUSED" ||
+      error?.message?.includes("Network Error") ||
+      error?.code === "ENOTFOUND"
+    ) {
       if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
         // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         // Create mock updated task response
         const mockUpdatedTask = {
           _id: taskId,
@@ -1535,9 +1667,12 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
           dateType: updates.dateType || "Easy",
           dateRange: {
             start: new Date().toISOString(),
-            end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
+            end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
           },
-          location: updates.location || { address: "Updated location", coordinates: { lat: 0, lng: 0 } },
+          location: updates.location || {
+            address: "Updated location",
+            coordinates: { lat: 0, lng: 0 },
+          },
           status: "open",
           categories: ["General"],
           images: updates.images || [],
@@ -1546,30 +1681,31 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
             firstName: "Mock",
             lastName: "User",
             email: "mock@example.com",
-            rating: 5
+            rating: 5,
           },
           statusHistory: [],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          __v: 0
+          __v: 0,
         };
-        
+
         return {
           success: true,
-          data: mockUpdatedTask as Task
+          data: mockUpdatedTask as Task,
         };
       }
-      
-      throw new Error("Cannot connect to server. Please check your internet connection and try again.");
+
+      throw new Error(
+        "Cannot connect to server. Please check your internet connection and try again."
+      );
     }
-    
+
     // Catch-all error handler with development fallback
     if (__DEV__) {
     }
-    
+
     // Provide development fallback for any other errors
     if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
-      
       // Create mock updated task response
       const mockUpdatedTask = {
         _id: taskId,
@@ -1582,9 +1718,12 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
         dateType: updates.dateType || "Easy",
         dateRange: {
           start: new Date().toISOString(),
-          end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         },
-        location: updates.location || { address: "Updated location", coordinates: { lat: 0, lng: 0 } },
+        location: updates.location || {
+          address: "Updated location",
+          coordinates: { lat: 0, lng: 0 },
+        },
         status: "open",
         categories: updates.category ? [updates.category] : ["General"],
         images: updates.images || [],
@@ -1593,21 +1732,23 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
           firstName: "Mock",
           lastName: "User",
           email: "mock@example.com",
-          rating: 5
+          rating: 5,
         },
         statusHistory: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        __v: 0
+        __v: 0,
       };
-      
+
       return {
         success: true,
-        data: mockUpdatedTask as Task
+        data: mockUpdatedTask as Task,
       };
     }
-    
-    throw new Error(error?.message || "An unexpected error occurred while updating the task.");
+
+    throw new Error(
+      error?.message || "An unexpected error occurred while updating the task."
+    );
   }
 }
 
@@ -1618,154 +1759,159 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
  * Handles image uploads when updating tasks
  */
 export async function updateTaskWithImages(
-  taskId: string, 
-  updates: UpdateTaskRequest, 
+  taskId: string,
+  updates: UpdateTaskRequest,
   newImageUris: string[] = [],
   existingImages: string[] = [],
   replaceImages: boolean = false
 ): Promise<{ success: boolean; data: Task }> {
   const api = getApi();
   try {
-
-
-
-
-
     // Validate taskId format (MongoDB ObjectId is 24 hex characters)
     if (!taskId || !/^[0-9a-fA-F]{24}$/.test(taskId)) {
       throw new Error(`Invalid task ID format: ${taskId}`);
     }
-    
+
     // Ensure authentication
     const authResult = await ensureAuthentication();
     if (!authResult.success) {
-
-      throw new Error(authResult.message || "Authentication required. Please log in to update tasks.");
+      throw new Error(
+        authResult.message ||
+          "Authentication required. Please log in to update tasks."
+      );
     }
 
     // Create FormData for multipart/form-data upload
     const formData = new FormData();
-    
+
     // Add all text fields from updates
-    if (updates.title) formData.append('title', updates.title);
-    if (updates.details) formData.append('details', updates.details);
-    if (updates.budget !== undefined) formData.append('budget', updates.budget.toString());
-    if (updates.currency) formData.append('currency', updates.currency);
-    if (updates.time) formData.append('time', updates.time);
-    if (updates.date) formData.append('date', updates.date);
-    if (updates.dateType) formData.append('dateType', updates.dateType);
-    
+    if (updates.title) formData.append("title", updates.title);
+    if (updates.details) formData.append("details", updates.details);
+    if (updates.budget !== undefined)
+      formData.append("budget", updates.budget.toString());
+    if (updates.currency) formData.append("currency", updates.currency);
+    if (updates.time) formData.append("time", updates.time);
+    if (updates.date) formData.append("date", updates.date);
+    if (updates.dateType) formData.append("dateType", updates.dateType);
+
     // Handle location - backend expects it as string or JSON
     if (updates.location) {
-      if (typeof updates.location === 'string') {
-        formData.append('location', updates.location);
+      if (typeof updates.location === "string") {
+        formData.append("location", updates.location);
       } else {
-        formData.append('location', JSON.stringify(updates.location));
+        formData.append("location", JSON.stringify(updates.location));
         // If location has coordinates, also send them separately for backend compatibility
         if (updates.location.coordinates) {
-          formData.append('coordinates', JSON.stringify(updates.location.coordinates));
+          formData.append(
+            "coordinates",
+            JSON.stringify(updates.location.coordinates)
+          );
         }
       }
     }
-    
+
     // Add existing images as JSON array (URLs to keep)
     if (existingImages.length > 0) {
-      formData.append('images', JSON.stringify(existingImages));
+      formData.append("images", JSON.stringify(existingImages));
     }
-    
+
     // Add replaceImages flag
-    formData.append('replaceImages', replaceImages.toString());
-    
+    formData.append("replaceImages", replaceImages.toString());
+
     // Add new image files
     if (newImageUris.length > 0) {
-
       for (let i = 0; i < newImageUris.length; i++) {
         const uri = newImageUris[i];
-        const filename = uri.split('/').pop() || `image_${i}.jpg`;
-        
+        const filename = uri.split("/").pop() || `image_${i}.jpg`;
+
         try {
           // Validate file exists
           const fileInfo = await FileSystem.getInfoAsync(uri);
           if (!fileInfo.exists) {
-
             continue;
           }
-          
+
           // Determine MIME type from extension
-          const extension = filename.split('.').pop()?.toLowerCase() || 'jpg';
-          let mimeType = 'image/jpeg';
+          const extension = filename.split(".").pop()?.toLowerCase() || "jpg";
+          let mimeType = "image/jpeg";
           switch (extension) {
-            case 'png': mimeType = 'image/png'; break;
-            case 'gif': mimeType = 'image/gif'; break;
-            case 'webp': mimeType = 'image/webp'; break;
-            default: mimeType = 'image/jpeg'; break;
+            case "png":
+              mimeType = "image/png";
+              break;
+            case "gif":
+              mimeType = "image/gif";
+              break;
+            case "webp":
+              mimeType = "image/webp";
+              break;
+            default:
+              mimeType = "image/jpeg";
+              break;
           }
-          
+
           // Create file object for FormData
           const file = {
             uri,
             name: filename,
-            type: mimeType
+            type: mimeType,
           } as any;
-          
-          formData.append('files', file);
-          
-        } catch (fileError) {
 
-        }
+          formData.append("files", file);
+        } catch (fileError) {}
       }
     }
 
     // Make PUT request with multipart/form-data
     const response = await api.put(`/tasks/${taskId}`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
-    
-
 
     if (!response.data || !response.data.success) {
       throw new Error("Update failed - server returned unsuccessful response");
     }
-    
+
     // 🔧 FIX: Parse location if it's returned as a string from multipart upload
     if (response.data.data && response.data.data.location) {
-      if (typeof response.data.data.location === 'string') {
+      if (typeof response.data.data.location === "string") {
         try {
-
           response.data.data.location = JSON.parse(response.data.data.location);
-
-        } catch {
-
-        }
+        } catch {}
       }
     }
-    
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-
-
-
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
       }
       const retryResult = await handleAuthErrorAndRetry();
       if (retryResult.success) {
-
-        return updateTaskWithImages(taskId, updates, newImageUris, existingImages, replaceImages);
+        return updateTaskWithImages(
+          taskId,
+          updates,
+          newImageUris,
+          existingImages,
+          replaceImages
+        );
       }
-      throw new Error("Authentication expired. Please log in again to continue.");
+      throw new Error(
+        "Authentication expired. Please log in again to continue."
+      );
     }
-    
+
     // Handle other errors
     if (error?.response?.status === 400) {
-      throw new Error(error?.response?.data?.message || "Invalid task data. Please check your inputs.");
+      throw new Error(
+        error?.response?.data?.message ||
+          "Invalid task data. Please check your inputs."
+      );
     }
     if (error?.response?.status === 404) {
       throw new Error("Task not found. It may have been deleted.");
@@ -1773,8 +1919,10 @@ export async function updateTaskWithImages(
     if (error?.response?.status === 403) {
       throw new Error("You don't have permission to update this task.");
     }
-    
-    throw new Error(error?.message || "An unexpected error occurred while updating the task.");
+
+    throw new Error(
+      error?.message || "An unexpected error occurred while updating the task."
+    );
   }
 }
 
@@ -1783,129 +1931,123 @@ export async function updateTaskWithImages(
  * Endpoint: DELETE /api/tasks/:id
  * Auth: Required
  */
-export async function deleteTask(taskId: string): Promise<{ success: boolean; message: string }> {
+export async function deleteTask(
+  taskId: string
+): Promise<{ success: boolean; message: string }> {
   const api = getApi();
   try {
-
-
-
-
     // Ensure authentication
     const authResult = await ensureAuthentication();
     if (!authResult.success) {
-
       return {
         success: false,
-        message: authResult.message || "Authentication required. Please log in to delete tasks."
+        message:
+          authResult.message ||
+          "Authentication required. Please log in to delete tasks.",
       };
     }
 
     const response = await api.delete(`/tasks/${taskId}`);
 
-
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-
-
-
-
-
-
-
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
       }
-      
+
       // Try to handle auth error and retry once
       const retryResult = await handleAuthErrorAndRetry();
       if (retryResult.success) {
-
         return deleteTask(taskId); // Retry once with fresh auth
       }
-      
-      return {
-        success: false,
-        message: "Authentication expired. Please log in again to continue."
-      };
-    }
-    
-    // Handle other HTTP errors
-    if (error?.response?.status === 404) {
 
       return {
-        success: true,
-        message: "Task was already deleted or not found."
+        success: false,
+        message: "Authentication expired. Please log in again to continue.",
       };
     }
-    
+
+    // Handle other HTTP errors
+    if (error?.response?.status === 404) {
+      return {
+        success: true,
+        message: "Task was already deleted or not found.",
+      };
+    }
+
     if (error?.response?.status === 403) {
       if (__DEV__) {
       }
       return {
         success: false,
-        message: "You don't have permission to delete this task."
+        message: "You don't have permission to delete this task.",
       };
     }
-    
+
     if (error?.response?.status >= 500) {
       if (__DEV__) {
-
       }
       return {
         success: false,
-        message: "Server error. Please try again later."
+        message: "Server error. Please try again later.",
       };
     }
-    
+
     // Check if this is a "method not allowed" or "endpoint not found" error
     if (error?.response?.status === 405 || error?.response?.status === 404) {
-
-
       // Development fallback: simulate successful delete
       if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
-
         // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         return {
           success: true,
-          message: "Task deleted successfully (development mode - backend DELETE endpoint not implemented)"
+          message:
+            "Task deleted successfully (development mode - backend DELETE endpoint not implemented)",
         };
       }
-      
+
       return {
         success: false,
-        message: "Delete functionality is not available. Backend DELETE endpoint needs to be implemented."
+        message:
+          "Delete functionality is not available. Backend DELETE endpoint needs to be implemented.",
       };
     }
-    
-    // Network errors (server not available)
-    if (error?.code === 'ECONNREFUSED' || error?.message?.includes('Network Error') || error?.code === 'ENOTFOUND') {
 
+    // Network errors (server not available)
+    if (
+      error?.code === "ECONNREFUSED" ||
+      error?.message?.includes("Network Error") ||
+      error?.code === "ENOTFOUND"
+    ) {
       if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
         // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         return {
           success: true,
-          message: "Task deleted successfully (development mode - server unavailable)"
+          message:
+            "Task deleted successfully (development mode - server unavailable)",
         };
       }
-      
+
       return {
         success: false,
-        message: "Cannot connect to server. Please check your internet connection and try again."
+        message:
+          "Cannot connect to server. Please check your internet connection and try again.",
       };
     }
-    
+
     return {
       success: false,
-      message: error?.message || "An unexpected error occurred while deleting the task."
+      message:
+        error?.message ||
+        "An unexpected error occurred while deleting the task.",
     };
   }
 }
@@ -1917,27 +2059,26 @@ export async function deleteTask(taskId: string): Promise<{ success: boolean; me
  * Endpoint: GET /api/tasks/:id/offers
  * Auth: No
  */
-export async function getTaskOffers(taskId: string): Promise<TaskOffersResponse> {
+export async function getTaskOffers(
+  taskId: string
+): Promise<TaskOffersResponse> {
   const api = getApi();
   try {
-
     const response = await api.get(`/tasks/${taskId}/offers`);
-    
+
     // Log specific offer structure for debugging
     if (response.data?.data?.offers?.length > 0) {
     }
-    
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-
     }
-    
+
     // Handle authentication errors - return empty offers instead of throwing
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (!isNetworkError(error) && __DEV__) {
-
       }
 
       return {
@@ -1945,24 +2086,23 @@ export async function getTaskOffers(taskId: string): Promise<TaskOffersResponse>
         data: {
           _id: taskId,
           offers: [],
-          offerCount: 0
-        } as any
+          offerCount: 0,
+        } as any,
       };
     }
-    
-    // Handle network errors - return empty offers
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
 
+    // Handle network errors - return empty offers
+    if (error.code === "ERR_NETWORK" || error.message === "Network Error") {
       return {
         success: false,
         data: {
           _id: taskId,
           offers: [],
-          offerCount: 0
-        } as any
+          offerCount: 0,
+        } as any,
       };
     }
-    
+
     // For other errors, still throw to maintain existing behavior for real errors
     throw error;
   }
@@ -1973,14 +2113,16 @@ export async function getTaskOffers(taskId: string): Promise<TaskOffersResponse>
  * Endpoint: POST /api/tasks/:id/offers
  * Auth: Required
  */
-export async function createOffer(taskId: string, offerData: CreateOfferRequest): Promise<CreateOfferResponse> {
+export async function createOffer(
+  taskId: string,
+  offerData: CreateOfferRequest
+): Promise<CreateOfferResponse> {
   const api = getApi();
   try {
-
     // Clean the offer data - remove currency if it might cause issues
     const cleanOfferData = {
       amount: offerData.amount,
-      message: offerData.message
+      message: offerData.message,
       // Temporarily removing currency to see if that's causing the 400 error
     };
 
@@ -1990,27 +2132,29 @@ export async function createOffer(taskId: string, offerData: CreateOfferRequest)
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-
-
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
       }
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     // Handle validation errors (400 Bad Request)
     if (error?.response?.status === 400) {
       if (__DEV__) {
       }
-      const errorMessage = error?.response?.data?.message || 
-                          error?.response?.data?.error || 
-                          "Invalid offer data. Please check your amount and message.";
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Invalid offer data. Please check your amount and message.";
       throw new Error(`Validation Error: ${errorMessage}`);
     }
-    
+
     throw error;
   }
 }
@@ -2026,40 +2170,43 @@ function mapCategoryToServiceType(categoryName: string): string {
   // Create mapping for common variations and typos to standardized display names
   const categoryMappings: { [key: string]: string } = {
     // Handle typos and variations in category names - return exact display names
-    'Building Maintenance and Renovations': 'Building Maintenance and Renovations',
-    'Buliding Maintatance and Renovations': 'Building Maintenance and Renovations', // Handle typos
-    'Appliance installation and repair': 'Appliance installation and repair',
-    'Auto Michanic and Electrician': 'Auto Michanic and Electrician',
-    'Auto Mechanic and Electrician': 'Auto Michanic and Electrician', // Normalize to backend format
-    'Business and Accounting': 'Business and Accounting',
-    'Carpentry': 'Carpentry',
-    'Cleaning and Organising': 'Cleaning and Organising',
-    'Removalist': 'Removalist',
-    'Education and Tutoring': 'Education and Tutoring',
-    'Electrical': 'Electrical',
-    'Event Planning': 'Event Planning',
-    'Furniture repair and Flatpack Assemply': 'Furniture repair and Flatpack Assemply',
-    'Gardening and Landscaping': 'Gardening and Landscaping',
-    'Graphic Design': 'Graphic Design',
-    'Handyman and Handywomen': 'Handyman and Handywomen',
-    'Health & Fitness': 'Health & Fitness',
-    'IT & Tech': 'IT & Tech',
-    'Legal Services': 'Legal Services',
-    'Marketting and Advertising': 'Marketting and Advertising',
-    'Marketing and Advertising': 'Marketting and Advertising', // Normalize to backend format
-    'Music and Entertainment': 'Music and Entertainment',
-    'Painting': 'Painting',
-    'Pet Care': 'Pet Care',
-    'Photography': 'Photography',
-    'Plumbing': 'Plumbing',
-    'Something Else': 'Something Else',
-    'Web & App Development': 'Web & App Development',
-    'Personal Assistance': 'Personal Assistance',
-    'Tours and Transport': 'Tours and Transport',
-    'Delivery': 'Delivery',
-    'Realestate': 'Realestate',
+    "Building Maintenance and Renovations":
+      "Building Maintenance and Renovations",
+    "Buliding Maintatance and Renovations":
+      "Building Maintenance and Renovations", // Handle typos
+    "Appliance installation and repair": "Appliance installation and repair",
+    "Auto Michanic and Electrician": "Auto Michanic and Electrician",
+    "Auto Mechanic and Electrician": "Auto Michanic and Electrician", // Normalize to backend format
+    "Business and Accounting": "Business and Accounting",
+    Carpentry: "Carpentry",
+    "Cleaning and Organising": "Cleaning and Organising",
+    Removalist: "Removalist",
+    "Education and Tutoring": "Education and Tutoring",
+    Electrical: "Electrical",
+    "Event Planning": "Event Planning",
+    "Furniture repair and Flatpack Assemply":
+      "Furniture repair and Flatpack Assemply",
+    "Gardening and Landscaping": "Gardening and Landscaping",
+    "Graphic Design": "Graphic Design",
+    "Handyman and Handywomen": "Handyman and Handywomen",
+    "Health & Fitness": "Health & Fitness",
+    "IT & Tech": "IT & Tech",
+    "Legal Services": "Legal Services",
+    "Marketting and Advertising": "Marketting and Advertising",
+    "Marketing and Advertising": "Marketting and Advertising", // Normalize to backend format
+    "Music and Entertainment": "Music and Entertainment",
+    Painting: "Painting",
+    "Pet Care": "Pet Care",
+    Photography: "Photography",
+    Plumbing: "Plumbing",
+    "Something Else": "Something Else",
+    "Web & App Development": "Web & App Development",
+    "Personal Assistance": "Personal Assistance",
+    "Tours and Transport": "Tours and Transport",
+    Delivery: "Delivery",
+    Realestate: "Realestate",
   };
-  
+
   // Return mapped value or return the original category name
   return categoryMappings[categoryName] || categoryName;
 }
@@ -2069,63 +2216,79 @@ function mapCategoryToServiceType(categoryName: string): string {
  * Endpoint: POST /api/tasks/:taskId/offers/:offerId/accept
  * Auth: Required
  */
-export async function acceptOffer(taskId: string, offerId: string, userId?: string, taskCategory?: string): Promise<{ success: boolean; data: any }> {
+export async function acceptOffer(
+  taskId: string,
+  offerId: string,
+  userId?: string,
+  taskCategory?: string
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-
     // Try empty body first as API documentation doesn't specify request body requirements
 
     // Try the specific accept endpoint first
     try {
-      const response = await api.post(`/tasks/${taskId}/offers/${offerId}/accept`, {});
+      const response = await api.post(
+        `/tasks/${taskId}/offers/${offerId}/accept`,
+        {}
+      );
 
       return response.data;
     } catch (acceptError: any) {
-
       // If empty body fails, try with minimal user data (DO NOT send serviceType - causes validation errors)
-      if (acceptError?.response?.status === 500 || acceptError?.response?.status === 400) {
+      if (
+        acceptError?.response?.status === 500 ||
+        acceptError?.response?.status === 400
+      ) {
         const requestBody = {
-          userId: userId || ""
+          userId: userId || "",
         };
-        
+
         try {
-          const retryResponse = await api.post(`/tasks/${taskId}/offers/${offerId}/accept`, requestBody);
+          const retryResponse = await api.post(
+            `/tasks/${taskId}/offers/${offerId}/accept`,
+            requestBody
+          );
 
           return retryResponse.data;
         } catch (retryError: any) {
-
           throw retryError;
         }
       }
-      
+
       // If accept endpoint fails with 404, try updating offer status to 'accepted'
       if (acceptError?.response?.status === 404) {
-
         const statusUpdateBody = {
-          status: 'accepted',
+          status: "accepted",
           role: "poster",
-          userId: userId || ""
+          userId: userId || "",
         };
-        const updateResponse = await api.put(`/tasks/${taskId}/offers/${offerId}`, statusUpdateBody);
+        const updateResponse = await api.put(
+          `/tasks/${taskId}/offers/${offerId}`,
+          statusUpdateBody
+        );
 
         return updateResponse.data;
       }
-      
+
       throw acceptError;
     }
   } catch (error: any) {
-
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     // Handle 400 errors with more specific messages
     if (error?.response?.status === 400) {
-      const errorMessage = error?.response?.data?.message || "Bad request - invalid offer data";
+      const errorMessage =
+        error?.response?.data?.message || "Bad request - invalid offer data";
       throw new Error(errorMessage);
     }
-    
+
     throw error;
   }
 }
@@ -2135,26 +2298,34 @@ export async function acceptOffer(taskId: string, offerId: string, userId?: stri
  * Endpoint: PUT /api/tasks/:taskId/offers/:offerId
  * Auth: Required
  */
-export async function updateOffer(taskId: string, offerId: string, updates: Partial<CreateOfferRequest>): Promise<{ success: boolean; data: any }> {
+export async function updateOffer(
+  taskId: string,
+  offerId: string,
+  updates: Partial<CreateOfferRequest>
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-
-    const response = await api.put(`/tasks/${taskId}/offers/${offerId}`, updates);
+    const response = await api.put(
+      `/tasks/${taskId}/offers/${offerId}`,
+      updates
+    );
 
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
       }
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     throw error;
   }
 }
@@ -2169,26 +2340,25 @@ export async function getAllOffers(params?: {
   taskId?: string;
   limit?: number;
   sortBy?: string;
-  order?: 'asc' | 'desc';
+  order?: "asc" | "desc";
   page?: number;
 }): Promise<AllOffersResponse> {
   const api = getApi();
   try {
-
     // Since /api/offers/all doesn't exist, we'll fetch all tasks and extract their offers
-    const tasksResponse = await api.get('/tasks?limit=100&page=1');
+    const tasksResponse = await api.get("/tasks?limit=100&page=1");
     const tasks = tasksResponse.data?.data || [];
 
     // Aggregate all offers from all tasks
     const allOffers: any[] = [];
-    
+
     for (const task of tasks) {
       // If task has offers, fetch them individually
       if (task.offerCount && task.offerCount > 0) {
         try {
           const taskOffersResponse = await api.get(`/tasks/${task._id}/offers`);
           const taskOffers = taskOffersResponse.data?.data?.offers || [];
-          
+
           // Transform offers to include FULL task information (needed for Tasker's Todoo Tasks tab)
           const enrichedOffers = taskOffers.map((offer: any) => ({
             _id: offer._id,
@@ -2199,48 +2369,47 @@ export async function getAllOffers(params?: {
             taskTaker: offer.taskTaker || offer.taskTakerId,
             offer: {
               amount: offer.amount || offer.offer?.amount || 0,
-              currency: offer.currency || offer.offer?.currency || 'SGD',
-              message: offer.message || offer.offer?.message || ''
+              currency: offer.currency || offer.offer?.currency || "SGD",
+              message: offer.message || offer.offer?.message || "",
             },
             amount: offer.amount || offer.offer?.amount || 0,
-            currency: offer.currency || offer.offer?.currency || 'SGD',
-            message: offer.message || offer.offer?.message || '',
-            status: offer.status || 'pending',
+            currency: offer.currency || offer.offer?.currency || "SGD",
+            message: offer.message || offer.offer?.message || "",
+            status: offer.status || "pending",
             createdAt: offer.createdAt,
-            updatedAt: offer.updatedAt
+            updatedAt: offer.updatedAt,
           }));
-          
-          allOffers.push(...enrichedOffers);
-        } catch (offerError) {
 
-        }
+          allOffers.push(...enrichedOffers);
+        } catch (offerError) {}
       }
     }
 
     // Apply filtering if taskId parameter is provided
     let filteredOffers = allOffers;
     if (params?.taskId) {
-      filteredOffers = allOffers.filter(offer => offer.taskId._id === params.taskId);
-
+      filteredOffers = allOffers.filter(
+        (offer) => offer.taskId._id === params.taskId
+      );
     }
-    
+
     // Apply sorting
     if (params?.sortBy) {
       filteredOffers.sort((a, b) => {
         const aValue = a[params.sortBy!];
         const bValue = b[params.sortBy!];
-        const order = params.order === 'asc' ? 1 : -1;
+        const order = params.order === "asc" ? 1 : -1;
         return aValue > bValue ? order : -order;
       });
     }
-    
+
     // Apply pagination
     const page = params?.page || 1;
     const limit = params?.limit || 50;
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
     const paginatedOffers = filteredOffers.slice(startIndex, endIndex);
-    
+
     return {
       success: true,
       data: paginatedOffers,
@@ -2248,20 +2417,16 @@ export async function getAllOffers(params?: {
         total: filteredOffers.length,
         page: page,
         limit: limit,
-        pages: Math.ceil(filteredOffers.length / limit)
-      }
+        pages: Math.ceil(filteredOffers.length / limit),
+      },
     };
-    
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-
     }
-    
+
     // Handle authentication errors - return empty data instead of throwing
     if (error?.response?.status === 401 || error?.isAuthError) {
-
-
       return {
         success: false,
         data: [],
@@ -2269,14 +2434,13 @@ export async function getAllOffers(params?: {
           total: 0,
           page: 1,
           limit: params?.limit || 50,
-          pages: 0
-        }
+          pages: 0,
+        },
       };
     }
-    
+
     // Handle network errors - return empty data
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-
+    if (error.code === "ERR_NETWORK" || error.message === "Network Error") {
       return {
         success: false,
         data: [],
@@ -2284,11 +2448,11 @@ export async function getAllOffers(params?: {
           total: 0,
           page: 1,
           limit: params?.limit || 50,
-          pages: 0
-        }
+          pages: 0,
+        },
       };
     }
-    
+
     // For other errors, return empty data instead of crashing
 
     return {
@@ -2298,8 +2462,8 @@ export async function getAllOffers(params?: {
         total: 0,
         page: 1,
         limit: params?.limit || 50,
-        pages: 0
-      }
+        pages: 0,
+      },
     };
   }
 }
@@ -2311,26 +2475,29 @@ export async function getAllOffers(params?: {
  * Endpoint: GET /api/tasks/:taskId/completion-status
  * Auth: Required
  */
-export async function getTaskCompletionStatus(taskId: string): Promise<TaskCompletionStatusResponse> {
+export async function getTaskCompletionStatus(
+  taskId: string
+): Promise<TaskCompletionStatusResponse> {
   const api = getApi();
   try {
-
     const response = await api.get(`/tasks/${taskId}/completion-status`);
 
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
       }
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     throw error;
   }
 }
@@ -2340,49 +2507,50 @@ export async function getTaskCompletionStatus(taskId: string): Promise<TaskCompl
  * Endpoint: PATCH /api/tasks/:taskId/complete
  * Auth: Required
  */
-export async function completeTask(taskId: string): Promise<{ success: boolean; data: any }> {
+export async function completeTask(
+  taskId: string
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-
     // First, try to get the task details to check if it has an accepted offer
     try {
       const taskDetails = await getTaskById(taskId);
       const task = taskDetails.data;
-      
-      // If the task has an accepted offer, we need to complete the offer first
-      if (task && task.status === 'todo' && (task as any).acceptedOffer) {
 
+      // If the task has an accepted offer, we need to complete the offer first
+      if (task && task.status === "todo" && (task as any).acceptedOffer) {
         const acceptedOffer = (task as any).acceptedOffer;
-        
+
         // Try to update the offer status to 'completed' first
         try {
-          const offerCompleteResponse = await api.put(`/tasks/${taskId}/offers/${acceptedOffer._id}`, {
-            status: 'completed'
-          });
-
+          const offerCompleteResponse = await api.put(
+            `/tasks/${taskId}/offers/${acceptedOffer._id}`,
+            {
+              status: "completed",
+            }
+          );
         } catch {
-
           // Try with different status values that might be valid
-          const validStatuses = ['finished', 'done', 'complete'];
-          
+          const validStatuses = ["finished", "done", "complete"];
+
           for (const status of validStatuses) {
             try {
-              const alternativeResponse = await api.put(`/tasks/${taskId}/offers/${acceptedOffer._id}`, {
-                status: status
-              });
+              const alternativeResponse = await api.put(
+                `/tasks/${taskId}/offers/${acceptedOffer._id}`,
+                {
+                  status: status,
+                }
+              );
 
               break;
             } catch {
-
               continue;
             }
           }
         }
       }
-    } catch {
+    } catch {}
 
-    }
-    
     // Now attempt to complete the task
     const response = await api.patch(`/tasks/${taskId}/complete`);
 
@@ -2390,51 +2558,51 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-
-
-
     }
-    
-    // Handle specific error about offer status validation
-    if (error?.response?.data?.message?.includes('Offer validation failed')) {
-      if (__DEV__) {
 
+    // Handle specific error about offer status validation
+    if (error?.response?.data?.message?.includes("Offer validation failed")) {
+      if (__DEV__) {
       }
-      
+
       // Try the PUT method instead of PATCH
       try {
         const altResponse = await api.put(`/tasks/${taskId}/complete`);
         return altResponse.data;
       } catch (altError: any) {
-
         // If both methods fail, try updating task status directly
         try {
           const statusResponse = await api.patch(`/tasks/${taskId}`, {
-            status: 'completed'
+            status: "completed",
           });
           return statusResponse.data;
         } catch (statusError: any) {
-
           throw error; // Throw the original error
         }
       }
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
       }
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     // Handle 400 Bad Request with backend message
     if (error?.response?.status === 400) {
-      const backendMessage = error?.response?.data?.message || error?.response?.data?.error;
+      const backendMessage =
+        error?.response?.data?.message || error?.response?.data?.error;
       if (__DEV__) {
       }
-      throw new Error(backendMessage || "Cannot complete task. Please check the task status.");
+      throw new Error(
+        backendMessage || "Cannot complete task. Please check the task status."
+      );
     }
-    
+
     throw error;
   }
 }
@@ -2444,7 +2612,9 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
  * Endpoint: PUT /api/tasks/:taskId/complete
  * Auth: Required
  */
-export async function completeTaskAlt(taskId: string): Promise<{ success: boolean; data: any }> {
+export async function completeTaskAlt(
+  taskId: string
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
     const response = await api.put(`/tasks/${taskId}/complete`);
@@ -2453,14 +2623,17 @@ export async function completeTaskAlt(taskId: string): Promise<{ success: boolea
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
       }
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     throw error;
   }
 }
@@ -2470,15 +2643,15 @@ export async function completeTaskAlt(taskId: string): Promise<{ success: boolea
  * Endpoint: GET /api/tasks/cancellation-reasons?type=poster|tasker
  * Auth: No - Public endpoint
  */
-export async function getCancellationReasons(type: 'poster' | 'tasker'): Promise<{ success: boolean; data: any[] }> {
+export async function getCancellationReasons(
+  type: "poster" | "tasker"
+): Promise<{ success: boolean; data: any[] }> {
   const api = getApi();
   try {
-
     const response = await api.get(`/tasks/cancellation-reasons?type=${type}`);
 
     return response.data;
   } catch (error: any) {
-
     // Return empty array on failure rather than throwing
     return { success: false, data: [] };
   }
@@ -2489,16 +2662,17 @@ export async function getCancellationReasons(type: 'poster' | 'tasker'): Promise
  * Endpoint: PUT /api/tasks/:taskId/cancel
  * Auth: Required
  */
-export async function cancelTask(taskId: string, reason?: string, reasonId?: string): Promise<{ success: boolean; data: any }> {
+export async function cancelTask(
+  taskId: string,
+  reason?: string,
+  reasonId?: string
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-
-
-
     const payload: any = {};
     if (reason) payload.reason = reason;
     if (reasonId) payload.reasonId = reasonId;
-    
+
     const response = await api.put(`/tasks/${taskId}/cancel`, payload);
 
     return response.data;
@@ -2506,12 +2680,15 @@ export async function cancelTask(taskId: string, reason?: string, reasonId?: str
     if (!isNetworkError(error) && __DEV__) {
       // Log error in development
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     throw error;
   }
 }
@@ -2522,35 +2699,36 @@ export async function cancelTask(taskId: string, reason?: string, reasonId?: str
  * Auth: Required
  * Used when: Poster or Tasker wants to cancel a task AFTER payment has been made
  */
-export async function createCancellationRequest(taskId: string, reason: string): Promise<{ success: boolean; data: any }> {
+export async function createCancellationRequest(
+  taskId: string,
+  reason: string
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-
-
-    const response = await api.post(`/tasks/${taskId}/cancel-request`, { reason });
-
-
-
-
-
+    const response = await api.post(`/tasks/${taskId}/cancel-request`, {
+      reason,
+    });
 
     return response.data;
   } catch (error: any) {
     if (!isNetworkError(error) && __DEV__) {
       // Log error in development
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     // Handle duplicate request errors (400) - may happen if request already exists
     if (error?.response?.status === 400) {
       const errorMsg = error?.response?.data?.message || "Bad request";
       throw new Error(errorMsg);
     }
-    
+
     throw error;
   }
 }
@@ -2561,41 +2739,41 @@ export async function createCancellationRequest(taskId: string, reason: string):
  * Auth: Required
  * Used when: Check if there's a pending cancellation request for a task
  */
-export async function getCancellationRequest(taskId: string): Promise<{ success: boolean; data: any }> {
+export async function getCancellationRequest(
+  taskId: string
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-
     const response = await api.get(`/tasks/${taskId}/cancel-request`);
 
     return response.data;
   } catch (error: any) {
     // Suppress console errors for expected 400/404 responses (no cancellation request exists)
-    const isExpectedError = error?.response?.status === 400 || error?.response?.status === 404;
-    
+    const isExpectedError =
+      error?.response?.status === 400 || error?.response?.status === 404;
+
     if (!isExpectedError) {
-
-
-
-
-
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     // Return null data if no cancellation request found (404)
     if (error?.response?.status === 404) {
       return { success: true, data: null };
     }
-    
+
     // Handle 400 Bad Request - Backend returns this when no cancellation request exists
     // This is expected behavior for tasks without pending cancellation requests
     if (error?.response?.status === 400) {
       return { success: true, data: null };
     }
-    
+
     throw error;
   }
 }
@@ -2606,38 +2784,45 @@ export async function getCancellationRequest(taskId: string): Promise<{ success:
  * Auth: Required
  * Used when: Other party accepts or rejects the cancellation request
  */
-export async function respondToCancellationRequest(requestId: string, action: 'accept' | 'reject'): Promise<{ success: boolean; data: any }> {
+export async function respondToCancellationRequest(
+  requestId: string,
+  action: "accept" | "reject"
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-
-
-    const response = await api.put(`/tasks/cancel-requests/${requestId}/respond`, { action });
-
-
+    const response = await api.put(
+      `/tasks/cancel-requests/${requestId}/respond`,
+      { action }
+    );
 
     return response.data;
   } catch (error: any) {
     if (!isNetworkError(error) && __DEV__) {
       // Log error in development
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     // Handle not found errors (404) - request may have been already processed
     if (error?.response?.status === 404) {
-      const errorMsg = error?.response?.data?.message || "Cancellation request not found or already processed";
+      const errorMsg =
+        error?.response?.data?.message ||
+        "Cancellation request not found or already processed";
       throw new Error(errorMsg);
     }
-    
+
     // Handle bad request errors (400) - invalid action or request state
     if (error?.response?.status === 400) {
       const errorMsg = error?.response?.data?.message || "Invalid request";
       throw new Error(errorMsg);
     }
-    
+
     throw error;
   }
 }
@@ -2647,20 +2832,24 @@ export async function respondToCancellationRequest(requestId: string, action: 'a
  * Endpoint: PUT /api/tasks/:id/status
  * Auth: Required
  */
-export async function updateTaskStatus(taskId: string, status: string): Promise<{ success: boolean; data: any }> {
+export async function updateTaskStatus(
+  taskId: string,
+  status: string
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-
     const response = await api.put(`/tasks/${taskId}/status`, { status });
 
     return response.data;
   } catch (error: any) {
-
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     throw error;
   }
 }
@@ -2670,20 +2859,23 @@ export async function updateTaskStatus(taskId: string, status: string): Promise<
  * Endpoint: POST /api/tasks/:id/accept
  * Auth: Required
  */
-export async function acceptTask(taskId: string): Promise<{ success: boolean; data: any }> {
+export async function acceptTask(
+  taskId: string
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-
     const response = await api.post(`/tasks/${taskId}/accept`);
 
     return response.data;
   } catch (error: any) {
-
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     throw error;
   }
 }
@@ -2695,20 +2887,27 @@ export async function acceptTask(taskId: string): Promise<{ success: boolean; da
  * Endpoint: POST /api/tasks/:taskId/complete-payment
  * Auth: Required
  */
-export async function completePayment(taskId: string, paymentData?: any): Promise<{ success: boolean; data: any }> {
+export async function completePayment(
+  taskId: string,
+  paymentData?: any
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-
-    const response = await api.post(`/tasks/${taskId}/complete-payment`, paymentData || {});
+    const response = await api.post(
+      `/tasks/${taskId}/complete-payment`,
+      paymentData || {}
+    );
 
     return response.data;
   } catch (error: any) {
-
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     throw error;
   }
 }
@@ -2721,8 +2920,7 @@ export async function completePayment(taskId: string, paymentData?: any): Promis
 export async function getPaymentStatus(): Promise<PaymentStatusResponse> {
   const api = getApi();
   try {
-
-    const response = await api.get('/tasks/my-tasks/payment-status');
+    const response = await api.get("/tasks/my-tasks/payment-status");
 
     return response.data;
   } catch (error: any) {
@@ -2730,12 +2928,15 @@ export async function getPaymentStatus(): Promise<PaymentStatusResponse> {
     if (error?.response?.status === 404) {
       return { success: false, data: [] }; // Return empty data instead of throwing
     }
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     // Only log other errors, don't throw for better UX
 
     return { success: false, data: [] };
@@ -2747,20 +2948,24 @@ export async function getPaymentStatus(): Promise<PaymentStatusResponse> {
  * Endpoint: GET /api/payments/tasker
  * Auth: Required
  */
-export async function getTaskerPayments(): Promise<{ success: boolean; payments: any[] }> {
+export async function getTaskerPayments(): Promise<{
+  success: boolean;
+  payments: any[];
+}> {
   const api = getApi();
   try {
-
-    const response = await api.get('/payments/tasker');
+    const response = await api.get("/payments/tasker");
 
     return response.data;
   } catch (error: any) {
-
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     // Return empty data for other errors
     return { success: false, payments: [] };
   }
@@ -2771,20 +2976,24 @@ export async function getTaskerPayments(): Promise<{ success: boolean; payments:
  * Endpoint: GET /api/payments/poster
  * Auth: Required
  */
-export async function getPosterPayments(): Promise<{ success: boolean; payments: any[] }> {
+export async function getPosterPayments(): Promise<{
+  success: boolean;
+  payments: any[];
+}> {
   const api = getApi();
   try {
-
-    const response = await api.get('/payments/poster');
+    const response = await api.get("/payments/poster");
 
     return response.data;
   } catch (error: any) {
-
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     // Return empty data for other errors
     return { success: false, payments: [] };
   }
@@ -2795,31 +3004,30 @@ export async function getPosterPayments(): Promise<{ success: boolean; payments:
  * Endpoint: GET /api/tasks/:taskId/questions
  * Auth: No
  */
-export async function getTaskQuestions(taskId: string): Promise<{ success: boolean; data: any[] }> {
+export async function getTaskQuestions(
+  taskId: string
+): Promise<{ success: boolean; data: any[] }> {
   const api = getApi();
   try {
-
     const response = await api.get(`/tasks/${taskId}/questions`);
 
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-
     }
-    
+
     // Handle authentication errors (even though this endpoint doesn't require auth)
     if (error?.response?.status === 401 || error?.isAuthError) {
       // Don't throw auth error for GET endpoint, just return empty array
       return { success: false, data: [] };
     }
-    
+
     // Handle not found errors
     if (error?.response?.status === 404) {
-
       return { success: true, data: [] };
     }
-    
+
     throw error;
   }
 }
@@ -2829,26 +3037,33 @@ export async function getTaskQuestions(taskId: string): Promise<{ success: boole
  * Endpoint: POST /api/tasks/:taskId/questions
  * Auth: Required
  */
-export async function postTaskQuestion(taskId: string, question: string): Promise<{ success: boolean; data: any }> {
+export async function postTaskQuestion(
+  taskId: string,
+  question: string
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-
     const response = await api.post(`/tasks/${taskId}/questions`, { question });
 
     return response.data;
   } catch (error: any) {
-
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
-    // Handle validation errors  
+
+    // Handle validation errors
     if (error?.response?.status === 400) {
-      const errorMessage = error?.response?.data?.message || error?.response?.data?.error || "Invalid question data";
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Invalid question data";
       throw new Error(`Validation Error: ${errorMessage}`);
     }
-    
+
     throw error;
   }
 }
@@ -2858,36 +3073,45 @@ export async function postTaskQuestion(taskId: string, question: string): Promis
  * Endpoint: POST /api/tasks/:taskId/questions/:questionId/answer
  * Auth: Required
  */
-export async function answerTaskQuestion(taskId: string, questionId: string, answer: string): Promise<{ success: boolean; data: any }> {
+export async function answerTaskQuestion(
+  taskId: string,
+  questionId: string,
+  answer: string
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-
     // Try the primary answer endpoint first
     try {
-      const response = await api.post(`/tasks/${taskId}/questions/${questionId}/answer`, { answer });
+      const response = await api.post(
+        `/tasks/${taskId}/questions/${questionId}/answer`,
+        { answer }
+      );
 
       return response.data;
     } catch (primaryError: any) {
-
       // If 404, try alternative endpoint patterns
       if (primaryError?.response?.status === 404) {
-
         try {
           // Try updating the question directly with answer
-          const altResponse = await api.put(`/tasks/${taskId}/questions/${questionId}`, { 
-            answer,
-            status: 'answered',
-            answeredAt: new Date().toISOString()
-          });
+          const altResponse = await api.put(
+            `/tasks/${taskId}/questions/${questionId}`,
+            {
+              answer,
+              status: "answered",
+              answeredAt: new Date().toISOString(),
+            }
+          );
           return altResponse.data;
         } catch {
-
           // Try PATCH method as final fallback
-          const patchResponse = await api.patch(`/tasks/${taskId}/questions/${questionId}`, { 
-            answer,
-            status: 'answered',
-            answeredAt: new Date().toISOString()
-          });
+          const patchResponse = await api.patch(
+            `/tasks/${taskId}/questions/${questionId}`,
+            {
+              answer,
+              status: "answered",
+              answeredAt: new Date().toISOString(),
+            }
+          );
           return patchResponse.data;
         }
       } else {
@@ -2895,18 +3119,21 @@ export async function answerTaskQuestion(taskId: string, questionId: string, ans
       }
     }
   } catch (error: any) {
-
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      throw new Error(error.message || "Authentication expired. Please login again to continue.");
+      throw new Error(
+        error.message ||
+          "Authentication expired. Please login again to continue."
+      );
     }
-    
+
     // Handle not found errors
     if (error?.response?.status === 404) {
-
-      throw new Error("Could not find the question to answer. Please refresh and try again.");
+      throw new Error(
+        "Could not find the question to answer. Please refresh and try again."
+      );
     }
-    
+
     throw error;
   }
 }
@@ -2916,56 +3143,60 @@ export async function answerTaskQuestion(taskId: string, questionId: string, ans
  * Endpoint: GET /api/questions/public (aggregated from all tasks)
  * Auth: No - Public questions visible to all users
  */
-export async function getAllPublicQuestions(): Promise<{ success: boolean; data: any[] }> {
+export async function getAllPublicQuestions(): Promise<{
+  success: boolean;
+  data: any[];
+}> {
   const api = getApi();
   try {
-
     // Try the public questions endpoint first
     try {
-      const response = await api.get('/questions/public');
+      const response = await api.get("/questions/public");
 
       return response.data;
     } catch (endpointError: any) {
       // If public endpoint doesn't exist, aggregate from tasks
       if (endpointError?.response?.status === 404) {
-
-        const tasksResponse = await api.get('/tasks?limit=50');
+        const tasksResponse = await api.get("/tasks?limit=50");
         const tasks = tasksResponse.data?.data || [];
-        
+
         const allQuestions: any[] = [];
-        
+
         for (const task of tasks) {
           try {
-            const questionsResponse = await api.get(`/tasks/${task._id}/questions`);
+            const questionsResponse = await api.get(
+              `/tasks/${task._id}/questions`
+            );
             const taskQuestions = questionsResponse.data?.data || [];
-            
+
             // Add task context to each question
             const questionsWithContext = taskQuestions.map((q: any) => ({
               ...q,
               taskId: task._id,
               taskTitle: task.title,
-              taskLocation: task.location?.address || 'Location not specified',
-              taskBudget: task.formattedBudget || `${task.currency} ${task.budget}`,
-              taskCategory: task.categories?.[0] || 'General',
+              taskLocation: task.location?.address || "Location not specified",
+              taskBudget:
+                task.formattedBudget || `${task.currency} ${task.budget}`,
+              taskCategory: task.categories?.[0] || "General",
               taskCreatedBy: task.createdBy, // Add task creator info
-              isPublic: true
+              isPublic: true,
             }));
-            
-            allQuestions.push(...questionsWithContext);
-          } catch {
 
-          }
+            allQuestions.push(...questionsWithContext);
+          } catch {}
         }
-        
+
         // Sort by creation date (newest first)
-        allQuestions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        allQuestions.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
 
         return { success: true, data: allQuestions };
       }
       throw endpointError;
     }
   } catch (error: any) {
-
     // Return empty array on failure rather than throwing
     return { success: false, data: [] };
   }
@@ -2976,15 +3207,15 @@ export async function getAllPublicQuestions(): Promise<{ success: boolean; data:
  * Endpoint: GET /api/tasks/user/:userId
  * Auth: Required
  */
-export async function getUserTasks(userId: string): Promise<{ success: boolean; data: Task[] }> {
+export async function getUserTasks(
+  userId: string
+): Promise<{ success: boolean; data: Task[] }> {
   const api = getApi();
   try {
-
     const response = await api.get(`/tasks/user/${userId}`);
 
     return response.data;
   } catch (error) {
-
     throw error;
   }
 }
@@ -3002,24 +3233,24 @@ export const TaskAPI = {
   filterTasks, // New filter API for Sort/Filter UI
   getMyTasks,
   getMyOffers,
-  
+
   // Categories
   getCategories,
   getCategoriesByLocation,
-  
+
   // Phase 2: Task Management
   getTaskById,
   updateTask,
   updateTaskWithImages, // Update task with image upload support
   deleteTask,
-  
+
   // Phase 3: Offer System
   getTaskOffers,
   getAllOffers,
   createOffer,
   acceptOffer,
   updateOffer,
-  
+
   // Phase 4: Completion Flow
   getTaskCompletionStatus,
   completeTask,
@@ -3031,7 +3262,7 @@ export const TaskAPI = {
   respondToCancellationRequest, // NEW: Accept/Reject cancellation request
   updateTaskStatus,
   acceptTask,
-  
+
   // Phase 5: Advanced Features
   completePayment,
   getPaymentStatus,
