@@ -9,13 +9,13 @@ interface DebugToolsProps {
 
 export default function DebugTools({ onClearAll, onRefresh }: DebugToolsProps) {
   const handleTestCategories = async () => {
-    console.log("🏷️ Testing Categories API directly...");
+
     try {
       const result = await CategoriesAPI.getAllCategories();
-      console.log("🏷️ Direct API Test Result:", result);
+
       alert(`Categories API Test: ${JSON.stringify(result, null, 2)}`);
     } catch (error) {
-      console.error("❌ Categories API Test Failed:", error);
+
       alert(`Categories API Test Failed: ${error}`);
     }
   };

@@ -23,15 +23,13 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
 
   // 🔧 **DEBUG: Log verification status**
   const isVerified = userData?.isVerified || userData?.verified || false;
-  console.log('🔍 ID Verification Screen - User Data:', userData);
-  console.log('🔍 ID Verification Screen - isVerified:', isVerified);
+
 
   // 🔧 **TEMPORARY: Force show button for testing (remove this later)**
   const forceShowButton = true; // Change to false when API is integrated
 
   const handleStartVerification = () => {
-    console.log('🚀 Start Verification button clicked');
-    
+
     Alert.alert(
       'Start ID Verification',
       'This will start the ID verification process using Ratify ID service. You will need to provide a government-issued photo ID.',
@@ -40,8 +38,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
         { 
           text: 'Start Verification', 
           onPress: () => {
-            console.log('📄 Starting verification process...');
-            
+
             // For now, show a placeholder message until real API is provided
             Alert.alert(
               'Ratify ID Integration Ready',

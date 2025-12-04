@@ -45,11 +45,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     if (typeof location === 'string') {
       try {
         const parsed = JSON.parse(location);
-        console.log('📍 TaskCard (general): Parsed stringified location:', parsed);
         return parsed;
       } catch (e) {
         // If parsing fails, treat it as plain address string
-        console.warn('⚠️ TaskCard (general): Could not parse location string:', location);
         return { address: location, coordinates: {} };
       }
     }
@@ -66,7 +64,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     // Clean up any JSON remnants from address
     let cleanAddress = address;
     if (typeof address === 'string' && (address.includes('{') || address.includes('"coordinates"'))) {
-      console.warn('⚠️ TaskCard (general): Address contains JSON remnants:', address);
       const match = address.match(/"address":"([^"]+)"/);
       if (match) {
         cleanAddress = match[1];
@@ -263,13 +260,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   
                   // Only log for the first few tasks to avoid spam
                   if (task._id && task.title && Math.random() < 0.1) {
-                    console.log('🔍 [Browse TaskCard] Offer count:', {
-                      taskId: task._id,
-                      title: task.title,
-                      offerCount: task.offerCount,
-                      offersLength: task.offers?.length,
-                      calculatedCount: offerCount
-                    });
+
                   }
                   
                   return offerCount > 0

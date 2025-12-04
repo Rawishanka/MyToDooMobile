@@ -67,7 +67,6 @@ export default function ForgotPasswordScreen() {
         ]
       );
     } catch (error: any) {
-      console.error('Password Reset Error:', error);
 
       // Show user-friendly error messages
       if (error?.code === 'NETWORK_ERROR') {

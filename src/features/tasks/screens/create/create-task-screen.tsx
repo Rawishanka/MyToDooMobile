@@ -47,11 +47,10 @@ const copyImageToPersistentStorage = async (sourceUri: string): Promise<string> 
       from: sourceUri,
       to: destinationUri,
     });
-    
-    console.log('💾 Image copied to persistent storage:', destinationUri);
+
     return destinationUri;
   } catch (error) {
-    console.error('❌ Failed to copy image:', error);
+
     // If copy fails, return original URI as fallback
     return sourceUri;
   }
@@ -114,7 +113,7 @@ export default function CreateTaskScreen() {
 
   // Sync images to store whenever they change
   useEffect(() => {
-    console.log('💾 Syncing images to store:', images.length, 'images');
+
     updateMyTask({ 
       photos: images,
       photo: images[0] || ''
@@ -140,18 +139,18 @@ export default function CreateTaskScreen() {
   useEffect(() => {
     if (params.selectedCategory) {
       const categoryName = String(params.selectedCategory);
-      console.log('📌 Pre-selected category from params:', categoryName);
-      console.log('   Current selectedCategory state:', selectedCategory);
-      console.log('   Setting category to:', categoryName);
+
+
+
       setSelectedCategory(categoryName);
       setTouched(prev => ({ ...prev, category: true }));
-      console.log('   ✅ Category state updated to:', categoryName);
+
     }
   }, [params.selectedCategory]);
 
   // Debug: Log when selectedCategory changes
   useEffect(() => {
-    console.log('🔄 selectedCategory state changed to:', selectedCategory);
+
   }, [selectedCategory]);
 
   // Keyboard listeners
@@ -159,14 +158,14 @@ export default function CreateTaskScreen() {
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       () => {
-        console.log('⌨️ Keyboard shown');
+
         setIsKeyboardVisible(true);
       }
     );
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
-        console.log('⌨️ Keyboard hidden');
+
         // Small delay to ensure smooth transition
         setTimeout(() => {
           setIsKeyboardVisible(false);
@@ -206,7 +205,7 @@ export default function CreateTaskScreen() {
                 text: 'Discard',
                 style: 'destructive',
                 onPress: () => {
-                  console.log('🗑️ User confirmed discard via hardware back');
+
                   resetTask();
                   router.back();
                 }
@@ -433,11 +432,11 @@ export default function CreateTaskScreen() {
   // ✅ NEW: Validate image using OCR API for sensitive data
   const validateAndAddImage = async (imageUri: string): Promise<boolean> => {
     try {
-      console.log('🔍 Validating image with OCR API:', imageUri);
+
       const validation = await OCRAPI.validateImageForUpload(imageUri);
       
       if (!validation.isValid) {
-        console.warn('❌ Image contains sensitive data:', validation.reason);
+
         Alert.alert(
           'Sensitive Data Detected',
           `This image contains sensitive information and cannot be uploaded:
@@ -449,14 +448,13 @@ Please remove phone numbers and addresses from the image.`,
         );
         return false;
       }
-      
-      console.log('✅ Image passed OCR validation - adding to list');
+
       setImages(prevImages => [...prevImages, imageUri]);
       return true;
     } catch (error) {
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ OCR validation error:', error);
+
       }
       // Allow upload if OCR service fails
       setImages(prevImages => [...prevImages, imageUri]);
@@ -483,7 +481,7 @@ Please remove phone numbers and addresses from the image.`,
     }
 
     if (isProcessing) {
-      console.log('⏳ Already processing, please wait...');
+
       return;
     }
 
@@ -504,7 +502,7 @@ Please remove phone numbers and addresses from the image.`,
     } catch (error) {
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Error taking photo:', error);
+
       }
       Alert.alert('Error', 'Failed to take photo. Please try again.');
     } finally {
@@ -521,7 +519,7 @@ Please remove phone numbers and addresses from the image.`,
     }
 
     if (isProcessing) {
-      console.log('⏳ Already processing, please wait...');
+
       return;
     }
 
@@ -541,7 +539,7 @@ Please remove phone numbers and addresses from the image.`,
     } catch (error) {
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Error selecting image:', error);
+
       }
       Alert.alert('Error', 'Failed to select image. Please try again.');
     } finally {
@@ -551,37 +549,36 @@ Please remove phone numbers and addresses from the image.`,
   };
 
   const handleDeleteImage = (uri: string) => {
-    console.log('🗑️ Deleting image:', uri);
-    
+
     // Remove image from state
     setImages(prevImages => {
       const newImages = prevImages.filter(img => img !== uri);
-      console.log('✅ Image removed, remaining images:', newImages.length);
+
       return newImages;
     });
     
     // Force reset processing state to allow new uploads
     setIsProcessing(false);
-    console.log('✅ Processing state reset - ready for new uploads');
+
   };
 
   const handleLocationSelect = (location: LocationData) => {
-    console.log('📍 Location selected:', location);
-    console.log('   Address:', location?.address);
-    console.log('   Coordinates:', location?.coordinates);
+
+
+
     setSelectedLocation(location);
-    console.log('   Location state updated');
+
   };
 
   const handleLocationFocus = () => {
-    console.log('📍 Location field focused - scrolling into view');
+
     // Scroll to location section when focused
     if (section2Ref.current && scrollViewRef.current) {
       setTimeout(() => {
         section2Ref.current?.measureLayout(
           scrollViewRef.current as any,
           (x, y) => {
-            console.log('   Scrolling to location field at y:', y);
+
             // Scroll with more offset to ensure field is visible above keyboard
             // Add extra space (200px) to account for keyboard height
             scrollViewRef.current?.scrollTo({ 
@@ -589,7 +586,7 @@ Please remove phone numbers and addresses from the image.`,
               animated: true 
             });
           },
-          () => console.log('   Failed to measure location field')
+          () => {}
         );
       }, 150);
     }
@@ -684,15 +681,12 @@ Please remove phone numbers and addresses from the image.`,
   const descriptionLength = description.trim().length;
   
   // Debug: Log validation state
-  console.log('=== VALIDATION STATE ===');
-  console.log('selectedCategory:', selectedCategory);
-  console.log('titleLength:', titleLength, '(min: 10)');
-  console.log('descriptionLength:', descriptionLength, '(min: 20)');
-  console.log('titleError:', titleError);
-  console.log('descriptionError:', descriptionError);
-  console.log('selectedLocation:', selectedLocation);
-  console.log('selectedOption:', selectedOption);
-  
+
+
+
+
+
+
   const isFormValid =
     !!selectedCategory &&
     titleLength >= 10 &&
@@ -701,22 +695,17 @@ Please remove phone numbers and addresses from the image.`,
     !descriptionError &&
     !!selectedLocation &&
     selectedOption !== '';
-  
-  console.log('isFormValid:', isFormValid);
-  console.log('========================');
+
 
   const handleContinue = () => {
-    console.log('\n🔵 ===== CONTINUE BUTTON CLICKED =====');
-    console.log('📋 Current Form State:');
-    console.log('  - Category:', selectedCategory || 'NOT SELECTED');
-    console.log('  - Title:', `"${title}" (${titleLength} chars)`);
-    console.log('  - Description:', `"${description}" (${descriptionLength} chars)`);
-    console.log('  - Location:', selectedLocation ? selectedLocation.address : 'NOT SELECTED');
-    console.log('  - When:', selectedOption || 'NOT SELECTED');
-    console.log('  - Images:', images.length);
-    
+
+
+
+
+
+
     // Mark all fields as touched to show validation errors
-    console.log('🔍 Marking all fields as touched...');
+
     setTouched({
       title: true,
       description: true,
@@ -726,51 +715,40 @@ Please remove phone numbers and addresses from the image.`,
     });
 
     // Validate all fields
-    console.log('✅ Running validation checks...');
+
     if (title.trim().length === 0) {
-      console.log('  ❌ Title is empty');
+
       setTitleError('Title is required');
     } else if (title.trim().length < 10) {
-      console.log('  ❌ Title too short:', titleLength, '< 10');
+
       setTitleError('Minimum 10 characters required');
     } else {
-      console.log('  ✅ Title valid');
+
     }
 
     if (description.trim().length === 0) {
-      console.log('  ❌ Description is empty');
+
       setDescriptionError('Description is required');
     } else if (description.trim().length < 20) {
-      console.log('  ❌ Description too short:', descriptionLength, '< 20');
+
       setDescriptionError('Minimum 20 characters required');
     } else {
-      console.log('  ✅ Description valid');
+
     }
 
-    console.log('\n📊 Validation Results:');
-    console.log('  - selectedCategory:', !!selectedCategory);
-    console.log('  - titleLength >= 10:', titleLength >= 10);
-    console.log('  - descriptionLength >= 20:', descriptionLength >= 20);
-    console.log('  - !titleError:', !titleError);
-    console.log('  - !descriptionError:', !descriptionError);
-    console.log('  - selectedLocation:', !!selectedLocation);
-    console.log('  - selectedOption !== "":', selectedOption !== '');
-    console.log('  - isFormValid:', isFormValid);
+
+
+
+
+
+
+
 
     if (isFormValid) {
-      console.log('\n✅ Form is VALID - Proceeding to budget screen...');
+
       const selectedDate =
         selectedOption === 'on_time' ? onTimeDate : selectedOption === 'before' ? beforeDate : null;
 
-      console.log('💾 Saving task data:', {
-        title,
-        description,
-        category: selectedCategory,
-        location: selectedLocation?.address,
-        date: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
-        time: selectedTimeBlock || '',
-        photos: images.length,
-      });
 
       updateMyTask({
         title,
@@ -784,20 +762,17 @@ Please remove phone numbers and addresses from the image.`,
         date: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
         time: selectedTimeBlock ? selectedTimeBlock : '',
       });
-      
-      console.log('🚀 Navigating to budget screen...');
+
       router.push('/budget-screen' as any);
     } else {
-      console.log('\n❌ Form is INVALID - Showing alert...');
+
       const missingFields = [];
       if (!selectedCategory) missingFields.push('Category');
       if (titleLength < 10) missingFields.push('Title (min 10 chars)');
       if (descriptionLength < 20) missingFields.push('Description (min 20 chars)');
       if (!selectedLocation) missingFields.push('Location');
       if (selectedOption === '') missingFields.push('When');
-      
-      console.log('  Missing fields:', missingFields);
-      
+
       Alert.alert(
         'Incomplete Form',
         'Please fill in all required fields:\n' +
@@ -808,7 +783,7 @@ Please remove phone numbers and addresses from the image.`,
         (selectedOption === '' ? '• Select when you need this done' : '')
       );
     }
-    console.log('🔵 ===== END CONTINUE BUTTON =====\n');
+
   };
 
   return (
@@ -823,12 +798,10 @@ Please remove phone numbers and addresses from the image.`,
                               ('category' in myTask && myTask.category) || 
                               ('location' in myTask && myTask.location);
           const hasData = hasLocalData || hasStoreData;
-          
-          console.log('🔙 Back button pressed - Data check:');
-          console.log('   Local data exists:', hasLocalData);
-          console.log('   Store data exists:', hasStoreData);
-          console.log('   Has data:', hasData);
-          
+
+
+
+
           if (hasData) {
             // Prompt user to confirm discarding changes
             Alert.alert(
@@ -843,7 +816,7 @@ Please remove phone numbers and addresses from the image.`,
                   text: 'Discard',
                   style: 'destructive',
                   onPress: () => {
-                    console.log('🗑️ User confirmed discard - resetting task form');
+
                     resetTask();
                     router.back();
                   }
@@ -852,7 +825,7 @@ Please remove phone numbers and addresses from the image.`,
             );
           } else {
             // No data entered, just go back
-            console.log('✅ No data to discard, going back');
+
             resetTask();
             router.back();
           }
@@ -972,7 +945,7 @@ Please remove phone numbers and addresses from the image.`,
               if (suggestion.trim().length >= 10) {
                 setTitleError('');
               }
-              console.log('📝 Applied AI suggestion to title in create-task:', suggestion);
+
             }}
           />
 
@@ -1054,11 +1027,11 @@ Please remove phone numbers and addresses from the image.`,
 
             <LocationAutocomplete
               onSelect={(location) => {
-                console.log('🗺️ LocationAutocomplete onSelect triggered');
-                console.log('   Received location:', location);
+
+
                 handleLocationSelect(location);
                 setTouched({ ...touched, location: true });
-                console.log('   Location touched and error cleared');
+
               }}
               onFocus={handleLocationFocus}
               placeholder="Enter address or suburb"
@@ -1159,9 +1132,9 @@ Please remove phone numbers and addresses from the image.`,
           ]}
           disabled={!isFormValid}
           onPress={() => {
-            console.log('🔘 Continue button PRESSED!');
-            console.log('   Button disabled:', !isFormValid);
-            console.log('   isFormValid:', isFormValid);
+
+
+
             handleContinue();
           }}
         >

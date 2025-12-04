@@ -19,7 +19,7 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount }) => (
         style={styles.menuItem}
         onPress={() => {
           // TODO: Navigate to payout account setup
-          console.log('Setup Payout Account clicked');
+
         }}
       >
         <Text style={styles.menuText}>Setup Payout Account</Text>

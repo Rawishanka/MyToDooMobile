@@ -110,19 +110,17 @@ export default function WelcomeScreen() {
   // This clears abandoned task creation forms
   useFocusEffect(
     useCallback(() => {
-      console.log('📱 Dashboard focused - checking task state');
-      console.log('   Current task title:', myTask.title);
-      console.log('   Current task input:', taskInput);
-      
+
+
+
       // Sync the input with store title if they differ
       // This handles cases where user navigated away and came back
       if (myTask.title && myTask.title !== taskInput) {
         setTaskInput(myTask.title);
-        console.log('🔄 Synced task input with store title');
+
       } else if (!myTask.title && taskInput) {
         // If store is empty but input has value, clear the input
         setTaskInput('');
-        console.log('🧹 Cleared task input (store is empty)');
       }
     }, [myTask.title])
   );
@@ -133,7 +131,7 @@ export default function WelcomeScreen() {
     resetTask();
     setTaskInput('');
     setErrorMessage('');
-    console.log('✅ Task form completely reset');
+
   }, []);
 
   const handlePostTask = () => {
@@ -179,8 +177,7 @@ export default function WelcomeScreen() {
   };
 
   const handleTagPress = (categoryName: string) => {
-    console.log('📌 Category tag pressed:', categoryName);
-    console.log('   Navigating to title-screen (create-task) with category:', categoryName);
+
     
     // Navigate to title-screen (which is the create-task page) with pre-selected category
     router.push({
@@ -190,8 +187,7 @@ export default function WelcomeScreen() {
         section: 'details'
       }
     } as any);
-    
-    console.log('   ✅ Navigation initiated');
+
   };
 
   return (

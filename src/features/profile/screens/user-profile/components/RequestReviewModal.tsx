@@ -81,11 +81,11 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
           const code = COUNTRY_CODES[country as keyof typeof COUNTRY_CODES] || '+94';
           setCountryCode(code);
           setDetectedCountry(country);
-          console.log(`🌍 Detected country: ${country}, code: ${code}`);
+
         }
       }
     } catch (error) {
-      console.log('📍 Could not detect location, using default country code');
+
       // Keep default values
     }
   };
@@ -126,8 +126,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
           // Add the detected country code
           formattedRecipient = countryCode + formattedRecipient;
         }
-        
-        console.log(`📱 Original: ${recipient} → Formatted: ${formattedRecipient}`);
+
       }
       
       await requestReviewMutation.mutateAsync({
@@ -147,8 +146,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
       setMessage('');
       
     } catch (error: any) {
-      console.error('❌ Review request failed:', error);
-      
+
       // Check if it's a Twilio/SMS configuration error
       const errorMsg = error.message || '';
       if (errorMsg.includes('SMS service') && method === 'sms') {

@@ -24,45 +24,10 @@ interface MapViewProps {
 }
 
 export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: MapViewProps) {
-  console.log('🗺️ MapView Props Received:', {
-    tasksCount: tasks.length,
-    focusTaskId: focusTaskId,
-    hasOnMapAction: !!onMapAction,
-    taskIds: tasks.map(t => ({ id: t._id, title: t.title })).slice(0, 3)
-  });
-
   const generateMapHTML = () => {
-    console.log('🗺️ MapView Debug - Detailed Task Analysis:', {
-      totalTasks: tasks.length,
-      tasksWithLocationData: tasks.filter(t => t.location).length,
-      tasksWithCoordinatesData: tasks.filter(t => t.location?.coordinates).length,
-      focusTaskId: focusTaskId,
-      sampleTasks: tasks.slice(0, 5).map(t => ({
-        id: t._id,
-        title: t.title,
-        hasLocation: !!t.location,
-        locationData: t.location,
-        hasCoordinates: !!t.location?.coordinates,
-        coordinatesData: t.location?.coordinates,
-        coordinatesType: typeof t.location?.coordinates,
-        coordinatesIsEmpty: t.location?.coordinates && Object.keys(t.location.coordinates).length === 0,
-        address: t.location?.address
-      }))
-    });
-
     // Add comprehensive API data logging
     if (tasks.length > 0) {
-      console.log('🔍 First task detailed analysis:', {
-        task: tasks[0],
-        locationStructure: {
-          hasLocation: !!tasks[0].location,
-          address: tasks[0].location?.address,
-          coordinates: tasks[0].location?.coordinates,
-          coordinatesType: typeof tasks[0].location?.coordinates,
-          coordinatesKeys: tasks[0].location?.coordinates ? Object.keys(tasks[0].location.coordinates) : 'No coordinates',
-          coordinatesContent: JSON.stringify(tasks[0].location?.coordinates, null, 2)
-        }
-      });
+      // Log first task for debugging
     }
 
     const markers: {
@@ -79,7 +44,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
     // Process tasks - convert addresses to coordinates
     tasks.forEach((task, index) => {
       if (!task.location) {
-        console.log(`🚫 Task ${index + 1} has no location:`, { id: task._id, title: task.title });
+
         return;
       }
 
@@ -89,15 +54,6 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       // Try to get coordinates from existing task data first
       const coords = task.location.coordinates;
       
-      console.log(`📍 Processing task ${index + 1} - ${task.title}:`, {
-        id: task._id,
-        address: task.location.address,
-        coordsExists: !!coords,
-        coordsType: typeof coords,
-        coordsIsEmpty: coords && Object.keys(coords).length === 0,
-        coordsContent: JSON.stringify(coords, null, 2),
-        coords: coords
-      });
 
       if (coords && Object.keys(coords).length > 0) {
         // Handle different coordinate formats from the API
@@ -107,7 +63,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           if (coords.coordinates.length === 2) {
             lng = typeof coords.coordinates[0] === 'number' ? coords.coordinates[0] : parseFloat(coords.coordinates[0]);
             lat = typeof coords.coordinates[1] === 'number' ? coords.coordinates[1] : parseFloat(coords.coordinates[1]);
-            console.log(`✅ Extracted GeoJSON coordinates for ${task.title}:`, { lat, lng, source: 'GeoJSON API' });
+
           }
         }
         // Format 2: Object format { lat: number, lng: number }
@@ -115,36 +71,34 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           const coordsObj = coords as any;
           lat = typeof coordsObj.lat === 'number' ? coordsObj.lat : parseFloat(coordsObj.lat);
           lng = typeof coordsObj.lng === 'number' ? coordsObj.lng : parseFloat(coordsObj.lng);
-          console.log(`✅ Extracted object coordinates for ${task.title}:`, { lat, lng, source: 'Object API' });
+
         }
         // Format 3: Alternative object format { latitude: number, longitude: number }
         else if (typeof coords === 'object' && 'latitude' in coords && 'longitude' in coords) {
           const coordsObj = coords as any;
           lat = typeof coordsObj.latitude === 'number' ? coordsObj.latitude : parseFloat(coordsObj.latitude);
           lng = typeof coordsObj.longitude === 'number' ? coordsObj.longitude : parseFloat(coordsObj.longitude);
-          console.log(`✅ Extracted lat/lng coordinates for ${task.title}:`, { lat, lng, source: 'LatLng API' });
+
         }
         // Format 4: Direct array format [lng, lat]
         else if (Array.isArray(coords) && coords.length === 2) {
           lng = typeof coords[0] === 'number' ? coords[0] : parseFloat(coords[0]);
           lat = typeof coords[1] === 'number' ? coords[1] : parseFloat(coords[1]);
-          console.log(`✅ Extracted array coordinates for ${task.title}:`, { lat, lng, source: 'Array API' });
+
         }
         else {
-          console.log(`⚠️ Unknown coordinate format for ${task.title}:`, { coords, type: typeof coords, keys: Object.keys(coords) });
         }
       }
 
       // If no coordinates found OR coordinates are (0,0), try to geocode the address using known locations
       if ((lat === null || lng === null || isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) && task.location.address) {
-        console.log(`🔍 No valid API coordinates found (lat: ${lat}, lng: ${lng}), geocoding address for ${task.title}:`, task.location.address);
         const geocodedCoords = geocodeAddressSync(task.location.address);
         if (geocodedCoords) {
           lat = geocodedCoords.lat;
           lng = geocodedCoords.lng;
-          console.log(`✅ Geocoded ${task.location.address} to:`, { lat, lng, source: 'Geocoded' });
+
         } else {
-          console.log(`❌ Could not geocode ${task.location.address}`);
+
         }
       }
 
@@ -164,59 +118,8 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
             status: task.status,
             offers: task.offerCount || 0,
           });
-          
-          console.log(`🎯 Added marker ${markers.length} for task (${coordinateSource} coordinates):`, {
-            id: task._id,
-            title: task.title,
-            lat: lat,
-            lng: lng,
-            address: task.location.address,
-            source: coordinateSource
-          });
-        } else {
-          console.log('⚠️ Invalid coordinates range for task:', { 
-            taskId: task._id, 
-            title: task.title,
-            lat, 
-            lng, 
-            address: task.location.address 
-          });
         }
-      } else {
-        console.log('🚫 No valid coordinates found for task:', {
-          taskId: task._id,
-          title: task.title,
-          address: task.location.address,
-          hasCoords: !!coords,
-          coordsEmpty: coords && Object.keys(coords).length === 0,
-          lat: lat,
-          lng: lng,
-          reason: 'Missing or invalid coordinate data'
-        });
       }
-    });
-
-    console.log(`🗺️ Final map data summary:`, {
-      totalTasksFromAPI: tasks.length,
-      totalMarkersCreated: markers.length,
-      tasksWithoutValidCoords: tasks.length - markers.length,
-      focusTaskId: focusTaskId,
-      sampleMarkers: markers.slice(0, 3).map(m => ({ 
-        id: m.id, 
-        title: m.title, 
-        lat: m.lat, 
-        lng: m.lng,
-        address: m.location
-      })),
-      tasksWithoutMarkers: tasks.filter(t => 
-        !markers.find(m => m.id === t._id)
-      ).map(t => ({
-        id: t._id,
-        title: t.title,
-        address: t.location?.address,
-        hasCoords: !!t.location?.coordinates,
-        coordsEmpty: t.location?.coordinates && Object.keys(t.location.coordinates).length === 0
-      }))
     });
     
     return generateHTMLContent(markers);
@@ -232,52 +135,52 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
     // Check for exact matches first
     for (const [location, coords] of locationMap) {
       if (addressLower.includes(location.toLowerCase())) {
-        console.log(`📍 Found coordinates for ${address}: ${location} -> ${coords.lat}, ${coords.lng}`);
+
         return coords;
       }
     }
 
     // Enhanced pattern matching for Australian addresses
     if (addressLower.includes('langhorne creek') || addressLower.includes('kangaroo road')) {
-      console.log(`📍 Found coordinates for ${address}: Langhorne Creek area`);
+
       return { lat: -35.3100, lng: 139.0500 };
     }
 
     // New: Enhanced suburb/street patterns
     if (addressLower.includes('adelaide') || addressLower.includes('sa ') || addressLower.includes('south australia')) {
-      console.log(`📍 Found coordinates for ${address}: Adelaide area`);
+
       return { lat: -34.9285, lng: 138.6007 };
     }
 
     if (addressLower.includes('sydney') || addressLower.includes('nsw') || addressLower.includes('new south wales')) {
-      console.log(`📍 Found coordinates for ${address}: Sydney area`);
+
       return { lat: -33.8688, lng: 151.2093 };
     }
 
     if (addressLower.includes('melbourne') || addressLower.includes('vic') || addressLower.includes('victoria')) {
-      console.log(`📍 Found coordinates for ${address}: Melbourne area`);
+
       return { lat: -37.8136, lng: 144.9631 };
     }
 
     if (addressLower.includes('brisbane') || addressLower.includes('qld') || addressLower.includes('queensland')) {
-      console.log(`📍 Found coordinates for ${address}: Brisbane area`);
+
       return { lat: -27.4698, lng: 153.0251 };
     }
 
     if (addressLower.includes('perth') || addressLower.includes('wa') || addressLower.includes('western australia')) {
-      console.log(`📍 Found coordinates for ${address}: Perth area`);
+
       return { lat: -31.9505, lng: 115.8613 };
     }
 
     // Sri Lankan patterns
     if (addressLower.includes('colombo') || addressLower.includes('sri lanka') || addressLower.includes('lanka')) {
-      console.log(`📍 Found coordinates for ${address}: Colombo area`);
+
       return { lat: 6.9271, lng: 79.8612 };
     }
 
     // New Zealand patterns  
     if (addressLower.includes('auckland') || addressLower.includes('new zealand') || addressLower.includes('nz')) {
-      console.log(`📍 Found coordinates for ${address}: Auckland area`);
+
       return { lat: -36.8485, lng: 174.7633 };
     }
 
@@ -286,12 +189,11 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       if (address.toLowerCase().includes(location.toLowerCase()) || 
           location.toLowerCase().includes(addressLower.split(' ')[0]) ||
           location.toLowerCase().includes(addressLower.split(',')[0])) {
-        console.log(`📍 Found fuzzy match for ${address}: ${location} -> ${coords.lat}, ${coords.lng}`);
+
         return coords;
       }
     }
-    
-    console.log(`❌ No coordinates found for address: ${address}`);
+
     return null;
   };
 
@@ -402,16 +304,6 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
     status: string;
     offers: number;
   }[]) => {
-    console.log('🗺️ Final Map Markers:', {
-      totalMarkers: markers.length,
-      markers: markers.slice(0, 3).map(m => ({
-        id: m.id,
-        title: m.title,
-        lat: m.lat,
-        lng: m.lng
-      }))
-    });
-
     // Calculate center based on focus task or markers
     let centerLat = -34.9285; // Adelaide default
     let centerLng = 138.6007;
@@ -422,9 +314,9 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       if (focusMarker) {
         centerLat = focusMarker.lat;
         centerLng = focusMarker.lng;
-        console.log('🎯 Using focus task coordinates as center:', { lat: centerLat, lng: centerLng, taskId: focusTaskId });
+
       } else {
-        console.log('⚠️ Focus task not found in markers, using calculated center');
+
         if (markers.length > 0) {
           centerLat = markers.reduce((sum, marker) => sum + marker.lat, 0) / markers.length;
           centerLng = markers.reduce((sum, marker) => sum + marker.lng, 0) / markers.length;
@@ -433,7 +325,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
     } else if (markers.length > 0) {
       centerLat = markers.reduce((sum, marker) => sum + marker.lat, 0) / markers.length;
       centerLng = markers.reduce((sum, marker) => sum + marker.lng, 0) / markers.length;
-      console.log('📍 Using calculated center from all markers:', { lat: centerLat, lng: centerLng });
+
     }
 
     return `
@@ -552,8 +444,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           maxBounds: [[-90, -180], [90, 180]],
           maxBoundsViscosity: 1.0
         });
-        console.log('🗺️ Map initialized with center:', [${centerLat}, ${centerLng}], 'zoom:', initialZoom);
-        
+
         // Add OpenStreetMap tiles with zoom constraints
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
@@ -642,15 +533,14 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
 
         // Handle specific task focus
         ${focusTaskId ? `
-        console.log('🎯 Focusing on task:', '${focusTaskId}');
+
         const focusMarker = markers.find(m => m.id === '${focusTaskId}');
         if (focusMarker) {
-          console.log('✅ Found focus marker:', focusMarker);
-          
+
           // Find the corresponding leaflet marker and open its popup
           const leafletMarker = leafletMarkers.find(lm => lm.data.id === '${focusTaskId}');
           if (leafletMarker) {
-            console.log('🎯 Opening popup for focus marker');
+
             map.setView([focusMarker.lat, focusMarker.lng], 16);
             
             // Open the popup after a short delay to ensure map is ready
@@ -658,10 +548,10 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
               leafletMarker.marker.openPopup();
             }, 500);
           } else {
-            console.log('❌ Leaflet marker not found for focus task');
+
           }
         } else {
-          console.log('❌ Focus marker not found for ID: ${focusTaskId}');
+
           // Still show all markers even if focus task not found
           if (markers.length > 0) {
             if (markers.length === 1) {
@@ -682,14 +572,14 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
             map.fitBounds(group.getBounds().pad(0.1));
           }
         } else {
-          console.log('⚠️ No markers to display, using default Adelaide view');
+
           map.setView([-34.9285, 138.6007], 10);
         }
         `}
 
         // Handle action buttons
         function handleAction(action, taskId) {
-          console.log('Map action:', action, taskId);
+
           if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({
               action: action,
@@ -698,7 +588,6 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           }
         }
 
-        console.log('🗺️ Map initialized with', markers.length, 'markers');
       </script>
     </body>
     </html>`;
@@ -715,7 +604,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
             onMapAction(data.action, data.taskId);
           }
         } catch (error) {
-          console.error('Error parsing map message:', error);
+
         }
       }}
       javaScriptEnabled={true}

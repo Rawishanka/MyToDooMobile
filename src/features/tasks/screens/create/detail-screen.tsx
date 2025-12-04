@@ -152,10 +152,8 @@ export default function DetailScreen() {
       currency: myTask.currency || currencyInfo.code, // Include currency in task creation
       images: myTask.photos || [], // ✅ Include images from store
     };
-    
-    console.log('📸 Task request includes images:', taskRequest.images?.length || 0);
-    console.log('📸 Image URIs:', taskRequest.images);
-    
+
+
     return taskRequest;
   };
 
@@ -166,12 +164,11 @@ export default function DetailScreen() {
     
     // Check if user is logged in
     if (!storedToken) {
-      console.log("❌ No stored token found, redirecting to login");
-      console.log("📋 Task data will be saved and posted after login/signup");
+
+
       // Redirect to login - task data is already saved in Zustand store
       // After successful login/signup, the task will be automatically posted
-      console.log("❌ No stored token found, setting pending action and redirecting to login");
-      
+
       // Set pending action to continue task posting after login
       setPendingAction({
         type: 'post-task',
@@ -184,14 +181,12 @@ export default function DetailScreen() {
     }
 
     try {
-      console.log("🚀 Starting task creation...");
+
       const taskData = convertToTaskRequest();
-      console.log("📝 Task data to post:", taskData);
-      
+
       // Extract image URIs from task data
       const imageUris = taskData.images || [];
-      console.log("📸 Extracted image URIs:", imageUris.length, "images");
-      
+
       // Remove images from task data (will be passed separately)
       const taskDataWithoutImages = { ...taskData };
       delete taskDataWithoutImages.images;
@@ -201,14 +196,12 @@ export default function DetailScreen() {
         taskData: taskDataWithoutImages, 
         imageUris 
       });
-      console.log("✅ Task posted successfully:", response);
-      
+
       // Only show success alert if response is valid and successful
       if (response && (response.success || response.data)) {
         // Reset task store after confirmed successful posting
         resetTask();
-        console.log("🔄 Task store reset after successful posting");
-        
+
         // Show success message only after confirmed success
         Alert.alert(
           "Posted Successfully!", 
@@ -234,7 +227,7 @@ export default function DetailScreen() {
     } catch (error: any) {
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Error posting task:', error);
+
       }
       
       // Handle authentication errors specifically

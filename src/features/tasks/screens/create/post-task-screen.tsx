@@ -112,72 +112,41 @@ export default function PostTaskScreen() {
         taskData.coordinates = coordinates;
       }
 
-      console.log('📸 Task Posting - Image URIs from store:', imageUris.length);
-      console.log('📋 API Compliance Check:');
-      console.log('  ✅ title:', taskData.title);
-      console.log('  ✅ category:', taskData.category);
-      console.log('  ✅ details:', taskData.details);
-      console.log('  ✅ budget:', taskData.budget);
-      console.log('  ✅ currency:', taskData.currency);
-      console.log('  ✅ dateType:', taskData.dateType);
-      console.log('  ✅ locationType:', taskData.locationType);
-      console.log('  ✅ files count (images):', imageUris.length);
-      console.log('📸 Task Posting - myTask.photos raw:', JSON.stringify(myTask.photos, null, 2));
-      console.log('📸 Task Posting - imageUris extracted:', JSON.stringify(imageUris, null, 2));
-      console.log('📸 Task Posting - STORE STATE FULL myTask:', JSON.stringify(myTask, null, 2));
-      console.log('📸 First image URI:', imageUris[0]?.substring(0, 100));
-      console.log('📸 FINAL TASK DATA WITH IMAGES:', JSON.stringify(taskData, null, 2));
+
+
+
+
+
+
+
+
 
       let result;
       
       if (imageUris.length > 0) {
         setUploadProgress(`Processing ${imageUris.length} image(s)...`);
-        console.log('🚀 Using FormData approach for task with images (like profile upload)');
         
         // Use image URIs directly (like profile upload)
-        console.log('🔍 === IMAGE FORMDATA PREPARATION ===');
-        console.log('🔍 imageUris count:', imageUris.length);
-        console.log('🔍 imageUris:', imageUris);
-        
+
+
+
         // Keep images as file URIs for FormData upload
         taskData.images = imageUris;
-        
-        console.log('🚨 === FINAL TASK DATA BEFORE FORMDATA POSTING ===');
-        console.log('🚨 taskData.images count:', taskData.images?.length);
-        console.log('🚨 taskData.images (URIs):', taskData.images?.map(uri => uri.substring(0, 50) + '...'));
-        console.log('🚨 taskData structure:', Object.keys(taskData));
-        console.log('🚨 === ABOUT TO SEND TO BACKEND WITH FORMDATA ===');
-        
-        console.log('📤 Posting with', imageUris.length, 'image URIs using FormData (multipart/form-data)');
+
+
+
         result = await postTaskDirectMutation.mutateAsync(taskData);
-        console.log('✅ Task posted with images (DIRECT) - Response:', result);
         
         // CRITICAL: Log the response to see if backend saved images
-        console.log('🔍 === BACKEND RESPONSE ANALYSIS ===');
-        console.log('🔍 Response has data:', !!result?.data);
-        console.log('🔍 Response data has images:', !!result?.data?.images);
-        console.log('🔍 Response images count:', result?.data?.images?.length || 0);
+
         if (result?.data?.images && result.data.images.length > 0) {
-          console.log('✅ Backend successfully saved images!');
-          result.data.images.forEach((img: any, idx: number) => {
-            console.log(`📸 Response image ${idx}:`, {
-              type: typeof img,
-              length: typeof img === 'string' ? img.length : 'N/A',
-              isDataUri: typeof img === 'string' && img.startsWith('data:'),
-              preview: typeof img === 'string' ? img.substring(0, 50) : JSON.stringify(img).substring(0, 50)
-            });
-          });
-        } else {
-          if (__DEV__) {
-            console.warn('🚨 CRITICAL: Backend did NOT save any images!');
-            console.warn('🚨 We sent', imageUris.length, 'images but got', result?.data?.images?.length || 0, 'back');
-          }
+          // Backend successfully saved images
         }
       } else {
         setUploadProgress('Creating task...');
-        console.log('📤 Posting task WITHOUT images');
+
         result = await createTaskMutation.mutateAsync(taskData);
-        console.log('✅ Task posted without images - Response:', result);
+
       }
       
       // Reset the task store immediately
@@ -195,7 +164,7 @@ export default function PostTaskScreen() {
     } catch (error: any) {
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Failed to create task:', error);
+
       }
       
       let errorMessage = 'Something went wrong. Please try again.';

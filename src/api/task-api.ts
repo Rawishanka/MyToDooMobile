@@ -1626,13 +1626,11 @@ export async function updateTaskWithImages(
 ): Promise<{ success: boolean; data: Task }> {
   const api = getApi();
   try {
-    console.log("✏️🖼️ Starting update task with images operation...");
-    console.log("📋 Task ID:", taskId);
-    console.log("📝 Updates payload:", JSON.stringify(updates, null, 2));
-    console.log("🖼️ New image URIs:", newImageUris.length);
-    console.log("🖼️ Existing images:", existingImages.length);
-    console.log("🔄 Replace images:", replaceImages);
-    
+
+
+
+
+
     // Validate taskId format (MongoDB ObjectId is 24 hex characters)
     if (!taskId || !/^[0-9a-fA-F]{24}$/.test(taskId)) {
       throw new Error(`Invalid task ID format: ${taskId}`);
@@ -1641,12 +1639,10 @@ export async function updateTaskWithImages(
     // Ensure authentication
     const authResult = await ensureAuthentication();
     if (!authResult.success) {
-      console.error("❌ Authentication failed for update operation");
+
       throw new Error(authResult.message || "Authentication required. Please log in to update tasks.");
     }
 
-    console.log("🔐 Authentication confirmed for update with images operation");
-    
     // Create FormData for multipart/form-data upload
     const formData = new FormData();
     
@@ -1682,8 +1678,7 @@ export async function updateTaskWithImages(
     
     // Add new image files
     if (newImageUris.length > 0) {
-      console.log("📤 Processing new images for upload...");
-      
+
       for (let i = 0; i < newImageUris.length; i++) {
         const uri = newImageUris[i];
         const filename = uri.split('/').pop() || `image_${i}.jpg`;
@@ -1692,7 +1687,7 @@ export async function updateTaskWithImages(
           // Validate file exists
           const fileInfo = await FileSystem.getInfoAsync(uri);
           if (!fileInfo.exists) {
-            console.error(`❌ File does not exist: ${uri}`);
+
             continue;
           }
           
@@ -1714,16 +1709,13 @@ export async function updateTaskWithImages(
           } as any;
           
           formData.append('files', file);
-          console.log(`✅ Added image ${i + 1}/${newImageUris.length}: ${filename} (${mimeType})`);
           
         } catch (fileError) {
-          console.error(`❌ Failed to process image ${i + 1}:`, fileError);
+
         }
       }
     }
-    
-    console.log("📤 Sending multipart/form-data update request...");
-    
+
     // Make PUT request with multipart/form-data
     const response = await api.put(`/tasks/${taskId}`, formData, {
       headers: {
@@ -1731,10 +1723,8 @@ export async function updateTaskWithImages(
       },
     });
     
-    console.log("✅ Update task with images API response:", JSON.stringify(response.data, null, 2));
-    console.log("✅ Update task HTTP status:", response.status);
-    console.log("🖼️ Images in response:", response.data?.data?.images?.length || 0);
-    
+
+
     if (!response.data || !response.data.success) {
       throw new Error("Update failed - server returned unsuccessful response");
     }
@@ -1743,11 +1733,11 @@ export async function updateTaskWithImages(
     if (response.data.data && response.data.data.location) {
       if (typeof response.data.data.location === 'string') {
         try {
-          console.log('📍 Location returned as string, parsing:', response.data.data.location);
+
           response.data.data.location = JSON.parse(response.data.data.location);
-          console.log('📍 Parsed location:', response.data.data.location);
+
         } catch {
-          console.warn('⚠️ Could not parse location string, keeping as-is');
+
         }
       }
     }
@@ -1756,20 +1746,18 @@ export async function updateTaskWithImages(
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Update task with images failed - Full error details:");
-      console.warn("   - Error message:", error?.message);
-      console.warn("   - HTTP status:", error?.response?.status);
-      console.warn("   - Response data:", JSON.stringify(error?.response?.data, null, 2));
+
+
+
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
-        console.log("❌ Update task with images - Authentication required (401)");
       }
       const retryResult = await handleAuthErrorAndRetry();
       if (retryResult.success) {
-        console.log("🔄 Retrying update with images after auth refresh");
+
         return updateTaskWithImages(taskId, updates, newImageUris, existingImages, replaceImages);
       }
       throw new Error("Authentication expired. Please log in again to continue.");
@@ -1798,50 +1786,45 @@ export async function updateTaskWithImages(
 export async function deleteTask(taskId: string): Promise<{ success: boolean; message: string }> {
   const api = getApi();
   try {
-    console.log("🗑️ Starting delete task operation...");
-    console.log("📋 Task ID:", taskId);
-    console.log("🌐 API Base URL:", API_CONFIG.BASE_URL);
-    console.log("🔗 Full delete URL:", `${API_CONFIG.BASE_URL}/tasks/${taskId}`);
-    
+
+
+
+
     // Ensure authentication
     const authResult = await ensureAuthentication();
     if (!authResult.success) {
-      console.error("❌ Authentication failed for delete operation");
+
       return {
         success: false,
         message: authResult.message || "Authentication required. Please log in to delete tasks."
       };
     }
 
-    console.log("🔐 Authentication confirmed for delete operation");
-    
     const response = await api.delete(`/tasks/${taskId}`);
-    console.log("✅ Delete task API response:", response.data);
-    console.log("✅ Delete task HTTP status:", response.status);
-    
+
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Delete task failed - Full error details:");
-      console.warn("   - Error message:", error?.message);
-      console.warn("   - HTTP status:", error?.response?.status);
-      console.warn("   - Response data:", error?.response?.data);
-      console.warn("   - Request URL:", error?.config?.url);
-      console.warn("   - Request method:", error?.config?.method);
-      console.warn("   - Request headers:", error?.config?.headers);
+
+
+
+
+
+
+
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
-        console.log("❌ Delete task - Authentication required (401)");
       }
       
       // Try to handle auth error and retry once
       const retryResult = await handleAuthErrorAndRetry();
       if (retryResult.success) {
-        console.log("🔄 Retrying delete after auth refresh");
+
         return deleteTask(taskId); // Retry once with fresh auth
       }
       
@@ -1853,7 +1836,7 @@ export async function deleteTask(taskId: string): Promise<{ success: boolean; me
     
     // Handle other HTTP errors
     if (error?.response?.status === 404) {
-      console.warn("⚠️ Task not found - treating as already deleted");
+
       return {
         success: true,
         message: "Task was already deleted or not found."
@@ -1862,7 +1845,6 @@ export async function deleteTask(taskId: string): Promise<{ success: boolean; me
     
     if (error?.response?.status === 403) {
       if (__DEV__) {
-        console.log("❌ Delete task - Permission denied (403)");
       }
       return {
         success: false,
@@ -1872,7 +1854,7 @@ export async function deleteTask(taskId: string): Promise<{ success: boolean; me
     
     if (error?.response?.status >= 500) {
       if (__DEV__) {
-        console.log("❌ Delete task - Server error:", error?.response?.status);
+
       }
       return {
         success: false,
@@ -1882,12 +1864,11 @@ export async function deleteTask(taskId: string): Promise<{ success: boolean; me
     
     // Check if this is a "method not allowed" or "endpoint not found" error
     if (error?.response?.status === 405 || error?.response?.status === 404) {
-      console.warn("⚠️ DELETE endpoint may not be implemented on backend server");
-      console.warn("🔄 Falling back to mock delete for development");
-      
+
+
       // Development fallback: simulate successful delete
       if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
-        console.log("🎭 Using mock delete operation for development");
+
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 500));
         
@@ -1905,10 +1886,8 @@ export async function deleteTask(taskId: string): Promise<{ success: boolean; me
     
     // Network errors (server not available)
     if (error?.code === 'ECONNREFUSED' || error?.message?.includes('Network Error') || error?.code === 'ENOTFOUND') {
-      console.warn("🔄 Server not available, using development mode with mock delete");
-      
+
       if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
-        console.log("🎭 Using mock delete operation (server unavailable)");
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 500));
         
@@ -1941,28 +1920,26 @@ export async function deleteTask(taskId: string): Promise<{ success: boolean; me
 export async function getTaskOffers(taskId: string): Promise<TaskOffersResponse> {
   const api = getApi();
   try {
-    console.log("👀 Fetching offers for task:", taskId);
+
     const response = await api.get(`/tasks/${taskId}/offers`);
-    console.log("✅ Get task offers success:", JSON.stringify(response.data, null, 2));
     
     // Log specific offer structure for debugging
     if (response.data?.data?.offers?.length > 0) {
-      console.log("🔍 First offer structure:", JSON.stringify(response.data.data.offers[0], null, 2));
     }
     
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get task offers failed:", error);
+
     }
     
     // Handle authentication errors - return empty offers instead of throwing
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Get task offers failed - Authentication required, returning empty offers");
+
       }
-      console.warn("💡 Please login again to view offers");
+
       return {
         success: false,
         data: {
@@ -1975,7 +1952,7 @@ export async function getTaskOffers(taskId: string): Promise<TaskOffersResponse>
     
     // Handle network errors - return empty offers
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.warn("⚠️ Network error while fetching task offers, returning empty offers");
+
       return {
         success: false,
         data: {
@@ -1999,37 +1976,27 @@ export async function getTaskOffers(taskId: string): Promise<TaskOffersResponse>
 export async function createOffer(taskId: string, offerData: CreateOfferRequest): Promise<CreateOfferResponse> {
   const api = getApi();
   try {
-    console.log("💰 Creating offer for task:", taskId, offerData);
-    
+
     // Clean the offer data - remove currency if it might cause issues
     const cleanOfferData = {
       amount: offerData.amount,
       message: offerData.message
       // Temporarily removing currency to see if that's causing the 400 error
     };
-    
-    console.log("📤 Sending clean offer data:", cleanOfferData);
-    
+
     const response = await api.post(`/tasks/${taskId}/offers`, cleanOfferData);
-    console.log("✅ Create offer success:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Create offer failed:", error);
-      console.warn("⚠️ Error details:", {
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        data: error?.response?.data,
-        message: error.message,
-        requestData: offerData
-      });
+
+
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
-        console.log("❌ Create offer - Authentication required (401)");
       }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
@@ -2037,7 +2004,6 @@ export async function createOffer(taskId: string, offerData: CreateOfferRequest)
     // Handle validation errors (400 Bad Request)
     if (error?.response?.status === 400) {
       if (__DEV__) {
-        console.log("❌ Create offer - Bad Request (400)");
       }
       const errorMessage = error?.response?.data?.message || 
                           error?.response?.data?.error || 
@@ -2106,76 +2072,57 @@ function mapCategoryToServiceType(categoryName: string): string {
 export async function acceptOffer(taskId: string, offerId: string, userId?: string, taskCategory?: string): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("✅ Accepting offer:", { taskId, offerId, userId, taskCategory });
-    
+
     // Try empty body first as API documentation doesn't specify request body requirements
-    console.log("📤 Accept offer - trying with empty body");
-    
+
     // Try the specific accept endpoint first
     try {
       const response = await api.post(`/tasks/${taskId}/offers/${offerId}/accept`, {});
-      console.log("✅ Accept offer success:", response.data);
+
       return response.data;
     } catch (acceptError: any) {
-      console.log("⚠️ Accept endpoint failed with empty body, trying with user data:", {
-        status: acceptError?.response?.status,
-        data: acceptError?.response?.data,
-        message: acceptError.message
-      });
-      
+
       // If empty body fails, try with minimal user data (DO NOT send serviceType - causes validation errors)
       if (acceptError?.response?.status === 500 || acceptError?.response?.status === 400) {
-        console.log("🔄 Trying with minimal user data (no serviceType)");
         const requestBody = {
           userId: userId || ""
         };
         
         try {
           const retryResponse = await api.post(`/tasks/${taskId}/offers/${offerId}/accept`, requestBody);
-          console.log("✅ Accept offer success with user data:", retryResponse.data);
+
           return retryResponse.data;
         } catch (retryError: any) {
-          console.log("❌ Accept endpoint failed again:", retryError?.response?.data);
+
           throw retryError;
         }
       }
       
       // If accept endpoint fails with 404, try updating offer status to 'accepted'
       if (acceptError?.response?.status === 404) {
-        console.log("🔄 Attempting alternative approach: updating offer status to 'accepted'");
+
         const statusUpdateBody = {
           status: 'accepted',
           role: "poster",
           userId: userId || ""
         };
         const updateResponse = await api.put(`/tasks/${taskId}/offers/${offerId}`, statusUpdateBody);
-        console.log("✅ Accept offer via status update success:", updateResponse.data);
+
         return updateResponse.data;
       }
       
       throw acceptError;
     }
   } catch (error: any) {
-    console.log("❌ Accept offer failed:", {
-      message: error.message,
-      status: error?.response?.status,
-      data: error?.response?.data,
-      requestBody: {
-        userId: userId || ""
-        // Note: Not sending serviceType as it causes backend validation errors
-      }
-    });
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.log("❌ Accept offer failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
     // Handle 400 errors with more specific messages
     if (error?.response?.status === 400) {
       const errorMessage = error?.response?.data?.message || "Bad request - invalid offer data";
-      console.log("❌ Accept offer failed - Bad request (400):", errorMessage);
       throw new Error(errorMessage);
     }
     
@@ -2191,20 +2138,19 @@ export async function acceptOffer(taskId: string, offerId: string, userId?: stri
 export async function updateOffer(taskId: string, offerId: string, updates: Partial<CreateOfferRequest>): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("✏️ Updating offer:", { taskId, offerId, updates });
+
     const response = await api.put(`/tasks/${taskId}/offers/${offerId}`, updates);
-    console.log("✅ Update offer success:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.log("⚠️ Update offer failed:", error?.message);
+
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
-        console.log("❌ Update offer - Authentication required (401)");
       }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
@@ -2228,14 +2174,11 @@ export async function getAllOffers(params?: {
 }): Promise<AllOffersResponse> {
   const api = getApi();
   try {
-    console.log("🌍 Fetching all offers by aggregating from tasks...");
-    
+
     // Since /api/offers/all doesn't exist, we'll fetch all tasks and extract their offers
     const tasksResponse = await api.get('/tasks?limit=100&page=1');
     const tasks = tasksResponse.data?.data || [];
-    
-    console.log(`📊 Fetched ${tasks.length} tasks to extract offers`);
-    
+
     // Aggregate all offers from all tasks
     const allOffers: any[] = [];
     
@@ -2269,18 +2212,16 @@ export async function getAllOffers(params?: {
           
           allOffers.push(...enrichedOffers);
         } catch (offerError) {
-          console.warn(`⚠️ Could not fetch offers for task ${task._id}:`, offerError);
+
         }
       }
     }
-    
-    console.log(`✅ Successfully aggregated ${allOffers.length} offers from ${tasks.length} tasks`);
-    
+
     // Apply filtering if taskId parameter is provided
     let filteredOffers = allOffers;
     if (params?.taskId) {
       filteredOffers = allOffers.filter(offer => offer.taskId._id === params.taskId);
-      console.log(`🔍 Filtered to ${filteredOffers.length} offers for task ${params.taskId}`);
+
     }
     
     // Apply sorting
@@ -2314,13 +2255,13 @@ export async function getAllOffers(params?: {
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.log("⚠️ Get all offers failed:", error?.message || error);
+
     }
     
     // Handle authentication errors - return empty data instead of throwing
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.warn("⚠️ Get all offers failed - Authentication required, returning empty data");
-      console.warn("💡 Please login again to view offers");
+
+
       return {
         success: false,
         data: [],
@@ -2335,7 +2276,7 @@ export async function getAllOffers(params?: {
     
     // Handle network errors - return empty data
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.warn("⚠️ Network error while fetching offers, returning empty data");
+
       return {
         success: false,
         data: [],
@@ -2349,7 +2290,7 @@ export async function getAllOffers(params?: {
     }
     
     // For other errors, return empty data instead of crashing
-    console.warn("⚠️ Unexpected error fetching offers, returning empty data");
+
     return {
       success: false,
       data: [],
@@ -2373,20 +2314,19 @@ export async function getAllOffers(params?: {
 export async function getTaskCompletionStatus(taskId: string): Promise<TaskCompletionStatusResponse> {
   const api = getApi();
   try {
-    console.log("📊 Getting completion status for task:", taskId);
+
     const response = await api.get(`/tasks/${taskId}/completion-status`);
-    console.log("✅ Get completion status success:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.log("⚠️ Get completion status failed:", error?.message);
+
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
-        console.log("❌ Get completion status - Authentication required (401)");
       }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
@@ -2403,8 +2343,7 @@ export async function getTaskCompletionStatus(taskId: string): Promise<TaskCompl
 export async function completeTask(taskId: string): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("✅ Completing task:", taskId);
-    
+
     // First, try to get the task details to check if it has an accepted offer
     try {
       const taskDetails = await getTaskById(taskId);
@@ -2412,7 +2351,7 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
       
       // If the task has an accepted offer, we need to complete the offer first
       if (task && task.status === 'todo' && (task as any).acceptedOffer) {
-        console.log("🎯 Task has accepted offer, completing offer first...");
+
         const acceptedOffer = (task as any).acceptedOffer;
         
         // Try to update the offer status to 'completed' first
@@ -2420,10 +2359,9 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
           const offerCompleteResponse = await api.put(`/tasks/${taskId}/offers/${acceptedOffer._id}`, {
             status: 'completed'
           });
-          console.log("✅ Completed offer successfully:", offerCompleteResponse.data);
+
         } catch {
-          console.log("⚠️ Offer completion failed, trying alternative approaches...");
-          
+
           // Try with different status values that might be valid
           const validStatuses = ['finished', 'done', 'complete'];
           
@@ -2432,54 +2370,51 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
               const alternativeResponse = await api.put(`/tasks/${taskId}/offers/${acceptedOffer._id}`, {
                 status: status
               });
-              console.log(`✅ Completed offer with status '${status}':`, alternativeResponse.data);
+
               break;
             } catch {
-              console.log(`❌ Failed to complete offer with status '${status}'`);
+
               continue;
             }
           }
         }
       }
     } catch {
-      console.log("⚠️ Could not fetch task details, proceeding with direct completion...");
+
     }
     
     // Now attempt to complete the task
     const response = await api.patch(`/tasks/${taskId}/complete`);
-    console.log("✅ Complete task success:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.log("⚠️ Complete task failed:", error?.message);
-      console.log("⚠️ Error response:", error?.response?.data);
-      console.log("⚠️ Error status:", error?.response?.status);
+
+
+
     }
     
     // Handle specific error about offer status validation
     if (error?.response?.data?.message?.includes('Offer validation failed')) {
       if (__DEV__) {
-        console.log("❌ Offer validation error - trying alternative completion approach");
+
       }
       
       // Try the PUT method instead of PATCH
       try {
         const altResponse = await api.put(`/tasks/${taskId}/complete`);
-        console.log("✅ Complete task success (PUT method):", altResponse.data);
         return altResponse.data;
       } catch (altError: any) {
-        console.error("❌ Alternative completion method also failed:", altError?.response?.data);
-        
+
         // If both methods fail, try updating task status directly
         try {
           const statusResponse = await api.patch(`/tasks/${taskId}`, {
             status: 'completed'
           });
-          console.log("✅ Complete task success (direct status update):", statusResponse.data);
           return statusResponse.data;
         } catch (statusError: any) {
-          console.error("❌ Direct status update also failed:", statusError?.response?.data);
+
           throw error; // Throw the original error
         }
       }
@@ -2488,7 +2423,6 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
-        console.log("❌ Complete task - Authentication required (401)");
       }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
@@ -2497,7 +2431,6 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
     if (error?.response?.status === 400) {
       const backendMessage = error?.response?.data?.message || error?.response?.data?.error;
       if (__DEV__) {
-        console.log("❌ Complete task - Bad Request (400):", backendMessage);
       }
       throw new Error(backendMessage || "Cannot complete task. Please check the task status.");
     }
@@ -2514,20 +2447,16 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
 export async function completeTaskAlt(taskId: string): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("✅ Completing task (alt):", taskId);
     const response = await api.put(`/tasks/${taskId}/complete`);
-    console.log("✅ Complete task (alt) success:", response.data);
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.log("⚠️ Complete task (alt) failed:", error?.message);
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
-        console.log("❌ Complete task (alt) - Authentication required (401)");
       }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
@@ -2544,13 +2473,12 @@ export async function completeTaskAlt(taskId: string): Promise<{ success: boolea
 export async function getCancellationReasons(type: 'poster' | 'tasker'): Promise<{ success: boolean; data: any[] }> {
   const api = getApi();
   try {
-    console.log("📋 Getting cancellation reasons for:", type);
+
     const response = await api.get(`/tasks/cancellation-reasons?type=${type}`);
-    console.log("✅ Get cancellation reasons success:", response.data);
+
     return response.data;
   } catch (error: any) {
-    console.error("❌ Get cancellation reasons failed:", error);
-    
+
     // Return empty array on failure rather than throwing
     return { success: false, data: [] };
   }
@@ -2564,25 +2492,23 @@ export async function getCancellationReasons(type: 'poster' | 'tasker'): Promise
 export async function cancelTask(taskId: string, reason?: string, reasonId?: string): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("❌ Canceling task:", taskId);
-    console.log("   Reason:", reason);
-    console.log("   Reason ID:", reasonId);
-    
+
+
+
     const payload: any = {};
     if (reason) payload.reason = reason;
     if (reasonId) payload.reasonId = reasonId;
     
     const response = await api.put(`/tasks/${taskId}/cancel`, payload);
-    console.log("✅ Cancel task success:", response.data);
+
     return response.data;
   } catch (error: any) {
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Cancel task failed:", error?.message);
+      // Log error in development
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      if (__DEV__) console.warn("⚠️ Cancel task failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
@@ -2599,35 +2525,29 @@ export async function cancelTask(taskId: string, reason?: string, reasonId?: str
 export async function createCancellationRequest(taskId: string, reason: string): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("📝 Creating cancellation request for task:", taskId);
-    console.log("   Reason:", reason);
-    
+
+
     const response = await api.post(`/tasks/${taskId}/cancel-request`, { reason });
-    console.log("✅ Cancellation request created successfully:", response.data);
-    console.log("   Request ID:", response.data?.data?._id);
-    console.log("   Requester ID:", response.data?.data?.requesterId);
-    console.log("   📊 FULL RESPONSE DATA:", JSON.stringify(response.data, null, 2));
-    console.log("   🎯 Task data in response:", response.data?.data?.task);
-    console.log("   🎯 Task status after request:", response.data?.data?.task?.status);
-    console.log("   🎯 Request status:", response.data?.data?.status);
+
+
+
+
+
+
     return response.data;
   } catch (error: any) {
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Create cancellation request failed:", error?.message);
-      console.warn("   Error status:", error?.response?.status);
-      console.warn("   Task ID:", taskId);
+      // Log error in development
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      if (__DEV__) console.warn("⚠️ Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
     // Handle duplicate request errors (400) - may happen if request already exists
     if (error?.response?.status === 400) {
       const errorMsg = error?.response?.data?.message || "Bad request";
-      console.error("❌ Bad request (400):", errorMsg);
       throw new Error(errorMsg);
     }
     
@@ -2644,39 +2564,35 @@ export async function createCancellationRequest(taskId: string, reason: string):
 export async function getCancellationRequest(taskId: string): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("🔍 Getting cancellation request for task:", taskId);
-    
+
     const response = await api.get(`/tasks/${taskId}/cancel-request`);
-    console.log("✅ Cancellation request retrieved:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Suppress console errors for expected 400/404 responses (no cancellation request exists)
     const isExpectedError = error?.response?.status === 400 || error?.response?.status === 404;
     
     if (!isExpectedError) {
-      console.error("❌ Get cancellation request failed:", error);
-      console.error("   Error status:", error?.response?.status);
-      console.error("   Error data:", error?.response?.data);
-      console.error("   Error message:", error?.message);
-      console.error("   Request URL:", `/tasks/${taskId}/cancel-request`);
+
+
+
+
+
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Get cancellation request failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
     // Return null data if no cancellation request found (404)
     if (error?.response?.status === 404) {
-      console.log("ℹ️ No cancellation request found for task (404) - returning null");
       return { success: true, data: null };
     }
     
     // Handle 400 Bad Request - Backend returns this when no cancellation request exists
     // This is expected behavior for tasks without pending cancellation requests
     if (error?.response?.status === 400) {
-      console.log("ℹ️ No cancellation request found for task (400) - returning null");
       return { success: true, data: null };
     }
     
@@ -2693,39 +2609,32 @@ export async function getCancellationRequest(taskId: string): Promise<{ success:
 export async function respondToCancellationRequest(requestId: string, action: 'accept' | 'reject'): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("✅ Responding to cancellation request:", requestId);
-    console.log("   Action:", action);
-    
+
+
     const response = await api.put(`/tasks/cancel-requests/${requestId}/respond`, { action });
-    console.log("✅ Cancellation request response successful:", response.data);
-    console.log("   Task ID:", response.data?.data?.task?._id);
-    console.log("   New status:", response.data?.data?.task?.status);
+
+
+
     return response.data;
   } catch (error: any) {
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Respond to cancellation request failed:", error?.message);
-      console.warn("   Error status:", error?.response?.status);
-      console.warn("   Request ID:", requestId);
-      console.warn("   Action:", action);
+      // Log error in development
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      if (__DEV__) console.warn("⚠️ Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
     // Handle not found errors (404) - request may have been already processed
     if (error?.response?.status === 404) {
       const errorMsg = error?.response?.data?.message || "Cancellation request not found or already processed";
-      console.error("❌ Not found (404):", errorMsg);
       throw new Error(errorMsg);
     }
     
     // Handle bad request errors (400) - invalid action or request state
     if (error?.response?.status === 400) {
       const errorMsg = error?.response?.data?.message || "Invalid request";
-      console.error("❌ Bad request (400):", errorMsg);
       throw new Error(errorMsg);
     }
     
@@ -2741,16 +2650,14 @@ export async function respondToCancellationRequest(requestId: string, action: 'a
 export async function updateTaskStatus(taskId: string, status: string): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("🔄 Updating task status:", { taskId, status });
+
     const response = await api.put(`/tasks/${taskId}/status`, { status });
-    console.log("✅ Update task status success:", response.data);
+
     return response.data;
   } catch (error: any) {
-    console.error("❌ Update task status failed:", error);
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Update task status failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
@@ -2766,16 +2673,14 @@ export async function updateTaskStatus(taskId: string, status: string): Promise<
 export async function acceptTask(taskId: string): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("🤝 Accepting task:", taskId);
+
     const response = await api.post(`/tasks/${taskId}/accept`);
-    console.log("✅ Accept task success:", response.data);
+
     return response.data;
   } catch (error: any) {
-    console.error("❌ Accept task failed:", error);
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Accept task failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
@@ -2793,16 +2698,14 @@ export async function acceptTask(taskId: string): Promise<{ success: boolean; da
 export async function completePayment(taskId: string, paymentData?: any): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("💳 Completing payment for task:", taskId);
+
     const response = await api.post(`/tasks/${taskId}/complete-payment`, paymentData || {});
-    console.log("✅ Complete payment success:", response.data);
+
     return response.data;
   } catch (error: any) {
-    console.error("❌ Complete payment failed:", error);
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Complete payment failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
@@ -2818,25 +2721,23 @@ export async function completePayment(taskId: string, paymentData?: any): Promis
 export async function getPaymentStatus(): Promise<PaymentStatusResponse> {
   const api = getApi();
   try {
-    console.log("📊 Getting payment status...");
+
     const response = await api.get('/tasks/my-tasks/payment-status');
-    console.log("✅ Get payment status success:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Handle 404 gracefully (endpoint not available)
     if (error?.response?.status === 404) {
-      console.log("ℹ️ Payment status endpoint not available (404) - using fallback");
       return { success: false, data: [] }; // Return empty data instead of throwing
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Get payment status failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
     // Only log other errors, don't throw for better UX
-    console.log("ℹ️ Payment status failed:", error?.response?.status, "- using fallback data");
+
     return { success: false, data: [] };
   }
 }
@@ -2849,13 +2750,12 @@ export async function getPaymentStatus(): Promise<PaymentStatusResponse> {
 export async function getTaskerPayments(): Promise<{ success: boolean; payments: any[] }> {
   const api = getApi();
   try {
-    console.log("💰 Getting tasker payments...");
+
     const response = await api.get('/payments/tasker');
-    console.log("✅ Get tasker payments success:", response.data);
+
     return response.data;
   } catch (error: any) {
-    console.error("❌ Get tasker payments failed:", error);
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
@@ -2874,13 +2774,12 @@ export async function getTaskerPayments(): Promise<{ success: boolean; payments:
 export async function getPosterPayments(): Promise<{ success: boolean; payments: any[] }> {
   const api = getApi();
   try {
-    console.log("💵 Getting poster payments...");
+
     const response = await api.get('/payments/poster');
-    console.log("✅ Get poster payments success:", response.data);
+
     return response.data;
   } catch (error: any) {
-    console.error("❌ Get poster payments failed:", error);
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
@@ -2899,26 +2798,25 @@ export async function getPosterPayments(): Promise<{ success: boolean; payments:
 export async function getTaskQuestions(taskId: string): Promise<{ success: boolean; data: any[] }> {
   const api = getApi();
   try {
-    console.log("❓ Getting questions for task:", taskId);
+
     const response = await api.get(`/tasks/${taskId}/questions`);
-    console.log("✅ Get task questions success:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get task questions failed:", error);
+
     }
     
     // Handle authentication errors (even though this endpoint doesn't require auth)
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Get questions failed - Authentication issue (401)");
       // Don't throw auth error for GET endpoint, just return empty array
       return { success: false, data: [] };
     }
     
     // Handle not found errors
     if (error?.response?.status === 404) {
-      console.log("ℹ️ No questions found for task:", taskId);
+
       return { success: true, data: [] };
     }
     
@@ -2934,22 +2832,19 @@ export async function getTaskQuestions(taskId: string): Promise<{ success: boole
 export async function postTaskQuestion(taskId: string, question: string): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("❓ Posting question for task:", taskId, question);
+
     const response = await api.post(`/tasks/${taskId}/questions`, { question });
-    console.log("✅ Post task question success:", response.data);
+
     return response.data;
   } catch (error: any) {
-    console.error("❌ Post task question failed:", error);
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Post question failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
     // Handle validation errors  
     if (error?.response?.status === 400) {
-      console.error("❌ Post question failed - Bad Request (400)");
       const errorMessage = error?.response?.data?.message || error?.response?.data?.error || "Invalid question data";
       throw new Error(`Validation Error: ${errorMessage}`);
     }
@@ -2966,20 +2861,17 @@ export async function postTaskQuestion(taskId: string, question: string): Promis
 export async function answerTaskQuestion(taskId: string, questionId: string, answer: string): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("💬 Answering question:", { taskId, questionId, answer });
-    
+
     // Try the primary answer endpoint first
     try {
       const response = await api.post(`/tasks/${taskId}/questions/${questionId}/answer`, { answer });
-      console.log("✅ Answer task question success:", response.data);
+
       return response.data;
     } catch (primaryError: any) {
-      console.warn("⚠️ Primary answer endpoint failed, trying alternative:", primaryError?.response?.status);
-      
+
       // If 404, try alternative endpoint patterns
       if (primaryError?.response?.status === 404) {
-        console.log("🔄 Trying alternative endpoint: PUT /tasks/:taskId/questions/:questionId");
-        
+
         try {
           // Try updating the question directly with answer
           const altResponse = await api.put(`/tasks/${taskId}/questions/${questionId}`, { 
@@ -2987,18 +2879,15 @@ export async function answerTaskQuestion(taskId: string, questionId: string, ans
             status: 'answered',
             answeredAt: new Date().toISOString()
           });
-          console.log("✅ Answer task question success (alt method):", altResponse.data);
           return altResponse.data;
         } catch {
-          console.warn("⚠️ Alternative endpoint also failed, trying PATCH method");
-          
+
           // Try PATCH method as final fallback
           const patchResponse = await api.patch(`/tasks/${taskId}/questions/${questionId}`, { 
             answer,
             status: 'answered',
             answeredAt: new Date().toISOString()
           });
-          console.log("✅ Answer task question success (patch method):", patchResponse.data);
           return patchResponse.data;
         }
       } else {
@@ -3006,17 +2895,15 @@ export async function answerTaskQuestion(taskId: string, questionId: string, ans
       }
     }
   } catch (error: any) {
-    console.error("❌ Answer task question failed:", error);
-    
+
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
-      console.error("❌ Answer task question failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
     // Handle not found errors
     if (error?.response?.status === 404) {
-      console.error("❌ Answer endpoint not found - Question or task may not exist");
+
       throw new Error("Could not find the question to answer. Please refresh and try again.");
     }
     
@@ -3032,18 +2919,16 @@ export async function answerTaskQuestion(taskId: string, questionId: string, ans
 export async function getAllPublicQuestions(): Promise<{ success: boolean; data: any[] }> {
   const api = getApi();
   try {
-    console.log("🌍 Getting all public questions...");
-    
+
     // Try the public questions endpoint first
     try {
       const response = await api.get('/questions/public');
-      console.log("✅ Get public questions success:", response.data);
+
       return response.data;
     } catch (endpointError: any) {
       // If public endpoint doesn't exist, aggregate from tasks
       if (endpointError?.response?.status === 404) {
-        console.log("📝 Public questions endpoint not available, aggregating from tasks...");
-        
+
         const tasksResponse = await api.get('/tasks?limit=50');
         const tasks = tasksResponse.data?.data || [];
         
@@ -3068,21 +2953,19 @@ export async function getAllPublicQuestions(): Promise<{ success: boolean; data:
             
             allQuestions.push(...questionsWithContext);
           } catch {
-            console.log(`Failed to get questions for task ${task._id}, skipping...`);
+
           }
         }
         
         // Sort by creation date (newest first)
         allQuestions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        
-        console.log(`✅ Aggregated ${allQuestions.length} public questions from ${tasks.length} tasks`);
+
         return { success: true, data: allQuestions };
       }
       throw endpointError;
     }
   } catch (error: any) {
-    console.error("❌ Get public questions failed:", error);
-    
+
     // Return empty array on failure rather than throwing
     return { success: false, data: [] };
   }
@@ -3096,12 +2979,12 @@ export async function getAllPublicQuestions(): Promise<{ success: boolean; data:
 export async function getUserTasks(userId: string): Promise<{ success: boolean; data: Task[] }> {
   const api = getApi();
   try {
-    console.log("👤 Getting tasks for user:", userId);
+
     const response = await api.get(`/tasks/user/${userId}`);
-    console.log("✅ Get user tasks success:", response.data);
+
     return response.data;
   } catch (error) {
-    console.error("❌ Get user tasks failed:", error);
+
     throw error;
   }
 }

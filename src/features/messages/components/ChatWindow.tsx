@@ -54,9 +54,9 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
   const saveMessagesToStorage = async (taskId: string, messages: ChatMessage[]) => {
     try {
       await AsyncStorage.setItem(getStorageKey(taskId), JSON.stringify(messages));
-      console.log(`💾 Saved ${messages.length} messages to storage for task: ${taskId}`);
+
     } catch (error) {
-      console.error('❌ Failed to save messages to storage:', error);
+
     }
   };
   
@@ -65,11 +65,11 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
       const stored = await AsyncStorage.getItem(getStorageKey(taskId));
       if (stored) {
         const messages = JSON.parse(stored);
-        console.log(`💼 Loaded ${messages.length} messages from storage for task: ${taskId}`);
+
         return messages;
       }
     } catch (error) {
-      console.error('❌ Failed to load messages from storage:', error);
+
     }
     return [];
   };
@@ -83,7 +83,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
         setCurrentUserId(userId);
         setCurrentUserName(userName);
       } catch (error) {
-        console.error('Failed to load user info:', error);
+
       }
     };
     
@@ -95,7 +95,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
   // Reset chat messages when switching to a different chat
   useEffect(() => {
     if (taskId !== lastTaskId && visible) {
-      console.log(`🔄 Switching chat from ${lastTaskId} to ${taskId}`);
+
       setIsFirstLoad(true);
       setChatMessages([]);
       setLastTaskId(taskId || null);
@@ -109,10 +109,10 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
         // First, load from local storage
         const storedMessages = await loadMessagesFromStorage(taskId);
         if (storedMessages.length > 0) {
-          console.log(`💼 Using stored messages for task: ${taskId}`);
+
           setChatMessages(storedMessages);
         } else {
-          console.log(`💭 Starting new conversation for task: ${taskId}`);
+
           setChatMessages([]); // Start with empty array for new conversations
         }
         setIsFirstLoad(false);
@@ -125,8 +125,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
   // Load API messages when available and merge with local storage
   useEffect(() => {
     if (groupChatData?.messages && visible && currentUserId && !isFirstLoad) {
-      console.log(`📡 Loading ${groupChatData.messages.length} messages from API for taskId: ${taskId}`);
-      
+
       const convertedMessages: ChatMessage[] = groupChatData.messages.map(msg => ({
         id: msg.id,
         text: msg.text,
@@ -150,8 +149,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
           if (taskId) {
             saveMessagesToStorage(taskId, mergedMessages);
           }
-          
-          console.log(`🔄 Updated messages state with ${mergedMessages.length} total messages`);
+
           return mergedMessages;
         });
       }
@@ -205,17 +203,14 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
             return updatedMessages;
           });
         }
-        
-        console.log('✅ Message sent successfully for taskId:', taskId);
-        
+
       } catch (error) {
-        console.error('❌ Failed to send message:', error);
-        
+
         // Remove the optimistic message on error
         if (optimisticMsg) {
           setChatMessages(prev => {
             const filtered = prev.filter(msg => msg.id !== optimisticMsg!.id);
-            console.log('🔄 Rolled back optimistic message, remaining:', filtered.length);
+
             // Save the rolled back state
             saveMessagesToStorage(taskId, filtered);
             return filtered;

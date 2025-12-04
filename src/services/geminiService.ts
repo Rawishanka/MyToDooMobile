@@ -17,7 +17,7 @@ export class GeminiService {
     // You'll need to add your Gemini API key to environment variables
     this.apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
     if (!this.apiKey) {
-      console.warn('⚠️ Gemini API key not found in environment variables');
+
     }
   }
 

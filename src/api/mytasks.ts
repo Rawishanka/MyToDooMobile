@@ -1,4 +1,4 @@
-﻿import { useStorageState } from "@/src/shared/hooks/useStorageState";
+import { useStorageState } from "@/src/shared/hooks/useStorageState";
 import { createApi } from "@/src/shared/utils/api";
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useAuthStore } from "@/src/store/auth-task-store";
@@ -33,35 +33,19 @@ export function useApiFunctions() {
 
     // Debug authentication state with more detailed logging
     const authState = useAuthStore.getState();
-    console.log("🔐 Auth state check:", { 
-      hasToken: !!authState.token, 
-      isAuthenticated: authState.isAuthenticated,
-      tokenStart: authState.token?.substring(0, 20) + "...",
-      user: authState.user?.email 
-    });
-    console.log("🔐 Storage token check:", { 
-      hasStoredToken: !!storedToken, 
-      tokenStart: storedToken?.substring(0, 20) + "...",
-      tokenLength: storedToken?.length 
-    });
 
     // Ensure auth store token is synced with storage token
     if (storedToken && !authState.token) {
-      console.log("🔄 Found stored token, setting in auth store without user data");
+
       // Set token without user data - user data will be fetched from API when needed
       setAuthData(storedToken, null, 3600);
     } else if (authState.token && storedToken && authState.token !== storedToken) {
-      console.log("⚠️ Token mismatch between auth store and storage!");
-      console.log("Auth store token:", authState.token?.substring(0, 20) + "...");
-      console.log("Storage token:", storedToken?.substring(0, 20) + "...");
+
     }
 
-    console.log("📝 Creating task with data:", taskData);
-    
     try {
       const response = await api.post('/tasks/post-task', taskData);
-      console.log("✅ Task created successfully:", response.data);
-      
+
       // Update the store with the created task
       if (response.data && response.data.data) {
         updateMyTask(response.data.data);
@@ -71,8 +55,7 @@ export function useApiFunctions() {
     } catch (error: any) {
       // Check for authentication errors first
       if (error?.response?.status === 401) {
-        console.warn("🔐 Authentication failed - using development mode with mock task creation");
-        console.log("✅ Mock task creation successful for development (auth fallback)");
+
         
         // Create a mock task response that matches API format
         const mockTask = {
@@ -132,9 +115,8 @@ export function useApiFunctions() {
       
       // Development fallback - if server is not available, use mock data
       if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.code === 'ENOTFOUND') {
-        console.warn("🔄 Server not available, using development mode with mock task creation");
-        console.log("✅ Mock task creation successful for development");
-        
+
+
         // Create a mock task response that matches API format
         const mockTask = {
           success: true,
@@ -192,10 +174,10 @@ export function useApiFunctions() {
       }
       
       // Only log detailed errors for non-network issues
-      console.error("❌ Error creating task:");
-      console.error("Status:", error?.response?.status);
-      console.error("Response Data:", error?.response?.data);
-      console.error("Full Error:", error);
+
+
+
+
       throw error;
     }
   }
@@ -235,17 +217,14 @@ export function useApiFunctions() {
     
     // Prepare the request payload
     const loginPayload = { email, password };
-    
-    console.log("========================================");
-    console.log("🔐 LOGIN ATTEMPT");
-    console.log("========================================");
-    console.log("📍 API URL:", API_CONFIG.BASE_URL + "/auth/login");
-    console.log("📧 Email:", email);
-    console.log("🔒 Password length:", password?.length || 0, "characters");
-    console.log("📦 Request payload:", JSON.stringify(loginPayload, null, 2));
-    console.log("🌐 BASE_URL from config:", API_CONFIG.BASE_URL);
-    console.log("⏱️ Timeout:", API_CONFIG.TIMEOUT);
-    console.log("========================================");
+
+
+
+
+
+
+
+
 
     try {
       const response = await api.post('/auth/login', loginPayload, {
@@ -256,21 +235,17 @@ export function useApiFunctions() {
         }
       });
 
-      console.log("========================================");
-      console.log("✅ LOGIN SUCCESS");
-      console.log("========================================");
-      console.log("Response status:", response.status);
-      console.log("Response data keys:", Object.keys(response.data || {}));
-      console.log("Has token:", !!response.data?.token);
-      console.log("Has user:", !!response.data?.user);
-      console.log("========================================");
-      
+
+
+
+
+
+
       const { token, user, expiresIn } = response.data;
       
       // Validate that we received a valid token and user from backend
       if (!token || !user) {
-        console.error("❌ Invalid response from server - missing token or user");
-        console.error("Response data:", JSON.stringify(response.data, null, 2));
+
         throw new Error('Invalid response from server');
       }
       
@@ -282,33 +257,30 @@ export function useApiFunctions() {
         await AsyncStorage.setItem('userEmail', email);
         await AsyncStorage.setItem('userPassword', password);
       } catch (storageError) {
-        console.warn('Failed to store credentials in AsyncStorage:', storageError);
+
       }
       
       return token;
     } catch (error: any) {
-      console.log("========================================");
-      console.log("❌ LOGIN FAILED");
-      console.log("========================================");
-      console.log("⚠️ Error type:", error?.constructor?.name || 'Unknown');
-      console.log("⚠️ Error code:", error?.code || 'No code');
-      console.log("⚠️ Error message:", error?.message || 'No message');
-      console.log("⚠️ Response status:", error?.response?.status || 'No status');
-      console.log("⚠️ Response data:", JSON.stringify(error?.response?.data) || 'No data');
-      console.log("⚠️ Request URL:", error?.config?.url || 'No URL');
-      console.log("⚠️ Request method:", error?.config?.method || 'No method');
-      console.log("========================================");
-      
+
+
+
+
+
+
+
+
+
+
       // Development fallback - if server is not available, use mock data
       if (error.code === 'ECONNREFUSED' || 
           error.message?.includes('Network Error') || 
           error.code === 'ENOTFOUND' ||
           error.code === 'ERR_NETWORK') {
-        console.warn("🔄 Server not available - attempting development fallback");
-        
+
         // Development mode fallback
         if (API_CONFIG.DEVELOPMENT_MODE) {
-            console.log("💡 Using development mode fallback...");
+
             // Create mock user session for development
             const mockToken = "dev-token-" + Date.now();
             const mockUser = {
@@ -327,27 +299,21 @@ export function useApiFunctions() {
             try {
                 await AsyncStorage.setItem('userEmail', email);
             } catch (storageError) {
-                console.warn('Failed to store email in AsyncStorage:', storageError);
+
             }
             
             return mockToken;
         }
         
         // Production mode - throw network error
-        console.log("⚠️ Network Error Details:", {
-            code: error?.code || 'No code',
-            message: error?.message || 'No message',
-            url: API_CONFIG.BASE_URL
-        });
+
         throw new Error('Server connection failed. Please check your internet connection or try again later.');
       }
       
       // Log detailed error information without causing Metro crashes
-      console.log("❌ Login failed - Details:");
-      console.log("• Status:", error?.response?.status);
-      console.log("• Response:", JSON.stringify(error?.response?.data));
-      console.log("• Message:", error?.message);
-      
+
+
+
       // Re-throw the original error to preserve response data for proper error handling in the UI
       throw error;
     }
@@ -356,53 +322,37 @@ export function useApiFunctions() {
   async function handleGoogleSignIn(credential: string) {
     // API_CONFIG.BASE_URL already handles the env variable and fallback
     const api = createApi(API_CONFIG.BASE_URL);
-    console.log("Calling Google Sign-In API:", API_CONFIG.BASE_URL + "/auth/google");
-    console.log("With credential token");
+
 
     try {
       const response = await api.post('/auth/google', { credential });
-      console.log("✅ Google Sign-In Success Response:", response.data);
+
       const { token, user, expiresIn } = response.data;
       
       // Enhanced validation with detailed logging
-      console.log("🔍 Backend response details:", {
-        hasToken: !!token,
-        hasUser: !!user,
-        tokenPreview: token?.substring(0, 20) + "...",
-        userDetails: user ? {
-          id: user.id || user._id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          avatar: user.avatar ? "has avatar" : "no avatar"
-        } : "NO USER DATA"
-      });
       
       // Validate that we received a valid token and user from backend
       if (!token) {
-        console.error("❌ No token in backend response");
+
         throw new Error('No authentication token received from server');
       }
       
       if (!user) {
-        console.error("❌ No user data in backend response");
+
         throw new Error('No user data received from server');
       }
-      
-      console.log("✅ Calling setAuthData with validated data...");
+
       setAuthData(token, user, expiresIn);
       setStoredToken(token);
-      
-      console.log("✅ Returning data to React Query...");
+
       return { token, user };
     } catch (error: any) {
       // Log detailed error information
-      console.error("❌ Google Sign-In failed:");
-      console.error("Status:", error?.response?.status);
-      console.error("Status Text:", error?.response?.statusText);
-      console.error("Response Data:", error?.response?.data);
-      console.error("Error Message:", error?.message);
-      
+
+
+
+
+
       // Re-throw the error to be handled by the UI layer
       throw error;
     }
@@ -411,8 +361,7 @@ export function useApiFunctions() {
   async function handleSignUpUser(signUpData: SignUpRequest) {
     // Check if we should use mock API only
     if (API_CONFIG.USE_MOCK_ONLY) {
-      console.log("🎭 Using Mock Signup (development mode)");
-      console.log("✅ Mock signup successful for development");
+
       // Create a mock signup response for development
       const mockResponse = {
         success: true,
@@ -425,38 +374,35 @@ export function useApiFunctions() {
     
     // API_CONFIG.BASE_URL already handles the env variable and fallback
     const api = createApi(API_CONFIG.BASE_URL);
-    console.log("Calling signup API:", API_CONFIG.BASE_URL + "/auth/signup");
-    console.log("With data:", signUpData);
+
 
     try {
       const response = await api.post('/auth/signup', signUpData);
-      console.log("✅ Signup Success Response:", response.data);
-      
+
       // Return the response data which should include OTP sent message
       return response.data;
     } catch (error: any) {
       // Development fallback - if server is not available, use mock data
       if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.code === 'ENOTFOUND') {
-        console.warn("🔄 Server not available, using development mode with mock signup");
-        console.log("✅ Mock signup successful for development");
+
+
         // Create a mock signup response for development
         const mockResponse = {
           success: true,
           message: "OTP sent to your email",
           email: signUpData.email
         };
-        console.log("Signup response:", mockResponse);
+
         return mockResponse;
       }
       
       // Only log detailed errors for non-network issues
-      console.error("❌ Signup failed with detailed error:");
-      console.error("Status:", error?.response?.status);
-      console.error("Status Text:", error?.response?.statusText);
-      console.error("Response Data:", error?.response?.data);
-      console.error("Request Config:", error?.config);
-      console.error("Full Error:", error);
-      
+
+
+
+
+
+
       throw error;
     }
   }
@@ -464,29 +410,25 @@ export function useApiFunctions() {
   async function handleVerifyOTP(email: string, otp: string) {
     // API_CONFIG.BASE_URL already handles the env variable and fallback
     const api = createApi(API_CONFIG.BASE_URL);
-    
-    console.log("Attempting email OTP verification with:", email, "OTP:", otp);
-    
+
     try {
       // Use the original endpoint: /two-factor-auth/otp-verification
       const endpoint = '/two-factor-auth/otp-verification';
-      console.log(`Trying OTP verification endpoint: ${API_CONFIG.BASE_URL}${endpoint}`);
-      
+
       // Backend expects { email, otp }
       const requestData = { email, otp };
       
       const response = await api.post(endpoint, requestData);
-      console.log(`✅ Email OTP Verification Success:`, response.data);
+
       return response.data;
       
     } catch (error: any) {
       // Check for network errors and fall back to development mode
       if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.code === 'ENOTFOUND') {
-        console.warn("🔄 Server not available, using development mode with mock OTP verification");
+
         // Mock OTP verification - accept any 4-6 digit code
         if (otp && otp.length >= 4 && otp.length <= 6 && /^\d+$/.test(otp)) {
-          console.log("✅ Mock OTP verification successful for development");
-          
+
           // Create a mock user session for development
           const mockToken = "dev-mock-token-" + Date.now();
           const mockUser = {
@@ -505,9 +447,7 @@ export function useApiFunctions() {
           
           // Store credentials for login attempts
           await AsyncStorage.setItem('userEmail', email);
-          
-          console.log("✅ Development mode: Created mock user session for network fallback");
-          
+
           return {
             success: true,
             message: "Email verified successfully",
@@ -527,22 +467,18 @@ export function useApiFunctions() {
         throw new Error('OTP verification endpoint not found. Please check your backend configuration.');
       } else if (status === 400 || status === 401) {
         // Bad request or unauthorized - endpoint exists but OTP/email is wrong
-        console.error("❌ Email OTP Verification failed - Invalid OTP or email:");
-        console.error("Status:", status);
-        console.error("Response Data:", error?.response?.data);
-        
+
+
+
         const errorMessage = error?.response?.data?.message || 'Invalid OTP. Please try again.';
         throw new Error(errorMessage);
       } else if (status === 500) {
         // Special case: Backend has internal server errors - likely development mode issues
-        console.warn("⚠️ Backend has internal server error (500) - this might be due to development mode or backend problems");
-        console.warn("🔄 Attempting development mode fallback with mock OTP verification");
-        console.warn("Backend response:", responseMessage);
-        
+
+
         // In development mode, try to accept common test OTPs or any 6-digit code
         if (otp && otp.length >= 4 && otp.length <= 6 && /^\d+$/.test(otp)) {
-          console.log("✅ Development mode: accepting OTP format for mock verification");
-          
+
           // Create a mock user session for development
           const mockToken = "dev-otp-verified-" + Date.now();
           const mockUser = {
@@ -561,9 +497,7 @@ export function useApiFunctions() {
           
           // Store credentials for login attempts
           await AsyncStorage.setItem('userEmail', email);
-          
-          console.log("✅ Development mode: Created mock user session");
-          
+
           return {
             success: true,
             message: "Email verified successfully (development mode)",
@@ -576,11 +510,10 @@ export function useApiFunctions() {
         }
       } else {
         // Other error
-        console.error("❌ Email OTP Verification failed with error:");
-        console.error("Status:", status);
-        console.error("Response Data:", error?.response?.data);
-        console.error("Full Error:", error);
-        
+
+
+
+
         const errorMessage = error?.response?.data?.message || 'OTP verification failed. Please try again.';
         throw new Error(errorMessage);
       }
@@ -590,33 +523,25 @@ export function useApiFunctions() {
   async function getAllTasks() {
     // Check if we should use mock API only
     if (API_CONFIG.USE_MOCK_ONLY) {
-      console.log("🎭 Using Mock Tasks (development mode)");
       const { MockApiService } = await import('./mock-api');
       return await MockApiService.getAllTasks();
     }
 
     // API_CONFIG.BASE_URL already handles the env variable and fallback
     const api = createApi(API_CONFIG.BASE_URL);
-    console.log("🔧 API Configuration Debug:", {
-      baseUrl: API_CONFIG.BASE_URL,
-      currentTime: new Date().toISOString(),
-      useMockOnly: API_CONFIG.USE_MOCK_ONLY
-    });
-    console.log("Calling get all tasks API:", API_CONFIG.BASE_URL + "/tasks");
 
     try {
       const response = await api.get('/tasks');
-      console.log("✅ Get all tasks response:", response.data);
+
       return response.data;
     } catch (error: any) {
-      console.error("❌ Get all tasks failed:", error);
-      
+
       // Development fallback - if server is not available, use mock data
       if (error.code === 'ECONNREFUSED' || 
           error.message?.includes('Network Error') || 
           error.code === 'ENOTFOUND' ||
           error.code === 'ERR_NETWORK') {
-        console.warn("🎭 Server not available, using Mock Tasks for development");
+
         const { MockApiService } = await import('./mock-api');
         return await MockApiService.getAllTasks();
       }
@@ -629,18 +554,16 @@ export function useApiFunctions() {
     // API_CONFIG.BASE_URL already handles the env variable and fallback
     const api = createApi(API_CONFIG.BASE_URL);
     const endpoint = `/tasks/my-tasks?section=${section}`;
-    console.log("📋 Calling get my tasks API:", API_CONFIG.BASE_URL + endpoint);
 
     try {
       const response = await api.get(endpoint);
-      console.log("✅ Get my tasks response:", response.data);
+
       return response.data;
     } catch (error: any) {
       // Development fallback - if server is not available, use mock data
       if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.code === 'ENOTFOUND') {
-        console.warn("🔄 Server not available, using development mode with mock my tasks");
-        console.log("✅ Mock my tasks data for development");
-        
+
+
         // Create mock my tasks response that matches API format
         const mockMyTasks = {
           success: true,
@@ -699,7 +622,7 @@ export function useApiFunctions() {
       
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Get my tasks failed:", error);
+
       }
       throw error;
     }
@@ -741,21 +664,19 @@ export function useApiFunctions() {
     // API_CONFIG.BASE_URL already handles the env variable and fallback
     const api = createApi(API_CONFIG.BASE_URL);
 
-    console.log("🏷️ Fetching categories from /api/categories endpoint...");
-
     try {
       const response = await api.get('/categories');
-      console.log("✅ Categories API response:", response.data);
+
       return response.data;
     } catch (error: any) {
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Get categories failed:", error);
+
       }
       
       // If categories endpoint doesn't exist, try extracting from tasks
       if (__DEV__) {
-        console.log("⚠️ Trying to extract categories from tasks...");
+
       }
       try {
         const tasksResponse = await api.get('/tasks');
@@ -772,15 +693,14 @@ export function useApiFunctions() {
         });
         
         const categories = Array.from(categoriesSet).map(name => ({ name, count: 0 }));
-        console.log("✅ Categories extracted from tasks:", categories);
-        
+
         return {
           success: true,
           data: categories,
           total: categories.length
         };
       } catch (tasksError) {
-        console.error("❌ Failed to extract categories from tasks:", tasksError);
+
         throw error;
       }
     }

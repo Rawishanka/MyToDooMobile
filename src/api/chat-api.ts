@@ -21,7 +21,7 @@ class ChatAPIService {
   private async getAuthHeaders() {
     const token = await AsyncStorage.getItem('token');
     if (!token) {
-      console.log('⚠️ No auth token found in storage');
+
     }
     return {
       'Content-Type': 'application/json',
@@ -31,11 +31,11 @@ class ChatAPIService {
 
   private async refreshAuthToken(): Promise<boolean> {
     try {
-      console.log('🔄 Attempting to refresh auth token...');
+
       // Try to get a fresh token - this would normally call your auth refresh endpoint
       const refreshToken = await AsyncStorage.getItem('refreshToken');
       if (!refreshToken) {
-        console.log('❌ No refresh token available');
+
         return false;
       }
 
@@ -44,7 +44,7 @@ class ChatAPIService {
       const userEmail = await AsyncStorage.getItem('userEmail');
       
       if (userEmail) {
-        console.log('💡 Token refresh would happen here with your auth endpoint');
+
         // For now, return false to indicate we need user to re-login
         return false;
       }
@@ -52,14 +52,14 @@ class ChatAPIService {
       return false;
     } catch (error: any) {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Token refresh failed:', error?.message);
+
       }
       return false;
     }
   }
 
   private async handleAuthError(): Promise<void> {
-    console.log('🔐 Handling authentication error - clearing stored tokens');
+
     await AsyncStorage.multiRemove(['token', 'refreshToken', 'user']);
     // You might want to redirect to login screen here
     // This depends on your navigation setup
@@ -68,15 +68,12 @@ class ChatAPIService {
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}, retries = 2): Promise<T> {
     const url = `${API_CONFIG.BASE_URL}${endpoint}`;
     const headers = await this.getAuthHeaders();
-    
-    console.log(`📡 Chat API Request: ${options.method || 'GET'} ${url}`);
-    
+
     for (let attempt = 1; attempt <= retries + 1; attempt++) {
       try {
         const controller = new AbortController();
         // Increase timeout to 45 seconds for chat API
         const timeoutId = setTimeout(() => {
-          console.log(`⏰ Request timeout after 45s (attempt ${attempt})`);
           controller.abort();
         }, 45000);
 
@@ -92,33 +89,31 @@ class ChatAPIService {
         clearTimeout(timeoutId);
 
         const responseText = await response.text();
-        console.log(`📥 Chat API Response [${response.status}]:`, responseText.substring(0, 200));
 
         if (!response.ok) {
           // Handle specific error cases
           if (response.status === 404) {
-            console.log(`🔍 Resource not found: ${endpoint}`);
+
             throw new Error(`Resource not found: ${endpoint}`);
           } else if (response.status === 401) {
-            console.log(`🔐 Authentication failed - token may be expired`);
-            
+
             // Try to refresh token on first attempt
             if (attempt === 1) {
               const refreshed = await this.refreshAuthToken();
               if (refreshed) {
-                console.log('✅ Token refreshed, retrying request...');
+
                 continue; // Retry with new token
               } else {
-                console.log('❌ Token refresh failed, clearing auth data');
+
                 await this.handleAuthError();
               }
             }
             
             throw new Error('Authentication failed - please log in again');
           } else if (response.status >= 500) {
-            console.log(`🚨 Server error ${response.status} - will retry if attempts remain`);
+
             if (attempt <= retries) {
-              console.log(`🔄 Retrying in ${attempt * 1000}ms...`);
+
               await new Promise(resolve => setTimeout(resolve, attempt * 1000));
               continue;
             }
@@ -130,14 +125,12 @@ class ChatAPIService {
       } catch (error: any) {
         // Silent network error handling - only log non-network errors in dev
         if (!isNetworkError(error) && __DEV__) {
-          console.warn(`⚠️ Chat API Error (attempt ${attempt}/${retries + 1}):`, error?.message);
         }
         
         // Handle abort errors with graceful message
         if (error.name === 'AbortError') {
-          console.log(`⏰ Request aborted due to timeout (attempt ${attempt})`);
           if (attempt <= retries) {
-            console.log(`🔄 Retrying after timeout...`);
+
             await new Promise(resolve => setTimeout(resolve, 2000));
             continue;
           } else {
@@ -147,9 +140,8 @@ class ChatAPIService {
         
         // Handle network errors
         if (error.message.includes('Failed to fetch') || error.message.includes('Network request failed')) {
-          console.log(`🌐 Network error detected (attempt ${attempt})`);
           if (attempt <= retries) {
-            console.log(`🔄 Retrying after network error...`);
+
             await new Promise(resolve => setTimeout(resolve, 2000));
             continue;
           } else {
@@ -169,7 +161,7 @@ class ChatAPIService {
         }
         
         // Wait before retry
-        console.log(`🔄 Retrying in ${attempt * 1000}ms...`);
+
         await new Promise(resolve => setTimeout(resolve, attempt * 1000));
       }
     }
@@ -197,8 +189,7 @@ class ChatAPIService {
 
   // 4. Get group chat messages
   async getGroupChatMessages(taskId: string, limit: number = 50): Promise<GroupChatResponse> {
-    console.log(`📡 Getting group chat messages for task: ${taskId}`);
-    
+
     try {
       // Try to get chat data from the main chat list first to check if chat exists
       const chatListResponse = await this.getAllChats();
@@ -209,8 +200,7 @@ class ChatAPIService {
         
         if (chatItem && chatItem.lastMessage) {
           // If we have a chat with messages, try to extract message history
-          console.log(`💬 Found existing chat with last message: ${chatItem.lastMessage.text}`);
-          
+
           // Create a message object from the last message
           const lastMessage = {
             id: `msg_${Date.now()}`,
@@ -231,8 +221,7 @@ class ChatAPIService {
           };
         }
       }
-      
-      console.log(`💭 No existing messages found for task: ${taskId}`);
+
       return {
         success: true,
         groupChatId: taskId,
@@ -243,7 +232,7 @@ class ChatAPIService {
       
     } catch (error: any) {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn(`⚠️ Error getting group chat messages:`, error?.message);
+
       }
       return {
         success: false,
@@ -257,9 +246,8 @@ class ChatAPIService {
 
   // 5. Send group chat message
   async sendGroupChatMessage(taskId: string, message: SendGroupMessageRequest): Promise<SendGroupMessageResponse> {
-    console.log(`📤 Sending group chat message for task: ${taskId}`);
-    console.log(`📝 Message content: ${message.text}`);
-    
+
+
     try {
       // Since direct message sending endpoints don't exist, we'll simulate the response
       // and rely on Firebase or local storage for persistence
@@ -269,9 +257,7 @@ class ChatAPIService {
       
       // In a real app, this would update the backend chat list with the new last message
       // For now, we'll return a success response that the UI can use
-      
-      console.log(`✅ Message sent successfully with ID: ${messageId}`);
-      
+
       return {
         success: true,
         messageId: messageId,
@@ -282,7 +268,7 @@ class ChatAPIService {
       
     } catch (error: any) {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn(`⚠️ Error sending group chat message:`, error?.message);
+
       }
       throw new Error(`Failed to send message: ${error}`);
     }

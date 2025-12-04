@@ -36,19 +36,15 @@ export async function startRatifyIdVerification(
   verificationData: RatifyIdRequest
 ): Promise<ApiResponse<RatifyIdResponse>> {
   try {
-    console.log('🆔 Starting Ratify ID verification for user:', verificationData.userId);
-    
+
     const response = await api.post('/verification/ratify-id/start', verificationData);
-    console.log('✅ Ratify ID verification started successfully:', response.data);
-    
+
     return response.data;
   } catch (error: any) {
-    console.error('❌ Ratify ID verification failed:', error);
-    
+
     // If API is not available, simulate the verification process
     if (error.code === 'ERR_NETWORK' || error.response?.status === 404) {
-      console.log('⚠️ Ratify ID API not available - simulating verification process');
-      
+
       // Simulate a successful verification start
       const mockResponse: RatifyIdResponse = {
         verificationId: `ratify_${Date.now()}_${Math.random().toString(36).substring(7)}`,
@@ -77,19 +73,15 @@ export async function getRatifyIdStatus(
   verificationId: string
 ): Promise<ApiResponse<VerificationStatusResponse>> {
   try {
-    console.log('📋 Checking Ratify ID verification status:', verificationId);
-    
+
     const response = await api.get(`/verification/ratify-id/status/${verificationId}`);
-    console.log('✅ Verification status retrieved:', response.data);
-    
+
     return response.data;
   } catch (error: any) {
-    console.error('❌ Failed to get verification status:', error);
-    
+
     // If API is not available, simulate status check
     if (error.code === 'ERR_NETWORK' || error.response?.status === 404) {
-      console.log('⚠️ Ratify ID API not available - simulating status check');
-      
+
       // For demo purposes, simulate a completed verification after some time
       const mockStatus: VerificationStatusResponse = {
         verificationId,
@@ -119,23 +111,19 @@ export async function updateUserVerificationStatus(
   status: 'verified' | 'rejected'
 ): Promise<ApiResponse<{ isVerified: boolean }>> {
   try {
-    console.log('🔄 Updating user verification status:', { userId, verificationId, status });
-    
+
     const response = await api.patch('/users/verification-status', {
       userId,
       verificationId,
       status
     });
-    console.log('✅ User verification status updated:', response.data);
-    
+
     return response.data;
   } catch (error: any) {
-    console.error('❌ Failed to update verification status:', error);
-    
+
     // If API is not available, simulate successful update
     if (error.code === 'ERR_NETWORK' || error.response?.status === 404) {
-      console.log('⚠️ API not available - simulating verification status update');
-      
+
       return {
         success: true,
         data: { 

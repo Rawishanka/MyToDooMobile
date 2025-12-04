@@ -31,7 +31,7 @@ export const GetMoreReviewsSection: React.FC<GetMoreReviewsProps> = ({ userId, u
         Alert.alert('Link Copied', 'Review link copied to clipboard!');
       }
     } catch (error) {
-      console.error('Share error:', error);
+
       // Fallback: try to copy to clipboard
       try {
         const reviewLink = `http://134.199.172.167:3000/review/${userId}`;

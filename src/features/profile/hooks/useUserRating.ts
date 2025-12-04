@@ -59,8 +59,7 @@ export const useUserRating = (userId: string): UseUserRatingResult => {
         setRatingData(newRatingData);
         setCurrentPage(page);
       } catch (apiError) {
-        console.warn('🔄 Rating API not available, using fallback data:', apiError);
-        
+
         // Fallback data when API is not available
         const fallbackData: UserRatingData = {
           stats: {
@@ -99,7 +98,7 @@ export const useUserRating = (userId: string): UseUserRatingResult => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch ratings';
       setError(errorMessage);
-      console.error('Error fetching user ratings:', err);
+
     } finally {
       setLoading(false);
     }

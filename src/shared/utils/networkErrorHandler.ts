@@ -41,7 +41,7 @@ export const handleApiError = (error: any, context: string): NetworkErrorRespons
 
   // Only log in development mode and only as warnings
   if (__DEV__ && isNetwork) {
-    console.warn(`⚠️ ${context}: Network connection issue detected`);
+
   }
 
   return {

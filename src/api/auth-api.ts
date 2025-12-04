@@ -37,9 +37,8 @@ export async function forgotPassword(data: ForgotPasswordRequest): Promise<Forgo
   const api = createApi(baseUrl);
   
   try {
-    console.log("📧 Sending password reset email to:", data.email);
-    console.log("🔗 API URL:", baseUrl + "/auth/forgot-password");
-    
+
+
     // Add platform parameter to tell backend this is mobile
     const requestData = {
       ...data,
@@ -48,11 +47,10 @@ export async function forgotPassword(data: ForgotPasswordRequest): Promise<Forgo
     };
     
     const response = await api.post<ForgotPasswordResponse>('/auth/forgot-password', requestData);
-    console.log("✅ Forgot password success:", response.data);
+
     return response.data;
   } catch (error: any) {
-    console.error("❌ Forgot password failed:", error);
-    
+
     // Re-throw with more context for better error handling
     if (error.response) {
       // Server responded with an error
@@ -88,15 +86,13 @@ export async function resetPassword(data: ResetPasswordRequest): Promise<ResetPa
   const api = createApi(baseUrl);
   
   try {
-    console.log("🔐 Resetting password for:", data.email);
-    console.log("🔗 API URL:", baseUrl + "/auth/reset-password");
-    
+
+
     const response = await api.post<ResetPasswordResponse>('/auth/reset-password', data);
-    console.log("✅ Reset password success:", response.data);
+
     return response.data;
   } catch (error: any) {
-    console.error("❌ Reset password failed:", error);
-    
+
     // Re-throw with more context for better error handling
     if (error.response) {
       // Server responded with an error

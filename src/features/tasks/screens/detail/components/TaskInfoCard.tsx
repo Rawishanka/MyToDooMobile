@@ -622,7 +622,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
             // Clean up any JSON remnants from address
             let cleanAddress = address;
             if (typeof address === 'string' && (address.includes('{') || address.includes('"coordinates"'))) {
-              console.warn('⚠️ TaskInfoCard: Address contains JSON remnants:', address);
+
               // Try to extract just the address part
               const match = address.match(/"address":"([^"]+)"/);
               if (match) {

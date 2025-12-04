@@ -65,7 +65,7 @@ export default function OnboardingCarousel() {
         setImagesLoaded(true);
         await SplashScreen.hideAsync();
       } catch (error) {
-        console.log('Error preloading images:', error);
+
         setImagesLoaded(true);
         await SplashScreen.hideAsync();
       }

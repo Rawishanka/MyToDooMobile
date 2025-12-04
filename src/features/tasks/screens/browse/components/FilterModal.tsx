@@ -65,19 +65,11 @@ export default function FilterModal({
 
   // Filter categories based on search text with prioritized sorting
   const filteredCategories = useMemo(() => {
-    console.log('🔍 FilterModal: Category filtering debug:', {
-      searchText: categorySearchText,
-      totalCategories: categories.length,
-      trimmedSearch: categorySearchText.trim()
-    });
-
     if (!categorySearchText.trim()) {
-      console.log('✅ No search text, returning all categories:', categories.length);
       return categories;
     }
 
     const searchLower = categorySearchText.toLowerCase().trim();
-    console.log('🔍 Searching for:', searchLower);
 
     // Filter and categorize matches
     const startingMatches: string[] = [];
@@ -85,7 +77,7 @@ export default function FilterModal({
 
     categories.forEach(cat => {
       if (!cat || typeof cat !== 'string') {
-        console.warn('⚠️ Invalid category found:', cat);
+
         return;
       }
       
@@ -102,14 +94,6 @@ export default function FilterModal({
 
     // Combine results: starting matches first, then containing matches
     const filtered = [...startingMatches, ...containingMatches];
-
-    console.log('🎯 Filtered results:', {
-      searchTerm: searchLower,
-      startingMatches: startingMatches.length,
-      containingMatches: containingMatches.length,
-      totalMatched: filtered.length,
-      orderedCategories: filtered
-    });
 
     return filtered;
   }, [categories, categorySearchText]);

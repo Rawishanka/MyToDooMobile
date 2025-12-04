@@ -138,15 +138,15 @@ export interface RequestReviewRequest {
  */
 export async function getUserProfile(): Promise<UserProfileResponse> {
   try {
-    console.log("👤 Fetching user profile...");
+
     const response = await api.get('/users/profile');
-    console.log("✅ User profile fetched successfully:", response.data);
+
     return response.data;
   } catch (error: any) {
     // 🚨 CRITICAL FIX: Don't return mock data to prevent cache persistence
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get user profile failed:", error?.response?.status || error?.code || error?.message);
+
     }
     
     // For auth errors, throw the error to prevent cache pollution
@@ -154,7 +154,7 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
         error?.response?.status === 401 || 
         error?.status === 401) {
       if (__DEV__) {
-        console.log("⚠️ 401 Unauthorized - Authentication may have expired");
+
       }
       throw error; // Let the UI handle the auth error
     }
@@ -162,14 +162,14 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
     // For network errors, also throw to prevent mock data cache persistence
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
       if (__DEV__) {
-        console.log("⚠️ Network error - no mock data to prevent cache pollution");
+
       }
       throw error; // Let the UI handle the network error
     }
     
     // For other errors, log and throw
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get user profile failed:", error);
+
     }
     throw error;
   }
@@ -181,20 +181,20 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
  */
 export async function updateUserProfile(profileData: UpdateProfileRequest): Promise<UserProfileResponse> {
   try {
-    console.log("📝 Updating user profile:", profileData);
+
     const response = await api.put('/users/profile', profileData);
-    console.log("✅ User profile updated successfully:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Handle auth errors
     if (error?.isAuthError || error?.status === 401) {
-      console.log("ℹ️ Authentication required to update profile");
+
       throw new Error("Please login to update your profile");
     }
     
     // Network error fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.log("ℹ️ Network unavailable - Using mock update response");
+
       return {
         success: true,
         data: {
@@ -222,7 +222,7 @@ export async function updateUserProfile(profileData: UpdateProfileRequest): Prom
     
     // For other errors, log and throw
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Update user profile failed:", error);
+
     }
     throw error;
   }
@@ -234,17 +234,16 @@ export async function updateUserProfile(profileData: UpdateProfileRequest): Prom
  */
 export async function uploadUserAvatar(formData: FormData): Promise<UserProfileResponse> {
   try {
-    console.log("📸 Uploading user avatar...");
+
     const response = await api.post('/users/avatar', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
-    console.log("✅ Avatar uploaded successfully:", response.data);
+
     return response.data;
   } catch (error: any) {
-    console.log("⚠️ Avatar upload error:", error?.response?.status || error?.code || error?.message);
-    
+
     // Handle auth errors (401) or network errors - use mock data for development
     if (error?.isAuthError || 
         error?.response?.status === 401 || 
@@ -252,7 +251,6 @@ export async function uploadUserAvatar(formData: FormData): Promise<UserProfileR
         error.code === 'ERR_NETWORK' || 
         error.message === 'Network Error') {
       
-      console.log("ℹ️ Using mock avatar upload for development (auth or network issue)");
       
       // Extract the actual image URI from FormData for better mock response
       let mockAvatar = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."; // Default mock
@@ -264,7 +262,7 @@ export async function uploadUserAvatar(formData: FormData): Promise<UserProfileR
           mockAvatar = avatarData.uri; // Use the actual selected image URI
         }
       } catch (e) {
-        console.log("Could not extract image URI from FormData, using default mock");
+
       }
       
       return {
@@ -295,7 +293,7 @@ export async function uploadUserAvatar(formData: FormData): Promise<UserProfileR
     
     // For other errors, log and throw
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Upload avatar failed:", error);
+
     }
     throw error;
   }
@@ -307,14 +305,14 @@ export async function uploadUserAvatar(formData: FormData): Promise<UserProfileR
  */
 export async function getUserRatingStats(userId: string): Promise<RatingStatsResponse> {
   try {
-    console.log(`📊 Fetching rating stats for user ${userId}...`);
+
     const response = await api.get(`/users/${userId}/rating-stats`);
-    console.log("✅ Rating stats fetched successfully:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Network error fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.log("ℹ️ Network unavailable - Using mock rating stats");
+
       return {
         success: true,
         data: {
@@ -341,7 +339,7 @@ export async function getUserRatingStats(userId: string): Promise<RatingStatsRes
     }
     
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get rating stats failed:", error);
+
     }
     throw error;
   }
@@ -359,18 +357,18 @@ export async function getUserReviews(
   populate?: string
 ): Promise<ReviewsListResponse> {
   try {
-    console.log(`📝 Fetching reviews for user ${userId}, page: ${page}`);
+
     const params: any = { page, limit };
     if (role) params.role = role;
     if (populate) params.populate = populate;
     
     const response = await api.get(`/users/${userId}/reviews`, { params });
-    console.log("✅ Reviews fetched successfully:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Network error fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.log("ℹ️ Network unavailable - Using mock reviews");
+
       return {
         success: true,
         data: [],
@@ -384,7 +382,7 @@ export async function getUserReviews(
     }
     
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get reviews failed:", error);
+
     }
     throw error;
   }
@@ -396,14 +394,14 @@ export async function getUserReviews(
  */
 export async function submitUserReview(userId: string, review: SubmitReviewData): Promise<{ success: boolean; message: string }> {
   try {
-    console.log(`✍️ Submitting review for user ${userId}:`, review);
+
     const response = await api.post(`/users/${userId}/reviews`, review);
-    console.log("✅ Review submitted successfully:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Network error fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.log("ℹ️ Network unavailable - Using mock review submission");
+
       return {
         success: true,
         message: "Review submitted successfully (mock)"
@@ -411,7 +409,7 @@ export async function submitUserReview(userId: string, review: SubmitReviewData)
     }
     
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Submit review failed:", error);
+
     }
     throw error;
   }
@@ -423,14 +421,14 @@ export async function submitUserReview(userId: string, review: SubmitReviewData)
  */
 export async function canReviewUser(userId: string): Promise<{ success: boolean; canReview: boolean; reason?: string }> {
   try {
-    console.log(`🔍 Checking if can review user ${userId}...`);
+
     const response = await api.get(`/users/${userId}/can-review`);
-    console.log("✅ Can review check successful:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Network error fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.log("ℹ️ Network unavailable - Using mock can review response");
+
       return {
         success: true,
         canReview: true
@@ -438,7 +436,7 @@ export async function canReviewUser(userId: string): Promise<{ success: boolean;
     }
     
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Can review check failed:", error);
+
     }
     throw error;
   }
@@ -450,24 +448,16 @@ export async function canReviewUser(userId: string): Promise<{ success: boolean;
  */
 export async function requestReview(requestData: RequestReviewRequest): Promise<{ success: boolean; message: string; sentTo: string; method: string }> {
   try {
-    console.log("📧 Requesting review with data:", JSON.stringify(requestData, null, 2));
-    console.log("📧 Request URL: /users/request-review");
-    
+
     const response = await api.post('/users/request-review', requestData);
-    console.log("✅ Review request sent successfully:", response.data);
+
     return response.data;
   } catch (error: any) {
     // Enhanced error logging - only for non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Request review failed with error:", error);
-      console.warn("⚠️ Error response:", error?.response?.data);
-      console.warn("⚠️ Error status:", error?.response?.status);
-      console.warn("⚠️ Error config:", {
-        url: error?.config?.url,
-        method: error?.config?.method,
-        data: error?.config?.data,
-        headers: error?.config?.headers ? Object.keys(error?.config?.headers) : 'none'
-      });
+
+
+
     }
     
     // Get error details
@@ -478,9 +468,8 @@ export async function requestReview(requestData: RequestReviewRequest): Promise<
     if (errorMessage.includes('Twilio') || 
         errorMessage.includes('country mismatch') || 
         errorMessage.includes('not a Twilio phone number')) {
-      console.error("🔥 SMS/Twilio configuration error detected");
-      console.error("🔥 Backend Twilio issue:", errorMessage);
-      
+
+
       // Provide helpful error message for SMS issues
       if (requestData.method === 'sms') {
         throw new Error('SMS service is currently unavailable due to backend configuration. Please use Email instead.');
@@ -502,9 +491,7 @@ export async function requestReview(requestData: RequestReviewRequest): Promise<
     
     // Check if it's a 500 server error
     if (errorStatus === 500) {
-      console.error("🔥 Server error (500) - Backend issue detected");
-      console.error("🔥 This suggests an issue on the server side, not the client");
-      
+
       // For 500 errors, provide helpful message
       if (requestData.method === 'sms') {
         throw new Error('SMS service is currently unavailable. Please use Email instead or try again later.');
@@ -515,7 +502,7 @@ export async function requestReview(requestData: RequestReviewRequest): Promise<
     
     // Network error fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.log("ℹ️ Network unavailable - Using mock request review");
+
       return {
         success: true,
         message: `Review request sent successfully via ${requestData.method} (mock)`,

@@ -72,12 +72,6 @@ export default function PaymentSummaryScreen() {
       ? (taskerPaymentsData?.payments || []) 
       : (posterPaymentsData?.payments || []);
       
-    console.log('🔍 Payment Summary Debug:', {
-      userRole,
-      paymentsCount: paymentsData.length,
-      samplePayments: paymentsData.slice(0, 2),
-      currentUserId: currentUser?._id || currentUser?.id
-    });
     
     // Process payment data from dedicated endpoints
     return paymentsData.map((payment: any) => {
@@ -89,16 +83,6 @@ export default function PaymentSummaryScreen() {
       
       if (task.location) {
         const locationType = typeof task.location;
-        
-        console.log('🔍 RAW Location Debug:', {
-          taskId: task._id,
-          taskTitle: task.title,
-          locationType: locationType,
-          locationValue: task.location,
-          isString: locationType === 'string',
-          isObject: locationType === 'object',
-          stringified: JSON.stringify(task.location)
-        });
         
         if (locationType === 'string') {
           // If it's already a string, check if it's a JSON string
@@ -122,16 +106,16 @@ export default function PaymentSummaryScreen() {
                 if (parsedLocation.country) parts.push(parsedLocation.country);
                 locationText = parts.length > 0 ? parts.join(', ') : trimmedLocation;
               }
-              console.log('✅ Parsed JSON string location:', locationText);
+
             } catch (error) {
               // If JSON parsing fails, use the string as-is
               locationText = trimmedLocation;
-              console.log('⚠️ Failed to parse JSON, using raw string:', locationText, error);
+
             }
           } else {
             // Regular string location
             locationText = trimmedLocation;
-            console.log('✅ Using string location:', locationText);
+
           }
         } else if (locationType === 'object' && task.location !== null) {
           // If it's an object, extract the address or city
@@ -155,20 +139,20 @@ export default function PaymentSummaryScreen() {
                   if (nestedParsed.country) parts.push(nestedParsed.country);
                   locationText = parts.length > 0 ? parts.join(', ') : addressValue;
                 }
-                console.log('✅ Parsed nested JSON in object.address:', locationText);
+
               } catch (error) {
                 // If parsing fails, use the address value as-is
                 locationText = addressValue;
-                console.log('⚠️ Failed to parse nested JSON in object.address, using raw value:', error);
+
               }
             } else {
               // Regular string address
               locationText = addressValue;
-              console.log('✅ Using object.address directly:', locationText);
+
             }
           } else if (task.location.city) {
             locationText = task.location.city;
-            console.log('✅ Using object.city:', locationText);
+
           } else {
             // Fallback: try to construct from available fields
             const parts = [];
@@ -177,16 +161,11 @@ export default function PaymentSummaryScreen() {
             if (task.location.state) parts.push(task.location.state);
             if (task.location.country) parts.push(task.location.country);
             locationText = parts.length > 0 ? parts.join(', ') : 'Location not specified';
-            console.log('✅ Constructed location from object parts:', locationText);
+
           }
         }
       }
-      
-      console.log('📍 Final Location:', {
-        taskId: task._id,
-        finalLocation: locationText
-      });
-      
+
       return {
         paymentId: payment._id || `payment-${Date.now()}-${Math.random()}`,
         taskId: task._id || payment.task || 'unknown',

@@ -87,8 +87,7 @@ export class MockApiService {
   });
 
   static async postTask(taskData: CreateTaskRequest): Promise<CreateTaskResponse> {
-    console.log('📝 Mock API: Creating task', taskData);
-    
+
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
@@ -121,9 +120,7 @@ export class MockApiService {
     
     // Add to mock database
     this.mockTasks.unshift(newTask);
-    
-    console.log('✅ Mock API: Task created successfully', newTask);
-    
+
     return {
       success: true,
       data: newTask
@@ -131,8 +128,7 @@ export class MockApiService {
   }
 
   static async getAllTasks(): Promise<TasksResponse> {
-    console.log('📝 Mock API: Fetching all tasks');
-    
+
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500));
     
@@ -147,8 +143,7 @@ export class MockApiService {
   }
 
   static async searchTasks(params: any): Promise<TasksResponse> {
-    console.log('📝 Mock API: Searching tasks', params);
-    
+
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500));
     
@@ -172,8 +167,7 @@ export class MockApiService {
   }
 
   static async filterTasks(params: any): Promise<any> {
-    console.log('📝 Mock API: Filtering tasks', params);
-    
+
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 300));
     

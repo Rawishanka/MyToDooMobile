@@ -69,18 +69,16 @@ export class RatingService {
    */
   static async getUserRatingStats(userId: string): Promise<RatingStats> {
     try {
-      console.log(`📊 Fetching rating stats for user: ${userId}`);
+
       const response = await this.api.get(`${API_CONFIG.ENDPOINTS.USERS}/${userId}/rating-stats`);
-      console.log('✅ Rating stats fetched successfully:', response.data);
-      
+
       // Unwrap the response structure {success: true, data: {...}}
       if (response.data && response.data.data) {
         return response.data.data;
       }
       return response.data;
     } catch (error: any) {
-      console.warn('⚠️ Failed to fetch rating stats from API:', error?.message);
-      
+
       // Return empty stats for fallback
       throw new Error('Unable to load rating statistics');
     }
@@ -97,7 +95,7 @@ export class RatingService {
     populate?: string
   ): Promise<ReviewsResponse> {
     try {
-      console.log(`📝 Fetching reviews for user: ${userId}, page: ${page}`);
+
       const params: any = { page, limit };
       if (role) params.role = role;
       if (populate) params.populate = populate;
@@ -105,8 +103,7 @@ export class RatingService {
       const response = await this.api.get(`${API_CONFIG.ENDPOINTS.USERS}/${userId}/reviews`, {
         params
       });
-      console.log('✅ Reviews fetched successfully:', response.data);
-      
+
       // Unwrap the response structure {success: true, data: [...], pagination: {...}}
       if (response.data && response.data.success) {
         return {
@@ -127,8 +124,7 @@ export class RatingService {
         hasMore: false
       };
     } catch (error: any) {
-      console.warn('⚠️ Failed to fetch reviews from API:', error?.message);
-      
+
       // Return empty reviews for fallback
       throw new Error('Unable to load reviews');
     }
@@ -139,12 +135,12 @@ export class RatingService {
    */
   static async submitReview(userId: string, reviewData: SubmitReviewRequest): Promise<{ success: boolean; message: string }> {
     try {
-      console.log('📝 Submitting review:', reviewData);
+
       const response = await this.api.post(`${API_CONFIG.ENDPOINTS.USERS}/${userId}/reviews`, reviewData);
-      console.log('✅ Review submitted successfully:', response.data);
+
       return response.data;
     } catch (error: any) {
-      console.error('❌ Failed to submit review:', error?.message);
+
       throw new Error('Unable to submit review');
     }
   }
@@ -154,14 +150,14 @@ export class RatingService {
    */
   static async getMyReviews(page: number = 1, limit: number = 10): Promise<ReviewsResponse> {
     try {
-      console.log('📋 Fetching my reviews, page:', page);
+
       const response = await this.api.get(`${API_CONFIG.ENDPOINTS.USERS}/reviews/my-reviews`, {
         params: { page, limit }
       });
-      console.log('✅ My reviews fetched successfully:', response.data);
+
       return response.data;
     } catch (error: any) {
-      console.error('❌ Failed to fetch my reviews:', error?.message);
+
       throw new Error('Unable to load your reviews');
     }
   }
@@ -174,12 +170,12 @@ export class RatingService {
     updateData: { rating: number; comment?: string }
   ): Promise<Review> {
     try {
-      console.log(`📝 Updating review ${reviewId}:`, updateData);
+
       const response = await this.api.put(`${API_CONFIG.ENDPOINTS.USERS}/reviews/${reviewId}`, updateData);
-      console.log('✅ Review updated successfully:', response.data);
+
       return response.data;
     } catch (error: any) {
-      console.error('❌ Failed to update review:', error?.message);
+
       throw new Error('Unable to update review');
     }
   }
@@ -189,11 +185,11 @@ export class RatingService {
    */
   static async deleteReview(reviewId: string): Promise<void> {
     try {
-      console.log(`🗑️ Deleting review: ${reviewId}`);
+
       await this.api.delete(`${API_CONFIG.ENDPOINTS.USERS}/reviews/${reviewId}`);
-      console.log('✅ Review deleted successfully');
+
     } catch (error: any) {
-      console.error('❌ Failed to delete review:', error?.message);
+
       throw new Error('Unable to delete review');
     }
   }

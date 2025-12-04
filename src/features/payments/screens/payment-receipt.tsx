@@ -76,16 +76,6 @@ export default function PaymentReceiptScreen() {
   };
   
   const parsedTaskLocation = parseTaskLocation(taskLocation);
-  
-  console.log('📄 Payment Receipt Screen Params:', {
-    taskId,
-    taskTitle,
-    offerAmount,
-    currency,
-    taskerName,
-    posterName,
-    userRole
-  });
 
   // Format dates
   const formatDate = (dateString: string) => {
@@ -121,18 +111,15 @@ export default function PaymentReceiptScreen() {
   const handleDownloadReceipt = async () => {
     try {
       setIsDownloading(true);
-      console.log('📥 Generating PDF receipt...');
 
       const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4;margin:0}*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fff;padding:0;margin:0}.page{width:210mm;min-height:297mm;padding:15mm;background:#fff}.receipt-container{border:2px solid #e0e0e0;border-radius:8px;overflow:hidden}.receipt-header{background:linear-gradient(135deg,#007AFF,#0051D5);color:#fff;padding:25px;text-align:center}.logo-text{font-size:32px;font-weight:700;letter-spacing:1.5px;margin-bottom:10px}.receipt-title{font-size:20px;font-weight:700;margin-bottom:4px}.receipt-subtitle{font-size:13px;opacity:.95}.receipt-body{padding:25px}.section{margin-bottom:18px;page-break-inside:avoid}.section-label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-weight:600}.section-value{font-size:15px;font-weight:600;color:#333}.section-title{font-size:16px;font-weight:700;color:#333;margin-bottom:12px;border-bottom:2px solid #007AFF;padding-bottom:6px}.info-row{display:flex;justify-content:space-between;margin-bottom:8px;padding:6px 0}.info-label{font-size:13px;color:#555;font-weight:500}.info-value{font-size:13px;color:#222;font-weight:600;text-align:right;max-width:60%;word-wrap:break-word}.party-card{background:#f8f9fa;padding:14px;border-radius:6px;margin-bottom:10px;border-left:4px solid #007AFF}.party-header{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600}.party-name{font-size:16px;font-weight:700;color:#222}.payment-row{display:flex;justify-content:space-between;margin-bottom:10px;padding:6px 0}.payment-label{font-size:13px;color:#555;font-weight:500}.payment-value{font-size:13px;color:#222;font-weight:600}.divider-light{height:1px;background:#e0e0e0;margin:10px 0}.total-row{display:flex;justify-content:space-between;padding:14px 0;border-top:2px solid #007AFF;margin-top:10px}.total-label{font-size:17px;font-weight:700;color:#222}.total-value{font-size:20px;font-weight:700;color:#007AFF}.status-section{text-align:center;margin:20px 0;page-break-inside:avoid}.status-badge{display:inline-block;background:#d4edda;border:2px solid #28a745;padding:10px 24px;border-radius:25px;margin-bottom:8px}.status-text{font-size:15px;font-weight:700;color:#155724}.status-date{font-size:12px;color:#666;margin-top:4px}.footer{text-align:center;padding-top:18px;border-top:2px solid #e0e0e0;margin-top:20px}.footer-text{font-size:15px;font-weight:700;color:#333;margin-bottom:6px}.footer-subtext{font-size:12px;color:#666}.divider{height:1px;background:#d0d0d0;margin:16px 0}</style></head><body><div class="page"><div class="receipt-container"><div class="receipt-header"><div class="logo-text">MyTodoo</div><div class="receipt-title">PAYMENT RECEIPT</div><div class="receipt-subtitle">Official Transaction Record</div></div><div class="receipt-body"><div class="section"><div class="section-label">Receipt ID</div><div class="section-value">${paymentId.substring(0, 12).toUpperCase()}</div></div><div class="divider"></div><div class="section"><div class="section-title">Task Details</div><div class="info-row"><span class="info-label">Task:</span><span class="info-value">${taskTitle}</span></div><div class="info-row"><span class="info-label">Location:</span><span class="info-value">${parsedTaskLocation}</span></div><div class="info-row"><span class="info-label">Accepted:</span><span class="info-value">${formatDate(acceptedDate)}</span></div><div class="info-row"><span class="info-label">Completed:</span><span class="info-value">${formatDate(completedDate)}</span></div></div><div class="divider"></div><div class="section"><div class="section-title">Parties Involved</div><div class="party-card"><div class="party-header">👤 TASK POSTER</div><div class="party-name">${posterName}</div></div><div class="party-card"><div class="party-header">💼 TASKER</div><div class="party-name">${taskerName}</div></div></div><div class="divider"></div><div class="section"><div class="section-title">Payment Breakdown</div><div class="payment-row"><span class="payment-label">Task Amount</span><span class="payment-value">${formattedAmount}</span></div><div class="payment-row"><span class="payment-label">Platform Fee (10%)</span><span class="payment-value">- ${formattedPlatformFee}</span></div><div class="divider-light"></div><div class="total-row"><span class="total-label">${userRole === 'Tasker' ? 'Amount Received' : 'Total Paid'}</span><span class="total-value">${userRole === 'Tasker' ? formattedNetAmount : formattedAmount}</span></div></div><div class="divider"></div><div class="status-section"><div class="status-badge"><span class="status-text">✓ Payment Completed</span></div><div class="status-date">Processed on ${formatDate(completedDate)}</div></div><div class="footer"><div class="footer-text">Thank you for using MyTodoo!</div><div class="footer-subtext">For support, contact us at support@mytodoo.com</div></div></div></div></div></body></html>`;
 
       const { uri } = await Print.printToFileAsync({ html: htmlContent });
-      console.log('✅ PDF generated:', uri);
 
       const fileName = `MyTodo_Receipt_${paymentId.substring(0, 8)}_${Date.now()}.pdf`;
       const fileUri = `${FileSystem.documentDirectory}${fileName}`;
       
       await FileSystem.copyAsync({ from: uri, to: fileUri });
-      console.log('✅ PDF saved:', fileUri);
 
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(fileUri, {
@@ -160,7 +147,7 @@ export default function PaymentReceiptScreen() {
         ]
       );
     } catch (error: any) {
-      console.error('❌ PDF generation error:', error);
+
       Alert.alert('Error', `Failed to generate PDF: ${error.message || 'Unknown error'}`);
     } finally {
       setIsDownloading(false);

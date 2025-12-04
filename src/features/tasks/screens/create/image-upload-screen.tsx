@@ -33,11 +33,10 @@ const copyImageToPersistentStorage = async (sourceUri: string): Promise<string> 
       from: sourceUri,
       to: destinationUri,
     });
-    
-    console.log('💾 Image copied to persistent storage:', destinationUri);
+
     return destinationUri;
   } catch (error) {
-    console.error('❌ Failed to copy image:', error);
+
     // If copy fails, return original URI as fallback
     return sourceUri;
   }
@@ -85,11 +84,11 @@ export default function SnapPhotoScreen() {
   // ✅ NEW: Validate image using OCR API for sensitive data
   const validateAndAddImage = async (imageUri: string): Promise<boolean> => {
     try {
-      console.log('🔍 Validating image with OCR API:', imageUri);
+
       const validation = await OCRAPI.validateImageForUpload(imageUri);
       
       if (!validation.isValid) {
-        console.warn('❌ Image contains sensitive data:', validation.reason);
+
         Alert.alert(
           'Sensitive Data Detected',
           `This image contains sensitive information and cannot be uploaded:
@@ -101,14 +100,13 @@ Please remove phone numbers and addresses from the image.`,
         );
         return false;
       }
-      
-      console.log('✅ Image passed OCR validation - adding to list');
+
       setImages(prevImages => [...prevImages, imageUri]);
       return true;
     } catch (error) {
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ OCR validation error:', error);
+
       }
       // Allow upload if OCR service fails
       setImages(prevImages => [...prevImages, imageUri]);
@@ -152,7 +150,7 @@ Please remove phone numbers and addresses from the image.`,
     }
 
     if (isProcessing) {
-      console.log('⏳ Already processing...');
+
       return;
     }
 
@@ -174,7 +172,7 @@ Please remove phone numbers and addresses from the image.`,
     } catch (error) {
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Error taking photo:', error);
+
       }
       Alert.alert('Error', 'Failed to take photo. Please try again.');
     } finally {
@@ -195,7 +193,7 @@ Please remove phone numbers and addresses from the image.`,
     }
 
     if (isProcessing) {
-      console.log('⏳ Already processing...');
+
       return;
     }
 
@@ -216,7 +214,7 @@ Please remove phone numbers and addresses from the image.`,
     } catch (error) {
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Error selecting image:', error);
+
       }
       Alert.alert('Error', 'Failed to select image. Please try again.');
     } finally {
@@ -225,7 +223,7 @@ Please remove phone numbers and addresses from the image.`,
   };
 
   const handleDeleteImage = (uri: string) => {
-    console.log('🗑️ Deleting image:', uri);
+
     setImages(prevImages => prevImages.filter(img => img !== uri));
     setIsProcessing(false);
   };
@@ -233,7 +231,7 @@ Please remove phone numbers and addresses from the image.`,
   // Location handler
   const handleLocationSelect = (location: LocationData) => {
     setSelectedLocation(location);
-    console.log('Selected location:', location);
+
   };
 
   const handleContinue = () => {

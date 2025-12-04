@@ -54,18 +54,18 @@ const LocationScreen = () => {
 
     // Debug logs - only when data changes
     useEffect(() => {
-        console.log('Current Task:', myTask);
+
     }, [myTask]);
 
     useEffect(() => {
         if (categoriesResponse) {
-            console.log('Categories Response:', categoriesResponse);
+
         }
     }, [categoriesResponse]);
 
     useEffect(() => {
         if (categoriesError) {
-            console.log('Categories Error:', categoriesError);
+
         }
     }, [categoriesError]);
 
@@ -133,16 +133,13 @@ const LocationScreen = () => {
     // Location handler
     const handleLocationSelect = (location: LocationData) => {
         setSelectedLocation(location);
-        console.log('Selected location:', location);
+
     };
 
     // Handle category selection
     const handleCategorySelect = (category: string, categoryObj?: Category) => {
-        console.log('Selected category:', category);
-        console.log('Selected category object:', categoryObj);
-        
 
-        
+
         // Set the selected category (already a string)
         setSelectedCategory(category);
         setShowCategoryDropdown(false);

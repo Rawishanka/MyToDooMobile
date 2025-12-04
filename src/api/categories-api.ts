@@ -30,19 +30,16 @@ export interface CategoriesResponse {
 export async function getAllCategories(): Promise<CategoriesResponse> {
   // Check if we should use mock API only
   if (API_CONFIG.USE_MOCK_ONLY) {
-    console.log("🎭 Using Mock Categories (development mode)");
     return getMockCategories();
   }
 
   const api = getApi();
   try {
-    console.log("🏷️ Fetching categories from database...");
-    
+
     // Try to get categories from dedicated endpoint first
     try {
       const categoriesResponse = await api.get('/categories');
-      console.log("✅ Categories from /api/categories:", categoriesResponse.data);
-      
+
       if (categoriesResponse.data && categoriesResponse.data.data) {
         const dbCategories = categoriesResponse.data.data;
         
@@ -52,11 +49,6 @@ export async function getAllCategories(): Promise<CategoriesResponse> {
           count: cat.count || 0
         }));
 
-        console.log("✅ Database categories loaded:", {
-          totalCategories: categories.length,
-          categories: categories.map(c => `${c.name} (${c.count})`)
-        });
-
         return {
           success: true,
           data: categories,
@@ -64,7 +56,7 @@ export async function getAllCategories(): Promise<CategoriesResponse> {
         };
       }
     } catch (categoriesError) {
-      console.log("⚠️ /api/categories endpoint not available, trying to extract from tasks...");
+
     }
     
     // Fallback: Extract categories from tasks if dedicated endpoint doesn't exist
@@ -92,11 +84,6 @@ export async function getAllCategories(): Promise<CategoriesResponse> {
         .map(([name, count]) => ({ name, count }))
         .sort((a, b) => b.count - a.count);
 
-      console.log("✅ Categories extracted from tasks:", {
-        totalCategories: categories.length,
-        categories: categories.map(c => `${c.name} (${c.count})`)
-      });
-
       return {
         success: true,
         data: categories,
@@ -110,7 +97,7 @@ export async function getAllCategories(): Promise<CategoriesResponse> {
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get categories failed:", error?.message || error);
+
     }
     
     // Check for network connection errors or timeouts - use mock service as fallback
@@ -121,12 +108,12 @@ export async function getAllCategories(): Promise<CategoriesResponse> {
         error.message?.includes('timeout') ||
         error.code === 'ECONNREFUSED' || 
         error.code === 'ENOTFOUND') {
-      console.warn("🎭 Network/Timeout issue - Using Mock Categories");
+
       return getMockCategories();
     }
     
     // Return default categories on other errors
-    console.warn("🔄 Using default categories as fallback");
+
     return getDefaultCategories();
   }
 }

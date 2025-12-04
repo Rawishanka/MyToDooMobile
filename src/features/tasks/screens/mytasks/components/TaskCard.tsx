@@ -1159,7 +1159,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 (isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) && styles.disabledButton
               ]}
               onPress={() => {
-                console.log('🔥 Mark as Completed button touched!');
+
                 if (!isProcessing && !completeTaskMutation.isPending && !completeTaskPaymentMutation.isPending) {
                   handleMarkAsCompleted();
                 }
@@ -1187,7 +1187,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 isProcessing && styles.disabledButton
               ]}
               onPress={() => {
-                console.log('🔥 Cancel button (Accepted) touched!');
                 if (!isProcessing) {
                   handleCancelTask();
                 }
@@ -1216,21 +1215,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
               disabled={isProcessing || deleteTaskMutation.isPending}
               onPress={() => {
-                console.log('🔥 Edit button touched!'); // Debug log
-                if (!isProcessing && !deleteTaskMutation.isPending) {
-                  withDebounce(() => {
-                    console.log('✏️ Edit button pressed for task:', task._id);
-                    console.log('   Task data:', task);
-                    // Always navigate to edit screen for edit button
-                    router.push({
-                      pathname: '/edit-task',
-                      params: {
-                        taskId: task._id,
-                        task: JSON.stringify(task)
-                      }
-                    } as any);
-                  });
-                }
+                router.push({
+                  pathname: '/edit-task',
+                  params: { taskId: task._id }
+                } as any);
               }}
             >
               <MaterialIcons 

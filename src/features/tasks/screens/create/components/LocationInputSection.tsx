@@ -26,19 +26,19 @@ export const LocationInputSection: React.FC<LocationInputSectionProps> = ({
 
   // Handle input focus and auto-scroll
   const handleInputFocus = () => {
-    console.log('📍 Location input focused - triggering auto scroll');
+
     if (scrollViewRef?.current && locationFieldRef.current) {
       setTimeout(() => {
         locationFieldRef.current?.measureLayout(
           scrollViewRef.current as any,
           (_x, y) => {
-            console.log('📍 Scrolling to location field at y:', y);
+
             scrollViewRef.current?.scrollTo({
               y: Math.max(0, y - 100), // Scroll with 100px offset from top for better view
               animated: true,
             });
           },
-          () => console.log('Failed to measure location field')
+          () => {}
         );
       }, 150);
     }
@@ -46,7 +46,7 @@ export const LocationInputSection: React.FC<LocationInputSectionProps> = ({
 
   // Handle dropdown state change
   const handleDropdownStateChange = (isOpen: boolean) => {
-    console.log('📍 Dropdown state changed:', isOpen ? 'OPEN' : 'CLOSED');
+
     if (isOpen) {
       handleInputFocus();
     }

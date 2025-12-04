@@ -137,7 +137,6 @@ export default function SetNewPasswordScreen() {
         ]
       );
     } catch (error: any) {
-      console.error('Set Password Error:', error);
 
       // Show user-friendly error messages
       if (error?.code === 'NETWORK_ERROR') {

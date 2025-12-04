@@ -10,13 +10,13 @@ const USE_MOCK_API_ONLY = false; // 🔧 CHANGED: Using real API instead of mock
 const getApiUrl = () => {
     // First priority: Environment variable
     if (process.env.EXPO_PUBLIC_API_URL) {
-        console.log('✅ Using API URL from .env:', process.env.EXPO_PUBLIC_API_URL);
+
         return process.env.EXPO_PUBLIC_API_URL;
     }
     
     // 🔧 Fallback: Using IP address from error logs
     const fallbackUrl = "http://134.199.172.167:5001/api";
-    console.log('⚠️ Using fallback API URL:', fallbackUrl);
+
     return fallbackUrl;
 };
 
@@ -48,12 +48,6 @@ const API_CONFIG = {
 }
 
 // Log the final configuration on app start
-console.log('🔧 API Configuration Loaded:', {
-    baseUrl: API_CONFIG.BASE_URL,
-    useMockOnly: API_CONFIG.USE_MOCK_ONLY,
-    timeout: API_CONFIG.TIMEOUT,
-    currentTime: new Date().toISOString()
-});
 
 // Re-export createApi function for convenience
 export { createApi } from '@/src/shared/utils/api';

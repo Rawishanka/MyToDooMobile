@@ -30,14 +30,12 @@ export const TaskTitleSuggestions: React.FC<TaskTitleSuggestionsProps> = ({
     try {
       setLoading(true);
       setError(null);
-      console.log('🤖 Loading title suggestions for category:', category);
-      
+
       const titleSuggestions = await geminiService.suggestTaskTitles(category);
       setSuggestions(titleSuggestions);
-      console.log('✅ Loaded suggestions:', titleSuggestions);
-      
+
     } catch (error) {
-      console.error('❌ Error loading title suggestions:', error);
+
       setError('Failed to load suggestions');
       setSuggestions([]);
     } finally {
@@ -46,7 +44,7 @@ export const TaskTitleSuggestions: React.FC<TaskTitleSuggestionsProps> = ({
   };
 
   const handleSuggestionPress = (suggestion: string) => {
-    console.log('💡 Title suggestion selected:', suggestion);
+
     onSuggestionSelect(suggestion);
   };
 

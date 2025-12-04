@@ -87,7 +87,7 @@ export const RatingSystemDemo: React.FC<RatingSystemDemoProps> = ({
   userId = 'demo-user-123' 
 }) => {
   const handleLoadMore = () => {
-    console.log('Loading more reviews...');
+
     // In real implementation, this would fetch more data
   };
 

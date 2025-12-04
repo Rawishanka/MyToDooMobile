@@ -65,31 +65,27 @@ export default function AccountScreen() {
   // 🔄 **Force profile refetch when user changes**
   React.useEffect(() => {
     if (isAuthenticated && token) {
-      console.log("🔄 Auth state changed - triggering profile refetch");
+
       refetch();
     }
   }, [isAuthenticated, token, authUser?.email, authUser?._id, refetch]);
 
   // 🔄 **CRITICAL: Clear ALL user data when auth user changes to prevent cache persistence**
   React.useEffect(() => {
-    console.log("🔄 User ID changed - clearing all cached data to prevent persistence", {
-      userId: authUser?._id,
-      userEmail: authUser?.email
-    });
-    
+
     // Clear any local state that might hold user data
     setSelectedImageUri(null);
     
     // Force refetch if authenticated
     if (isAuthenticated && token && authUser) {
-      console.log("🔄 Forcing fresh profile fetch for new user");
+
       refetch();
     }
   }, [authUser?._id]); // Trigger only when user ID actually changes
 
   // 🔄 **Force profile refetch when component mounts**
   React.useEffect(() => {
-    console.log("🔄 Profile screen mounted - forcing fresh data fetch");
+
     if (isAuthenticated && token) {
       refetch();
     }
@@ -99,7 +95,7 @@ export default function AccountScreen() {
   React.useEffect(() => {
     if (userProfileData?.avatar && selectedImageUri) {
       // Only clear preview if we have fresh avatar data from API
-      console.log("✅ Avatar updated in profile data, clearing preview");
+
       setSelectedImageUri(null);
       setAvatarLoadFailed(false); // Reset avatar load state when new data arrives
     }
@@ -107,7 +103,7 @@ export default function AccountScreen() {
 
   // 🔄 **Clear selected image when user changes - prevents cache persistence**
   React.useEffect(() => {
-    console.log("🔄 User changed - clearing selected image preview and resetting avatar state");
+
     setSelectedImageUri(null);
     setAvatarLoadFailed(false); // Reset avatar load state for new user
   }, [authUser?._id, authUser?.email]);
@@ -120,43 +116,22 @@ export default function AccountScreen() {
   // 2. API error = no data  
   // 3. Mismatched user = no data
   if (!isAuthenticated || !token || !authUser?._id) {
-    console.log("⚠️ Not authenticated - no profile data");
+
     userData = null;
   } else if (profileError && !userData) {
-    console.log("⚠️ Profile API error - no profile data to prevent cache persistence");
+
     userData = null;
   } else if (userData && authUser?._id && userData._id && userData._id !== authUser._id) {
-    console.log("⚠️ User ID mismatch - clearing cached data", {
-      cachedUserId: userData._id,
-      currentUserId: authUser._id
-    });
+
     userData = null; // Clear mismatched user data
     refetch(); // Force fresh fetch for correct user
   }
 
   // 🚨 **DEBUG: Log authentication state**
-  console.log("🔍 Profile Screen Debug:", {
-    hasToken: !!token,
-    hasUserData: !!userData,
-    isAuthenticated,
-    isVerified: userData?.isVerified,
-    profileError: profileError?.message,
-    tokenPreview: token?.substring(0, 20) + "...",
-    authUserDetails: authUser ? {
-      id: authUser.id || authUser._id,
-      email: authUser.email,
-      firstName: authUser.firstName
-    } : undefined,
-    userDataDetails: userData ? {
-      id: userData.id || userData._id,
-      email: userData.email,
-      firstName: userData.firstName
-    } : undefined
-  });
 
   // 🚨 **EARLY RETURN: Show auth error if not properly authenticated**
   if (!isAuthenticated || !token || !authUser) {
-    console.log("❌ Authentication error - not retrying profile fetch");
+
     return (
       <View style={styles.container}>
         <View style={styles.loadingContainer}>
@@ -205,7 +180,7 @@ export default function AccountScreen() {
       // Upload avatar
       uploadAvatar(formData, {
         onSuccess: (response) => {
-          console.log("✅ Avatar upload successful, response:", response);
+
           Alert.alert('Success', 'Profile picture updated successfully!');
           
           // Reset avatar load state since we have a new upload
@@ -214,24 +189,24 @@ export default function AccountScreen() {
           // Try to refetch profile data, but don't clear preview yet
           if (isAuthenticated && token) {
             refetch().then(() => {
-              console.log("✅ Profile refetch successful, clearing preview");
+
               // Give a small delay before clearing preview to ensure new image loads
               setTimeout(() => {
                 setSelectedImageUri(null);
               }, 1500); // 1.5 second delay to allow new S3 image to be accessible
             }).catch((error) => {
-              console.warn("⚠️ Profile refetch failed after upload, keeping preview:", error);
+
               // Don't clear selectedImageUri so the uploaded image stays visible
               // The preview will serve as the current avatar until next successful fetch
             });
           } else {
-            console.warn("⚠️ Not authenticated for refetch, keeping uploaded image preview");
+
             // Keep the preview showing since we can't refetch
           }
         },
         onError: (error: any) => {
           if (!isNetworkError(error) && __DEV__) {
-            console.warn('⚠️ Avatar upload error:', error?.message);
+
           }
           setSelectedImageUri(null); // Reset preview on error
           Alert.alert(
@@ -463,13 +438,12 @@ export default function AccountScreen() {
               }}
               style={styles.profileImage}
               onError={(error) => {
-                console.log("🖼️ Image load error:", error.nativeEvent.error);
+
                 const currentUri = userData?.avatar || userData?.profilePicture;
-                console.log("🖼️ Failed to load avatar URL:", currentUri);
-                
+
                 // If it's an S3 URL that failed, mark avatar as failed
                 if (currentUri && !selectedImageUri && !avatarLoadFailed) { // Only mark failed once
-                  console.log("🚫 Marking avatar as failed, will show initials");
+
                   setAvatarLoadFailed(true);
                 }
               }}
@@ -477,7 +451,7 @@ export default function AccountScreen() {
                 // Only log success for S3 images, don't change state for initials avatar
                 const currentUri = userData?.avatar || userData?.profilePicture;
                 if (currentUri && !selectedImageUri && avatarLoadFailed) {
-                  console.log("🖼️ Avatar loaded successfully after previous failure");
+
                   setAvatarLoadFailed(false); // S3 image loaded successfully
                 }
               }}

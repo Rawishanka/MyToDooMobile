@@ -12,7 +12,7 @@ export function useStorageState(key: string): [[boolean, string | null], (value:
         const value = await AsyncStorage.getItem(key);
         setState([false, value]);
       } catch (error) {
-        console.warn(`Failed to load storage key "${key}":`, error);
+
         setState([false, null]);
       }
     };

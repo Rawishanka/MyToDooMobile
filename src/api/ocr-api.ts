@@ -38,7 +38,6 @@ class OCRAPIService {
    */
   async analyzeImage(imageUri: string): Promise<OCRAnalysisResponse> {
     try {
-      console.log('🔍 Starting OCR analysis for image:', imageUri);
 
       // Validate file exists before processing
       const fileInfo = await FileSystem.getInfoAsync(imageUri);
@@ -64,8 +63,7 @@ class OCRAPIService {
       } as any);
 
       const headers = await this.getAuthHeaders();
-      
-      console.log('📤 Sending image to OCR API...');
+
       const response = await fetch(`${this.baseURL}/ocr/analyze`, {
         method: 'POST',
         headers: {
@@ -77,23 +75,17 @@ class OCRAPIService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ OCR API error:', response.status, errorText);
+
         throw new Error(`OCR analysis failed: ${response.status} ${errorText}`);
       }
 
       const result: OCRAnalysisResponse = await response.json();
-      console.log('✅ OCR analysis completed:', {
-        hasSensitiveData: result.data?.hasSensitiveData,
-        containsMobileNumber: result.data?.analysis?.containsMobileNumber,
-        containsAddress: result.data?.analysis?.containsAddress,
-        confidence: result.data?.analysis?.confidence,
-      });
 
       return result;
     } catch (error: any) {
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ OCR analysis failed:', error);
+
       }
       throw new Error(error.message || 'Failed to analyze image for sensitive data');
     }
@@ -142,7 +134,7 @@ class OCRAPIService {
     } catch (error: any) {
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Image validation failed:', error);
+
       }
       // On error, we'll allow the upload but log the error
       // You can change this behavior to block on errors if needed

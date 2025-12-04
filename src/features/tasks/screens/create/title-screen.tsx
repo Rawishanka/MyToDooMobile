@@ -112,7 +112,7 @@ export default function TitleInputScreen() {
                 text: 'Discard',
                 style: 'destructive',
                 onPress: () => {
-                  console.log('🗑️ User confirmed discard via hardware back');
+
                   resetTask();
                   router.back();
                 }
@@ -146,12 +146,8 @@ export default function TitleInputScreen() {
         const hasLocalData = title.trim() || description.trim() || selectedCategory;
         const hasStoreData = myTask.title || myTask.description || ('category' in myTask && myTask.category);
         const hasData = hasLocalData || hasStoreData;
-        
-        console.log('🔙 Back button pressed - Data check:');
-        console.log('   Local data:', { title: title.trim(), description: description.trim(), category: selectedCategory });
-        console.log('   Store data:', { title: myTask.title, description: myTask.description, category: ('category' in myTask ? myTask.category : null) });
-        console.log('   Has data:', hasData);
-        
+
+
         if (hasData) {
           // Prompt user to confirm discarding changes
           Alert.alert(
@@ -166,7 +162,7 @@ export default function TitleInputScreen() {
                 text: 'Discard',
                 style: 'destructive',
                 onPress: () => {
-                  console.log('🗑️ User confirmed discard - resetting task form');
+
                   resetTask();
                   router.back();
                 }
@@ -175,7 +171,7 @@ export default function TitleInputScreen() {
           );
         } else {
           // No data entered, just go back
-          console.log('✅ No data to discard, going back');
+
           resetTask();
           router.back();
         }
@@ -266,7 +262,7 @@ export default function TitleInputScreen() {
           currentTitle={title}
           onSuggestionSelect={(suggestion) => {
             setTitle(suggestion);
-            console.log('📝 Applied AI suggestion to title:', suggestion);
+
           }}
         />
 

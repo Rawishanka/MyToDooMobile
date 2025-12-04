@@ -24,12 +24,6 @@ export default function BudgetScreen() {
   // Auto-detect country for currency if no location set yet
   const { countryInfo, isDetecting } = useLocationCountry();
 
-  console.log('🏗️ Budget screen useLocationCountry state:', {
-    countryInfo,
-    isDetecting,
-    hookResult: { countryInfo, isDetecting }
-  });
-
   // Get currency based on task location or detected country
   const location = 'location' in myTask ? myTask.location : undefined;
   // Handle both string location and object location formats
@@ -48,17 +42,6 @@ export default function BudgetScreen() {
 
   const minimumBudget = getMinimumBudget(currencyInfo.code);
   const defaultBudgetAmount = getDefaultBudget(currencyInfo.code);
-
-  console.log('💰 Budget screen currency info:', {
-    hasLocation: !!locationForCurrency,
-    detectedCountry: countryInfo.countryName,
-    detectedCurrency: countryInfo.currency,
-    finalCurrency: currencyInfo.code,
-    symbol: currencyInfo.symbol,
-    minimumBudget,
-    defaultBudgetAmount,
-    isDetecting
-  });
 
   const [budget, setBudget] = useState('');
   const [errorMessage, setErrorMessage] = useState('');

@@ -1,4 +1,4 @@
-﻿// // api/user-api.ts
+// // api/user-api.ts
 // import { createApi } from '@/src/shared/utils/api';
 // import API_CONFIG from './config';
 // import { User } from './types/user';
@@ -15,16 +15,16 @@
 //   const api = createApi(baseUrl);
   
 //   try {
-//     console.log("👤 Getting user profile from:", baseUrl + "/auth/profile");
+//     console.log("?? Getting user profile from:", baseUrl + "/auth/profile");
 //     const response = await api.get('/auth/profile');
-//     console.log("✅ Get user profile success:", response.data);
+//     console.log("? Get user profile success:", response.data);
 //     return response.data;
 //   } catch (error: any) {
-//     console.error("❌ Get user profile failed:", error);
+//     console.error("? Get user profile failed:", error);
     
 //     // Development fallback - if server is not available, use mock data
 //     if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.code === 'ENOTFOUND') {
-//       console.warn("🔄 Server not available, using development mode with mock user profile");
+//       console.warn("?? Server not available, using development mode with mock user profile");
 //       const mockUserProfile = {
 //         success: true,
 //         data: {
@@ -48,7 +48,7 @@
 //           updatedAt: "2025-10-07T06:34:19.793Z"
 //         }
 //       };
-//       console.log("✅ Mock user profile data for development");
+//       console.log("? Mock user profile data for development");
 //       return mockUserProfile;
 //     }
     
@@ -64,16 +64,16 @@
 //   const api = createApi(baseUrl);
   
 //   try {
-//     console.log("📝 Updating user profile:", profileData);
+//     console.log("?? Updating user profile:", profileData);
 //     const response = await api.put('/auth/profile', profileData);
-//     console.log("✅ Update user profile success:", response.data);
+//     console.log("? Update user profile success:", response.data);
 //     return response.data;
 //   } catch (error: any) {
-//     console.error("❌ Update user profile failed:", error);
+//     console.error("? Update user profile failed:", error);
     
 //     // Development fallback
 //     if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.code === 'ENOTFOUND') {
-//       console.warn("🔄 Server not available, using development mode with mock update");
+//       console.warn("?? Server not available, using development mode with mock update");
 //       const mockUpdateResponse = {
 //         success: true,
 //         data: {
@@ -91,7 +91,7 @@
 //           ...profileData // Apply the updates
 //         }
 //       };
-//       console.log("✅ Mock update user profile success for development");
+//       console.log("? Mock update user profile success for development");
 //       return mockUpdateResponse;
 //     }
     
@@ -107,24 +107,24 @@
 //   const api = createApi(baseUrl);
   
 //   try {
-//     console.log("🔐 Changing user password");
+//     console.log("?? Changing user password");
 //     const response = await api.put('/auth/change-password', {
 //       currentPassword,
 //       newPassword
 //     });
-//     console.log("✅ Change password success:", response.data);
+//     console.log("? Change password success:", response.data);
 //     return response.data;
 //   } catch (error: any) {
-//     console.error("❌ Change password failed:", error);
+//     console.error("? Change password failed:", error);
     
 //     // Development fallback
 //     if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.code === 'ENOTFOUND') {
-//       console.warn("🔄 Server not available, using development mode with mock password change");
+//       console.warn("?? Server not available, using development mode with mock password change");
 //       const mockPasswordResponse = {
 //         success: true,
 //         message: "Password changed successfully"
 //       };
-//       console.log("✅ Mock password change success for development");
+//       console.log("? Mock password change success for development");
 //       return mockPasswordResponse;
 //     }
     
@@ -147,27 +147,27 @@
 //       name: 'profile.jpg',
 //     } as any);
     
-//     console.log("📸 Uploading profile picture");
+//     console.log("?? Uploading profile picture");
 //     const response = await api.post('/auth/profile/picture', formData, {
 //       headers: {
 //         'Content-Type': 'multipart/form-data',
 //       },
 //     });
-//     console.log("✅ Upload profile picture success:", response.data);
+//     console.log("? Upload profile picture success:", response.data);
 //     return response.data;
 //   } catch (error: any) {
-//     console.error("❌ Upload profile picture failed:", error);
+//     console.error("? Upload profile picture failed:", error);
     
 //     // Development fallback
 //     if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.code === 'ENOTFOUND') {
-//       console.warn("🔄 Server not available, using development mode with mock upload");
+//       console.warn("?? Server not available, using development mode with mock upload");
 //       const mockUploadResponse = {
 //         success: true,
 //         data: {
 //           profilePicture: "https://randomuser.me/api/portraits/men/1.jpg"
 //         }
 //       };
-//       console.log("✅ Mock upload profile picture success for development");
+//       console.log("? Mock upload profile picture success for development");
 //       return mockUploadResponse;
 //     }
     
@@ -248,15 +248,13 @@ interface VerifySMSResponse {
 export function useCreateSignUpToken() {
   return useMutation<SignUpResponse, Error, SignUpRequest>({
     mutationFn: async (signUpData) => {
-      console.log('📝 Creating signup with data:', signUpData);
-      
+
       try {
         const response = await api.post('/auth/signup', signUpData);
-        console.log('✅ Signup API response:', response.data);
+
         return response.data;
       } catch (error: any) {
-        console.error('❌ Signup API error:', error);
-        
+
         // Enhanced server error detection for 500-level errors
         const statusCode = error?.response?.status || error?.status;
         const errorMessage = error?.message || '';
@@ -270,8 +268,8 @@ export function useCreateSignUpToken() {
                              errorMessage.includes('Gateway Timeout');
         
         if (isServerError && API_CONFIG.DEVELOPMENT_MODE) {
-          console.warn('⚠️ Server error detected in development - using fallback');
-          console.warn('📊 Error details:', { statusCode, errorMessage, error: error?.response?.data });
+
+
           return {
             success: true,
             message: 'Account created in development mode (server fallback)',
@@ -283,7 +281,7 @@ export function useCreateSignUpToken() {
         
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
-          console.warn('🎭 Network failed - Using Mock Signup');
+
           return {
             success: true,
             message: 'Account created in development mode',
@@ -297,10 +295,10 @@ export function useCreateSignUpToken() {
       }
     },
     onSuccess: (data) => {
-      console.log('✅ Signup mutation success:', data);
+
     },
     onError: (error) => {
-      console.error('❌ Signup mutation error:', error);
+
     }
   });
 }
@@ -311,19 +309,17 @@ export function useCreateSignUpToken() {
 export function useVerifyOTP() {
   return useMutation<VerifyOTPResponse, Error, VerifyOTPRequest>({
     mutationFn: async (verifyData) => {
-      console.log('🔐 Verifying email OTP:', verifyData);
-      
+
       try {
         // Use the original endpoint: /two-factor-auth/otp-verification
         const response = await api.post('/two-factor-auth/otp-verification', {
           email: verifyData.email,
           otp: verifyData.otp
         });
-        console.log('✅ Email OTP verification response:', response.data);
+
         return response.data;
       } catch (error: any) {
-        console.error('❌ Email OTP verification error:', error);
-        
+
         // Enhanced server error detection for 500-level errors
         const statusCode = error?.response?.status || error?.status;
         const errorMessage = error?.message || '';
@@ -337,8 +333,8 @@ export function useVerifyOTP() {
                              errorMessage.includes('Gateway Timeout');
         
         if (isServerError && API_CONFIG.DEVELOPMENT_MODE) {
-          console.warn('⚠️ Server error in email verification - using fallback');
-          console.warn('📊 Error details:', { statusCode, errorMessage, error: error?.response?.data });
+
+
           return {
             success: true,
             message: 'Email verified in development mode (server fallback)',
@@ -349,7 +345,7 @@ export function useVerifyOTP() {
         
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
-          console.warn('🎭 Network failed - Using Mock Email Verification');
+
           return {
             success: true,
             message: 'Email verified in development mode',
@@ -362,10 +358,10 @@ export function useVerifyOTP() {
       }
     },
     onSuccess: (data) => {
-      console.log('✅ Email verification mutation success:', data);
+
     },
     onError: (error) => {
-      console.error('❌ Email verification mutation error:', error);
+
     }
   });
 }
@@ -378,8 +374,7 @@ export function useVerifySMS() {
   
   return useMutation<VerifySMSResponse, Error, VerifySMSRequest>({
     mutationFn: async (verifyData) => {
-      console.log('📱 Verifying SMS OTP:', verifyData);
-      
+
       try {
         // backend expects { phone, otp, userId? }
         const payload = {
@@ -388,17 +383,10 @@ export function useVerifySMS() {
           userId: verifyData.userId
         };
         const response = await api.post('/two-factor-auth/sms-verification', payload);
-        console.log('✅ SMS verification response:', response.data);
+
         return response.data;
       } catch (error: any) {
-        console.error('❌ SMS verification error:', {
-          error,
-          status: error?.response?.status,
-          message: error?.message,
-          responseData: error?.response?.data,
-          name: error?.name
-        });
-        
+
         // Enhanced server error detection for 500-level errors
         const errorMessage = error?.message || '';
         const isServerError = 
@@ -412,8 +400,7 @@ export function useVerifySMS() {
           
         if (isServerError) {
           if (API_CONFIG.DEVELOPMENT_MODE) {
-            console.warn('⚠️ Server error detected in development - using SMS verification fallback');
-            
+
             const mockUser = {
               id: 'dev-user-' + Date.now(),
               _id: 'dev-user-' + Date.now(),
@@ -441,8 +428,7 @@ export function useVerifySMS() {
         
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
-          console.warn('🎭 Network failed - Using Mock SMS Verification');
-          
+
           const mockUser = {
             id: 'dev-user-' + Date.now(),
             _id: 'dev-user-' + Date.now(),
@@ -471,16 +457,15 @@ export function useVerifySMS() {
       }
     },
     onSuccess: (data) => {
-      console.log('✅ SMS verification mutation success:', data);
-      
+
       // Auto-login user after successful verification
       if (data.token && data.user) {
         setAuthData(data.token, data.user, data.expiresIn || 604800);
-        console.log('✅ User auto-logged in after verification');
+
       }
     },
     onError: (error) => {
-      console.error('❌ SMS verification mutation error:', error);
+
     }
   });
 }
@@ -491,18 +476,16 @@ export function useVerifySMS() {
 export function useResendEmailOTP() {
   return useMutation<any, Error, { email: string; userId?: string | null }>({
     mutationFn: async (resendData) => {
-      console.log('📧 Resending email OTP:', resendData);
-      
+
       try {
         const response = await api.post('/two-factor-auth/send-email', resendData);
-        console.log('✅ Email OTP resent:', response.data);
+
         return response.data;
       } catch (error: any) {
-        console.error('❌ Resend email OTP error:', error);
-        
+
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
-          console.warn('🎭 Network failed - Mock Resend Email');
+
           return {
             success: true,
             message: 'Email OTP resent (dev mode)'
@@ -521,19 +504,17 @@ export function useResendEmailOTP() {
 export function useResendSMSOTP() {
   return useMutation<any, Error, { phone: string; userId?: string | null }>({
     mutationFn: async (resendData) => {
-      console.log('📱 Resending SMS OTP:', resendData);
-      
+
       try {
         const response = await api.post('/two-factor-auth/send-sms', resendData);
-        console.log('✅ SMS OTP resent:', response.data);
+
         return response.data;
       } catch (error: any) {
-        console.error('❌ Resend SMS OTP error:', error);
-        
+
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
-          console.warn('🎭 Network failed - Mock Resend SMS');
-          console.log(`🎯 [SIMULATION] Would have sent SMS to ${resendData.phone}`);
+
+
           return {
             success: true,
             message: 'SMS OTP resent (dev mode)'
@@ -567,19 +548,16 @@ export function useCreateAuthToken() {
   
   return useMutation<LoginResponse, Error, LoginRequest>({
     mutationFn: async (loginData) => {
-      console.log('🔐 Logging in:', loginData.email);
-      
+
       try {
         const response = await api.post('/auth/login', loginData);
-        console.log('✅ Login response:', response.data);
+
         return response.data;
       } catch (error: any) {
-        console.error('❌ Login error:', error);
-        
+
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
-          console.warn('🎭 Network failed - Using Mock Login');
-          
+
           const mockUser = {
             id: 'dev-user-' + Date.now(),
             _id: 'dev-user-' + Date.now(),
@@ -602,11 +580,11 @@ export function useCreateAuthToken() {
       }
     },
     onSuccess: (data) => {
-      console.log('✅ Login mutation success');
+
       setAuthData(data.token, data.user, data.expiresIn);
     },
     onError: (error) => {
-      console.error('❌ Login mutation error:', error);
+
     }
   });
 }
@@ -616,27 +594,26 @@ export function updateUserProfile(profileData: Partial<User>) {
 }
 
 export async function getUserProfile(): Promise<User> {
-  console.log('📥 Getting user profile...');
-  
+
   try {
     // Try to get user from auth store first
     const authState = useAuthStore.getState();
     if (authState.user && authState.isAuthenticated) {
-      console.log('✅ Returning user from auth store');
+
       return authState.user;
     }
     
     // If no user in store, try API call
     const response = await api.get('/auth/profile');
-    console.log('✅ User profile fetched from API:', response.data);
+
     return response.data.user;
     
   } catch (error: any) {
     // Don't log auth errors as errors - they're expected when not logged in
     if (error?.isAuthError || error?.status === 401) {
-      console.log('⚠️ Auth required - User not logged in, using mock profile');
+
     } else {
-      console.error('❌ Get user profile error:', error);
+
     }
     
     // Auth error - user not logged in, return mock user
@@ -658,8 +635,7 @@ export async function getUserProfile(): Promise<User> {
     
     // Network error fallback - return mock user
     if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
-      console.warn('🎭 Network failed - Using Mock Profile');
-      
+
       const mockUser: User = {
         id: 'dev-user-123',
         _id: 'dev-user-123',

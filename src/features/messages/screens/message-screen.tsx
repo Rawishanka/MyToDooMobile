@@ -86,15 +86,12 @@ const MessageScreen: React.FC = () => {
             }
           } catch {
             // Silently handle preview loading errors
-            if (__DEV__) console.warn(`Preview load issue for ${key}`);
           }
         }
         
-        if (__DEV__) console.log(`📱 Loaded ${Object.keys(previews).length} local message previews`);
         setLocalMessagePreviews(previews);
       } catch {
         // Silently handle errors
-        if (__DEV__) console.warn('Failed to load local message previews');
       }
     };
     
@@ -107,18 +104,17 @@ const MessageScreen: React.FC = () => {
   const chatMessages: Message[] = useMemo(() => {
     if (!chatData?.data) {
       // Fallback to mock data if API not available
-      console.log('📱 Using fallback chat data');
+
       return MESSAGES_DATA;
     }
 
     try {
-      console.log(`💬 Processing ${chatData.data.length} chats from API...`);
-      
+
       const filteredChats = chatData.data
         .filter((chatItem: ChatListItem) => {
           // Filter out invalid chat items
           if (!chatItem || !chatItem.chat || !chatItem.chat._id) {
-            console.log('❌ Invalid chat item - missing required fields');
+
             return false;
           }
           
@@ -142,16 +138,12 @@ const MessageScreen: React.FC = () => {
           const isAcceptedOffer = taskStatus && validStatuses.includes(taskStatus);
           
           if (!isAcceptedOffer) {
-            console.log(`⏭️ Skipping chat: "${task?.title || 'Unknown'}" | Status: "${taskStatus}" (offer not accepted)`);
             return false;
           }
           
-          console.log(`✅ Including chat: "${task?.title || 'Unknown'}" | Status: "${taskStatus}" (offer accepted)`);
           return true;
         });
-      
-      console.log(`📊 Filtered ${filteredChats.length} chats with accepted offers out of ${chatData.data.length} total chats`);
-      
+
       return filteredChats.map((chatItem: ChatListItem) => {
           // Get preview from local storage if API doesn't have lastMessage
           const taskId = chatItem.chat.taskId;
@@ -173,9 +165,7 @@ const MessageScreen: React.FC = () => {
             const name = `${firstName}+${lastName}`.trim();
             avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=007AFF&color=fff&size=100&bold=true&rounded=true`;
           }
-          
-          console.log(`👤 Avatar for ${otherParticipant?.firstName}: ${avatarUrl}`);
-          
+
           return {
             id: chatItem.chat._id,
             title: chatItem.task?.title || 'Untitled Task',
@@ -191,8 +181,8 @@ const MessageScreen: React.FC = () => {
           };
         });
     } catch (error) {
-      console.error('❌ Error processing chat data:', error);
-      console.log('📱 Falling back to mock data due to processing error');
+
+
       return MESSAGES_DATA;
     }
   }, [chatData, localMessagePreviews]);
@@ -210,7 +200,6 @@ const MessageScreen: React.FC = () => {
   }, [searchQuery, chatMessages]);
 
   const handleMessagePress = (message: Message) => {
-    console.log('📱 Opening chat for message:', message.id, 'taskId:', (message as any).taskId);
     setSelectedMessage(message);
     setSelectedChatId((message as any).taskId || null);
     setShowChat(true);
