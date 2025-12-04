@@ -1087,14 +1087,15 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   return (
     <View style={styles.card} pointerEvents="auto">
-      {/* Clickable Card Content - Navigates to Details */}
+      {/* Clickable Card Content - Navigates to Details (disabled for Completed tab) */}
       <TouchableOpacity
         style={styles.cardContent}
-        activeOpacity={0.7}
-        onPress={() => {
+        activeOpacity={status === 'completed' ? 1 : 0.7}
+        onPress={status === 'completed' ? undefined : () => {
           console.log('📋 Card pressed, navigating to task detail:', task._id);
           router.push(`/task-detail?taskId=${task._id}`);
         }}
+        disabled={status === 'completed'}
       >
         <View style={styles.header}>
           <View style={styles.info}>
@@ -1143,8 +1144,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                task.status === 'assigned' || task.status === 'in_progress' || task.status === 'in-progress'
                 ? task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')
                 : (() => {
-                    // Try multiple ways to get offer count
-                    const offerCount = task.offerCount || task.offers?.length || 0;
+                    // Count only non-rejected offers
+                    const nonRejectedOffers = task.offers?.filter((offer: any) => offer.status !== 'rejected') || [];
+                    const offerCount = nonRejectedOffers.length || task.offerCount || 0;
                     return offerCount > 0
                       ? `${offerCount} Offer${offerCount !== 1 ? 's' : ''}`
                       : 'Make the first offer';
@@ -1212,7 +1214,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
       {/* Offers Section - Show offer count for all roles when offers exist */}
       {(() => {
-        const offerCount = task.offers?.length || task.offerCount || 0;
+        // Count only non-rejected offers
+        const nonRejectedOffers = task.offers?.filter((offer: any) => offer.status !== 'rejected') || [];
+        const offerCount = nonRejectedOffers.length || task.offerCount || 0;
         return offerCount > 0;
       })() && (
         <View style={styles.offersSection}>
@@ -1224,7 +1228,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               <View style={styles.offersInfo}>
                 <MaterialIcons name="local-offer" size={20} color="#007bff" />
                 <Text style={styles.offersLabel}>
-                  Offers: {task.offers?.length || task.offerCount || 0}
+                  Offers: {(task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0}
                 </Text>
               </View>
               <MaterialIcons name="chevron-right" size={20} color="#007bff" />
@@ -1235,7 +1239,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               <View style={styles.offersInfo}>
                 <MaterialIcons name="local-offer" size={20} color="#007bff" />
                 <Text style={styles.offersLabel}>
-                  Offers: {task.offers?.length || task.offerCount || 0}
+                  Offers: {(task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0}
                 </Text>
               </View>
             </View>
@@ -1806,7 +1810,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             </View>
 
             <FlatList
-              data={task.offers || []}
+              data={(task.offers || []).filter((offer: any) => offer.status !== 'rejected')}
               keyExtractor={(offer) => offer._id}
               renderItem={({ item: offer }) => {
                 // Debug logging for offer structure
