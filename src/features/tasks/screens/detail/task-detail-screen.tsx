@@ -6,16 +6,16 @@ import { useRef, useState } from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
 import {
-  AskQuestionModal,
-  DetailHeader,
-  ErrorState,
-  LoadingState,
-  MakeOfferSection,
-  MyOfferCard,
-  OffersList,
-  QuestionsList,
-  TabsSection,
-  TaskInfoCard,
+    AskQuestionModal,
+    DetailHeader,
+    ErrorState,
+    LoadingState,
+    MakeOfferSection,
+    MyOfferCard,
+    OffersList,
+    QuestionsList,
+    TabsSection,
+    TaskInfoCard,
 } from './components';
 import { useTaskDetail } from './hooks/useTaskDetail';
 
@@ -139,7 +139,8 @@ export default function TaskDetailScreen() {
         >
         {/* Only show Make Offer section to taskers (not the task creator) */}
         {/* Hide if user is assigned to this task (Todoo Tasks or Completed) */}
-        {task?.createdBy?._id !== currentUser?._id && !shouldHideSections && (
+        {/* Hide if user has already made an offer (myOffer exists) */}
+        {task?.createdBy?._id !== currentUser?._id && !shouldHideSections && !myOffer && (
           <MakeOfferSection 
             onMakeOffer={handleMakeOffer} 
             offerCount={task?.offerCount || taskOffers.length}
@@ -153,12 +154,11 @@ export default function TaskDetailScreen() {
           refetch={refetch}
         />
 
-        {/* Show user's own offer if they made one */}
-        {/* OR show the first offer if user is the task poster (to review/accept) */}
-        {(myOffer || (task?.createdBy?._id === currentUser?._id && taskOffers.length > 0)) && (
+        {/* Show user's own offer if they made one (Tasker only) */}
+        {myOffer && task?.createdBy?._id !== currentUser?._id && (
           <MyOfferCard 
-            offer={myOffer || taskOffers[0]} 
-            isTaskPoster={task?.createdBy?._id === currentUser?._id}
+            offer={myOffer} 
+            isTaskPoster={false}
             onAcceptOffer={handleAcceptOffer}
             taskLocation={task?.location}
           />
@@ -176,7 +176,7 @@ export default function TaskDetailScreen() {
               taskCreatorId={task?.createdBy?._id}
               currentUserId={currentUser?._id}
               onAcceptOffer={handleAcceptOffer}
-              excludeOfferId={myOffer?._id || (task?.createdBy?._id === currentUser?._id && taskOffers.length > 0 ? taskOffers[0]._id : undefined)}
+              excludeOfferId={myOffer?._id}
               taskLocation={task?.location}
             />
           ) : (

@@ -11,22 +11,22 @@ import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-  AllOffersResponse,
-  CreateOfferRequest,
-  CreateOfferResponse,
-  CreateTaskRequest,
-  CreateTaskResponse,
-  MyTasksParams,
-  PaymentStatusResponse,
-  SingleTaskResponse,
-  Task,
-  TaskCompletionStatusResponse,
-  TaskFilterParams,
-  TaskFilterResponse,
-  TaskOffersResponse,
-  TaskSearchParams,
-  TasksResponse,
-  UpdateTaskRequest
+    AllOffersResponse,
+    CreateOfferRequest,
+    CreateOfferResponse,
+    CreateTaskRequest,
+    CreateTaskResponse,
+    MyTasksParams,
+    PaymentStatusResponse,
+    SingleTaskResponse,
+    Task,
+    TaskCompletionStatusResponse,
+    TaskFilterParams,
+    TaskFilterResponse,
+    TaskOffersResponse,
+    TaskSearchParams,
+    TasksResponse,
+    UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -2466,10 +2466,25 @@ export async function acceptOffer(taskId: string, offerId: string, userId?: stri
     console.log("📤 Accept offer - trying with empty body");
     
     // Try the specific accept endpoint first
+    let acceptResponse;
     try {
       const response = await api.post(`/tasks/${taskId}/offers/${offerId}/accept`, {});
       console.log("✅ Accept offer success:", response.data);
-      return response.data;
+      acceptResponse = response.data;
+      
+      // After successfully accepting, reject all other pending offers
+      try {
+        console.log("🚫 Rejecting other pending offers...");
+        const rejectionResult = await rejectOtherOffers(taskId, offerId);
+        console.log(`✅ Rejected ${rejectionResult.rejectedCount} other offer(s)`);
+      } catch (rejectError) {
+        // Don't fail the acceptance if rejection fails
+        if (__DEV__) {
+          console.log('⚠️ Failed to reject other offers (continuing anyway):', rejectError);
+        }
+      }
+      
+      return acceptResponse;
     } catch (acceptError: any) {
       console.log("⚠️ Accept endpoint failed with empty body, trying with user data:", {
         status: acceptError?.response?.status,
@@ -2487,6 +2502,18 @@ export async function acceptOffer(taskId: string, offerId: string, userId?: stri
         try {
           const retryResponse = await api.post(`/tasks/${taskId}/offers/${offerId}/accept`, requestBody);
           console.log("✅ Accept offer success with user data:", retryResponse.data);
+          
+          // Reject other offers after successful acceptance
+          try {
+            console.log("🚫 Rejecting other pending offers...");
+            const rejectionResult = await rejectOtherOffers(taskId, offerId);
+            console.log(`✅ Rejected ${rejectionResult.rejectedCount} other offer(s)`);
+          } catch (rejectError) {
+            if (__DEV__) {
+              console.log('⚠️ Failed to reject other offers:', rejectError);
+            }
+          }
+          
           return retryResponse.data;
         } catch (retryError: any) {
           console.log("❌ Accept endpoint failed again:", retryError?.response?.data);
@@ -2504,6 +2531,18 @@ export async function acceptOffer(taskId: string, offerId: string, userId?: stri
         };
         const updateResponse = await api.put(`/tasks/${taskId}/offers/${offerId}`, statusUpdateBody);
         console.log("✅ Accept offer via status update success:", updateResponse.data);
+        
+        // Reject other offers after successful acceptance
+        try {
+          console.log("🚫 Rejecting other pending offers...");
+          const rejectionResult = await rejectOtherOffers(taskId, offerId);
+          console.log(`✅ Rejected ${rejectionResult.rejectedCount} other offer(s)`);
+        } catch (rejectError) {
+          if (__DEV__) {
+            console.log('⚠️ Failed to reject other offers:', rejectError);
+          }
+        }
+        
         return updateResponse.data;
       }
       
@@ -2533,6 +2572,88 @@ export async function acceptOffer(taskId: string, offerId: string, userId?: stri
       throw new Error(errorMessage);
     }
     
+    throw error;
+  }
+}
+
+/**
+ * 🚫 Reject Other Offers
+ * Rejects all pending offers except the accepted one and sends notifications
+ * Endpoint: PUT /api/tasks/:taskId/offers/:offerId (status: rejected)
+ * Auth: Required
+ */
+export async function rejectOtherOffers(taskId: string, acceptedOfferId: string): Promise<{ success: boolean; rejectedCount: number }> {
+  const api = getApi();
+  try {
+    console.log("🚫 Rejecting other offers for task:", { taskId, acceptedOfferId });
+    
+    // Get all offers for this task
+    const offersResponse = await getTaskOffers(taskId);
+    const allOffers = offersResponse.data?.offers || [];
+    
+    // Filter pending offers (exclude the accepted one)
+    const pendingOffers = allOffers.filter((offer: any) => 
+      offer._id !== acceptedOfferId && offer.status === 'pending'
+    );
+    
+    if (pendingOffers.length === 0) {
+      console.log("✅ No other pending offers to reject");
+      return { success: true, rejectedCount: 0 };
+    }
+    
+    console.log(`🚫 Rejecting ${pendingOffers.length} pending offer(s)`);
+    
+    // Reject each pending offer
+    const rejectionPromises = pendingOffers.map(async (offer: any) => {
+      try {
+        // Update offer status to rejected
+        const response = await api.put(`/tasks/${taskId}/offers/${offer._id}`, {
+          status: 'rejected'
+        });
+        
+        console.log(`✅ Rejected offer ${offer._id} for user ${offer.user?._id || offer.taskTakerId?._id}`);
+        
+        // Send notification to the user whose offer was rejected
+        // Backend should handle this, but we'll try to trigger it via webhook
+        try {
+          const userId = offer.user?._id || offer.taskTakerId?._id || offer.taskTaker?._id;
+          if (userId) {
+            await api.post('/notifications/webhook', {
+              type: 'OFFER_REJECTED',
+              title: 'Offer Not Accepted',
+              message: `Unfortunately, another offer has been accepted for this task. Thank you for your interest.`,
+              recipient: userId,
+              priority: 'NORMAL',
+              task: taskId,
+              offer: offer._id
+            });
+            console.log(`📧 Notification sent to user ${userId} for rejected offer`);
+          }
+        } catch (notifError) {
+          // Don't fail the rejection if notification fails
+          if (__DEV__) {
+            console.log('⚠️ Failed to send rejection notification:', notifError);
+          }
+        }
+        
+        return response.data;
+      } catch (error) {
+        if (__DEV__) {
+          console.log(`⚠️ Failed to reject offer ${offer._id}:`, error);
+        }
+        throw error;
+      }
+    });
+    
+    await Promise.all(rejectionPromises);
+    
+    console.log(`✅ Successfully rejected ${pendingOffers.length} offer(s)`);
+    return { success: true, rejectedCount: pendingOffers.length };
+    
+  } catch (error: any) {
+    if (!isNetworkError(error) && __DEV__) {
+      console.log("⚠️ Failed to reject other offers:", error?.message);
+    }
     throw error;
   }
 }
@@ -3489,6 +3610,7 @@ export const TaskAPI = {
   getAllOffers,
   createOffer,
   acceptOffer,
+  rejectOtherOffers,
   updateOffer,
   
   // Phase 4: Completion Flow
