@@ -112,6 +112,7 @@ export const OffersList: React.FC<OffersListProps> = ({
           currentUserId={currentUserId}
           onAcceptOffer={onAcceptOffer}
           hasAcceptedOffer={hasAcceptedOffer}
+          isTaskPoster={currentUserId === taskCreatorId}
         />
       )}
     />
@@ -119,22 +120,24 @@ export const OffersList: React.FC<OffersListProps> = ({
 };
 
 // Component to display offer amount and status
-const OfferAmountStatus: React.FC<{ offer: any }> = ({ offer }) => {
+const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean }> = ({ offer, isTaskPoster }) => {
   const { countryInfo } = useLocationCountry();
   const currencyInfo = getCurrencyFromUserLocation(countryInfo);
   
   const offerAmount = offer.offer?.amount || offer.amount || 0;
-  const offerCurrency = offer.offer?.currency || offer.currency || 'SGD';
   const status = offer.status || 'pending';
   
   return (
     <View style={styles.offerAmountStatusContainer}>
-      <View style={styles.offerAmountRow}>
-        <Ionicons name="cash-outline" size={16} color="#004aad" />
-        <Text style={styles.offerAmountText}>
-          {formatCurrency(offerAmount, currencyInfo)}
-        </Text>
-      </View>
+      {/* Only show amount to task poster, hide from other taskers */}
+      {isTaskPoster && (
+        <View style={styles.offerAmountRow}>
+          <Ionicons name="cash-outline" size={16} color="#004aad" />
+          <Text style={styles.offerAmountText}>
+            {formatCurrency(offerAmount, currencyInfo)}
+          </Text>
+        </View>
+      )}
       <View style={[
         styles.offerStatusBadge,
         status === 'accepted' ? styles.acceptedStatusBadge : styles.pendingStatusBadge
@@ -162,9 +165,10 @@ interface OfferCardProps {
   currentUserId?: string;
   onAcceptOffer?: (offerId: string) => void;
   hasAcceptedOffer?: boolean;
+  isTaskPoster?: boolean;
 }
 
-const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUserId, onAcceptOffer, hasAcceptedOffer }) => {
+const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUserId, onAcceptOffer, hasAcceptedOffer, isTaskPoster }) => {
   const taskTitle = offer.taskId?.title || 'Task';
   
   // Extract user information
@@ -299,8 +303,8 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                     )}
                   </View>
 
-                  {/* Offer Amount and Status */}
-                  <OfferAmountStatus offer={offer} />
+                  {/* Offer Amount and Status - Only visible to task poster */}
+                  <OfferAmountStatus offer={offer} isTaskPoster={isTaskPoster || false} />
 
                   {/* Rating and Stats Row */}
                   <View style={styles.offerStatsRow}>
@@ -619,30 +623,27 @@ const styles = StyleSheet.create({
   offerAmountStatusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 8,
-    marginBottom: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
+    justifyContent: 'flex-start',
+    marginTop: 6,
+    marginBottom: 6,
   },
   offerAmountRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    marginRight: 12,
   },
   offerAmountText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: '#004aad',
   },
   offerStatusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 16,
     gap: 4,
   },
   acceptedStatusBadge: {
