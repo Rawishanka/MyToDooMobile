@@ -51,11 +51,6 @@ export default function AnswerQuestionScreen() {
 
       setIsSubmitting(true);
 
-      console.log('💬 Posting answer with attachments:', {
-        answer: answer.trim(),
-        attachments: attachments.length
-      });
-
       // TODO: Update API to support attachments
       // For now, we'll include attachment info in the answer text if there are any
       let finalAnswer = answer.trim();
@@ -72,7 +67,6 @@ export default function AnswerQuestionScreen() {
         answer: finalAnswer,
       });
 
-      console.log('✅ Answer posted successfully:', result);
 
       Alert.alert(
         'Answer Posted!',
@@ -90,7 +84,6 @@ export default function AnswerQuestionScreen() {
       );
 
     } catch (error: any) {
-      console.error('❌ Failed to post answer:', error);
       Alert.alert(
         'Failed to Post Answer',
         error?.message || 'Something went wrong. Please try again.',

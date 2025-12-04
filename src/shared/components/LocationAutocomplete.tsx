@@ -83,7 +83,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       const { status } = await Location.getForegroundPermissionsAsync();
       setPermissionStatus(status === 'granted' ? 'granted' : 'denied');
     } catch (error) {
-      console.log('Error checking permission:', error);
       setPermissionStatus('unknown');
     }
   };
@@ -93,12 +92,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     ? "Detecting your location..." 
     : `${placeholder} (${countryInfo.countryName})`;
 
-  console.log('🌍 Using country for location search:', {
-    provided: country,
-    detected: countryInfo.countryCode,
-    effective: effectiveCountry,
-    countryName: countryInfo.countryName
-  });
 
   const requestLocationPermission = async (): Promise<boolean> => {
     try {
@@ -120,7 +113,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
             onPress: () => {
               setPermissionStatus('denied');
               // Focus on the search input
-              console.log('📍 User chose to enter location manually');
             }
           },
           {
@@ -150,7 +142,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       return false;
     } catch (error) {
       if (__DEV__) {
-        console.log('⚠️ Error requesting location permission:', error);
       }
       setPermissionStatus('denied');
       return false;
@@ -161,12 +152,10 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     try {
       setDetectingLocation(true);
       setError(null);
-      console.log('📍 Getting current location...');
       
       // Check/request permissions
       const hasPermission = await requestLocationPermission();
       if (!hasPermission) {
-        console.log('❌ Location permission denied');
         return;
       }
 
@@ -182,7 +171,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       };
 
       setCurrentLocation(coords);
-      console.log('📍 Coordinates:', coords);
       
       // Reverse geocode to get readable address
       const reverseGeocodeResult = await Location.reverseGeocodeAsync({
@@ -200,15 +188,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         // Create a clean suburb + region format
         const shortAddress = [suburbOnly, regionInfo].filter(Boolean).join(', ');
         
-        console.log('📍 Current location detected:', shortAddress);
-        console.log('   Full address available:', {
-          street: address.street,
-          streetNumber: address.streetNumber,
-          city: address.city,
-          subregion: address.subregion,
-          region: address.region,
-          country: address.country
-        });
         
         // Auto-fill with suburb only
         setQuery(shortAddress);
@@ -219,7 +198,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           coordinates: coords,
         };
         
-        console.log('✅ Auto-selecting current suburb/city');
         onSelect(locationData);
         setSuggestions([]);
         setShowSuggestions(false);
@@ -228,7 +206,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       
     } catch (error: any) {
       if (__DEV__) {
-        console.log('⚠️ Error getting current location:', error?.message || error);
       }
       
       // Provide specific error messages
@@ -257,7 +234,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
     // Check if Mapbox token is configured
     if (MAPBOX_ACCESS_TOKEN === 'YOUR_MAPBOX_ACCESS_TOKEN_HERE' || !MAPBOX_ACCESS_TOKEN) {
-      console.warn("⚠️ Mapbox access token not configured");
       setError("Configure Mapbox token for location search");
       setShowSuggestions(true);
       onDropdownStateChange?.(true);
@@ -292,7 +268,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       // Add proximity bias if we have current location
       if (currentLocation) {
         params.proximity = `${currentLocation.lng},${currentLocation.lat}`;
-        console.log('📍 Using location proximity bias:', params.proximity);
       }
       
       const response = await axios.get(
@@ -305,17 +280,13 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         }
       );
 
-      console.log('🗺️ Mapbox response:', response.data);
 
       const features = response.data.features || [];
-      console.log(`   Found ${features.length} suggestions`);
       setSuggestions(features);
       
       if (features.length === 0) {
-        console.log('   No locations found');
         setError("No locations found. Try a different search term.");
       } else {
-        console.log('   Suggestions:', features.map((f: LocationResult) => f.place_name));
       }
       
     } catch (error: any) {
@@ -325,7 +296,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
                               error?.message?.includes('Network Error') ||
                               error?.message?.includes('timeout');
         if (!isNetworkError) {
-          console.log('⚠️ Mapbox API error:', error?.message || error);
         }
       }
       
@@ -354,7 +324,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   };
 
   const handleInputChange = (value: string) => {
-    console.log('🔍 Location input changed:', value);
     setQuery(value);
     
     // Clear previous timeout
@@ -363,7 +332,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     }
     
     if (value.length < 2) {
-      console.log('   Input too short, clearing suggestions');
       setSuggestions([]);
       setShowSuggestions(false);
       onDropdownStateChange?.(false);
@@ -371,9 +339,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     }
     
     // Debounce search requests
-    console.log('   Scheduling search in 300ms...');
     searchTimeout.current = setTimeout(() => {
-      console.log('   Executing search for:', value);
       searchMapboxPlaces(value);
     }, 300); // Wait 300ms after user stops typing
   };
@@ -387,7 +353,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       },
     };
 
-    console.log('📍 Location selected:', locationData);
     
     onSelect(locationData);
     setQuery(suggestion.place_name);
@@ -486,7 +451,6 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           returnKeyType="search"
           editable={!detectingLocation && !isDetectingCountry}
           onFocus={() => {
-            console.log('📍 Location input focused');
             onFocus?.();
             onDropdownStateChange?.(true);
           }}

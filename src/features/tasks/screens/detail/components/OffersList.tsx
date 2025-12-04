@@ -129,12 +129,6 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
   // Safe logging - only log when data exists and in development mode
   if (__DEV__ && ratingStatsData && !ratingStatsError) {
     try {
-      console.log('✅ OffersList - Rating stats loaded:', {
-        userId,
-        userName: user?.firstName,
-        hasData: !!ratingStatsData,
-        completedTasks: user?.completedTasks,
-      });
     } catch {
       // Ignore logging errors in offline mode
     }
@@ -193,12 +187,6 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
         // Safe logging in development mode only
         if (__DEV__) {
           try {
-            console.log('🎯 OffersList - User data:', userName, {
-              rating,
-              totalReviews,
-              completedTasks,
-              completionRate,
-            });
           } catch {
             // Ignore logging errors in offline mode
           }
@@ -208,11 +196,9 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
         if (__DEV__ && !ratingStatsError) {
           try {
             if (completedTasks > 0 && rating === 0) {
-              console.log(`⚠️ Data inconsistency for ${userName}: ${completedTasks} tasks but 0 rating`);
             }
             
             if (completedTasks >= 100 && totalReviews === 0) {
-              console.log(`🚨 Critical data issue for ${userName}: 100+ tasks but 0 reviews`);
             }
           } catch {
             // Ignore logging errors in offline mode

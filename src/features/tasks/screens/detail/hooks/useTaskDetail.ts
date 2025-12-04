@@ -71,14 +71,6 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
   // PRIVACY FIX: Only show questions specific to THIS task, not public questions from other tasks
   const taskQuestions = questionsData?.data || [];
   
-  console.log('📝 Questions Debug (PRIVACY MODE):', {
-    taskId: taskId,
-    taskQuestionsCount: taskQuestions.length,
-    questionsShownToUser: taskQuestions.length,
-    privacyMode: 'enabled - only showing questions for this specific task',
-    currentUserId: currentUser?._id,
-    taskCreatorId: task?.createdBy?._id
-  });
   
   // PRIVACY: Only use questions for THIS specific task
   // Updated filtering to show questions to all relevant users for better collaboration
@@ -118,13 +110,11 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
 
   const handleAcceptOffer = async (offerId: string) => {
     try {
-      console.log('💳 Opening Stripe payment modal for offer:', offerId);
       
       // Find the offer data
       const offerToAccept = taskOffers.find((offer: any) => offer._id === offerId);
       
       if (!offerToAccept) {
-        console.error('❌ Could not find offer data for:', offerId);
         return;
       }
       
@@ -133,16 +123,8 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
       setSelectedOffer(offerToAccept);
       setShowPaymentModal(true);
       
-      console.log('✅ Payment modal opened for offer:', {
-        offerId,
-        offerStructure: offerToAccept,
-        amount: offerToAccept.offer?.amount || offerToAccept.amount,
-        currency: offerToAccept.offer?.currency || offerToAccept.currency,
-        amountPath: offerToAccept.offer?.amount ? 'offer.amount' : 'amount'
-      });
       
     } catch (error) {
-      console.error('Failed to open payment modal:', error);
     }
   };
   
@@ -153,10 +135,8 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
   };
   
   const handlePaymentSuccess = async () => {
-    console.log('🎉 Payment completed successfully!');
     
     // Refresh task data to show updated status
-    console.log('🔄 Refreshing task data and offers after payment success');
     await Promise.all([refetch(), refetchTaskOffers()]);
     
     handleClosePaymentModal();
@@ -164,7 +144,6 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     // Small delay to ensure UI updates before navigation
     setTimeout(() => {
       // Navigate to My Tasks → Poster → Todo tab (where in-progress/assigned tasks appear)
-      console.log('🧭 Navigating to My Tasks - Poster - Todo tab (in-progress tasks)');
       router.push({
         pathname: '/(tabs)/my-tasks' as any,
         params: { role: 'Poster', tab: 'Todo' }
@@ -176,10 +155,6 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     if (!questionText.trim()) return;
 
     try {
-      console.log('📝 Submitting question with attachments:', {
-        questionText,
-        attachments: attachments.length
-      });
 
       // TODO: Update API to support attachments
       // For now, we'll include attachment info in the question text if there are any
@@ -196,14 +171,12 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
         question: finalQuestion,
       });
       
-      console.log('✅ Question posted successfully');
       setQuestionText('');
       setShowAskQuestion(false);
       
       // Refresh questions list
       refetchQuestions();
     } catch (error: any) {
-      console.error('❌ Failed to post question:', error);
       // The error will be handled by the mutation's onError callback
     }
   };

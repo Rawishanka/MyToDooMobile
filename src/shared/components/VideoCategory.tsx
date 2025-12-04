@@ -13,7 +13,6 @@ export const VideoCategory: React.FC<VideoCategoryProps> = ({
   onPress 
 }) => {
   React.useEffect(() => {
-    console.log(`📹 Rendering VideoCategory: ${title}`, videoSource);
   }, [title, videoSource]);
 
   return (

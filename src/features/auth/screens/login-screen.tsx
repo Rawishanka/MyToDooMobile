@@ -60,15 +60,6 @@ export default function LoginScreen() {
   // Always use Expo auth proxy for better compatibility
   const redirectUri = `https://auth.expo.io/@${owner}/${slug}`;
   
-  console.log('📱 Redirect URI for Google OAuth:', redirectUri);
-  console.log('🔐 Google Client ID:', googleClientId ? 'Configured' : 'Not configured');
-  console.log('🔐 Google Sign-In Configuration:', {
-    'Client ID': googleClientId,
-    'Redirect URI': redirectUri,
-    'Owner': owner,
-    'Slug': slug,
-  });
-  
   // Configure Google Sign-In - Use Web Client ID for mobile
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     clientId: googleClientId,
@@ -80,63 +71,34 @@ export default function LoginScreen() {
     try {
       setGoogleLoading(true);
       
-      console.log('✅ Google Sign-In successful, ID token received');
-      console.log('📤 Sending token to backend...');
-      
       // Clear all caches BEFORE Google Sign-In to ensure no stale data
-      console.log('🧹 Pre-Google login: Clearing all cached data...');
       clearCachesOnLogin();
       await queryClient.clear(); // Force clear everything
       
       // Send the ID token to backend
       const result = await googleSignIn({ credential: idToken });
       
-      console.log('✅ Backend authentication successful:', result);
-      console.log('🔍 Auth result details:', { 
-        hasToken: !!result.token, 
-        hasUser: !!result.user,
-        userEmail: result.user?.email,
-        userId: result.user?.id 
-      });
-      
       // Wait a moment for auth store to be updated
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Check current auth state
       const authState = useAuthStore.getState();
-      console.log('🔍 Auth state after Google Sign-In:', {
-        hasToken: !!authState.token,
-        hasUser: !!authState.user,
-        isAuthenticated: authState.isAuthenticated,
-        userEmail: authState.user?.email
-      });
       
       // Force invalidate profile queries to ensure fresh profile data with user context
       if (authState.user?.id) {
         await queryClient.invalidateQueries({ queryKey: ['user-profile'] });
-        console.log('🔄 Profile queries invalidated for user:', authState.user.id);
       }
       
       // Check for pending actions after successful login
       const pendingActionType = checkPendingAction();
       if (pendingActionType) {
-        console.log('📋 Found pending action after Google login, executing:', pendingActionType);
         await executePendingAction();
       } else {
-        console.log('🚀 No pending action, navigating to tabs...');
         // Navigate to tabs (which shows welcome screen as default) after successful login
         router.replace('/(tabs)' as any);
       }
       
     } catch (error: any) {
-      // Use console.log to prevent Metro crashes
-      console.log('❌ Google Sign-In backend error:', error?.message);
-      console.log('📊 Error details:', {
-        message: error?.message,
-        backendMessage: error?.response?.data?.message,
-        status: error?.response?.status,
-      });
-      
       Alert.alert(
         'Sign-In Failed',
         error?.response?.data?.message || error?.message || 'Unable to complete Google Sign-In. Please try again or use email/password.',
@@ -151,12 +113,6 @@ export default function LoginScreen() {
   useEffect(() => {
     if (!response) return;
 
-    console.log('🔍 Google OAuth Response:', {
-      type: response.type,
-      params: (response as any).params,
-      error: (response as any).error,
-    });
-
     if (response?.type === 'success') {
       const { id_token, authentication } = (response as any).params;
       const token = id_token || authentication?.idToken;
@@ -164,7 +120,6 @@ export default function LoginScreen() {
       if (token) {
         handleGoogleSignInSuccess(token);
       } else {
-        console.log('⚠️ No ID token in response:', (response as any).params);
         Alert.alert(
           'Authentication Failed',
           'Unable to complete Google Sign-In. The authentication token was not received.\n\nPlease try again or use email/password login.',
@@ -173,7 +128,6 @@ export default function LoginScreen() {
         setGoogleLoading(false);
       }
     } else if (response?.type === 'error') {
-      console.log('❌ Google Sign-In error:', (response as any).error?.message || 'Unknown error');
       setGoogleLoading(false);
       
       // Check for specific error
@@ -206,7 +160,6 @@ export default function LoginScreen() {
         );
       }
     } else if (response?.type === 'dismiss' || response?.type === 'cancel') {
-      console.log('ℹ️ User cancelled Google Sign-In');
       setGoogleLoading(false);
     }
   }, [response, handleGoogleSignInSuccess]);
@@ -245,34 +198,25 @@ export default function LoginScreen() {
   // Helper function to post pending task after login
   const postPendingTask = async () => {
     if (!hasPendingTask()) {
-      console.log('No pending task to post');
       return false;
     }
 
     try {
-      console.log('🚀 Posting pending task after login...');
-      
       // Wait for authentication token to be properly set in API client
-      console.log('⏱️ Waiting for auth token to be set in API client...');
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const taskData = convertTaskToAPIFormat();
-      console.log('📝 Task data:', taskData);
       
       const result = await postTaskMutation.mutateAsync(taskData);
-      console.log('✅ Pending task posted successfully:', result);
       
       // Reset task store after successful posting
       resetTask();
-      console.log('🔄 Task store reset after posting');
       
       // Add delay to ensure server processes the task
       await new Promise(resolve => setTimeout(resolve, 500));
-      console.log('⏱️ Waited for server to process task');
       
       return true;
     } catch (error) {
-      console.error('❌ Error posting pending task:', error);
       return false;
     }
   };
@@ -335,7 +279,6 @@ export default function LoginScreen() {
       setLoading(true);
       
       // Clear all caches BEFORE login to ensure no stale data
-      console.log('🧹 Pre-login: Clearing all cached data...');
       clearCachesOnLogin();
       await queryClient.clear(); // Force clear everything
       
@@ -344,11 +287,9 @@ export default function LoginScreen() {
       
       // Force invalidate profile queries to ensure fresh profile data
       await queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
-      console.log('🔄 Profile queries invalidated for fresh data');
       
       // Check if there's a pending task to post
       if (hasPendingTask()) {
-        console.log('📋 Pending task detected after login');
         const taskPosted = await postPendingTask();
         
         if (taskPosted) {
@@ -384,24 +325,13 @@ export default function LoginScreen() {
         // Check for pending actions after successful login
         const pendingActionType = checkPendingAction();
         if (pendingActionType) {
-          console.log('🔄 Found pending action after email login, executing:', pendingActionType);
           await executePendingAction();
         } else {
-          console.log('🚀 No pending action, navigating to tabs...');
           // Navigate back to detail screen after successful login
           router.replace('/(tabs)' as any);
         }
       }
     } catch (error: any) {
-      // Use console.log instead of console.error to prevent Metro crashes
-      console.log('❌ Login Error:', error?.message || 'Unknown error');
-      console.log('📊 Login Error Details:', {
-        status: error?.response?.status,
-        message: error?.message,
-        backendMessage: error?.response?.data?.message,
-        code: error?.code
-      });
-      
       // Get error message from backend if available
       const backendMessage = error?.response?.data?.message || error?.response?.data?.error;
       
@@ -527,18 +457,10 @@ export default function LoginScreen() {
         return;
       }
       
-      // Log configuration for debugging
-      console.log('🔐 Initiating Google Sign-In...');
-      console.log('Client ID:', googleClientId.substring(0, 20) + '...');
-      console.log('Redirect URI:', redirectUri);
-      
       // Trigger Google Sign-In flow
       const result = await promptAsync();
-      console.log('Google Sign-In result type:', result?.type);
       
     } catch (error: any) {
-      console.log('❌ Google Sign-In Error:', error?.message || 'Unknown error');
-      
       const errorMessage = error?.message || '';
       
       if (errorMessage.includes('network') || errorMessage.includes('Network')) {
@@ -576,7 +498,6 @@ export default function LoginScreen() {
           if (pendingAction) {
             const { clearPendingAction } = usePendingActionStore.getState();
             clearPendingAction();
-            console.log("🔄 Cleared pending action due to login cancellation");
           }
           router.replace('/');
         }}

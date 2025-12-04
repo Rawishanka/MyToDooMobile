@@ -23,9 +23,6 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
   const status = offer.status || 'pending';
   
   // Debug logging to see what we're actually getting
-  console.log('MyOfferCard - Raw offer data:', JSON.stringify(offer, null, 2));
-  console.log('MyOfferCard - Extracted amount:', offerAmount);
-  console.log('MyOfferCard - Extracted currency:', offerCurrency);
   
   // Determine if this is the task poster viewing someone else's offer
   const isViewingOthersOffer = isTaskPoster;

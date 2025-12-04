@@ -38,7 +38,7 @@ export function useGetAllTasksQuery() {
 export function useMyTasksQuery() {
     return useQuery({
         queryKey: KEYS.myTasks(),
-        queryFn: () =>console.log("hello")
+        queryFn: () => {}
         // queryFn: () => weatherAPI.getGeoCode(keyWord)
     });
 }
@@ -64,7 +64,6 @@ export function useCreateAuthToken() {
       queryClient.setQueryData(['auth-token'], data);
     },
     onError: (error) => {
-      console.error("Login failed:", error);
     },
   });
 }
@@ -75,10 +74,6 @@ export function useGoogleSignIn() {
   return useMutation({
     mutationFn: ({ credential }: { credential: string }) => handleGoogleSignIn(credential),
     onSuccess: (data) => {
-      console.log('🔄 useGoogleSignIn - Setting cache data:', { 
-        token: data.token?.substring(0, 20) + '...', 
-        user: data.user 
-      });
       
       // Set auth token and user data in React Query cache
       queryClient.setQueryData(['auth-token'], data.token);
@@ -88,15 +83,12 @@ export function useGoogleSignIn() {
       if (data.user?.id) {
         const userSpecificKey = ['user-profile', data.user.id];
         queryClient.setQueryData(userSpecificKey, data.user);
-        console.log('✅ Set user-specific profile cache:', userSpecificKey);
       }
       
       // Invalidate all queries to force fresh data fetch
       queryClient.invalidateQueries();
-      console.log('🔄 All queries invalidated for fresh data');
     },
     onError: (error) => {
-      console.error("❌ Google Sign-In failed:", error);
     },
   });
 }
@@ -125,7 +117,6 @@ export function useCreateSignUpToken() {
       queryClient.setQueryData(['signup'], data);
     },
     onError: (error) => {
-      console.error("Sign up failed:", error);
     },
   });
 }
@@ -140,7 +131,6 @@ export function useVerifyOTP() {
       queryClient.setQueryData(['otp-verification'], data);
     },
     onError: (error) => {
-      console.error("OTP verification failed:", error);
     },
   });
 }

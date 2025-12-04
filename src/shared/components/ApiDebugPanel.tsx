@@ -9,9 +9,7 @@ export default function ApiDebugPanel() {
   const handleTestConnection = async () => {
     setTestResult('Testing real API...');
     try {
-      console.log('🔍 Testing API connection to:', API_CONFIG.BASE_URL);
       const response = await fetch(`${API_CONFIG.BASE_URL}/tasks`);
-      console.log('✅ API Connection test - Status:', response.status);
       
       if (response.ok) {
         const data = await response.json() as any;
@@ -20,7 +18,6 @@ export default function ApiDebugPanel() {
         setTestResult(`❌ Real API Failed: HTTP ${response.status}`);
       }
     } catch (error: any) {
-      console.error('❌ API Connection test failed:', error);
       setTestResult(`❌ Real API Failed: ${error.message || 'Unknown error'}`);
     }
   };

@@ -11,14 +11,12 @@ export async function autoLoginForDevelopment() {
   
   // If already authenticated, do nothing
   if (isAuthenticated && token) {
-    console.log("✅ User already authenticated");
     return;
   }
   
   // Check if we're in development mode
   const isDevelopment = __DEV__;
   if (!isDevelopment) {
-    console.log("🔧 Not in development mode, skipping auto-login");
     return;
   }
   
@@ -30,17 +28,13 @@ export async function autoLoginForDevelopment() {
     
     if (storedToken) {
       // Don't create mock user - let the app fetch real user data from API
-      console.log("🔄 Found stored token in development, setting token only");
       setAuthData(storedToken, null, 3600);
-      console.log("✅ Development token restored (user data will be fetched from API)");
       return;
     }
     
     // Only create development session if explicitly requested
-    console.log("🔧 No stored token found in development mode");
     
   } catch (error) {
-    console.error("❌ Error during development auto-login:", error);
   }
 }
 
@@ -52,5 +46,4 @@ export async function clearAuthAndRestart() {
   const { resetTask } = await import('@/src/store/create-task-store').then(m => m.useCreateTaskStore.getState());
   await clearAuth();
   resetTask();
-  console.log("🔄 Authentication cleared - app will need fresh login");
 }

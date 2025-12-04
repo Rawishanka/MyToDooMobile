@@ -75,7 +75,6 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
   const getServiceFeeData = () => {
     if (paymentIntentData?.breakdown) {
       // Use breakdown data from the actual backend response - THIS IS WHAT STRIPE CHARGES
-      console.log('✅ Using backend breakdown data (this is what Stripe will charge):', paymentIntentData.breakdown);
       return {
         budgetAmount: paymentIntentData.breakdown.budgetAmount,
         serviceFee: paymentIntentData.breakdown.serviceFee,
@@ -85,7 +84,6 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
     }
     
     // Fallback calculation ONLY before backend response
-    console.log('⚠️ Using fallback calculation (waiting for backend):', offerAmount);
     const serviceFee = Math.round(offerAmount * 0.10 * 100) / 100;
     return {
       budgetAmount: offerAmount,
@@ -98,13 +96,6 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
   // Make fee calculation reactive to paymentIntentData changes
   const feeCalculation = useMemo(() => {
     const result = getServiceFeeData();
-    console.log('🔢 Fee calculation updated:', {
-      hasBackendData: !!paymentIntentData?.breakdown,
-      budgetAmount: result.budgetAmount,
-      serviceFee: result.serviceFee,
-      totalAmount: result.totalAmount,
-      source: paymentIntentData?.breakdown ? 'BACKEND' : 'FALLBACK'
-    });
     return result;
   }, [paymentIntentData, offerAmount, currency]);
 
@@ -118,15 +109,8 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
   const initializeAndPresentPaymentSheet = async () => {
     setIsProcessing(true);
     try {
-      console.log('💳 Starting payment process:', { 
-        taskId, 
-        offerId, 
-        offerAmount, 
-        currency
-      });
       
       // STEP 1: Calculate service fee using the new endpoint (with fallback)
-      console.log('📊 Step 1: Calculating service fee...');
       let serviceFeeResult;
       try {
         serviceFeeResult = await PaymentAPI.calculateServiceFee({
@@ -134,20 +118,12 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
           currency: currency || 'LKR',
         });
 
-        console.log('✅ Service fee calculated:', {
-          budgetAmount: serviceFeeResult.calculation.budgetAmount,
-          serviceFee: serviceFeeResult.calculation.serviceFee,
-          totalAmount: serviceFeeResult.calculation.totalAmount,
-          currency: serviceFeeResult.calculation.currency
-        });
       } catch (feeError: any) {
         // If service fee calculation fails completely, log it but continue
         // The backend payment intent will handle fee calculation as backup
-        console.log('ℹ️ Service fee pre-calculation unavailable, backend will calculate:', feeError.message);
       }
 
       // STEP 2: Create payment intent with the calculated amounts
-      console.log('💳 Step 2: Creating payment intent...');
       const paymentResult = await createPaymentIntent.mutateAsync({
         taskId,
         offerId,
@@ -159,12 +135,6 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
         throw new Error('Failed to create payment intent');
       }
 
-      console.log('✅ Payment intent created:', {
-        budgetAmount: paymentResult.breakdown?.budgetAmount,
-        serviceFee: paymentResult.breakdown?.serviceFee,
-        totalCharge: paymentResult.breakdown?.totalCharge,
-        currency: paymentResult.breakdown?.currency
-      });
       
       setPaymentIntentData(paymentResult);
 
@@ -182,18 +152,15 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
       });
 
       if (initError) {
-        console.error('❌ Payment Sheet initialization failed:', initError);
         throw new Error(initError.message);
       }
 
-      console.log('✅ Payment Sheet initialized, presenting now...');
       
       // Immediately present the payment sheet
       const { error: presentError } = await presentPaymentSheet();
 
       if (presentError) {
         if (presentError.code === 'Canceled') {
-          console.log('ℹ️ User canceled payment');
           onClose();
           return;
         }
@@ -201,7 +168,6 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
       }
 
       // Payment succeeded
-      console.log('✅ Payment succeeded!');
       Alert.alert(
         'Payment Successful! 🎉',
         'Your payment has been processed. The task will be assigned shortly.',
@@ -217,11 +183,6 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
         }]
       );
     } catch (error: any) {
-      console.log('❌ Payment Sheet initialization error:', {
-        message: error.message,
-        code: error.code || 'Unknown',
-        name: error.name || 'Unknown'
-      });
       
       // Handle specific backend endpoint errors
       if (error.message?.includes('404') || error.message?.includes('Not Found')) {
@@ -273,7 +234,6 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
 
   const handleDirectOfferAcceptance = async () => {
     try {
-      console.log('🚀 Direct offer acceptance (bypassing payment):', { taskId, offerId });
       
       if (!currentUser?._id) {
         Alert.alert('Authentication Required', 'Please login to continue.');
@@ -289,7 +249,6 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
         taskCategory
       });
       
-      console.log('✅ Offer accepted directly:', acceptResult);
       Alert.alert(
         'Success! 🎉', 
         'The offer has been accepted successfully!',
@@ -307,10 +266,6 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
       );
       
     } catch (error: any) {
-      console.log('❌ Failed to accept offer directly:', {
-        message: error.message,
-        code: error.code || 'Unknown'
-      });
       Alert.alert(
         'Error',
         'Failed to accept offer. Please try again or contact support.',

@@ -126,7 +126,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   
   // Function to open image viewer
   const openImageViewer = (imageUrl: string) => {
-    console.log('📸 Opening image viewer for:', imageUrl);
     setSelectedImageUrl(imageUrl);
     setImageModalVisible(true);
   };
@@ -153,19 +152,10 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   
   // Debug logging - simplified
   React.useEffect(() => {
-    console.log('🔍 QuestionsList Debug Info:', {
-      totalQuestions: questions.length,
-      currentUserId: currentUserId,
-      taskCreatorId: taskCreatorId,
-      isTaskCreator: currentUserId === taskCreatorId,
-      pendingQuestions: questions.filter(q => !q.answer || q.status === 'pending').length
-    });
   }, [questions, currentUserId, taskCreatorId]);
   
   const handleAnswerQuestion = (question: any) => {
-    console.log('🔘 Answer button pressed for question:', question._id);
     const questionTaskId = question.taskId || taskId;
-    console.log('🔘 Using taskId for API call:', questionTaskId);
     setSelectedQuestion({
       ...question,
       taskIdToUse: questionTaskId // Add this for the modal to use
@@ -177,7 +167,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   const canUserAnswerQuestion = (question: any): boolean => {
     // Allow both task creators and taskers to answer questions
     if (!currentUserId || !taskCreatorId) {
-      console.log('❌ Missing user IDs - currentUserId:', currentUserId, 'taskCreatorId:', taskCreatorId);
       return false;
     }
     
@@ -185,20 +174,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
     const isTaskCreator = currentUserId === taskCreatorId;
     
     // Enhanced debugging for task offers
-    console.log('🔍 Debugging taskOffers for user permission:', {
-      currentUserId,
-      taskOffersLength: taskOffers.length,
-      taskOffers: taskOffers.map((offer: any) => ({
-        offerId: offer._id,
-        taskTakerId: offer.taskTakerId,
-        userId: offer.userId,
-        user: offer.user,
-        userFromOffer: offer.user?._id,
-        directUserId: offer.userId,
-        taskTakerIdObj: offer.taskTakerId?._id,
-        taskTakerName: offer.taskTakerId?.firstName + ' ' + offer.taskTakerId?.lastName
-      }))
-    });
     
     // Check if current user is a tasker (has made an offer on this task)
     // Try multiple possible user ID fields in offers
@@ -217,11 +192,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
       
       const matches = possibleUserIds.includes(currentUserId);
       if (matches) {
-        console.log('✅ Found matching offer for user:', {
-          currentUserId,
-          matchedField: possibleUserIds.find(id => id === currentUserId),
-          offer: offer
-        });
       }
       return matches;
     });
@@ -233,17 +203,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
     // This ensures better collaboration and participation
     const isAuthenticatedUser = !!currentUserId;
     
-    console.log('✅ Permission check for question', question._id, ':', {
-      isTaskCreator,
-      isTasker,
-      isQuestionAsker,
-      isAuthenticatedUser,
-      currentUserId,
-      taskCreatorId,
-      offersCount: taskOffers.length,
-      questionAskedBy: question.askedBy?._id || question.userId || question.user?._id,
-      finalDecision: isTaskCreator || isTasker || isQuestionAsker || isAuthenticatedUser
-    });
     
     // Allow task creator, taskers who made offers, question askers, or any authenticated user to answer
     // This ensures the Q&A system is open and collaborative
@@ -299,15 +258,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
               {/* DEBUG: Let's check what's in the question data */}
               {(() => {
                 if (__DEV__) {
-                  console.log('🐛 Question data debug:', {
-                    id: question._id,
-                    askedBy: question.askedBy,
-                    user: question.user,
-                    questioner: question.questioner,
-                    isAnonymous: question.isAnonymous,
-                    type: typeof question.askedBy,
-                    keys: question.askedBy ? Object.keys(question.askedBy) : 'no askedBy'
-                  });
                 }
                 return null;
               })()}
@@ -402,7 +352,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                             if (attachment.type === 'image' && attachment.url) {
                               openImageViewer(attachment.url);
                             } else {
-                              console.log('📎 File attachment clicked:', attachment.name);
                             }
                           }}
                           activeOpacity={attachment.type === 'image' && attachment.url ? 0.7 : 1}
@@ -466,7 +415,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                                 if (attachment.type === 'image' && attachment.url) {
                                   openImageViewer(attachment.url);
                                 } else {
-                                  console.log('📎 File attachment clicked:', attachment.name);
                                 }
                               }}
                               activeOpacity={attachment.type === 'image' && attachment.url ? 0.7 : 1}
@@ -499,11 +447,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                 (() => {
                   const canAnswer = canUserAnswerQuestion(question);
                   
-                  console.log('🎯 Final render decision for question', question._id, ':', {
-                    canAnswer,
-                    hasAnswer: hasValidAnswer(question),
-                    shouldShowButton: canAnswer && !hasValidAnswer(question)
-                  });
 
                   if (canAnswer) {
                     return (
@@ -554,7 +497,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           taskId={taskId || ''}
           onAnswerSubmitted={() => {
             // Refresh questions list after answer is submitted
-            console.log('🔄 Refreshing questions after answer submission...');
             if (onRefreshQuestions) {
               onRefreshQuestions();
             }
@@ -596,7 +538,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                     style={styles.fullImage}
                     resizeMode="contain"
                     onError={(error) => {
-                      console.error('❌ Failed to load image in viewer:', error);
                     }}
                   />
                 </ScrollView>

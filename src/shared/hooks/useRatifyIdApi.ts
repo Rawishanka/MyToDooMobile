@@ -15,7 +15,6 @@ export function useStartIdVerification() {
   return useMutation<any, Error, RatifyIdRequest>({
     mutationFn: startRatifyIdVerification,
     onSuccess: (data) => {
-      console.log('✅ ID Verification started successfully:', data);
       
       // Invalidate user profile to refresh verification status
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
@@ -27,7 +26,6 @@ export function useStartIdVerification() {
       }
     },
     onError: (error) => {
-      console.error('❌ ID Verification failed:', error);
     }
   });
 }
@@ -59,7 +57,6 @@ export function useUpdateVerificationStatus() {
     mutationFn: ({ userId, verificationId, status }) => 
       updateUserVerificationStatus(userId, verificationId, status),
     onSuccess: (data) => {
-      console.log('✅ Verification status updated successfully:', data);
       
       // Invalidate and refetch user profile to show updated verification status
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
@@ -80,7 +77,6 @@ export function useUpdateVerificationStatus() {
       });
     },
     onError: (error) => {
-      console.error('❌ Failed to update verification status:', error);
     }
   });
 }
@@ -96,7 +92,6 @@ export function useSimulateVerification() {
   return useMutation<void, Error, { userId: string }>({
     mutationFn: async ({ userId }) => {
       // Simulate the verification process
-      console.log('🎭 Simulating ID verification for user:', userId);
       
       // Wait 2 seconds to simulate processing time
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -112,7 +107,6 @@ export function useSimulateVerification() {
       });
     },
     onError: (error) => {
-      console.error('❌ Verification simulation failed:', error);
     }
   });
 }

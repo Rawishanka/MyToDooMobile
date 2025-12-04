@@ -47,7 +47,6 @@ async function ensureAuthentication(): Promise<{ success: boolean; token?: strin
   try {
     const storedToken = await AsyncStorage.getItem('token');
     if (storedToken) {
-      console.log("🔄 Found stored token, syncing to auth store");
       // Restore auth state if we have a stored token
       const storedUser = await AsyncStorage.getItem('user');
       if (storedUser) {
@@ -56,20 +55,17 @@ async function ensureAuthentication(): Promise<{ success: boolean; token?: strin
           authState.setAuthData(storedToken, user, 3600);
           return { success: true, token: storedToken };
         } catch {
-          console.warn("⚠️ Failed to parse stored user, using auto-login");
         }
       }
     }
   } catch (error) {
     if (__DEV__) {
-      console.warn("⚠️ Error accessing AsyncStorage:", error);
     }
   }
   
   // Try development auto-login
   if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
     try {
-      console.log("🔧 Development mode: Attempting auto-login");
       await autoLoginForDevelopment();
       
       // Re-check auth state after auto-login
@@ -79,7 +75,6 @@ async function ensureAuthentication(): Promise<{ success: boolean; token?: strin
       }
     } catch (error) {
       if (__DEV__) {
-        console.warn("⚠️ Auto-login failed:", error);
       }
     }
   }
@@ -95,7 +90,6 @@ async function ensureAuthentication(): Promise<{ success: boolean; token?: strin
  */
 async function handleAuthErrorAndRetry(): Promise<{ success: boolean; token?: string; message?: string }> {
   try {
-    console.log("🔄 Handling authentication error...");
     
     // Clear invalid auth data
     await useAuthStore.getState().clearAuth();
@@ -118,7 +112,6 @@ async function handleAuthErrorAndRetry(): Promise<{ success: boolean; token?: st
     };
   } catch (error) {
     if (__DEV__) {
-      console.warn("⚠️ Error handling auth retry:", error);
     }
     return { 
       success: false, 
@@ -141,9 +134,7 @@ function getApi() {
 export async function getCategories(): Promise<{ success: boolean; data: any[] }> {
   const api = getApi();
   try {
-    console.log("📁 Fetching categories from database...");
     const response = await api.get('/categories');
-    console.log("✅ Get categories success:", response.data);
     
     // Handle the actual API response format
     if (response.data.success && Array.isArray(response.data.data)) {
@@ -161,12 +152,10 @@ export async function getCategories(): Promise<{ success: boolean; data: any[] }
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get categories failed:", error);
     }
     
     // Fallback to predefined categories if API fails
     if (__DEV__) {
-      console.warn("🔄 Using fallback categories due to API error");
     }
     const fallbackCategories = [
       'Appliance installation and repair',
@@ -215,21 +204,17 @@ export async function getCategories(): Promise<{ success: boolean; data: any[] }
 export async function getCategoriesByLocation(locationType: string): Promise<{ success: boolean; locationType: string; data: any[] }> {
   const api = getApi();
   try {
-    console.log(`📁 Fetching categories for location type: ${locationType}`);
     const response = await api.get(`/categories/by-location?type=${locationType}`);
-    console.log("✅ Get categories by location success:", response.data);
     
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get categories by location failed:", error);
     }
     
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Get categories by location failed - Authentication required (401)");
       }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
@@ -248,45 +233,31 @@ export async function getCategoriesByLocation(locationType: string): Promise<{ s
 export async function getAllTasks(): Promise<TasksResponse> {
   // Check if we should use mock API only
   if (API_CONFIG.USE_MOCK_ONLY) {
-    console.log("🎭 Using Mock API only (development mode)");
     return await MockApiService.getAllTasks();
   }
   
   const api = getApi();
   try {
-    console.log("🔍 Fetching all tasks with pagination support...");
     
     // Start with a reasonable limit to get most tasks in first request
     const response = await api.get('/tasks?limit=50&page=1');
-    console.log("✅ Get all tasks - First page response:", {
-      total: response.data.total,
-      count: response.data.count,
-      pages: response.data.pages,
-      currentPage: response.data.currentPage,
-      dataLength: response.data.data?.length
-    });
     
     let allTasksData = [...(response.data.data || [])];
     
     // Check if we have pagination and need to fetch more pages
     if (response.data.pages && response.data.pages > 1) {
-      console.log(`📄 Found ${response.data.pages} pages, fetching remaining ${response.data.pages - 1} pages...`);
       
       // Fetch remaining pages
       for (let page = 2; page <= response.data.pages; page++) {
         try {
-          console.log(`📄 Fetching page ${page}...`);
           const pageResponse = await api.get(`/tasks?limit=50&page=${page}`);
           if (pageResponse.data.data && pageResponse.data.data.length > 0) {
             allTasksData.push(...pageResponse.data.data);
-            console.log(`✅ Page ${page}: Added ${pageResponse.data.data.length} tasks`);
           }
         } catch (pageError) {
-          console.warn(`⚠️ Failed to fetch page ${page}:`, pageError);
         }
       }
       
-      console.log(`✅ Successfully fetched all ${allTasksData.length} tasks from ${response.data.pages} pages`);
       
       // Return combined results
       return {
@@ -297,17 +268,14 @@ export async function getAllTasks(): Promise<TasksResponse> {
       };
     }
     
-    console.log(`✅ Single page response: ${allTasksData.length} tasks`);
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get all tasks failed:", error);
     }
     
     // Check for network connection errors - use mock service as fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.warn("🎭 Network failed - Using Mock API for getAllTasks");
       return await MockApiService.getAllTasks();
     }
     
@@ -324,7 +292,6 @@ export async function getAllTasks(): Promise<TasksResponse> {
 export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskFilterResponse> {
   // Check if we should use mock API only
   if (API_CONFIG.USE_MOCK_ONLY) {
-    console.log("🎭 Using Mock API only (development mode) - falling back to getAllTasks");
     const mockResponse = await MockApiService.getAllTasks();
     // Convert to filter response format
     return {
@@ -363,26 +330,17 @@ export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskF
     const queryString = queryParams.toString();
     const url = `/tasks/filter${queryString ? `?${queryString}` : ''}`;
     
-    console.log("🎯 Filtering tasks with params:", params);
-    console.log("🔍 Filter URL:", url);
     
     const response = await api.get(url);
-    console.log("✅ Filter tasks response:", {
-      success: response.data.success,
-      dataLength: response.data.data?.length,
-      pagination: response.data.pagination
-    });
     
     return response.data;
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Filter endpoint failed:", error);
     }
     
     // If filter endpoint fails (500 error or not found), fallback to getAllTasks with client-side filtering
     if (error.response?.status === 500 || error.response?.status === 404 || error.code === 'ERR_NETWORK') {
-      console.log("🔄 Filter endpoint not available, falling back to getAllTasks with client-side filtering");
       
       try {
         // Use the working getAllTasks endpoint
@@ -469,11 +427,6 @@ export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskF
           }
         }
         
-        console.log("✅ Fallback filter complete:", {
-          originalCount: fallbackResponse.data?.length,
-          filteredCount: filteredTasks.length,
-          filters: params
-        });
         
         // Convert to filter response format
         return {
@@ -490,10 +443,8 @@ export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskF
         };
         
       } catch (fallbackError) {
-        console.error("❌ Fallback getAllTasks also failed:", fallbackError);
         
         // Last resort: use mock data
-        console.warn("🎭 Using Mock API as final fallback");
         const mockResponse = await MockApiService.getAllTasks();
         return {
           success: mockResponse.success,
@@ -522,18 +473,12 @@ export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskF
 export async function createTask(taskData: CreateTaskRequest): Promise<CreateTaskResponse> {
   const api = getApi();
   try {
-    console.log("📝 Creating task:", taskData);
     
     // 🚀 CONSOLE LOG THE COMPLETE REQUEST BODY (CREATE TASK)
-    console.log("🚀 === COMPLETE TASK CREATION REQUEST BODY (CREATE TASK) ===");
-    console.log(JSON.stringify(taskData, null, 2));
-    console.log("🚀 === END REQUEST BODY ===");
     
     const response = await api.post('/tasks', taskData);
-    console.log("✅ Create task success:", response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Create task failed:", error);
     throw error;
   }
 }
@@ -546,21 +491,11 @@ export async function createTask(taskData: CreateTaskRequest): Promise<CreateTas
 export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris: string[] = []): Promise<CreateTaskResponse> {
   const api = getApi();
   try {
-    console.log("🚀 === POST TASK WITH IMAGES FUNCTION STARTED ===");
-    console.log("📤 postTaskWithImages called with:");
-    console.log("📤 taskData:", JSON.stringify(taskData, null, 2));
-    console.log("📤 imageUris parameter:", JSON.stringify(imageUris, null, 2));
-    console.log("📤 imageUris.length:", imageUris.length);
-    console.log("📤 imageUris type:", typeof imageUris);
-    console.log("📤 imageUris isArray:", Array.isArray(imageUris));
     
     if (imageUris.length > 0) {
-      console.log("📤 Processing images - starting conversion to base64...");
     } else {
-      console.log("📤 No images to process - imageUris is empty or undefined");
     }
     
-    console.log("📤 Posting task with images:", imageUris.length);
 
     if (imageUris.length > 0) {
       // Convert images to binary data in parallel for better performance
@@ -571,8 +506,6 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
           // Validate the file exists and is accessible
           const fileInfo = await FileSystem.getInfoAsync(uri);
           if (!fileInfo.exists) {
-            console.error(`❌ File does not exist: ${uri}`);
-            console.error('This might happen if the image was deleted or moved after selection.');
             throw new Error(`Failed to read image ${filename}: Error: File does not exist: ${uri}`);
           }
 
@@ -607,52 +540,24 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
           // Create data URI with binary data
           const dataUri = `data:${mimeType};base64,${base64Data}`;
           
-          console.log(`🖼️ Image ${i + 1} conversion successful:`, {
-            filename,
-            mimeType,
-            originalFileSize: fileInfo.size,
-            base64DataLength: base64Data.length,
-            dataUriLength: dataUri.length,
-            dataUriPreview: `${dataUri.substring(0, 100)}...`
-          });
           
           return dataUri;
         } catch (fileError: any) {
-          console.error(`❌ Failed to read image ${i + 1}:`, fileError);
-          console.error(`Image URI: ${uri}`);
-          console.error(`This error typically occurs when:`);
-          console.error(`  1. The image was deleted from cache after selection`);
-          console.error(`  2. The image was moved to a different location`);
-          console.error(`  3. The app doesn't have permission to access the file`);
           throw new Error(`Failed to read image ${filename}: ${fileError.message || fileError}`);
         }
       });
 
       // Wait for all images to be processed in parallel
       const binaryImages = await Promise.all(imagePromises);
-      console.log(`✅ Converted ${binaryImages.length} images to base64`);
       
       // VALIDATE ALL IMAGES BEFORE SENDING
-      console.log("🔍 Validating converted images...");
       binaryImages.forEach((img, index) => {
         const isValidDataUri = img.startsWith('data:image/') && img.includes(';base64,');
         const base64Part = img.split(';base64,')[1];
         const isValidBase64 = base64Part && base64Part.length > 0;
         
-        console.log(`🔍 Image ${index + 1} validation:`, {
-          isValidDataUri,
-          isValidBase64,
-          length: img.length,
-          mimeType: img.split(';')[0],
-          base64Length: base64Part?.length || 0
-        });
         
         if (!isValidDataUri || !isValidBase64) {
-          console.error(`❌ Image ${index + 1} is INVALID!`, {
-            preview: img.substring(0, 100),
-            hasDataPrefix: img.startsWith('data:'),
-            hasBase64Marker: img.includes(';base64,')
-          });
         }
       });
       
@@ -660,13 +565,9 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
       const totalSizeKB = imageSizes.reduce((sum, size) => sum + size, 0);
       const totalSizeMB = totalSizeKB / 1024;
       
-      console.log(`📊 Image data sizes:`, imageSizes.map(size => `${size.toFixed(2)}KB`));
-      console.log(`📊 Total payload size: ${totalSizeKB.toFixed(2)}KB (${totalSizeMB.toFixed(2)}MB)`);
       
       // Warn if images might be too large
       if (totalSizeMB > 10) {
-        console.warn(`⚠️ WARNING: Total image size is ${totalSizeMB.toFixed(2)}MB - this might exceed backend limits!`);
-        console.warn(`⚠️ Consider implementing image compression before upload`);
       }
 
       // Create enhanced task data with binary images in JSON - EXACTLY like the required format
@@ -675,90 +576,29 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
         images: binaryImages
       };
       
-      console.log(`📤 Sending task to backend WITH ${binaryImages.length} images`);
-      console.log(`📤 REQUEST BODY - images field:`, {
-        imagesCount: taskDataWithImages.images?.length,
-        firstImagePreview: taskDataWithImages.images?.[0]?.substring(0, 100),
-        imagesSizes: taskDataWithImages.images?.map((img: string) => `${(img.length / 1024).toFixed(2)}KB`)
-      });
-      console.log(`📤 FULL REQUEST BODY STRUCTURE:`, {
-        title: taskDataWithImages.title,
-        category: taskDataWithImages.category,
-        details: taskDataWithImages.details,
-        budget: taskDataWithImages.budget,
-        currency: taskDataWithImages.currency,
-        dateType: taskDataWithImages.dateType,
-        date: taskDataWithImages.date,
-        time: taskDataWithImages.time,
-        locationType: taskDataWithImages.locationType,
-        location: taskDataWithImages.location,
-        coordinates: taskDataWithImages.coordinates,
-        imagesCount: taskDataWithImages.images?.length,
-        imagesPreview: taskDataWithImages.images?.map((img: string) => `${img.substring(0, 50)}...`)
-      });
       
       // 🚨 LOG THE COMPLETE REQUEST BODY FOR DEBUGGING
-      console.log("🚨 === COMPLETE REQUEST BODY BEING SENT TO BACKEND ===");
-      console.log("🚨 Request URL: POST /tasks");
-      console.log("🚨 Request Headers:", {
-        'Content-Type': 'application/json'
-      });
-      console.log("🚨 Request Body Size:", JSON.stringify(taskDataWithImages).length, "characters");
-      console.log("🚨 Request Body Size:", (JSON.stringify(taskDataWithImages).length / 1024).toFixed(2), "KB");
-      console.log("🚨 Request Body Size:", (JSON.stringify(taskDataWithImages).length / 1024 / 1024).toFixed(2), "MB");
-      console.log("🚨 FULL REQUEST BODY (COMPLETE):");
-      console.log(JSON.stringify(taskDataWithImages, null, 2));
-      console.log("🚨 === END OF REQUEST BODY ===");
       
       const response = await api.post('/tasks', taskDataWithImages, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      console.log("✅ Task posted successfully - Backend response:");
-      console.log("📦 Response status:", response.status);
-      console.log("📦 Response headers:", response.headers);
-      console.log("📦 Response data (FULL):", JSON.stringify(response.data, null, 2));
-      console.log("🖼️ Images in response:", response.data?.data?.images?.length || 0);
       
       // CRITICAL CHECK: Did backend save the images?
       if (binaryImages.length > 0 && (!response.data?.data?.images || response.data.data.images.length === 0)) {
-        console.error("🚨 🚨 🚨 CRITICAL: IMAGES WERE SENT BUT NOT SAVED BY BACKEND! 🚨 🚨 🚨");
-        console.error("🚨 Sent images count:", binaryImages.length);
-        console.error("🚨 Backend saved images count:", response.data?.data?.images?.length || 0);
-        console.error("🚨 Full backend response data:", JSON.stringify(response.data, null, 2));
-        console.error("🚨 This indicates a BACKEND ISSUE - images are being received but not saved to database!");
-        console.error("🚨 Check backend logs for image processing errors!");
       } else if (binaryImages.length > 0 && response.data?.data?.images && response.data.data.images.length > 0) {
-        console.log("✅ SUCCESS: Images were properly saved by backend!");
-        console.log("✅ Sent:", binaryImages.length, "images");
-        console.log("✅ Backend saved:", response.data.data.images.length, "images");
-        console.log("✅ Backend image URLs:", response.data.data.images);
       }
       
       return response.data;
     } else {
       // No images, use regular JSON upload
       const response = await api.post('/tasks', taskData);
-      console.log("✅ Task posted successfully");
       return response.data;
     }
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Task posting failed:", error?.response?.status);
-      console.warn("⚠️ Error details:", {
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        data: error?.response?.data,
-        message: error?.message,
-        config: {
-          url: error?.config?.url,
-          method: error?.config?.method,
-          headers: error?.config?.headers,
-          dataLength: error?.config?.data?.length
-        }
-      });
     }
     
     // Check for authentication errors with special handling
@@ -772,20 +612,16 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
     // Check for validation errors  
     if (error?.response?.status === 400) {
       const errorMessage = error?.response?.data?.message || error?.response?.data?.error || "Invalid task data";
-      console.error("❌ Backend validation error:", errorMessage);
       throw new Error(`Validation Error: ${errorMessage}`);
     }
     
     // Check for file upload errors
     if (error?.response?.status === 413) {
-      console.error("❌ Payload too large error - images are too big");
       throw new Error("Images are too large. Please reduce image size and try again.");
     }
     
     // Check for server errors that might indicate image processing issues
     if (error?.response?.status >= 500) {
-      console.error("❌ Server error - might be related to image processing");
-      console.error("❌ This could indicate backend issues with image handling");
     }
     
     throw error;
@@ -800,36 +636,21 @@ export async function postTaskWithImages(taskData: CreateTaskRequest, imageUris:
 export async function postTask(taskData: CreateTaskRequest): Promise<CreateTaskResponse> {
   const api = getApi();
   try {
-    console.log("📝 Posting task to main endpoint:", taskData);
     
     // 🚀 CONSOLE LOG THE COMPLETE REQUEST BODY (REGULAR POST TASK)
-    console.log("🚀 === COMPLETE TASK CREATION REQUEST BODY (REGULAR POST) ===");
-    console.log(JSON.stringify(taskData, null, 2));
-    console.log("🚀 === END REQUEST BODY ===");
     
     const response = await api.post('/tasks', taskData);
-    console.log("✅ Post task success:", response.data);
     return response.data;
   } catch (error: any) {
     // Enhanced error logging for debugging
-    console.error("❌ Post task failed with detailed error:");
-    console.error("Status:", error?.response?.status);
-    console.error("Status Text:", error?.response?.statusText);
-    console.error("Response Data:", error?.response?.data);
-    console.error("Request Data:", taskData);
-    console.error("Request Headers:", error?.config?.headers);
-    console.error("Full Error:", error);
     
     // Check for network connection errors - use mock service as fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.error("❌ Network connection failed - Using mock service as fallback");
-      console.warn("🎭 Switching to Mock API for development");
       return await MockApiService.postTask(taskData);
     }
     
     // Check for authentication errors with special handling
     if (error?.response?.status === 401) {
-      console.error("❌ Post task failed - Authentication required (401)");
       
       // If this is an auth error from the interceptor, provide user-friendly message
       if (error.isAuthError) {
@@ -842,12 +663,10 @@ export async function postTask(taskData: CreateTaskRequest): Promise<CreateTaskR
     
     // Check for validation errors  
     if (error?.response?.status === 400) {
-      console.error("❌ Post task failed - Bad Request (400)");
       const errorMessage = error?.response?.data?.message || error?.response?.data?.error || "Invalid task data";
       throw new Error(`Validation Error: ${errorMessage}`);
     }
     
-    console.error("❌ Task posting failed:", error);
     throw error;
   }
 }
@@ -860,17 +679,11 @@ export async function postTask(taskData: CreateTaskRequest): Promise<CreateTaskR
 export async function postTaskDirect(taskData: CreateTaskRequest): Promise<CreateTaskResponse> {
   const api = getApi();
   try {
-    console.log("🚀 === POST TASK WITH SMART UPLOAD ===");
-    console.log("📤 postTaskDirect called with:");
-    console.log("📤 taskData:", JSON.stringify(taskData, null, 2));
-    console.log("📤 images count:", taskData.images?.length || 0);
-    console.log("📤 has images field:", 'images' in taskData);
     
     // Check if images exist and have content
     const hasImages = taskData.images && taskData.images.length > 0;
     
     if (hasImages) {
-      console.log("🔄 Trying FormData approach first (like profile upload)...");
       
       // Extract images array for use in both try and catch blocks
       const images = taskData.images!; // Already validated hasImages above
@@ -898,7 +711,6 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
         // Add images as files (backend expects 'files' parameter)
         for (let i = 0; i < images.length; i++) {
           const imageUri = images[i];
-          console.log(`📸 Adding image ${i + 1}/${images.length} to FormData as 'files'`);
           
           const filename = imageUri.split('/').pop() || `task_image_${i}.jpg`;
           const extension = filename.split('.').pop()?.toLowerCase() || 'jpg';
@@ -914,35 +726,22 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
           } as any);
         }
         
-        console.log("📤 Attempting FormData upload with 'files' parameter...");
-        console.log("📋 API Compliance: Using 'files' parameter as specified in /tasks POST endpoint");
         const formDataResponse = await api.post('/tasks', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
         
-        console.log("✅ FormData upload successful!");
-        console.log("📦 FormData response:", JSON.stringify(formDataResponse.data, null, 2));
         
         if (formDataResponse.data?.data?.images && formDataResponse.data.data.images.length > 0) {
-          console.log("✅ SUCCESS: Backend saved images with FormData approach!");
-          console.log("✅ Sent", images.length, "images as 'files' parameter");
-          console.log("✅ Backend returned", formDataResponse.data.data.images.length, "images");
-          console.log("✅ Image URLs:", formDataResponse.data.data.images);
           return formDataResponse.data;
         } else {
-          console.error("⚠️ FormData sent successfully but no images in response");
-          console.error("⚠️ Expected images array, got:", formDataResponse.data?.data?.images);
           throw new Error("FormData uploaded but no images in response - backend may not be processing files parameter correctly");
         }
         
       } catch (formDataError: any) {
-        console.warn("⚠️ FormData approach failed, trying base64 fallback...");
-        console.warn("⚠️ FormData error:", formDataError?.message);
         
         // Fallback to base64 approach
-        console.log("🔄 Converting to base64 for JSON upload...");
         
         // Convert images to base64 data URIs
         const base64Images: string[] = [];
@@ -960,13 +759,7 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
             
             const dataUri = `data:${mimeType};base64,${base64Data}`;
             base64Images.push(dataUri);
-            console.log(`✅ Converted image to base64:`, {
-              originalSize: imageUri.length,
-              base64Size: dataUri.length,
-              mimeType
-            });
           } catch (conversionError) {
-            console.error(`❌ Failed to convert image to base64:`, conversionError);
           }
         }
         
@@ -980,30 +773,19 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
           images: base64Images
         };
         
-        console.log("📤 Attempting base64 JSON upload...");
         const base64Response = await api.post('/tasks', taskDataWithBase64);
         
-        console.log("✅ Base64 upload successful!");
-        console.log("📦 Base64 response:", JSON.stringify(base64Response.data, null, 2));
         
         return base64Response.data;
       }
     } else {
       // No images, use regular upload
-      console.log("📤 Posting task without images");
       const response = await api.post('/tasks', taskData);
       return response.data;
     }
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Task posting failed (all methods):", error?.response?.status);
-      console.warn("⚠️ Error details:", {
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        data: error?.response?.data,
-        message: error?.message
-      });
     }
     
     if (error?.response?.status === 401 || error?.isAuthError) {
@@ -1027,7 +809,6 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
 export async function searchTasks(params: TaskSearchParams): Promise<TasksResponse> {
   const api = getApi();
   try {
-    console.log("🔍 Searching tasks with params:", params);
     
     // Try multiple GET approaches only (POST is not supported)
     const getApproaches = [
@@ -1081,7 +862,6 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
       
       // Approach 4: Fallback to general tasks endpoint
       () => {
-        console.log('🔄 Trying general /tasks endpoint as fallback');
         return `/tasks`;
       }
     ];
@@ -1090,17 +870,11 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
     for (let i = 0; i < getApproaches.length; i++) {
       try {
         const url = getApproaches[i]();
-        console.log(`🔍 Trying GET approach ${i + 1}:`, url);
-        console.log(`🔍 Full endpoint: ${api.defaults.baseURL}${url}`);
         const response = await api.get(url);
         
-        console.log("✅ Search tasks success with approach", i + 1, ":", response.data);
         return response.data;
         
       } catch (approachError: any) {
-        console.log(`❌ GET Approach ${i + 1} failed:`, approachError.response?.status, approachError.message);
-        console.log(`❌ Error response data:`, approachError.response?.data);
-        console.log(`❌ Error config:`, approachError.config?.url);
         
         // If this isn't the last approach, try the next one
         if (i < getApproaches.length - 1) {
@@ -1115,23 +889,14 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ All search approaches failed:", error);
-      console.warn("⚠️ Error details:", {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.message
-      });
     }
     
     // Check for network connection errors - use mock service as fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.warn("🎭 Network failed - Using Mock API for searchTasks");
       return await MockApiService.searchTasks(params);
     }
     
     // Try the filter endpoint as final fallback
-    console.warn("🔄 Search API failed completely, trying filter API as final fallback...");
     try {
       const filterParams: TaskFilterParams = {
         sortBy: params.sort as 'latest' | 'newest' | 'oldest' | 'highest-budget' | 'lowest-budget' | 'earliest' | 'price-high' | 'price-low' | undefined,
@@ -1144,7 +909,6 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
         limit: 20
       };
       const filterResult = await getFilteredTasks(filterParams);
-      console.log("✅ Filter API fallback succeeded");
       
       // Convert TaskFilterResponse to TasksResponse
       const tasksResponse: TasksResponse = {
@@ -1158,8 +922,6 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
       
       return tasksResponse;
     } catch (filterError) {
-      console.error("❌ Filter API fallback also failed:", filterError);
-      console.warn("🎭 Using Mock API as final fallback");
       return await MockApiService.searchTasks(params);
     }
   }
@@ -1176,7 +938,6 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
 export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterResponse> {
   const api = getApi();
   try {
-    console.log("🎯 Filtering tasks with params:", params);
     
     // Build query parameters for the filter endpoint
     const searchParams = new URLSearchParams();
@@ -1267,45 +1028,25 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
     
     for (let i = 0; i < endpoints.length; i++) {
       try {
-        console.log(`🔗 Trying Filter API endpoint ${i + 1}:`, endpoints[i]);
         response = await api.get<any>(endpoints[i]);
         
         if (response.data && response.data.success) {
-          console.log(`✅ Filter API succeeded with endpoint ${i + 1}:`, {
-            success: response.data.success,
-            hasData: !!response.data.data,
-            dataLength: response.data.data?.length,
-            responseKeys: Object.keys(response.data)
-          });
           break;
         } else {
-          console.log(`⚠️ Endpoint ${i + 1} returned unsuccessful response:`, {
-            success: response.data?.success,
-            hasData: !!response.data?.data,
-            responseData: response.data
-          });
         }
       } catch (error: any) {
-        console.log(`❌ Endpoint ${i + 1} failed:`, error?.response?.status, error?.message);
         lastError = error;
         
         // If this is the routing conflict error, continue to next endpoint
         if (error?.response?.status === 500 && 
             (error?.response?.data?.message?.includes('Cast to ObjectId failed') ||
              error?.response?.data?.message?.includes('filter'))) {
-          console.warn(`🚨 Detected routing conflict on endpoint ${i + 1}, trying next...`);
           continue;
         }
       }
     }
     
     if (!response || !response.data || !response.data.success) {
-      console.log("❌ All endpoints failed or returned unsuccessful response:", {
-        hasResponse: !!response,
-        hasData: !!response?.data,
-        success: response?.data?.success,
-        lastError: lastError?.message
-      });
       throw lastError || new Error('All filter endpoints failed');
     }
     
@@ -1313,11 +1054,6 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
     if (response.data && response.data.success) {
       // Check if this is a search response (TasksResponse) that needs conversion
       if ('count' in response.data && 'total' in response.data && !('pagination' in response.data)) {
-        console.log("✅ Search API succeeded, converting to filter format", {
-          totalItems: response.data.total,
-          count: response.data.count,
-          dataLength: response.data.data?.length
-        });
         
         // Convert TasksResponse to TaskFilterResponse
         const filterResponse: TaskFilterResponse = {
@@ -1337,19 +1073,10 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
       } 
       // This is already a filter response
       else if ('pagination' in response.data) {
-        console.log("✅ Filter API succeeded", {
-          totalItems: response.data.pagination?.totalItems,
-          currentPage: response.data.pagination?.currentPage,
-          totalPages: response.data.pagination?.totalPages,
-        });
         return response.data;
       }
       // Handle edge case where response format is unexpected
       else {
-        console.log("✅ API succeeded with unknown format, adapting", {
-          responseKeys: Object.keys(response.data),
-          dataLength: response.data.data?.length
-        });
         
         const filterResponse: TaskFilterResponse = {
           success: true,
@@ -1367,41 +1094,26 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
         return filterResponse;
       }
     } else {
-      console.warn("⚠️ API returned unsuccessful response");
       throw new Error("API returned unsuccessful response");
     }
 
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Filter API failed:", {
-        message: error?.message,
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        data: error?.response?.data
-      });
       
       // Check for backend routing conflict (ObjectId casting error)
       if (error?.response?.status === 500 && 
           (error?.response?.data?.message?.includes('Cast to ObjectId failed') ||
            error?.response?.data?.message?.includes('filter'))) {
-        console.warn('🚨 BACKEND ROUTING CONFLICT: /tasks/filter is being treated as /tasks/:id');
-        console.warn('Backend needs: router.get("/filter", ...) BEFORE router.get("/:id", ...)');
       }
     }
     
     // Only fallback to mock if we actually have an error that prevents getting data
     if (error?.response?.status || error?.message?.includes('failed')) {
-      console.warn("🎭 Using Mock API for filterTasks due to API failure");
       try {
         const mockResponse = await MockApiService.filterTasks(params);
-        console.log("✅ Mock API succeeded", {
-          totalItems: mockResponse.pagination?.totalItems,
-          dataLength: mockResponse.data?.length
-        });
         return mockResponse;
       } catch (mockError) {
-        console.error("❌ Mock API also failed for filterTasks:", mockError);
         
         // Final fallback: return empty successful response
         return {
@@ -1432,7 +1144,6 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
 export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boolean; data: Task[] }> {
   const api = getApi();
   try {
-    console.log("👤 Fetching my tasks with params:", params);
     
     // Try my-tasks endpoint first, fallback to general tasks endpoint
     try {
@@ -1442,7 +1153,6 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
       if (params?.role) searchParams.append('role', params.role);
       
       const response = await api.get(`/tasks/my-tasks?${searchParams.toString()}`);
-      console.log("✅ Get my tasks response:", response.data);
       
       // 🔧 FIX: Parse location for each task if returned as string
       if (response.data && response.data.data && Array.isArray(response.data.data)) {
@@ -1450,9 +1160,7 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
           if (task.location && typeof task.location === 'string') {
             try {
               task.location = JSON.parse(task.location);
-              console.log('📍 MyTasks: Parsed location for task:', task._id);
             } catch {
-              console.warn('⚠️ MyTasks: Could not parse location for task:', task._id);
             }
           }
         });
@@ -1462,21 +1170,16 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
       if (response.data && response.data.data && response.data.data.length > 0) {
         return response.data;
       } else {
-        console.log("📝 my-tasks endpoint returned empty data, using general tasks endpoint");
         throw new Error("Empty data from my-tasks endpoint");
       }
     } catch {
-      console.log("📝 my-tasks endpoint not available or empty, using general tasks endpoint");
       // Fallback to general tasks endpoint - use getAllTasks function
       const tasksResponse = await getAllTasks();
-      console.log("✅ Get my tasks fallback success:", { success: true, data: tasksResponse.data });
       return { success: true, data: tasksResponse.data };
     }
   } catch (error: any) {
     // Development fallback - if server is not available, use mock data
     if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error') || error.code === 'ENOTFOUND') {
-      console.warn("🔄 Server not available, using development mode with mock my tasks");
-      console.log("✅ Mock my tasks data for development");
       
       // Create mock my tasks response that matches API format
       const mockMyTasks = {
@@ -1537,7 +1240,6 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
     
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get my tasks failed:", error);
     }
     throw error;
   }
@@ -1551,7 +1253,6 @@ export async function getMyTasks(params?: MyTasksParams): Promise<{ success: boo
 export async function getMyOffers(params?: MyTasksParams): Promise<{ success: boolean; data: Task[] }> {
   const api = getApi();
   try {
-    console.log("🤝 Fetching my offers with params:", params);
     
     // Try my-offers endpoint first, fallback to general tasks endpoint
     try {
@@ -1559,26 +1260,21 @@ export async function getMyOffers(params?: MyTasksParams): Promise<{ success: bo
       if (params?.section) searchParams.append('section', params.section);
       
       const response = await api.get(`/tasks/my-offers?${searchParams.toString()}`);
-      console.log("✅ Get my offers response:", response.data);
       
       // Check if we got actual data, if not fall back to general endpoint
       if (response.data && response.data.data && response.data.data.length > 0) {
         return response.data;
       } else {
-        console.log("📝 my-offers endpoint returned empty data, using general tasks endpoint");
         throw new Error("Empty data from my-offers endpoint");
       }
     } catch {
-      console.log("📝 my-offers endpoint not available or empty, using general tasks endpoint");
       // Fallback to general tasks endpoint - use getAllTasks function
       const tasksResponse = await getAllTasks();
-      console.log("✅ Get my offers fallback success:", { success: true, data: tasksResponse.data });
       return { success: true, data: tasksResponse.data };
     }
   } catch (error) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get my offers failed:", error);
     }
     throw error;
   }
@@ -1594,33 +1290,25 @@ export async function getMyOffers(params?: MyTasksParams): Promise<{ success: bo
 export async function getTaskById(taskId: string): Promise<SingleTaskResponse> {
   const api = getApi();
   try {
-    console.log("📖 Fetching task details for ID:", taskId);
     const response = await api.get(`/tasks/${taskId}`);
-    console.log("✅ Get task details success");
     
     // Image debugging
     const taskData = response.data?.data;
     const imagesCount = taskData?.images?.length || 0;
     
     if (imagesCount > 0) {
-      console.log(`✅ Task "${taskData?.title}" has ${imagesCount} image(s)`);
       // Log first image sample for verification
       const firstImage = taskData.images[0];
       const imageType = typeof firstImage === 'string' ? 'URL' : 'Object';
-      console.log(`📸 First image type: ${imageType}`);
     } else if (taskData?.images && Array.isArray(taskData.images)) {
-      console.warn(`⚠️ Task "${taskData?.title}" has empty images array - check backend`);
     }
     
     // 🔧 FIX: Parse location if it's returned as a string from backend
     if (taskData && taskData.location) {
       if (typeof taskData.location === 'string') {
         try {
-          console.log('📍 GET: Location returned as string, parsing:', taskData.location);
           taskData.location = JSON.parse(taskData.location);
-          console.log('📍 GET: Parsed location:', taskData.location);
         } catch {
-          console.warn('⚠️ GET: Could not parse location string, keeping as-is');
         }
       }
     }
@@ -1629,19 +1317,12 @@ export async function getTaskById(taskId: string): Promise<SingleTaskResponse> {
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get task details failed:", {
-        taskId,
-        status: error?.response?.status,
-        message: error?.message,
-        data: error?.response?.data
-      });
     }
     
     // Handle 400 errors - bad request (invalid task ID, etc.)
     if (error?.response?.status === 400) {
       const errorMessage = error?.response?.data?.message || `Invalid task ID or task not found: ${taskId}`;
       if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Get task details failed - Bad request (400):", errorMessage);
       }
       throw new Error(errorMessage);
     }
@@ -1649,7 +1330,6 @@ export async function getTaskById(taskId: string): Promise<SingleTaskResponse> {
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Get task details failed - Authentication required (401)");
       }
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
@@ -1666,11 +1346,6 @@ export async function getTaskById(taskId: string): Promise<SingleTaskResponse> {
 export async function updateTask(taskId: string, updates: UpdateTaskRequest): Promise<{ success: boolean; data: Task }> {
   const api = getApi();
   try {
-    console.log("✏️ Starting update task operation...");
-    console.log("📋 Task ID:", taskId);
-    console.log("📝 Updates payload:", JSON.stringify(updates, null, 2));
-    console.log("🌐 API Base URL:", API_CONFIG.BASE_URL);
-    console.log("🔗 Full update URL:", `${API_CONFIG.BASE_URL}/tasks/${taskId}`);
     
     // Validate taskId format (MongoDB ObjectId is 24 hex characters)
     if (!taskId || !/^[0-9a-fA-F]{24}$/.test(taskId)) {
@@ -1680,16 +1355,12 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     // Ensure authentication
     const authResult = await ensureAuthentication();
     if (!authResult.success) {
-      console.error("❌ Authentication failed for update operation");
       throw new Error(authResult.message || "Authentication required. Please log in to update tasks.");
     }
 
-    console.log("🔐 Authentication confirmed for update operation");
     
     // Make PUT request to /tasks/:id endpoint
     const response = await api.put(`/tasks/${taskId}`, updates);
-    console.log("✅ Update task API response:", JSON.stringify(response.data, null, 2));
-    console.log("✅ Update task HTTP status:", response.status);
     
     if (!response.data || !response.data.success) {
       throw new Error("Update failed - server returned unsuccessful response");
@@ -1699,11 +1370,8 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     if (response.data.data && response.data.data.location) {
       if (typeof response.data.data.location === 'string') {
         try {
-          console.log('📍 Location returned as string, parsing:', response.data.data.location);
           response.data.data.location = JSON.parse(response.data.data.location);
-          console.log('📍 Parsed location:', response.data.data.location);
         } catch {
-          console.warn('⚠️ Could not parse location string, keeping as-is');
         }
       }
     }
@@ -1712,20 +1380,12 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Update task failed - Full error details:");
-      console.warn("   - Error message:", error?.message);
-      console.warn("   - HTTP status:", error?.response?.status);
-      console.warn("   - Response data:", JSON.stringify(error?.response?.data, null, 2));
-      console.warn("   - Request URL:", error?.config?.url);
-      console.warn("   - Request method:", error?.config?.method);
-      console.warn("   - Request payload:", JSON.stringify(updates, null, 2));
     }
     
     // Handle validation errors (400)
     if (error?.response?.status === 400) {
       const errorMessage = error?.response?.data?.message || error?.response?.data?.error;
       if (__DEV__) {
-        console.log("❌ Update task validation error (400):", errorMessage);
       }
       throw new Error(errorMessage || "Invalid task data. Please check your inputs.");
     }
@@ -1733,13 +1393,11 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     // Handle authentication errors
     if (error?.response?.status === 401 || error?.isAuthError) {
       if (__DEV__) {
-        console.log("❌ Update task - Authentication required (401)");
       }
       
       // Try to handle auth error and retry once
       const retryResult = await handleAuthErrorAndRetry();
       if (retryResult.success) {
-        console.log("🔄 Retrying update after auth refresh");
         return updateTask(taskId, updates); // Retry once with fresh auth
       }
       
@@ -1749,7 +1407,6 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     // Handle not found errors
     if (error?.response?.status === 404) {
       if (__DEV__) {
-        console.log("❌ Update task - Task not found (404)");
       }
       throw new Error("Task not found. It may have been deleted.");
     }
@@ -1757,7 +1414,6 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     // Handle permission denied errors
     if (error?.response?.status === 403) {
       if (__DEV__) {
-        console.log("❌ Update task - Permission denied (403)");
       }
       throw new Error("You don't have permission to update this task.");
     }
@@ -1765,13 +1421,10 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     // Handle server errors
     if (error?.response?.status >= 500) {
       if (__DEV__) {
-        console.log("❌ Update task - Server error:", error?.response?.status);
-        console.log("🔄 Server error detected, using development fallback");
       }
       
       // Development fallback for server errors
       if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
-        console.log("🎭 Using mock update operation due to server error");
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 500));
         
@@ -1817,12 +1470,9 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     
     // Check if this is a "method not allowed" or "endpoint not found" error
     if (error?.response?.status === 405 || error?.response?.status === 404) {
-      console.warn("⚠️ PUT endpoint may not be implemented on backend server");
-      console.warn("🔄 Falling back to mock update for development");
       
       // Development fallback: simulate successful update
       if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
-        console.log("🎭 Using mock update operation for development");
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 500));
         
@@ -1868,10 +1518,8 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     
     // Network errors (server not available)
     if (error?.code === 'ECONNREFUSED' || error?.message?.includes('Network Error') || error?.code === 'ENOTFOUND') {
-      console.warn("🔄 Server not available, using development mode with mock update");
       
       if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
-        console.log("🎭 Using mock update operation (server unavailable)");
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 500));
         
@@ -1917,12 +1565,10 @@ export async function updateTask(taskId: string, updates: UpdateTaskRequest): Pr
     
     // Catch-all error handler with development fallback
     if (__DEV__) {
-      console.log("❌ Update task - Unexpected error:", error?.message);
     }
     
     // Provide development fallback for any other errors
     if (__DEV__ || API_CONFIG.DEVELOPMENT_MODE) {
-      console.warn("🎭 Unexpected error occurred, using development fallback");
       
       // Create mock updated task response
       const mockUpdatedTask = {

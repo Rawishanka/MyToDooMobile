@@ -38,12 +38,6 @@ export default function TaskDetailScreen() {
   const isFromTaskerAssignedOrCompleted = 
     fromUserRole === 'Tasker' && (fromStatus === 'assigned' || fromStatus === 'completed');
   
-  console.log('🔍 Task Detail Screen - Navigation Context:', {
-    fromUserRole,
-    fromStatus,
-    isFromTaskerAssignedOrCompleted,
-    shouldHideMakeOfferAndAskQuestion: isFromTaskerAssignedOrCompleted
-  });
 
   const {
     task,
@@ -88,7 +82,7 @@ export default function TaskDetailScreen() {
         (x, y) => {
           scrollViewRef.current?.scrollTo({ y: y - 20, animated: true });
         },
-        () => console.log('Failed to measure tabs section')
+        () => {}
       );
     }, 100);
   };
@@ -115,14 +109,6 @@ export default function TaskDetailScreen() {
                                                        task.status === 'todo' ||
                                                        task.status === 'completed'));
   
-  console.log('🎯 Task Detail - Hide Sections Decision:', {
-    taskId: task._id,
-    taskStatus: task.status,
-    userRole: (task as any)?.userRole,
-    isCurrentUserAssignee,
-    isFromTaskerAssignedOrCompleted,
-    shouldHideSections
-  });
 
   return (
     <View style={styles.wrapper}>

@@ -23,12 +23,10 @@ export const usePendingActionStore = create<PendingActionStore>((set, get) => ({
   pendingAction: null,
   
   setPendingAction: (action: PendingAction) => {
-    console.log("🔄 Setting pending action:", action);
     set({ pendingAction: action });
   },
   
   clearPendingAction: () => {
-    console.log("🔄 Clearing pending action");
     set({ pendingAction: null });
   },
   

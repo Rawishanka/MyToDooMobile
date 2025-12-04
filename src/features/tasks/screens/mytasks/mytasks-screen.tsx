@@ -57,15 +57,11 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
   };
 
   const handleTaskCancelled = useCallback((taskId: string) => {
-    console.log('📋 Task cancelled:', taskId);
-    console.log('   Refreshing task list to move task to Cancelled tab');
     // Refresh the task list to update the UI
     onRefresh();
   }, [onRefresh]);
 
   const handleTaskDeleted = useCallback((taskId: string) => {
-    console.log('🗑️ Task deleted:', taskId);
-    console.log('   Refreshing task list to remove task');
     // Refresh the task list to update the UI
     onRefresh();
   }, [onRefresh]);
@@ -90,9 +86,6 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             status={status}
             userRole={userRole}
             onPress={(taskId: string) => {
-              console.log('👁️ Navigating to task-detail with taskId:', taskId);
-              console.log('   Task data:', item);
-              console.log('   From tab:', status, 'Role:', userRole);
               // Navigate to task detail screen to view task and make offers
               router.push({
                 pathname: '/task-detail',
@@ -152,11 +145,9 @@ export default function MyTasksScreen() {
   // Set initial role and tab based on navigation params
   useEffect(() => {
     if (params.role === 'Poster') {
-      console.log('🎯 Setting userRole to Poster from navigation params');
       setUserRole('Poster');
     }
     if (params.tab) {
-      console.log('🎯 Navigation requested tab:', params.tab);
       // The tab will be handled by the Tab.Navigator's initialRouteName if needed
     }
   }, [params.role, params.tab]);
@@ -164,14 +155,12 @@ export default function MyTasksScreen() {
   // Handle route parameters to set initial role
   useEffect(() => {
     if (params.role === 'Poster') {
-      console.log('📋 Setting user role to Poster from route params');
       setUserRole('Poster');
     }
   }, [params.role]);
 
   // FIX: Log when screen mounts to verify layout is ready
   useEffect(() => {
-    console.log('✅ My Tasks screen mounted and ready for interaction');
   }, []);
 
   // Get real notification count from API
@@ -269,52 +258,8 @@ export default function MyTasksScreen() {
     : (isLoadingTasks || isLoadingAllOffers);
 
   // Debug logging for API data
-  console.log('📊 My Tasks Screen Data:', {
-    userRole,
-    dataSource: userRole === 'Tasker' ? 'All System Tasks' : 'My Tasks Only',
-    totalTasks: allTasks.length,
-    totalOffers: allOffers.length,
-    taskerAssignedTasksCount: taskerAssignedTasks.length,
-    myOffersCount: myOffers.length,
-    myOffersMapSize: myOffersMap.size,
-    isLoadingTasks,
-    isLoadingTaskerTasks,
-    isLoadingMyOffers,
-    isLoadingAllOffers,
-    isLoadingAllTasks: userRole === 'Tasker' ? isLoadingAllTasks : 'N/A',
-    sampleTasks: allTasks.slice(0, 3).map(t => ({ 
-      id: t._id, 
-      title: t.title, 
-      status: t.status,
-      createdBy: t.createdBy?._id || 'unknown',
-      currentUserId: currentUserId,
-      isMyTask: t.createdBy?._id === currentUserId,
-      offersArray: t.offers?.length || 0,
-      offerCount: t.offerCount || 0,
-      hasOffers: !!(t.offers?.length || t.offerCount)
-    }))
-  });
 
   // Debug logging for offers data structure
-  console.log('🤝 My Offers Data Structure:', {
-    totalOffers: allOffers.length,
-    sampleOffers: allOffers.slice(0, 3).map((offer: any) => ({
-      id: offer._id || offer.id,
-      status: offer.status,
-      taskId: offer.taskId || offer.task?._id,
-      hasTask: !!offer.task,
-      taskTitle: offer.task?.title,
-      taskStatus: offer.task?.status,
-      offerAmount: offer.offer?.amount || offer.amount,
-      fullStructure: JSON.stringify(offer, null, 2).substring(0, 200) + '...'
-    })),
-    acceptedOffers: allOffers.filter((offer: any) => offer.status === 'accepted').map((offer: any) => ({
-      id: offer._id || offer.id,
-      taskTitle: offer.task?.title,
-      taskStatus: offer.task?.status,
-      offerStatus: offer.status
-    }))
-  });
 
   // Categorize tasks and offers based on status and user role
   const categorizedData = useMemo(() => {
@@ -369,25 +314,6 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
   // Debug logging for filtering
   const shouldInclude = isOpenStatus && isNotMyTask && hasMyOffer && isOfferPending;
   if (allTasks.length <= 10) { // Only log for small datasets to avoid spam
-    console.log('🔍 Tasker Open Tasks Filter:', {
-      taskId: task._id,
-      title: task.title,
-      status: task.status,
-      createdBy: task.createdBy?._id,
-      currentUserId,
-      isOpenStatus,
-      isNotMyTask,
-      hasMyOffer,
-      offerStatus: myOffer?.status,
-      isOfferPending,
-      shouldInclude,
-      reason: shouldInclude ? 'INCLUDED: Open task with pending offer' :
-             !isOpenStatus ? 'EXCLUDED: Task not open' :
-             !isNotMyTask ? 'EXCLUDED: User created this task' :
-             !hasMyOffer ? 'EXCLUDED: No offer made on this task' :
-             !isOfferPending ? `EXCLUDED: Offer status is ${myOffer?.status}` :
-             'EXCLUDED: Unknown reason'
-    });
   }
   
   // For Tasker Open Tasks: Show ONLY open tasks where user has made a PENDING offer
@@ -412,45 +338,10 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       const openTasks = filterBySearch(sortedOpenTasks);
 
       // Debug log the final result for Tasker Open Tasks
-      console.log('🎯 Tasker Open Tasks Final Result:', {
-        totalSystemTasks: allTasks.length,
-        myOffersCount: myOffers.length,
-        pendingOffersCount: myOffers.filter((o: any) => o.status === 'pending').length,
-        filteredOpenTasks: openTasksFiltered.length,
-        sortedOpenTasks: sortedOpenTasks.length,
-        finalOpenTasks: openTasks.length,
-        currentUserId,
-        sortOrder: 'By offer createdAt (newest first)',
-        taskSample: openTasks.slice(0, 3).map(t => {
-          const offer = myOffersMap.get(t._id);
-          return {
-            id: t._id,
-            title: t.title,
-            status: t.status,
-            createdBy: t.createdBy?._id,
-            offerStatus: offer?.status,
-            offerAmount: offer?.offer?.amount,
-            offerCreatedAt: offer?.createdAt,
-            taskCreatedAt: t.createdAt
-          };
-        })
-      });
 
       
       // Todo Tasks: Use /api/tasks/my-tasks?role=tasker endpoint which returns tasks assigned to user
       // CRITICAL: Only show tasks where offer was ACCEPTED AND PAID (backend sets assignedTo after payment)
-      console.log('🔍 Tasker Assigned Tasks (from /api/tasks/my-tasks?role=tasker):', {
-        totalAssignedTasks: taskerAssignedTasks.length,
-        allStatuses: taskerAssignedTasks.map((t: Task) => t.status),
-        sampleTasks: taskerAssignedTasks.slice(0, 5).map((task: Task) => ({
-          id: task._id,
-          title: task.title,
-          status: task.status,
-          budget: task.budget,
-          userRole: (task as any).userRole,
-          assignedTo: (task as any).assignedTo?._id
-        }))
-      });
       
       const todoTasksFiltered = taskerAssignedTasks.filter((task: Task) => {
         // IMPORTANT: After payment, backend sets status to "todo", "assigned", or "in_progress"
@@ -475,20 +366,6 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
         const shouldInclude = !isExcluded && isAssignedToMe;
         
         if (taskerAssignedTasks.length <= 10) {
-          console.log('🎯 Tasker Todoo Tasks Filter (from my-tasks?role=tasker):', {
-            taskId: task._id,
-            title: task.title,
-            status: task.status,
-            budget: task.budget,
-            userRole: (task as any).userRole,
-            isActiveTask,
-            isAssignedToMe,
-            shouldInclude,
-            reason: shouldInclude ? 'INCLUDED: Task assigned and active' : 
-                   !isActiveTask ? 'EXCLUDED: Task not active (completed/cancelled/overdue)' :
-                   !isAssignedToMe ? 'EXCLUDED: Not assigned to current user' :
-                   'EXCLUDED: Unknown reason'
-          });
         }
         
         return shouldInclude;
@@ -496,22 +373,6 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       
       const todoTasks = sortByCreatedDate(filterBySearch(todoTasksFiltered));
       
-      console.log('✅ Tasker Todoo Tasks Result:', {
-        totalAssignedTasks: taskerAssignedTasks.length,
-        activeTasks: taskerAssignedTasks.filter((t: Task) => 
-          t.status === 'todo' || t.status === 'assigned' || t.status === 'in_progress'
-        ).length,
-        completedTasks: taskerAssignedTasks.filter((t: Task) => t.status === 'completed').length,
-        filteredTodoTasks: todoTasksFiltered.length,
-        finalTodoTasks: todoTasks.length,
-        taskSample: todoTasks.slice(0, 2).map(t => ({
-          id: t._id,
-          title: t.title,
-          status: t.status,
-          budget: t.budget,
-          userRole: (t as any).userRole
-        }))
-      });
       
       const completedTasks = sortByCreatedDate(filterBySearch(
         taskerAssignedTasks.filter((task: Task) => task.status === 'completed')
@@ -541,12 +402,6 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       // Only show real cancelled tasks from API - no dummy data
       const finalCancelledTasks = filterBySearch(sortedCancelledTasks);
       
-      console.log('📋 Tasker Cancelled Tasks:', {
-        fromAssigned: cancelledTasksFromAssigned.length,
-        fromAllTasks: cancelledTasksFromAll.length,
-        uniqueTotal: uniqueCancelledTasks.length,
-        finalCount: finalCancelledTasks.length
-      });
       
       return {
         openTasks,
@@ -572,11 +427,6 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
     
     // Debug: Log sorting for Open Tasks
     if (openTasks.length > 0) {
-      console.log('📋 Open Tasks sorted by date:', openTasks.map(t => ({
-        title: t.title,
-        createdAt: t.createdAt,
-        date: new Date(t.createdAt).toLocaleDateString()
-      })));
     }
     
     const todoTasks = sortByCreatedDate(
@@ -665,14 +515,6 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       )
     );
     
-    console.log('✅ Poster Accepted Tasks (from myTasks API):', {
-      count: acceptedTasks.length,
-      tasks: acceptedTasks.map(task => ({
-        id: task._id,
-        title: task.title,
-        status: task.status
-      }))
-    });
 
     return {
       openTasks,
@@ -686,13 +528,6 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
   }, [allTasks, taskerAssignedTasks, myOffers, myOffersMap, userRole, searchText, currentUserId]);
 
   // Debug log categorized data counts
-  console.log(`📋 Categorized Data for ${userRole}:`, {
-    openTasks: categorizedData.openTasks.length,
-    todoTasks: categorizedData.todoTasks.length,
-    completedTasks: categorizedData.completedTasks.length,
-    postedTasks: categorizedData.postedTasks.length,
-    acceptedTasks: categorizedData.acceptedTasks.length,
-  });
 
   const handleRefresh = useCallback(() => {
     if (!isConnected) {
@@ -711,13 +546,11 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
   // Refresh data when screen is focused
   useFocusEffect(
     useCallback(() => {
-      console.log('🔄 My Tasks screen focused, refreshing data...');
       // Force refresh all data sources to ensure we get the latest offers after payment
       handleRefresh();
       
       // Additional refresh after a small delay to catch any async updates
       const delayedRefresh = setTimeout(() => {
-        console.log('🔄 Delayed refresh for latest data...');
         handleRefresh();
       }, 1000);
 

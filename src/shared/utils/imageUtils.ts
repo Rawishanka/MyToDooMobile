@@ -16,7 +16,6 @@ export interface ImageData {
  */
 export async function convertImageToBinary(uri: string): Promise<ImageData> {
   try {
-    console.log('📷 Converting image to binary:', uri);
     
     // Read the file as base64
     const base64Data = await FileSystem.readAsStringAsync(uri, {
@@ -55,15 +54,8 @@ export async function convertImageToBinary(uri: string): Promise<ImageData> {
       dataUri: `data:${mimeType};base64,${base64Data}`, // Complete data URI for JSON
     };
 
-    console.log('✅ Image converted successfully:', {
-      name: imageData.name,
-      type: imageData.type,
-      dataSize: `${(base64Data.length * 0.75 / 1024).toFixed(2)}KB`, // Approximate file size
-    });
-
     return imageData;
   } catch (error) {
-    console.error('❌ Failed to convert image to binary:', error);
     throw new Error(`Failed to convert image: ${error}`);
   }
 }
@@ -73,15 +65,12 @@ export async function convertImageToBinary(uri: string): Promise<ImageData> {
  */
 export async function convertImagesToBinary(uris: string[]): Promise<ImageData[]> {
   try {
-    console.log('📷 Converting multiple images to binary:', uris.length);
     
     const promises = uris.map(uri => convertImageToBinary(uri));
     const results = await Promise.all(promises);
     
-    console.log('✅ All images converted successfully:', results.length);
     return results;
   } catch (error) {
-    console.error('❌ Failed to convert multiple images:', error);
     throw error;
   }
 }

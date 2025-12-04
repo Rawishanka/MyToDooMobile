@@ -30,24 +30,18 @@ export function createApi(baseURL: string) {
                 const storedToken = await AsyncStorage.getItem('token');
                 if (storedToken) {
                     token = storedToken;
-                    console.log("🔄 Retrieved token from AsyncStorage for API request");
                 }
             } catch (error: any) {
                 if (__DEV__ && !isNetworkError(error)) {
-                    console.warn("⚠️ Error retrieving token from AsyncStorage:", error?.message);
                 }
             }
         }
         
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
-            console.log("🔐 Added auth header to request:", config.url);
-            console.log("🔐 Token preview:", token.substring(0, 20) + "...");
         } else if (!isAuthEndpoint) {
             // Only warn if it's NOT an auth endpoint
-            console.warn("⚠️ No token available for API request to:", config.url);
         } else {
-            console.log("✅ Auth endpoint - no token required:", config.url);
         }
         
         return config;
@@ -75,7 +69,6 @@ export function createApi(baseURL: string) {
                 originalRequest._retry = true;
                 
                 if (__DEV__) {
-                    console.warn("⚠️ 401 Unauthorized - Authentication may have expired");
                 }
                 
                 // Return a user-friendly auth error without auto-redirect

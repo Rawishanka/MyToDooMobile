@@ -16,14 +16,12 @@ export function DeepLinkHandler() {
     const handleInitialURL = async () => {
       const initialUrl = await Linking.getInitialURL();
       if (initialUrl) {
-        console.log('📱 App opened with deep link:', initialUrl);
         handleDeepLink(initialUrl);
       }
     };
 
     // Handle URL changes while app is running
     const subscription = Linking.addEventListener('url', ({ url }) => {
-      console.log('📱 Received deep link while app running:', url);
       handleDeepLink(url);
     });
 
@@ -36,12 +34,10 @@ export function DeepLinkHandler() {
 
   const handleDeepLink = (url: string) => {
     try {
-      console.log('🔗 Processing URL:', url);
       
       // Parse the URL
       const { hostname, path, queryParams } = Linking.parse(url);
       
-      console.log('🔍 Parsed URL:', { hostname, path, queryParams });
 
       // Handle reset-password deep link
       // Supports multiple formats:
@@ -58,10 +54,8 @@ export function DeepLinkHandler() {
         const token = queryParams?.token as string;
         const email = queryParams?.email as string;
 
-        console.log('🔐 Reset password detected:', { token: token?.substring(0, 10) + '...', email });
 
         if (token) {
-          console.log('✅ Navigating to set-new-password with token');
           
           // Build URL with query params
           const params = new URLSearchParams();
@@ -75,7 +69,6 @@ export function DeepLinkHandler() {
             router.push(`/(auth)/set-new-password?${params.toString()}` as any);
           }, 100);
         } else {
-          console.warn('⚠️ Reset password link missing token');
           Alert.alert(
             'Invalid Link',
             'This password reset link is invalid. Please request a new one.',
@@ -94,12 +87,10 @@ export function DeepLinkHandler() {
       else if (hostname === 'task' || path?.startsWith('task/')) {
         const taskId = path?.replace('task/', '') || hostname;
         if (taskId) {
-          console.log('✅ Navigating to task:', taskId);
           router.push(`/task-detail?id=${taskId}` as any);
         }
       }
     } catch (error) {
-      console.error('❌ Error handling deep link:', error);
     }
   };
 

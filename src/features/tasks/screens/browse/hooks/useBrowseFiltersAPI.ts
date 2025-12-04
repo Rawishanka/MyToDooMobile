@@ -32,11 +32,6 @@ const filterTasksBySearch = (tasks: Task[], searchText: string): Task[] => {
   const searchLower = searchText.toLowerCase().trim();
   const searchTerms = searchLower.split(/\s+/); // Split by whitespace for multi-word search
 
-  console.log('🔍 Search Filter Debug:', {
-    searchText,
-    searchTerms,
-    totalTasks: tasks.length,
-  });
 
   // Multiple priority levels for title matching
   const titleStartsWith: Task[] = [];
@@ -55,19 +50,16 @@ const filterTasksBySearch = (tasks: Task[], searchText: string): Task[] => {
     if (titleLower.startsWith(searchLower)) {
       titleMatchLevel = 3;
       titleStartsWith.push(task);
-      console.log(`🥇 TITLE STARTS WITH: "${task.title}" starts with "${searchText}"`);
     }
     // Level 2: Title contains search as whole word
     else if (titleWords.some(word => word === searchLower || searchTerms.every(term => titleWords.some(w => w === term)))) {
       titleMatchLevel = 2;
       titleWholeWord.push(task);
-      console.log(`🥈 TITLE WHOLE WORD: "${task.title}" has whole word match for "${searchText}"`);
     }
     // Level 1: Title contains search text anywhere
     else if (searchTerms.every(term => titleLower.includes(term))) {
       titleMatchLevel = 1;
       titleContains.push(task);
-      console.log(`🥉 TITLE CONTAINS: "${task.title}" contains "${searchText}"`);
     }
 
     // Only check other fields if NO title match at all
@@ -116,7 +108,6 @@ const filterTasksBySearch = (tasks: Task[], searchText: string): Task[] => {
       
       if (matchesOtherFields) {
         otherMatches.push(task);
-        console.log(`📋 OTHER FIELD MATCH: "${task.title}" matched in other fields for "${searchText}"`);
       }
     }
   });
@@ -124,15 +115,6 @@ const filterTasksBySearch = (tasks: Task[], searchText: string): Task[] => {
   // Combine results in priority order: starts with > whole word > contains > other fields
   const filtered = [...titleStartsWith, ...titleWholeWord, ...titleContains, ...otherMatches];
 
-  console.log('🔍 Search Filter Result:', {
-    inputTasks: tasks.length,
-    titleStartsWith: titleStartsWith.length,
-    titleWholeWord: titleWholeWord.length,
-    titleContains: titleContains.length,
-    otherMatches: otherMatches.length,
-    totalFiltered: filtered.length,
-    searchText
-  });
 
   return filtered;
 };
@@ -185,7 +167,6 @@ export const useBrowseFiltersAPI = () => {
             setSelectedSort(0);
           }
         } catch (err) {
-          console.error('Location error:', err);
           setSelectedSort(0);
         }
       }
@@ -283,15 +264,10 @@ export const useBrowseFiltersAPI = () => {
       );
 
       if (tasksNeedingOfferCounts.length === 0) {
-        console.log('🔍 [useBrowseFiltersAPI] All tasks already have offer data');
         setTasksWithOfferCounts(baseTasks);
         return;
       }
 
-      console.log('🔍 [useBrowseFiltersAPI] Fetching offer counts for tasks missing data:', {
-        totalTasks: baseTasks.length,
-        tasksNeedingOfferCounts: tasksNeedingOfferCounts.length
-      });
 
       try {
         // Fetch offer counts for tasks in parallel (limit to first 20 to avoid API overload)
@@ -302,7 +278,6 @@ export const useBrowseFiltersAPI = () => {
             const offerCount = offersResponse.data?.offers?.length || 0;
             return { taskId: task._id, offerCount, offers: offersResponse.data?.offers || [] };
           } catch (error) {
-            console.warn(`Failed to fetch offers for task ${task._id}:`, error);
             return { taskId: task._id, offerCount: 0, offers: [] };
           }
         });
@@ -324,14 +299,9 @@ export const useBrowseFiltersAPI = () => {
           return task;
         });
 
-        console.log('✅ [useBrowseFiltersAPI] Enhanced tasks with offer counts:', {
-          totalTasks: enhancedTasks.length,
-          tasksWithOffers: enhancedTasks.filter(t => (t.offerCount || 0) > 0).length
-        });
 
         setTasksWithOfferCounts(enhancedTasks);
       } catch (error) {
-        console.error('❌ [useBrowseFiltersAPI] Failed to enhance tasks with offer counts:', error);
         setTasksWithOfferCounts(baseTasks);
       }
     };
@@ -344,18 +314,6 @@ export const useBrowseFiltersAPI = () => {
     const baseTasks = tasksWithOfferCounts;
     
     // Debug logging for API response data
-    console.log('🔍 [useBrowseFiltersAPI] Final Tasks Debug:', {
-      baseTasksLength: baseTasks.length,
-      sampleTask: baseTasks[0] ? {
-        id: baseTasks[0]._id,
-        title: baseTasks[0].title,
-        offerCount: baseTasks[0].offerCount,
-        offersLength: baseTasks[0].offers?.length,
-        offersExists: !!baseTasks[0].offers,
-        status: baseTasks[0].status
-      } : null,
-      tasksWithOffers: baseTasks.filter(t => (t.offerCount || 0) > 0).length
-    });
     
     // Apply client-side search filter for multi-field search
     return filterTasksBySearch(baseTasks, searchText);

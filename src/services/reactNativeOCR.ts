@@ -19,14 +19,11 @@ export class ReactNativeOCR {
    */
   async recognizeText(imageUri: string): Promise<RNOCRResult> {
     try {
-      console.log('📱 Starting intelligent image OCR analysis...');
       
       // Use intelligent mock analysis (more reliable than problematic native library)
-      console.log('🔍 Using intelligent image analysis for OCR');
       return await this.mockTextRecognition(imageUri);
 
     } catch (error: any) {
-      console.warn('⚠️ Intelligent OCR analysis failed:', error?.message || error);
       
       // Fallback to basic mock analysis
       return await this.mockTextRecognition(imageUri);
@@ -38,14 +35,12 @@ export class ReactNativeOCR {
    */
   private async mockTextRecognition(imageUri: string): Promise<RNOCRResult> {
     try {
-      console.log('🔍 Using intelligent image analysis...');
       
       // Get actual file information
       const fileInfo = await FileSystem.getInfoAsync(imageUri);
       const fileName = imageUri.toLowerCase();
       const fileSize = (fileInfo as any)?.size || 0;
       
-      console.log(`📊 Image analysis: ${fileName.split('/').pop()}, size: ${Math.round(fileSize / 1024)}KB`);
       
       // STEP 1: Check filename for obvious documents
       const isObviousDocument = 
@@ -58,7 +53,6 @@ export class ReactNativeOCR {
       
       if (isObviousDocument) {
         const mockText = this.generateMockDocumentText();
-        console.log('📄 DOCUMENT: Obvious document detected from filename');
         
         return {
           text: mockText,
@@ -105,8 +99,6 @@ export class ReactNativeOCR {
       // Ensure reasonable bounds
       confidence = Math.max(75, Math.min(95, confidence));
       
-      console.log(`🎯 ANALYSIS RESULT: ${confidence}% confidence`);
-      console.log(`📝 Reasoning: ${reasoning.join(', ')}`);
       
       return {
         text: mockText,
@@ -116,7 +108,6 @@ export class ReactNativeOCR {
       };
       
     } catch (error) {
-      console.warn('⚠️ Image analysis failed:', error);
       
       // Random but consistent fallback based on URI
       const hashSeed = this.generateHashFromUri(imageUri);
@@ -175,13 +166,11 @@ export class ReactNativeOCR {
     
     // STEP 1: No text = Perfect photo (but with variation)
     if (!text || text.trim().length === 0) {
-      console.log('✅ EXCELLENT: No text detected - Perfect task photo!');
       const baseConfidence = 88;
       const variation = (hash % 8) - 4; // -4 to +4
       return Math.max(85, Math.min(95, baseConfidence + variation));
     }
     
-    console.log(`🔍 Analyzing text: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
     
     // STEP 2: Check for specific problematic content
     const textLower = text.toLowerCase();
@@ -190,7 +179,6 @@ export class ReactNativeOCR {
     
     // Phone numbers
     if (/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/.test(text) || /\b\(\d{3}\)\s?\d{3}[-.]?\d{4}\b/.test(text)) {
-      console.log('❌ BAD: Phone number detected');
       confidence -= 45;
       penalties.push('phone number');
     }
@@ -198,7 +186,6 @@ export class ReactNativeOCR {
     // Addresses/locations
     if (/\b\d+\s+[A-Za-z\s]+(street|st|avenue|ave|road|rd|lane|ln|drive|dr)\b/i.test(text) ||
         /\b\d{5}(-\d{4})?\b/.test(text) || /\b(address|location|zip)\s*:?\s*\w+/i.test(text)) {
-      console.log('❌ BAD: Address/location detected');
       confidence -= 40;
       penalties.push('address/location');
     }
@@ -207,18 +194,15 @@ export class ReactNativeOCR {
     if (/\$\d+(\.\d{2})?/.test(text) || 
         /\b(invoice|receipt|bill|total|amount|account|card|payment)\b/i.test(text) ||
         /\b\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/.test(text)) {
-      console.log('❌ BAD: Financial/document content detected');
       confidence -= 42;
       penalties.push('financial/document');
     }
     
     // STEP 3: Text length penalties
     if (text.length > 80) {
-      console.log('❌ BAD: Lots of text detected - likely document');
       confidence -= 35;
       penalties.push('excessive text');
     } else if (text.length <= 30) {
-      console.log('✅ GOOD: Minimal text - likely just signs/labels');
       confidence += 10;
     }
     
@@ -230,9 +214,7 @@ export class ReactNativeOCR {
     confidence = Math.max(20, Math.min(95, confidence));
     
     if (penalties.length > 0) {
-      console.log(`📉 Applied penalties for: ${penalties.join(', ')} | Final: ${confidence}%`);
     } else {
-      console.log(`📊 Text analysis complete | Final: ${confidence}%`);
     }
     
     return Math.round(confidence);

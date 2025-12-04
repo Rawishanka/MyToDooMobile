@@ -13,16 +13,10 @@ export function useCreatePaymentIntent() {
       currency?: string;
     }) => paymentAPI.createPaymentIntent(data),
     onSuccess: (data, variables) => {
-      console.log('✅ Payment intent created successfully:', data);
       // Invalidate related queries if needed
       queryClient.invalidateQueries({ queryKey: ['payment', variables.taskId] });
     },
     onError: (error: any, variables) => {
-      console.log('❌ Payment intent creation failed:', {
-        message: error.message,
-        code: (error as any).code || 'Unknown',
-        variables
-      });
     }
   });
 }
@@ -38,17 +32,11 @@ export function useVerifyPayment() {
       offerId: string;
     }) => paymentAPI.verifyPayment(data),
     onSuccess: (data, variables) => {
-      console.log('✅ Payment verification successful:', data);
       // Invalidate related queries
       queryClient.invalidateQueries({ queryKey: ['payment', variables.taskId] });
       queryClient.invalidateQueries({ queryKey: ['task', variables.taskId] });
     },
     onError: (error: any, variables) => {
-      console.log('❌ Payment verification failed:', {
-        message: error.message,
-        code: (error as any).code || 'Unknown',
-        variables
-      });
     }
   });
 }
@@ -92,16 +80,10 @@ export function useUpdateServiceFeeConfig() {
       MAX_FEE_USD?: number;
     }) => paymentAPI.updateServiceFeeConfig(configData),
     onSuccess: (data) => {
-      console.log('✅ Service fee config updated successfully:', data);
       // Invalidate the config query to refetch latest data
       queryClient.invalidateQueries({ queryKey: ['service-fee-config'] });
     },
     onError: (error: any, variables) => {
-      console.log('❌ Service fee config update failed:', {
-        message: error.message,
-        code: (error as any).code || 'Unknown',
-        variables
-      });
     }
   });
 }
@@ -117,18 +99,8 @@ export function useCalculateServiceFee() {
       currency?: string;
     }) => paymentAPI.calculateServiceFee(data),
     onSuccess: (data, variables) => {
-      console.log('✅ Service fee calculated successfully:', {
-        amount: variables.amount,
-        currency: variables.currency,
-        result: data.calculation
-      });
     },
     onError: (error: any, variables) => {
-      console.log('❌ Service fee calculation failed:', {
-        message: error.message,
-        code: (error as any).code || 'Unknown',
-        variables
-      });
     }
   });
 }

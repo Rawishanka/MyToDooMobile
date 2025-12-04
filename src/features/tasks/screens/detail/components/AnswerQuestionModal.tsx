@@ -60,12 +60,6 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
     }
 
     try {
-      console.log('💬 Submitting answer with attachments:', {
-        taskId: questionTaskId,
-        questionId: question._id,
-        answer: answer.trim(),
-        attachments: attachments.length,
-      });
 
       // TODO: Update API to support attachments
       // For now, we'll include attachment info in the answer text if there are any
@@ -83,7 +77,6 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
         answer: finalAnswer,
       });
 
-      console.log('✅ Answer posted successfully');
       
       Alert.alert(
         'Answer Posted!',
@@ -101,12 +94,10 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
       } else {
         // Small delay to allow backend to process before any potential refresh
         setTimeout(() => {
-          console.log('💫 Answer submitted successfully, questions should refresh automatically');
         }, 500);
       }
 
     } catch (error: any) {
-      console.error('❌ Failed to post answer:', error);
       Alert.alert(
         'Failed to Post Answer',
         error?.message || 'Something went wrong. Please try again.',

@@ -54,14 +54,11 @@ export default function BrowseTasksScreen() {
   
   // Track selectedTaskId changes
   useEffect(() => {
-    console.log('🎯 selectedTaskId changed to:', selectedTaskId);
-    console.log('🎯 Current viewMode:', viewMode);
   }, [selectedTaskId, viewMode]);
 
   // Clear selectedTaskId when switching back to list view
   useEffect(() => {
     if (viewMode === 'list' && selectedTaskId) {
-      console.log('📝 Clearing selectedTaskId when switching to list view');
       setSelectedTaskId(null);
     }
   }, [viewMode, selectedTaskId]);
@@ -82,11 +79,6 @@ export default function BrowseTasksScreen() {
   // Memoize categories array to prevent effect dependency issues
   const categories = useMemo(
     () => {
-      console.log('📂 BrowseScreen: Categories debug:', {
-        categoriesWithAll,
-        categoriesLoading,
-        categoriesError: categoriesError?.message
-      });
 
       const result = categoriesWithAll || [
         'All Categories',
@@ -119,7 +111,6 @@ export default function BrowseTasksScreen() {
         'Web & App Development',
       ];
 
-      console.log('📂 Final categories being passed to FilterModal:', result);
       return result;
     },
     [categoriesWithAll]
@@ -175,30 +166,11 @@ export default function BrowseTasksScreen() {
 
   // Debug logging
   useEffect(() => {
-    console.log("🏷️ Categories Debug:", {
-      categoriesLoading,
-      categoriesError: categoriesError?.message,
-      categoriesCount: categories.length,
-      categories: categories
-    });
-
-    console.log("🔍 Browse Tasks - Combined API Debug:", {
-      activeAPI,
-      useSearchAPI,
-      searchText: searchText.trim(),
-      hasSearchText: searchText.trim().length > 0,
-      isLoading,
-      error: error?.message,
-      totalItems,
-      dataLength: filteredAndSortedTasks.length,
-      activeFiltersCount,
-    });
   }, [categoriesLoading, categoriesError, categories, isLoading, error, totalItems, filteredAndSortedTasks.length, activeFiltersCount, activeAPI, searchText, useSearchAPI]);
 
   // Refresh on screen focus
   useFocusEffect(
     useCallback(() => {
-      console.log("🔄 Browse Tasks screen focused, refreshing data...");
       refetch();
     }, [refetch])
   );
@@ -206,17 +178,6 @@ export default function BrowseTasksScreen() {
   // Debug map data when switching to map view
   useEffect(() => {
     if (viewMode === 'map') {
-      console.log('🗺️ Browse Screen Map Debug:', {
-        totalTasks: filteredAndSortedTasks.length,
-        taskSample: filteredAndSortedTasks.slice(0, 2).map(t => ({
-          id: t._id,
-          title: t.title,
-          hasLocation: !!t.location,
-          hasCoordinates: !!t.location?.coordinates,
-          coordinatesType: typeof t.location?.coordinates,
-          coordinates: t.location?.coordinates
-        }))
-      });
     }
   }, [viewMode, filteredAndSortedTasks]);
 
@@ -225,21 +186,14 @@ export default function BrowseTasksScreen() {
     <TaskCard
       task={item}
       onPress={(taskId) => {
-        console.log(`🔗 Navigating to task detail: ${item.title} (ID: ${taskId})`);
         router.push({
           pathname: '/task-detail',
           params: { taskId }
         });
       }}
       onMapPress={(taskId) => {
-        console.log('📍 Map button clicked for task:', {
-          taskId: taskId,
-          taskTitle: item.title,
-          previousSelectedTaskId: selectedTaskId
-        });
         setSelectedTaskId(taskId);
         setViewMode('map');
-        console.log('📍 Updated selectedTaskId to:', taskId, 'and switched to map view');
       }}
       showMapButton={true}
       variant="default"
@@ -314,12 +268,6 @@ export default function BrowseTasksScreen() {
       {/* Content - Map or List */}
       {viewMode === 'map' ? (
         (() => {
-          console.log('🗺️ Rendering MapView with:', {
-            tasksCount: filteredAndSortedTasks.length,
-            selectedTaskId: selectedTaskId,
-            viewMode: viewMode,
-            taskTitles: filteredAndSortedTasks.slice(0, 3).map(t => ({ id: t._id, title: t.title }))
-          });
           return (
             <View style={styles.mapContainer}>
               <MapView 
@@ -335,7 +283,6 @@ export default function BrowseTasksScreen() {
                     });
                   } else if (action === 'openInMaps') {
                     // Open in device maps app - could implement later
-                    console.log('Open in Maps for task:', taskId);
                   }
                 }}
               />
@@ -361,7 +308,6 @@ export default function BrowseTasksScreen() {
               renderItem={renderTaskCard}
               refreshing={isLoading}
               onRefresh={() => {
-                console.log("🔄 Pull to refresh triggered in Browse Tasks");
                 refetch();
               }}
               ListEmptyComponent={

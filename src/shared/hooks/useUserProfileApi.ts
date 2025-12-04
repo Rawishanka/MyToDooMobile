@@ -29,17 +29,12 @@ export function useGetUserProfile() {
   
   // Clear profile cache whenever user changes
   React.useEffect(() => {
-    console.log("🔄 Auth user changed - clearing profile cache", { 
-      userId: user?._id, 
-      userEmail: user?.email 
-    });
     queryClient.removeQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
   }, [user?._id, queryClient]);
   
   return useQuery({
     queryKey: [...USER_PROFILE_QUERY_KEYS.profile(), user?.email, user?._id, token], // More specific user isolation
     queryFn: () => {
-      console.log("🔍 Fetching fresh user profile data for user:", user?.email);
       // Double-check authentication before making API call
       if (!isAuthenticated || !token || !user?._id) {
         throw new Error("Not authenticated - cannot fetch profile");
@@ -53,7 +48,6 @@ export function useGetUserProfile() {
     retry: (failureCount, error: any) => {
       // Don't retry on 401 authentication errors
       if (error?.response?.status === 401 || error?.isAuthError || error?.message?.includes("Not authenticated")) {
-        console.log("❌ Authentication error - not retrying profile fetch");
         return false;
       }
       // Retry network errors only once
@@ -105,10 +99,8 @@ export function useUpdateUserProfile() {
     onSuccess: (response) => {
       // Invalidate and refetch profile
       queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.profile() });
-      console.log('✅ Profile updated successfully:', response.data);
     },
     onError: (error) => {
-      console.error('❌ Profile update failed:', error);
     }
   });
 }
@@ -124,8 +116,6 @@ export function useUploadUserAvatar() {
     mutationFn: (formData: FormData) => 
       UserProfileAPI.uploadUserAvatar(formData),
     onSuccess: (response) => {
-      console.log("✅ Avatar uploaded successfully for user:", user?.email);
-      console.log("📄 Avatar upload response:", response);
       
       // Try to update cache with new avatar data if available in response
       if (response?.data?.avatar) {
@@ -134,7 +124,6 @@ export function useUploadUserAvatar() {
         // Optimistically update the cached profile data
         queryClient.setQueryData(profileQueryKey, (oldData: any) => {
           if (oldData) {
-            console.log("🔄 Optimistically updating cached avatar");
             return {
               ...oldData,
               avatar: response.data.avatar
@@ -147,10 +136,8 @@ export function useUploadUserAvatar() {
       // Also invalidate to ensure fresh data on next fetch
       queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.profile() });
       
-      console.log('✅ Avatar cache updated successfully');
     },
     onError: (error) => {
-      console.error('❌ Avatar upload failed:', error);
     }
   });
 }
@@ -169,10 +156,8 @@ export function useSubmitUserReview(userId: string) {
       queryClient.invalidateQueries({ 
         queryKey: USER_PROFILE_QUERY_KEYS.ratingStats(userId) 
       });
-      console.log('✅ Review submitted successfully');
     },
     onError: (error) => {
-      console.error('❌ Review submission failed:', error);
     }
   });
 }
@@ -185,10 +170,8 @@ export function useRequestReview() {
     mutationFn: (requestData: RequestReviewRequest) => 
       UserProfileAPI.requestReview(requestData),
     onSuccess: (response) => {
-      console.log('✅ Review request sent:', response);
     },
     onError: (error) => {
-      console.error('❌ Review request failed:', error);
     }
   });
 }

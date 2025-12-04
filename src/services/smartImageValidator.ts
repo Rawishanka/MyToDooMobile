@@ -27,7 +27,6 @@ export class SmartImageValidator {
    */
   async validateImage(imageUri: string, taskContext: TaskContext): Promise<SmartValidationResult> {
     try {
-      console.log('🔍 Starting advanced OCR-powered validation for:', imageUri.substring(0, 50) + '...');
       
       // Use React Native OCR directly - simplified approach
       const ocrResult = await reactNativeOCR.recognizeText(imageUri);
@@ -44,17 +43,12 @@ export class SmartImageValidator {
       };
       
       if (this.DEBUG) {
-        console.log(`📊 OCR Validation Complete: ${result.isValid ? '✅ PASSED' : '❌ FAILED'} (${result.confidence}% confidence)`);
-        console.log(`📝 OCR Message: ${result.message}`);
-        console.log(`🔍 OCR Method Used: ${result.analysis}`);
         if (result.reasons.length > 0) {
-          console.log(`🔍 OCR Reasons: ${result.reasons.join(', ')}`);
         }
       }
 
       // Ensure we have dynamic confidence values, not static ones
       if (result.confidence === 84 || result.confidence === 85) {
-        console.log('⚠️ Detected potentially static confidence value, enhancing with additional analysis...');
         
         // Generate consistent hash for deterministic variation
         let hash = 0;
@@ -80,8 +74,6 @@ export class SmartImageValidator {
       return result;
 
     } catch (error: any) {
-      console.error('❌ Advanced OCR validation error:', error);
-      console.log('🔄 Falling back to basic image analysis...');
       
       // Fallback to basic validation if advanced OCR fails
       const fallbackResult = await this.performBasicImageAnalysis(imageUri, taskContext);
@@ -114,7 +106,6 @@ export class SmartImageValidator {
     const suggestions: string[] = [];
     
     try {
-      console.log('🔧 Performing enhanced basic image analysis...');
       // Step 1: File validation
       const fileInfo = await FileSystem.getInfoAsync(imageUri);
       
@@ -179,7 +170,6 @@ export class SmartImageValidator {
           }
         }
       } catch (manipError) {
-        console.log('⚠️ Could not analyze image dimensions');
         confidence -= 5;
       }
 
@@ -237,7 +227,6 @@ export class SmartImageValidator {
       };
 
     } catch (error) {
-      console.error('❌ Basic image analysis failed:', error);
       
       return {
         isValid: true,
@@ -255,7 +244,6 @@ export class SmartImageValidator {
    * @deprecated Use validateImage instead
    */
   async performValidation(imageUri: string, taskContext: TaskContext): Promise<SmartValidationResult> {
-    console.warn('⚠️ performValidation is deprecated, use validateImage instead');
     return this.validateImage(imageUri, taskContext);
   }
 }

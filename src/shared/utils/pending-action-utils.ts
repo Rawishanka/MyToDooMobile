@@ -11,11 +11,9 @@ export async function executePendingAction() {
   const { pendingAction, clearPendingAction } = usePendingActionStore.getState();
   
   if (!pendingAction) {
-    console.log("ℹ️ No pending action to execute");
     return;
   }
 
-  console.log("🚀 Executing pending action:", pendingAction);
 
   try {
     switch (pendingAction.type) {
@@ -24,7 +22,6 @@ export async function executePendingAction() {
         break;
       
       default:
-        console.warn("⚠️ Unknown pending action type:", pendingAction.type);
         break;
     }
     
@@ -32,7 +29,6 @@ export async function executePendingAction() {
     clearPendingAction();
     
   } catch (error: any) {
-    console.error("❌ Error executing pending action:", error);
     
     // Clear the pending action even if it failed to avoid infinite loops
     clearPendingAction();
@@ -50,7 +46,6 @@ export async function executePendingAction() {
  * Execute post task action
  */
 async function executePostTask(taskData: CreateTaskRequest, returnPath?: string) {
-  console.log("📝 Executing post task action with data:", taskData);
   
   try {
     // Import the API function dynamically to avoid circular dependencies
@@ -58,12 +53,10 @@ async function executePostTask(taskData: CreateTaskRequest, returnPath?: string)
     
     // Post the task
     const response = await postTask(taskData);
-    console.log("✅ Task posted successfully via pending action:", response);
     
     // Reset task store after successful posting
     const { resetTask } = useCreateTaskStore.getState();
     resetTask();
-    console.log("🔄 Task store reset after successful posting");
     
     // Show success message and navigate
     Alert.alert(
@@ -82,7 +75,6 @@ async function executePostTask(taskData: CreateTaskRequest, returnPath?: string)
     );
     
   } catch (error: any) {
-    console.error("❌ Failed to post task via pending action:", error);
     throw error; // Re-throw to be handled by executePendingAction
   }
 }

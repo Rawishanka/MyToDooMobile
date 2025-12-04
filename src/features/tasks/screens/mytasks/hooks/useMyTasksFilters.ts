@@ -54,37 +54,28 @@ export const useMyTasksFilters = () => {
   const filterTasksByType = useCallback((tasks: Task[]): Task[] => {
     if (!tasks) return [];
 
-    console.log('🔍 Filtering tasks:', {
-      selectedFilter,
-      totalTasks: tasks.length,
-      tasks: tasks.map(t => ({ id: t._id, status: t.status, title: t.title })),
-    });
 
     switch (selectedFilter) {
       case 'All tasks':
         return tasks;
       case 'Posted tasks':
         const postedTasks = tasks.filter(task => task.status === 'open');
-        console.log('📝 Posted tasks found:', postedTasks.length);
         return postedTasks;
       case 'Task assigned':
         const assignedTasks = tasks.filter(task => task.status === 'assigned');
         if (assignedTasks.length === 0 && tasks.length >= 2) {
-          console.log('⚡ No assigned tasks found, showing first 2 as demo assigned tasks');
           return tasks.slice(0, 2);
         }
         return assignedTasks;
       case 'Offers pending':
         const pendingTasks = tasks.filter(task => task.status === 'pending');
         if (pendingTasks.length === 0 && tasks.length >= 1) {
-          console.log('⏳ No pending tasks found, showing first 1 as demo pending task');
           return tasks.slice(0, 1);
         }
         return pendingTasks;
       case 'Task completed':
         const completedTasks = tasks.filter(task => task.status === 'completed');
         if (completedTasks.length === 0 && tasks.length >= 1) {
-          console.log('✅ No completed tasks found, showing last 1 as demo completed task');
           return tasks.slice(-1);
         }
         return completedTasks;

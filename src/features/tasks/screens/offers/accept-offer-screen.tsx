@@ -49,14 +49,12 @@ export default function AcceptOfferScreen() {
 
       setIsSubmitting(true);
 
-      console.log('✅ Accepting offer:', selectedOfferId);
 
       const result = await acceptOfferMutation.mutateAsync({
         taskId: taskId!,
         offerId: selectedOfferId,
       });
 
-      console.log('✅ Offer accepted successfully:', result);
 
       Alert.alert(
         'Offer Accepted! 🎉',
@@ -75,7 +73,6 @@ export default function AcceptOfferScreen() {
 
     } catch (error: any) {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Failed to accept offer:', error?.message);
       }
       Alert.alert(
         'Failed to Accept Offer',

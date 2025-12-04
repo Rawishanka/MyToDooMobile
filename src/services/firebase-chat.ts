@@ -31,7 +31,6 @@ class FirebaseChatServiceClass {
   ): () => void {
     const chatId = this.getFirebaseChatId(taskId);
     
-    console.log(`🔥 Subscribing to Firebase chat: ${chatId}`);
 
     return db
       .collection('chats')
@@ -69,11 +68,9 @@ class FirebaseChatServiceClass {
 
           // Reverse to get chronological order (oldest first)
           const sortedMessages = messages.reverse();
-          console.log(`🔥 Firebase messages updated: ${sortedMessages.length} messages`);
           onUpdate(sortedMessages);
         },
         (error) => {
-          console.error('❌ Firebase subscription error:', error);
           if (onError) {
             onError(error);
           }
@@ -114,10 +111,8 @@ class FirebaseChatServiceClass {
         .collection('messages')
         .add(messageData);
 
-      console.log(`✅ Message sent to Firebase: ${docRef.id}`);
       return docRef.id;
     } catch (error) {
-      console.error('❌ Failed to send message to Firebase:', error);
       throw error;
     }
   }

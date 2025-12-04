@@ -39,11 +39,9 @@ export default function AcceptTaskScreen() {
 
       setIsSubmitting(true);
 
-      console.log('🤝 Accepting task:', taskId);
 
       const result = await acceptTaskMutation.mutateAsync(taskId!);
 
-      console.log('✅ Task accepted successfully:', result);
 
       Alert.alert(
         'Task Accepted! 🎉',
@@ -61,7 +59,6 @@ export default function AcceptTaskScreen() {
       );
 
     } catch (error: any) {
-      console.error('❌ Failed to accept task:', error);
       Alert.alert(
         'Failed to Accept Task',
         error?.message || 'Something went wrong. Please try again.',

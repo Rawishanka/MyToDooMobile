@@ -23,28 +23,23 @@ export default function LogoutPopup({ onBack }) {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      console.log("🔐 Starting logout process...");
       
       // STEP 1: Clear React Query cache FIRST while user is still authenticated
-      console.log("🧹 Clearing all caches...");
       clearAllCaches();
       
       // STEP 2: Reset task creation form to clear any unsaved data
-      console.log("🧹 Resetting task creation form...");
       resetTask();
       
       // STEP 3: Wait a moment for cache clearing to complete
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // STEP 4: Disable auth queries
-      console.log("🚫 Disabling all React Query hooks...");
       const { disableAuth } = useAuthStore.getState();
       disableAuth();
       
       // STEP 5: Clear all authentication data
       await clearAuth();
       
-      console.log("✅ Logout successful, redirecting to login...");
       
       // Close popup first
       setShowPopup(false);
@@ -56,7 +51,6 @@ export default function LogoutPopup({ onBack }) {
       Alert.alert('Success', 'You have been logged out successfully!');
       
     } catch (error) {
-      console.error("❌ Logout error:", error);
       Alert.alert('Error', 'Failed to logout. Please try again.');
     } finally {
       setIsLoggingOut(false);

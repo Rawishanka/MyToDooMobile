@@ -35,12 +35,10 @@ export function useGetAllChats() {
           error?.message?.includes('401') || 
           error?.message?.includes('Authentication failed') ||
           error?.message?.includes('please log in again')) {
-        console.log('🚫 Not retrying chat list due to client error');
         return false;
       }
       // Silent network error handling - only log non-network errors in dev
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Failed to load chat list:', error?.message);
       }
       return failureCount < 2;
     },
@@ -76,7 +74,6 @@ export function useGetGroupChatMessages(taskId: string, limit: number = 50, enab
       if (error?.message?.includes('404') || 
           error?.message?.includes('Authentication failed') ||
           error?.message?.includes('No valid endpoint found')) {
-        console.log('🚫 Not retrying group messages due to client error');
         return false;
       }
       return failureCount < 2;
@@ -113,13 +110,11 @@ export function useSendChatMessage() {
     onError: (error) => {
       // Silent network error handling
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Failed to send chat message:', error?.message);
       }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        if (__DEV__) console.warn("⚠️ Authentication error in send chat message - handling automatically");
-        handleAuthenticationError(error);
+        if (__DEV__) handleAuthenticationError(error);
       }
     },
   });
@@ -133,24 +128,20 @@ export function useSendGroupChatMessage() {
     mutationFn: ({ taskId, message }: { taskId: string; message: SendGroupMessageRequest }) =>
       ChatAPI.sendGroupChatMessage(taskId, message),
     onSuccess: (_, { taskId }) => {
-      console.log('✅ Message sent successfully, invalidating cache for taskId:', taskId);
       // Invalidate group chat messages to refresh the list with a slight delay for API propagation
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.groupMessages(taskId) });
         queryClient.invalidateQueries({ queryKey: CHAT_QUERY_KEYS.lists() });
-        console.log('🔄 Cache invalidated for taskId:', taskId);
       }, 200);
     },
     onError: (error) => {
       // Silent network error handling
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Failed to send group chat message:', error?.message);
       }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        if (__DEV__) console.warn("⚠️ Authentication error in send group chat message - handling automatically");
-        handleAuthenticationError(error);
+        if (__DEV__) handleAuthenticationError(error);
       }
     },
   });
@@ -171,13 +162,11 @@ export function useSendSystemMessage() {
     onError: (error) => {
       // Silent network error handling
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Failed to send system message:', error?.message);
       }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        if (__DEV__) console.warn("⚠️ Authentication error in send system message - handling automatically");
-        handleAuthenticationError(error);
+        if (__DEV__) handleAuthenticationError(error);
       }
     },
   });
@@ -197,13 +186,11 @@ export function useCreateOrUpdateChat() {
     onError: (error) => {
       // Silent network error handling
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Failed to create/update chat:', error?.message);
       }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        if (__DEV__) console.warn("⚠️ Authentication error in create/update chat - handling automatically");
-        handleAuthenticationError(error);
+        if (__DEV__) handleAuthenticationError(error);
       }
     },
   });

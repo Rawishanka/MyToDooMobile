@@ -10,43 +10,17 @@ export const TaskImageDebug = {
    * Log task data structure for debugging
    */
   logTaskStructure: (task: any, context: string = '') => {
-    console.log(`🔍 === TASK DEBUG: ${context} ===`);
-    console.log('🔍 Task ID:', task?.id);
-    console.log('🔍 Task Title:', task?.title);
-    console.log('🔍 Has images field:', !!task?.images);
-    console.log('🔍 Images type:', typeof task?.images);
-    console.log('🔍 Images is array:', Array.isArray(task?.images));
-    console.log('🔍 Images count:', task?.images?.length || 0);
-    console.log('🔍 Images raw value:', task?.images);
-    console.log('🔍 Images JSON:', JSON.stringify(task?.images, null, 2));
     
     if (task?.images?.length > 0) {
-      console.log('🔍 First image analysis:', {
-        type: typeof task.images[0],
-        isString: typeof task.images[0] === 'string',
-        length: typeof task.images[0] === 'string' ? task.images[0].length : 'N/A',
-        preview: typeof task.images[0] === 'string' ? task.images[0].substring(0, 100) + '...' : task.images[0],
-        isCloudinary: typeof task.images[0] === 'string' && task.images[0].includes('cloudinary'),
-        isDataUri: typeof task.images[0] === 'string' && task.images[0].startsWith('data:'),
-        isHttpUri: typeof task.images[0] === 'string' && task.images[0].startsWith('http')
-      });
     }
     
     // Check alternative image fields
     const altFields = ['image', 'photos', 'pictures', 'attachments', 'files'];
     altFields.forEach(field => {
       if (task?.[field]) {
-        console.log(`🔍 Alternative field '${field}':`, {
-          type: typeof task[field],
-          isArray: Array.isArray(task[field]),
-          length: task[field]?.length,
-          value: Array.isArray(task[field]) ? task[field].slice(0, 2) : task[field]
-        });
       }
     });
     
-    console.log('🔍 All task keys:', task ? Object.keys(task) : 'No task');
-    console.log(`🔍 === END TASK DEBUG: ${context} ===`);
   },
 
   /**
@@ -56,10 +30,8 @@ export const TaskImageDebug = {
     try {
       const response = await fetch(url, { method: 'HEAD' });
       const isAccessible = response.ok;
-      console.log(`🌐 Image URL test - ${url.substring(0, 50)}...: ${isAccessible ? '✅ OK' : '❌ Failed'}`);
       return isAccessible;
     } catch (error) {
-      console.log(`🌐 Image URL test - ${url.substring(0, 50)}...: ❌ Error -`, error);
       return false;
     }
   },
@@ -68,16 +40,9 @@ export const TaskImageDebug = {
    * Compare task data before and after API call
    */
   compareTaskData: (beforeTask: any, afterTask: any) => {
-    console.log('🔄 === TASK DATA COMPARISON ===');
-    console.log('🔄 Before images:', beforeTask?.images?.length || 0);
-    console.log('🔄 After images:', afterTask?.images?.length || 0);
-    console.log('🔄 Images changed:', (beforeTask?.images?.length || 0) !== (afterTask?.images?.length || 0));
     
     if (beforeTask?.images && afterTask?.images) {
-      console.log('🔄 Before images raw:', JSON.stringify(beforeTask.images, null, 2));
-      console.log('🔄 After images raw:', JSON.stringify(afterTask.images, null, 2));
     }
-    console.log('🔄 === END COMPARISON ===');
   },
 
   /**

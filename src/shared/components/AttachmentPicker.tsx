@@ -75,11 +75,9 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
         const asset = result.assets[0];
         
         // ✅ OCR: Validate image for sensitive data
-        console.log('🔍 Analyzing image for sensitive data...');
         const validation = await OCRAPI.validateImageForUpload(asset.uri);
         
         if (!validation.isValid) {
-          console.warn('❌ Image contains sensitive data:', validation.reason);
           Alert.alert(
             'Sensitive Data Detected',
             `This image contains sensitive information and cannot be uploaded:\n\n${validation.reason}\n\nPlease remove phone numbers and addresses before uploading.`,
@@ -89,7 +87,6 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
           return;
         }
         
-        console.log('✅ Image passed OCR validation');
         const newAttachment: AttachmentItem = {
           id: Date.now().toString(),
           uri: asset.uri,
@@ -100,7 +97,6 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
         addAttachment(newAttachment);
       }
     } catch (error) {
-      console.error('Error picking image:', error);
       Alert.alert('Error', 'Failed to select image. Please try again.');
     } finally {
       setIsProcessing(false);
@@ -128,11 +124,9 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
         const asset = result.assets[0];
         
         // ✅ OCR: Validate image for sensitive data
-        console.log('🔍 Analyzing photo for sensitive data...');
         const validation = await OCRAPI.validateImageForUpload(asset.uri);
         
         if (!validation.isValid) {
-          console.warn('❌ Photo contains sensitive data:', validation.reason);
           Alert.alert(
             'Sensitive Data Detected',
             `This photo contains sensitive information and cannot be uploaded:\n\n${validation.reason}\n\nPlease remove phone numbers and addresses before uploading.`,
@@ -142,7 +136,6 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
           return;
         }
         
-        console.log('✅ Photo passed OCR validation');
         const newAttachment: AttachmentItem = {
           id: Date.now().toString(),
           uri: asset.uri,
@@ -153,7 +146,6 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
         addAttachment(newAttachment);
       }
     } catch (error) {
-      console.error('Error taking photo:', error);
       Alert.alert('Error', 'Failed to take photo. Please try again.');
     } finally {
       setIsProcessing(false);
@@ -182,7 +174,6 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
         addAttachment(newAttachment);
       }
     } catch (error) {
-      console.error('Error picking document:', error);
       Alert.alert('Error', 'Failed to select document. Please try again.');
     } finally {
       setIsProcessing(false);

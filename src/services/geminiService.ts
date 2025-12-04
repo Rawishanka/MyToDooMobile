@@ -32,22 +32,18 @@ export class GeminiService {
    * Get AI-powered task title suggestions based on selected category
    */
   async suggestTaskTitles(category: string): Promise<string[]> {
-    console.log('🤖 Getting AI title suggestions for category:', category);
     
     try {
       // First try offline suggestions for better performance
       const offlineSuggestions = this.getOfflineSuggestions(category);
       if (offlineSuggestions.length > 0) {
-        console.log('📱 Using offline suggestions for:', category);
         return offlineSuggestions;
       }
 
       // If no offline suggestions found, try generic suggestions first
-      console.log('📋 No offline suggestions found, using generic suggestions for:', category);
       return this.getGenericSuggestions();
       
     } catch (error) {
-      console.error('❌ Error getting title suggestions:', error);
       // Always return generic suggestions as final fallback
       return this.getGenericSuggestions();
     }
@@ -344,11 +340,9 @@ export class GeminiService {
    */
   private async getAISuggestions(category: string): Promise<string[]> {
     if (!this.apiKey) {
-      console.log('❌ No API key available, falling back to generic suggestions');
       return this.getGenericSuggestions();
     }
 
-    console.log('🤖 Calling Gemini API for category:', category);
 
     const prompt = `Generate 5 concise task titles for "${category}" category. 
     Focus on common service requests. 
@@ -370,16 +364,13 @@ export class GeminiService {
         })
       });
 
-      console.log('📡 API Response status:', response.status);
 
       if (!response.ok) {
-        console.log('📡 API Error: Status', response.status);
         // Don't throw error, just fallback to generic suggestions
         return this.getGenericSuggestions();
       }
 
       const data = await response.json();
-      console.log('📡 API Response received successfully');
       
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       
@@ -390,15 +381,12 @@ export class GeminiService {
           .filter((line: string) => line.length > 0 && line.length < 100)
           .slice(0, 5);
         
-        console.log('🤖 AI generated suggestions:', suggestions);
         return suggestions.length > 0 ? suggestions : this.getGenericSuggestions();
       }
 
-      console.log('❌ Invalid response format from Gemini API, using generic suggestions');
       return this.getGenericSuggestions();
 
     } catch (error) {
-      console.log('❌ AI API call failed, using generic suggestions:', error);
       // Always fallback to generic suggestions instead of throwing
       return this.getGenericSuggestions();
     }

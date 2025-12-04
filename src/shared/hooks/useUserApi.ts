@@ -71,31 +71,25 @@ export function useGetUserProfile() {
   return useQuery<User, Error>({
     queryKey: USER_QUERY_KEYS.profile(),
     queryFn: async () => {
-      console.log('📥 Fetching user profile...');
       
       try {
         // Try to use the real API first
         if (typeof UserAPI.getUserProfile === 'function') {
           const profile = await UserAPI.getUserProfile();
-          console.log('✅ User profile fetched:', profile);
           if (profile !== undefined && profile !== null) {
             return profile;
           } else {
             // If profile is undefined/null, fallback to mock data
-            console.warn('🎭 UserAPI.getUserProfile returned no data, using fallback');
             return await fallbackGetUserProfile();
           }
         } else {
           // Fallback to mock data
-          console.warn('🎭 Using fallback user profile');
           return await fallbackGetUserProfile();
         }
       } catch (error: any) {
         // Don't log auth errors as errors - they're expected when not logged in
         if (error?.isAuthError || error?.status === 401) {
-          console.log('⚠️ Auth required - Using fallback profile');
         } else {
-          console.error('❌ Get user profile error:', error);
         }
 
         // Auth error - user not logged in, return fallback
@@ -105,7 +99,6 @@ export function useGetUserProfile() {
 
         // Network error fallback
         if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
-          console.warn('🎭 Network failed - Using Mock Profile');
           return await fallbackGetUserProfile();
         }
 
@@ -128,11 +121,9 @@ export async function updateUserProfile(profileData: Partial<User>): Promise<Use
     const response = await api.put<User>('/user/profile', profileData);
     return response.data;
   } catch (error: any) {
-    console.error('❌ updateUserProfile API error:', error);
 
     // Network error fallback
     if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
-      console.warn('🎭 Network failed - Using fallbackUpdateUserProfile');
       return fallbackUpdateUserProfile(profileData);
     }
 
@@ -147,11 +138,9 @@ export async function getUserProfile(): Promise<User> {
     const response = await api.get<User>('/user/profile');
     return response.data;
   } catch (error: any) {
-    console.error('❌ getUserProfile API error:', error);
 
     // Network error fallback
     if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
-      console.warn('🎭 Network failed - Using fallbackGetUserProfile');
       return fallbackGetUserProfile();
     }
 

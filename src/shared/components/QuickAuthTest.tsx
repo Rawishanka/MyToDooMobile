@@ -12,7 +12,6 @@ export const QuickAuthTest = () => {
     
     try {
       // Test 1: Check if server is running
-      console.log('🔍 Testing server connectivity...');
       const healthCheck = await fetch(`${baseUrl}/../api-docs`);
       
       if (!healthCheck.ok) {
@@ -21,7 +20,6 @@ export const QuickAuthTest = () => {
       }
       
       // Test 2: Test signup endpoint
-      console.log('✅ Server is running! Testing signup...');
       const signupResponse = await fetch(`${baseUrl}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -33,7 +31,6 @@ export const QuickAuthTest = () => {
         })
       });
       
-      console.log('📧 Signup response:', signupResponse.status);
       
       // Test 3: Test login endpoint  
       const loginResponse = await fetch(`${baseUrl}/auth/login`, {
@@ -45,7 +42,6 @@ export const QuickAuthTest = () => {
         })
       });
       
-      console.log('🔐 Login response:', loginResponse.status);
       
       Alert.alert(
         '🎉 SUCCESS!', 

@@ -15,7 +15,6 @@ export function useClearTaskCaches() {
   const queryClient = useQueryClient();
   
   return () => {
-    console.log("🧹 Clearing all task caches...");
     
     // Remove all task-related queries from cache
     queryClient.removeQueries({ queryKey: TASK_QUERY_KEYS.all });
@@ -30,7 +29,6 @@ export function useClearTaskCaches() {
       }
     });
     
-    console.log("✅ All task caches cleared successfully");
   };
 }
 
@@ -42,7 +40,6 @@ export function useClearCategoriesCaches() {
   const queryClient = useQueryClient();
   
   return () => {
-    console.log("🧹 Clearing all categories caches...");
     
     // Remove all categories-related queries from cache
     queryClient.removeQueries({ queryKey: CATEGORIES_QUERY_KEYS.all });
@@ -55,7 +52,6 @@ export function useClearCategoriesCaches() {
       }
     });
     
-    console.log("✅ All categories caches cleared successfully");
   };
 }
 
@@ -67,7 +63,6 @@ export function useClearUserProfileCaches() {
   const queryClient = useQueryClient();
   
   return () => {
-    console.log("🧹 Clearing all user profile caches...");
     
     // Clear user profile queries from useUserProfileApi
     queryClient.removeQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
@@ -85,10 +80,8 @@ export function useClearUserProfileCaches() {
     });
     
     // Force clear everything to be absolutely sure
-    console.log("🧹 Force clearing entire cache to prevent any data persistence...");
     queryClient.clear();
     
-    console.log("✅ All user profile caches cleared successfully");
   };
 }
 /**
@@ -101,11 +94,9 @@ export function useClearAllCaches() {
   const clearUserProfileCaches = useClearUserProfileCaches();
   
   return () => {
-    console.log("🧹 Clearing ALL caches...");
     clearTaskCaches();
     clearCategoriesCaches();
     clearUserProfileCaches();
-    console.log("✅ All caches cleared successfully");
   };
 }
 
@@ -117,7 +108,6 @@ export function useForceRefreshTasks() {
   const queryClient = useQueryClient();
   
   return async () => {
-    console.log("🔄 Force refreshing all task data...");
     
     // Invalidate all task queries and force immediate refetch
     await queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all });
@@ -126,7 +116,6 @@ export function useForceRefreshTasks() {
       type: 'all'
     });
     
-    console.log("✅ All task data refreshed");
   };
 }
 
@@ -138,7 +127,6 @@ export function useForceRefreshCategories() {
   const queryClient = useQueryClient();
   
   return async () => {
-    console.log("🔄 Force refreshing categories data...");
     
     // Invalidate all categories queries and force immediate refetch
     await queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.all });
@@ -147,7 +135,6 @@ export function useForceRefreshCategories() {
       type: 'all'
     });
     
-    console.log("✅ All categories data refreshed");
   };
 }
 
@@ -158,12 +145,10 @@ export function useForceRefreshCategories() {
  */
 export function clearAllCachesGlobal(queryClient: any) {
   if (!queryClient) {
-    console.log("⚠️ No query client provided for cache clearing");
     return;
   }
   
   try {
-    console.log("🧹 Clearing ALL caches globally...");
     
     // Clear all task-related queries
     queryClient.removeQueries({ queryKey: TASK_QUERY_KEYS.all });
@@ -193,9 +178,7 @@ export function clearAllCachesGlobal(queryClient: any) {
     // Also clear the entire cache as a final step
     queryClient.clear();
     
-    console.log("✅ All caches cleared globally");
   } catch (error) {
-    console.error("❌ Error clearing caches globally:", error);
   }
 }
 
@@ -207,7 +190,6 @@ export function useClearCachesOnLogin() {
   const clearAllCaches = useClearAllCaches();
   
   return () => {
-    console.log("🔄 Clearing caches for fresh login session...");
     clearAllCaches();
   };
 }

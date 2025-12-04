@@ -112,7 +112,6 @@ export function useFilterTasks(params: TaskFilterParams, enabled = true) {
       // Don't retry on backend routing conflicts (500 errors with ObjectId)
       if (error?.response?.status === 500 && 
           error?.response?.data?.message?.includes('Cast to ObjectId failed')) {
-        console.warn('🚨 Detected routing conflict, not retrying');
         return false;
       }
       
@@ -248,7 +247,6 @@ export function useGetPaymentStatus() {
       if (error?.response?.status === 404 || 
           error?.response?.status === 403 || 
           error?.response?.status === 401) {
-        console.warn('🚨 Payment status endpoint not available, using fallback data');
         return false;
       }
       
@@ -309,7 +307,6 @@ export function useGetAllPublicQuestions(enabled = true) {
     retry: (failureCount, error: any) => {
       // Don't retry if it's a 404 or 500 error
       if (error?.response?.status === 404 || error?.response?.status === 500) {
-        console.log('📝 Public questions endpoint not available, skipping retries');
         return false;
       }
       return failureCount < 1; // Only retry once for other errors
@@ -346,7 +343,6 @@ export function useCreateTask() {
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.lists() }); // Force immediate refetch of browse tasks
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() }); // Force immediate refetch of my tasks
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers specifically
-      console.log("✅ Force refetched all task queries after creating new task - browse tasks should update immediately");
     },
   });
 }
@@ -359,9 +355,6 @@ export function usePostTaskDirect() {
   
   return useMutation({
     mutationFn: (taskData: CreateTaskRequest) => {
-      console.log('🚀 DIRECT MUTATION - Received task data with images:');
-      console.log('🚀 DIRECT MUTATION - taskData:', JSON.stringify(taskData, null, 2));
-      console.log('🚀 DIRECT MUTATION - images count:', taskData.images?.length || 0);
       return TaskAPI.postTaskDirect(taskData);
     },
     onSuccess: (result, variables) => {
@@ -372,29 +365,22 @@ export function usePostTaskDirect() {
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
       
       // If we have the created task ID, invalidate its specific detail query
-      console.log("🔍 Task creation result structure:", JSON.stringify(result, null, 2));
       const createdTaskId = (result as any)?.data?.id || (result as any)?.data?._id;
       if (createdTaskId) {
-        console.log("✅ Invalidating specific task detail cache for ID:", createdTaskId);
         queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(createdTaskId) });
       } else {
-        console.log("⚠️ Could not extract task ID from result - cannot invalidate specific detail");
       }
       
-      console.log("✅ Task posted successfully (DIRECT) - force refetched all task queries and specific detail");
     },
     onError: (error: any) => {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Error posting task (DIRECT):", error?.message);
       }
       
       if (isAuthError(error)) {
-        if (__DEV__) console.warn("⚠️ Authentication error detected - handling automatically");
-        handleAuthenticationError(error);
+        if (__DEV__) handleAuthenticationError(error);
       } else if (error?.message?.includes("Images are too large")) {
-        if (__DEV__) console.warn("⚠️ Image upload failed - files too large");
+        if (__DEV__) {}
       } else if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Task posting failed with unknown error:", error?.message);
       }
     }
   });
@@ -405,9 +391,6 @@ export function usePostTaskWithImages() {
   
   return useMutation({
     mutationFn: ({ taskData, imageUris }: { taskData: CreateTaskRequest; imageUris: string[] }) => {
-      console.log('🔧 MUTATION - Received parameters:');
-      console.log('🔧 MUTATION - taskData:', JSON.stringify(taskData, null, 2));
-      console.log('🔧 MUTATION - imageUris:', JSON.stringify(imageUris, null, 2));
       return TaskAPI.postTaskWithImages(taskData, imageUris);
     },
     onSuccess: (result, variables) => {
@@ -416,21 +399,17 @@ export function usePostTaskWithImages() {
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.lists() }); // Force immediate refetch of browse tasks
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() }); // Force immediate refetch of my tasks
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers specifically
-      console.log("✅ Task with images posted successfully - force refetched all task queries");
     },
     onError: (error: any) => {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Error posting task with images:", error?.message);
       }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        if (__DEV__) console.warn("⚠️ Authentication error detected - handling automatically");
-        handleAuthenticationError(error);
+        if (__DEV__) handleAuthenticationError(error);
       } else if (error?.message?.includes("Images are too large")) {
-        if (__DEV__) console.warn("⚠️ Image upload failed - files too large");
+        if (__DEV__) {}
       } else if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Task posting with images failed:", error?.message);
       }
     }
   });
@@ -447,19 +426,15 @@ export function usePostTask() {
     onSuccess: (result, variables) => {
       // Optimized: Only invalidate queries, let them refetch on demand
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all });
-      console.log("✅ Task posted successfully");
     },
     onError: (error: any) => {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Error posting task:", error?.message);
       }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        if (__DEV__) console.warn("⚠️ Authentication error detected - handling automatically");
-        handleAuthenticationError(error);
+        if (__DEV__) handleAuthenticationError(error);
       } else if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Task posting failed:", error?.message);
       }
     }
   });
@@ -473,39 +448,24 @@ export function useUpdateTask() {
   
   return useMutation({
     mutationFn: ({ taskId, updates }: { taskId: string; updates: UpdateTaskRequest }) => {
-      console.log('🔄 useUpdateTask: Starting mutation for taskId:', taskId);
-      console.log('🔄 useUpdateTask: Update payload:', JSON.stringify(updates, null, 2));
       return TaskAPI.updateTask(taskId, updates);
     },
     onSuccess: (data, variables) => {
-      console.log('✅ useUpdateTask: Mutation successful!');
-      console.log('✅ useUpdateTask: Response data:', JSON.stringify(data, null, 2));
-      console.log('🔄 useUpdateTask: Starting cache invalidation and refetch...');
       
       // Force immediate refetch of all task-related queries
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
-      console.log('✅ Invalidated task detail query for:', variables.taskId);
       
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all }); // All views
-      console.log('✅ Invalidated all task queries');
       
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.lists() }); // Force immediate refetch of browse tasks
-      console.log('✅ Refetching browse tasks list...');
       
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() }); // Force immediate refetch of my tasks
-      console.log('✅ Refetching my tasks list...');
       
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers
-      console.log('✅ Invalidated my offers query');
       
-      console.log("✅ useUpdateTask: All cache operations completed - UI should update immediately");
     },
     onError: (error: any, variables) => {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ useUpdateTask: Mutation failed!');
-        console.warn('⚠️ useUpdateTask: TaskId:', variables.taskId);
-        console.warn('⚠️ useUpdateTask: Updates payload:', JSON.stringify(variables.updates, null, 2));
-        console.warn('⚠️ useUpdateTask: Error message:', error?.message);
       }
     },
   });
@@ -532,42 +492,24 @@ export function useUpdateTaskWithImages() {
       existingImages?: string[];
       replaceImages?: boolean;
     }) => {
-      console.log('🔄 useUpdateTaskWithImages: Starting mutation for taskId:', taskId);
-      console.log('🔄 useUpdateTaskWithImages: Update payload:', JSON.stringify(updates, null, 2));
-      console.log('🔄 useUpdateTaskWithImages: New images:', newImageUris.length);
-      console.log('🔄 useUpdateTaskWithImages: Existing images:', existingImages.length);
-      console.log('🔄 useUpdateTaskWithImages: Replace images:', replaceImages);
       return TaskAPI.updateTaskWithImages(taskId, updates, newImageUris, existingImages, replaceImages);
     },
     onSuccess: (data, variables) => {
-      console.log('✅ useUpdateTaskWithImages: Mutation successful!');
-      console.log('✅ useUpdateTaskWithImages: Response data:', JSON.stringify(data, null, 2));
-      console.log('🔄 useUpdateTaskWithImages: Starting cache invalidation and refetch...');
       
       // Force immediate refetch of all task-related queries
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
-      console.log('✅ Invalidated task detail query for:', variables.taskId);
       
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all }); // All views
-      console.log('✅ Invalidated all task queries');
       
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.lists() }); // Force immediate refetch of browse tasks
-      console.log('✅ Refetching browse tasks list...');
       
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() }); // Force immediate refetch of my tasks
-      console.log('✅ Refetching my tasks list...');
       
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers
-      console.log('✅ Invalidated my offers query');
       
-      console.log("✅ useUpdateTaskWithImages: All cache operations completed - UI should update immediately");
     },
     onError: (error: any, variables) => {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ useUpdateTaskWithImages: Mutation failed!');
-        console.warn('⚠️ useUpdateTaskWithImages: TaskId:', variables.taskId);
-        console.warn('⚠️ useUpdateTaskWithImages: New images count:', variables.newImageUris?.length || 0);
-        console.warn('⚠️ useUpdateTaskWithImages: Error message:', error?.message);
       }
     },
   });
@@ -712,7 +654,6 @@ export function useCreateCancellationRequest() {
       // queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
       // queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
       
-      console.log('✅ Cancellation request created - task should stay visible in current tab');
     },
   });
 }
@@ -838,22 +779,18 @@ export function usePostTaskQuestion() {
     mutationFn: ({ taskId, question }: { taskId: string; question: string }) => 
       TaskAPI.postTaskQuestion(taskId, question),
     onSuccess: (data, variables) => {
-      console.log('✅ Question posted successfully, invalidating queries');
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.questions(variables.taskId) });
       // Also refresh task detail to update question count
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
     },
     onError: (error: any) => {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Error posting question:", error?.message);
       }
       
       // Check if it's an authentication error and handle automatically
       if (isAuthError(error)) {
-        if (__DEV__) console.warn("⚠️ Authentication error detected - handling automatically");
-        handleAuthenticationError(error);
+        if (__DEV__) handleAuthenticationError(error);
       } else if (!isNetworkError(error) && __DEV__) {
-        console.warn("⚠️ Question posting failed:", error?.message);
       }
     }
   });

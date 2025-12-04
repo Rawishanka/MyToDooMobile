@@ -43,11 +43,6 @@ export default function AskQuestionScreen() {
 
       setIsSubmitting(true);
 
-      console.log('❓ Posting question with attachments:', {
-        question: question.trim(),
-        attachments: attachments.length
-      });
-
       // TODO: Update API to support attachments
       // For now, we'll include attachment info in the question text if there are any
       let finalQuestion = question.trim();
@@ -63,7 +58,6 @@ export default function AskQuestionScreen() {
         question: finalQuestion,
       });
 
-      console.log('✅ Question posted successfully:', result);
 
       Alert.alert(
         'Question Posted!',
@@ -81,7 +75,6 @@ export default function AskQuestionScreen() {
       );
 
     } catch (error: any) {
-      console.error('❌ Failed to post question:', error);
       Alert.alert(
         'Failed to Post Question',
         error?.message || 'Something went wrong. Please try again.',

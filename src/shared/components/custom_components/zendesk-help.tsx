@@ -25,7 +25,6 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
 
   const handleMessage = (event: any) => {
     // Handle messages from Zendesk if needed
-    console.log('Message from Zendesk:', event.nativeEvent.data);
   };
 
   return (

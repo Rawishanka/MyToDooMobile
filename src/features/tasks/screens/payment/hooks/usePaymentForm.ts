@@ -45,12 +45,6 @@ export const usePaymentForm = ({ taskId, offerId, acceptedOfferId }: UsePaymentF
 
       const finalOfferId = offerId || acceptedOfferId;
       
-      console.log('💰 Completing payment:', {
-        taskId,
-        offerId: finalOfferId,
-        paymentMethod,
-        notes: notes.trim()
-      });
 
       const result = await completePaymentMutation.mutateAsync({
         taskId: taskId!,
@@ -61,7 +55,6 @@ export const usePaymentForm = ({ taskId, offerId, acceptedOfferId }: UsePaymentF
         }
       });
 
-      console.log('✅ Payment completed successfully:', result);
 
       Alert.alert(
         'Payment Completed! 🎉',
@@ -79,7 +72,6 @@ export const usePaymentForm = ({ taskId, offerId, acceptedOfferId }: UsePaymentF
       );
 
     } catch (error: any) {
-      console.error('❌ Failed to complete payment:', error);
       Alert.alert(
         'Failed to Complete Payment',
         error?.message || 'Something went wrong. Please try again.',

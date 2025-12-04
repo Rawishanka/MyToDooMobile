@@ -54,14 +54,6 @@ export default function MakeOfferScreen() {
     taskLocation: task?.location
   });
 
-  // Debug logging for button state
-  console.log('🔧 [MakeOfferScreen] Button State:', {
-    isSubmitting,
-    isLoadingOffers,
-    userHasExistingOffer,
-    buttonDisabled: isSubmitting || userHasExistingOffer || isLoadingOffers,
-    taskId: taskId
-  });
 
   if (isLoading) {
     return <LoadingState />;

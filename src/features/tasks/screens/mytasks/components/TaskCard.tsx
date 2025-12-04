@@ -51,13 +51,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const [selectedCancelReasonData, setSelectedCancelReasonData] = useState<any | null>(null);
   
   // Debug logging for offer data
-  console.log(`💳 TaskCard [${task._id}] offer data:`, {
-    title: task.title,
-    offersArray: task.offers?.length || 0,
-    offerCount: task.offerCount || 0,
-    hasOffers: !!(task.offers?.length || task.offerCount),
-    userRole
-  });
   
   // Debouncing state to prevent multiple rapid clicks
   const lastClickTime = useRef<number>(0);
@@ -83,36 +76,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   
   // Enhanced logging for cancelled tasks
   if (status === 'cancelled') {
-    console.log('🔍 CANCELLED TASK - Cancellation Request Details:', {
-      taskId: task._id.substring(0, 8),
-      taskTitle: task.title.substring(0, 30),
-      status,
-      shouldFetch: shouldFetchCancellationRequest,
-      queryData: cancellationRequestData,
-      hasCancellationRequest: !!pendingCancellationRequest,
-      requestStatus: pendingCancellationRequest?.status,
-      requestedBy: pendingCancellationRequest?.requestedBy,
-      requestedById: typeof pendingCancellationRequest?.requestedBy === 'string' 
-        ? pendingCancellationRequest.requestedBy 
-        : pendingCancellationRequest?.requestedBy?._id,
-      currentUserId: currentUser?._id || currentUser?.id,
-      taskCreatedById: task.createdBy?._id,
-      reason: pendingCancellationRequest?.reason
-    });
   }
   
-  console.log('🔍 Cancellation Request Query:', {
-    taskId: task._id.substring(0, 8),
-    taskTitle: task.title.substring(0, 30),
-    status,
-    isPostPaymentTask,
-    shouldFetch: shouldFetchCancellationRequest,
-    hasCancellationRequest: !!pendingCancellationRequest,
-    requestStatus: pendingCancellationRequest?.status,
-    requestedBy: pendingCancellationRequest?.requestedBy,
-    currentUserId: currentUser?._id || currentUser?.id,
-    taskCreatedById: task.createdBy?._id
-  });
   
   // Fetch cancellation reasons based on user role
   const cancellationType = userRole === 'Poster' ? 'poster' : 'tasker';
@@ -121,24 +86,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   // Extract reasons array from API response
   const cancellationReasons = cancellationReasonsData?.data || [];
   
-  console.log(`📋 Cancellation reasons for ${cancellationType}:`, {
-    count: cancellationReasons.length,
-    reasons: cancellationReasons.map((r: any) => r.reason)
-  });
 
   // Auto-show cancellation request modal when there's a pending request from the other party
   useEffect(() => {
     if (pendingCancellationRequest && pendingCancellationRequest.status === 'pending') {
-      console.log('🔍 Checking pending cancellation request:', {
-        requestId: pendingCancellationRequest._id,
-        requestedBy: pendingCancellationRequest.requestedBy,
-        requestedById: pendingCancellationRequest.requestedBy?._id,
-        currentUserId: currentUser?._id || currentUser?.id,
-        taskCreatedBy: task.createdBy?._id,
-        userRole,
-        status: pendingCancellationRequest.status,
-        reason: pendingCancellationRequest.reason
-      });
       
       // Get the ID of who requested the cancellation
       const requesterId = typeof pendingCancellationRequest.requestedBy === 'string' 
@@ -149,29 +100,18 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       const currentUserId = currentUser?._id || currentUser?.id;
       
       if (!currentUserId) {
-        console.warn('⚠️ No current user ID found, cannot determine if modal should show');
         return;
       }
       
       // Only show modal if the request was made by the OTHER party (not current user)
       const requestedByCurrentUser = requesterId === currentUserId;
       
-      console.log('🔍 Modal display logic:', {
-        requesterId,
-        currentUserId,
-        requestedByCurrentUser,
-        userRole,
-        shouldShowModal: !requestedByCurrentUser
-      });
       
       if (!requestedByCurrentUser) {
-        console.log('🔔 Pending cancellation request from OTHER party detected, showing modal');
         setShowCancelRequestModal(true);
       } else {
-        console.log('ℹ️ Current user made the request, not showing modal');
       }
     } else if (pendingCancellationRequest) {
-      console.log('ℹ️ Cancellation request exists but status is not pending:', pendingCancellationRequest.status);
     }
   }, [pendingCancellationRequest, currentUser, userRole, task.createdBy]);
 
@@ -179,7 +119,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const withDebounce = useCallback((callback: () => void, delay: number = 300) => {
     const now = Date.now();
     if (now - lastClickTime.current < delay) {
-      console.log('🛡️ Button click debounced - preventing rapid taps');
       return;
     }
     lastClickTime.current = now;
@@ -194,7 +133,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   const handleMarkAsCompleted = useCallback(async () => {
     if (completeTaskMutation.isPending || completeTaskPaymentMutation.isPending || isProcessing) {
-      console.log('🛡️ Complete operation already in progress');
       return;
     }
 
@@ -210,26 +148,12 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
     try {
       setIsProcessing(true);
-      console.log('✅ Marking task as completed:', task._id);
-      console.log('🔍 Task data:', {
-        id: task._id,
-        status: task.status,
-        userRole,
-        tabStatus: status,
-        hasOffers: !!task.offers,
-        offersCount: task.offers?.length || 0,
-        offers: task.offers,
-        hasAcceptedOffer: !!(task as any).acceptedOffer,
-        assignedTo: (task as any).assignedTo,
-        paymentIntentId: (task as any).paymentIntentId
-      });
       
       // Check if this is an accepted offer that requires payment completion
       // This should be true when we're in the "Accepted" tab (Poster side)
       const isAcceptedOfferTask = status === 'accepted' && userRole === 'Poster';
       
       if (isAcceptedOfferTask) {
-        console.log('💳 Attempting payment completion for accepted offer...');
         
         // Try to find payment intent ID and offer ID from task data
         let paymentIntentId = (task as any).paymentIntentId;
@@ -240,14 +164,12 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           const acceptedOffer = task.offers.find(offer => offer.status === 'accepted');
           if (acceptedOffer) {
             acceptedOfferId = acceptedOffer._id;
-            console.log('✅ Found accepted offer in task.offers:', acceptedOfferId);
           }
         }
         
         if (!acceptedOfferId && (task as any).acceptedOffer) {
           const acceptedOffer = (task as any).acceptedOffer;
           acceptedOfferId = acceptedOffer._id || acceptedOffer;
-          console.log('✅ Found accepted offer in task.acceptedOffer:', acceptedOfferId);
         }
         
         if (paymentIntentId && acceptedOfferId) {
@@ -262,17 +184,14 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               }
             });
             
-            console.log('✅ Task payment completed successfully');
           } catch (paymentError: any) {
             if (!isNetworkError(paymentError) && __DEV__) {
-              console.warn('⚠️ Payment completion failed:', paymentError?.message);
             }
             
             // If payment completion fails due to missing payment intent, try regular completion
             if (paymentError?.response?.status === 500 || 
                 paymentError?.response?.data?.message?.includes('No accepted offer found') ||
                 paymentError?.response?.data?.message?.includes('Payment has not been completed yet')) {
-              console.log('⚠️ Payment completion failed, falling back to regular task completion');
               await completeTaskMutation.mutateAsync(task._id);
             } else {
               throw paymentError; // Re-throw if it's a different error
@@ -280,7 +199,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           }
         } else {
           // Try payment completion without paymentIntentId first (maybe it's not required)
-          console.log('⚠️ Missing payment intent ID, trying payment completion without it');
           
           try {
             await completeTaskPaymentMutation.mutateAsync({ 
@@ -290,26 +208,19 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 offerId: acceptedOfferId,
               }
             });
-            console.log('✅ Task payment completed successfully without paymentIntentId');
           } catch (paymentError: any) {
             if (!isNetworkError(paymentError) && __DEV__) {
-              console.warn('⚠️ Payment completion failed:', paymentError?.message);
             }
             
             // Fall back to regular task completion
-            console.log('⚠️ Payment completion failed, using regular task completion');
-            console.log('   PaymentIntentId:', paymentIntentId);
-            console.log('   AcceptedOfferId:', acceptedOfferId);
             await completeTaskMutation.mutateAsync(task._id);
           }
         }
       } else {
         // Regular task completion for non-payment tasks
-        console.log('✅ Using regular task completion...');
         await completeTaskMutation.mutateAsync(task._id);
       }
       
-      console.log('✅ Task marked as completed successfully');
       
       // Notify parent component to refresh and move to Completed tab
       if (onTaskCompleted) {
@@ -326,9 +237,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       );
       
     } catch (error: any) {
-      console.error('❌ Error marking task as completed:', error);
-      console.error('❌ Error response:', error?.response?.data);
-      console.error('❌ Error message:', error?.message);
       
       let errorMessage = 'Failed to mark task as completed. Please try again.';
       let errorTitle = 'Completion Failed';
@@ -363,9 +271,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   }, [task, status, userRole, completeTaskMutation, completeTaskPaymentMutation, onTaskCompleted, isProcessing, isValidMongoId]);
 
   const handleCancelTask = useCallback(() => {
-    console.log('🔥 Cancel button touched!'); // Debug log
     if (isProcessing) {
-      console.log('🛡️ Cancel operation already in progress');
       return;
     }
     
@@ -379,15 +285,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       return;
     }
     
-    console.log('❌ Handling cancel task:', task._id);
-    console.log('   Task status:', status);
-    console.log('   User role:', userRole);
-    console.log('   Is post-payment task:', isPostPaymentTask);
     
     // Check if this is a post-payment task (accepted/assigned/completed)
     // These require cancellation REQUEST flow (needs other party's approval)
     if (isPostPaymentTask) {
-      console.log('📝 Post-payment task - showing cancellation REQUEST modal');
       // Show the appropriate modal for creating a cancellation request
       if (userRole === 'Poster') {
         setShowPosterCancelModal(true);
@@ -396,20 +297,16 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       }
     } else {
       // Pre-payment task (open/posted) - use legacy direct cancellation
-      console.log('❌ Pre-payment task - showing direct cancellation modal');
       if (userRole === 'Poster' && (status === 'open' || status === 'posted' || !status)) {
         setShowPosterCancelModal(true);
       } else {
-        console.log('❌ Tasker cancelling task:', task._id);
         setShowTaskerCancelModal(true);
       }
     }
   }, [userRole, status, task._id, isProcessing, isValidMongoId, isPostPaymentTask]);
 
   const handleDeleteTask = useCallback(() => {
-    console.log('🔥 Delete button touched!'); // Debug log
     if (deleteTaskMutation.isPending || isProcessing) {
-      console.log('🛡️ Delete operation already in progress');
       return;
     }
 
@@ -423,14 +320,12 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       return;
     }
 
-    console.log('🗑️ Opening delete confirmation modal');
     setShowDeleteModal(true);
   }, [deleteTaskMutation.isPending, isProcessing, isValidMongoId, task._id]);
 
   const confirmDeleteTask = useCallback(async () => {
     try {
       if (deleteTaskMutation.isPending || isProcessing) {
-        console.log('🛡️ Delete operation already in progress');
         return;
       }
 
@@ -446,30 +341,16 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       }
 
       setIsProcessing(true);
-      console.log('🗑️ Attempting to delete task:', task._id);
-      console.log('🔍 Task details:', { 
-        id: task._id, 
-        title: task.title, 
-        status: task.status 
-      });
       
       // Check mutation state before calling
-      console.log('🔍 Delete mutation state:', { 
-        isPending: deleteTaskMutation.isPending,
-        isError: deleteTaskMutation.isError,
-        error: deleteTaskMutation.error
-      });
       
       // Use the React Query mutation to delete the task
       const result = await deleteTaskMutation.mutateAsync(task._id);
       
-      console.log('✅ Delete API response:', result);
-      console.log('✅ Task deleted successfully');
       setShowDeleteModal(false);
       
       // Notify parent component to refresh the task list
       if (onTaskDeleted) {
-        console.log('🔄 Notifying parent component to refresh task list');
         onTaskDeleted(task._id);
       }
       
@@ -482,13 +363,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       
     } catch (error: any) {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Task deletion failed:', error?.message);
-        console.warn('⚠️ Error details:', {
-          message: error?.message,
-          status: error?.response?.status,
-          data: error?.response?.data,
-          isAuthError: error?.isAuthError
-        });
       }
       
       setShowDeleteModal(false);
@@ -530,7 +404,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     }
     
     if (cancelTaskMutation.isPending || createCancellationRequestMutation.isPending || isProcessing) {
-      console.log('🛡️ Cancel operation already in progress');
       return;
     }
     
@@ -539,21 +412,14 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       const reasonText = selectedCancelReasonData.reason;
       const reasonId = selectedCancelReasonData._id;
       
-      console.log('❌ Poster cancelling task:', task._id);
-      console.log('   Reason:', reasonText);
-      console.log('   Reason ID:', reasonId);
-      console.log('   Is post-payment task:', isPostPaymentTask);
       
       // Check if this is a post-payment task (requires cancellation request)
       if (isPostPaymentTask) {
-        console.log('📝 Creating cancellation REQUEST for post-payment task');
         await createCancellationRequestMutation.mutateAsync({ 
           taskId: task._id,
           reason: reasonText
         });
         
-        console.log('✅ Cancellation request created successfully');
-        console.log('   Task should stay in Accepted tab with pending request indicator');
         
         // Close modal and reset state
         setShowPosterCancelModal(false);
@@ -574,14 +440,12 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         );
       } else {
         // Pre-payment task - use legacy direct cancellation
-        console.log('❌ Direct cancellation for pre-payment task');
         await cancelTaskMutation.mutateAsync({ 
           taskId: task._id,
           reason: reasonText,
           reasonId: reasonId
         });
         
-        console.log('✅ Task cancelled successfully via API');
         
         // Close modal and reset state
         setShowPosterCancelModal(false);
@@ -601,11 +465,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         );
       }
       
-      console.log('✅ Cancellation completed');
     } catch (error: any) {
       // Silent network error handling - only log if not a network error
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Task cancellation failed:', error?.message);
       }
       
       // Close modal on error
@@ -646,7 +508,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     }
     
     if (cancelTaskMutation.isPending || createCancellationRequestMutation.isPending || isProcessing) {
-      console.log('🛡️ Cancel operation already in progress');
       return;
     }
     
@@ -655,22 +516,14 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       const reasonText = selectedCancelReasonData.reason;
       const reasonId = selectedCancelReasonData._id;
       
-      console.log('❌ Tasker cancelling task:', task._id);
-      console.log('   Is post-payment task:', isPostPaymentTask);
-      console.log('   Reason:', reasonText);
-      console.log('   Reason ID:', reasonId);
-      console.log('   Reason Index:', selectedCancelReason);
       
       if (isPostPaymentTask) {
         // Post-payment task - create cancellation REQUEST
-        console.log('📤 Creating cancellation request (post-payment task)');
         await createCancellationRequestMutation.mutateAsync({ 
           taskId: task._id,
           reason: reasonText
         });
         
-        console.log('✅ Cancellation request created successfully');
-        console.log('   Task should stay in Todoo tab with pending request indicator');
         
         // Close modal and reset state
         setShowTaskerCancelModal(false);
@@ -690,17 +543,14 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           [{ text: 'OK' }]
         );
         
-        console.log('✅ Cancellation request sent to Poster - task stays in Todoo tab');
       } else {
         // Pre-payment task - direct cancellation
-        console.log('❌ Direct task cancellation (pre-payment task)');
         await cancelTaskMutation.mutateAsync({ 
           taskId: task._id,
           reason: reasonText,
           reasonId: reasonId
         });
         
-        console.log('✅ Task cancelled successfully via API');
         
         // Close modal and reset state
         setShowTaskerCancelModal(false);
@@ -719,12 +569,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           [{ text: 'OK' }]
         );
         
-        console.log('✅ Task moved to Cancelled tab');
       }
     } catch (error: any) {
       // Silent network error handling - only log if not a network error
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Task cancellation failed:', error?.message);
       }
       
       // Close modal on error
@@ -761,7 +609,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   };
 
   const handleViewReceipt = useCallback(() => {
-    console.log('📄 Viewing payment receipt for task:', task._id);
     
     // Get tasker and poster names
     const taskerName = (task as any).assignedTo?.firstName 
@@ -816,25 +663,21 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   const handleAcceptCancellation = async () => {
     if (!pendingCancellationRequest?._id) {
-      console.warn('⚠️ No pending cancellation request found');
       setShowCancelRequestModal(false);
       return;
     }
 
     if (respondToCancellationRequestMutation.isPending) {
-      console.log('🛡️ Response already in progress');
       return;
     }
 
     try {
-      console.log('✅ Accepting cancellation request:', pendingCancellationRequest._id);
       
       await respondToCancellationRequestMutation.mutateAsync({
         requestId: pendingCancellationRequest._id,
         action: 'accept'
       });
 
-      console.log('✅ Cancellation request accepted successfully');
 
       // Close modal first
       setShowCancelRequestModal(false);
@@ -855,7 +698,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       );
     } catch (error: any) {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Accept cancellation failed:', error?.message);
       }
 
       // Show error message
@@ -870,25 +712,21 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   const handleRejectCancellation = async () => {
     if (!pendingCancellationRequest?._id) {
-      console.warn('⚠️ No pending cancellation request found');
       setShowCancelRequestModal(false);
       return;
     }
 
     if (respondToCancellationRequestMutation.isPending) {
-      console.log('🛡️ Response already in progress');
       return;
     }
 
     try {
-      console.log('❌ Rejecting cancellation request:', pendingCancellationRequest._id);
       
       await respondToCancellationRequestMutation.mutateAsync({
         requestId: pendingCancellationRequest._id,
         action: 'reject'
       });
 
-      console.log('✅ Cancellation request rejected successfully');
 
       // Close modal
       setShowCancelRequestModal(false);
@@ -901,7 +739,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       );
     } catch (error: any) {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Reject cancellation failed:', error?.message);
       }
 
       // Show error message
@@ -918,13 +755,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const handleAcceptOffer = async (offerId: string, taskerId: string) => {
     try {
       setIsProcessing(true);
-      console.log('✅ Preparing to accept offer with payment:', { 
-        taskId: task._id, 
-        offerId, 
-        taskerId,
-        offerExists: !!offerId,
-        taskerExists: !!taskerId 
-      });
       
       if (!offerId || !taskerId) {
         throw new Error('Missing offer ID or tasker ID');
@@ -944,15 +774,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       });
       setShowPaymentModal(true);
       
-      console.log('💳 Opening payment modal for offer:', {
-        offerId,
-        amount: offer.amount || offer.offer?.amount,
-        currency: offer.currency || offer.offer?.currency
-      });
       
     } catch (error: any) {
       if (!isNetworkError(error) && __DEV__) {
-        console.warn('⚠️ Offer acceptance preparation failed:', error?.message);
       }
       Alert.alert('Error', 'Failed to prepare payment. Please try again.');
     } finally {
@@ -967,7 +791,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   };
 
   const handleViewOffers = () => {
-    console.log('📋 Viewing offers for task:', task._id);
     setShowOffersModal(true);
   };
 
@@ -1005,11 +828,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     if (typeof location === 'string') {
       try {
         const parsed = JSON.parse(location);
-        console.log('📍 TaskCard: Parsed stringified location:', parsed);
         return parsed;
       } catch {
         // If parsing fails, treat it as plain address string
-        console.warn('⚠️ TaskCard: Could not parse location string:', location);
         return { address: location, coordinates: {} };
       }
     }
@@ -1035,7 +856,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     // Clean up any JSON remnants from address
     let cleanAddress = address;
     if (typeof address === 'string' && (address.includes('{') || address.includes('"coordinates"'))) {
-      console.warn('⚠️ TaskCard: Address contains JSON remnants:', address);
       // Try to extract just the address part
       const match = address.match(/"address":"([^"]+)"/);
       if (match) {
@@ -1074,16 +894,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     (task.budget ? formatCurrency(task.budget, userCurrencyInfo) : 
     `${userCurrencyInfo.symbol}0.00`);
     
-  console.log('💰 TaskCard currency info:', {
-    taskId: task._id.substring(0, 8),
-    userCountry: countryInfo.countryName,
-    userCurrency: userCurrencyInfo.code,
-    userSymbol: userCurrencyInfo.symbol,
-    taskLocation: task.location?.address,
-    taskCurrency: taskLocationCurrencyInfo.code,
-    originalBudget: task.budget,
-    formattedBudget: formattedBudgetDisplay
-  });
 
   return (
     <View style={styles.card} pointerEvents="auto">
@@ -1092,7 +902,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         style={styles.cardContent}
         activeOpacity={0.7}
         onPress={() => {
-          console.log('📋 Card pressed, navigating to task detail:', task._id);
           router.push(`/task-detail?taskId=${task._id}`);
         }}
       >
@@ -1807,18 +1616,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               data={task.offers || []}
               keyExtractor={(offer) => offer._id}
               renderItem={({ item: offer }) => {
-                // Debug logging for offer structure
-                console.log('🔍 [TaskCard] Offer data structure:', {
-                  offerId: offer._id,
-                  taskId: task._id,
-                  taskTitle: task.title,
-                  taskTakerId: offer.taskTakerId, // This might be undefined
-                  taskTaker: offer.taskTaker, // This is the actual user data
-                  offerAmount: offer.amount, // Direct property, not nested
-                  offerCurrency: offer.currency, // Direct property
-                  offerMessage: offer.message, // Direct property
-                  fullOffer: offer
-                });
                 
                 // Get user data from offer
                 const offerUser = offer.taskTaker || offer.taskTakerId;

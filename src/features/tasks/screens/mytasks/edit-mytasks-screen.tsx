@@ -55,15 +55,10 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   
   const taskId = route?.params?.taskId || params.taskId;
 
-  console.log('📝 Edit Task Screen - Task ID:', taskId);
-  console.log('📝 Edit Task Screen - Task Data:', JSON.stringify(taskData, null, 2));
-  console.log('📝 Edit Task Screen - Location field:', taskData?.location);
-  console.log('📝 Edit Task Screen - Location type:', typeof taskData?.location);
 
   // Map task data to form fields - MEMOIZED to prevent recreation
   const initialLocation = useMemo(() => {
     if (!taskData?.location) {
-      console.log('📍 No location data in taskData');
       return null;
     }
     
@@ -71,11 +66,8 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     let locationData = taskData.location;
     if (typeof locationData === 'string') {
       try {
-        console.log('📍 Location is a string, attempting to parse:', locationData);
         locationData = JSON.parse(locationData);
-        console.log('📍 Parsed location:', locationData);
       } catch (e) {
-        console.error('📍 Failed to parse location string:', e);
         // If it's just a plain address string, use it as-is
         return {
           address: locationData,
@@ -84,47 +76,39 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
       }
     }
     
-    console.log('📍 Raw location data:', JSON.stringify(locationData, null, 2));
     
     let lat = 0, lng = 0;
     const coords = locationData.coordinates;
     
     if (coords) {
-      console.log('📍 Coordinates object:', JSON.stringify(coords, null, 2));
       
       // Check for GeoJSON format: { type: "Point", coordinates: [lng, lat] }
       if (coords.type === 'Point' && Array.isArray(coords.coordinates)) {
         lng = coords.coordinates[0];
         lat = coords.coordinates[1];
-        console.log('📍 Parsed GeoJSON format: lat=', lat, 'lng=', lng);
       }
       // Check for nested coordinates: { coordinates: [lng, lat] }
       else if ('coordinates' in coords && Array.isArray(coords.coordinates)) {
         lng = coords.coordinates[0];
         lat = coords.coordinates[1];
-        console.log('📍 Parsed nested array format: lat=', lat, 'lng=', lng);
       }
       // Check for object format: { lat: number, lng: number }
       else if ('lat' in coords && 'lng' in coords) {
         lat = coords.lat;
         lng = coords.lng;
-        console.log('📍 Parsed object format: lat=', lat, 'lng=', lng);
       }
       // Check if coords itself is an array: [lng, lat]
       else if (Array.isArray(coords)) {
         lng = coords[0];
         lat = coords[1];
-        console.log('📍 Parsed direct array format: lat=', lat, 'lng=', lng);
       }
     }
     
     const address = locationData.address || '';
-    console.log('📍 Final parsed location:', { address, lat, lng });
     
     // Additional validation - if address is still JSON-like, extract just the address field
     let cleanAddress = address;
     if (typeof address === 'string' && (address.includes('{') || address.includes('coordinates'))) {
-      console.warn('📍 Address appears to contain JSON remnants:', address);
       try {
         const parsed = JSON.parse(address);
         cleanAddress = parsed.address || address;
@@ -133,7 +117,6 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
         const match = address.match(/"address":"([^"]+)"/);
         if (match) {
           cleanAddress = match[1];
-          console.log('📍 Extracted address from malformed JSON:', cleanAddress);
         }
       }
     }
@@ -349,11 +332,9 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
         const imageUri = result.assets[0].uri;
         
         // ✅ Validate with OCR API
-        console.log('🔍 Validating image with OCR API:', imageUri);
         const validation = await OCRAPI.validateImageForUpload(imageUri);
         
         if (!validation.isValid) {
-          console.warn('❌ Image contains sensitive data:', validation.reason);
           Alert.alert(
             'Sensitive Data Detected',
             `This image contains sensitive information and cannot be uploaded:
@@ -366,11 +347,9 @@ Please remove phone numbers and addresses from the image.`,
           return;
         }
         
-        console.log('✅ Image passed OCR validation');
         setImages(prevImages => [...prevImages, imageUri]);
       }
     } catch (error) {
-      console.error('Error selecting image:', error);
       Alert.alert('Error', 'Failed to select image. Please try again.');
     }
   };
@@ -382,13 +361,11 @@ Please remove phone numbers and addresses from the image.`,
 
   // Location handlers - MEMOIZED
   const handleLocationSelect = useCallback((location: LocationData) => {
-    console.log('📍 Location selected:', location);
     setSelectedLocation(location);
     setTouched(prev => ({ ...prev, location: true }));
   }, []);
 
   const handleLocationFocus = useCallback(() => {
-    console.log('📍 Location field focused');
     if (locationSectionRef.current && scrollViewRef.current) {
       setTimeout(() => {
         locationSectionRef.current?.measureLayout(
@@ -404,7 +381,6 @@ Please remove phone numbers and addresses from the image.`,
 
   // Date picker handlers - MEMOIZED
   const handleDateChange = useCallback((event: DateTimePickerEvent, date?: Date | undefined): void => {
-    console.log('📅 Date picker change:', { event: event.type, date });
     
     if (Platform.OS === 'android') {
       setShowDatePicker(false);
@@ -412,10 +388,8 @@ Please remove phone numbers and addresses from the image.`,
     
     if (event.type === 'set' && date) {
       if (activePickerOption === 'on_time') {
-        console.log('📅 Setting onTimeDate:', date);
         setOnTimeDate(date);
       } else if (activePickerOption === 'before') {
-        console.log('📅 Setting beforeDate:', date);
         setBeforeDate(date);
       }
     }
@@ -428,7 +402,6 @@ Please remove phone numbers and addresses from the image.`,
   }, [activePickerOption]);
 
   const handleOpenPicker = useCallback((pickerType: string) => {
-    console.log('📅 Opening date picker:', pickerType);
     setActivePickerOption(pickerType);
     setShowDatePicker(true);
   }, []);
@@ -572,26 +545,13 @@ Please remove phone numbers and addresses from the image.`,
       return;
     }
 
-    console.log('💾 Saving task:', taskId);
 
     try {
       const selectedDate =
         selectedOption === 'on_time' ? onTimeDate : selectedOption === 'before' ? beforeDate : null;
 
-      console.log('\n🔨 EDIT TASK: Building update request...');
-      console.log('📝 EDIT TASK: Current form values:');
-      console.log('  - Title:', title);
-      console.log('  - Description:', description);
-      console.log('  - Budget:', budget);
-      console.log('  - Location:', selectedLocation?.address);
-      console.log('  - Category:', selectedCategory);
-      console.log('  - Date option:', selectedOption);
-      console.log('  - Selected date:', selectedDate);
-      console.log('  - Time block:', selectedTimeBlock);
-
       // Get currency code from location using utility function
       const currencyInfo = getCurrencyFromLocation(selectedLocation || undefined);
-      console.log('💰 EDIT TASK: Currency info:', currencyInfo);
 
       // Prepare the update request body matching backend API expectations
       const updateRequest: any = {
@@ -604,10 +564,6 @@ Please remove phone numbers and addresses from the image.`,
         dateType: selectedOption === 'no_rush' ? 'Easy' : selectedOption === 'on_time' ? 'DoneOn' : 'DoneBy',
       };
       
-      console.log('🗓️ EDIT TASK: Date type mapping:', {
-        selectedOption,
-        mappedDateType: updateRequest.dateType
-      });
 
       // Add location only if it exists (GeoJSON format required by backend)
       if (selectedLocation) {
@@ -618,13 +574,11 @@ Please remove phone numbers and addresses from the image.`,
             coordinates: [selectedLocation.coordinates.lng, selectedLocation.coordinates.lat] // GeoJSON: [longitude, latitude]
           }
         };
-        console.log('📍 EDIT TASK: Location added (GeoJSON format):', updateRequest.location);
       }
 
       // Add category if changed
       if (selectedCategory) {
         updateRequest.category = selectedCategory; // Backend expects singular string
-        console.log('🏷️ EDIT TASK: Category added:', selectedCategory);
       }
 
       // Remove undefined values
@@ -632,13 +586,8 @@ Please remove phone numbers and addresses from the image.`,
         updateRequest[key] === undefined && delete updateRequest[key]
       );
 
-      console.log('\n📤 EDIT TASK: Final update request payload:');
-      console.log(JSON.stringify(updateRequest, null, 2));
       
       // 🖼️ HANDLE IMAGES: Separate new uploads from existing URLs
-      console.log('\n🖼️ EDIT TASK: Processing images...');
-      console.log('🖼️ Current images array:', images);
-      console.log('🖼️ Original existing images:', existingImages);
       
       // Detect which images are new (local file:// URIs) vs existing (https:// Cloudinary URLs)
       const newImageUris = images.filter(img => 
@@ -659,18 +608,11 @@ Please remove phone numbers and addresses from the image.`,
       const imagesWereRemoved = keptExistingImages.length < existingImages.length;
       const shouldReplaceImages = imagesWereRemoved || (imagesChanged && !hasNewImages);
       
-      console.log('🖼️ New image URIs to upload:', newImageUris.length, newImageUris);
-      console.log('🖼️ Existing images to keep:', keptExistingImages.length, keptExistingImages);
-      console.log('🖼️ Has new images:', hasNewImages);
-      console.log('🖼️ Images changed:', imagesChanged);
-      console.log('🖼️ Images were removed:', imagesWereRemoved, `(${existingImages.length} → ${keptExistingImages.length})`);
-      console.log('🖼️ Should replace images:', shouldReplaceImages);
       
       let result;
       
       if (hasNewImages || imagesChanged) {
         // Use updateTaskWithImages for multipart upload
-        console.log('\n🚀 EDIT TASK: Using updateTaskWithImages (with image upload support)...');
         result = await updateTaskWithImagesMutation.mutateAsync({
           taskId: taskId as string,
           updates: updateRequest,
@@ -680,18 +622,13 @@ Please remove phone numbers and addresses from the image.`,
         });
       } else {
         // Use regular updateTask (no images changed)
-        console.log('\n🚀 EDIT TASK: Using regular updateTask (no image changes)...');
         result = await updateTaskMutation.mutateAsync({
           taskId: taskId as string,
           updates: updateRequest
         });
       }
 
-      console.log('\n✅ EDIT TASK: Mutation completed successfully!');
-      console.log('✅ EDIT TASK: API Response:');
-      console.log(JSON.stringify(result, null, 2));
 
-      console.log('\n🎉 EDIT TASK: Showing success alert...');
       
       // Show success message
       Alert.alert(
@@ -701,7 +638,6 @@ Please remove phone numbers and addresses from the image.`,
           {
             text: "OK",
             onPress: () => {
-              console.log('✅ EDIT TASK: User confirmed success, navigating back...');
               router.back();
             }
           }
@@ -709,13 +645,6 @@ Please remove phone numbers and addresses from the image.`,
       );
 
     } catch (error: any) {
-      console.error('\n❌❌❌ EDIT TASK: ERROR OCCURRED ❌❌❌');
-      console.error('❌ EDIT TASK: Error object:', error);
-      console.error('❌ EDIT TASK: Error message:', error?.message);
-      console.error('❌ EDIT TASK: Error stack:', error?.stack);
-      console.error('❌ EDIT TASK: Error response:', error?.response);
-      console.error('❌ EDIT TASK: Error response data:', error?.response?.data);
-      console.error('❌ EDIT TASK: Error status:', error?.response?.status);
       
       let errorMessage = "Failed to update task. Please try again.";
       let errorTitle = "Update Failed";

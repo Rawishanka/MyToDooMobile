@@ -29,17 +29,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
   const offers = taskOffersData?.data?.offers || [];
   
   // Debug logging to check offer structure and user matching
-  console.log('🔍 [useOfferSubmission] Checking existing offers:');
-  console.log('📊 Current user ID:', currentUser?._id);
-  console.log('📝 Total offers found:', offers.length);
   offers.forEach((offer: any, index: number) => {
-    console.log(`📋 Offer ${index + 1}:`, {
-      offerId: offer._id,
-      taskTakerId: offer.taskTakerId?._id,
-      status: offer.status,
-      // Backend returns user info in 'user' field, not 'taskTakerId'
-      isMatch: (offer.user?._id || offer.taskTakerId?._id) === currentUser?._id
-    });
   });
   
   // Check if current user has already made an offer on this task
@@ -53,23 +43,14 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
       const isMatch = takerId && currentUserId && takerId === currentUserId;
       
       if (isMatch) {
-        console.log('✅ Found existing offer from current user:', {
-          offerId: offer._id,
-          status: offer.status,
-          amount: offer.offer?.amount || offer.amount,
-          takerId: takerId,
-          currentUserId: currentUserId
-        });
       }
       return isMatch;
     }
   );
   
-  console.log('🚫 User has existing offer:', userHasExistingOffer);
   
   // Additional safety check - if we can't determine user ID, assume no existing offer to allow functionality
   if (!currentUser?._id) {
-    console.log('⚠️ No current user ID found, allowing offer submission');
   }
 
   const [offerAmount, setOfferAmount] = useState('');
@@ -166,7 +147,6 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
         message: message.trim(),
       };
 
-      console.log("📤 [useOfferSubmission] Submitting offer data:", offerData);
 
       await createOfferMutation.mutateAsync({
         taskId,
@@ -184,7 +164,6 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
         ]
       );
     } catch (error: any) {
-      console.error('Error submitting offer:', error);
       Alert.alert(
         'Failed to Submit Offer',
         error?.message || 'Something went wrong. Please try again.'
