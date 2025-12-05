@@ -10,6 +10,8 @@
 // ✅ Accept offer functionality for task creators
 
 import { getUserRatingStats } from '@/src/api/user-profile-api';
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
@@ -58,14 +60,21 @@ export const OffersList: React.FC<OffersListProps> = ({
 }) => {
   const insets = useSafeAreaInsets();
   
+  // Check if any offer has been accepted
+  const hasAcceptedOffer = offers.some((offer: any) => offer.status === 'accepted');
+  
   // Filter out:
   // 1. The current user's offer (shown separately in MyOfferCard)
   // 2. The offer being displayed in MyOfferCard (if task poster is viewing)
+  // 3. Rejected offers (when one offer is accepted, others are rejected)
   const otherOffers = offers.filter(
     (offer: any) => {
       // Backend returns offer.user._id, fallback to taskTakerId._id
       const offerUserId = offer.user?._id || offer.taskTakerId?._id;
-      return offerUserId !== currentUserId && offer._id !== excludeOfferId;
+      const isNotCurrentUser = offerUserId !== currentUserId && offer._id !== excludeOfferId;
+      const isNotRejected = offer.status !== 'rejected';
+      
+      return isNotCurrentUser && isNotRejected;
     }
   );
 
@@ -102,9 +111,50 @@ export const OffersList: React.FC<OffersListProps> = ({
           taskCreatorId={taskCreatorId}
           currentUserId={currentUserId}
           onAcceptOffer={onAcceptOffer}
+          hasAcceptedOffer={hasAcceptedOffer}
+          isTaskPoster={currentUserId === taskCreatorId}
         />
       )}
     />
+  );
+};
+
+// Component to display offer amount and status
+const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean }> = ({ offer, isTaskPoster }) => {
+  const { countryInfo } = useLocationCountry();
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
+  
+  const offerAmount = offer.offer?.amount || offer.amount || 0;
+  const status = offer.status || 'pending';
+  
+  return (
+    <View style={styles.offerAmountStatusContainer}>
+      {/* Only show amount to task poster, hide from other taskers */}
+      {isTaskPoster && (
+        <View style={styles.offerAmountRow}>
+          <Ionicons name="cash-outline" size={16} color="#004aad" />
+          <Text style={styles.offerAmountText}>
+            {formatCurrency(offerAmount, currencyInfo)}
+          </Text>
+        </View>
+      )}
+      <View style={[
+        styles.offerStatusBadge,
+        status === 'accepted' ? styles.acceptedStatusBadge : styles.pendingStatusBadge
+      ]}>
+        <Ionicons 
+          name={status === 'accepted' ? 'checkmark-circle' : 'time'} 
+          size={14} 
+          color={status === 'accepted' ? '#4CAF50' : '#FFA500'} 
+        />
+        <Text style={[
+          styles.offerStatusText,
+          status === 'accepted' ? styles.acceptedStatusText : styles.pendingStatusText
+        ]}>
+          {status === 'accepted' ? 'Accepted' : 'Pending'}
+        </Text>
+      </View>
+    </View>
   );
 };
 
@@ -114,9 +164,11 @@ interface OfferCardProps {
   taskCreatorId?: string;
   currentUserId?: string;
   onAcceptOffer?: (offerId: string) => void;
+  hasAcceptedOffer?: boolean;
+  isTaskPoster?: boolean;
 }
 
-const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUserId, onAcceptOffer }) => {
+const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUserId, onAcceptOffer, hasAcceptedOffer, isTaskPoster }) => {
   const taskTitle = offer.taskId?.title || 'Task';
   
   // Extract user information
@@ -251,6 +303,9 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                     )}
                   </View>
 
+                  {/* Offer Amount and Status - Only visible to task poster */}
+                  <OfferAmountStatus offer={offer} isTaskPoster={isTaskPoster || false} />
+
                   {/* Rating and Stats Row */}
                   <View style={styles.offerStatsRow}>
                     {isLoadingRatingStats ? (
@@ -317,11 +372,13 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
 
             {/* Accept Offer Button - Only show if:
                 1. Current user is the task creator
-                2. Offer is not already accepted
-                3. onAcceptOffer callback is provided
+                2. This offer is not already accepted
+                3. No other offer has been accepted (hasAcceptedOffer is false)
+                4. onAcceptOffer callback is provided
             */}
             {currentUserId === taskCreatorId && 
              offer.status !== 'accepted' && 
+             !hasAcceptedOffer &&
              onAcceptOffer && (
               <TouchableOpacity 
                 style={styles.acceptOfferButton}
@@ -562,5 +619,47 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     marginLeft: 4,
     fontWeight: '600',
+  },
+  offerAmountStatusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginTop: 6,
+    marginBottom: 6,
+  },
+  offerAmountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginRight: 12,
+  },
+  offerAmountText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#004aad',
+  },
+  offerStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    gap: 4,
+  },
+  acceptedStatusBadge: {
+    backgroundColor: '#E8F5E9',
+  },
+  pendingStatusBadge: {
+    backgroundColor: '#FFF3E0',
+  },
+  offerStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  acceptedStatusText: {
+    color: '#4CAF50',
+  },
+  pendingStatusText: {
+    color: '#FFA500',
   },
 });

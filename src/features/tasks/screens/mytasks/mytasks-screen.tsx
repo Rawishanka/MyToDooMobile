@@ -89,7 +89,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             task={item} 
             status={status}
             userRole={userRole}
-            onPress={(taskId: string) => {
+            onPress={status === 'completed' ? undefined : (taskId: string) => {
               console.log('👁️ Navigating to task-detail with taskId:', taskId);
               console.log('   Task data:', item);
               console.log('   From tab:', status, 'Role:', userRole);
