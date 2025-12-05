@@ -127,10 +127,85 @@ export const validateForm = (formData: SignupFormData): boolean => {
     return false;
   }
 
-  // Phone validation
+  // Phone validation - basic format check
   const phoneRegex = /^[0-9+\-\s()]+$/;
   if (!phoneRegex.test(formData.phone)) {
-    Alert.alert('Error', 'Please enter a valid phone number');
+    Alert.alert('Invalid Mobile Number', 'Please enter a valid mobile number');
+    return false;
+  }
+
+  // Get phone digits only for length validation
+  const phoneDigits = formData.phone.replace(/[^0-9]/g, '');
+  
+  // Country-specific validation for international format
+  // Australia (+61), New Zealand (+64), and Sri Lanka (+94) all require
+  // removing the leading 0 when using international format
+  const countryCode = formData.selectedCountry?.code;
+  
+  // Check for leading 0
+  if (formData.phone.startsWith('0')) {
+    let errorMessage = '';
+    let exampleNumber = '';
+    
+    switch (countryCode) {
+      case 'AU':
+        errorMessage = 'For Australia (+61), please enter your mobile number without the leading 0.';
+        exampleNumber = 'Example: Enter 412345678 instead of 0412345678';
+        break;
+      case 'NZ':
+        errorMessage = 'For New Zealand (+64), please enter your mobile number without the leading 0.';
+        exampleNumber = 'Example: Enter 211234567 instead of 0211234567';
+        break;
+      case 'LK':
+        errorMessage = 'Please enter a valid mobile number';
+        exampleNumber = 'Do not include the leading 0 with country code +94';
+        break;
+      default:
+        // For other countries, if they use international format, the leading 0 should generally be removed
+        errorMessage = `For ${formData.selectedCountry?.name} (${formData.selectedCountry?.phoneCode}), please enter your mobile number without the leading 0.`;
+        exampleNumber = 'The leading 0 is only used for domestic dialing.';
+        break;
+    }
+    
+    Alert.alert('Invalid Mobile Number', `${errorMessage}\n${exampleNumber}`);
+    return false;
+  }
+
+  // Country-specific length validation
+  let minLength = 7;
+  let maxLength = 15;
+  let lengthErrorMessage = 'Please enter a valid mobile number';
+  
+  switch (countryCode) {
+    case 'AU':
+      // Australian mobile numbers are 9 digits (without leading 0)
+      minLength = 9;
+      maxLength = 9;
+      lengthErrorMessage = 'Australian mobile numbers must be 9 digits (e.g., 412345678)';
+      break;
+    case 'NZ':
+      // New Zealand mobile numbers are 8-10 digits (without leading 0)
+      minLength = 8;
+      maxLength = 10;
+      lengthErrorMessage = 'New Zealand mobile numbers must be 8-10 digits (e.g., 211234567)';
+      break;
+    case 'LK':
+      // Sri Lankan mobile numbers are 9 digits (without leading 0)
+      minLength = 9;
+      maxLength = 9;
+      lengthErrorMessage = 'Sri Lankan mobile numbers must be 9 digits (e.g., 771234567)';
+      break;
+    default:
+      // General validation for other countries
+      minLength = 7;
+      maxLength = 15;
+      lengthErrorMessage = 'Please enter a valid mobile number';
+      break;
+  }
+
+  // Validate phone number length
+  if (phoneDigits.length < minLength || phoneDigits.length > maxLength) {
+    Alert.alert('Invalid Mobile Number', lengthErrorMessage);
     return false;
   }
 

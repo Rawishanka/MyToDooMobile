@@ -270,22 +270,34 @@ export const useSignup = () => {
     } catch (error: any) {
       // Parse backend error message for specific issues
       let errorMessage = 'Failed to create account. Please try again.';
+      let errorTitle = 'Sign Up Error';
       
       if (error?.response?.data?.message) {
         const backendMessage = error.response.data.message;
         
-        // Check for specific error patterns
-        if (backendMessage.toLowerCase().includes('phone') && 
+        // Check for phone validation errors
+        if (backendMessage.toLowerCase().includes('validation failed') || 
+            (backendMessage.toLowerCase().includes('phone') && 
+             backendMessage.toLowerCase().includes('invalid'))) {
+          errorTitle = 'Invalid Mobile Number';
+          errorMessage = 'Please enter a valid mobile number';
+        }
+        // Check for phone already registered
+        else if (backendMessage.toLowerCase().includes('phone') && 
             (backendMessage.toLowerCase().includes('already') || 
              backendMessage.toLowerCase().includes('exists') ||
              backendMessage.toLowerCase().includes('registered'))) {
           errorMessage = 'Phone number already registered. Please use a different number or login.';
-        } else if (backendMessage.toLowerCase().includes('email') && 
+        }
+        // Check for email already registered
+        else if (backendMessage.toLowerCase().includes('email') && 
                    (backendMessage.toLowerCase().includes('already') || 
                     backendMessage.toLowerCase().includes('exists') ||
                     backendMessage.toLowerCase().includes('registered'))) {
           errorMessage = 'Email already registered. Please use a different email or login.';
-        } else {
+        }
+        // Default to backend message
+        else {
           errorMessage = backendMessage;
         }
       } else if (error?.message) {
@@ -296,7 +308,7 @@ export const useSignup = () => {
         console.log('ℹ️ Signup failed:', errorMessage);
       }
       
-      Alert.alert('Sign Up Error', errorMessage);
+      Alert.alert(errorTitle, errorMessage);
     } finally {
       setLoading(false);
     }
