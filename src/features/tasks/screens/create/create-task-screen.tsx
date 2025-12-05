@@ -111,6 +111,7 @@ export default function CreateTaskScreen() {
   // Section 2: Images & Location
   const [images, setImages] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isOCRProcessing, setIsOCRProcessing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
 
   // Sync images to store whenever they change
@@ -434,11 +435,13 @@ export default function CreateTaskScreen() {
   // ✅ NEW: Validate image using OCR API for sensitive data
   const validateAndAddImage = async (imageUri: string): Promise<boolean> => {
     try {
+      setIsOCRProcessing(true);
       console.log('🔍 Validating image with OCR API:', imageUri);
       const validation = await OCRAPI.validateImageForUpload(imageUri);
       
       if (!validation.isValid) {
         console.warn('❌ Image contains sensitive data:', validation.reason);
+        setIsOCRProcessing(false);
         Alert.alert(
           'Sensitive Data Detected',
           `This image contains sensitive information and cannot be uploaded:
@@ -453,6 +456,7 @@ Please remove phone numbers and addresses from the image.`,
       
       console.log('✅ Image passed OCR validation - adding to list');
       setImages(prevImages => [...prevImages, imageUri]);
+      setIsOCRProcessing(false);
       return true;
     } catch (error) {
       // Only log non-network errors in development
@@ -461,6 +465,7 @@ Please remove phone numbers and addresses from the image.`,
       }
       // Allow upload if OCR service fails
       setImages(prevImages => [...prevImages, imageUri]);
+      setIsOCRProcessing(false);
       return true;
     }
   };
@@ -647,12 +652,17 @@ Please remove phone numbers and addresses from the image.`,
               <TouchableOpacity
                 key={`upload-${rowIndex}-${itemIndex}`}
                 onPress={showImagePickerOptions}
-                style={[styles.uploadBox, isProcessing && styles.uploadBoxDisabled]}
+                style={[styles.uploadBox, (isProcessing || isOCRProcessing) && styles.uploadBoxDisabled]}
                 activeOpacity={0.7}
-                disabled={isProcessing}
+                disabled={isProcessing || isOCRProcessing}
               >
-                {isProcessing ? (
-                  <Ionicons name="hourglass" size={24} color="#999" />
+                {isProcessing || isOCRProcessing ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="#467FFF" />
+                    {isOCRProcessing && (
+                      <Text style={styles.loadingText}>Checking image...</Text>
+                    )}
+                  </View>
                 ) : (
                   <>
                     <Ionicons name="camera" size={24} color="#467FFF" />
@@ -1433,6 +1443,17 @@ const styles = StyleSheet.create({
   uploadBoxDisabled: {
     opacity: 0.5,
     backgroundColor: '#F8F9FA',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 4,
+  },
+  loadingText: {
+    fontSize: 10,
+    color: '#467FFF',
+    marginTop: 4,
+    textAlign: 'center',
   },
   addIcon: {
     position: 'absolute',
