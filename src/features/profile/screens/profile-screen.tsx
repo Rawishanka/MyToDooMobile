@@ -497,14 +497,47 @@ export default function AccountScreen() {
           {userData?.firstName} {userData?.lastName?.charAt(0)}.
         </Text>
         <Text style={styles.location}>
-          {userData?.location ? 
-            (typeof userData.location === 'string' 
-              ? userData.location 
-              : (userData.location as any).city && (userData.location as any).state 
-                ? `${(userData.location as any).city}, ${(userData.location as any).state}${(userData.location as any).country ? ', ' + (userData.location as any).country : ''}`
-                : 'Location not set'
-            ) 
-            : 'Location not set'}
+          {(() => {
+            if (!userData?.location) return 'Location not set';
+            
+            const loc = userData.location;
+            
+            // Handle string location
+            if (typeof loc === 'string') {
+              return loc.trim() || 'Location not set';
+            }
+            
+            // Handle object location
+            if (typeof loc === 'object') {
+              // Try nested address first (e.g., { address: { city, state, country } })
+              const nested = (loc as any).address;
+              if (nested && typeof nested === 'object') {
+                const parts = [];
+                if (nested.city) parts.push(nested.city);
+                if (nested.state) parts.push(nested.state);
+                if (nested.country) parts.push(nested.country);
+                if (parts.length > 0) return parts.join(', ');
+              }
+              
+              // Try direct properties (e.g., { city, state, country })
+              const parts = [];
+              if ((loc as any).city) parts.push((loc as any).city);
+              if ((loc as any).state) parts.push((loc as any).state);
+              if ((loc as any).country) parts.push((loc as any).country);
+              if (parts.length > 0) return parts.join(', ');
+              
+              // Try suburb or region
+              if ((loc as any).suburb) return (loc as any).suburb;
+              if ((loc as any).region) return (loc as any).region;
+              
+              // Try address string
+              if ((loc as any).address && typeof (loc as any).address === 'string') {
+                return (loc as any).address.trim() || 'Location not set';
+              }
+            }
+            
+            return 'Location not set';
+          })()}
         </Text>
         <TouchableOpacity style={styles.row}>
           <Text style={styles.linkText}>See your public profile</Text>
