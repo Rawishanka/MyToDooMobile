@@ -1,16 +1,18 @@
 import { Task } from '@/src/api/types/tasks';
+import { RatingReviewModal } from '@/src/features/tasks/components/RatingReviewModal';
 import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import {
-    useAcceptOffer,
-    useCancelTask,
-    useCompleteTask,
-    useCompleteTaskPayment,
-    useCreateCancellationRequest,
-    useDeleteTask,
-    useGetCancellationReasons,
-    useGetCancellationRequest,
-    useRespondToCancellationRequest
+  useAcceptOffer,
+  useCancelTask,
+  useCompleteTask,
+  useCompleteTaskPayment,
+  useCreateCancellationRequest,
+  useDeleteTask,
+  useGetCancellationReasons,
+  useGetCancellationRequest,
+  useRespondToCancellationRequest,
+  useSubmitReview
 } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromLocation, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
@@ -46,6 +48,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showOffersModal, setShowOffersModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false); // NEW: Rating & Review modal
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [selectedCancelReason, setSelectedCancelReason] = useState<number | null>(null);
   const [selectedCancelReasonData, setSelectedCancelReasonData] = useState<any | null>(null);
@@ -71,6 +74,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const acceptOfferMutation = useAcceptOffer();
   const completeTaskMutation = useCompleteTask();
   const completeTaskPaymentMutation = useCompleteTaskPayment();
+  const submitReviewMutation = useSubmitReview(); // NEW: Submit review
   
   // Check if there's a pending cancellation request for this task (only for assigned/accepted/completed/cancelled tasks)
   const isPostPaymentTask = status === 'accepted' || status === 'assigned' || status === 'completed' || status === 'todo';
@@ -322,7 +326,18 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         isAcceptedOfferTask ? 
           'Payment has been released and the task has been marked as completed.' : 
           'The task has been marked as completed and moved to the Completed tab.',
-        [{ text: 'OK' }]
+        [{ 
+          text: 'OK',
+          onPress: () => {
+            // POSTER: Show rating modal after task completion
+            if (userRole === 'Poster' && isAcceptedOfferTask) {
+              console.log('⭐ Task completed - now showing rating modal for poster');
+              setTimeout(() => {
+                setShowRatingModal(true);
+              }, 300);
+            }
+          }
+        }]
       );
       
     } catch (error: any) {
@@ -810,9 +825,39 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     } as any);
   }, [task, userRole, router]);
 
-
-
-
+  // ⭐ Handler for submitting review
+  const handleSubmitReview = async (reviewData: {
+    rating: number;
+    reviewText: string;
+    attachments: any[];
+  }) => {
+    try {
+      // Check if poster is skipping the review (rating = 0)
+      const isSkipping = reviewData.rating === 0;
+      
+      if (isSkipping) {
+        console.log('⏭️ Poster skipping review');
+        // Just close modal - task is already completed
+        setShowRatingModal(false);
+      } else {
+        console.log('⭐ Submitting review for task:', task._id);
+        
+        await submitReviewMutation.mutateAsync({
+          taskId: task._id,
+          rating: reviewData.rating,
+          reviewText: reviewData.reviewText,
+          attachments: reviewData.attachments,
+        });
+        
+        console.log('✅ Review submitted successfully');
+        // Close modal after successful review submission
+        setShowRatingModal(false);
+      }
+    } catch (error) {
+      console.error('❌ Failed to submit review:', error);
+      throw error; // Let the modal handle the error display
+    }
+  };
 
   const handleAcceptCancellation = async () => {
     if (!pendingCancellationRequest?._id) {
@@ -1250,24 +1295,44 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       {/* Action Buttons - Separate from Card Content */}
       <View style={styles.actionButtons} pointerEvents="box-none">
         {status === 'completed' && userRole === 'Tasker' ? (
-          // Completed tab (Tasker): View Receipt button
-          <TouchableOpacity 
-            style={[
-              styles.actionButton,
-              styles.receiptButton,
-              isProcessing && styles.disabledButton
-            ]} 
-            activeOpacity={0.6}
-            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            onPress={handleViewReceipt}
-            disabled={isProcessing}
-          >
-            <MaterialIcons 
-              name="receipt" 
-              size={20} 
-              color={isProcessing ? "#999" : "#007AFF"} 
-            />
-          </TouchableOpacity>
+          // Completed tab (Tasker): Add Rating & Review button + View Receipt button
+          <>
+            <TouchableOpacity 
+              style={[
+                styles.actionButton,
+                styles.reviewButton,
+                isProcessing && styles.disabledButton
+              ]} 
+              activeOpacity={0.6}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              onPress={() => setShowRatingModal(true)}
+              disabled={isProcessing}
+            >
+              <MaterialIcons 
+                name="star" 
+                size={20} 
+                color={isProcessing ? "#999" : "#FFD700"} 
+              />
+              
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[
+                styles.actionButton,
+                styles.receiptButton,
+                isProcessing && styles.disabledButton
+              ]} 
+              activeOpacity={0.6}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              onPress={handleViewReceipt}
+              disabled={isProcessing}
+            >
+              <MaterialIcons 
+                name="receipt" 
+                size={20} 
+                color={isProcessing ? "#999" : "#007AFF"} 
+              />
+            </TouchableOpacity>
+          </>
         ) : status === 'completed' && userRole === 'Poster' ? (
           // Completed tab (Poster): View Receipt + Delete button
           <>
@@ -1910,6 +1975,15 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         onClose={handleClosePaymentModal}
         onSuccess={handleClosePaymentModal}
       />
+
+      {/* Rating & Review Modal */}
+      <RatingReviewModal
+        visible={showRatingModal}
+        onClose={() => setShowRatingModal(false)}
+        onSubmit={handleSubmitReview}
+        taskTitle={task.title}
+        userRole={userRole === 'Tasker' ? 'tasker' : 'poster'}
+      />
     </View>
   );
 }
@@ -2317,6 +2391,9 @@ const styles = StyleSheet.create({
   },
   receiptButton: {
     backgroundColor: '#e3f2fd',
+  },
+  reviewButton: {
+    backgroundColor: '#FFF9E6',
   },
   deleteModalContent: {
     backgroundColor: '#fff',

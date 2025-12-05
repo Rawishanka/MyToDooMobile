@@ -11,22 +11,22 @@ import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-    AllOffersResponse,
-    CreateOfferRequest,
-    CreateOfferResponse,
-    CreateTaskRequest,
-    CreateTaskResponse,
-    MyTasksParams,
-    PaymentStatusResponse,
-    SingleTaskResponse,
-    Task,
-    TaskCompletionStatusResponse,
-    TaskFilterParams,
-    TaskFilterResponse,
-    TaskOffersResponse,
-    TaskSearchParams,
-    TasksResponse,
-    UpdateTaskRequest
+  AllOffersResponse,
+  CreateOfferRequest,
+  CreateOfferResponse,
+  CreateTaskRequest,
+  CreateTaskResponse,
+  MyTasksParams,
+  PaymentStatusResponse,
+  SingleTaskResponse,
+  Task,
+  TaskCompletionStatusResponse,
+  TaskFilterParams,
+  TaskFilterResponse,
+  TaskOffersResponse,
+  TaskSearchParams,
+  TasksResponse,
+  UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -3581,6 +3581,122 @@ export async function getUserTasks(userId: string): Promise<{ success: boolean; 
   }
 }
 
+// ⭐ **PHASE 6: REVIEWS & RATINGS**
+
+/**
+ * ⭐ Submit Review for Task
+ * Endpoint: POST /api/tasks/:taskId/reviews
+ * Auth: Required
+ * Content-Type: multipart/form-data
+ */
+export async function submitTaskReview(params: {
+  taskId: string;
+  rating: number;
+  reviewText?: string;
+  attachments?: any[]; // Array of file objects
+}): Promise<{ success: boolean; data: any; message?: string }> {
+  const api = getApi();
+  try {
+    console.log("⭐ Submitting review for task:", params.taskId);
+    
+    // Create FormData for multipart/form-data request
+    const formData = new FormData();
+    formData.append('rating', params.rating.toString());
+    
+    if (params.reviewText) {
+      formData.append('reviewText', params.reviewText);
+    }
+    
+    // Handle file attachments
+    if (params.attachments && params.attachments.length > 0) {
+      console.log(`📎 Adding ${params.attachments.length} attachments to review`);
+      
+      for (const file of params.attachments) {
+        // Each file should have: uri, name, type
+        formData.append('attachments', {
+          uri: file.uri,
+          name: file.name,
+          type: file.type || 'image/jpeg'
+        } as any);
+      }
+    }
+    
+    const response = await api.post(`/tasks/${params.taskId}/reviews`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+    console.log("✅ Submit review success:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Submit review failed:", error);
+    
+    // Extract error message from response
+    const errorMessage = error?.response?.data?.error || 
+                        error?.response?.data?.message || 
+                        'Failed to submit review';
+    
+    throw new Error(errorMessage);
+  }
+}
+
+/**
+ * ⭐ Get Tasker Reviews
+ * Endpoint: GET /api/reviews/tasker
+ * Auth: Required
+ */
+export async function getTaskerReviews(params?: {
+  page?: number;
+  limit?: number;
+}): Promise<{ success: boolean; data: any }> {
+  const api = getApi();
+  try {
+    console.log("⭐ Getting tasker reviews");
+    
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    
+    const url = `/reviews/tasker${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await api.get(url);
+    
+    console.log("✅ Get tasker reviews success:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Get tasker reviews failed:", error);
+    throw error;
+  }
+}
+
+/**
+ * ⭐ Get Poster Reviews
+ * Endpoint: GET /api/reviews/poster
+ * Auth: Required
+ */
+export async function getPosterReviews(params?: {
+  page?: number;
+  limit?: number;
+}): Promise<{ success: boolean; data: any }> {
+  const api = getApi();
+  try {
+    console.log("⭐ Getting poster reviews");
+    
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    
+    const url = `/reviews/poster${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await api.get(url);
+    
+    console.log("✅ Get poster reviews success:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Get poster reviews failed:", error);
+    throw error;
+  }
+}
+
 // 🚀 **EXPORT ALL FUNCTIONS**
 export const TaskAPI = {
   // Phase 1: Core Features
@@ -3635,6 +3751,11 @@ export const TaskAPI = {
   postTaskQuestion,
   answerTaskQuestion,
   getUserTasks,
+  
+  // Phase 6: Reviews & Ratings
+  submitTaskReview,
+  getTaskerReviews,
+  getPosterReviews,
 };
 
 export default TaskAPI;

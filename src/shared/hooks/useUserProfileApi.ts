@@ -1,5 +1,5 @@
 // React Query hooks for user profile management
-import type { RequestReviewRequest, Review, UpdateProfileRequest } from '@/src/api/user-profile-api';
+import type { RequestReviewRequest, UpdateProfileRequest } from '@/src/api/user-profile-api';
 import * as UserProfileAPI from '@/src/api/user-profile-api';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -162,7 +162,7 @@ export function useSubmitUserReview(userId: string) {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (review: Review) => 
+    mutationFn: (review: SubmitReviewData) => 
       UserProfileAPI.submitUserReview(userId, review),
     onSuccess: () => {
       // Invalidate rating stats to refetch updated data
