@@ -23,6 +23,7 @@ export const RemovalLocationInputs: React.FC<RemovalLocationInputsProps> = ({
         <Ionicons name="location-outline" size={20} color="#aaa" style={styles.icon} />
         <TextInput
           placeholder="Enter postal code"
+          placeholderTextColor="#999"
           value={pickupCode}
           onChangeText={onPickupChange}
           style={styles.input}
@@ -35,6 +36,7 @@ export const RemovalLocationInputs: React.FC<RemovalLocationInputsProps> = ({
         <Ionicons name="location-outline" size={20} color="#aaa" style={styles.icon} />
         <TextInput
           placeholder="Enter postal code"
+          placeholderTextColor="#999"
           value={dropoffCode}
           onChangeText={onDropoffChange}
           style={styles.input}

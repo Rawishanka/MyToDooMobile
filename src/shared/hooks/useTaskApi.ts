@@ -44,11 +44,9 @@ export function useGetAllTasks() {
   return useQuery({
     queryKey: TASK_QUERY_KEYS.lists(),
     queryFn: () => TaskAPI.getAllTasks(),
-    staleTime: 1 * 60 * 1000, // 1 minute cache - prevents excessive refetching
-    refetchOnMount: false, // Don't refetch on every mount - use cache
-    refetchOnWindowFocus: false, // Don't refetch on window focus - prevents navigation reset
+    staleTime: 0, // Use global config for real-time updates
+    // refetchOnMount, refetchOnWindowFocus, refetchInterval use global QueryClient config
     refetchOnReconnect: true, // Refetch when network reconnects
-    refetchInterval: false, // Disable automatic polling - use manual refresh instead
   });
 }
 
@@ -60,9 +58,8 @@ export function useGetFilteredTasks(params?: import('@/src/api/types/tasks').Tas
     queryKey: [...TASK_QUERY_KEYS.lists(), 'filtered', params],
     queryFn: () => TaskAPI.getFilteredTasks(params),
     enabled,
-    staleTime: 2 * 60 * 1000, // 2 minutes cache
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    staleTime: 0, // Use global config for real-time updates
+    // refetchOnMount, refetchOnWindowFocus, refetchInterval use global QueryClient config
     refetchOnReconnect: true,
   });
 }
@@ -95,7 +92,7 @@ export function useSearchTasks(params: TaskSearchParams, enabled = true) {
     queryKey: TASK_QUERY_KEYS.list(params),
     queryFn: () => TaskAPI.searchTasks(params),
     enabled: enabled, // Remove the Object.keys condition that was preventing execution
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 0, // Use global config for real-time updates
   });
 }
 
@@ -107,7 +104,7 @@ export function useFilterTasks(params: TaskFilterParams, enabled = true) {
     queryKey: ['tasks', 'filter', params],
     queryFn: () => TaskAPI.filterTasks(params),
     enabled: enabled && Object.keys(params).length > 0,
-    staleTime: 1 * 60 * 1000, // 1 minute - shorter cache for filter results
+    staleTime: 0, // Use global config for real-time updates
     retry: (failureCount, error: any) => {
       // Don't retry on backend routing conflicts (500 errors with ObjectId)
       if (error?.response?.status === 500 && 
@@ -135,9 +132,8 @@ export function useGetMyTasks(params?: MyTasksParams) {
   return useQuery({
     queryKey: TASK_QUERY_KEYS.myTasks(params),
     queryFn: () => TaskAPI.getMyTasks(params),
-    staleTime: 2 * 60 * 1000, // 2 minutes cache
-    refetchOnMount: false, // Don't refetch on mount - preserves screen state
-    refetchOnWindowFocus: false, // Don't refetch on focus - prevents navigation reset
+    staleTime: 0, // Use global config for real-time updates
+    // refetchOnMount, refetchOnWindowFocus, refetchInterval use global QueryClient config
   });
 }
 
@@ -148,9 +144,8 @@ export function useGetMyOffers(params?: MyTasksParams) {
   return useQuery({
     queryKey: TASK_QUERY_KEYS.myOffers(params),
     queryFn: () => TaskAPI.getMyOffers(params),
-    staleTime: 2 * 60 * 1000, // 2 minutes cache
-    refetchOnMount: false, // Don't refetch on mount - preserves screen state
-    refetchOnWindowFocus: false, // Don't refetch on focus - prevents navigation reset
+    staleTime: 0, // Use global config for real-time updates
+    // refetchOnMount, refetchOnWindowFocus, refetchInterval use global QueryClient config
   });
 }
 
@@ -164,7 +159,7 @@ export function useGetTaskById(taskId: string, enabled = true) {
     queryKey: TASK_QUERY_KEYS.detail(taskId),
     queryFn: () => TaskAPI.getTaskById(taskId),
     enabled: enabled && !!taskId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 0, // Use global config for real-time updates
   });
 }
 
@@ -178,7 +173,7 @@ export function useGetTaskOffers(taskId: string, enabled = true) {
     queryKey: TASK_QUERY_KEYS.offers(taskId),
     queryFn: () => TaskAPI.getTaskOffers(taskId),
     enabled: enabled && !!taskId,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 0, // Use global config for real-time updates
   });
 }
 
@@ -197,9 +192,8 @@ export function useGetAllOffers(params?: {
     queryKey: TASK_QUERY_KEYS.allOffers(params?.taskId),
     queryFn: () => TaskAPI.getAllOffers(params),
     enabled: enabled,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    staleTime: 0, // Use global config for real-time updates
+    // refetchOnMount, refetchOnWindowFocus, refetchInterval use global QueryClient config
   });
 }
 
@@ -215,7 +209,7 @@ export function useGetAcceptedOffer(taskId: string, enabled = true) {
       return acceptedOffer ? { data: acceptedOffer } : { data: null };
     },
     enabled: enabled && !!taskId,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 0, // Use global config for real-time updates
   });
 }
 
@@ -229,7 +223,7 @@ export function useGetTaskCompletionStatus(taskId: string, enabled = true) {
     queryKey: TASK_QUERY_KEYS.completionStatus(taskId),
     queryFn: () => TaskAPI.getTaskCompletionStatus(taskId),
     enabled: enabled && !!taskId,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 0, // Use global config for real-time updates
   });
 }
 
@@ -242,7 +236,7 @@ export function useGetPaymentStatus() {
   return useQuery({
     queryKey: TASK_QUERY_KEYS.paymentStatus(),
     queryFn: () => TaskAPI.getPaymentStatus(),
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 0, // Use global config for real-time updates
     retry: (failureCount, error: any) => {
       // Don't retry on 404 (endpoint doesn't exist) or 403/401 (auth issues)
       if (error?.response?.status === 404 || 
@@ -265,9 +259,8 @@ export function useGetTaskerPayments() {
   return useQuery({
     queryKey: [...TASK_QUERY_KEYS.all, 'tasker-payments'],
     queryFn: () => TaskAPI.getTaskerPayments(),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    staleTime: 0, // Use global config for real-time updates
+    // refetchOnMount, refetchOnWindowFocus, refetchInterval use global QueryClient config
   });
 }
 
@@ -278,9 +271,8 @@ export function useGetPosterPayments() {
   return useQuery({
     queryKey: [...TASK_QUERY_KEYS.all, 'poster-payments'],
     queryFn: () => TaskAPI.getPosterPayments(),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    staleTime: 0, // Use global config for real-time updates
+    // refetchOnMount, refetchOnWindowFocus, refetchInterval use global QueryClient config
   });
 }
 
@@ -292,7 +284,7 @@ export function useGetTaskQuestions(taskId: string, enabled = true) {
     queryKey: TASK_QUERY_KEYS.questions(taskId),
     queryFn: () => TaskAPI.getTaskQuestions(taskId),
     enabled: enabled && !!taskId,
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 0, // Use global config for real-time updates
   });
 }
 
@@ -304,8 +296,8 @@ export function useGetAllPublicQuestions(enabled = true) {
     queryKey: [...TASK_QUERY_KEYS.all, 'public-questions'],
     queryFn: () => TaskAPI.getAllPublicQuestions(),
     enabled: enabled,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchOnMount: false,
+    staleTime: 0, // Use global config for real-time updates
+    // refetchOnMount, refetchOnWindowFocus, refetchInterval use global QueryClient config
     retry: (failureCount, error: any) => {
       // Don't retry if it's a 404 or 500 error
       if (error?.response?.status === 404 || error?.response?.status === 500) {
@@ -326,7 +318,7 @@ export function useGetUserTasks(userId: string, enabled = true) {
     queryKey: TASK_QUERY_KEYS.userTasks(userId),
     queryFn: () => TaskAPI.getUserTasks(userId),
     enabled: enabled && !!userId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 0, // Use global config for real-time updates
   });
 }
 

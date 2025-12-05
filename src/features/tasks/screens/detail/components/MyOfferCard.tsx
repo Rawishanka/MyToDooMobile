@@ -37,6 +37,12 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
         <Text style={styles.headerText}>
           {isViewingOthersOffer ? 'Offer' : 'Your Offer'}
         </Text>
+        {status === 'completed' && (
+          <View style={styles.completedBadge}>
+            <Ionicons name="checkmark-done-circle" size={16} color="#2E7D32" />
+            <Text style={styles.completedText}>Completed</Text>
+          </View>
+        )}
         {status === 'accepted' && (
           <View style={styles.acceptedBadge}>
             <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
@@ -73,7 +79,7 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
         )}
 
         {/* Accept Offer Button - Only shown to task poster */}
-        {isTaskPoster && status !== 'accepted' && (
+        {isTaskPoster && status !== 'accepted' && status !== 'completed' && (
           <TouchableOpacity 
             style={styles.acceptOfferButton}
             onPress={() => onAcceptOffer && onAcceptOffer(offer._id)}
@@ -86,7 +92,11 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
         <View style={styles.infoContainer}>
           <Ionicons name="information-circle-outline" size={16} color="#666" />
           <Text style={styles.infoText}>
-            {status === 'accepted' 
+            {status === 'completed'
+              ? isViewingOthersOffer
+                ? 'This task has been completed successfully.'
+                : 'Congratulations! You have successfully completed this task.'
+              : status === 'accepted' 
               ? isViewingOthersOffer
                 ? 'This offer has been accepted.'
                 : 'Congratulations! Your offer has been accepted.' 
@@ -136,6 +146,20 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     fontSize: 12,
     fontWeight: '600',
+    marginLeft: 4,
+  },
+  completedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#C8E6C9',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+  },
+  completedText: {
+    color: '#2E7D32',
+    fontSize: 12,
+    fontWeight: '700',
     marginLeft: 4,
   },
   pendingBadge: {

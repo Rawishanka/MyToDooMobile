@@ -1,13 +1,13 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
+    Alert,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 interface LocationData {
   address: string;
@@ -58,6 +58,7 @@ export const SimpleLocationInput: React.FC<SimpleLocationInputProps> = ({
           value={address}
           onChangeText={setAddress}
           placeholder={placeholder}
+          placeholderTextColor="#999"
           autoCorrect={false}
           autoCapitalize="words"
           returnKeyType="done"

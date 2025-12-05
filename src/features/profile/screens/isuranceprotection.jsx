@@ -15,21 +15,21 @@ export default function InsuranceProtection({ onBack }) {
         {/* Main Insurance Notice */}
         <View style={styles.insuranceNotice}>
           <Text style={styles.insuranceTitle}>
-            Airtasker Insurance including Terms & Conditions have been updated as of July 1, 2024.
+            MyToDoo Insurance including Terms & Conditions have been updated as of July 1, 2024.
           </Text>
         </View>
 
         {/* Summary Section */}
         <View style={styles.summarySection}>
           <Text style={styles.summaryText}>
-            Please note this is a summary of the Airtasker third party liability insurance policy ONLY.
+            Please note this is a summary of the MyToDoo third party liability insurance policy ONLY.
           </Text>
         </View>
 
         {/* Disclaimer Section */}
         <View style={styles.disclaimerSection}>
           <Text style={styles.disclaimerText}>
-            Nothing contained herein is general or personal advice. Furthermore, it is declared and agreed that nothing contained in this summary should be understood to be an implied condition, term or exclusion which forms part of the Insurer Policy terms and conditions or be relied upon in the event of a Claim. Please contact Airtasker for access to the Certificate of Currency and/or Insurance Policy Schedule and/or Policy Wording for information as to the specific coverage, terms, conditions and exclusions afforded by the Insurer Policy and an understanding of such. Please review the{' '}
+            Nothing contained herein is general or personal advice. Furthermore, it is declared and agreed that nothing contained in this summary should be understood to be an implied condition, term or exclusion which forms part of the Insurer Policy terms and conditions or be relied upon in the event of a Claim. Please contact MyToDoo for access to the Certificate of Currency and/or Insurance Policy Schedule and/or Policy Wording for information as to the specific coverage, terms, conditions and exclusions afforded by the Insurer Policy and an understanding of such. Please review the{' '}
             <Text style={styles.linkText}>Privacy Policy</Text> and{' '}
             <Text style={styles.linkText}>Terms and Conditions</Text> for full details.
           </Text>
@@ -40,7 +40,7 @@ export default function InsuranceProtection({ onBack }) {
           <Text style={styles.contactTitle}>Need help?</Text>
           <TouchableOpacity style={styles.contactButton}>
             <Ionicons name="mail-outline" size={20} color="#0052A2" />
-            <Text style={styles.contactButtonText}>Contact Airtasker Support</Text>
+            <Text style={styles.contactButtonText}>Contact MyToDoo Support</Text>
           </TouchableOpacity>
         </View>
 

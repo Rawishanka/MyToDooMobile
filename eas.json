@@ -14,7 +14,7 @@
       },
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://134.199.172.167:5001/api"
+        "EXPO_PUBLIC_API_URL": "https://api.mytodoo.com/api"
       }
     },
     "production": {
@@ -23,7 +23,7 @@
       },
       "env": {
         "_comment": "This URL is set specifically for production builds. For local development, change the .env file instead.",
-        "EXPO_PUBLIC_API_URL": "http://134.199.172.167:5001/api"
+        "EXPO_PUBLIC_API_URL": "https://api.mytodoo.com/api"
       },
       "autoIncrement": true
     }

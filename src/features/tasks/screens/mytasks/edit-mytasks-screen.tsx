@@ -19,6 +19,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -760,6 +761,8 @@ Please remove phone numbers and addresses from the image.`,
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
         <ScrollView
           ref={scrollViewRef}
           style={styles.scrollView}
@@ -1107,6 +1110,8 @@ Please remove phone numbers and addresses from the image.`,
           </View>
         </View>
         </ScrollView>
+          </View>
+        </TouchableWithoutFeedback>
 
         {/* Date Picker */}
         {showDatePicker && (

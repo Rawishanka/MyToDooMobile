@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface SearchBarProps {
@@ -33,6 +32,9 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose }
           autoFocus
           autoCapitalize="none"
           autoCorrect={false}
+          returnKeyType="search"
+          enablesReturnKeyAutomatically={true}
+          blurOnSubmit={false}
         />
         {searchText.length > 0 && (
           <TouchableOpacity onPress={handleClear} style={styles.clearButton}>

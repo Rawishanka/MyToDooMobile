@@ -115,6 +115,9 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
   onLoadMore,
   hasMore = false,
 }) => {
+  // Ensure reviews is always an array
+  const reviewsArray = Array.isArray(reviews) ? reviews : [];
+
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
       <Ionicons name="chatbox-outline" size={48} color="#CCC" />
@@ -138,7 +141,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
     );
   };
 
-  if (!reviews || (reviews.length === 0 && !loading)) {
+  if (reviewsArray.length === 0 && !loading) {
     return renderEmptyState();
   }
 
@@ -146,9 +149,9 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Text style={styles.sectionTitle}>Reviews</Text>
-        {reviews && reviews.length > 0 && (
+        {reviewsArray.length > 0 && (
           <Text style={styles.reviewCount}>
-            {reviews.length} review{reviews.length !== 1 ? 's' : ''}
+            {reviewsArray.length} review{reviewsArray.length !== 1 ? 's' : ''}
           </Text>
         )}
       </View>
@@ -159,7 +162,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled={true}
       >
-        {(reviews || []).map((review) => (
+        {reviewsArray.map((review) => (
           <ReviewItem key={review._id} review={review} />
         ))}
         {renderFooter()}

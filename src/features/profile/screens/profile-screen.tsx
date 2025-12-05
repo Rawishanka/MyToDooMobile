@@ -1,4 +1,6 @@
 import TaskerDashboard from '@/src/features/dashboard/screens/dashboard';
+import PrivacyPolicyScreen from '@/src/features/legal/screens/PrivacyPolicyScreen';
+import TermsConditionsScreen from '@/src/features/legal/screens/TermsConditionsScreen';
 import CommunityGuideLines from '@/src/shared/components/custom_components/community-guidelines';
 import ContactUs from '@/src/shared/components/custom_components/contact-us';
 import EditProfileScreen from '@/src/shared/components/custom_components/editprofilescreen';
@@ -7,7 +9,7 @@ import LegalScreen from '@/src/shared/components/custom_components/legal-screen'
 import Logout from '@/src/shared/components/custom_components/Logout';
 import ProfileUpdateForm from '@/src/shared/components/custom_components/profile-update-form';
 import ZendeskHelp from '@/src/shared/components/custom_components/zendesk-help';
-import { useGetUserProfile, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
+import { useGetUserProfile, useGetUserRatingStats, useGetUserReviews, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
 import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useAuthStore } from '@/src/store/auth-task-store';
@@ -18,7 +20,6 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // Import rating components
-import { useGetUserRatingStats } from '@/src/shared/hooks/useUserProfileApi';
 import { GetMoreReviewsSection } from './user-profile/components/GetMoreReviewsSection';
 import { OverallRatingSection } from './user-profile/components/OverallRatingSection';
 import { ReviewsList } from './user-profile/components/ReviewsList';
@@ -37,6 +38,11 @@ export default function AccountScreen() {
   const [editAccessStatus, setEditAccessStatus] = useState<'locked' | 'pending' | 'approved'>('locked');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
+  
+  // ID Verification request flow states
+  const [idVerificationStatus, setIdVerificationStatus] = useState<'locked' | 'pending' | 'approved'>('locked');
+  const [showIdRequestModal, setShowIdRequestModal] = useState(false);
+  const [showIdPendingModal, setShowIdPendingModal] = useState(false);
 
   // Local state for profile picture preview
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
@@ -52,7 +58,7 @@ export default function AccountScreen() {
   //  **NEW: Get real user data from API**
   const { data: userProfileData, isLoading: isLoadingProfile, error: profileError, refetch } = useGetUserProfile();
   const { mutate: uploadAvatar, isPending: isUploadingAvatar } = useUploadUserAvatar();
-  const { user: authUser, isAuthenticated, token } = useAuthStore();
+  const { user: authUser, isAuthenticated, token, clearAuth } = useAuthStore();
 
   // **Get rating data for the current user**
   const userId = authUser?._id || authUser?.id || '';
@@ -61,6 +67,30 @@ export default function AccountScreen() {
     isLoading: ratingLoading,
     error: ratingError,
   } = useGetUserRatingStats(userId, !!userId);
+
+  // **Debug: Log rating data to understand the issue**
+  React.useEffect(() => {
+    if (ratingData) {
+      console.log('📊 ===== RATING DATA DEBUG =====');
+      console.log('📊 Average Rating:', ratingData.averageRating);
+      console.log('📊 Total Reviews:', ratingData.totalReviews);
+      console.log('📊 Rating Distribution:', ratingData.ratingDistribution);
+      console.log('📊 As Poster:', ratingData.asPoster);
+      console.log('📊 As Tasker:', ratingData.asTasker);
+      console.log('📊 ===========================');
+      
+      // Calculate total reviews from asPoster + asTasker
+      const totalFromRoles = (ratingData.asPoster?.totalReviews || 0) + (ratingData.asTasker?.totalReviews || 0);
+      console.log('📊 Total from Roles (poster + tasker):', totalFromRoles);
+    }
+  }, [ratingData]);
+
+  // **Get reviews for the current user**
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const {
+    data: reviewsData,
+    isLoading: reviewsLoading,
+  } = useGetUserReviews(userId, reviewsPage, 10, undefined, !!userId);
 
   // 🔄 **Force profile refetch when user changes**
   React.useEffect(() => {
@@ -116,12 +146,37 @@ export default function AccountScreen() {
   let userData: any = userProfileData;
 
   // 🚨 **PREVENT CACHE PERSISTENCE: Multiple validation layers**
+  // Check if we have authentication error (401, token expired, etc.)
+  const isAuthError = profileError && (
+    (profileError as any)?.response?.status === 401 ||
+    (profileError as any)?.isAuthError ||
+    (profileError as any)?.message?.includes('Not authenticated') ||
+    (profileError as any)?.message?.includes('token')
+  );
+
+  // If auth error detected, clear auth and redirect
+  React.useEffect(() => {
+    if (isAuthError) {
+      console.log("❌ Authentication error detected - clearing auth and redirecting to login");
+      clearAuth().then(() => {
+        router.replace('/(auth)/login');
+      });
+    }
+  }, [isAuthError]);
+
   // 1. No authentication = no data
   // 2. API error = no data  
   // 3. Mismatched user = no data
-  if (!isAuthenticated || !token || !authUser?._id) {
-    console.log("⚠️ Not authenticated - no profile data");
-    userData = null;
+  if (!isAuthenticated || !token) {
+    console.log("⚠️ Not authenticated - redirecting to login");
+    router.replace('/(auth)/login');
+    return null;
+  } else if (!authUser?._id && !isLoadingProfile) {
+    console.log("⚠️ No user data in auth store - clearing auth");
+    clearAuth().then(() => {
+      router.replace('/(auth)/login');
+    });
+    return null;
   } else if (profileError && !userData) {
     console.log("⚠️ Profile API error - no profile data to prevent cache persistence");
     userData = null;
@@ -154,14 +209,13 @@ export default function AccountScreen() {
     } : undefined
   });
 
-  // 🚨 **EARLY RETURN: Show auth error if not properly authenticated**
-  if (!isAuthenticated || !token || !authUser) {
-    console.log("❌ Authentication error - not retrying profile fetch");
+  // 🚨 **Show loading while fetching profile data**
+  if (isLoadingProfile) {
+    console.log("⏳ Loading profile data...");
     return (
-      <View style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Please sign in to view your profile</Text>
-        </View>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0052A2" />
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
   }
@@ -255,26 +309,37 @@ export default function AccountScreen() {
   }
 
   // Handle error state - but only if we're authenticated and have an error
-  if ((profileError && !userData && isAuthenticated && token) || (!isAuthenticated || !token)) {
+  if (profileError && !userData && isAuthenticated && token) {
+    // Check if this is an authentication error (401 or token expired)
+    const isAuthError = (profileError as any)?.isAuthError || 
+                        (profileError as any)?.isTokenExpired ||
+                        (profileError as any)?.status === 401 ||
+                        (profileError as any)?.response?.status === 401;
+    
+    // If it's an auth error, show loading state while API interceptor handles auto-logout
+    if (isAuthError) {
+      console.log("⏳ Auth error detected - waiting for auto-logout redirect...");
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0052A2" />
+          <Text style={styles.loadingText}>Signing out...</Text>
+        </View>
+      );
+    }
+    
+    // For non-auth errors, show the error UI
     return (
       <View style={styles.errorContainer}>
         <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
-        <Text style={styles.errorTitle}>
-          {!isAuthenticated || !token ? "Please log in" : "Failed to load profile"}
-        </Text>
+        <Text style={styles.errorTitle}>Failed to load profile</Text>
         <Text style={styles.errorSubtitle}>
-          {!isAuthenticated || !token 
-            ? "You need to be logged in to view your profile."
-            : "Could not load your profile. Please check your connection and try again."
-          }
+          Could not load your profile. Please check your connection and try again.
         </Text>
         <TouchableOpacity 
           style={styles.retryButton} 
-          onPress={() => isAuthenticated && token ? refetch() : router.push('/(auth)/login')}
+          onPress={() => refetch()}
         >
-          <Text style={styles.retryButtonText}>
-            {!isAuthenticated || !token ? "Go to Login" : "Try Again"}
-          </Text>
+          <Text style={styles.retryButtonText}>Try Again</Text>
         </TouchableOpacity>
       </View>
     );
@@ -315,19 +380,17 @@ export default function AccountScreen() {
   };
 
   const navigateToProfileUpdate = () => {
-    // Check if profile editing is locked
+    // Check edit access status
     if (editAccessStatus === 'locked') {
+      // Show request modal if locked
       setShowRequestModal(true);
-      return;
-    }
-    
-    if (editAccessStatus === 'pending') {
+    } else if (editAccessStatus === 'pending') {
+      // Show pending modal if already requested
       setShowPendingModal(true);
-      return;
+    } else {
+      // Only allow editing if approved
+      setCurrentScreen('profile-update');
     }
-    
-    // If approved, allow editing
-    setCurrentScreen('profile-update');
   };
 
   const handleSendRequest = () => {
@@ -350,6 +413,14 @@ export default function AccountScreen() {
     setCurrentScreen('community-guidelines');
   };
 
+  const navigateToPrivacyPolicy = () => {
+    setCurrentScreen('privacy-policy');
+  };
+
+  const navigateToTermsConditions = () => {
+    setCurrentScreen('terms-conditions');
+  };
+
   const navigateToLegalScreen = () => {
     setCurrentScreen('legal');
   };
@@ -363,7 +434,29 @@ export default function AccountScreen() {
   };
 
   const navigateToIDVerification = () => {
-    setCurrentScreen('id-verification');
+    // Check ID verification access status
+    if (idVerificationStatus === 'locked') {
+      // Show request modal if locked
+      setShowIdRequestModal(true);
+    } else if (idVerificationStatus === 'pending') {
+      // Show pending modal if already requested
+      setShowIdPendingModal(true);
+    } else {
+      // Only allow ID verification if approved
+      setCurrentScreen('id-verification');
+    }
+  };
+
+  const handleSendIdVerificationRequest = () => {
+    setShowIdRequestModal(false);
+    // TODO: Send request to backend API
+    // For now, just update the status to pending
+    setIdVerificationStatus('pending');
+    
+    // Show pending modal
+    setTimeout(() => {
+      setShowIdPendingModal(true);
+    }, 300);
   };
 
   // If profile update screen is selected, show profile update form
@@ -426,6 +519,14 @@ export default function AccountScreen() {
 
   if (currentScreen === 'community-guidelines') {
     return <CommunityGuideLines visible={true} onClose={navigateToAccount} />;
+  }
+
+  if (currentScreen === 'privacy-policy') {
+    return <PrivacyPolicyScreen onBack={navigateToAccount} />;
+  }
+
+  if (currentScreen === 'terms-conditions') {
+    return <TermsConditionsScreen onBack={navigateToAccount} />;
   }
 
   if (currentScreen === 'legal') {
@@ -550,13 +651,32 @@ export default function AccountScreen() {
             </View>
           ) : ratingData ? (
             <>
-              <OverallRatingSection
-                averageRating={ratingData?.averageRating ?? userData?.rating ?? 0}
-                totalReviews={ratingData?.totalReviews || 0}
-                ratingDistribution={ratingData?.ratingDistribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
-                completionRate={90} // Default completion rate since it's not in this stats object
-                totalTasks={userData?.completedTasks ?? 0}
-              />
+              {(() => {
+                // Calculate actual total reviews (use asPoster + asTasker if main totalReviews is 0)
+                const actualTotalReviews = ratingData.totalReviews > 0 
+                  ? ratingData.totalReviews 
+                  : (ratingData.asPoster?.totalReviews || 0) + (ratingData.asTasker?.totalReviews || 0);
+                
+                console.log('📊 Displaying Total Reviews:', actualTotalReviews);
+                
+                return (
+                  <OverallRatingSection
+                    averageRating={ratingData?.averageRating ?? userData?.rating ?? 0}
+                    totalReviews={actualTotalReviews}
+                    ratingDistribution={ratingData?.ratingDistribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
+                    completionRate={
+                      // If we have both completed tasks and reviews, calculate review rate
+                      // Otherwise, if we have completed tasks, assume high completion rate
+                      userData?.completedTasks && userData.completedTasks > 0
+                        ? actualTotalReviews > 0
+                          ? Math.min(Math.round((actualTotalReviews / userData.completedTasks) * 100), 100)
+                          : 95 // Default high completion rate if tasks exist but no reviews yet
+                        : 0
+                    }
+                    totalTasks={userData?.completedTasks ?? 0}
+                  />
+                );
+              })()}
               
               <GetMoreReviewsSection 
                 userId={userId}
@@ -564,10 +684,14 @@ export default function AccountScreen() {
               />
               
               <ReviewsList
-                reviews={[]} // Reviews will be handled separately
-                loading={false}
-                onLoadMore={() => {}}
-                hasMore={false}
+                reviews={reviewsData?.reviews ?? []}
+                loading={reviewsLoading}
+                onLoadMore={() => {
+                  if (reviewsData?.pagination?.hasMore) {
+                    setReviewsPage((prev) => prev + 1);
+                  }
+                }}
+                hasMore={reviewsData?.pagination?.hasMore ?? false}
               />
             </>
           ) : userData ? (
@@ -599,17 +723,26 @@ export default function AccountScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>PROFILE</Text>
         <MenuItem 
-          icon={<Ionicons name="person-outline" size={20} color={editAccessStatus === 'approved' ? "#0052A2" : "#999"} />}
+          icon={<Ionicons name="person-outline" size={20} color="#0052A2" />}
           text="Edit Profile"
           onPress={navigateToProfileUpdate} 
-          subtext={editAccessStatus === 'locked' ? "Editing is disabled until approved by admin" : editAccessStatus === 'pending' ? "Request pending approval" : "Update your personal information"}
-          disabled={editAccessStatus !== 'approved'}
+          subtext={editAccessStatus === 'locked' 
+            ? "Request access to edit" 
+            : editAccessStatus === 'pending' 
+            ? "Pending admin approval" 
+            : "Update your personal information"}
+          disabled={false}
         />
         <MenuItem 
           icon={<Ionicons name="shield-checkmark-outline" size={20} color="#0052A2" />}
           text="ID Verification"
           onPress={navigateToIDVerification} 
-          subtext={userData?.isVerified ? "Identity verified" : "Verify your identity to build trust"}        
+          subtext={idVerificationStatus === 'locked'
+            ? "Request access to verify"
+            : idVerificationStatus === 'pending'
+            ? "Pending admin approval"
+            : userData?.isVerified ? "Identity verified" : "Verify your identity to build trust"}
+          disabled={false}
         />
         
         <Text style={styles.sectionTitle}>ACCOUNT SETTINGS</Text>
@@ -681,19 +814,27 @@ export default function AccountScreen() {
           onPress={navigateToContactUs}        
         />
 
-        <Text style={styles.sectionTitle}>SAFETY</Text>
+        <Text style={styles.sectionTitle}>LEGAL & SAFETY</Text>
         <MenuItem 
           icon={<Ionicons name="shield-outline" size={20} color="#0052A2" />}
-          text="Insurance Protection" 
-          subtext={undefined} 
+          text="Insurance protection" 
+          subtext="Learn about coverage and terms" 
           onPress={navigateToInsuranceProtection}        
         />
         <MenuItem 
           icon={<Ionicons name="document-text-outline" size={20} color="#0052A2" />}
-          text="Legal" 
-          subtext={undefined} 
-          onPress={navigateToLegalScreen}        
+          text="Privacy policy" 
+          subtext="How we handle your data" 
+          onPress={navigateToPrivacyPolicy}        
         />
+        <MenuItem 
+          icon={<Ionicons name="shield-checkmark-outline" size={20} color="#0052A2" />}
+          text="Terms & conditions" 
+          subtext="Platform usage agreement" 
+          onPress={navigateToTermsConditions}        
+        />
+        
+        <Text style={styles.sectionTitle}>ACCOUNT</Text>
         <MenuItem 
           icon={<Ionicons name="log-out-outline" size={20} color="#0052A2" />}
           text="Logout" 
@@ -770,6 +911,79 @@ export default function AccountScreen() {
             
             <Text style={styles.modalFooterText}>
               Usually takes 24-48 hours
+            </Text>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ID Verification Request Access Modal */}
+      <Modal
+        visible={showIdRequestModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowIdRequestModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Request ID Verification Access</Text>
+            <Text style={styles.modalMessage}>
+              ID Verification requires admin approval. Send a request to admin to enable ID verification?
+            </Text>
+            <Text style={styles.modalSubMessage}>
+              Admin will review your request and grant access.
+            </Text>
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={styles.modalCancelButton}
+                onPress={() => setShowIdRequestModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.modalSendButton}
+                onPress={handleSendIdVerificationRequest}
+              >
+                <Text style={styles.modalSendText}>Send Request</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ID Verification Pending Approval Modal */}
+      <Modal
+        visible={showIdPendingModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowIdPendingModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.pendingIconContainer}>
+              <Ionicons name="shield-checkmark" size={48} color="#0052A2" />
+            </View>
+            
+            <Text style={styles.modalTitle}>Verification Request Sent!</Text>
+            <Text style={styles.modalMessage}>
+              Waiting for admin approval to proceed with ID verification.
+            </Text>
+            
+            <View style={styles.pendingBadge}>
+              <View style={styles.pendingDot} />
+              <Text style={styles.pendingText}>Pending Admin Approval</Text>
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.backToProfileButton}
+              onPress={() => setShowIdPendingModal(false)}
+            >
+              <Text style={styles.backToProfileText}>Back to Profile</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.modalFooterText}>
+              You'll be notified when approved (Usually 24-48 hours)
             </Text>
           </View>
         </View>

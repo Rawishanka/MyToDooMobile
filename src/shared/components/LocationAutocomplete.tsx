@@ -4,14 +4,14 @@ import axios from 'axios';
 import * as Location from 'expo-location';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 export interface Coordinates {
@@ -481,6 +481,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           value={query}
           onChangeText={handleInputChange}
           placeholder={dynamicPlaceholder}
+          placeholderTextColor="#999"
           autoCorrect={false}
           autoCapitalize="words"
           returnKeyType="search"

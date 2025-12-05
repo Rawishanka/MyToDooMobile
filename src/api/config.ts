@@ -14,8 +14,8 @@ const getApiUrl = () => {
         return process.env.EXPO_PUBLIC_API_URL;
     }
     
-    // 🔧 Fallback: Using IP address from error logs
-    const fallbackUrl = "http://134.199.172.167:5001/api";
+    // 🔧 Fallback: Using production domain
+    const fallbackUrl = "https://api.mytodoo.com/api";
     console.log('⚠️ Using fallback API URL:', fallbackUrl);
     return fallbackUrl;
 };

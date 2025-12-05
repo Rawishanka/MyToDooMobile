@@ -10,19 +10,20 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  BackHandler,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    BackHandler,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -31,9 +32,9 @@ import { OCRAPI } from '@/src/api/ocr-api';
 import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
 
 import {
-  DateOptionSelector,
-  TimeOfDayGrid,
-  TimeToggle,
+    DateOptionSelector,
+    TimeOfDayGrid,
+    TimeToggle,
 } from './components';
 
 // Helper function to copy image to persistent storage
@@ -881,6 +882,8 @@ Please remove phone numbers and addresses from the image.`,
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
         <ScrollView
           ref={scrollViewRef}
           style={styles.scrollView}
@@ -1140,6 +1143,8 @@ Please remove phone numbers and addresses from the image.`,
           )}
         </View>
         </ScrollView>
+          </View>
+        </TouchableWithoutFeedback>
 
         {/* Date Picker */}
         {showDatePicker && (

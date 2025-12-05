@@ -49,7 +49,7 @@ export function useApiFunctions() {
     if (storedToken && !authState.token) {
       console.log("🔄 Found stored token, setting in auth store without user data");
       // Set token without user data - user data will be fetched from API when needed
-      setAuthData(storedToken, null, 3600);
+      await setAuthData(storedToken, null, 3600);
     } else if (authState.token && storedToken && authState.token !== storedToken) {
       console.log("⚠️ Token mismatch between auth store and storage!");
       console.log("Auth store token:", authState.token?.substring(0, 20) + "...");
@@ -274,7 +274,7 @@ export function useApiFunctions() {
         throw new Error('Invalid response from server');
       }
       
-      setAuthData(token, user, expiresIn);
+      await setAuthData(token, user, expiresIn);
       setStoredToken(token);
       
       // Store credentials for automatic re-authentication
@@ -322,7 +322,7 @@ export function useApiFunctions() {
             const mockExpiresIn = 3600;
 
             // Set up development session
-            setAuthData(mockToken, mockUser, mockExpiresIn);
+            await setAuthData(mockToken, mockUser, mockExpiresIn);
             setStoredToken(mockToken);
             try {
                 await AsyncStorage.setItem('userEmail', email);
@@ -390,7 +390,7 @@ export function useApiFunctions() {
       }
       
       console.log("✅ Calling setAuthData with validated data...");
-      setAuthData(token, user, expiresIn);
+      await setAuthData(token, user, expiresIn);
       setStoredToken(token);
       
       console.log("✅ Returning data to React Query...");
@@ -500,7 +500,7 @@ export function useApiFunctions() {
           const mockExpiresIn = 3600; // 1 hour
           
           // Store the auth data in the store so user can login
-          setAuthData(mockToken, mockUser, mockExpiresIn);
+          await setAuthData(mockToken, mockUser, mockExpiresIn);
           setStoredToken(mockToken);
           
           // Store credentials for login attempts
@@ -556,7 +556,7 @@ export function useApiFunctions() {
           const mockExpiresIn = 3600; // 1 hour
           
           // Store the auth data in the store so user can login
-          setAuthData(mockToken, mockUser, mockExpiresIn);
+          await setAuthData(mockToken, mockUser, mockExpiresIn);
           setStoredToken(mockToken);
           
           // Store credentials for login attempts

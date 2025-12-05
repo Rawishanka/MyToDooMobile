@@ -38,17 +38,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
 
   // Helper function to get user profile picture with fallback to generated avatar
   const getUserAvatar = (question: any) => {
-    const user = question.askedBy || question.user || question.questioner;
-    
-    // If no user data in question, use current user's avatar
-    if (!user && currentUser) {
-      const avatar = currentUser.profilePicture || currentUser.avatar;
-      if (avatar) return avatar;
-      
-      // Generate avatar for current user
-      const name = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || 'You';
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4CAF50&color=fff&size=80`;
-    }
+    const user = question.askedBy || question.user || question.questioner || question.userId;
     
     if (!user) {
       return 'https://ui-avatars.com/api/?name=User&background=999&color=fff&size=80';
@@ -160,6 +150,20 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
       isTaskCreator: currentUserId === taskCreatorId,
       pendingQuestions: questions.filter(q => !q.answer || q.status === 'pending').length
     });
+    
+    // Debug: Log question asker details for first question
+    if (questions.length > 0) {
+      const firstQ = questions[0];
+      console.log('🔍 First Question Debug:', {
+        questionId: firstQ._id,
+        askedBy: firstQ.askedBy,
+        user: firstQ.user,
+        questioner: firstQ.questioner,
+        userId: firstQ.userId,
+        hasAskedByData: !!firstQ.askedBy,
+        askedByName: firstQ.askedBy ? `${firstQ.askedBy.firstName} ${firstQ.askedBy.lastName}` : 'N/A'
+      });
+    }
   }, [questions, currentUserId, taskCreatorId]);
   
   const handleAnswerQuestion = (question: any) => {
@@ -326,13 +330,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                         ? 'Anonymous User'
                         : (() => {
                             // Handle different possible user data structures
-                            const user = question.askedBy || question.user || question.questioner;
-                            
-                            // If no user data in question, check if it might be current user's question
-                            if (!user && currentUser) {
-                              const currentUserFullName = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim();
-                              return currentUserFullName || currentUser.email?.split('@')[0] || 'You';
-                            }
+                            const user = question.askedBy || question.user || question.questioner || question.userId;
                             
                             if (!user) return 'Unknown User';
                             

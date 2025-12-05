@@ -1,10 +1,11 @@
 import { resetPassword } from '@/src/api/auth-api';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Keyboard,
     KeyboardAvoidingView,
     Platform,
     SafeAreaView,
@@ -12,6 +13,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 
@@ -203,6 +205,8 @@ export default function SetNewPasswordScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.innerContainer}
       >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.contentWrapper}>
         <View style={styles.header}>
           <Ionicons name="key-outline" size={64} color="#007BFF" style={styles.keyIcon} />
           <Text style={styles.title}>Set New Password</Text>
@@ -218,6 +222,7 @@ export default function SetNewPasswordScreen() {
             value={email}
             onChangeText={setEmail}
             placeholder="Enter your email"
+            placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
             editable={!emailParam} // If email comes from URL, make it read-only
@@ -230,6 +235,7 @@ export default function SetNewPasswordScreen() {
               value={password}
               onChangeText={setPassword}
               placeholder="Enter new password"
+              placeholderTextColor="#999"
               secureTextEntry={!showPassword}
               autoCapitalize="none"
             />
@@ -253,6 +259,7 @@ export default function SetNewPasswordScreen() {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder="Confirm new password"
+              placeholderTextColor="#999"
               secureTextEntry={!showConfirmPassword}
               autoCapitalize="none"
             />
@@ -326,6 +333,8 @@ export default function SetNewPasswordScreen() {
             )}
           </TouchableOpacity>
         </View>
+          </View>
+        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -340,6 +349,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
+  },
+  contentWrapper: {
+    flex: 1,
   },
   backButton: {
     position: 'absolute',

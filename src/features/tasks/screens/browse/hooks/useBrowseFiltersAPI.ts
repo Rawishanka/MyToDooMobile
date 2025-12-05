@@ -194,18 +194,32 @@ export const useBrowseFiltersAPI = () => {
   }, [selectedSort]);
 
   const shouldUseFilterAPI = React.useMemo(() => {
-    // Always use Filter API to get all tasks, then do comprehensive client-side filtering
-    // This allows searching across all fields (title, location, categories, etc.)
-    // instead of relying on backend's limited title-only search
-    return true;
-  }, []);
+    // Use Search API ONLY when there's actual search text (at least 1 character)
+    // This ensures we call /tasks/search endpoint only for searches
+    const hasSearchText = searchText.trim().length > 0;
+    
+    console.log('🔍 [useBrowseFiltersAPI] API Selection:', {
+      hasSearchText,
+      searchText: searchText.trim(),
+      willUseFilterAPI: !hasSearchText,
+      willUseSearchAPI: hasSearchText
+    });
+    
+    // Use Filter API when there's no search text
+    return !hasSearchText;
+  }, [searchText]);
 
   const searchParams: TaskSearchParams = useMemo(() => {
+    // Only create search params if we have search text
+    if (!searchText.trim()) {
+      return {} as TaskSearchParams;
+    }
+
     const params: TaskSearchParams = {
+      q: searchText.trim(), // Required parameter for search endpoint
       sort: SEARCH_SORT_MAPPING[selectedSort],
     };
 
-    if (searchText.trim()) params.q = searchText.trim();
     if (selectedCategory !== 'All Categories') params.category = selectedCategory;
     
     const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === 10000;
@@ -217,6 +231,7 @@ export const useBrowseFiltersAPI = () => {
     if (taskType === 'in-person') params.location = 'In-person';
     else if (taskType === 'remote') params.location = 'Online';
 
+    console.log('🔍 [useBrowseFiltersAPI] Search Params:', params);
     return params;
   }, [selectedCategory, taskType, priceRange, selectedSort, searchText]);
 
@@ -255,7 +270,10 @@ export const useBrowseFiltersAPI = () => {
     isLoading: searchLoading,
     error: searchError,
     refetch: searchRefetch,
-  } = useSearchTasks(searchParams, !shouldUseFilterAPI && Object.keys(searchParams).length > 0);
+  } = useSearchTasks(
+    searchParams, 
+    !shouldUseFilterAPI && searchText.trim().length > 0 // Only enable when we have search text
+  );
 
   const {
     data: filterResponse,
@@ -339,13 +357,17 @@ export const useBrowseFiltersAPI = () => {
     enhanceTasksWithOfferCounts();
   }, [shouldUseFilterAPI, filterResponse?.data, searchResponse?.data]);
 
-  // Apply client-side search filter to results
+  // Apply client-side search filter to results ONLY if using Filter API
+  // When using Search API, backend already filtered results
   const filteredAndSortedTasks = useMemo(() => {
     const baseTasks = tasksWithOfferCounts;
     
     // Debug logging for API response data
     console.log('🔍 [useBrowseFiltersAPI] Final Tasks Debug:', {
       baseTasksLength: baseTasks.length,
+      shouldUseFilterAPI,
+      searchText: searchText.trim(),
+      activeAPI: shouldUseFilterAPI ? 'FILTER' : 'SEARCH',
       sampleTask: baseTasks[0] ? {
         id: baseTasks[0]._id,
         title: baseTasks[0].title,
@@ -357,9 +379,22 @@ export const useBrowseFiltersAPI = () => {
       tasksWithOffers: baseTasks.filter(t => (t.offerCount || 0) > 0).length
     });
     
-    // Apply client-side search filter for multi-field search
+    // If using Search API, return results as-is (backend already filtered)
+    if (!shouldUseFilterAPI) {
+      console.log('✅ Using Search API results directly (no client-side filtering)');
+      return baseTasks;
+    }
+    
+    // If using Filter API without search text, return all results
+    if (shouldUseFilterAPI && !searchText.trim()) {
+      console.log('✅ Using Filter API results directly (no search text)');
+      return baseTasks;
+    }
+    
+    // This shouldn't happen, but keep as fallback
+    console.log('⚠️ Unexpected state - applying client-side filter');
     return filterTasksBySearch(baseTasks, searchText);
-  }, [tasksWithOfferCounts, searchText]);
+  }, [tasksWithOfferCounts, searchText, shouldUseFilterAPI]);
   
   const isLoading = shouldUseFilterAPI ? filterLoading : searchLoading;
   const error = shouldUseFilterAPI ? filterError : searchError;
