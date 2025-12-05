@@ -15,17 +15,17 @@ import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -431,7 +431,7 @@ export default function LoginScreen() {
                    backendMessage?.toLowerCase().includes('incorrect password')) {
           Alert.alert(
             'Incorrect Credentials', 
-            'The email or password you entered is incorrect.\n\n✓ Check your email spelling\n✓ Verify your password is correct\n✓ Try using "Forgot Password" if needed',
+            'The email or password you entered is incorrect.\n',
             [
               { text: 'Try Again', style: 'cancel' },
               { 
