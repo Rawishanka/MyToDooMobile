@@ -1,25 +1,25 @@
 // Updated Notification Screen with Real API Integration
 import { Notification } from '@/src/api/notification-api';
 import {
-  useDeleteNotification,
-  useMarkAllAsRead,
-  useMarkAsRead,
-  useNotifications,
-  useUnreadCount,
+    useDeleteNotification,
+    useMarkAllAsRead,
+    useMarkAsRead,
+    useNotifications,
+    useUnreadCount,
 } from '@/src/shared/hooks/useNotifications';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Modal,
-  RefreshControl,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Modal,
+    RefreshControl,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 interface NotificationModalProps {
@@ -142,6 +142,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
   visible,
   onClose,
 }) => {
+  // Only fetch notifications when modal is visible
   const {
     data: notificationsData,
     isLoading,
@@ -155,8 +156,14 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
   const deleteNotification = useDeleteNotification();
   const markAllAsRead = useMarkAllAsRead();
 
-  const notifications = (notificationsData as any)?.data || [];
-  const unreadCount = (unreadCountData as any)?.unreadCount || 0;
+  // Safely extract data with fallbacks
+  const notifications = React.useMemo(() => {
+    return (notificationsData as any)?.data || [];
+  }, [notificationsData]);
+  
+  const unreadCount = React.useMemo(() => {
+    return (unreadCountData as any)?.count || (unreadCountData as any)?.unreadCount || 0;
+  }, [unreadCountData]);
 
   // Handle notification press - mark as read
   const handleNotificationPress = (notification: Notification) => {

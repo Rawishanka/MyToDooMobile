@@ -6,17 +6,18 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 // ✅ NEW: Use OCR API for sensitive data detection
@@ -54,6 +55,7 @@ interface LocationData {
 export default function SnapPhotoScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [validatingImages, setValidatingImages] = useState<Set<string>>(new Set()); // Track which images are being validated
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const { myTask, updateMyTask} = useCreateTaskStore();
 
@@ -74,49 +76,76 @@ export default function SnapPhotoScreen() {
     }
   }, [myTask]);
 
-  // Update store when images change
+  // Update store when images change - OPTIMIZED with useCallback
   useEffect(() => {
     updateMyTask({ 
       photos: images,
       photo: images[0] || ''
     });
-  }, [images, updateMyTask]);
+  }, [images]);
 
-  // ✅ NEW: Validate image using OCR API for sensitive data
-  const validateAndAddImage = async (imageUri: string): Promise<boolean> => {
+  // ✅ NEW: Validate image using OCR API for sensitive data with loading state
+  const validateAndAddImage = useCallback(async (imageUri: string): Promise<boolean> => {
     try {
-      console.log('🔍 Validating image with OCR API:', imageUri);
+      console.log('📸 Adding image to array immediately:', imageUri.substring(0, 50));
+      
+      // ✅ IMMEDIATELY add image to array so it shows with loading state
+      setImages(prevImages => [...prevImages, imageUri]);
+      
+      console.log('⏳ Adding to validating set...');
+      // Add to validating set to show loading overlay
+      setValidatingImages(prev => {
+        const newSet = new Set(prev).add(imageUri);
+        console.log('✅ Validating set size:', newSet.size);
+        return newSet;
+      });
+      
+      console.log('🔍 Starting OCR validation...');
       const validation = await OCRAPI.validateImageForUpload(imageUri);
+      
+      console.log('✅ OCR validation complete, removing from validating set');
+      // Remove from validating set
+      setValidatingImages(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(imageUri);
+        console.log('✅ Validating set size after removal:', newSet.size);
+        return newSet;
+      });
       
       if (!validation.isValid) {
         console.warn('❌ Image contains sensitive data:', validation.reason);
+        
+        // Remove the image from array since validation failed
+        setImages(prevImages => prevImages.filter(img => img !== imageUri));
+        
         Alert.alert(
           'Sensitive Data Detected',
-          `This image contains sensitive information and cannot be uploaded:
-
-${validation.reason}
-
-Please remove phone numbers and addresses from the image.`,
+          `This image contains sensitive information and cannot be uploaded:\n\n${validation.reason}\n\nPlease remove phone numbers and addresses from the image.`,
           [{ text: 'OK' }]
         );
         return false;
       }
       
-      console.log('✅ Image passed OCR validation - adding to list');
-      setImages(prevImages => [...prevImages, imageUri]);
+      console.log('✅ Image passed OCR validation');
       return true;
     } catch (error) {
+      // Remove from validating set on error
+      setValidatingImages(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(imageUri);
+        return newSet;
+      });
+      
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
         console.warn('⚠️ OCR validation error:', error);
       }
-      // Allow upload if OCR service fails
-      setImages(prevImages => [...prevImages, imageUri]);
+      // Allow upload if OCR service fails (image already in array)
       return true;
     }
-  };
+  }, []);
 
-  const showImagePickerOptions = () => {
+  const showImagePickerOptions = useCallback(() => {
     if (images.length >= 10) return;
 
     Alert.alert(
@@ -137,7 +166,7 @@ Please remove phone numbers and addresses from the image.`,
         },
       ],
     );
-  };
+  }, [images.length]);
 
   const openCamera = async () => {
     // Request camera permissions
@@ -168,17 +197,22 @@ Please remove phone numbers and addresses from the image.`,
       if (!result.canceled && result.assets?.[0]) {
         // Copy image to persistent storage to prevent cache deletion
         const persistentUri = await copyImageToPersistentStorage(result.assets[0].uri);
-        // ✅ Validate with OCR before adding
+        
+        // Clear processing state before validation starts
+        setIsProcessing(false);
+        
+        // ✅ Validate with OCR (now with loading overlay visible)
         await validateAndAddImage(persistentUri);
+      } else {
+        setIsProcessing(false);
       }
     } catch (error) {
+      setIsProcessing(false);
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
         console.warn('⚠️ Error taking photo:', error);
       }
       Alert.alert('Error', 'Failed to take photo. Please try again.');
-    } finally {
-      setTimeout(() => setIsProcessing(false), 300);
     }
   };
 
@@ -210,33 +244,46 @@ Please remove phone numbers and addresses from the image.`,
       if (!result.canceled && result.assets?.[0]) {
         // Copy image to persistent storage to prevent cache deletion
         const persistentUri = await copyImageToPersistentStorage(result.assets[0].uri);
-        // ✅ Validate with OCR before adding
+        
+        // Clear processing state before validation starts
+        setIsProcessing(false);
+        
+        // ✅ Validate with OCR (now with loading overlay visible)
         await validateAndAddImage(persistentUri);
+      } else {
+        setIsProcessing(false);
       }
     } catch (error) {
+      setIsProcessing(false);
       // Only log non-network errors in development
       if (!isNetworkError(error) && __DEV__) {
         console.warn('⚠️ Error selecting image:', error);
       }
       Alert.alert('Error', 'Failed to select image. Please try again.');
-    } finally {
-      setTimeout(() => setIsProcessing(false), 300);
     }
   };
 
-  const handleDeleteImage = (uri: string) => {
+  const handleDeleteImage = useCallback((uri: string) => {
     console.log('🗑️ Deleting image:', uri);
     setImages(prevImages => prevImages.filter(img => img !== uri));
+    
+    // Also remove from validating set if it was being validated
+    setValidatingImages(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(uri);
+      return newSet;
+    });
+    
     setIsProcessing(false);
-  };
+  }, []);
 
-  // Location handler
-  const handleLocationSelect = (location: LocationData) => {
+  // Location handler - OPTIMIZED with useCallback
+  const handleLocationSelect = useCallback((location: LocationData) => {
     setSelectedLocation(location);
     console.log('Selected location:', location);
-  };
+  }, []);
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     // Update store with location data
     if (selectedLocation) {
       updateMyTask({
@@ -245,9 +292,10 @@ Please remove phone numbers and addresses from the image.`,
       });
     }
     router.push('/time-select-screen' as any);
-  };
+  }, [selectedLocation, updateMyTask]);
 
-  const renderGridItems = () => {
+  // OPTIMIZED: Memoize grid items to prevent unnecessary re-renders
+  const renderGridItems = useMemo(() => {
     const items = [...images];
     
     // Add upload button if less than 10 images
@@ -269,12 +317,17 @@ Please remove phone numbers and addresses from the image.`,
               <TouchableOpacity 
                 key={`upload-${rowIndex}-${itemIndex}`}
                 onPress={showImagePickerOptions} 
-                style={[styles.uploadBox, isProcessing && styles.uploadBoxDisabled]}
+                style={[styles.uploadBox, (isProcessing || validatingImages.size > 0) && styles.uploadBoxDisabled]}
                 activeOpacity={0.7}
-                disabled={isProcessing}
+                disabled={isProcessing || validatingImages.size > 0}
               >
-                {isProcessing ? (
-                  <Ionicons name="hourglass" size={24} color="#999" />
+                {(isProcessing || validatingImages.size > 0) ? (
+                  <View style={styles.uploadingContainer}>
+                    <ActivityIndicator size="small" color="#467FFF" />
+                    <Text style={styles.uploadingText}>
+                      {validatingImages.size > 0 ? 'Validating...' : 'Processing...'}
+                    </Text>
+                  </View>
                 ) : (
                   <>
                     <Ionicons name="camera" size={24} color="#467FFF" />
@@ -285,14 +338,26 @@ Please remove phone numbers and addresses from the image.`,
             );
           }
           
+          const isValidating = validatingImages.has(item);
+          
           return (
             <View key={`${rowIndex}-${itemIndex}`} style={styles.imageWrapper}>
-              <Image source={{ uri: item }} style={styles.uploadedImage} />
+              <Image source={{ uri: item }} style={[styles.uploadedImage, isValidating && styles.imageValidating]} />
+              
+              {/* Loading overlay for validating images */}
+              {isValidating && (
+                <View style={styles.validatingOverlay}>
+                  <ActivityIndicator size="large" color="#467FFF" />
+                  <Text style={styles.validatingText}>Checking...</Text>
+                </View>
+              )}
+              
               <TouchableOpacity 
-                style={styles.deleteBtn} 
+                style={[styles.deleteBtn, isValidating && styles.deleteBtnDisabled]} 
                 onPress={() => handleDeleteImage(item)}
+                disabled={isValidating}
               >
-                <Ionicons name="close-circle" size={22} color="#FF4D4F" />
+                <Ionicons name="close-circle" size={22} color={isValidating ? "#CCC" : "#FF4D4F"} />
               </TouchableOpacity>
             </View>
           );
@@ -304,7 +369,7 @@ Please remove phone numbers and addresses from the image.`,
         ))}
       </View>
     ));
-  };
+  }, [images, isProcessing, validatingImages, showImagePickerOptions, handleDeleteImage]);;
 
   return (
     <KeyboardAvoidingView 
@@ -320,6 +385,7 @@ Please remove phone numbers and addresses from the image.`,
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        removeClippedSubviews={Platform.OS === 'android'}
       >
         <Text style={styles.title}>Add photos & location</Text>
         <Text style={styles.subtitle}>
@@ -327,7 +393,7 @@ Please remove phone numbers and addresses from the image.`,
         </Text>
 
         <View style={styles.imageSection}>
-          {renderGridItems()}
+          {renderGridItems}
         </View>
 
         {/* Location Section */}
@@ -437,6 +503,9 @@ const styles = StyleSheet.create({
     shadowRadius: 1.41,
     elevation: 2,
   },
+  deleteBtnDisabled: {
+    opacity: 0.4,
+  },
   uploadBox: {
     width: 70,
     height: 70,
@@ -510,6 +579,46 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  // NEW: Loading and validation styles
+  uploadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  uploadingText: {
+    fontSize: 9,
+    color: '#467FFF',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  imageValidating: {
+    opacity: 0.7,
+  },
+  validatingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(70, 127, 255, 0.15)', // Light blue overlay
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#467FFF',
+    borderStyle: 'dashed',
+  },
+  validatingText: {
+    fontSize: 9,
+    color: '#467FFF',
+    fontWeight: '700',
+    marginTop: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    overflow: 'hidden',
   },
   // Validation text styles - MOVED BELOW IMAGE
   validationTextContainer: {

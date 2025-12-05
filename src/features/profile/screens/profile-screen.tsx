@@ -55,6 +55,14 @@ export default function AccountScreen() {
   const { mutate: uploadAvatar, isPending: isUploadingAvatar } = useUploadUserAvatar();
   const { user: authUser, isAuthenticated, token } = useAuthStore();
 
+  // 🔄 **Auto-redirect to login when authentication is cleared**
+  React.useEffect(() => {
+    if (!isAuthenticated || !token) {
+      console.log("⚠️ Not authenticated - redirecting to login");
+      router.replace('/(auth)/login');
+    }
+  }, [isAuthenticated, token, router]);
+
   // **Get rating data for the current user**
   const userId = authUser?._id || authUser?.id || '';
   const {
@@ -179,14 +187,13 @@ export default function AccountScreen() {
     } : undefined
   });
 
-  // 🚨 **EARLY RETURN: Show auth error if not properly authenticated**
+  // 🚨 **Show loading while checking authentication (useEffect will redirect if needed)**
   if (!isAuthenticated || !token || !authUser) {
-    console.log("❌ Authentication error - not retrying profile fetch");
+    console.log("❌ Not authenticated - showing loading state");
     return (
-      <View style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Please sign in to view your profile</Text>
-        </View>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0052A2" />
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
   }
@@ -280,26 +287,37 @@ export default function AccountScreen() {
   }
 
   // Handle error state - but only if we're authenticated and have an error
-  if ((profileError && !userData && isAuthenticated && token) || (!isAuthenticated || !token)) {
+  if (profileError && !userData && isAuthenticated && token) {
+    // Check if this is an authentication error (401 or token expired)
+    const isAuthError = (profileError as any)?.isAuthError || 
+                        (profileError as any)?.isTokenExpired ||
+                        (profileError as any)?.status === 401 ||
+                        (profileError as any)?.response?.status === 401;
+    
+    // If it's an auth error, show loading state while API interceptor handles auto-logout
+    if (isAuthError) {
+      console.log("⏳ Auth error detected - waiting for auto-logout redirect...");
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0052A2" />
+          <Text style={styles.loadingText}>Signing out...</Text>
+        </View>
+      );
+    }
+    
+    // For non-auth errors, show the error UI
     return (
       <View style={styles.errorContainer}>
         <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
-        <Text style={styles.errorTitle}>
-          {!isAuthenticated || !token ? "Please log in" : "Failed to load profile"}
-        </Text>
+        <Text style={styles.errorTitle}>Failed to load profile</Text>
         <Text style={styles.errorSubtitle}>
-          {!isAuthenticated || !token 
-            ? "You need to be logged in to view your profile."
-            : "Could not load your profile. Please check your connection and try again."
-          }
+          Could not load your profile. Please check your connection and try again.
         </Text>
         <TouchableOpacity 
           style={styles.retryButton} 
-          onPress={() => isAuthenticated && token ? refetch() : router.push('/(auth)/login')}
+          onPress={() => refetch()}
         >
-          <Text style={styles.retryButtonText}>
-            {!isAuthenticated || !token ? "Go to Login" : "Try Again"}
-          </Text>
+          <Text style={styles.retryButtonText}>Try Again</Text>
         </TouchableOpacity>
       </View>
     );

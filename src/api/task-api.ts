@@ -11,22 +11,22 @@ import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-  AllOffersResponse,
-  CreateOfferRequest,
-  CreateOfferResponse,
-  CreateTaskRequest,
-  CreateTaskResponse,
-  MyTasksParams,
-  PaymentStatusResponse,
-  SingleTaskResponse,
-  Task,
-  TaskCompletionStatusResponse,
-  TaskFilterParams,
-  TaskFilterResponse,
-  TaskOffersResponse,
-  TaskSearchParams,
-  TasksResponse,
-  UpdateTaskRequest
+    AllOffersResponse,
+    CreateOfferRequest,
+    CreateOfferResponse,
+    CreateTaskRequest,
+    CreateTaskResponse,
+    MyTasksParams,
+    PaymentStatusResponse,
+    SingleTaskResponse,
+    Task,
+    TaskCompletionStatusResponse,
+    TaskFilterParams,
+    TaskFilterResponse,
+    TaskOffersResponse,
+    TaskSearchParams,
+    TasksResponse,
+    UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -53,7 +53,7 @@ async function ensureAuthentication(): Promise<{ success: boolean; token?: strin
       if (storedUser) {
         try {
           const user = JSON.parse(storedUser);
-          authState.setAuthData(storedToken, user, 3600);
+          await authState.setAuthData(storedToken, user, 3600);
           return { success: true, token: storedToken };
         } catch {
           console.warn("⚠️ Failed to parse stored user, using auto-login");
@@ -1021,108 +1021,55 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
 
 /**
  * 🔍 Search Tasks
- * Endpoint: GET /api/tasks/search
+ * Endpoint: GET /api/tasks/search OR /api/tasks/filter
  * Auth: No
+ * Note: Backend /tasks/search has strict validation (min 4+ chars), so we use filter API instead
+ *       Filter API handles search queries of any length without validation errors
  */
 export async function searchTasks(params: TaskSearchParams): Promise<TasksResponse> {
   const api = getApi();
   try {
     console.log("🔍 Searching tasks with params:", params);
     
-    // Try multiple GET approaches only (POST is not supported)
-    const getApproaches = [
-      // Approach 1: Standard search with all parameters
-      () => {
-        const searchParams = new URLSearchParams();
-        
-        if (params.search || params.q) {
-          searchParams.append('q', params.search || params.q!);
-        }
-        if (params.category) {
-          searchParams.append('category', params.category);
-        }
-        if (params.categories && params.categories.length > 0) {
-          searchParams.append('category', params.categories[0]);
-        }
-        if (params.location) {
-          searchParams.append('location', params.location);
-        }
-        if (params.minBudget !== undefined && params.minBudget > 0) {
-          searchParams.append('minBudget', params.minBudget.toString());
-        }
-        if (params.maxBudget !== undefined && params.maxBudget < 10000) {
-          searchParams.append('maxBudget', params.maxBudget.toString());
-        }
-        if (params.sort) {
-          searchParams.append('sort', params.sort);
-        }
-        
-        searchParams.append('page', '1');
-        searchParams.append('limit', '20');
-        
-        return `/tasks/search?${searchParams.toString()}`;
-      },
-      
-      // Approach 2: Minimal parameters (just sort)
-      () => {
-        const searchParams = new URLSearchParams();
-        if (params.sort) {
-          searchParams.append('sort', params.sort);
-        } else {
-          searchParams.append('sort', 'latest');
-        }
-        return `/tasks/search?${searchParams.toString()}`;
-      },
-      
-      // Approach 3: Just basic search endpoint without parameters
-      () => {
-        return `/tasks/search`;
-      },
-      
-      // Approach 4: Fallback to general tasks endpoint
-      () => {
-        console.log('🔄 Trying general /tasks endpoint as fallback');
-        return `/tasks`;
-      }
-    ];
-
-    // Try each GET approach
-    for (let i = 0; i < getApproaches.length; i++) {
-      try {
-        const url = getApproaches[i]();
-        console.log(`🔍 Trying GET approach ${i + 1}:`, url);
-        console.log(`🔍 Full endpoint: ${api.defaults.baseURL}${url}`);
-        const response = await api.get(url);
-        
-        console.log("✅ Search tasks success with approach", i + 1, ":", response.data);
-        return response.data;
-        
-      } catch (approachError: any) {
-        console.log(`❌ GET Approach ${i + 1} failed:`, approachError.response?.status, approachError.message);
-        console.log(`❌ Error response data:`, approachError.response?.data);
-        console.log(`❌ Error config:`, approachError.config?.url);
-        
-        // If this isn't the last approach, try the next one
-        if (i < getApproaches.length - 1) {
-          continue;
-        }
-        
-        // If all GET approaches failed, throw the last error
-        throw approachError;
-      }
-    }
+    const searchQuery = params.search || params.q;
+    
+    // DECISION: Always use Filter API for search instead of Search API
+    // Reason: Filter API has no minimum length validation and handles search perfectly
+    // This prevents validation errors (400) that appear in console even though fallback works
+    console.log(`ℹ️ Using Filter API for search query: "${searchQuery}"`);
+    
+    const filterParams: TaskFilterParams = {
+      sortBy: params.sort as 'latest' | 'newest' | 'oldest' | 'highest-budget' | 'lowest-budget' | 'earliest' | 'price-high' | 'price-low' | undefined,
+      categories: params.category,
+      search: searchQuery?.trim() || undefined, // Filter API handles search of any length
+      minBudget: params.minBudget,
+      maxBudget: params.maxBudget,
+      locationType: params.location as 'In-person' | 'Online' | undefined,
+      status: 'open',
+      page: 1,
+      limit: 20
+    };
+    
+    const filterResult = await getFilteredTasks(filterParams);
+    
+    // Convert TaskFilterResponse to TasksResponse
+    return {
+      success: filterResult.success,
+      count: filterResult.data.length,
+      total: filterResult.pagination.totalItems,
+      pages: filterResult.pagination.totalPages,
+      currentPage: filterResult.pagination.currentPage,
+      data: filterResult.data
+    };
     
   } catch (error: any) {
-    // Only log non-network errors in development
-    if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ All search approaches failed:", error);
-      console.warn("⚠️ Error details:", {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.message
-      });
-    }
+    console.error("❌ Search API error:", error.response?.status, error.message);
+    console.error("❌ Error details:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
     
     // Check for network connection errors - use mock service as fallback
     if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
@@ -1130,8 +1077,8 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
       return await MockApiService.searchTasks(params);
     }
     
-    // Try the filter endpoint as final fallback
-    console.warn("🔄 Search API failed completely, trying filter API as final fallback...");
+    // For 400 errors or other API errors, try filter endpoint as fallback
+    console.warn("🔄 Search API failed, trying filter API as fallback...");
     try {
       const filterParams: TaskFilterParams = {
         sortBy: params.sort as 'latest' | 'newest' | 'oldest' | 'highest-budget' | 'lowest-budget' | 'earliest' | 'price-high' | 'price-low' | undefined,
@@ -1140,6 +1087,7 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
         minBudget: params.minBudget,
         maxBudget: params.maxBudget,
         locationType: params.location as 'In-person' | 'Online' | undefined,
+        status: 'open',
         page: 1,
         limit: 20
       };
@@ -1163,9 +1111,6 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
       return await MockApiService.searchTasks(params);
     }
   }
-  
-  // This should never be reached due to the try-catch structure above
-  throw new Error("All search approaches failed");
 }
 
 /**

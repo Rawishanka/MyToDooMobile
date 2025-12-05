@@ -8,6 +8,7 @@ import { useAuthStore } from '@/src/store/auth-task-store';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Google from 'expo-auth-session/providers/google';
 import Constants from 'expo-constants';
@@ -43,6 +44,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const { mutateAsync } = useCreateAuthToken();
   const { mutateAsync: googleSignIn } = useGoogleSignIn();
   const clearCachesOnLogin = useClearCachesOnLogin();
@@ -78,6 +80,50 @@ export default function LoginScreen() {
     redirectUri: redirectUri,
     scopes: ['openid', 'profile', 'email'],
   });
+
+  // Load saved credentials on mount
+  useEffect(() => {
+    loadSavedCredentials();
+  }, []);
+
+  const loadSavedCredentials = async () => {
+    try {
+      const savedEmail = await AsyncStorage.getItem('saved_email');
+      const savedPassword = await AsyncStorage.getItem('saved_password');
+      const rememberMeValue = await AsyncStorage.getItem('remember_me');
+      
+      if (rememberMeValue === 'true' && savedEmail && savedPassword) {
+        setEmail(savedEmail);
+        setPassword(savedPassword);
+        setRememberMe(true);
+        console.log('✅ Loaded saved credentials');
+      }
+    } catch (error) {
+      console.log('⚠️ Error loading saved credentials:', error);
+    }
+  };
+
+  const saveCredentials = async (email: string, password: string) => {
+    try {
+      await AsyncStorage.setItem('saved_email', email);
+      await AsyncStorage.setItem('saved_password', password);
+      await AsyncStorage.setItem('remember_me', 'true');
+      console.log('✅ Credentials saved');
+    } catch (error) {
+      console.log('⚠️ Error saving credentials:', error);
+    }
+  };
+
+  const clearSavedCredentials = async () => {
+    try {
+      await AsyncStorage.removeItem('saved_email');
+      await AsyncStorage.removeItem('saved_password');
+      await AsyncStorage.removeItem('remember_me');
+      console.log('✅ Credentials cleared');
+    } catch (error) {
+      console.log('⚠️ Error clearing credentials:', error);
+    }
+  };
 
   const handleGoogleSignInSuccess = useCallback(async (idToken: string) => {
     try {
@@ -344,6 +390,13 @@ export default function LoginScreen() {
       
       // Use trimmed values for login
       await mutateAsync({ username: trimmedEmail.toLowerCase(), password: trimmedPassword });
+      
+      // Save or clear credentials based on Remember Me checkbox
+      if (rememberMe) {
+        await saveCredentials(trimmedEmail, trimmedPassword);
+      } else {
+        await clearSavedCredentials();
+      }
       
       // Force invalidate profile queries to ensure fresh profile data
       await queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
@@ -658,6 +711,20 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
+          {/* Remember Me Checkbox */}
+          <TouchableOpacity 
+            style={styles.rememberMeContainer}
+            onPress={() => setRememberMe(!rememberMe)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+              {rememberMe && (
+                <Ionicons name="checkmark" size={16} color="#fff" />
+              )}
+            </View>
+            <Text style={styles.rememberMeText}>Remember Me</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
             <Text style={styles.forgotPassword}>Forgot Password?</Text>
           </TouchableOpacity>
@@ -797,6 +864,31 @@ const styles = StyleSheet.create({
     padding: 8,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  rememberMeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingVertical: 4,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  checkboxChecked: {
+    backgroundColor: '#007BFF',
+    borderColor: '#007BFF',
+  },
+  rememberMeText: {
+    fontSize: 14,
+    color: '#333',
   },
   forgotPassword: {
     color: '#007BFF',

@@ -140,12 +140,12 @@ export interface RequestReviewRequest {
 
 /**
  * Get user profile
- * GET /api/users/profile
+ * GET /api/auth/profile
  */
 export async function getUserProfile(): Promise<UserProfileResponse> {
   try {
     console.log("👤 Fetching user profile...");
-    const response = await api.get('/users/profile');
+    const response = await api.get('/auth/profile');
     console.log("✅ User profile fetched successfully:", response.data);
     return response.data;
   } catch (error: any) {
@@ -183,12 +183,12 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
 
 /**
  * Update user profile
- * PUT /api/users/profile
+ * PUT /api/auth/profile
  */
 export async function updateUserProfile(profileData: UpdateProfileRequest): Promise<UserProfileResponse> {
   try {
     console.log("📝 Updating user profile with data:", JSON.stringify(profileData, null, 2));
-    const response = await api.put('/users/profile', profileData);
+    const response = await api.put('/auth/profile', profileData);
     console.log("✅ User profile updated successfully:", response.data);
     return response.data;
   } catch (error: any) {

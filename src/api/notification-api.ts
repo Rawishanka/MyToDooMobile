@@ -82,37 +82,71 @@ export const getNotifications = async (params?: {
   limit?: number;
   type?: string;
 }): Promise<NotificationResponse> => {
-  const queryParams = new URLSearchParams();
-  if (params?.page) queryParams.append('page', params.page.toString());
-  if (params?.limit) queryParams.append('limit', params.limit.toString());
-  if (params?.type) queryParams.append('type', params.type);
+  try {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.type) queryParams.append('type', params.type);
 
-  const url = queryParams.toString()
-    ? `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}?${queryParams.toString()}`
-    : API_CONFIG.ENDPOINTS.NOTIFICATIONS;
+    const url = queryParams.toString()
+      ? `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}?${queryParams.toString()}`
+      : API_CONFIG.ENDPOINTS.NOTIFICATIONS;
 
-  const response = await api.get<NotificationResponse>(url);
-  return response.data;
+    const response = await api.get<NotificationResponse>(url);
+    return response.data;
+  } catch (error: any) {
+    // Silently fail for auth errors - hook will handle this with enabled flag
+    if (error?.isAuthError || error?.status === 401) {
+      return { 
+        success: false, 
+        data: [], 
+        pagination: { page: 1, limit: 10, total: 0, pages: 0 },
+        unreadCount: 0 
+      };
+    }
+    throw error;
+  }
 };
 
 /**
  * Get unread notification count
  */
 export const getUnreadCount = async (): Promise<UnreadCountResponse> => {
-  const response = await api.get<UnreadCountResponse>(
-    `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/unread-count`
-  );
-  return response.data;
+  try {
+    const response = await api.get<UnreadCountResponse>(
+      `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/unread-count`
+    );
+    return response.data;
+  } catch (error: any) {
+    // Silently fail for auth errors - hook will handle this with enabled flag
+    if (error?.isAuthError || error?.status === 401) {
+      return { success: false, count: 0 };
+    }
+    throw error;
+  }
 };
 
 /**
  * Get notification statistics
  */
 export const getNotificationStats = async (): Promise<NotificationStatsResponse> => {
-  const response = await api.get<NotificationStatsResponse>(
-    `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/stats`
-  );
-  return response.data;
+  try {
+    const response = await api.get<NotificationStatsResponse>(
+      `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/stats`
+    );
+    return response.data;
+  } catch (error: any) {
+    // Silently fail for auth errors - hook will handle this with enabled flag
+    if (error?.isAuthError || error?.status === 401) {
+      return { 
+        success: false, 
+        total: 0, 
+        unread: 0, 
+        byType: {} 
+      };
+    }
+    throw error;
+  }
 };
 
 /**

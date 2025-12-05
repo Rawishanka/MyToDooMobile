@@ -38,17 +38,18 @@ export function useGetUserProfile() {
   }, [user?._id, queryClient]);
   
   return useQuery({
-    queryKey: [...USER_PROFILE_QUERY_KEYS.profile(), user?.email, user?._id, token], // More specific user isolation
+    queryKey: [...USER_PROFILE_QUERY_KEYS.profile(), user?._id], // Simplified - use only user ID for cache isolation
     queryFn: () => {
-      console.log("🔍 Fetching fresh user profile data for user:", user?.email);
+      console.log("🔍 Fetching fresh user profile data for user:", user?.email, "ID:", user?._id);
       // Double-check authentication before making API call
       if (!isAuthenticated || !token || !user?._id) {
         throw new Error("Not authenticated - cannot fetch profile");
       }
       return UserProfileAPI.getUserProfile();
     },
-    staleTime: 0, // Always fetch fresh data
-    gcTime: 0, // Never cache results
+    staleTime: 0, // Use global config for real-time updates
+    // refetchOnMount, refetchOnWindowFocus, refetchInterval use global QueryClient config
+    // gcTime uses global config (5 minutes) for offline fallback
     enabled: isAuthenticated && !!token && !!user?._id, // Only fetch when fully authenticated with user ID
     select: (response) => response.data, // Extract data from response
     retry: (failureCount, error: any) => {
@@ -60,8 +61,6 @@ export function useGetUserProfile() {
       // Retry network errors only once
       return failureCount < 1;
     },
-    refetchOnMount: false, // Don't auto-refetch on mount to prevent auth errors
-    refetchOnWindowFocus: false, // Don't refetch when window gains focus
   });
 }
 

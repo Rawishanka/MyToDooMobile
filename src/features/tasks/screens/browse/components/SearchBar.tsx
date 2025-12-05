@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface SearchBarProps {
@@ -7,13 +6,20 @@ interface SearchBarProps {
   searchText: string;
   onChangeText: (text: string) => void;
   onClose: () => void;
+  onSubmit?: () => void;
 }
 
-export default function SearchBar({ visible, searchText, onChangeText, onClose }: SearchBarProps) {
+export default function SearchBar({ visible, searchText, onChangeText, onClose, onSubmit }: SearchBarProps) {
   if (!visible) return null;
 
   const handleClear = () => {
     onChangeText('');
+  };
+
+  const handleSearch = () => {
+    if (onSubmit) {
+      onSubmit();
+    }
   };
 
   return (
@@ -30,14 +36,23 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose }
           placeholderTextColor="#999"
           value={searchText}
           onChangeText={onChangeText}
+          onSubmitEditing={handleSearch}
           autoFocus
           autoCapitalize="none"
           autoCorrect={false}
+          returnKeyType="search"
+          enablesReturnKeyAutomatically={true}
+          blurOnSubmit={false}
         />
         {searchText.length > 0 && (
-          <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
-            <Ionicons name="close-circle" size={20} color="#666" />
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
+              <Ionicons name="close-circle" size={20} color="#666" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleSearch} style={styles.searchButton}>
+              <Ionicons name="search" size={20} color="#007AFF" />
+            </TouchableOpacity>
+          </>
         )}
       </View>
       
@@ -82,6 +97,12 @@ const styles = StyleSheet.create({
   clearButton: {
     padding: 4,
     marginLeft: 4,
+  },
+  searchButton: {
+    padding: 6,
+    marginLeft: 4,
+    borderRadius: 12,
+    backgroundColor: '#E8F4FF',
   },
   searchInfo: {
     fontSize: 12,

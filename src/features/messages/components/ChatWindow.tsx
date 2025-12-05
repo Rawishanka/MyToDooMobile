@@ -11,7 +11,6 @@ import {
     Alert,
     FlatList,
     Image,
-    Keyboard,
     KeyboardAvoidingView,
     Modal,
     Platform,
@@ -20,8 +19,7 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+    View
 } from 'react-native';
 import type { ChatMessage, Message } from './message-types';
 
@@ -407,10 +405,8 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
         {/* Message Input */}
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
         >
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.contentWrapper}>
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
               <TouchableOpacity onPress={handleAttachment} style={styles.attachButton}>
@@ -434,8 +430,6 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
               </TouchableOpacity>
             </View>
           </View>
-            </View>
-          </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
       </View>
     </Modal>
@@ -446,9 +440,6 @@ const styles = StyleSheet.create({
   chatContainer: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  contentWrapper: {
-    flex: 1,
   },
   chatHeader: {
     flexDirection: 'row',
@@ -497,7 +488,7 @@ const styles = StyleSheet.create({
   },
   messagesContentContainer: {
     padding: 16,
-    paddingBottom: 100,
+    paddingBottom: 16,
   },
   messageWrapper: {
     marginBottom: 16,
