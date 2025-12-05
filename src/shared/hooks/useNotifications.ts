@@ -12,7 +12,9 @@ import {
     updateNotificationPreferences,
 } from '@/src/api/notification-api';
 import { handleAuthenticationError, isAuthError } from '@/src/shared/utils/auth-utils';
+import { useAuthStore } from '@/src/store/auth-task-store';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React from 'react';
 import { Alert } from 'react-native';
 
 // Query keys
@@ -34,12 +36,18 @@ export const useNotifications = (params?: {
   limit?: number;
   type?: string;
 }) => {
+  // Use getState() instead of subscribe to avoid re-renders
+  const isEnabled = React.useMemo(() => {
+    const { isAuthenticated, token } = useAuthStore.getState();
+    return isAuthenticated && !!token;
+  }, []); // Empty deps - only check once on mount
+
   return useQuery({
     queryKey: NOTIFICATION_KEYS.list(params),
     queryFn: () => getNotifications(params),
     staleTime: 30000, // 30 seconds
     retry: 0, // Don't retry on 404 - endpoint might not exist yet
-    enabled: true,
+    enabled: isEnabled, // Only fetch when authenticated
   });
 };
 
@@ -47,13 +55,19 @@ export const useNotifications = (params?: {
  * Hook to fetch unread count
  */
 export const useUnreadCount = () => {
+  // Use getState() instead of subscribe to avoid re-renders
+  const isEnabled = React.useMemo(() => {
+    const { isAuthenticated, token } = useAuthStore.getState();
+    return isAuthenticated && !!token;
+  }, []); // Empty deps - only check once on mount
+
   return useQuery({
     queryKey: NOTIFICATION_KEYS.unreadCount(),
     queryFn: getUnreadCount,
-    refetchInterval: 60000, // Refetch every minute
+    refetchInterval: isEnabled ? 60000 : false, // Only refetch when authenticated
     staleTime: 30000,
     retry: 0, // Don't retry on 404
-    enabled: true,
+    enabled: isEnabled, // Only fetch when authenticated
   });
 };
 
@@ -61,11 +75,18 @@ export const useUnreadCount = () => {
  * Hook to fetch notification statistics
  */
 export const useNotificationStats = () => {
+  // Use getState() instead of subscribe to avoid re-renders
+  const isEnabled = React.useMemo(() => {
+    const { isAuthenticated, token } = useAuthStore.getState();
+    return isAuthenticated && !!token;
+  }, []); // Empty deps - only check once on mount
+
   return useQuery({
     queryKey: NOTIFICATION_KEYS.stats(),
     queryFn: getNotificationStats,
     staleTime: 60000, // 1 minute
-    retry: 2,
+    retry: 0,
+    enabled: isEnabled, // Only fetch when authenticated
   });
 };
 
@@ -76,12 +97,18 @@ export const useNotificationsByType = (
   type: string,
   params?: { page?: number; limit?: number }
 ) => {
+  // Use getState() instead of subscribe to avoid re-renders
+  const isEnabled = React.useMemo(() => {
+    const { isAuthenticated, token } = useAuthStore.getState();
+    return !!type && isAuthenticated && !!token;
+  }, [type]); // Depend on type
+
   return useQuery({
     queryKey: NOTIFICATION_KEYS.byType(type),
     queryFn: () => getNotificationsByType(type, params),
-    enabled: !!type,
+    enabled: isEnabled, // Only fetch when authenticated
     staleTime: 30000,
-    retry: 2,
+    retry: 0,
   });
 };
 
@@ -89,11 +116,18 @@ export const useNotificationsByType = (
  * Hook to fetch notification preferences
  */
 export const useNotificationPreferences = () => {
+  // Use getState() instead of subscribe to avoid re-renders
+  const isEnabled = React.useMemo(() => {
+    const { isAuthenticated, token } = useAuthStore.getState();
+    return isAuthenticated && !!token;
+  }, []); // Empty deps - only check once on mount
+
   return useQuery({
     queryKey: NOTIFICATION_KEYS.preferences(),
     queryFn: getNotificationPreferences,
     staleTime: 300000, // 5 minutes
-    retry: 2,
+    retry: 0,
+    enabled: isEnabled, // Only fetch when authenticated
   });
 };
 

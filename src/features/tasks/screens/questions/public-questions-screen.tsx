@@ -1,7 +1,7 @@
 import { useGetAllPublicQuestions } from '@/src/shared/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -180,6 +180,7 @@ export default function PublicQuestionsScreen() {
           <TextInput
             style={styles.searchInput}
             placeholder="Search questions..."
+            placeholderTextColor="#999"
             value={searchText}
             onChangeText={setSearchText}
           />

@@ -232,37 +232,40 @@ export async function calculateServiceFee(
     return response.data;
   } catch (error: any) {
     // Check if this is an expected error that should use fallback
+    const statusCode = error?.status || error?.response?.status;
     const isExpectedFallbackError = 
-      error?.response?.status === 403 || 
-      error?.response?.status === 404 || 
-      error?.response?.status === 503;
+      statusCode === 403 || 
+      statusCode === 404 || 
+      statusCode === 503 ||
+      error?.isForbiddenError;
     
     // Only log errors for unexpected failures
-    if (!isExpectedFallbackError) {
+    if (!isExpectedFallbackError && !error?.isAuthError && !error?.isNetworkError) {
       console.error("❌ Failed to calculate service fee:", error);
     }
     
     // Handle authentication errors
-    if (error?.response?.status === 401 || error?.isAuthError) {
+    if (statusCode === 401 || error?.isAuthError) {
       console.error("❌ Service fee calculation failed - Authentication required (401)");
       throw new Error(error.message || "Authentication expired. Please login again to continue.");
     }
     
     // Handle validation errors
-    if (error?.response?.status === 400) {
-      const errorMessage = error?.response?.data?.message || "Invalid amount provided for fee calculation.";
+    if (statusCode === 400) {
+      const errorMessage = error?.response?.data?.message || error?.message || "Invalid amount provided for fee calculation.";
       console.error("❌ Service fee calculation failed - Validation error (400):", errorMessage);
       throw new Error(errorMessage);
     }
     
     // Fallback calculation if API is not available or returns 403/404/503
     if (isExpectedFallbackError) {
-      const statusCode = error?.response?.status;
       const reason = statusCode === 403 ? 'Forbidden (admin only)' : 
                      statusCode === 404 ? 'Endpoint not found' : 
                      'Service unavailable';
       
-      console.log(`ℹ️ Service fee API returned ${statusCode} (${reason}) - using fallback calculation (10%)`);
+      if (__DEV__) {
+        console.log(`ℹ️ Service fee API returned ${statusCode} (${reason}) - using fallback calculation (10%)`);
+      }
       
       const amount = feeData.amount;
       const serviceFee = Math.round(amount * 0.10 * 100) / 100; // 10% fee
@@ -280,7 +283,7 @@ export async function calculateServiceFee(
       };
     }
     
-    throw new Error(error?.response?.data?.message || "Failed to calculate service fee. Please try again.");
+    throw new Error(error?.response?.data?.message || error?.message || "Failed to calculate service fee. Please try again.");
   }
 }
 
@@ -461,6 +464,6 @@ export async function updateServiceFeeConfig(configData: {
 
 // Export all payment functions
 export {
-  createPaymentIntent as default
+    createPaymentIntent as default
 };
 

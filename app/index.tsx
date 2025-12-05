@@ -1,8 +1,9 @@
 import FallingStars from '@/src/shared/components/FallingStars';
+import { useAuthStore } from '@/src/store/auth-task-store';
 import { ResizeMode, Video } from 'expo-av';
 import { Link, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 const MyToDooLogo = require('@/assets/MyToDoo_logo.gif');
@@ -16,6 +17,34 @@ export default function WelcomeScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [nextIndex, setNextIndex] = useState(1);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const { isAuthenticated, token } = useAuthStore();
+  
+  // Check authentication and navigate to appropriate screen
+  useEffect(() => {
+    const checkAuth = async () => {
+      console.log('🔐 Checking authentication status...', { isAuthenticated, hasToken: !!token });
+      
+      // Wait a moment for AuthProvider to restore state from AsyncStorage
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const currentAuthState = useAuthStore.getState();
+      console.log('🔐 Auth state after delay:', { 
+        isAuthenticated: currentAuthState.isAuthenticated, 
+        hasToken: !!currentAuthState.token 
+      });
+      
+      if (currentAuthState.isAuthenticated && currentAuthState.token) {
+        console.log('✅ User is authenticated, navigating to tabs...');
+        router.replace('/(tabs)' as any);
+      } else {
+        console.log('❌ User not authenticated, showing welcome screen');
+        setIsCheckingAuth(false);
+      }
+    };
+    
+    checkAuth();
+  }, []); // Run only once on mount
   
   useEffect(() => {
     console.log('🚀 WelcomeScreen: Component mounted, starting video timer...');
@@ -43,6 +72,18 @@ export default function WelcomeScreen() {
   const nextCategory = categoryVideos[nextIndex];
   const currentVideo = getCategoryVideo(currentCategory.id);
   const nextVideo = getCategoryVideo(nextCategory.id);
+
+  // Show loading while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -225,5 +266,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#fff',
+    fontSize: 16,
+    marginTop: 16,
+    fontWeight: '500',
   },
 });

@@ -617,9 +617,9 @@ export function useCreateAuthToken() {
         throw error;
       }
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log('✅ Login mutation success');
-      setAuthData(data.token, data.user, data.expiresIn);
+      await setAuthData(data.token, data.user, data.expiresIn);
     },
     onError: (error: any) => {
       if (__DEV__) {

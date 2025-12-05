@@ -10,10 +10,11 @@ import React from 'react';
 // ==========================================
 
 export const USER_PROFILE_QUERY_KEYS = {
-  all: ['userProfile'] as const,
+  all: ['user-profile'] as const,
   profile: () => [...USER_PROFILE_QUERY_KEYS.all, 'profile'] as const,
-  ratingStats: (userId: string) => [...USER_PROFILE_QUERY_KEYS.all, 'ratingStats', userId] as const,
-  canReview: (userId: string) => [...USER_PROFILE_QUERY_KEYS.all, 'canReview', userId] as const,
+  ratingStats: (userId: string) => [...USER_PROFILE_QUERY_KEYS.all, 'rating-stats', userId] as const,
+  reviews: (userId: string) => [...USER_PROFILE_QUERY_KEYS.all, 'reviews', userId] as const,
+  canReview: (userId: string) => [...USER_PROFILE_QUERY_KEYS.all, 'can-review', userId] as const,
 };
 
 // ==========================================
@@ -36,31 +37,30 @@ export function useGetUserProfile() {
     queryClient.removeQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
   }, [user?._id, queryClient]);
   
+  // Check if we have minimum auth requirements
+  const hasMinimumAuth = isAuthenticated && !!token;
+  
   return useQuery({
-    queryKey: [...USER_PROFILE_QUERY_KEYS.profile(), user?.email, user?._id, token], // More specific user isolation
+    queryKey: [...USER_PROFILE_QUERY_KEYS.profile(), user?._id], // Simplified - use only user ID for cache isolation
     queryFn: () => {
-      console.log("🔍 Fetching fresh user profile data for user:", user?.email);
-      // Double-check authentication before making API call
-      if (!isAuthenticated || !token || !user?._id) {
-        throw new Error("Not authenticated - cannot fetch profile");
-      }
+      console.log("🔍 Fetching fresh user profile data for user:", user?.email, "ID:", user?._id);
+      // If we have token but no user ID, the API will use the token to get user info
       return UserProfileAPI.getUserProfile();
     },
-    staleTime: 0, // Always fetch fresh data
-    gcTime: 0, // Never cache results
-    enabled: isAuthenticated && !!token && !!user?._id, // Only fetch when fully authenticated with user ID
+    staleTime: 0, // Use global config for real-time updates
+    // refetchOnMount, refetchOnWindowFocus, refetchInterval use global QueryClient config
+    // gcTime uses global config (5 minutes) for offline fallback
+    enabled: hasMinimumAuth, // Only need token, API will return user data
     select: (response) => response.data, // Extract data from response
     retry: (failureCount, error: any) => {
       // Don't retry on 401 authentication errors
-      if (error?.response?.status === 401 || error?.isAuthError || error?.message?.includes("Not authenticated")) {
+      if (error?.response?.status === 401 || error?.isAuthError) {
         console.log("❌ Authentication error - not retrying profile fetch");
         return false;
       }
       // Retry network errors only once
       return failureCount < 1;
     },
-    refetchOnMount: false, // Don't auto-refetch on mount to prevent auth errors
-    refetchOnWindowFocus: false, // Don't refetch when window gains focus
   });
 }
 
@@ -74,6 +74,33 @@ export function useGetUserRatingStats(userId: string, enabled = true) {
     enabled: enabled && !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     select: (response) => response.data,
+  });
+}
+
+/**
+ * Hook to fetch user reviews (paginated)
+ */
+export function useGetUserReviews(
+  userId: string,
+  page: number = 1,
+  limit: number = 10,
+  role?: 'poster' | 'tasker',
+  enabled = true
+) {
+  return useQuery({
+    queryKey: [...USER_PROFILE_QUERY_KEYS.reviews(userId), page, limit, role],
+    queryFn: () => UserProfileAPI.getUserReviews(userId, page, limit, role),
+    enabled: enabled && !!userId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    select: (response) => ({
+      reviews: response?.data || [],
+      pagination: response?.pagination || {
+        currentPage: 1,
+        totalPages: 0,
+        totalReviews: 0,
+        hasMore: false,
+      },
+    }),
   });
 }
 

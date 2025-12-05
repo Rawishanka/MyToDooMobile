@@ -4,11 +4,15 @@ import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View
 } from 'react-native';
 
@@ -90,6 +94,12 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
   };
 
   return (
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={{ flex: 1 }}>
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
@@ -173,6 +183,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
                   value={basePercentage}
                   onChangeText={setBasePercentage}
                   placeholder="Enter percentage (e.g., 10 for 10%)"
+                  placeholderTextColor="#999"
                   keyboardType="decimal-pad"
                   editable={!updateConfigMutation.isPending}
                 />
@@ -188,6 +199,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
                   value={minFeeUsd}
                   onChangeText={setMinFeeUsd}
                   placeholder="Enter minimum fee (e.g., 5.00)"
+                  placeholderTextColor="#999"
                   keyboardType="decimal-pad"
                   editable={!updateConfigMutation.isPending}
                 />
@@ -203,6 +215,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
                   value={maxFeeUsd}
                   onChangeText={setMaxFeeUsd}
                   placeholder="Enter maximum fee (e.g., 50.00)"
+                  placeholderTextColor="#999"
                   keyboardType="decimal-pad"
                   editable={!updateConfigMutation.isPending}
                 />
@@ -256,6 +269,9 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
         )}
       </ScrollView>
     </View>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 

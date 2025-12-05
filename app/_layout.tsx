@@ -1,5 +1,5 @@
 import { AntDesign, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -14,6 +14,11 @@ import { useColorScheme } from '@/src/shared/hooks/useColorScheme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
+
+// Import testing utilities in development mode
+if (__DEV__) {
+  require('@/src/shared/utils/test-auth-persistence');
+}
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -34,9 +39,12 @@ const queryClient = new QueryClient({
         // Retry other errors up to 2 times
         return failureCount < 2;
       },
-      refetchOnWindowFocus: false, // Prevent refetch when returning to app - preserves screen state
-      refetchOnMount: false, // Prevent refetch on component mount - preserves screen state
-      staleTime: 5 * 60 * 1000, // 5 minutes - data considered fresh for 5 minutes
+      refetchOnWindowFocus: true, // ✅ FIXED: Refetch when app comes to foreground
+      refetchOnMount: true, // ✅ FIXED: Refetch when component mounts
+      refetchOnReconnect: true, // ✅ NEW: Refetch when internet reconnects
+      staleTime: 0, // ✅ FIXED: Data always considered stale - refetch immediately
+      gcTime: 5 * 60 * 1000, // Cache for 5 minutes (formerly cacheTime)
+      refetchInterval: 30000, // ✅ NEW: Auto-refetch every 30 seconds for real-time updates
     },
     mutations: {
       retry: false, // Don't retry mutations by default
@@ -88,7 +96,7 @@ export default function RootLayout() {
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
           <SafeAreaProvider>
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <ThemeProvider value={DefaultTheme}>
               <DeepLinkHandler />
               <Stack>
                 <Stack.Screen name='index' options={{ headerShown: false }} />
@@ -102,7 +110,7 @@ export default function RootLayout() {
                 <Stack.Screen name="public-questions" options={{ headerShown: false }} />
                 <Stack.Screen name="+not-found" />
               </Stack>
-              <StatusBar style="auto" />
+              <StatusBar style="dark" />
             </ThemeProvider>
           </SafeAreaProvider>
         </QueryClientProvider>

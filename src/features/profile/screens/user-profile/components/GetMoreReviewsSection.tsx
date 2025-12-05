@@ -14,7 +14,7 @@ export const GetMoreReviewsSection: React.FC<GetMoreReviewsProps> = ({ userId, u
   const handleShareReviewLink = async () => {
     try {
       // Generate review link - using hosted frontend
-      const reviewLink = `http://134.199.172.167:3000/review/${userId}`;
+      const reviewLink = `https://mytodoo.com/review/${userId}`;
       
       // Try to share using React Native's built-in Share API
       const result = await Share.share({
@@ -34,7 +34,7 @@ export const GetMoreReviewsSection: React.FC<GetMoreReviewsProps> = ({ userId, u
       console.error('Share error:', error);
       // Fallback: try to copy to clipboard
       try {
-        const reviewLink = `http://134.199.172.167:3000/review/${userId}`;
+        const reviewLink = `https://mytodoo.com/review/${userId}`;
         await Clipboard.setString(reviewLink);
         Alert.alert('Link Copied', 'Review link copied to clipboard!');
       } catch (clipboardError) {

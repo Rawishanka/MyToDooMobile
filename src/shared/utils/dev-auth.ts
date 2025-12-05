@@ -31,7 +31,7 @@ export async function autoLoginForDevelopment() {
     if (storedToken) {
       // Don't create mock user - let the app fetch real user data from API
       console.log("🔄 Found stored token in development, setting token only");
-      setAuthData(storedToken, null, 3600);
+      await setAuthData(storedToken, null, 3600);
       console.log("✅ Development token restored (user data will be fetched from API)");
       return;
     }

@@ -7,19 +7,19 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
-  ActionSheetIOS,
-  Alert,
-  FlatList,
-  Image,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActionSheetIOS,
+    Alert,
+    FlatList,
+    Image,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import type { ChatMessage, Message } from './message-types';
 
@@ -405,7 +405,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
         {/* Message Input */}
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
         >
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
@@ -415,6 +415,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({ visible, onClose, messag
               <TextInput
                 style={styles.messageInput}
                 placeholder="Type a message..."
+                placeholderTextColor="#999"
                 value={newMessage}
                 onChangeText={setNewMessage}
                 multiline
@@ -487,7 +488,7 @@ const styles = StyleSheet.create({
   },
   messagesContentContainer: {
     padding: 16,
-    paddingBottom: 100,
+    paddingBottom: 16,
   },
   messageWrapper: {
     marginBottom: 16,

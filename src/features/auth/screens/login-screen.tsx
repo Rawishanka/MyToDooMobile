@@ -8,6 +8,7 @@ import { useAuthStore } from '@/src/store/auth-task-store';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Google from 'expo-auth-session/providers/google';
 import Constants from 'expo-constants';
@@ -18,13 +19,16 @@ import {
     ActivityIndicator,
     Alert,
     Image,
+    Keyboard,
     KeyboardAvoidingView,
     Platform,
     SafeAreaView,
+    ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 
@@ -40,6 +44,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const { mutateAsync } = useCreateAuthToken();
   const { mutateAsync: googleSignIn } = useGoogleSignIn();
   const clearCachesOnLogin = useClearCachesOnLogin();
@@ -75,6 +80,50 @@ export default function LoginScreen() {
     redirectUri: redirectUri,
     scopes: ['openid', 'profile', 'email'],
   });
+
+  // Load saved credentials on mount
+  useEffect(() => {
+    loadSavedCredentials();
+  }, []);
+
+  const loadSavedCredentials = async () => {
+    try {
+      const savedEmail = await AsyncStorage.getItem('saved_email');
+      const savedPassword = await AsyncStorage.getItem('saved_password');
+      const rememberMeValue = await AsyncStorage.getItem('remember_me');
+      
+      if (rememberMeValue === 'true' && savedEmail && savedPassword) {
+        setEmail(savedEmail);
+        setPassword(savedPassword);
+        setRememberMe(true);
+        console.log('✅ Loaded saved credentials');
+      }
+    } catch (error) {
+      console.log('⚠️ Error loading saved credentials:', error);
+    }
+  };
+
+  const saveCredentials = async (email: string, password: string) => {
+    try {
+      await AsyncStorage.setItem('saved_email', email);
+      await AsyncStorage.setItem('saved_password', password);
+      await AsyncStorage.setItem('remember_me', 'true');
+      console.log('✅ Credentials saved');
+    } catch (error) {
+      console.log('⚠️ Error saving credentials:', error);
+    }
+  };
+
+  const clearSavedCredentials = async () => {
+    try {
+      await AsyncStorage.removeItem('saved_email');
+      await AsyncStorage.removeItem('saved_password');
+      await AsyncStorage.removeItem('remember_me');
+      console.log('✅ Credentials cleared');
+    } catch (error) {
+      console.log('⚠️ Error clearing credentials:', error);
+    }
+  };
 
   const handleGoogleSignInSuccess = useCallback(async (idToken: string) => {
     try {
@@ -342,6 +391,13 @@ export default function LoginScreen() {
       // Use trimmed values for login
       await mutateAsync({ username: trimmedEmail.toLowerCase(), password: trimmedPassword });
       
+      // Save or clear credentials based on Remember Me checkbox
+      if (rememberMe) {
+        await saveCredentials(trimmedEmail, trimmedPassword);
+      } else {
+        await clearSavedCredentials();
+      }
+      
       // Force invalidate profile queries to ensure fresh profile data
       await queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
       console.log('🔄 Profile queries invalidated for fresh data');
@@ -585,16 +641,23 @@ export default function LoginScreen() {
         <Ionicons name="close" size={28} color="#333" />
       </TouchableOpacity>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.innerContainer}
       >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.contentWrapper}>
         <View style={styles.header}>
           {/* MyToDoo SVG Logo in Blue Container */}
           <View style={styles.logoContainer}>
             <View style={styles.logoBackground}>
               <MyToDooLogo 
-                width={60}
-                height={60}
+                width={50}
+                height={50}
               />
             </View>
           </View>
@@ -620,6 +683,7 @@ export default function LoginScreen() {
             value={email}
             onChangeText={setEmail}
             placeholder="Enter your email"
+            placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -631,6 +695,7 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               placeholder="Enter your password"
+              placeholderTextColor="#999"
               secureTextEntry={!showPassword}
             />
             <TouchableOpacity 
@@ -645,6 +710,20 @@ export default function LoginScreen() {
               />
             </TouchableOpacity>
           </View>
+
+          {/* Remember Me Checkbox */}
+          <TouchableOpacity 
+            style={styles.rememberMeContainer}
+            onPress={() => setRememberMe(!rememberMe)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+              {rememberMe && (
+                <Ionicons name="checkmark" size={16} color="#fff" />
+              )}
+            </View>
+            <Text style={styles.rememberMeText}>Remember Me</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
             <Text style={styles.forgotPassword}>Forgot Password?</Text>
@@ -691,6 +770,9 @@ export default function LoginScreen() {
             <Text style={styles.registerText}>Sign Up</Text>
           </TouchableOpacity>
         </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -703,53 +785,64 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
+    paddingVertical: 20,
+  },
+  contentWrapper: {
+    width: '100%',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
+    marginTop: 20,
   },
   logoContainer: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   logoBackground: {
     backgroundColor: '#0a2d5c',
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: 16,
+    padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 6,
     color: '#333',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
   },
   form: {
-    marginBottom: 24,
+    marginBottom: 16,
   },
   label: {
     fontSize: 14,
     color: '#333',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 16,
+    paddingVertical: 12,
+    marginBottom: 12,
+    color: '#333',
+    backgroundColor: '#fff',
+    fontSize: 15,
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -757,38 +850,67 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
-    marginBottom: 16,
+    marginBottom: 12,
     paddingRight: 8,
   },
   passwordInput: {
     flex: 1,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
+    color: '#333',
+    fontSize: 15,
   },
   passwordToggle: {
     padding: 8,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  rememberMeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingVertical: 4,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  checkboxChecked: {
+    backgroundColor: '#007BFF',
+    borderColor: '#007BFF',
+  },
+  rememberMeText: {
+    fontSize: 14,
+    color: '#333',
+  },
   forgotPassword: {
     color: '#007BFF',
     textAlign: 'right',
     marginBottom: 16,
+    fontSize: 14,
   },
   loginButton: {
     backgroundColor: '#007BFF',
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
   },
   loginButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+    fontSize: 16,
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 16,
   },
   divider: {
     flex: 1,
@@ -806,11 +928,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   googleIcon: {
     width: 20,
