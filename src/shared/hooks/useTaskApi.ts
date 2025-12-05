@@ -4,13 +4,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TaskAPI } from '../../api/task-api';
 import {
-  CreateOfferRequest,
-  CreateTaskRequest,
-  MyTasksParams,
-  TaskFilterParams,
-  TaskOffer,
-  TaskSearchParams,
-  UpdateTaskRequest
+    CreateOfferRequest,
+    CreateTaskRequest,
+    MyTasksParams,
+    TaskFilterParams,
+    TaskOffer,
+    TaskSearchParams,
+    UpdateTaskRequest
 } from '../../api/types/tasks';
 import { handleAuthenticationError, isAuthError } from '../utils/auth-utils';
 import { isNetworkError } from '../utils/networkErrorHandler';
@@ -866,6 +866,54 @@ export function useAnswerTaskQuestion() {
   });
 }
 
+/**
+ * ⭐ Submit Review Mutation
+ */
+export function useSubmitReview() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (params: {
+      taskId: string;
+      rating: number;
+      reviewText?: string;
+      attachments?: any[];
+    }) => TaskAPI.submitTaskReview(params),
+    onSuccess: (data, variables) => {
+      // Invalidate task details to show updated review
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.taskDetails(variables.taskId) });
+      
+      // Invalidate reviews queries
+      queryClient.invalidateQueries({ queryKey: ['reviews', 'tasker'] });
+      queryClient.invalidateQueries({ queryKey: ['reviews', 'poster'] });
+      
+      console.log('✅ Review submitted successfully');
+    },
+  });
+}
+
+/**
+ * ⭐ Get Tasker Reviews Query
+ */
+export function useGetTaskerReviews(params?: { page?: number; limit?: number }) {
+  return useQuery({
+    queryKey: ['reviews', 'tasker', params],
+    queryFn: () => TaskAPI.getTaskerReviews(params),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
+/**
+ * ⭐ Get Poster Reviews Query
+ */
+export function useGetPosterReviews(params?: { page?: number; limit?: number }) {
+  return useQuery({
+    queryKey: ['reviews', 'poster', params],
+    queryFn: () => TaskAPI.getPosterReviews(params),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
 // 🚀 **EXPORT ALL HOOKS**
 export const TaskHooks = {
   // Query Hooks
@@ -884,6 +932,8 @@ export const TaskHooks = {
   useGetPosterPayments,
   useGetTaskQuestions,
   useGetUserTasks,
+  useGetTaskerReviews,
+  useGetPosterReviews,
   
   // Mutation Hooks
   useCreateTask,
@@ -904,6 +954,7 @@ export const TaskHooks = {
   useCompleteTaskPayment,
   usePostTaskQuestion,
   useAnswerTaskQuestion,
+  useSubmitReview,
 };
 
 export default TaskHooks;
