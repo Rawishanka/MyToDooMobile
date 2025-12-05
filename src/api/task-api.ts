@@ -3543,6 +3543,12 @@ export async function submitTaskReview(params: {
   const api = getApi();
   try {
     console.log("⭐ Submitting review for task:", params.taskId);
+    console.log("⭐ Review parameters:", {
+      taskId: params.taskId,
+      rating: params.rating,
+      hasReviewText: !!params.reviewText,
+      attachmentsCount: params.attachments?.length || 0
+    });
     
     // Create FormData for multipart/form-data request
     const formData = new FormData();
@@ -3576,12 +3582,16 @@ export async function submitTaskReview(params: {
     return response.data;
   } catch (error: any) {
     console.error("❌ Submit review failed:", error);
+    console.error("❌ Error response data:", error?.response?.data);
+    console.error("❌ Error status:", error?.response?.status);
     
     // Extract error message from response
     const errorMessage = error?.response?.data?.error || 
                         error?.response?.data?.message || 
+                        error?.message ||
                         'Failed to submit review';
     
+    console.error("❌ Final error message:", errorMessage);
     throw new Error(errorMessage);
   }
 }

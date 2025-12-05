@@ -324,20 +324,28 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       Alert.alert(
         'Task Completed',
         isAcceptedOfferTask ? 
-          'Payment has been released and the task has been marked as completed.' : 
+          'Payment has been released and the task has been marked as completed. Would you like to rate and review the tasker now?' : 
           'The task has been marked as completed and moved to the Completed tab.',
-        [{ 
-          text: 'OK',
-          onPress: () => {
-            // POSTER: Show rating modal after task completion
-            if (userRole === 'Poster' && isAcceptedOfferTask) {
+        isAcceptedOfferTask ? [
+          {
+            text: 'Later',
+            style: 'cancel',
+            onPress: () => {
+              console.log('⏭️ Poster chose to skip review for now');
+            }
+          },
+          { 
+            text: 'Rate Now',
+            onPress: () => {
+              // POSTER: Show rating modal after task completion
               console.log('⭐ Task completed - now showing rating modal for poster');
+              // Give time for backend to update task status and UI to refresh
               setTimeout(() => {
                 setShowRatingModal(true);
-              }, 300);
+              }, 1500);
             }
           }
-        }]
+        ] : [{ text: 'OK' }]
       );
       
     } catch (error: any) {

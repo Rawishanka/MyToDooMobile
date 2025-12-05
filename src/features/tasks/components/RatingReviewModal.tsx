@@ -90,10 +90,21 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
     } catch (error: any) {
       console.error('❌ Submit review error:', error);
       setIsSubmitting(false);
-      Alert.alert(
-        'Error',
-        error?.message || 'Failed to submit review. Please try again.'
-      );
+      
+      let errorMessage = 'Failed to submit review. Please try again.';
+      
+      // Check for specific error messages
+      if (error?.message?.includes('reviewerId') || error?.message?.includes('revieweeId')) {
+        errorMessage = 'Task information is not ready yet. Please wait a moment and try again, or close this modal and submit your review from the Completed tab.';
+      } else if (error?.message?.includes('already reviewed')) {
+        errorMessage = 'You have already submitted a review for this task.';
+      } else if (error?.message?.includes('not completed')) {
+        errorMessage = 'This task must be fully completed before you can submit a review.';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Review Submission Failed', errorMessage);
     }
   };
 
