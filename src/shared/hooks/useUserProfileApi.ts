@@ -37,24 +37,24 @@ export function useGetUserProfile() {
     queryClient.removeQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
   }, [user?._id, queryClient]);
   
+  // Check if we have minimum auth requirements
+  const hasMinimumAuth = isAuthenticated && !!token;
+  
   return useQuery({
     queryKey: [...USER_PROFILE_QUERY_KEYS.profile(), user?._id], // Simplified - use only user ID for cache isolation
     queryFn: () => {
       console.log("🔍 Fetching fresh user profile data for user:", user?.email, "ID:", user?._id);
-      // Double-check authentication before making API call
-      if (!isAuthenticated || !token || !user?._id) {
-        throw new Error("Not authenticated - cannot fetch profile");
-      }
+      // If we have token but no user ID, the API will use the token to get user info
       return UserProfileAPI.getUserProfile();
     },
     staleTime: 0, // Use global config for real-time updates
     // refetchOnMount, refetchOnWindowFocus, refetchInterval use global QueryClient config
     // gcTime uses global config (5 minutes) for offline fallback
-    enabled: isAuthenticated && !!token && !!user?._id, // Only fetch when fully authenticated with user ID
+    enabled: hasMinimumAuth, // Only need token, API will return user data
     select: (response) => response.data, // Extract data from response
     retry: (failureCount, error: any) => {
       // Don't retry on 401 authentication errors
-      if (error?.response?.status === 401 || error?.isAuthError || error?.message?.includes("Not authenticated")) {
+      if (error?.response?.status === 401 || error?.isAuthError) {
         console.log("❌ Authentication error - not retrying profile fetch");
         return false;
       }

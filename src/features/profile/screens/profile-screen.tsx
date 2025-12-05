@@ -38,6 +38,11 @@ export default function AccountScreen() {
   const [editAccessStatus, setEditAccessStatus] = useState<'locked' | 'pending' | 'approved'>('locked');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
+  
+  // ID Verification request flow states
+  const [idVerificationStatus, setIdVerificationStatus] = useState<'locked' | 'pending' | 'approved'>('locked');
+  const [showIdRequestModal, setShowIdRequestModal] = useState(false);
+  const [showIdPendingModal, setShowIdPendingModal] = useState(false);
 
   // Local state for profile picture preview
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
@@ -53,15 +58,7 @@ export default function AccountScreen() {
   //  **NEW: Get real user data from API**
   const { data: userProfileData, isLoading: isLoadingProfile, error: profileError, refetch } = useGetUserProfile();
   const { mutate: uploadAvatar, isPending: isUploadingAvatar } = useUploadUserAvatar();
-  const { user: authUser, isAuthenticated, token } = useAuthStore();
-
-  // 🔄 **Auto-redirect to login when authentication is cleared**
-  React.useEffect(() => {
-    if (!isAuthenticated || !token) {
-      console.log("⚠️ Not authenticated - redirecting to login");
-      router.replace('/(auth)/login');
-    }
-  }, [isAuthenticated, token, router]);
+  const { user: authUser, isAuthenticated, token, clearAuth } = useAuthStore();
 
   // **Get rating data for the current user**
   const userId = authUser?._id || authUser?.id || '';
@@ -149,12 +146,37 @@ export default function AccountScreen() {
   let userData: any = userProfileData;
 
   // 🚨 **PREVENT CACHE PERSISTENCE: Multiple validation layers**
+  // Check if we have authentication error (401, token expired, etc.)
+  const isAuthError = profileError && (
+    (profileError as any)?.response?.status === 401 ||
+    (profileError as any)?.isAuthError ||
+    (profileError as any)?.message?.includes('Not authenticated') ||
+    (profileError as any)?.message?.includes('token')
+  );
+
+  // If auth error detected, clear auth and redirect
+  React.useEffect(() => {
+    if (isAuthError) {
+      console.log("❌ Authentication error detected - clearing auth and redirecting to login");
+      clearAuth().then(() => {
+        router.replace('/(auth)/login');
+      });
+    }
+  }, [isAuthError]);
+
   // 1. No authentication = no data
   // 2. API error = no data  
   // 3. Mismatched user = no data
-  if (!isAuthenticated || !token || !authUser?._id) {
-    console.log("⚠️ Not authenticated - no profile data");
-    userData = null;
+  if (!isAuthenticated || !token) {
+    console.log("⚠️ Not authenticated - redirecting to login");
+    router.replace('/(auth)/login');
+    return null;
+  } else if (!authUser?._id && !isLoadingProfile) {
+    console.log("⚠️ No user data in auth store - clearing auth");
+    clearAuth().then(() => {
+      router.replace('/(auth)/login');
+    });
+    return null;
   } else if (profileError && !userData) {
     console.log("⚠️ Profile API error - no profile data to prevent cache persistence");
     userData = null;
@@ -187,9 +209,9 @@ export default function AccountScreen() {
     } : undefined
   });
 
-  // 🚨 **Show loading while checking authentication (useEffect will redirect if needed)**
-  if (!isAuthenticated || !token || !authUser) {
-    console.log("❌ Not authenticated - showing loading state");
+  // 🚨 **Show loading while fetching profile data**
+  if (isLoadingProfile) {
+    console.log("⏳ Loading profile data...");
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0052A2" />
@@ -412,7 +434,29 @@ export default function AccountScreen() {
   };
 
   const navigateToIDVerification = () => {
-    setCurrentScreen('id-verification');
+    // Check ID verification access status
+    if (idVerificationStatus === 'locked') {
+      // Show request modal if locked
+      setShowIdRequestModal(true);
+    } else if (idVerificationStatus === 'pending') {
+      // Show pending modal if already requested
+      setShowIdPendingModal(true);
+    } else {
+      // Only allow ID verification if approved
+      setCurrentScreen('id-verification');
+    }
+  };
+
+  const handleSendIdVerificationRequest = () => {
+    setShowIdRequestModal(false);
+    // TODO: Send request to backend API
+    // For now, just update the status to pending
+    setIdVerificationStatus('pending');
+    
+    // Show pending modal
+    setTimeout(() => {
+      setShowIdPendingModal(true);
+    }, 300);
   };
 
   // If profile update screen is selected, show profile update form
@@ -693,7 +737,12 @@ export default function AccountScreen() {
           icon={<Ionicons name="shield-checkmark-outline" size={20} color="#0052A2" />}
           text="ID Verification"
           onPress={navigateToIDVerification} 
-          subtext={userData?.isVerified ? "Identity verified" : "Verify your identity to build trust"}        
+          subtext={idVerificationStatus === 'locked'
+            ? "Request access to verify"
+            : idVerificationStatus === 'pending'
+            ? "Pending admin approval"
+            : userData?.isVerified ? "Identity verified" : "Verify your identity to build trust"}
+          disabled={false}
         />
         
         <Text style={styles.sectionTitle}>ACCOUNT SETTINGS</Text>
@@ -862,6 +911,79 @@ export default function AccountScreen() {
             
             <Text style={styles.modalFooterText}>
               Usually takes 24-48 hours
+            </Text>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ID Verification Request Access Modal */}
+      <Modal
+        visible={showIdRequestModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowIdRequestModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Request ID Verification Access</Text>
+            <Text style={styles.modalMessage}>
+              ID Verification requires admin approval. Send a request to admin to enable ID verification?
+            </Text>
+            <Text style={styles.modalSubMessage}>
+              Admin will review your request and grant access.
+            </Text>
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={styles.modalCancelButton}
+                onPress={() => setShowIdRequestModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.modalSendButton}
+                onPress={handleSendIdVerificationRequest}
+              >
+                <Text style={styles.modalSendText}>Send Request</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ID Verification Pending Approval Modal */}
+      <Modal
+        visible={showIdPendingModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowIdPendingModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.pendingIconContainer}>
+              <Ionicons name="shield-checkmark" size={48} color="#0052A2" />
+            </View>
+            
+            <Text style={styles.modalTitle}>Verification Request Sent!</Text>
+            <Text style={styles.modalMessage}>
+              Waiting for admin approval to proceed with ID verification.
+            </Text>
+            
+            <View style={styles.pendingBadge}>
+              <View style={styles.pendingDot} />
+              <Text style={styles.pendingText}>Pending Admin Approval</Text>
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.backToProfileButton}
+              onPress={() => setShowIdPendingModal(false)}
+            >
+              <Text style={styles.backToProfileText}>Back to Profile</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.modalFooterText}>
+              You'll be notified when approved (Usually 24-48 hours)
             </Text>
           </View>
         </View>

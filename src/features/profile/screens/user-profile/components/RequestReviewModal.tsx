@@ -3,17 +3,17 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    Keyboard,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 
 // Country codes mapping
@@ -51,7 +51,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
   const [detectedCountry, setDetectedCountry] = useState('LK');
   
   // Review link using hosted frontend
-  const reviewLink = `http://134.199.172.167:3000/review/${userId}`;
+  const reviewLink = `https://mytodoo.com/review/${userId}`;
   
   const requestReviewMutation = useRequestReview();
 

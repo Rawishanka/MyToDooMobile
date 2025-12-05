@@ -59,7 +59,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     apiUrl: process.env.API_URL,
-    easApiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://134.199.172.167:5001/api',
+    easApiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://api.mytodoo.com/api',
     environment: process.env.ENVIRONMENT,
     mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
     googleClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
