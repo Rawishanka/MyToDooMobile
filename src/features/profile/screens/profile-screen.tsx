@@ -164,19 +164,31 @@ export default function AccountScreen() {
     }
   }, [isAuthError]);
 
+  // Handle missing authentication - use useEffect to avoid setState during render
+  React.useEffect(() => {
+    if (!isAuthenticated || !token) {
+      console.log("⚠️ Not authenticated - redirecting to login");
+      router.replace('/(auth)/login');
+    }
+  }, [isAuthenticated, token]);
+
+  // Handle missing user data - use useEffect to avoid setState during render
+  React.useEffect(() => {
+    if (isAuthenticated && token && !authUser?._id && !isLoadingProfile) {
+      console.log("⚠️ No user data in auth store - clearing auth");
+      clearAuth().then(() => {
+        router.replace('/(auth)/login');
+      });
+    }
+  }, [isAuthenticated, token, authUser?._id, isLoadingProfile]);
+
   // 1. No authentication = no data
   // 2. API error = no data  
   // 3. Mismatched user = no data
   if (!isAuthenticated || !token) {
-    console.log("⚠️ Not authenticated - redirecting to login");
-    router.replace('/(auth)/login');
-    return null;
+    return null; // useEffect will handle redirect
   } else if (!authUser?._id && !isLoadingProfile) {
-    console.log("⚠️ No user data in auth store - clearing auth");
-    clearAuth().then(() => {
-      router.replace('/(auth)/login');
-    });
-    return null;
+    return null; // useEffect will handle clearing auth and redirect
   } else if (profileError && !userData) {
     console.log("⚠️ Profile API error - no profile data to prevent cache persistence");
     userData = null;

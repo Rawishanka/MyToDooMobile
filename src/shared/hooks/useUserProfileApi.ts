@@ -1,5 +1,5 @@
 // React Query hooks for user profile management
-import type { RequestReviewRequest, UpdateProfileRequest } from '@/src/api/user-profile-api';
+import type { RequestReviewRequest, SubmitReviewData, UpdateProfileRequest } from '@/src/api/user-profile-api';
 import * as UserProfileAPI from '@/src/api/user-profile-api';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';

@@ -272,8 +272,12 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               console.warn('⚠️ Payment completion failed:', paymentError?.message);
             }
             
-            // If payment completion fails due to missing payment intent, try regular completion
+            // If payment completion fails, try regular completion as fallback
+            // This handles cases where payment API is unavailable or task is already paid
             if (paymentError?.response?.status === 500 || 
+                paymentError?.response?.status === 400 ||
+                paymentError?.response?.status === 404 ||
+                paymentError?.message?.includes('Failed to complete task payment') ||
                 paymentError?.response?.data?.message?.includes('No accepted offer found') ||
                 paymentError?.response?.data?.message?.includes('Payment has not been completed yet')) {
               console.log('⚠️ Payment completion failed, falling back to regular task completion');

@@ -4,13 +4,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TaskAPI } from '../../api/task-api';
 import {
-    CreateOfferRequest,
-    CreateTaskRequest,
-    MyTasksParams,
-    TaskFilterParams,
-    TaskOffer,
-    TaskSearchParams,
-    UpdateTaskRequest
+  CreateOfferRequest,
+  CreateTaskRequest,
+  MyTasksParams,
+  TaskFilterParams,
+  TaskOffer,
+  TaskSearchParams,
+  UpdateTaskRequest
 } from '../../api/types/tasks';
 import { handleAuthenticationError, isAuthError } from '../utils/auth-utils';
 import { isNetworkError } from '../utils/networkErrorHandler';
@@ -881,7 +881,7 @@ export function useSubmitReview() {
     }) => TaskAPI.submitTaskReview(params),
     onSuccess: (data, variables) => {
       // Invalidate task details to show updated review
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.taskDetails(variables.taskId) });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
       
       // Invalidate reviews queries
       queryClient.invalidateQueries({ queryKey: ['reviews', 'tasker'] });
