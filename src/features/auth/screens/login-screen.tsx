@@ -487,7 +487,7 @@ export default function LoginScreen() {
                    backendMessage?.toLowerCase().includes('incorrect password')) {
           Alert.alert(
             'Incorrect Credentials', 
-            'The email or password you entered is incorrect.\n\n✓ Check your email spelling\n✓ Verify your password is correct\n✓ Try using "Forgot Password" if needed',
+            'The email or password you entered is incorrect.\n',
             [
               { text: 'Try Again', style: 'cancel' },
               { 
