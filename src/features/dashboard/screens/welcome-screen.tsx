@@ -2,6 +2,7 @@
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -14,6 +15,7 @@ import {
   Dimensions,
   FlatList,
   Image,
+  Keyboard,
   Linking,
   SafeAreaView,
   ScrollView,
@@ -21,6 +23,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View
 } from 'react-native';
 
@@ -196,6 +199,8 @@ export default function WelcomeScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#003399' }}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={{ flex: 1 }}>
       {/* Header */}
       <View style={styles.headerWhite}>
         <View style={styles.logoPlaceholder} />
@@ -275,6 +280,7 @@ export default function WelcomeScreen() {
               horizontal
               showsHorizontalScrollIndicator={false}
               style={styles.tagRow}
+              keyboardShouldPersistTaps="handled"
             >
               {((categories?.data || []).map((cat: any) => typeof cat === 'string' ? cat : cat.name) || []).map((categoryName: string, index: number) => (
                 <TouchableOpacity 
@@ -304,6 +310,7 @@ export default function WelcomeScreen() {
             snapToInterval={screenWidth * 0.35 + 12}
             decelerationRate="fast"
             contentContainerStyle={styles.carouselContent}
+            keyboardShouldPersistTaps="handled"
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
               { useNativeDriver: false }
@@ -397,6 +404,9 @@ export default function WelcomeScreen() {
         </TouchableOpacity>
       </View>
 
+        </View>
+      </TouchableWithoutFeedback>
+
       {/* Notification Modal */}
       <NotificationModal
         visible={showNotifications}
@@ -409,27 +419,27 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   headerWhite: {
     backgroundColor: '#003399',
-    paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingTop: hp('1%'),
     paddingBottom: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 80,
+    minHeight: isTablet ? 100 : 80,
   },
   logoPlaceholder: {
-    width: 24,
-    flexShrink: 0, // Prevent shrinking
+    width: isTablet ? 28 : 24,
+    flexShrink: 0,
   },
   logoCenter: {
-    height: 150,
-    width: 240,
+    height: isTablet ? 300 : 150,
+    width: isTablet ? 300 : 240,
     flexShrink: 0,
   },
   notificationButton: {
     position: 'relative',
-    width: 24,
-    flexShrink: 0, // Prevent disappearing
+    width: isTablet ? 28 : 24,
+    flexShrink: 0,
   },
   notificationBadge: {
     position: 'absolute',
@@ -449,34 +459,38 @@ const styles = StyleSheet.create({
   },
   blueSection: {
     backgroundColor: '#003399',
-    paddingHorizontal: Math.max(16, screenWidth * 0.05),
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingTop: hp('1%'),
+    paddingBottom: hp('2%'),
+    maxWidth: isTablet ? 900 : undefined,
+    alignSelf: isTablet ? 'center' : 'auto',
+    width: '100%',
   },
   title: {
-    fontSize: Math.min(24, screenWidth * 0.063),
+    fontSize: RFValue(isTablet ? 20 : 22),
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 6,
-    paddingHorizontal: 10,
+    marginTop: hp('-5%'),
+    marginBottom: hp('0.8%'),
+    paddingHorizontal: wp('2%'),
   },
   subtitle: {
-    fontSize: Math.min(16, screenWidth * 0.042),
+    fontSize: RFValue(isTablet ? 13 : 14),
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 10,
-    lineHeight: Math.min(22, screenWidth * 0.058),
+    marginBottom: hp('2%'),
+    paddingHorizontal: wp('2%'),
+    lineHeight: RFValue(isTablet ? 18 : 20),
   },
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    paddingHorizontal: Math.max(12, screenWidth * 0.04),
-    paddingVertical: 14,
-    fontSize: Math.min(16, screenWidth * 0.042),
-    marginBottom: 16,
-    minHeight: Math.max(50, screenWidth * 0.13),
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('1.8%'),
+    fontSize: RFValue(isTablet ? 14 : 15),
+    marginBottom: hp('2%'),
+    minHeight: isTablet ? hp('6%') : hp('6.5%'),
     width: '100%',
     textAlignVertical: 'center',
     shadowColor: '#000',
@@ -491,26 +505,26 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#ff4444',
-    fontSize: Math.max(11, screenWidth * 0.03),
-    marginTop: -8,
-    marginBottom: 8,
-    paddingLeft: 4,
+    fontSize: RFValue(10),
+    marginTop: hp('-1%'),
+    marginBottom: hp('1%'),
+    paddingLeft: wp('1%'),
     flexWrap: 'wrap',
   },
   postButton: {
     backgroundColor: '#ff6b35',
     borderRadius: 8,
-    paddingVertical: 12,
+    paddingVertical: hp('1.5%'),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   postButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(14),
     fontWeight: '600',
-    marginHorizontal: 8,
+    marginHorizontal: wp('2%'),
   },
   tagRow: {
     flexDirection: 'row',
@@ -538,38 +552,38 @@ const styles = StyleSheet.create({
     color: '#ff6b35',
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: RFValue(isTablet ? 17 : 18),
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
-    marginTop: 16,
-    marginBottom: 6,
+    marginTop: hp('2%'),
+    marginBottom: hp('0.8%'),
   },
   subTitle: {
-    fontSize: 14,
+    fontSize: RFValue(isTablet ? 12 : 13),
     color: '#666',
     textAlign: 'center',
-    marginBottom: 12,
-    paddingHorizontal: 20,
+    marginBottom: hp('1.5%'),
+    paddingHorizontal: isTablet ? wp('15%') : wp('5%'),
   },
   // NEW: Auto-scrolling Carousel Styles (show 5 at a time)
   carouselContainer: {
-    paddingVertical: 8,
-    paddingBottom: 20,
+    paddingVertical: hp('1%'),
+    paddingBottom: hp('2.5%'),
     marginBottom: 0,
   },
   carouselContent: {
-    paddingHorizontal: 12,
-    gap: 8,
+    paddingHorizontal: isTablet ? wp('8%') : wp('3%'),
+    gap: wp('2%'),
   },
   carouselItem: {
-    width: screenWidth * 0.35,
-    marginHorizontal: 6,
+    width: isTablet ? wp('18%') : screenWidth * 0.35,
+    marginHorizontal: wp('1.5%'),
     alignItems: 'center',
   },
   imageContainer: {
-    width: screenWidth * 0.35,
-    height: screenWidth * 0.35,
+    width: isTablet ? wp('18%') : screenWidth * 0.35,
+    height: isTablet ? wp('18%') : screenWidth * 0.35,
     borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: '#E3F2FD',
@@ -586,25 +600,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   categoryImage: {
-    width: '90%', // Slightly smaller than container to show full image
-    height: '90%', // Slightly smaller than container to show full image
+    width: '90%',
+    height: '90%',
     backgroundColor: '#E3F2FD',
   },
   carouselLabel: {
-    fontSize: 11,
+    fontSize: RFValue(isTablet ? 9 : 10),
     fontWeight: '700',
     color: '#1A237E',
     textAlign: 'center',
-    marginTop: 6,
-    lineHeight: 14,
-    paddingHorizontal: 2,
+    marginTop: hp('0.8%'),
+    lineHeight: RFValue(isTablet ? 11 : 13),
+    paddingHorizontal: wp('0.5%'),
   },
   // Pagination Dots
   paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+  //  marginTop: 8,
+    marginTop: isTablet ? wp('2.5%') : wp('2.3%'),
     gap: 5,
   },
   paginationDot: {
@@ -620,16 +635,16 @@ const styles = StyleSheet.create({
   // Social Media Section - Fixed at Bottom
   socialMediaSection: {
     position: 'absolute',
-    right: 14,
-    bottom: 207,
+    right: isTablet ? wp('4%') : 14,
+    bottom: isTablet ? 220 : 207,
     backgroundColor: 'transparent',
     zIndex: 12,
     alignItems: 'center',
   },
   fabButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 24,
+    width: isTablet ? 48 : 40,
+    height: isTablet ? 48 : 40,
+    borderRadius: isTablet ? 24 : 20,
     backgroundColor: '#00993bf2',
     justifyContent: 'center',
     alignItems: 'center',
@@ -645,13 +660,13 @@ const styles = StyleSheet.create({
   socialIconsContainer: {
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
+    gap: isTablet ? 14 : 12,
+    marginBottom: isTablet ? 14 : 12,
   },
   socialIconWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: isTablet ? 50 : 44,
+    height: isTablet ? 50 : 44,
+    borderRadius: isTablet ? 25 : 22,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

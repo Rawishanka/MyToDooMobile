@@ -5,6 +5,9 @@ import { useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
+
+// Responsive utilities
+import { isTablet, wp } from '@/src/shared/utils/responsive';
 import {
     AskQuestionModal,
     DetailHeader,
@@ -241,7 +244,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    maxWidth: isTablet ? 900 : undefined,
+    alignSelf: isTablet ? 'center' : 'auto',
+    width: isTablet ? '100%' : 'auto',
   },
   tabContent: {
     flex: 1,

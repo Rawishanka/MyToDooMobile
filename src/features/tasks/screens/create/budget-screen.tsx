@@ -2,12 +2,13 @@
 
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatNumber, getCurrencySymbol, getDefaultBudget, getMinimumBudget } from '@/src/shared/utils/currency';
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -187,7 +188,7 @@ export default function BudgetScreen() {
       <View style={styles.keypad}>
         {numberPad.map((row, rowIndex) => (
           <View key={rowIndex} style={styles.row}>
-            {row.map((value) => value !== null ? renderKey(value) : <View key="empty" style={{ width: 70, height: 70, marginHorizontal: 10 }} />)}
+            {row.map((value) => value !== null ? renderKey(value) : <View key="empty" style={{ width: isTablet ? wp('10%') : wp('18%'), height: isTablet ? wp('10%') : wp('18%'), marginHorizontal: isTablet ? wp('2%') : wp('2.5%') }} />)}
           </View>
         ))}
       </View>
@@ -213,32 +214,36 @@ export default function BudgetScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('6%'),
     paddingTop: 60,
     backgroundColor: '#fff',
     justifyContent: 'space-between',
+    maxWidth: isTablet ? 900 : undefined,
+    alignSelf: isTablet ? 'center' : 'auto',
+    width: '100%',
   },
   back: {
     position: 'absolute',
     top: 50,
-    left: 24,
+    left: isTablet ? wp('12.5%') : wp('6%'),
     zIndex: 1,
   },
   title: {
-    fontSize: 22,
+    fontSize: RFValue(isTablet ? 24 : 20),
     fontWeight: 'bold',
     color: '#002366',
-    marginTop: 40,
+    marginTop: hp('5%'),
     textAlign: 'center',
   },
   subtitle: {
     textAlign: 'center',
     color: '#6e6e6e',
-    marginTop: 8,
+    marginTop: hp('1%'),
+    fontSize: RFValue(isTablet ? 14 : 13),
   },
   inputBox: {
-    marginTop: 30,
-    height: 50,
+    marginTop: hp('3%'),
+    height: isTablet ? hp('8%') : hp('6%'),
     borderRadius: 8,
     backgroundColor: '#f5f5f5',
     justifyContent: 'center',
@@ -246,13 +251,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   currencySymbol: {
-    fontSize: 20,
+    fontSize: RFValue(isTablet ? 24 : 18),
     fontWeight: '600',
     color: '#002366',
-    marginRight: 5,
+    marginRight: wp('1.5%'),
   },
   budgetText: {
-    fontSize: 20,
+    fontSize: RFValue(isTablet ? 24 : 18),
     fontWeight: '600',
     color: '#002366',
   },
@@ -264,49 +269,49 @@ const styles = StyleSheet.create({
     color: '#FF3B30',
   },
   errorText: {
-    fontSize: 14,
+    fontSize: RFValue(13),
     color: '#FF3B30',
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: hp('1%'),
     fontWeight: '600',
   },
   validationText: {
-    fontSize: 14,
+    fontSize: RFValue(13),
     color: '#FF3B30',
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: hp('1%'),
     fontWeight: '500',
   },
   keypad: {
-    marginVertical: 30,
+    marginVertical: hp('3%'),
     justifyContent: 'center',
     alignItems: 'center',
   },
   row: {
     flexDirection: 'row',
-    marginBottom: 20,
+    marginBottom: hp('2%'),
   },
   key: {
-    width: 70,
-    height: 70,
+    width: isTablet ? wp('10%') : wp('18%'),
+    height: isTablet ? wp('10%') : wp('18%'),
     backgroundColor: '#fff',
-    borderRadius: 35,
+    borderRadius: isTablet ? wp('5%') : wp('9%'),
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 10,
+    marginHorizontal: isTablet ? wp('2%') : wp('2.5%'),
     borderWidth: 1,
     borderColor: '#eee',
   },
   keyText: {
-    fontSize: 22,
+    fontSize: RFValue(isTablet ? 24 : 20),
     color: '#002366',
   },
   button: {
     backgroundColor: '#0050C8',
-    paddingVertical: 14,
+    paddingVertical: hp('1.8%'),
     borderRadius: 24,
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: hp('3%'),
   },
   buttonDisabled: {
     backgroundColor: '#D1D1D6',
@@ -314,7 +319,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: RFValue(14),
     textTransform: 'capitalize',
   },
   buttonTextDisabled: {

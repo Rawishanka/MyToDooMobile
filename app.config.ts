@@ -47,6 +47,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     'expo-font',
     'expo-video',
+    'expo-build-properties',
+    'expo-web-browser',
     [
       'expo-location',
       {

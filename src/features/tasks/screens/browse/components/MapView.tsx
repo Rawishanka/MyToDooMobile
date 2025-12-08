@@ -229,7 +229,43 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
     const addressLower = address.toLowerCase();
     const locationMap = getLocationCoordinatesMap();
     
-    // Check for exact matches first
+    // Parse address components - prioritize the first part (most specific location)
+    // Format: "Ja-Ela, Gampaha, Sri Lanka" or "Sydney, NSW, Australia"
+    const addressParts = address.split(',').map(part => part.trim().toLowerCase());
+    
+    console.log('🔍 Parsing address components:', { 
+      fullAddress: address, 
+      parts: addressParts,
+      partsCount: addressParts.length 
+    });
+    
+    // Check the first part (most specific location) with highest priority
+    if (addressParts.length > 0) {
+      const primaryLocation = addressParts[0];
+      for (const [location, coords] of locationMap) {
+        const locationLower = location.toLowerCase();
+        // Exact match or very close match for the primary location
+        if (primaryLocation === locationLower || 
+            primaryLocation.includes(locationLower) ||
+            locationLower.includes(primaryLocation)) {
+          console.log(`✅ Found coordinates for primary location "${primaryLocation}" -> ${location}: ${coords.lat}, ${coords.lng}`);
+          return coords;
+        }
+      }
+    }
+    
+    // If no match in primary location, check all address parts in order
+    for (const addressPart of addressParts) {
+      for (const [location, coords] of locationMap) {
+        const locationLower = location.toLowerCase();
+        if (addressPart.includes(locationLower) || locationLower.includes(addressPart)) {
+          console.log(`📍 Found coordinates for address part "${addressPart}" -> ${location}: ${coords.lat}, ${coords.lng}`);
+          return coords;
+        }
+      }
+    }
+    
+    // Fallback: Check for exact matches in full address (original behavior)
     for (const [location, coords] of locationMap) {
       if (addressLower.includes(location.toLowerCase())) {
         console.log(`📍 Found coordinates for ${address}: ${location} -> ${coords.lat}, ${coords.lng}`);
@@ -298,15 +334,16 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
   // Enhanced location coordinates database for better geocoding coverage
   const getLocationCoordinatesMap = (): Map<string, { lat: number; lng: number }> => {
     return new Map([
-      // Australia - Major Cities
-      ['sydney', { lat: -33.8688, lng: 151.2093 }],
-      ['melbourne', { lat: -37.8136, lng: 144.9631 }],
-      ['brisbane', { lat: -27.4698, lng: 153.0251 }],
-      ['perth', { lat: -31.9505, lng: 115.8613 }],
-      ['adelaide', { lat: -34.9285, lng: 138.6007 }],
-      ['darwin', { lat: -12.4634, lng: 130.8456 }],
+      // ==================================================
+      // AUSTRALIA - COMPREHENSIVE LOCATION DATABASE
+      // ==================================================
+      
+      // Australian Capital Territory
       ['canberra', { lat: -35.2809, lng: 149.1300 }],
-      ['hobart', { lat: -42.8821, lng: 147.3272 }],
+      ['belconnen', { lat: -35.2381, lng: 149.0661 }],
+      ['tuggeranong', { lat: -35.4244, lng: 149.0669 }],
+      ['woden', { lat: -35.3444, lng: 149.0856 }],
+      ['gungahlin', { lat: -35.1847, lng: 149.1328 }],
       
       // South Australia - Regional & Suburbs
       ['langhorne creek', { lat: -35.3100, lng: 139.0500 }],
@@ -332,63 +369,333 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       ['joondalup', { lat: -31.7500, lng: 115.7667 }],
       ['rockingham', { lat: -32.2794, lng: 115.7328 }],
       
-      // Victoria - Melbourne Suburbs
+      // Victoria
+      ['melbourne', { lat: -37.8136, lng: 144.9631 }],
       ['geelong', { lat: -38.1499, lng: 144.3617 }],
       ['ballarat', { lat: -37.5622, lng: 143.8503 }],
       ['bendigo', { lat: -36.7570, lng: 144.2794 }],
+      ['shepparton', { lat: -36.3806, lng: 145.3986 }],
+      ['mildura', { lat: -34.1850, lng: 142.1617 }],
+      ['warrnambool', { lat: -38.3828, lng: 142.4856 }],
+      ['frankston', { lat: -38.1432, lng: 145.1286 }],
+      ['dandenong', { lat: -37.9881, lng: 145.2169 }],
+      // New South Wales
+      ['sydney', { lat: -33.8688, lng: 151.2093 }],
+      ['parramatta', { lat: -33.8153, lng: 151.0000 }],
+      ['penrith', { lat: -33.7508, lng: 150.6944 }],
+      ['liverpool', { lat: -33.9267, lng: 150.9233 }],
+      ['blacktown', { lat: -33.7689, lng: 150.9064 }],
+      ['bankstown', { lat: -33.9181, lng: 151.0350 }],
+      ['campbelltown', { lat: -34.0653, lng: 150.8126 }],
+      ['sutherland', { lat: -34.0311, lng: 151.0569 }],
+      ['hornsby', { lat: -33.7047, lng: 151.0989 }],
+      ['ryde', { lat: -33.8156, lng: 151.1021 }],
+      ['chatswood', { lat: -33.7969, lng: 151.1831 }],
+      ['bondi', { lat: -33.8908, lng: 151.2743 }],
+      ['manly', { lat: -33.7969, lng: 151.2897 }],
+      ['cronulla', { lat: -34.0581, lng: 151.1517 }],
+      ['maroubra', { lat: -33.9500, lng: 151.2500 }],
+      ['newcastle', { lat: -32.9283, lng: 151.7817 }],
+      ['wollongong', { lat: -34.4278, lng: 150.8931 }],
+      ['central coast', { lat: -33.4269, lng: 151.3428 }],
+      ['gosford', { lat: -33.4250, lng: 151.3417 }],
+      ['albury', { lat: -36.0804, lng: 146.9158 }],
+      ['wagga wagga', { lat: -35.1082, lng: 147.3598 }],
+      ['orange', { lat: -33.2839, lng: 149.0992 }],
+      ['dubbo', { lat: -32.2569, lng: 148.6011 }],
+      ['tamworth', { lat: -31.0906, lng: 150.9297 }],
+      ['port macquarie', { lat: -31.4311, lng: 152.9083 }],
+      ['bathurst', { lat: -33.4172, lng: 149.5806 }],
+      ['nowra', { lat: -34.8833, lng: 150.6000 }],
+      
+      // Victoria
+      ['melbourne', { lat: -37.8136, lng: 144.9631 }],
+      ['geelong', { lat: -38.1499, lng: 144.3617 }],
+      ['ballarat', { lat: -37.5622, lng: 143.8503 }],
+      ['bendigo', { lat: -36.7570, lng: 144.2794 }],
+      ['shepparton', { lat: -36.3806, lng: 145.3986 }],
+      ['mildura', { lat: -34.1850, lng: 142.1617 }],
+      ['warrnambool', { lat: -38.3828, lng: 142.4856 }],
       ['frankston', { lat: -38.1432, lng: 145.1286 }],
       ['dandenong', { lat: -37.9881, lng: 145.2169 }],
       ['box hill', { lat: -37.8167, lng: 145.1233 }],
       ['richmond', { lat: -37.8264, lng: 144.9881 }],
       ['st kilda', { lat: -37.8667, lng: 144.9833 }],
+      ['preston', { lat: -37.7500, lng: 145.0000 }],
+      ['footscray', { lat: -37.7992, lng: 144.9014 }],
       
-      // New South Wales - Sydney Suburbs  
-      ['newcastle', { lat: -32.9283, lng: 151.7817 }],
-      ['wollongong', { lat: -34.4278, lng: 150.8931 }],
-      ['central coast', { lat: -33.4269, lng: 151.3428 }],
-      ['parramatta', { lat: -33.8153, lng: 151.0000 }],
-      ['penrith', { lat: -33.7508, lng: 150.6944 }],
-      ['liverpool', { lat: -33.9267, lng: 150.9233 }],
-      ['cronulla', { lat: -34.0581, lng: 151.1517 }],
-      ['manly', { lat: -33.7969, lng: 151.2897 }],
-      ['bondi', { lat: -33.8908, lng: 151.2743 }],
-      
-      // Queensland - Brisbane Suburbs
+      // Queensland
+      ['brisbane', { lat: -27.4698, lng: 153.0251 }],
       ['gold coast', { lat: -28.0167, lng: 153.4000 }],
       ['sunshine coast', { lat: -26.6500, lng: 153.0667 }],
       ['townsville', { lat: -19.2590, lng: 146.8169 }],
       ['cairns', { lat: -16.9186, lng: 145.7781 }],
       ['toowoomba', { lat: -27.5598, lng: 151.9507 }],
       ['ipswich', { lat: -27.6167, lng: 152.7667 }],
+      ['logan', { lat: -27.6394, lng: 153.1094 }],
+      ['mackay', { lat: -21.1428, lng: 149.1861 }],
+      ['rockhampton', { lat: -23.3803, lng: 150.5111 }],
+      ['bundaberg', { lat: -24.8661, lng: 152.3489 }],
+      ['hervey bay', { lat: -25.2990, lng: 152.8224 }],
+      ['mount isa', { lat: -20.7256, lng: 139.4927 }],
+      ['redcliffe', { lat: -27.2311, lng: 153.1097 }],
+      ['southport', { lat: -27.9667, lng: 153.4000 }],
       
-      // Sri Lanka - Major Cities and Suburbs
-      ['colombo', { lat: 6.9271, lng: 79.8612 }],
-      ['kandy', { lat: 7.2906, lng: 80.6337 }],
-      ['galle', { lat: 6.0535, lng: 80.2210 }],
-      ['jaffna', { lat: 9.6615, lng: 80.0255 }],
-      ['negombo', { lat: 7.2083, lng: 79.8358 }],
-      ['anuradhapura', { lat: 8.3114, lng: 80.4037 }],
-      ['trincomalee', { lat: 8.5874, lng: 81.2152 }],
-      ['batticaloa', { lat: 7.7102, lng: 81.7088 }],
-      ['kurunegala', { lat: 7.4863, lng: 80.3647 }],
-      ['ratnapura', { lat: 6.6828, lng: 80.3992 }],
-      ['matara', { lat: 5.9549, lng: 80.5550 }],
+      // South Australia
+      ['adelaide', { lat: -34.9285, lng: 138.6007 }],
+      ['mount gambier', { lat: -37.8289, lng: 140.7825 }],
+      ['whyalla', { lat: -33.0333, lng: 137.5167 }],
+      ['murray bridge', { lat: -35.1197, lng: 139.2756 }],
+      ['port augusta', { lat: -32.4928, lng: 137.7656 }],
+      ['victor harbor', { lat: -35.5528, lng: 138.6156 }],
+      ['goolwa', { lat: -35.5067, lng: 138.7847 }],
+      ['norwood', { lat: -34.9219, lng: 138.6264 }],
+      ['unley', { lat: -34.9504, lng: 138.6063 }],
+      ['glenelg', { lat: -35.0067, lng: 138.5144 }],
+      ['port adelaide', { lat: -34.8467, lng: 138.5089 }],
+      ['elizabeth', { lat: -34.7183, lng: 138.6744 }],
+      ['salisbury', { lat: -34.7606, lng: 138.6428 }],
+      ['modbury', { lat: -34.8333, lng: 138.6833 }],
+      ['mount barker', { lat: -35.0706, lng: 138.8606 }],
+      ['langhorne creek', { lat: -35.3100, lng: 139.0500 }],
+      ['strathalbyn', { lat: -35.2606, lng: 138.8906 }],
+      
+      // Western Australia
+      ['perth', { lat: -31.9505, lng: 115.8613 }],
+      ['fremantle', { lat: -32.0569, lng: 115.7439 }],
+      ['mandurah', { lat: -32.5269, lng: 115.7214 }],
+      ['bunbury', { lat: -33.3267, lng: 115.6378 }],
+      ['geraldton', { lat: -28.7774, lng: 114.6147 }],
+      ['kalgoorlie', { lat: -30.7489, lng: 121.4656 }],
+      ['albany', { lat: -35.0269, lng: 117.8842 }],
+      ['rockingham', { lat: -32.2794, lng: 115.7328 }],
+      ['joondalup', { lat: -31.7500, lng: 115.7667 }],
+      ['armadale', { lat: -32.1500, lng: 116.0167 }],
+      ['australind', { lat: -33.2839, lng: 115.7289 }],
+      
+      // Tasmania
+      ['hobart', { lat: -42.8821, lng: 147.3272 }],
+      ['launceston', { lat: -41.4332, lng: 147.1441 }],
+      ['devonport', { lat: -41.1789, lng: 146.3503 }],
+      ['burnie', { lat: -41.0556, lng: 145.9025 }],
+      
+      // Northern Territory
+      ['darwin', { lat: -12.4634, lng: 130.8456 }],
+      ['alice springs', { lat: -23.6980, lng: 133.8807 }],
+      ['palmerston', { lat: -12.4897, lng: 130.9833 }],
+      
+      // ==================================================
+      // SRI LANKA - COMPREHENSIVE LOCATION DATABASE
+      // ==================================================
+      
+      // Colombo District (most specific suburbs first)
       ['dehiwala', { lat: 6.8569, lng: 79.8658 }],
+      ['mount lavinia', { lat: 6.8373, lng: 79.8636 }],
       ['moratuwa', { lat: 6.7731, lng: 79.8828 }],
+      ['ratmalana', { lat: 6.8214, lng: 79.8864 }],
+      ['wellawatte', { lat: 6.8747, lng: 79.8589 }],
+      ['bambalapitiya', { lat: 6.8935, lng: 79.8501 }],
+      ['kollupitiya', { lat: 6.9149, lng: 79.8486 }],
+      ['fort', { lat: 6.9335, lng: 79.8459 }],
+      ['pettah', { lat: 6.9393, lng: 79.8535 }],
+      ['maradana', { lat: 6.9295, lng: 79.8607 }],
+      ['borella', { lat: 6.9145, lng: 79.8797 }],
+      ['slave island', { lat: 6.9261, lng: 79.8470 }],
+      ['cinnamon gardens', { lat: 6.9090, lng: 79.8618 }],
+      ['havelock town', { lat: 6.8964, lng: 79.8736 }],
+      ['narahenpita', { lat: 6.9042, lng: 79.8840 }],
+      ['nugegoda', { lat: 6.8649, lng: 79.8997 }],
+      ['maharagama', { lat: 6.8482, lng: 79.9266 }],
       ['kotte', { lat: 6.8905, lng: 79.9075 }],
-      ['mirigama', { lat: 7.2417, lng: 80.1283 }],
-      ['gampaha', { lat: 7.0917, lng: 80.0000 }],
-      ['kalutara', { lat: 6.5854, lng: 79.9607 }],
+      ['sri jayawardenepura kotte', { lat: 6.8905, lng: 79.9075 }],
+      ['rajagiriya', { lat: 6.9084, lng: 79.8973 }],
+      ['battaramulla', { lat: 6.8978, lng: 79.9189 }],
+      ['malabe', { lat: 6.9042, lng: 79.9536 }],
+      ['kotahena', { lat: 6.9508, lng: 79.8531 }],
+      ['grandpass', { lat: 6.9464, lng: 79.8568 }],
+      ['dematagoda', { lat: 6.9348, lng: 79.8739 }],
+      ['peliyagoda', { lat: 6.9683, lng: 79.8836 }],
+      ['kelaniya', { lat: 6.9553, lng: 79.9219 }],
+      ['kiribathgoda', { lat: 6.9786, lng: 79.9294 }],
+      ['kadawatha', { lat: 7.0022, lng: 79.9531 }],
+      ['ragama', { lat: 7.0272, lng: 79.9217 }],
+      ['wattala', { lat: 6.9889, lng: 79.8917 }],
+      ['ja-ela', { lat: 7.0747, lng: 79.8919 }],
+      ['ja ela', { lat: 7.0747, lng: 79.8919 }],
+      ['jaela', { lat: 7.0747, lng: 79.8919 }],
+      ['seeduwa', { lat: 7.1172, lng: 79.8847 }],
+      ['katunayake', { lat: 7.1697, lng: 79.8842 }],
+      ['katunayaka', { lat: 7.1697, lng: 79.8842 }],
+      ['colombo', { lat: 6.9271, lng: 79.8612 }],
       
-      // New Zealand - Major Cities
+      // Gampaha District
+      ['gampaha', { lat: 7.0917, lng: 80.0000 }],
+      ['negombo', { lat: 7.2083, lng: 79.8358 }],
+      ['mirigama', { lat: 7.2417, lng: 80.1283 }],
+      ['veyangoda', { lat: 7.1564, lng: 80.0769 }],
+      ['divulapitiya', { lat: 7.2231, lng: 80.0092 }],
+      ['minuwangoda', { lat: 7.1697, lng: 79.9517 }],
+      ['nittambuwa', { lat: 7.1422, lng: 80.0892 }],
+      ['attanagalla', { lat: 7.1083, lng: 80.1467 }],
+      ['ganemulla', { lat: 7.0658, lng: 80.0200 }],
+      ['biyagama', { lat: 6.9539, lng: 79.9778 }],
+      
+      // Kalutara District
+      ['kalutara', { lat: 6.5854, lng: 79.9607 }],
+      ['panadura', { lat: 6.7133, lng: 79.9025 }],
+      ['horana', { lat: 6.7156, lng: 80.0631 }],
+      ['beruwala', { lat: 6.4789, lng: 79.9828 }],
+      ['aluthgama', { lat: 6.4308, lng: 80.0014 }],
+      ['bentota', { lat: 6.4258, lng: 79.9956 }],
+      ['wadduwa', { lat: 6.6639, lng: 79.9314 }],
+      ['matugama', { lat: 6.5311, lng: 80.1553 }],
+      ['bandaragama', { lat: 6.7181, lng: 79.9878 }],
+      
+      // Kandy District
+      ['kandy', { lat: 7.2906, lng: 80.6337 }],
+      ['peradeniya', { lat: 7.2675, lng: 80.5958 }],
+      ['gampola', { lat: 7.1648, lng: 80.5769 }],
+      ['kadugannawa', { lat: 7.2533, lng: 80.5222 }],
+      ['katugastota', { lat: 7.3181, lng: 80.6328 }],
+      ['gelioya', { lat: 7.1817, lng: 80.5511 }],
+      ['pilimatalawa', { lat: 7.3142, lng: 80.5483 }],
+      ['akurana', { lat: 7.3656, lng: 80.6181 }],
+      
+      // Matale District
+      ['matale', { lat: 7.4675, lng: 80.6234 }],
+      ['dambulla', { lat: 7.8608, lng: 80.6517 }],
+      ['sigiriya', { lat: 7.9569, lng: 80.7603 }],
+      
+      // Nuwara Eliya District
+      ['nuwara eliya', { lat: 6.9497, lng: 80.7891 }],
+      ['hatton', { lat: 6.8919, lng: 80.5964 }],
+      ['talawakelle', { lat: 6.9394, lng: 80.6556 }],
+      ['nanu oya', { lat: 6.9392, lng: 80.7650 }],
+      
+      // Galle District
+      ['galle', { lat: 6.0535, lng: 80.2210 }],
+      ['hikkaduwa', { lat: 6.1406, lng: 80.1033 }],
+      ['ambalangoda', { lat: 6.2361, lng: 80.0539 }],
+      ['karapitiya', { lat: 6.0536, lng: 80.2342 }],
+      ['unawatuna', { lat: 6.0108, lng: 80.2503 }],
+      ['habaraduwa', { lat: 6.0006, lng: 80.2800 }],
+      
+      // Matara District
+      ['matara', { lat: 5.9549, lng: 80.5550 }],
+      ['weligama', { lat: 5.9734, lng: 80.4297 }],
+      ['mirissa', { lat: 5.9467, lng: 80.4614 }],
+      ['dikwella', { lat: 5.9667, lng: 80.6833 }],
+      ['akuressa', { lat: 6.0994, lng: 80.4822 }],
+      
+      // Hambantota District
+      ['hambantota', { lat: 6.1429, lng: 81.1212 }],
+      ['tangalle', { lat: 6.0244, lng: 80.7969 }],
+      ['tissamaharama', { lat: 6.2833, lng: 81.2833 }],
+      ['ambalantota', { lat: 6.1214, lng: 81.0272 }],
+      
+      // Ratnapura District
+      ['ratnapura', { lat: 6.6828, lng: 80.3992 }],
+      ['embilipitiya', { lat: 6.3428, lng: 80.8503 }],
+      ['balangoda', { lat: 6.6522, lng: 80.6975 }],
+      
+      // Badulla District
+      ['badulla', { lat: 6.9934, lng: 81.0550 }],
+      ['bandarawela', { lat: 6.8328, lng: 80.9850 }],
+      ['ella', { lat: 6.8667, lng: 81.0467 }],
+      ['haputale', { lat: 6.7714, lng: 80.9589 }],
+      ['mahiyanganaya', { lat: 7.3311, lng: 81.0028 }],
+      
+      // Monaragala District
+      ['monaragala', { lat: 6.8722, lng: 81.3506 }],
+      ['wellawaya', { lat: 6.7333, lng: 81.1000 }],
+      
+      // Kurunegala District
+      ['kurunegala', { lat: 7.4863, lng: 80.3647 }],
+      ['kuliyapitiya', { lat: 7.4703, lng: 80.0403 }],
+      ['polgahawela', { lat: 7.3333, lng: 80.3000 }],
+      ['wariyapola', { lat: 7.5000, lng: 80.2167 }],
+      ['maho', { lat: 7.8833, lng: 80.2500 }],
+      
+      // Puttalam District
+      ['puttalam', { lat: 8.0364, lng: 79.8286 }],
+      ['chilaw', { lat: 7.5761, lng: 79.7953 }],
+      ['wennappuwa', { lat: 7.3500, lng: 79.8500 }],
+      
+      // Anuradhapura District
+      ['anuradhapura', { lat: 8.3114, lng: 80.4037 }],
+      ['medawachchiya', { lat: 9.0167, lng: 80.4833 }],
+      ['mihintale', { lat: 8.3517, lng: 80.5058 }],
+      ['kekirawa', { lat: 8.0333, lng: 80.6000 }],
+      
+      // Polonnaruwa District
+      ['polonnaruwa', { lat: 7.9403, lng: 81.0003 }],
+      ['hingurakgoda', { lat: 8.0500, lng: 80.9667 }],
+      
+      // Trincomalee District
+      ['trincomalee', { lat: 8.5874, lng: 81.2152 }],
+      ['kinniya', { lat: 8.5167, lng: 81.1833 }],
+      
+      // Batticaloa District
+      ['batticaloa', { lat: 7.7102, lng: 81.7088 }],
+      ['kattankudy', { lat: 7.6833, lng: 81.7333 }],
+      
+      // Ampara District
+      ['ampara', { lat: 7.2967, lng: 81.6728 }],
+      ['kalmunai', { lat: 7.4092, lng: 81.8356 }],
+      ['akkaraipattu', { lat: 7.2167, lng: 81.8500 }],
+      
+      // Jaffna District
+      ['jaffna', { lat: 9.6615, lng: 80.0255 }],
+      ['nallur', { lat: 9.6833, lng: 80.0333 }],
+      ['chavakachcheri', { lat: 9.6667, lng: 80.1667 }],
+      
+      // Vavuniya District
+      ['vavuniya', { lat: 8.7514, lng: 80.4981 }],
+      
+      // Mannar District
+      ['mannar', { lat: 8.9814, lng: 79.9044 }],
+      
+      // Kilinochchi District
+      ['kilinochchi', { lat: 9.3833, lng: 80.4000 }],
+      
+      // Mullaitivu District
+      ['mullaitivu', { lat: 9.2667, lng: 80.8142 }],
+      
+      // ==================================================
+      // NEW ZEALAND - COMPREHENSIVE LOCATION DATABASE
+      // ==================================================
+      
+      // North Island
       ['auckland', { lat: -36.8485, lng: 174.7633 }],
-      ['wellington', { lat: -41.2865, lng: 174.7762 }],
-      ['christchurch', { lat: -43.5321, lng: 172.6362 }],
+      ['manukau', { lat: -37.0000, lng: 174.8833 }],
+      ['north shore', { lat: -36.8000, lng: 174.7500 }],
+      ['waitakere', { lat: -36.8500, lng: 174.5500 }],
       ['hamilton', { lat: -37.7870, lng: 175.2793 }],
-      ['dunedin', { lat: -45.8788, lng: 170.5028 }],
       ['tauranga', { lat: -37.6878, lng: 176.1651 }],
+      ['rotorua', { lat: -38.1368, lng: 176.2497 }],
       ['napier', { lat: -39.4928, lng: 176.9120 }],
+      ['hastings', { lat: -39.6381, lng: 176.8419 }],
       ['palmerston north', { lat: -40.3523, lng: 175.6082 }],
+      ['wellington', { lat: -41.2865, lng: 174.7762 }],
+      ['lower hutt', { lat: -41.2092, lng: 174.9042 }],
+      ['upper hutt', { lat: -41.1244, lng: 175.0514 }],
+      ['porirua', { lat: -41.1344, lng: 174.8397 }],
+      ['whangarei', { lat: -35.7247, lng: 174.3236 }],
+      ['new plymouth', { lat: -39.0667, lng: 174.0833 }],
+      ['gisborne', { lat: -38.6625, lng: 178.0175 }],
+      ['whanganui', { lat: -39.9306, lng: 175.0478 }],
+      ['kapiti coast', { lat: -40.9167, lng: 175.0000 }],
+      
+      // South Island
+      ['christchurch', { lat: -43.5321, lng: 172.6362 }],
+      ['dunedin', { lat: -45.8788, lng: 170.5028 }],
+      ['nelson', { lat: -41.2706, lng: 173.2840 }],
+      ['queenstown', { lat: -45.0311, lng: 168.6626 }],
+      ['invercargill', { lat: -46.4132, lng: 168.3538 }],
+      ['timaru', { lat: -44.3936, lng: 171.2372 }],
+      ['blenheim', { lat: -41.5139, lng: 173.9550 }],
+      ['ashburton', { lat: -43.8989, lng: 171.7519 }],
+      ['greymouth', { lat: -42.4500, lng: 171.2106 }],
     ]);
   };
 

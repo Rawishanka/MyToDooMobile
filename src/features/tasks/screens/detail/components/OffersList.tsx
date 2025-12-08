@@ -12,6 +12,7 @@
 import { getUserRatingStats } from '@/src/api/user-profile-api';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
@@ -426,8 +427,8 @@ const styles = StyleSheet.create({
   },
   offerCard: {
     backgroundColor: '#fff',
-    padding: 16,
-    marginBottom: 12,
+    padding: isTablet ? wp('3%') : wp('4%'),
+    marginBottom: hp('1.5%'),
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e0e0e0',
@@ -435,31 +436,31 @@ const styles = StyleSheet.create({
   taskTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 8,
-    marginBottom: 8,
+    paddingBottom: hp('1%'),
+    marginBottom: hp('1%'),
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   taskTitle: {
-    fontSize: 13,
+    fontSize: RFValue(12),
     color: '#666',
-    marginLeft: 6,
+    marginLeft: wp('1.5%'),
     flex: 1,
     fontWeight: '500',
   },
   offerHeader: {
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   offerUserSection: {
     flexDirection: 'row',
   },
   offerAvatarContainer: {
-    marginRight: 12,
+    marginRight: wp('3%'),
   },
   offerAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: isTablet ? 60 : 48,
+    height: isTablet ? 60 : 48,
+    borderRadius: isTablet ? 30 : 24,
     backgroundColor: '#f0f0f0',
   },
   offerUserInfo: {
@@ -471,7 +472,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   offerUserName: {
-    fontSize: 16,
+    fontSize: RFValue(isTablet ? 14 : 14),
     fontWeight: '600',
     color: '#000',
   },
@@ -479,18 +480,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#E8F5E9',
-    paddingVertical: 2,
-    paddingHorizontal: 6,
+    paddingVertical: hp('0.3%'),
+    paddingHorizontal: wp('1.5%'),
     borderRadius: 8,
     gap: 3,
   },
   verifiedTextSmall: {
-    fontSize: 10,
+    fontSize: RFValue(9),
     color: '#28a745',
     fontWeight: '600',
   },
   verifiedIcon: {
-    marginLeft: 6,
+    marginLeft: wp('1.5%'),
   },
   offerStatsRow: {
     flexDirection: 'row',

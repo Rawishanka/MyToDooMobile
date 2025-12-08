@@ -7,6 +7,7 @@
 // ✅ Local storage integration for message previews
 // ✅ Pull-to-refresh functionality
 
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -369,20 +370,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 16,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingTop: isTablet ? hp('6%') : hp('6.5%'),
+    paddingBottom: isTablet ? hp('2%') : hp('2%'),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: RFValue(isTablet ? 18 : 24),
     fontWeight: '700',
     color: '#000',
   },
   notificationButton: {
-    padding: 8,
+    padding: isTablet ? 10 : 8,
     position: 'relative',
   },
   notificationBadge: {
@@ -399,7 +400,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: RFValue(isTablet ? 10 : 12),
     fontWeight: 'bold',
   },
   listContent: {
@@ -409,35 +410,35 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: isTablet ? hp('8%') : hp('7.5%'),
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: RFValue(isTablet ? 18 : 16),
     color: '#8E8E93',
-    marginTop: 12,
+    marginTop: isTablet ? hp('1.5%') : hp('1.2%'),
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
+    paddingVertical: isTablet ? hp('8%') : hp('7.5%'),
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: RFValue(isTablet ? 18 : 16),
     color: '#8E8E93',
-    marginTop: 16,
+    marginTop: isTablet ? hp('2%') : hp('2%'),
     textAlign: 'center',
   },
   retryButton: {
-    marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    marginTop: isTablet ? hp('2%') : hp('2%'),
+    paddingHorizontal: isTablet ? wp('5%') : wp('5%'),
+    paddingVertical: isTablet ? hp('1.5%') : hp('1.2%'),
     backgroundColor: '#007AFF',
-    borderRadius: 8,
+    borderRadius: isTablet ? 10 : 8,
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(isTablet ? 16 : 16),
     fontWeight: '600',
   },
 });
