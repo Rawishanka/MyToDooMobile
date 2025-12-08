@@ -1,3 +1,4 @@
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -21,9 +22,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     paddingTop: 50,
-    paddingBottom: 12,
+    paddingBottom: hp('1.5%'),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
@@ -33,8 +34,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backText: {
-    marginLeft: 8,
-    fontSize: 16,
+    marginLeft: wp('2%'),
+    fontSize: RFValue(14),
     color: '#000',
   },
 });

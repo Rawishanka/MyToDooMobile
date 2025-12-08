@@ -5,6 +5,7 @@ import { usePostTaskWithImages } from '@/src/shared/hooks/useTaskApi';
 import { debugAuthState, forceFreshLogin } from '@/src/shared/utils/auth-utils';
 import { getCurrencyFromLocation, getCurrencySymbol } from '@/src/shared/utils/currency';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
@@ -390,39 +391,43 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: 20,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('5%'),
     paddingTop: 60,
+    maxWidth: isTablet ? 900 : undefined,
+    alignSelf: isTablet ? 'center' : 'auto',
+    width: '100%',
   },
   backBtn: {
     position: 'absolute',
     top: 50,
-    left: 20,
+    left: isTablet ? wp('12.5%') : wp('5%'),
     zIndex: 1,
   },
   title: {
-    fontSize: 22,
+    fontSize: RFValue(isTablet ? 24 : 20),
     fontWeight: 'bold',
     color: '#0B1A33',
-    marginBottom: 5,
-    marginTop: 40,
+    marginBottom: hp('0.6%'),
+    marginTop: hp('5%'),
     textAlign: 'center',
   },
   subtitle: {
     color: '#667085',
-    marginBottom: 20,
+    marginBottom: hp('2.5%'),
     textAlign: 'center',
+    fontSize: RFValue(isTablet ? 14 : 13),
   },
   list: {
-    paddingBottom: 20,
+    paddingBottom: hp('2.5%'),
   },
   item: {
-    paddingVertical: 15,
+    paddingVertical: isTablet ? hp('2%') : hp('1.8%'),
     borderBottomWidth: 0.5,
     borderBottomColor: '#ccc',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   itemLeft: {
     flexDirection: 'row',
@@ -430,30 +435,30 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   iconContainer: {
-    width: 24,
-    height: 24,
+    width: isTablet ? 28 : 24,
+    height: isTablet ? 28 : 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
   textContainer: {
-    marginLeft: 16,
+    marginLeft: wp('4%'),
     flex: 1,
   },
   itemText: {
-    fontSize: 16,
+    fontSize: RFValue(isTablet ? 16 : 14),
     color: '#003366',
     fontWeight: '600',
   },
   valueText: {
-    fontSize: 14,
+    fontSize: RFValue(isTablet ? 14 : 12),
     color: '#667085',
-    marginTop: 2,
+    marginTop: hp('0.3%'),
   },
   continueBtn: {
     backgroundColor: '#0052CC',
-    paddingVertical: 14,
+    paddingVertical: hp('1.8%'),
     borderRadius: 30,
-    marginBottom: 30,
+    marginBottom: hp('3%'),
     alignItems: 'center',
   },
   continueButtonDisabled: {
@@ -466,17 +471,18 @@ const styles = StyleSheet.create({
   continueText: {
     color: '#fff',
     fontWeight: '600',
+    fontSize: RFValue(14),
   },
   debugBtn: {
     backgroundColor: '#ff6b35',
-    paddingVertical: 8,
+    paddingVertical: hp('1%'),
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: hp('1.2%'),
     alignItems: 'center',
   },
   debugText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: RFValue(11),
     fontWeight: '500',
   },
 });

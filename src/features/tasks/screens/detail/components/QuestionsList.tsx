@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { ActivityIndicator, Dimensions, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnswerQuestionModal } from './AnswerQuestionModal';
@@ -651,31 +652,31 @@ const styles = StyleSheet.create({
   },
   questionCard: {
     backgroundColor: '#fff',
-    padding: 16,
-    marginBottom: 12,
+    padding: isTablet ? wp('3%') : wp('4%'),
+    marginBottom: hp('1.5%'),
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
   questionHeader: {
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   questionUserSection: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   questionAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
+    width: isTablet ? 50 : 40,
+    height: isTablet ? 50 : 40,
+    borderRadius: isTablet ? 25 : 20,
+    marginRight: wp('3%'),
     backgroundColor: '#f0f0f0',
   },
   questionUserInfo: {
     flex: 1,
   },
   questionUserName: {
-    fontSize: 14,
+    fontSize: RFValue(isTablet ? 12 : 12),
     fontWeight: '600',
     color: '#000',
     marginBottom: 2,

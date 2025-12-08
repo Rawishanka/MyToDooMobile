@@ -167,8 +167,35 @@ export const useBrowseFiltersAPI = () => {
   const [showTasksWithNoOffers, setShowTasksWithNoOffers] = useState(false);
   const [selectedSort, setSelectedSort] = useState(0);
   const [searchText, setSearchText] = useState('');
+  const [debouncedSearchText, setDebouncedSearchText] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [isProcessingData, setIsProcessingData] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [tasksWithOfferCounts, setTasksWithOfferCounts] = useState<Task[]>([]);
+
+  // Debounce search text for API calls (300ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchText(searchText);
+      console.log('🔍 [useBrowseFiltersAPI] Debounced search text updated:', searchText.trim());
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchText]);
+
+  // Control isSearching state based on debounce completion
+  useEffect(() => {
+    // User is typing if search text doesn't match debounced text
+    const isTyping = searchText.trim() !== debouncedSearchText.trim();
+    
+    if (isTyping) {
+      setIsSearching(true);
+      console.log('⏳ User typing - isSearching = true');
+    } else {
+      setIsSearching(false);
+      console.log('✅ Debounce complete - isSearching = false');
+    }
+  }, [searchText, debouncedSearchText]);
 
   React.useEffect(() => {
     const getLocation = async () => {
@@ -196,27 +223,27 @@ export const useBrowseFiltersAPI = () => {
   const shouldUseFilterAPI = React.useMemo(() => {
     // Use Search API ONLY when there's actual search text (at least 1 character)
     // This ensures we call /tasks/search endpoint only for searches
-    const hasSearchText = searchText.trim().length > 0;
+    const hasSearchText = debouncedSearchText.trim().length > 0;
     
     console.log('🔍 [useBrowseFiltersAPI] API Selection:', {
       hasSearchText,
-      searchText: searchText.trim(),
+      debouncedSearchText: debouncedSearchText.trim(),
       willUseFilterAPI: !hasSearchText,
       willUseSearchAPI: hasSearchText
     });
     
     // Use Filter API when there's no search text
     return !hasSearchText;
-  }, [searchText]);
+  }, [debouncedSearchText]);
 
   const searchParams: TaskSearchParams = useMemo(() => {
-    // Only create search params if we have search text
-    if (!searchText.trim()) {
+    // Only create search params if we have debounced search text
+    if (!debouncedSearchText.trim()) {
       return {} as TaskSearchParams;
     }
 
     const params: TaskSearchParams = {
-      q: searchText.trim(), // Required parameter for search endpoint
+      q: debouncedSearchText.trim(), // Required parameter for search endpoint
       sort: SEARCH_SORT_MAPPING[selectedSort],
     };
 
@@ -233,7 +260,7 @@ export const useBrowseFiltersAPI = () => {
 
     console.log('🔍 [useBrowseFiltersAPI] Search Params:', params);
     return params;
-  }, [selectedCategory, taskType, priceRange, selectedSort, searchText]);
+  }, [selectedCategory, taskType, priceRange, selectedSort, debouncedSearchText]);
 
   const filterParams: TaskFilterParams = useMemo(() => {
     const params: TaskFilterParams = {
@@ -272,7 +299,7 @@ export const useBrowseFiltersAPI = () => {
     refetch: searchRefetch,
   } = useSearchTasks(
     searchParams, 
-    !shouldUseFilterAPI && searchText.trim().length > 0 // Only enable when we have search text
+    !shouldUseFilterAPI && debouncedSearchText.trim().length > 0 // Only enable when we have debounced search text
   );
 
   const {
@@ -289,8 +316,13 @@ export const useBrowseFiltersAPI = () => {
         ? (filterResponse?.data || [])
         : (searchResponse?.data || []);
 
+      // Always set processing when data changes
+      setIsProcessingData(true);
+
       if (baseTasks.length === 0) {
         setTasksWithOfferCounts([]);
+        // Don't set isProcessingData false here - let it be controlled by API loading states
+        // This prevents flash of empty state while API is still loading
         return;
       }
 
@@ -301,8 +333,9 @@ export const useBrowseFiltersAPI = () => {
       );
 
       if (tasksNeedingOfferCounts.length === 0) {
-        console.log('🔍 [useBrowseFiltersAPI] All tasks already have offer data');
+        console.log('✅ [useBrowseFiltersAPI] All tasks already have offer data');
         setTasksWithOfferCounts(baseTasks);
+        setIsProcessingData(false);
         return;
       }
 
@@ -348,17 +381,31 @@ export const useBrowseFiltersAPI = () => {
         });
 
         setTasksWithOfferCounts(enhancedTasks);
+        setIsProcessingData(false);
       } catch (error) {
         console.error('❌ [useBrowseFiltersAPI] Failed to enhance tasks with offer counts:', error);
         setTasksWithOfferCounts(baseTasks);
+        setIsProcessingData(false);
       }
     };
 
     enhanceTasksWithOfferCounts();
   }, [shouldUseFilterAPI, filterResponse?.data, searchResponse?.data]);
 
-  // Apply client-side search filter to results ONLY if using Filter API
-  // When using Search API, backend already filtered results
+  // Reset isProcessingData when API loading completes
+  useEffect(() => {
+    const apiLoading = shouldUseFilterAPI ? filterLoading : searchLoading;
+    const apiHasData = shouldUseFilterAPI ? !!filterResponse : !!searchResponse;
+    
+    // Only set false when API is not loading AND we have received a response
+    if (!apiLoading && apiHasData) {
+      console.log('✅ API complete and data received, setting isProcessingData = false');
+      setIsProcessingData(false);
+    }
+  }, [shouldUseFilterAPI, filterLoading, searchLoading, filterResponse, searchResponse]);
+
+  // Apply client-side search filter to results with TITLE PRIORITIZATION
+  // During debounce period OR when using Search API, apply client-side filtering
   const filteredAndSortedTasks = useMemo(() => {
     const baseTasks = tasksWithOfferCounts;
     
@@ -367,6 +414,8 @@ export const useBrowseFiltersAPI = () => {
       baseTasksLength: baseTasks.length,
       shouldUseFilterAPI,
       searchText: searchText.trim(),
+      debouncedSearchText: debouncedSearchText.trim(),
+      isSearching,
       activeAPI: shouldUseFilterAPI ? 'FILTER' : 'SEARCH',
       sampleTask: baseTasks[0] ? {
         id: baseTasks[0]._id,
@@ -379,10 +428,17 @@ export const useBrowseFiltersAPI = () => {
       tasksWithOffers: baseTasks.filter(t => (t.offerCount || 0) > 0).length
     });
     
-    // If using Search API, return results as-is (backend already filtered)
-    if (!shouldUseFilterAPI) {
-      console.log('✅ Using Search API results directly (no client-side filtering)');
-      return baseTasks;
+    // CRITICAL: If user is typing (searchText exists but debounced hasn't caught up),
+    // apply client-side filtering immediately with the current searchText
+    if (searchText.trim() && searchText.trim() !== debouncedSearchText.trim()) {
+      console.log('⚡ User is typing - applying immediate client-side filter with searchText:', searchText.trim());
+      return filterTasksBySearch(baseTasks, searchText);
+    }
+    
+    // If using Search API with debounced text, still apply client-side filtering for TITLE PRIORITIZATION
+    if (!shouldUseFilterAPI && debouncedSearchText.trim()) {
+      console.log('🎯 Search API results - applying title prioritization filter');
+      return filterTasksBySearch(baseTasks, debouncedSearchText);
     }
     
     // If using Filter API without search text, return all results
@@ -391,12 +447,39 @@ export const useBrowseFiltersAPI = () => {
       return baseTasks;
     }
     
-    // This shouldn't happen, but keep as fallback
-    console.log('⚠️ Unexpected state - applying client-side filter');
-    return filterTasksBySearch(baseTasks, searchText);
-  }, [tasksWithOfferCounts, searchText, shouldUseFilterAPI]);
+    // Fallback: apply client-side filter
+    console.log('⚠️ Fallback - applying client-side filter');
+    return filterTasksBySearch(baseTasks, searchText || debouncedSearchText);
+  }, [tasksWithOfferCounts, searchText, debouncedSearchText, shouldUseFilterAPI, isSearching]);
   
-  const isLoading = shouldUseFilterAPI ? filterLoading : searchLoading;
+  // Calculate loading state properly:
+  // - Show loading during typing (debounce period)
+  // - Show loading when the active API is actually loading
+  // - Don't show loading from disabled queries
+  const activeApiLoading = React.useMemo(() => {
+    if (shouldUseFilterAPI) {
+      // Using Filter API
+      console.log('📊 Loading state - Filter API:', { filterLoading });
+      return filterLoading;
+    } else {
+      // Using Search API - only show loading if search query is enabled
+      const searchEnabled = debouncedSearchText.trim().length > 0;
+      const loading = searchEnabled && searchLoading;
+      console.log('📊 Loading state - Search API:', { searchEnabled, searchLoading, loading });
+      return loading;
+    }
+  }, [shouldUseFilterAPI, filterLoading, searchLoading, debouncedSearchText]);
+  
+  const isLoading = isSearching || activeApiLoading || isProcessingData;
+  
+  console.log('🎯 Final loading state:', { 
+    isSearching, 
+    activeApiLoading,
+    isProcessingData,
+    isLoading,
+    searchText: searchText.trim(),
+    debouncedSearchText: debouncedSearchText.trim()
+  });
   const error = shouldUseFilterAPI ? filterError : searchError;
   const refetch = shouldUseFilterAPI ? filterRefetch : searchRefetch;
   

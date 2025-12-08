@@ -1,18 +1,27 @@
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
-import { cardStyles, colors, spacing } from '@/src/shared/theme';
+import { cardStyles, colors } from '@/src/shared/theme';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 // Import Task type
 import { Task } from '@/src/api/types/tasks';
+
+// Import responsive utilities
+import {
+  getResponsiveValue,
+  hp,
+  isTablet,
+  RFValue,
+  wp
+} from '@/src/shared/utils/responsive';
 
 export interface TaskCardProps {
   task: Task;
@@ -47,7 +56,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         const parsed = JSON.parse(location);
         console.log('📍 TaskCard (general): Parsed stringified location:', parsed);
         return parsed;
-      } catch (e) {
+      } catch {
         // If parsing fails, treat it as plain address string
         console.warn('⚠️ TaskCard (general): Could not parse location string:', location);
         return { address: location, coordinates: {} };
@@ -203,7 +212,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
       {/* Location */}
       <View style={styles.taskRow}>
-        <Ionicons name={locationInfo.icon as any} size={16} color={colors.textSecondary} />
+        <Ionicons name={locationInfo.icon as any} size={RFValue(14)} color={colors.textSecondary} />
         <Text style={styles.taskRowText} numberOfLines={1}>
           {(() => {
             const address = parsedLocation?.address || 'Location not specified';
@@ -218,7 +227,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
       {/* Time Preference */}
       <View style={styles.taskRow}>
-        <Ionicons name="time-outline" size={16} color={colors.textSecondary} />
+        <Ionicons name="time-outline" size={RFValue(14)} color={colors.textSecondary} />
         <Text style={styles.taskRowText}>{getTimePreference()}</Text>
       </View>
 
@@ -293,7 +302,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           }}
           activeOpacity={0.7}
         >
-          <Ionicons name="map-outline" size={11} color={colors.primary} />
+          <Ionicons name="map-outline" size={RFValue(9)} color={colors.primary} />
           <Text style={styles.viewMapButtonText}>View Map</Text>
         </TouchableOpacity>
       )}
@@ -316,26 +325,26 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
       {/* Navigation Indicator */}
       <View style={styles.navigationIndicator}>
-        <Ionicons name="chevron-forward" size={16} color={colors.border} />
+        <Ionicons name="chevron-forward" size={RFValue(14)} color={colors.border} />
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  // Default Card Styles
+  // Default Card Styles - RESPONSIVE
   defaultCard: {
-    marginHorizontal: spacing.base,
-    marginBottom: spacing.sm,
+    marginHorizontal: isTablet ? wp('-2%') : wp('4%'), // Wider cards on tablets
+    marginBottom: hp('1%'),
     position: 'relative',
-    paddingRight: 100, // Space for avatar and poster name
+    paddingRight: isTablet ? wp('10%') : wp('20%'), // More space on phones for avatar
   },
 
-  // Compact Card Styles
+  // Compact Card Styles - RESPONSIVE
   compactCard: {
-    marginHorizontal: spacing.base,
-    marginBottom: spacing.xs,
-    paddingVertical: spacing.sm,
+    marginHorizontal: isTablet ? wp('8%') : wp('4%'),
+    marginBottom: hp('0.5%'),
+    paddingVertical: hp('1%'),
   },
   compactContent: {
     flexDirection: 'row',
@@ -344,36 +353,36 @@ const styles = StyleSheet.create({
   },
   compactLeft: {
     flex: 1,
-    marginRight: spacing.sm,
+    marginRight: wp('2%'),
   },
   compactTitle: {
-    fontSize: 16,
+    fontSize: RFValue(isTablet ? 13 : 14),
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: hp('0.5%'),
   },
   compactLocation: {
-    fontSize: 13,
+    fontSize: RFValue(isTablet ? 10 : 11),
     color: colors.textSecondary,
   },
   compactRight: {
     alignItems: 'flex-end',
   },
   compactPrice: {
-    fontSize: 16,
+    fontSize: RFValue(isTablet ? 13 : 14),
     fontWeight: '700',
     color: colors.primary,
-    marginBottom: 4,
+    marginBottom: hp('0.5%'),
   },
   compactStatus: {
-    fontSize: 12,
+    fontSize: RFValue(isTablet ? 9 : 10),
     fontWeight: '600',
   },
 
-  // Detailed Card Styles
+  // Detailed Card Styles - RESPONSIVE
   detailedCard: {
-    marginHorizontal: spacing.base,
-    marginBottom: spacing.sm,
+    marginHorizontal: isTablet ? wp('8%') : wp('4%'),
+    marginBottom: hp('1%'),
   },
   taskHeader: {
     flexDirection: 'row',
@@ -382,53 +391,53 @@ const styles = StyleSheet.create({
   },
   taskInfo: {
     flex: 1,
-    marginRight: spacing.sm,
+    marginRight: wp('2%'),
   },
   taskTitle: {
-    fontSize: 16,
+    fontSize: RFValue(isTablet ? 13 : 14),
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
-    lineHeight: 22,
-    paddingRight: spacing.xs,
+    marginBottom: hp('0.5%'),
+    lineHeight: RFValue(isTablet ? 16 : 18),
+    paddingRight: wp('1%'),
   },
   taskLocation: {
-    fontSize: 13,
+    fontSize: RFValue(isTablet ? 10 : 11),
     color: colors.textSecondary,
-    marginBottom: spacing.xs,
+    marginBottom: hp('0.5%'),
   },
   taskMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: wp('2%'),
   },
   statusBadge: {
-    fontSize: 12,
+    fontSize: RFValue(10),
     fontWeight: '600',
   },
   taskDate: {
-    fontSize: 12,
+    fontSize: RFValue(10),
     color: colors.textTertiary,
   },
   taskPriceContainer: {
     alignItems: 'flex-end',
   },
   taskPrice: {
-    fontSize: 18,
+    fontSize: RFValue(isTablet ? 15 : 16),
     fontWeight: '700',
     color: colors.primary,
   },
 
-  // Common Task Row Styles (Default)
+  // Common Task Row Styles (Default) - RESPONSIVE
   taskRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.xs,
-    gap: spacing.xs,
-    paddingRight: spacing.sm,
+    marginBottom: hp('0.5%'),
+    gap: wp('1.5%'),
+    paddingRight: wp('2%'),
   },
   taskRowText: {
-    fontSize: 13,
+    fontSize: RFValue(isTablet ? 10 : 11),
     color: colors.textSecondary,
     flex: 1,
     flexShrink: 1,
@@ -438,22 +447,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: spacing.xs,
+    gap: wp('1.5%'),
+    marginBottom: hp('0.5%'),
   },
   categoryTag: {
     backgroundColor: '#e3f2fd',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
+    paddingHorizontal: wp('2%'),
+    paddingVertical: hp('0.3%'),
+    borderRadius: getResponsiveValue(8, 10, 12),
   },
   categoryText: {
-    fontSize: 11,
+    fontSize: RFValue(9),
     color: '#1976d2',
     fontWeight: '500',
   },
   moreCategoriesText: {
-    fontSize: 11,
+    fontSize: RFValue(9),
     color: '#666',
     fontStyle: 'italic',
   },
@@ -462,81 +471,81 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: spacing.xs,
-    marginBottom: spacing.sm,
-    paddingRight: spacing.xs,
+    marginTop: hp('0.5%'),
+    marginBottom: hp('1%'),
+    paddingRight: wp('1%'),
   },
   statusContainer: {
     flexDirection: 'column',
   },
   statusText: {
-    fontSize: 11,
+    fontSize: RFValue(isTablet ? 8 : 9),
     color: colors.textTertiary,
-    marginBottom: 2,
+    marginBottom: hp('0.2%'),
   },
   offerText: {
-    fontSize: 13,
+    fontSize: RFValue(isTablet ? 10 : 11),
     color: colors.textSecondary,
     fontWeight: '500',
   },
   priceText: {
-    fontSize: 18,
+    fontSize: RFValue(isTablet ? 15 : 16),
     fontWeight: '700',
     color: colors.primary,
   },
 
-  // Map Button
+  // Map Button - RESPONSIVE
   viewMapButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    gap: wp('1%'),
+    paddingVertical: hp('0.5%'),
+    paddingHorizontal: wp('2%'),
     backgroundColor: colors.backgroundDark,
-    borderRadius: 12,
+    borderRadius: getResponsiveValue(8, 10, 12),
     alignSelf: 'flex-start',
-    marginBottom: spacing.xs,
+    marginBottom: hp('0.5%'),
   },
   viewMapButtonText: {
-    fontSize: 11,
+    fontSize: RFValue(9),
     color: colors.primary,
     fontWeight: '500',
   },
 
-  // User Avatar
+  // User Avatar - RESPONSIVE
   userAvatarContainer: {
     position: 'absolute',
-    top: spacing.sm,
-    right: spacing.sm,
+    top: hp('1%'),
+    right: wp('2%'),
     alignItems: 'center',
-    width: 85,
+    width: isTablet ? 80 : wp('20%'),
     zIndex: 2,
   },
   userAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: isTablet ? 50 : wp('10%'),
+    height: isTablet ? 50 : wp('10%'),
+    borderRadius: isTablet ? 25 : wp('5%'),
     backgroundColor: colors.backgroundDark,
   },
   posterName: {
-    fontSize: 9,
+    fontSize: RFValue(isTablet ? 9 : 7),
     color: colors.textPrimary,
     textAlign: 'center',
-    marginTop: 3,
-    maxWidth: 80,
-    lineHeight: 11,
+    marginTop: hp('0.3%'),
+    maxWidth: isTablet ? 75 : wp('18%'),
+    lineHeight: RFValue(isTablet ? 11 : 9),
     fontWeight: '500',
     backgroundColor: 'rgba(255,255,255,0.95)',
-    paddingHorizontal: 3,
-    paddingVertical: 1,
-    borderRadius: 3,
+    paddingHorizontal: wp('0.5%'),
+    paddingVertical: hp('0.1%'),
+    borderRadius: getResponsiveValue(2, 3, 4),
     overflow: 'hidden',
   },
 
-  // Navigation Indicator
+  // Navigation Indicator - RESPONSIVE
   navigationIndicator: {
     position: 'absolute',
-    bottom: spacing.sm,
-    right: spacing.sm,
+    bottom: hp('1%'),
+    right: wp('2%'),
   },
 });

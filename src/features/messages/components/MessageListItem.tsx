@@ -1,5 +1,6 @@
 // Message List Item Component - Optimized for Performance
 
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import React, { useCallback } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { Message } from './message-types';
@@ -85,8 +86,8 @@ export const MessageListItem = React.memo(MessageListItemComponent, (prevProps, 
 const styles = StyleSheet.create({
   messageItem: {
     flexDirection: 'row',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: isTablet ? hp('1.8%') : hp('1.7%'),
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
@@ -94,12 +95,12 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     position: 'relative',
-    marginRight: 12,
+    marginRight: isTablet ? wp('2%') : wp('3%'),
   },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: isTablet ? 56 : 50,
+    height: isTablet ? 56 : 50,
+    borderRadius: isTablet ? 28 : 25,
     backgroundColor: '#F0F0F0',
   },
   unreadDot: {
@@ -123,21 +124,21 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   messageTitle: {
-    fontSize: 15,
+    fontSize: RFValue(isTablet ? 14 : 15),
     fontWeight: '600',
     color: '#000',
     flex: 1,
-    marginRight: 8,
+    marginRight: isTablet ? wp('2%') : wp('2%'),
   },
   messageDate: {
-    fontSize: 13,
+    fontSize: RFValue(isTablet ? 10 : 13),
     color: '#8E8E93',
     flexShrink: 0,
   },
   messagePreview: {
-    fontSize: 14,
+    fontSize: RFValue(isTablet ? 10 : 14),
     color: '#8E8E93',
-    lineHeight: 18,
+    lineHeight: isTablet ? RFValue(20) : 18,
   },
   unreadItem: {
     backgroundColor: '#F0F7FF',
@@ -152,16 +153,16 @@ const styles = StyleSheet.create({
   },
   unreadBadge: {
     backgroundColor: '#007AFF',
-    borderRadius: 12,
-    minWidth: 24,
-    height: 24,
+    borderRadius: isTablet ? 18 : 12,
+    minWidth: isTablet ? 36 : 24,
+    height: isTablet ? 36 : 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
-    paddingHorizontal: 6,
+    marginLeft: isTablet ? wp('2%') : wp('2%'),
+    paddingHorizontal: isTablet ? 8 : 6,
   },
   unreadText: {
-    fontSize: 12,
+    fontSize: RFValue(isTablet ? 10 : 12),
     color: '#fff',
     fontWeight: '700',
   },

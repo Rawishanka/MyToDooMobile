@@ -6,6 +6,9 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+// Responsive utilities
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+
 interface TaskInfoCardProps {
   task: Task;
   getLocationIcon: () => 'location-outline' | 'desktop-outline' | 'car-outline';
@@ -135,7 +138,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
     let correctedUri = uri;
     
     // Fix all known S3 URL typos
-    const typoFixes: Array<[RegExp, string]> = [
+    const typoFixes: [RegExp, string][] = [
       // Domain typos
       [/amazoonaws\.com/g, 'amazonaws.com'],           // amazoonaws -> amazonaws
       [/aamazonaws\.com/g, 'amazonaws.com'],           // aamazonaws -> amazonaws  
@@ -413,7 +416,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       .map((imageData, index) => {
         const result = extractImageString(imageData);
         console.log(`📸 Image ${index} extraction:`, {
-          input: typeof imageData === 'object' ? `Object with keys: ${Object.keys(imageData).join(', ')}` : imageData,
+          input: typeof imageData === 'object' && imageData !== null ? `Object with keys: ${Object.keys(imageData).join(', ')}` : String(imageData),
           output: result ? `${result.substring(0, 60)}...` : 'null',
           outputLength: result ? result.length : 0
         });
@@ -807,57 +810,57 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 const styles = StyleSheet.create({
   taskCard: {
     backgroundColor: '#fff',
-    padding: 16,
-    marginBottom: 16,
+    padding: isTablet ? wp('3%') : wp('4%'),
+    marginBottom: hp('2%'),
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
   avatarContainer: {
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: isTablet ? 80 : 60,
+    height: isTablet ? 80 : 60,
+    borderRadius: isTablet ? 40 : 30,
     backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
   },
   avatarImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: isTablet ? 80 : 60,
+    height: isTablet ? 80 : 60,
+    borderRadius: isTablet ? 40 : 30,
   },
   taskTitle: {
-    fontSize: 20,
+    fontSize: RFValue(isTablet ? 18 : 18),
     fontWeight: '700',
     color: '#000',
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
     textAlign: 'center',
   },
   posterInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: hp('2%'),
   },
   posterName: {
-    fontSize: 14,
+    fontSize: RFValue(isTablet ? 12 : 12),
     color: '#666',
-    marginLeft: 6,
-    marginRight: 8,
+    marginLeft: wp('1.5%'),
+    marginRight: wp('2%'),
   },
   newBadge: {
     backgroundColor: '#4CAF50',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: wp('2%'),
+    paddingVertical: hp('0.3%'),
     borderRadius: 4,
   },
   newBadgeText: {
-    fontSize: 10,
+    fontSize: RFValue(9),
     color: '#fff',
     fontWeight: '600',
   },
@@ -865,94 +868,94 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: hp('2%'),
   },
   dateText: {
-    fontSize: 12,
+    fontSize: RFValue(11),
     color: '#999',
-    marginLeft: 6,
+    marginLeft: wp('1.5%'),
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   detailText: {
-    fontSize: 14,
+    fontSize: RFValue(isTablet ? 12 : 12),
     color: '#666',
-    marginLeft: 8,
+    marginLeft: wp('2%'),
     flex: 1,
   },
   budgetRow: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f8f9fa',
-    padding: 12,
+    padding: isTablet ? wp('2%') : wp('3%'),
     borderRadius: 8,
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   budgetInfo: {
-    marginLeft: 8,
+    marginLeft: wp('2%'),
   },
   budgetAmount: {
-    fontSize: 20,
+    fontSize: RFValue(isTablet ? 18 : 18),
     fontWeight: '700',
     color: '#000',
   },
   budgetLabel: {
-    fontSize: 12,
+    fontSize: RFValue(11),
     color: '#666',
   },
   category: {
-    fontSize: 12,
+    fontSize: RFValue(11),
     color: '#007bff',
     backgroundColor: '#e3f2fd',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('0.8%'),
     borderRadius: 16,
     alignSelf: 'flex-start',
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   description: {
-    fontSize: 14,
+    fontSize: RFValue(isTablet ? 12 : 12),
     color: '#333',
-    lineHeight: 20,
-    marginBottom: 12,
+    lineHeight: RFValue(isTablet ? 18 : 18),
+    marginBottom: hp('1.5%'),
   },
   note: {
-    fontSize: 12,
+    fontSize: RFValue(11),
     color: '#ff9800',
     fontStyle: 'italic',
     backgroundColor: '#fff3e0',
-    padding: 8,
+    padding: wp('2%'),
     borderRadius: 4,
   },
   // Image Gallery Styles
   imageGallery: {
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   imageGalleryTitle: {
-    fontSize: 16,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: hp('1%'),
   },
   noImagesText: {
-    fontSize: 14,
+    fontSize: RFValue(12),
     color: '#999',
     fontStyle: 'italic',
     textAlign: 'center',
-    padding: 16,
+    padding: isTablet ? wp('3%') : wp('4%'),
     backgroundColor: '#f9f9f9',
     borderRadius: 8,
   },
   imageRow: {
     flexDirection: 'row',
-    marginBottom: 8,
+    marginBottom: hp('1%'),
     justifyContent: 'flex-start',
   },
   imageWrapper: {
-    marginRight: 8,
+    marginRight: wp('2%'),
     borderRadius: 8,
     overflow: 'hidden',
     elevation: 2,
@@ -966,18 +969,18 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    width: 80,
-    height: 80,
+    width: isTablet ? 120 : 80,
+    height: isTablet ? 120 : 80,
   },
   thumbnailImage: {
-    width: 80,
-    height: 80,
+    width: isTablet ? 120 : 80,
+    height: isTablet ? 120 : 80,
     borderRadius: 8,
     backgroundColor: '#f5f5f5', // Background color while loading
   },
   thumbnailImageError: {
-    width: 80,
-    height: 80,
+    width: isTablet ? 120 : 80,
+    height: isTablet ? 120 : 80,
     borderRadius: 8,
     backgroundColor: '#f0f0f0',
     justifyContent: 'center',
@@ -997,8 +1000,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   emptyImageSlot: {
-    width: 80,
-    marginRight: 8,
+    width: isTablet ? 120 : 80,
+    marginRight: wp('2%'),
   },
   // Image Modal Styles
   imageModalContainer: {
@@ -1019,17 +1022,17 @@ const styles = StyleSheet.create({
   closeButton: {
     position: 'absolute',
     top: 50,
-    right: 20,
+    right: wp('4%'),
     zIndex: 10,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 20,
-    padding: 5,
+    padding: wp('1.5%'),
   },
   fullImageContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: isTablet ? wp('10%') : wp('5%'),
   },
   fullImage: {
     width: '100%',
@@ -1040,13 +1043,13 @@ const styles = StyleSheet.create({
     bottom: 50,
     alignSelf: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('0.8%'),
     borderRadius: 15,
   },
   imageCounterText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: RFValue(13),
     fontWeight: '500',
   },
 });

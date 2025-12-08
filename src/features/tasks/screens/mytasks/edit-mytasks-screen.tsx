@@ -19,7 +19,6 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -758,11 +757,9 @@ Please remove phone numbers and addresses from the image.`,
 
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={{ flex: 1 }}>
         <ScrollView
           ref={scrollViewRef}
           style={styles.scrollView}
@@ -770,7 +767,8 @@ Please remove phone numbers and addresses from the image.`,
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          nestedScrollEnabled={true}
+          scrollEventThrottle={16}
+          bounces={true}
         >
         {/* SECTION 1: TASK DETAILS */}
         <View style={styles.section}>
@@ -1110,8 +1108,6 @@ Please remove phone numbers and addresses from the image.`,
           </View>
         </View>
         </ScrollView>
-          </View>
-        </TouchableWithoutFeedback>
 
         {/* Date Picker */}
         {showDatePicker && (
@@ -1203,7 +1199,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 300,
+    paddingBottom: 120,
   },
   section: {
     marginBottom: 20,
