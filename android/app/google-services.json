@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "697863453994",
+    "firebase_url": "https://mytodoo-40c87.firebaseio.com",
+    "project_id": "mytodoo-40c87",
+    "storage_bucket": "mytodoo-40c87.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:697863453994:android:648f36d94e17641e853253",
+        "android_client_info": {
+          "package_name": "com.nowanya.mytodoomobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "697863453994-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACCrN_zK5NKUUM7GtZulp4Sy53ewb495M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "697863453994-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

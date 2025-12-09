@@ -22,10 +22,12 @@ export function createApi(baseURL: string) {
                                config.url?.includes('/auth/register');
         
         // First try to get token from auth store
-        let token = useAuthStore.getState().token;
+        const authState = useAuthStore.getState();
+        let token = authState.token;
         
         // If no token in store, try to get from AsyncStorage
-        if (!token && !isAuthEndpoint) {
+        // BUT only if user hasn't explicitly logged out (isAuthenticated !== false)
+        if (!token && !isAuthEndpoint && authState.isAuthenticated !== false) {
             try {
                 const storedToken = await AsyncStorage.getItem('token');
                 if (storedToken) {
@@ -37,6 +39,8 @@ export function createApi(baseURL: string) {
                     console.warn("⚠️ Error retrieving token from AsyncStorage:", error?.message);
                 }
             }
+        } else if (!token && !isAuthEndpoint && authState.isAuthenticated === false) {
+            console.log("ℹ️ User logged out - not using AsyncStorage token");
         }
         
         if (token) {
@@ -229,9 +233,19 @@ export function createApi(baseURL: string) {
             // Only log other errors in development for non-network issues
             // Exclude 401, 403, and non-critical endpoints from logging
             const statusCode = error.response?.status;
+            
+            // Special case: Don't log 500 errors for /offers endpoint if it's a duplicate chat error
+            // (This is handled gracefully in the createOffer function)
+            const isOfferEndpoint = requestUrl.includes('/offers');
+            const is500Error = statusCode === 500;
+            const errorMessage = error.response?.data?.message || error.response?.data?.error || '';
+            const isDuplicateChatError = errorMessage.includes('duplicate key') || errorMessage.includes('E11000');
+            const shouldSuppressOfferError = isOfferEndpoint && is500Error && isDuplicateChatError;
+            
             const shouldLog = __DEV__ && 
                              !isNetworkError(error) && 
                              !isNonCriticalEndpoint && 
+                             !shouldSuppressOfferError &&
                              statusCode !== 401 && 
                              statusCode !== 403;
             

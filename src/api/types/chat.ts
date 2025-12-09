@@ -28,11 +28,22 @@ export interface LastMessage {
 
 export interface Chat {
   _id: string;
+  chatId?: string;
   taskId: string;
-  posterId: ChatParticipant;
-  taskerId: ChatParticipant;
-  otherParticipant: OtherParticipant | null;
+  taskTitle?: string;
+  taskStatus?: string;
+  posterId?: ChatParticipant;
+  taskerId?: ChatParticipant;
+  participants?: ChatParticipant[];
+  otherParticipant?: OtherParticipant | null;
+  lastMessage?: LastMessage | null;
+  unreadCount?: number;
+  posterUnreadCount?: number;
+  taskerUnreadCount?: number;
+  status?: string;
   createdAt: string;
+  updatedAt?: string;
+  closedAt?: string | null;
 }
 
 export interface ChatListItem {

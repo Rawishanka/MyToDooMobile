@@ -12,30 +12,28 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    RefreshControl,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 // Import components
 import { ChatWindow } from '@/src/features/messages/components/ChatWindow';
 import type { Message } from '@/src/features/messages/components/message-types';
-import { MESSAGES_DATA } from '@/src/features/messages/components/message-types';
 import { MessageListItem } from '@/src/features/messages/components/MessageListItem';
 import { SearchBar } from '@/src/features/messages/components/SearchBar';
 
-// Import notification modal and chat API
-import type { ChatListItem } from '@/src/api/types/chat';
+// Import notification modal and NEW task-based chat API
 import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
-import { useGetAllChats } from '@/src/shared/hooks/useChatApi';
 import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
+import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
 import NotificationModal from './notification-screen-api';
 
 const MessageScreen: React.FC = () => {
@@ -51,13 +49,13 @@ const MessageScreen: React.FC = () => {
   // Network status monitoring
   const { isConnected } = useNetworkStatus();
 
-  // Get real chat data from API
+  // Get real chat data from NEW task-based chat API
   const { 
     data: chatData, 
     isLoading: isLoadingChats, 
     error: chatError,
     refetch: refetchChats 
-  } = useGetAllChats();
+  } = useGetUserChats();
 
   // Get real notification count from API
   const { data: unreadCountData } = useUnreadCount();
@@ -102,101 +100,104 @@ const MessageScreen: React.FC = () => {
     loadLocalPreviews();
   }, []);
 
-  // Convert API chat data to display format
-  // BUSINESS RULE: Only show chats for tasks where an offer has been ACCEPTED
-  // Workflow: Tasker makes offer → Poster accepts offer → Chat becomes visible
+  // Convert NEW task-based chat API data to display format
+  // BUSINESS RULE: Only shows chats for accepted/paid tasks (backend handles filtering)
   const chatMessages: Message[] = useMemo(() => {
-    if (!chatData?.data) {
-      // Fallback to mock data if API not available
-      console.log('📱 Using fallback chat data');
-      return MESSAGES_DATA;
+    // Safe check for chat data
+    if (!chatData) {
+      console.log('📱 No chat data received from API');
+      return [];
+    }
+    
+    const chats = chatData?.chats || [];
+    
+    if (!Array.isArray(chats) || chats.length === 0) {
+      console.log('📱 No chats available from API (empty or invalid array)');
+      return [];
     }
 
     try {
-      console.log(`💬 Processing ${chatData.data.length} chats from API...`);
+      console.log(`💬 Processing ${chats.length} chats from NEW task-based API...`);
       
-      const filteredChats = chatData.data
-        .filter((chatItem: ChatListItem) => {
-          // Filter out invalid chat items
-          if (!chatItem || !chatItem.chat || !chatItem.chat._id) {
-            console.log('❌ Invalid chat item - missing required fields');
-            return false;
-          }
-          
-          // ✅ ACCEPTANCE FILTER: Only show chats where the offer has been accepted
-          // After a poster accepts a tasker's offer, task status changes to one of:
-          // - 'accepted': Immediately after acceptance
-          // - 'assigned': Task assigned to tasker
-          // - 'todo': Task is ready to start
-          // - 'in_progress': Task is being worked on
-          // - 'completed': Task finished
-          // 
-          // Task statuses that mean offer NOT accepted yet:
-          // - 'open': No offers accepted
-          // - 'pending': Offers submitted but none accepted
-          const task = chatItem.task;
-          const taskStatus = task?.status?.toLowerCase();
-          
-          // Only show chats for tasks with accepted offers
-          // Valid statuses after offer acceptance: 'accepted', 'assigned', 'todo', 'in_progress', 'completed'
-          const validStatuses = ['accepted', 'assigned', 'todo', 'in_progress', 'completed'];
-          const isAcceptedOffer = taskStatus && validStatuses.includes(taskStatus);
-          
-          if (!isAcceptedOffer) {
-            console.log(`⏭️ Skipping chat: "${task?.title || 'Unknown'}" | Status: "${taskStatus}" (offer not accepted)`);
-            return false;
-          }
-          
-          console.log(`✅ Including chat: "${task?.title || 'Unknown'}" | Status: "${taskStatus}" (offer accepted)`);
-          return true;
+      return chats.map((chat: any) => {
+        // Safe extraction with fallbacks
+        const lastMessage = chat.lastMessage || {};
+        const preview = lastMessage.content || 'Start a conversation';
+        
+        // DEBUG: Log raw chat data
+        console.log('🔍 RAW CHAT DATA:', {
+          chatId: chat._id,
+          posterIdType: typeof chat.posterId,
+          taskerIdType: typeof chat.taskerId,
+          posterId: chat.posterId,
+          taskerId: chat.taskerId,
         });
-      
-      console.log(`📊 Filtered ${filteredChats.length} chats with accepted offers out of ${chatData.data.length} total chats`);
-      
-      return filteredChats.map((chatItem: ChatListItem) => {
-          // Get preview from local storage if API doesn't have lastMessage
-          const taskId = chatItem.chat.taskId;
-          const apiPreview = chatItem.lastMessage?.text;
-          const localPreview = localMessagePreviews[taskId];
-          const preview = apiPreview || localPreview || 'Start a conversation';
-          
-          // Get avatar from API or use fallback
-          const otherParticipant = chatItem.chat.otherParticipant;
-          let avatarUrl = 'https://ui-avatars.com/api/?name=User&background=007AFF&color=fff&size=100';
-          
-          if ((otherParticipant as any)?.avatar) {
-            // Use actual avatar from API
-            avatarUrl = (otherParticipant as any).avatar;
-          } else if (otherParticipant?.firstName || otherParticipant?.lastName) {
-            // Generate avatar with first letter of name using better styling
-            const firstName = otherParticipant.firstName || '';
-            const lastName = otherParticipant.lastName || '';
-            const name = `${firstName}+${lastName}`.trim();
-            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=007AFF&color=fff&size=100&bold=true&rounded=true`;
-          }
-          
-          console.log(`👤 Avatar for ${otherParticipant?.firstName}: ${avatarUrl}`);
-          
-          return {
-            id: chatItem.chat._id,
-            title: chatItem.task?.title || 'Untitled Task',
-            preview: preview,
-            date: new Date(chatItem.lastMessage?.timestamp || chatItem.chat.createdAt).toLocaleDateString('en-GB', {
+        
+        // Get participant info - posterId and taskerId should be populated objects from API
+        const posterId = typeof chat.posterId === 'object' ? chat.posterId : null;
+        const taskerId = typeof chat.taskerId === 'object' ? chat.taskerId : null;
+        
+        console.log('✅ EXTRACTED PARTICIPANTS:', {
+          poster: posterId ? `${posterId.firstName} ${posterId.lastName}` : 'NULL',
+          tasker: taskerId ? `${taskerId.firstName} ${taskerId.lastName}` : 'NULL',
+        });
+        
+        // Get other participant info (poster or tasker, depending on current user)
+        const participants = Array.isArray(chat.participants) ? chat.participants : [];
+        const otherUser = participants.find((p: any) => p && p._id !== chat.currentUserId);
+        
+        // Generate avatar with safe fallbacks
+        let avatarUrl = 'https://ui-avatars.com/api/?name=User&background=007AFF&color=fff&size=100';
+        if (otherUser?.profileImage) {
+          avatarUrl = otherUser.profileImage;
+        } else if (otherUser?.firstName || otherUser?.lastName) {
+          const firstName = otherUser.firstName || '';
+          const lastName = otherUser.lastName || '';
+          const name = `${firstName}+${lastName}`.trim() || 'User';
+          avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=007AFF&color=fff&size=100&bold=true&rounded=true`;
+        }
+        
+        // Safe date handling
+        let dateStr = 'Recently';
+        try {
+          const dateValue = lastMessage.createdAt || chat.createdAt;
+          if (dateValue) {
+            dateStr = new Date(dateValue).toLocaleDateString('en-GB', {
               day: 'numeric',
               month: 'short',
               year: 'numeric'
-            }),
-            avatar: avatarUrl,
-            unreadCount: chatItem.unreadCount && chatItem.unreadCount > 0 ? chatItem.unreadCount : undefined,
-            taskId: chatItem.chat.taskId || '', // Store task ID for chat functionality, ensure it's not null
-          };
-        });
+            });
+          }
+        } catch (e) {
+          console.warn('⚠️ Invalid date format for chat:', chat._id);
+        }
+        
+        const taskTitle = chat.taskTitle || chat.task?.title || 'Untitled Task';
+        const unreadCount = typeof chat.unreadCount === 'number' && chat.unreadCount > 0 
+          ? chat.unreadCount 
+          : undefined;
+        
+        console.log(`✅ Chat: "${taskTitle}" | Unread: ${unreadCount || 0} | Participants: ${participants.length}`);
+        
+        return {
+          id: chat._id || `chat-${Date.now()}`,
+          chatId: chat.chatId || chat._id, // Add chatId for direct chat access
+          title: taskTitle,
+          preview: preview,
+          date: dateStr,
+          avatar: avatarUrl,
+          unreadCount: unreadCount,
+          taskId: chat.taskId || chat.task?._id || '',
+          // Pass participant data for ChatWindow
+          posterId: posterId,
+          taskerId: taskerId,
+        };
+      });
     } catch (error) {
       console.error('❌ Error processing chat data:', error);
-      console.log('📱 Falling back to mock data due to processing error');
-      return MESSAGES_DATA;
+      return [];
     }
-  }, [chatData, localMessagePreviews]);
+  }, [chatData]);
 
   // Filter messages based on search
   const filteredMessages = useMemo(() => {
@@ -211,9 +212,13 @@ const MessageScreen: React.FC = () => {
   }, [searchQuery, chatMessages]);
 
   const handleMessagePress = (message: Message) => {
-    console.log('📱 Opening chat for message:', message.id, 'taskId:', (message as any).taskId);
+    console.log('📱 Opening chat:', {
+      messageId: message.id,
+      chatId: (message as any).chatId,
+      taskId: (message as any).taskId
+    });
     setSelectedMessage(message);
-    setSelectedChatId((message as any).taskId || null);
+    setSelectedChatId((message as any).chatId || (message as any).taskId || null);
     setShowChat(true);
   };
 
@@ -347,7 +352,10 @@ const MessageScreen: React.FC = () => {
         visible={showChat}
         onClose={handleCloseChat}
         message={selectedMessage}
-        taskId={selectedChatId}
+        taskId={(selectedMessage as any)?.taskId}
+        chatIdProp={selectedChatId || undefined}
+        posterIdProp={(selectedMessage as any)?.posterId}
+        taskerIdProp={(selectedMessage as any)?.taskerId}
       />
 
       {/* Network Alert */}

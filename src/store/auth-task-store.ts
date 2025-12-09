@@ -56,6 +56,14 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (finalExpiresIn) {
         await AsyncStorage.setItem('expiresIn', finalExpiresIn.toString());
       }
+      // Set flag that user has logged in before (for welcome screen logic)
+      await AsyncStorage.setItem('hasLoggedInBefore', 'true');
+      console.log("🏁 hasLoggedInBefore flag set to 'true' - user will see login screen after logout");
+      
+      // Clear the logout flag since user is now logging in
+      await AsyncStorage.removeItem('userLoggedOut');
+      console.log("🔓 userLoggedOut flag cleared - user is now authenticated");
+      
       console.log("💾 Auth data saved to AsyncStorage");
     } catch (error) {
       console.error("❌ Error saving auth data to AsyncStorage:", error);
@@ -83,9 +91,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   clearAuth: async () => {
     console.log("🧹 Clearing auth data...");
-    set({ token: null, user: null, expiresIn: null, isAuthenticated: false });
     
-    // Clear stored credentials
+    // CRITICAL: Set a flag in AsyncStorage to indicate user explicitly logged out
+    // This persists across app restarts, unlike the Zustand store
+    try {
+      await AsyncStorage.setItem('userLoggedOut', 'true');
+      console.log("🚪 userLoggedOut flag set - user will see login screen on app reopen");
+    } catch (error) {
+      console.error("❌ Error setting logout flag:", error);
+    }
+    
+    // Set isAuthenticated to false in Zustand store
+    set({ isAuthenticated: false, token: null, user: null, expiresIn: null });
+    console.log("🚫 isAuthenticated set to FALSE in store");
+    
+    // Clear stored credentials from AsyncStorage
     try {
       await AsyncStorage.multiRemove([
         'token', 
@@ -97,7 +117,16 @@ export const useAuthStore = create<AuthState>((set) => ({
         'saved_password',
         'remember_me'
       ]);
-      console.log("✅ All auth data cleared successfully");
+      console.log("✅ All auth data cleared from AsyncStorage");
+      
+      // Verify token was actually removed
+      const verifyToken = await AsyncStorage.getItem('token');
+      if (verifyToken) {
+        console.warn("⚠️ Token still exists in AsyncStorage after clear, forcing removal");
+        await AsyncStorage.removeItem('token');
+      } else {
+        console.log("✅ Verified: token removed from AsyncStorage");
+      }
       
       // NOTE: Cache clearing is now handled by the logout component to prevent race conditions
       // The clearAllCachesGlobal functionality has been moved to the logout sequence

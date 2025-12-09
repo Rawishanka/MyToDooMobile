@@ -112,15 +112,38 @@ export function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     // Restore full auth state from AsyncStorage when app starts
     const restoreAuthState = async () => {
-      if (isLoading) return; // Wait for storage to load
+      if (isLoading) {
+        console.log("⏳ AsyncStorage still loading, waiting...");
+        return; // Wait for storage to load
+      }
       
+      // CRITICAL: Check if user explicitly logged out
+      const userLoggedOut = await AsyncStorage.getItem('userLoggedOut');
+      if (userLoggedOut === 'true') {
+        console.log("🚪 User explicitly logged out, skipping auth restoration");
+        console.log("🔑 User will be shown login screen");
+        return; // Don't restore auth if user logged out
+      }
+      
+      console.log("🔍 Checking if auth restoration needed...", {
+        hasStoredToken: !!storedToken,
+        hasCurrentToken: !!token,
+        isAuthenticated,
+        userLoggedOut: userLoggedOut
+      });
+      
+      // If we have a stored token but no current token, restore it
+      // This happens when the app is closed and reopened (but user didn't logout)
       if (storedToken && !token) {
         console.log("🔄 Restoring auth state from AsyncStorage...");
+        console.log("📦 Stored token found:", storedToken.substring(0, 30) + "...");
         
         try {
           // Load user data from AsyncStorage
           const storedUser = await AsyncStorage.getItem('user');
           const storedExpiresIn = await AsyncStorage.getItem('expiresIn');
+          
+          console.log("📦 Stored user found:", !!storedUser);
           
           if (storedUser) {
             const user = JSON.parse(storedUser);
@@ -136,21 +159,26 @@ export function AuthProvider({ children }: PropsWithChildren) {
             // Call setAuthData directly from store to avoid dependency issues
             const { setAuthData } = useAuthStore.getState();
             await setAuthData(storedToken, user, expiresIn);
-            console.log("✅ Auth state restored successfully");
+            console.log("✅ Auth state restored successfully - user should be logged in now");
           } else {
             // No user data, just restore token
             console.log("⚠️ Found token but no user data, restoring token only");
             const { setAuthData } = useAuthStore.getState();
             await setAuthData(storedToken, null, undefined);
+            console.log("✅ Token restored, user data will be fetched from API");
           }
         } catch (error) {
           console.error("❌ Error restoring auth state:", error);
         }
+      } else if (storedToken && token) {
+        console.log("✅ Auth already restored (token present in both storage and state)");
+      } else {
+        console.log("ℹ️ No stored token found - user needs to login");
       }
     };
     
     restoreAuthState();
-  }, [isLoading, storedToken, token]); // Removed setAuthData from dependencies
+  }, [isLoading, storedToken, token]); // Removed isAuthenticated from dependencies
 
   // Don't show loading screen - let app render while auth loads in background
   // Auth status will be checked by individual screens that need it

@@ -3,17 +3,18 @@ import { RatingReviewModal } from '@/src/features/tasks/components/RatingReviewM
 import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import {
-  useAcceptOffer,
-  useCancelTask,
-  useCompleteTask,
-  useCompleteTaskPayment,
-  useCreateCancellationRequest,
-  useDeleteTask,
-  useGetCancellationReasons,
-  useGetCancellationRequest,
-  useRespondToCancellationRequest,
-  useSubmitReview
+    useAcceptOffer,
+    useCancelTask,
+    useCompleteTask,
+    useCompleteTaskPayment,
+    useCreateCancellationRequest,
+    useDeleteTask,
+    useGetCancellationReasons,
+    useGetCancellationRequest,
+    useRespondToCancellationRequest,
+    useSubmitReview
 } from '@/src/shared/hooks/useTaskApi';
+import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
 import { formatCurrency, getCurrencyFromLocation, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useAuthStore } from '@/src/store/auth-task-store';
@@ -43,6 +44,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   
   // Get current user from auth store
   const { user: currentUser } = useAuthStore();
+  
+  // Get user's chats to check if chat exists for this task
+  const { data: chatsData } = useGetUserChats();
   
   
   const [showPosterCancelModal, setShowPosterCancelModal] = useState(false);
@@ -198,6 +202,67 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     return /^[0-9a-fA-F]{24}$/.test(id);
   }, []);
 
+  // Helper function to handle chat navigation
+  const handleOpenChat = useCallback(() => {
+    console.log('💬 Chat button touched for task:', task._id);
+    
+    // First, check if a chat already exists for this task
+    const existingChat = chatsData?.chats?.find((chat: any) => {
+      const chatTaskId = typeof chat.taskId === 'string' ? chat.taskId : chat.taskId?._id;
+      return chatTaskId === task._id;
+    });
+
+    if (existingChat) {
+      // Chat exists - navigate with chatId to directly open the chat
+      console.log('✅ Found existing chat:', existingChat._id);
+      router.push({
+        pathname: '/task-chat',
+        params: {
+          taskId: task._id,
+          taskTitle: task.title,
+          chatId: existingChat._id
+        }
+      });
+      return;
+    }
+
+    // Chat doesn't exist - need to create one with posterId and taskerId
+    console.log('📝 No existing chat found, will create new chat');
+    
+    // Get poster ID (task creator)
+    const posterId = typeof task.createdBy === 'object' && task.createdBy?._id 
+      ? task.createdBy._id 
+      : (typeof task.createdBy === 'string' ? task.createdBy : null);
+    
+    // Get tasker ID (assigned user or accepted offer user)
+    let taskerId = null;
+    const assignedTo = (task as any).assignedTo;
+    if (typeof assignedTo === 'object' && assignedTo?._id) {
+      taskerId = assignedTo._id;
+    } else if (typeof assignedTo === 'string') {
+      taskerId = assignedTo;
+    } else if (task.offers && Array.isArray(task.offers)) {
+      // Find accepted offer and get the offer creator (task taker)
+      const acceptedOffer = task.offers.find((o: any) => o.status === 'accepted');
+      if (acceptedOffer) {
+        const taskTaker = acceptedOffer.taskTaker || acceptedOffer.taskTakerId;
+        taskerId = typeof taskTaker === 'object' ? taskTaker?._id : taskTaker;
+      }
+    }
+    
+    console.log('💬 Creating new chat with participants:', { posterId, taskerId });
+    
+    router.push({
+      pathname: '/task-chat',
+      params: {
+        taskId: task._id,
+        taskTitle: task.title,
+        posterId: posterId || '',
+        taskerId: taskerId || ''
+      }
+    });
+  }, [task, chatsData, router]);
+
 
   const handleMarkAsCompleted = useCallback(async () => {
     if (completeTaskMutation.isPending || completeTaskPaymentMutation.isPending || isProcessing) {
@@ -275,8 +340,12 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               console.warn('⚠️ Payment completion failed:', paymentError?.message);
             }
             
-            // If payment completion fails due to missing payment intent, try regular completion
+            // If payment completion fails, try regular completion as fallback
+            // This handles cases where payment API is unavailable or task is already paid
             if (paymentError?.response?.status === 500 || 
+                paymentError?.response?.status === 400 ||
+                paymentError?.response?.status === 404 ||
+                paymentError?.message?.includes('Failed to complete task payment') ||
                 paymentError?.response?.data?.message?.includes('No accepted offer found') ||
                 paymentError?.response?.data?.message?.includes('Payment has not been completed yet')) {
               console.log('⚠️ Payment completion failed, falling back to regular task completion');
@@ -1405,26 +1474,52 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             />
           </TouchableOpacity>
         ) : status === 'assigned' && userRole === 'Tasker' ? (
-          // Tasker Todoo Tasks: Only Cancel button
-          <TouchableOpacity 
-            style={[
-              styles.actionButton,
-              isProcessing && styles.disabledButton
-            ]} 
-            activeOpacity={0.6}
-            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            onPress={handleCancelTask}
-            disabled={isProcessing}
-          >
-            <MaterialIcons 
-              name="cancel" 
-              size={20} 
-              color={isProcessing ? "#999" : "#dc3545"} 
-            />
-          </TouchableOpacity>
-        ) : status === 'accepted' ? (
-          // Accepted Offers tab: Mark as Completed + Cancel
+          // Tasker Todoo Tasks: Chat + Cancel button
           <>
+            <TouchableOpacity 
+              style={[styles.chatButton]}
+              onPress={handleOpenChat}
+              activeOpacity={0.7}
+              delayPressIn={0}
+            >
+              <MaterialIcons 
+                name="chat" 
+                size={20} 
+                color="#007bff" 
+              />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[
+                styles.actionButton,
+                isProcessing && styles.disabledButton
+              ]} 
+              activeOpacity={0.6}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              onPress={handleCancelTask}
+              disabled={isProcessing}
+            >
+              <MaterialIcons 
+                name="cancel" 
+                size={20} 
+                color={isProcessing ? "#999" : "#dc3545"} 
+              />
+            </TouchableOpacity>
+          </>
+        ) : status === 'accepted' ? (
+          // Accepted Offers tab: Chat + Mark as Completed + Cancel
+          <>
+            <TouchableOpacity 
+              style={[styles.chatButton]}
+              onPress={handleOpenChat}
+              activeOpacity={0.7}
+              delayPressIn={0}
+            >
+              <MaterialIcons 
+                name="chat" 
+                size={20} 
+                color="#007bff" 
+              />
+            </TouchableOpacity>
             <TouchableOpacity 
               style={[
                 styles.completedButton,
@@ -2040,6 +2135,15 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.5,
     backgroundColor: '#f5f5f5',
+  },
+  chatButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#e7f3ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
   },
   completedButton: {
     flex: 1,

@@ -5,15 +5,15 @@ import { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { CountryPicker } from './CountryPicker';
 import { DatePickerInput } from './DatePickerInput';
@@ -602,6 +602,9 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           placeholder="Create a password"
           placeholderTextColor="#999"
           secureTextEntry={!showPassword}
+          textContentType="newPassword"
+          autoComplete="password-new"
+          importantForAutofill="yes"
           returnKeyType="next"
           onSubmitEditing={() => confirmPasswordRef.current?.focus()}
         />
@@ -638,6 +641,9 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           placeholder="Confirm your password"
           placeholderTextColor="#999"
           secureTextEntry={!showConfirmPassword}
+          textContentType="newPassword"
+          autoComplete="password-new"
+          importantForAutofill="yes"
           returnKeyType="done"
         />
         <TouchableOpacity 

@@ -23,6 +23,12 @@ export interface ChatMessage {
   sender: 'me' | 'other';
   timestamp: string;
   senderName?: string;
+  senderAvatar?: string;
+  senderInitials?: string;
+  messageType?: 'text' | 'image' | 'file';
+  mediaUrl?: string | null;
+  isRead?: boolean;
+  readAt?: string | null;
 }
 
 // Sample notification data

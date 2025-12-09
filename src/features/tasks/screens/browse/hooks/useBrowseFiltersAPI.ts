@@ -2,7 +2,7 @@
 import { Task, TaskFilterParams, TaskSearchParams } from '@/src/api/types/tasks';
 import { useFilterTasks, useSearchTasks } from '@/src/shared/hooks/useTaskApi';
 import * as Location from 'expo-location';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 export interface FilterState {
   selectedCategory: string;
@@ -172,6 +172,9 @@ export const useBrowseFiltersAPI = () => {
   const [isProcessingData, setIsProcessingData] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [tasksWithOfferCounts, setTasksWithOfferCounts] = useState<Task[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Debounce search text for API calls (300ms delay)
   useEffect(() => {
@@ -266,6 +269,8 @@ export const useBrowseFiltersAPI = () => {
     const params: TaskFilterParams = {
       sortBy: FILTER_SORT_MAPPING[selectedSort],
       status: 'open',
+      page: currentPage,
+      limit: 20,
     };
 
     if (selectedCategory !== 'All Categories') params.categories = selectedCategory;
@@ -290,7 +295,7 @@ export const useBrowseFiltersAPI = () => {
     // if (searchText.trim()) params.search = searchText.trim();
 
     return params;
-  }, [selectedCategory, taskType, priceRange, selectedSort, userLocation]);
+  }, [selectedCategory, taskType, priceRange, selectedSort, userLocation, currentPage]);
 
   const {
     data: searchResponse,
@@ -316,11 +321,22 @@ export const useBrowseFiltersAPI = () => {
         ? (filterResponse?.data || [])
         : (searchResponse?.data || []);
 
+      // Handle pagination info
+      if (shouldUseFilterAPI && filterResponse?.pagination) {
+        const { hasNextPage, currentPage: apiPage } = filterResponse.pagination;
+        setHasMore(hasNextPage);
+        console.log('📄 Pagination info:', { currentPage: apiPage, hasNextPage });
+      }
+
       // Always set processing when data changes
       setIsProcessingData(true);
 
       if (baseTasks.length === 0) {
-        setTasksWithOfferCounts([]);
+        // Only clear if it's page 1, otherwise keep existing tasks
+        if (currentPage === 1) {
+          setTasksWithOfferCounts([]);
+        }
+        setIsLoadingMore(false);
         // Don't set isProcessingData false here - let it be controlled by API loading states
         // This prevents flash of empty state while API is still loading
         return;
@@ -377,20 +393,35 @@ export const useBrowseFiltersAPI = () => {
 
         console.log('✅ [useBrowseFiltersAPI] Enhanced tasks with offer counts:', {
           totalTasks: enhancedTasks.length,
-          tasksWithOffers: enhancedTasks.filter(t => (t.offerCount || 0) > 0).length
+          tasksWithOffers: enhancedTasks.filter(t => (t.offerCount || 0) > 0).length,
+          currentPage,
+          isAppending: currentPage > 1
         });
 
-        setTasksWithOfferCounts(enhancedTasks);
+        // Append tasks if loading more pages, otherwise replace
+        if (currentPage > 1) {
+          setTasksWithOfferCounts(prev => {
+            const newTaskIds = new Set(enhancedTasks.map(t => t._id));
+            const uniquePrevTasks = prev.filter(t => !newTaskIds.has(t._id));
+            return [...uniquePrevTasks, ...enhancedTasks];
+          });
+        } else {
+          setTasksWithOfferCounts(enhancedTasks);
+        }
         setIsProcessingData(false);
+        setIsLoadingMore(false);
       } catch (error) {
         console.error('❌ [useBrowseFiltersAPI] Failed to enhance tasks with offer counts:', error);
-        setTasksWithOfferCounts(baseTasks);
+        if (currentPage === 1) {
+          setTasksWithOfferCounts(baseTasks);
+        }
         setIsProcessingData(false);
+        setIsLoadingMore(false);
       }
     };
 
     enhanceTasksWithOfferCounts();
-  }, [shouldUseFilterAPI, filterResponse?.data, searchResponse?.data]);
+  }, [shouldUseFilterAPI, filterResponse?.data, searchResponse?.data, currentPage]);
 
   // Reset isProcessingData when API loading completes
   useEffect(() => {
@@ -504,7 +535,25 @@ export const useBrowseFiltersAPI = () => {
     setShowTasksWithNoOffers(false);
     setSelectedSort(0);
     setSearchText('');
+    setCurrentPage(1);
+    setTasksWithOfferCounts([]);
+    setHasMore(true);
   };
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+    setTasksWithOfferCounts([]);
+    setHasMore(true);
+  }, [selectedCategory, taskType, priceRange, selectedSort, debouncedSearchText]);
+
+  const loadMore = useCallback(() => {
+    if (!isLoadingMore && hasMore && !isLoading) {
+      console.log('📄 Loading more tasks, page:', currentPage + 1);
+      setIsLoadingMore(true);
+      setCurrentPage(prev => prev + 1);
+    }
+  }, [isLoadingMore, hasMore, isLoading, currentPage]);
 
   return {
     selectedCategory,
@@ -525,6 +574,9 @@ export const useBrowseFiltersAPI = () => {
     activeFiltersCount: getActiveFiltersCount(),
     resetFilters,
     isLoading,
+    isLoadingMore,
+    hasMore,
+    loadMore,
     error,
     refetch,
     totalItems,
