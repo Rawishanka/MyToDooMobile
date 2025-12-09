@@ -1,3 +1,4 @@
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -33,30 +34,30 @@ export const MakeOfferSection: React.FC<MakeOfferSectionProps> = ({ onMakeOffer,
 const styles = StyleSheet.create({
   makeOfferSection: {
     backgroundColor: '#f8f9fa',
-    padding: 16,
-    marginBottom: 16,
+    padding: isTablet ? wp('3%') : wp('4%'),
+    marginBottom: hp('2%'),
     borderRadius: 8,
   },
   makeOfferTitle: {
-    fontSize: 16,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#000',
-    marginBottom: 4,
+    marginBottom: hp('0.5%'),
   },
   viewersText: {
-    fontSize: 12,
+    fontSize: RFValue(11),
     color: '#666',
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   makeOfferButton: {
     backgroundColor: '#4CAF50',
-    paddingVertical: 12,
+    paddingVertical: hp('1.5%'),
     borderRadius: 8,
     alignItems: 'center',
   },
   makeOfferButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(14),
     fontWeight: '600',
   },
 });

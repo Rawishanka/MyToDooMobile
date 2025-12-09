@@ -10,31 +10,29 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    BackHandler,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  Alert,
+  BackHandler,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // ✅ NEW: Use OCR API for sensitive data detection
 import { OCRAPI } from '@/src/api/ocr-api';
-import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
 
 import {
-    DateOptionSelector,
-    TimeOfDayGrid,
-    TimeToggle,
+  DateOptionSelector,
+  TimeOfDayGrid,
+  TimeToggle,
 } from './components';
 
 // Helper function to copy image to persistent storage
@@ -79,7 +77,9 @@ interface LocationData {
 export default function CreateTaskScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { myTask, updateMyTask, resetTask } = useCreateTaskStore();
+  const updateMyTask = useCreateTaskStore(state => state.updateMyTask);
+  const resetTask = useCreateTaskStore(state => state.resetTask);
+  const myTask = useCreateTaskStore(state => state.myTask);
   const insets = useSafeAreaInsets();
 
   // Refs for sections
@@ -114,14 +114,18 @@ export default function CreateTaskScreen() {
   const [isOCRProcessing, setIsOCRProcessing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
 
-  // Sync images to store whenever they change
+  const imagesRef = useRef<string[]>([]);
+
   useEffect(() => {
-    console.log('💾 Syncing images to store:', images.length, 'images');
-    updateMyTask({ 
-      photos: images,
-      photo: images[0] || ''
-    });
-  }, [images, updateMyTask]);
+    const imagesChanged = JSON.stringify(images) !== JSON.stringify(imagesRef.current);
+    if (imagesChanged) {
+      imagesRef.current = images;
+      useCreateTaskStore.getState().updateMyTask({ 
+        photos: images,
+        photo: images[0] || ''
+      });
+    }
+  }, [images]);
 
   // Section 3: Time
   const [selectedOption, setSelectedOption] = useState('');
@@ -149,7 +153,7 @@ export default function CreateTaskScreen() {
       setTouched(prev => ({ ...prev, category: true }));
       console.log('   ✅ Category state updated to:', categoryName);
     }
-  }, [params.selectedCategory]);
+  }, [params.selectedCategory, selectedCategory]);
 
   // Debug: Log when selectedCategory changes
   useEffect(() => {
@@ -403,7 +407,7 @@ export default function CreateTaskScreen() {
       setSelectedTimeBlock(myTask.time);
       setNeedSpecificTime(true);
     }
-  }, []);
+  }, [myTask]);
 
   // Reset time toggle when Flexible option is selected
   useEffect(() => {
@@ -879,11 +883,9 @@ Please remove phone numbers and addresses from the image.`,
 
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={{ flex: 1 }}>
         <ScrollView
           ref={scrollViewRef}
           style={styles.scrollView}
@@ -891,7 +893,8 @@ Please remove phone numbers and addresses from the image.`,
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          nestedScrollEnabled={true}
+          scrollEventThrottle={16}
+          bounces={true}
         >
         {/* SECTION 1: TASK DETAILS */}
         <View ref={section1Ref} style={styles.section}>
@@ -937,7 +940,11 @@ Please remove phone numbers and addresses from the image.`,
                   />
                 </View>
 
-                <ScrollView style={styles.categoriesList} nestedScrollEnabled>
+                <ScrollView 
+                  style={styles.categoriesList} 
+                  nestedScrollEnabled={true}
+                  keyboardShouldPersistTaps="handled"
+                >
                   {loadingCategories ? (
                     <ActivityIndicator size="small" color="#0057FF" style={styles.loader} />
                   ) : categoriesError ? (
@@ -973,21 +980,6 @@ Please remove phone numbers and addresses from the image.`,
               </View>
             )}
           </View>
-
-          {/* AI-Powered Title Suggestions */}
-          <TaskTitleSuggestions 
-            selectedCategory={selectedCategory}
-            currentTitle={title}
-            onSuggestionSelect={(suggestion) => {
-              setTitle(suggestion);
-              setTouched(prev => ({ ...prev, title: true }));
-              // Trigger validation
-              if (suggestion.trim().length >= 10) {
-                setTitleError('');
-              }
-              console.log('📝 Applied AI suggestion to title in create-task:', suggestion);
-            }}
-          />
 
           {/* Title Input */}
           <View style={styles.fieldContainer}>
@@ -1143,8 +1135,6 @@ Please remove phone numbers and addresses from the image.`,
           )}
         </View>
         </ScrollView>
-          </View>
-        </TouchableWithoutFeedback>
 
         {/* Date Picker */}
         {showDatePicker && (
@@ -1235,7 +1225,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 300, // Increased padding for keyboard space
+    paddingBottom: 120,
   },
   section: {
     marginBottom: 20,

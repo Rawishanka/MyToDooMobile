@@ -26,6 +26,9 @@ import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 // Auth Store
 import { useAuthStore } from '@/src/store/auth-task-store';
 
+// Responsive utilities
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+
 const Tab = createMaterialTopTabNavigator();
 
 interface TabScreenProps {
@@ -794,9 +797,10 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
             tabBarActiveTintColor: '#007AFF',
             tabBarInactiveTintColor: '#666',
             tabBarLabelStyle: { 
-              fontSize: 12, 
+              fontSize: isTablet ? 18 : 13, 
               fontWeight: '600',
-              textTransform: 'none'
+              textTransform: 'none',
+              paddingVertical: isTablet ? 4 : 0
             },
             tabBarStyle: { 
               backgroundColor: '#fff',
@@ -807,7 +811,8 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
             },
             tabBarIndicatorStyle: { 
               backgroundColor: '#007AFF', 
-              height: 2 
+              height: isTablet ? 4 : 2,
+              marginHorizontal: isTablet ? wp('2%') : 0
             },
             tabBarPressColor: '#e3f2fd',
             tabBarPressOpacity: 0.8,
@@ -992,55 +997,57 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight || 40,
+    paddingTop: StatusBar.currentHeight || hp('5%'),
     backgroundColor: '#fff',
   },
   tabContent: {
     flex: 1,
     backgroundColor: '#fff',
+    width: '100%',
+    alignSelf: 'center',
   },
   flatListContent: {
-    flexGrow: 1,
-    paddingVertical: 16,
-    paddingBottom: 100,
+    paddingVertical: hp('2%'),
+    paddingBottom: hp('12%'),
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('0%'),
   },
   emptyListContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 60,
+    paddingHorizontal: wp('5%'),
+    paddingVertical: hp('8%'),
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: RFValue(isTablet ? 16 : 14),
     color: '#666',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: hp('2%'),
   },
   refreshButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingHorizontal: wp('5%'),
+    paddingVertical: hp('1.2%'),
     backgroundColor: '#007AFF',
     borderRadius: 20,
   },
   refreshButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: RFValue(isTablet ? 14 : 12),
     fontWeight: '600',
   },
   roleSelectorContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingVertical: hp('1.2%'),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   roleButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    marginHorizontal: 5,
+    paddingHorizontal: wp(isTablet ? '3%' : '5%'),
+    paddingVertical: hp(isTablet ? '1%' : '1%'),
+    marginHorizontal: wp('1%'),
     borderRadius: 20,
     backgroundColor: '#f5f5f5',
   },
@@ -1048,7 +1055,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
   },
   roleText: {
-    fontSize: 14,
+    fontSize: RFValue(isTablet ? 13 : 12),
     fontWeight: '600',
     color: '#666',
   },
@@ -1059,8 +1066,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingVertical: hp('1.5%'),
     backgroundColor: '#f0f8ff',
     borderBottomWidth: 1,
     borderBottomColor: '#d0e8ff',
@@ -1071,7 +1078,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   searchResultsText: {
-    fontSize: 14,
+    fontSize: RFValue(isTablet ? 14 : 12),
     color: '#007AFF',
     fontWeight: '600',
     flex: 1,
@@ -1080,14 +1087,14 @@ const styles = StyleSheet.create({
   tabsContainer: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingVertical: hp('1.2%'),
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   tab: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: hp('1%'),
     alignItems: 'center',
   },
   activeTab: {
@@ -1095,7 +1102,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#007AFF',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: RFValue(isTablet ? 16 : 12),
     fontWeight: '500',
     color: '#666',
   },

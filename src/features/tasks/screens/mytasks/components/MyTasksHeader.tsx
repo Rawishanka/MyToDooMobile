@@ -1,6 +1,6 @@
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface MyTasksHeaderProps {
@@ -23,7 +23,7 @@ export default function MyTasksHeader({
       </View>
       <View style={styles.headerIcons}>
         <TouchableOpacity onPress={onSearchPress} style={styles.iconButton}>
-          <Ionicons name="search-outline" size={20} color="#000" />
+          <Ionicons name="search-outline" size={isTablet ? 26 : 20} color="#000" />
         </TouchableOpacity>
         
         {/* Payment Summary Button */}
@@ -31,12 +31,12 @@ export default function MyTasksHeader({
           onPress={() => router.push('/payment-summary' as any)}
           style={styles.iconButton}
         >
-          <Ionicons name="card-outline" size={20} color="#007bff" />
+          <Ionicons name="card-outline" size={isTablet ? 26 : 20} color="#007bff" />
         </TouchableOpacity>
         
         {/* Notification Button */}
         <TouchableOpacity onPress={onNotificationPress} style={styles.iconButton}>
-          <Ionicons name="notifications-outline" size={20} color="#000" />
+          <Ionicons name="notifications-outline" size={isTablet ? 26 : 20} color="#000" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
               <Text style={styles.badgeText}>
@@ -53,10 +53,10 @@ export default function MyTasksHeader({
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: 56,
+    height: isTablet ? hp('8%') : hp('7%'),
   },
   headerLeft: {
     flex: 1,
@@ -67,12 +67,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: RFValue(isTablet ? 15 : 14),
     fontWeight: '600',
     color: '#000',
+    textAlign: 'center',
+    paddingLeft: wp('5%'),
   },
   iconButton: {
-    marginLeft: 16,
+    marginLeft: isTablet ? wp('3%') : wp('4%'),
     position: 'relative',
   },
   notificationBadge: {
@@ -89,7 +91,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: RFValue(isTablet ? 13 : 12),
     fontWeight: 'bold',
   },
 });

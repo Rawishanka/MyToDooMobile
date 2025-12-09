@@ -1020,55 +1020,78 @@ export async function postTaskDirect(taskData: CreateTaskRequest): Promise<Creat
 }
 
 /**
- * 🔍 Search Tasks
- * Endpoint: GET /api/tasks/search OR /api/tasks/filter
- * Auth: No
- * Note: Backend /tasks/search has strict validation (min 4+ chars), so we use filter API instead
- *       Filter API handles search queries of any length without validation errors
+ * 🔍 Search Tasks (OPTIMIZED - Direct Search API)
+ * Endpoint: GET /api/tasks/search
+ * Auth: Required
+ * Note: Uses dedicated search endpoint with query parameters: q, category, location, minBudget, maxBudget
  */
 export async function searchTasks(params: TaskSearchParams): Promise<TasksResponse> {
   const api = getApi();
   try {
-    console.log("🔍 Searching tasks with params:", params);
+    console.log("🔍 [searchTasks] Calling /tasks/search with params:", params);
     
-    const searchQuery = params.search || params.q;
+    // Build query parameters for /tasks/search endpoint
+    const queryParams = new URLSearchParams();
     
-    // DECISION: Always use Filter API for search instead of Search API
-    // Reason: Filter API has no minimum length validation and handles search perfectly
-    // This prevents validation errors (400) that appear in console even though fallback works
-    console.log(`ℹ️ Using Filter API for search query: "${searchQuery}"`);
+    // Required 'q' parameter - search query
+    const searchQuery = params.q || params.search || '';
+    if (searchQuery.trim()) {
+      queryParams.append('q', searchQuery.trim());
+    }
     
-    const filterParams: TaskFilterParams = {
-      sortBy: params.sort as 'latest' | 'newest' | 'oldest' | 'highest-budget' | 'lowest-budget' | 'earliest' | 'price-high' | 'price-low' | undefined,
-      categories: params.category,
-      search: searchQuery?.trim() || undefined, // Filter API handles search of any length
-      minBudget: params.minBudget,
-      maxBudget: params.maxBudget,
-      locationType: params.location as 'In-person' | 'Online' | undefined,
-      status: 'open',
-      page: 1,
-      limit: 20
-    };
+    // Optional filters matching backend API spec
+    if (params.category) {
+      queryParams.append('category', params.category);
+    }
     
-    const filterResult = await getFilteredTasks(filterParams);
+    if (params.location) {
+      queryParams.append('location', params.location);
+    }
     
-    // Convert TaskFilterResponse to TasksResponse
+    if (params.minBudget !== undefined && params.minBudget > 0) {
+      queryParams.append('minBudget', params.minBudget.toString());
+    }
+    
+    if (params.maxBudget !== undefined && params.maxBudget < 10000) {
+      queryParams.append('maxBudget', params.maxBudget.toString());
+    }
+    
+    const endpoint = `/tasks/search${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    console.log("🔍 [searchTasks] Calling endpoint:", endpoint);
+    
+    const response = await api.get<{
+      success: boolean;
+      data: Task[];
+      count: number;
+      filters?: {
+        appliedCategories: string[];
+        appliedFilters: string[];
+        appliedPriceRange: { min: number | null; max: number | null };
+      };
+    }>(endpoint);
+    
+    console.log("✅ [searchTasks] Search successful:", {
+      count: response.data.count,
+      resultsLength: response.data.data?.length || 0,
+      searchQuery: searchQuery.trim()
+    });
+    
+    // Return in TasksResponse format
     return {
-      success: filterResult.success,
-      count: filterResult.data.length,
-      total: filterResult.pagination.totalItems,
-      pages: filterResult.pagination.totalPages,
-      currentPage: filterResult.pagination.currentPage,
-      data: filterResult.data
+      success: response.data.success,
+      count: response.data.count || response.data.data?.length || 0,
+      total: response.data.count || response.data.data?.length || 0,
+      pages: 1,
+      currentPage: 1,
+      data: response.data.data || []
     };
     
   } catch (error: any) {
-    console.error("❌ Search API error:", error.response?.status, error.message);
-    console.error("❌ Error details:", {
+    console.error("❌ [searchTasks] Search API error:", {
       status: error.response?.status,
       statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message
+      message: error.message,
+      data: error.response?.data
     });
     
     // Check for network connection errors - use mock service as fallback
@@ -1077,39 +1100,16 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
       return await MockApiService.searchTasks(params);
     }
     
-    // For 400 errors or other API errors, try filter endpoint as fallback
-    console.warn("🔄 Search API failed, trying filter API as fallback...");
-    try {
-      const filterParams: TaskFilterParams = {
-        sortBy: params.sort as 'latest' | 'newest' | 'oldest' | 'highest-budget' | 'lowest-budget' | 'earliest' | 'price-high' | 'price-low' | undefined,
-        categories: params.category,
-        search: params.q || params.search,
-        minBudget: params.minBudget,
-        maxBudget: params.maxBudget,
-        locationType: params.location as 'In-person' | 'Online' | undefined,
-        status: 'open',
-        page: 1,
-        limit: 20
-      };
-      const filterResult = await getFilteredTasks(filterParams);
-      console.log("✅ Filter API fallback succeeded");
-      
-      // Convert TaskFilterResponse to TasksResponse
-      const tasksResponse: TasksResponse = {
-        success: filterResult.success,
-        count: filterResult.data.length,
-        total: filterResult.pagination.totalItems,
-        pages: filterResult.pagination.totalPages,
-        currentPage: filterResult.pagination.currentPage,
-        data: filterResult.data
-      };
-      
-      return tasksResponse;
-    } catch (filterError) {
-      console.error("❌ Filter API fallback also failed:", filterError);
-      console.warn("🎭 Using Mock API as final fallback");
-      return await MockApiService.searchTasks(params);
-    }
+    // For other errors, return empty results (faster than fallback chains)
+    console.warn("⚠️ Search failed, returning empty results");
+    return {
+      success: false,
+      count: 0,
+      total: 0,
+      pages: 0,
+      currentPage: 1,
+      data: []
+    };
   }
 }
 

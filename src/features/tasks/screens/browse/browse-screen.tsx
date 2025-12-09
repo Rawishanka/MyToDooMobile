@@ -3,11 +3,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 // API and Hooks
@@ -18,15 +19,14 @@ import { useGetCategoriesWithAll } from '@/src/shared/hooks/useCategoriesApi';
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
 import { TaskCard } from '@/src/features/tasks/components';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
-import { LoadingState } from '../../components/shared';
 import {
-    FilterButton,
-    FilterModal,
-    MapView,
-    SearchBar,
-    SortButton,
-    SortModal,
-    ViewModeToggle
+  FilterButton,
+  FilterModal,
+  MapView,
+  SearchBar,
+  SortButton,
+  SortModal,
+  ViewModeToggle
 } from './components';
 
 // Network components
@@ -37,6 +37,8 @@ import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 // Custom Hooks
 import { useBrowseFiltersAPI } from './hooks/useBrowseFiltersAPI';
 
+// Responsive utilities
+import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 
 export default function BrowseTasksScreen() {
   // Modal visibility states
@@ -48,7 +50,6 @@ export default function BrowseTasksScreen() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showNetworkAlert, setShowNetworkAlert] = useState(false);
   const [networkAlertMessage, setNetworkAlertMessage] = useState('');
-  const [onEndReachedCalledDuringMomentum, setOnEndReachedCalledDuringMomentum] = useState(false);
 
   // Network status monitoring
   const { isConnected } = useNetworkStatus();
@@ -151,11 +152,6 @@ export default function BrowseTasksScreen() {
     totalItems,
     useSearchAPI,
     activeAPI,
-    loadMoreTasks,
-    hasMorePages,
-    isLoadingMore,
-    currentPage,
-    totalPages,
   } = useBrowseFiltersAPI();
 
   // Custom map marker icon - bigger Airtasker marker
@@ -198,11 +194,8 @@ export default function BrowseTasksScreen() {
       totalItems,
       dataLength: filteredAndSortedTasks.length,
       activeFiltersCount,
-      currentPage,
-      hasMorePages,
-      isLoadingMore,
     });
-  }, [categoriesLoading, categoriesError, categories, isLoading, error, totalItems, filteredAndSortedTasks.length, activeFiltersCount, activeAPI, searchText, useSearchAPI, currentPage, hasMorePages, isLoadingMore]);
+  }, [categoriesLoading, categoriesError, categories, isLoading, error, totalItems, filteredAndSortedTasks.length, activeFiltersCount, activeAPI, searchText, useSearchAPI]);
 
   // Refresh on screen focus
   useFocusEffect(
@@ -358,7 +351,12 @@ export default function BrowseTasksScreen() {
       ) : (
         <>
           {isLoading ? (
-            <LoadingState message="Loading tasks..." />
+            <View style={styles.emptyState}>
+              <ActivityIndicator size="large" color="#007bff" style={{ marginBottom: 16 }} />
+              <Text style={styles.loadingText}>
+                {searchText.trim() ? 'Searching tasks...' : 'Loading tasks...'}
+              </Text>
+            </View>
           ) : error ? (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>Failed to load tasks</Text>
@@ -366,69 +364,40 @@ export default function BrowseTasksScreen() {
                 <Text style={styles.retryButtonText}>Retry</Text>
               </TouchableOpacity>
             </View>
+          ) : filteredAndSortedTasks.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="search-outline" size={64} color="#ccc" style={{ marginBottom: 16 }} />
+              <Text style={styles.emptyText}>
+                {searchText.trim() 
+                  ? `No tasks found matching "${searchText.replace(/"/g, '\\"')}"`
+                  : 'No tasks found matching your criteria'}
+              </Text>
+              {searchText.trim() && (
+                <TouchableOpacity 
+                  style={styles.clearSearchButton}
+                  onPress={() => {
+                    setSearchText('');
+                    setSearchVisible(false);
+                  }}
+                >
+                  <Text style={styles.clearSearchText}>Clear search</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           ) : (
             <FlatList
               data={filteredAndSortedTasks}
               keyExtractor={(item) => item._id}
-              contentContainerStyle={{ paddingBottom: 100 }}
+              contentContainerStyle={{ 
+                paddingBottom: hp('12%'),
+                paddingHorizontal: isTablet ? wp('12.5%') : 0,
+              }}
               renderItem={renderTaskCard}
-              refreshing={isLoading && currentPage === 1}
+              refreshing={isLoading}
               onRefresh={() => {
                 console.log("🔄 Pull to refresh triggered in Browse Tasks");
                 refetch();
               }}
-              onEndReached={() => {
-                if (!onEndReachedCalledDuringMomentum && hasMorePages && !isLoadingMore) {
-                  console.log('📄 Reached end of list, loading more...', { hasMorePages, isLoadingMore, currentPage });
-                  loadMoreTasks();
-                  setOnEndReachedCalledDuringMomentum(true);
-                }
-              }}
-              onMomentumScrollBegin={() => {
-                setOnEndReachedCalledDuringMomentum(false);
-              }}
-              onEndReachedThreshold={0.5}
-              removeClippedSubviews={false}
-              maxToRenderPerBatch={10}
-              updateCellsBatchingPeriod={50}
-              initialNumToRender={20}
-              windowSize={5}
-              maintainVisibleContentPosition={{
-                minIndexForVisible: 0,
-                autoscrollToTopThreshold: 10,
-              }}
-              ListFooterComponent={
-                isLoadingMore ? (
-                  <View style={styles.loadingFooter}>
-                    <Text style={styles.loadingFooterText}>Loading more tasks...</Text>
-                  </View>
-                ) : !hasMorePages && filteredAndSortedTasks.length > 0 ? (
-                  <View style={styles.endOfListContainer}>
-                    <Text style={styles.endOfListText}>✓ All tasks loaded</Text>
-                  </View>
-                ) : null
-              }
-              ListEmptyComponent={
-                <View style={styles.emptyState}>
-                  <Ionicons name="search-outline" size={64} color="#ccc" style={{ marginBottom: 16 }} />
-                  <Text style={styles.emptyText}>
-                    {searchText.trim() 
-                      ? `No tasks found matching "${searchText.replace(/"/g, '\\"')}"`
-                      : 'No tasks found matching your criteria'}
-                  </Text>
-                  {searchText.trim() && (
-                    <TouchableOpacity 
-                      style={styles.clearSearchButton}
-                      onPress={() => {
-                        setSearchText('');
-                        setSearchVisible(false);
-                      }}
-                    >
-                      <Text style={styles.clearSearchText}>Clear search</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              }
             />
           )}
         </>
@@ -484,32 +453,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
-    paddingTop: 50,
+    paddingTop: hp('6%'),
   },
   header: {
     flexDirection: 'row',
-    paddingHorizontal: 12,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('3%'),
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: hp('1.2%'),
     minHeight: 50,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: RFValue(14),
     fontWeight: 'bold',
     flex: 1,
     textAlign: 'center',
-    marginHorizontal: 8,
+    marginHorizontal: wp('2%'),
   },
   headerIcons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: wp('2%'),
   },
   notificationButton: {
     position: 'relative',
-    marginLeft: 10,
-    padding: 4,
+    marginLeft: wp('2.5%'),
+    padding: wp('1%'),
   },
   notificationBadge: {
     position: 'absolute',
@@ -517,28 +486,28 @@ const styles = StyleSheet.create({
     right: -2,
     backgroundColor: '#ff4444',
     borderRadius: 10,
-    minWidth: 18,
-    height: 18,
+    minWidth: isTablet ? 20 : 18,
+    height: isTablet ? 20 : 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
   badgeText: {
     color: '#fff',
-    fontSize: 10,
+    fontSize: RFValue(8),
     fontWeight: '600',
   },
   searchResultsInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingVertical: hp('1.2%'),
     backgroundColor: '#f0f8ff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e5e5',
   },
   searchResultsText: {
-    fontSize: 14,
+    fontSize: RFValue(12),
     color: '#333',
     fontWeight: '500',
     flex: 1,
@@ -546,13 +515,13 @@ const styles = StyleSheet.create({
   filterSortRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginBottom: 10,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    marginBottom: hp('1.2%'),
   },
   mapContainer: {
     flex: 1,
-    marginHorizontal: 16,
-    marginBottom: 10,
+    marginHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    marginBottom: hp('1.2%'),
     borderRadius: 12,
     overflow: 'hidden',
     elevation: 2,
@@ -562,43 +531,30 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   emptyState: {
-    padding: 40,
+    padding: isTablet ? hp('6%') : hp('5%'),
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
   },
-  loadingFooter: {
-    padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingFooterText: {
+  loadingText: {
+    fontSize: RFValue(14),
     color: '#666',
-    fontSize: 14,
-    fontStyle: 'italic',
-  },
-  endOfListContainer: {
-    paddingVertical: 20,
-    alignItems: 'center',
-  },
-  endOfListText: {
-    fontSize: 14,
-    color: '#28a745',
-    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: hp('1%'),
   },
   clearSearchButton: {
-    marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    marginTop: hp('2%'),
+    paddingHorizontal: wp('5%'),
+    paddingVertical: hp('1.2%'),
     backgroundColor: '#007bff',
     borderRadius: 8,
   },
   clearSearchText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: RFValue(12),
     fontWeight: '600',
   },
   errorContainer: {

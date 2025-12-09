@@ -2,7 +2,7 @@
 import { Task, TaskFilterParams, TaskSearchParams } from '@/src/api/types/tasks';
 import { useFilterTasks, useSearchTasks } from '@/src/shared/hooks/useTaskApi';
 import * as Location from 'expo-location';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 export interface FilterState {
   selectedCategory: string;
@@ -167,16 +167,35 @@ export const useBrowseFiltersAPI = () => {
   const [showTasksWithNoOffers, setShowTasksWithNoOffers] = useState(false);
   const [selectedSort, setSelectedSort] = useState(0);
   const [searchText, setSearchText] = useState('');
+  const [debouncedSearchText, setDebouncedSearchText] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [isProcessingData, setIsProcessingData] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  
-  // 📄 Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [allLoadedTasks, setAllLoadedTasks] = useState<Task[]>([]);
-  const [hasMorePages, setHasMorePages] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const previousFiltersRef = useRef<string>('');
   const [tasksWithOfferCounts, setTasksWithOfferCounts] = useState<Task[]>([]);
+
+  // Debounce search text for API calls (300ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchText(searchText);
+      console.log('🔍 [useBrowseFiltersAPI] Debounced search text updated:', searchText.trim());
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchText]);
+
+  // Control isSearching state based on debounce completion
+  useEffect(() => {
+    // User is typing if search text doesn't match debounced text
+    const isTyping = searchText.trim() !== debouncedSearchText.trim();
+    
+    if (isTyping) {
+      setIsSearching(true);
+      console.log('⏳ User typing - isSearching = true');
+    } else {
+      setIsSearching(false);
+      console.log('✅ Debounce complete - isSearching = false');
+    }
+  }, [searchText, debouncedSearchText]);
 
   React.useEffect(() => {
     const getLocation = async () => {
@@ -204,27 +223,27 @@ export const useBrowseFiltersAPI = () => {
   const shouldUseFilterAPI = React.useMemo(() => {
     // Use Search API ONLY when there's actual search text (at least 1 character)
     // This ensures we call /tasks/search endpoint only for searches
-    const hasSearchText = searchText.trim().length > 0;
+    const hasSearchText = debouncedSearchText.trim().length > 0;
     
     console.log('🔍 [useBrowseFiltersAPI] API Selection:', {
       hasSearchText,
-      searchText: searchText.trim(),
+      debouncedSearchText: debouncedSearchText.trim(),
       willUseFilterAPI: !hasSearchText,
       willUseSearchAPI: hasSearchText
     });
     
     // Use Filter API when there's no search text
     return !hasSearchText;
-  }, [searchText]);
+  }, [debouncedSearchText]);
 
   const searchParams: TaskSearchParams = useMemo(() => {
-    // Only create search params if we have search text
-    if (!searchText.trim()) {
+    // Only create search params if we have debounced search text
+    if (!debouncedSearchText.trim()) {
       return {} as TaskSearchParams;
     }
 
     const params: TaskSearchParams = {
-      q: searchText.trim(), // Required parameter for search endpoint
+      q: debouncedSearchText.trim(), // Required parameter for search endpoint
       sort: SEARCH_SORT_MAPPING[selectedSort],
     };
 
@@ -241,14 +260,12 @@ export const useBrowseFiltersAPI = () => {
 
     console.log('🔍 [useBrowseFiltersAPI] Search Params:', params);
     return params;
-  }, [selectedCategory, taskType, priceRange, selectedSort, searchText]);
+  }, [selectedCategory, taskType, priceRange, selectedSort, debouncedSearchText]);
 
   const filterParams: TaskFilterParams = useMemo(() => {
     const params: TaskFilterParams = {
       sortBy: FILTER_SORT_MAPPING[selectedSort],
       status: 'open',
-      page: currentPage,
-      limit: 20,
     };
 
     if (selectedCategory !== 'All Categories') params.categories = selectedCategory;
@@ -273,7 +290,7 @@ export const useBrowseFiltersAPI = () => {
     // if (searchText.trim()) params.search = searchText.trim();
 
     return params;
-  }, [selectedCategory, taskType, priceRange, selectedSort, userLocation, currentPage]);
+  }, [selectedCategory, taskType, priceRange, selectedSort, userLocation]);
 
   const {
     data: searchResponse,
@@ -282,7 +299,7 @@ export const useBrowseFiltersAPI = () => {
     refetch: searchRefetch,
   } = useSearchTasks(
     searchParams, 
-    !shouldUseFilterAPI && searchText.trim().length > 0 // Only enable when we have search text
+    !shouldUseFilterAPI && debouncedSearchText.trim().length > 0 // Only enable when we have debounced search text
   );
 
   const {
@@ -292,67 +309,21 @@ export const useBrowseFiltersAPI = () => {
     refetch: filterRefetch,
   } = useFilterTasks(filterParams, shouldUseFilterAPI);
 
-  // Reset pagination when filters change
-  useEffect(() => {
-    const currentFilters = JSON.stringify({
-      category: selectedCategory,
-      taskType,
-      priceRange,
-      sort: selectedSort,
-      search: searchText,
-    });
-
-    if (previousFiltersRef.current !== currentFilters) {
-      console.log('🔄 Filters changed, resetting pagination');
-      previousFiltersRef.current = currentFilters;
-      setCurrentPage(1);
-      setAllLoadedTasks([]);
-      setHasMorePages(true);
-    }
-  }, [selectedCategory, taskType, priceRange, selectedSort, searchText]);
-
-  // Enhance tasks with offer counts and accumulate paginated data
+  // Enhance tasks with offer counts if missing
   useEffect(() => {
     const enhanceTasksWithOfferCounts = async () => {
       const baseTasks = shouldUseFilterAPI 
         ? (filterResponse?.data || [])
         : (searchResponse?.data || []);
-      
-      // Skip if no tasks
+
+      // Always set processing when data changes
+      setIsProcessingData(true);
+
       if (baseTasks.length === 0) {
-        // Only update if we're on page 1 (filters changed)
-        if (currentPage === 1) {
-          setAllLoadedTasks([]);
-          setTasksWithOfferCounts([]);
-        }
+        setTasksWithOfferCounts([]);
+        // Don't set isProcessingData false here - let it be controlled by API loading states
+        // This prevents flash of empty state while API is still loading
         return;
-      }
-      
-      // Update pagination info from response
-      if (shouldUseFilterAPI && filterResponse?.pagination) {
-        // TaskFilterResponse has pagination object
-        const pagination = filterResponse.pagination;
-        setHasMorePages(pagination.hasNextPage || false);
-        setTotalPages(pagination.totalPages || 1);
-        console.log('📄 Pagination Info (Filter API):', {
-          currentPage: pagination.currentPage,
-          totalPages: pagination.totalPages,
-          totalItems: pagination.totalItems,
-          hasNextPage: pagination.hasNextPage,
-          loadedSoFar: allLoadedTasks.length + baseTasks.length,
-        });
-      } else if (!shouldUseFilterAPI && searchResponse) {
-        // TasksResponse has individual fields
-        const hasNextPage = (searchResponse.currentPage || 1) < (searchResponse.pages || 1);
-        setHasMorePages(hasNextPage);
-        setTotalPages(searchResponse.pages || 1);
-        console.log('📄 Pagination Info (Search API):', {
-          currentPage: searchResponse.currentPage,
-          totalPages: searchResponse.pages,
-          totalItems: searchResponse.total,
-          hasNextPage,
-          loadedSoFar: allLoadedTasks.length + baseTasks.length,
-        });
       }
 
       // Check if tasks already have offer count data
@@ -361,96 +332,90 @@ export const useBrowseFiltersAPI = () => {
         (!task.offers || task.offers.length === 0)
       );
 
-      let enhancedTasks = baseTasks;
-
-      if (tasksNeedingOfferCounts.length > 0) {
-        console.log('🔍 [useBrowseFiltersAPI] Fetching offer counts for tasks missing data:', {
-          totalTasks: baseTasks.length,
-          tasksNeedingOfferCounts: tasksNeedingOfferCounts.length
-        });
-
-        try {
-          // Fetch offer counts for tasks in parallel (limit to first 20 to avoid API overload)
-          const tasksToFetch = tasksNeedingOfferCounts.slice(0, 20);
-          const offerCountPromises = tasksToFetch.map(async (task) => {
-            try {
-              const offersResponse = await TaskAPI.getTaskOffers(task._id);
-              const offerCount = offersResponse.data?.offers?.length || 0;
-              return { taskId: task._id, offerCount, offers: offersResponse.data?.offers || [] };
-            } catch (error) {
-              console.warn(`Failed to fetch offers for task ${task._id}:`, error);
-              return { taskId: task._id, offerCount: 0, offers: [] };
-            }
-          });
-
-          const offerCounts = await Promise.all(offerCountPromises);
-          const offerCountMap = Object.fromEntries(
-            offerCounts.map(({ taskId, offerCount, offers }) => [taskId, { offerCount, offers }])
-          );
-
-          // Enhance tasks with offer counts
-          enhancedTasks = baseTasks.map(task => {
-            if (offerCountMap[task._id]) {
-              return {
-                ...task,
-                offerCount: offerCountMap[task._id].offerCount,
-                offers: offerCountMap[task._id].offers
-              };
-            }
-            return task;
-          });
-
-          console.log('✅ [useBrowseFiltersAPI] Enhanced tasks with offer counts:', {
-            totalTasks: enhancedTasks.length,
-            tasksWithOffers: enhancedTasks.filter(t => (t.offerCount || 0) > 0).length,
-            page: currentPage,
-          });
-        } catch (error) {
-          console.error('❌ [useBrowseFiltersAPI] Failed to enhance tasks with offer counts:', error);
-        }
-      } else {
-        console.log('🔍 [useBrowseFiltersAPI] All tasks already have offer data');
+      if (tasksNeedingOfferCounts.length === 0) {
+        console.log('✅ [useBrowseFiltersAPI] All tasks already have offer data');
+        setTasksWithOfferCounts(baseTasks);
+        setIsProcessingData(false);
+        return;
       }
 
-      // Accumulate tasks: append new page to existing tasks
-      setAllLoadedTasks(prevTasks => {
-        // If page 1, replace all tasks (filters changed)
-        if (currentPage === 1) {
-          console.log('📄 Page 1: Replacing all tasks with', enhancedTasks.length, 'items');
-          setIsLoadingMore(false);
-          return enhancedTasks;
-        }
-        
-        // For page 2+, append new tasks avoiding duplicates
-        const existingIds = new Set(prevTasks.map(t => t._id));
-        const newTasks = enhancedTasks.filter(t => !existingIds.has(t._id));
-        
-        // Only update if we have new tasks to add
-        if (newTasks.length === 0) {
-          console.log('📄 Page', currentPage, ': No new tasks to add (all duplicates)');
-          setIsLoadingMore(false);
-          return prevTasks;
-        }
-        
-        console.log('📄 Page', currentPage, ': Adding', newTasks.length, 'new tasks (total:', prevTasks.length + newTasks.length, ')');
-        setIsLoadingMore(false);
-        return [...prevTasks, ...newTasks];
+      console.log('🔍 [useBrowseFiltersAPI] Fetching offer counts for tasks missing data:', {
+        totalTasks: baseTasks.length,
+        tasksNeedingOfferCounts: tasksNeedingOfferCounts.length
       });
+
+      try {
+        // Fetch offer counts for tasks in parallel (limit to first 20 to avoid API overload)
+        const tasksToFetch = tasksNeedingOfferCounts.slice(0, 20);
+        const offerCountPromises = tasksToFetch.map(async (task) => {
+          try {
+            const offersResponse = await TaskAPI.getTaskOffers(task._id);
+            const offerCount = offersResponse.data?.offers?.length || 0;
+            return { taskId: task._id, offerCount, offers: offersResponse.data?.offers || [] };
+          } catch (error) {
+            console.warn(`Failed to fetch offers for task ${task._id}:`, error);
+            return { taskId: task._id, offerCount: 0, offers: [] };
+          }
+        });
+
+        const offerCounts = await Promise.all(offerCountPromises);
+        const offerCountMap = Object.fromEntries(
+          offerCounts.map(({ taskId, offerCount, offers }) => [taskId, { offerCount, offers }])
+        );
+
+        // Enhance tasks with offer counts
+        const enhancedTasks = baseTasks.map(task => {
+          if (offerCountMap[task._id]) {
+            return {
+              ...task,
+              offerCount: offerCountMap[task._id].offerCount,
+              offers: offerCountMap[task._id].offers
+            };
+          }
+          return task;
+        });
+
+        console.log('✅ [useBrowseFiltersAPI] Enhanced tasks with offer counts:', {
+          totalTasks: enhancedTasks.length,
+          tasksWithOffers: enhancedTasks.filter(t => (t.offerCount || 0) > 0).length
+        });
+
+        setTasksWithOfferCounts(enhancedTasks);
+        setIsProcessingData(false);
+      } catch (error) {
+        console.error('❌ [useBrowseFiltersAPI] Failed to enhance tasks with offer counts:', error);
+        setTasksWithOfferCounts(baseTasks);
+        setIsProcessingData(false);
+      }
     };
 
     enhanceTasksWithOfferCounts();
-  }, [shouldUseFilterAPI, filterResponse?.data, searchResponse?.data, currentPage]);
+  }, [shouldUseFilterAPI, filterResponse?.data, searchResponse?.data]);
 
-  // Apply client-side search filter to accumulated tasks
-  // Use allLoadedTasks which contains all pages loaded so far
+  // Reset isProcessingData when API loading completes
+  useEffect(() => {
+    const apiLoading = shouldUseFilterAPI ? filterLoading : searchLoading;
+    const apiHasData = shouldUseFilterAPI ? !!filterResponse : !!searchResponse;
+    
+    // Only set false when API is not loading AND we have received a response
+    if (!apiLoading && apiHasData) {
+      console.log('✅ API complete and data received, setting isProcessingData = false');
+      setIsProcessingData(false);
+    }
+  }, [shouldUseFilterAPI, filterLoading, searchLoading, filterResponse, searchResponse]);
+
+  // Apply client-side search filter to results with TITLE PRIORITIZATION
+  // During debounce period OR when using Search API, apply client-side filtering
   const filteredAndSortedTasks = useMemo(() => {
-    const baseTasks = allLoadedTasks;
+    const baseTasks = tasksWithOfferCounts;
     
     // Debug logging for API response data
     console.log('🔍 [useBrowseFiltersAPI] Final Tasks Debug:', {
       baseTasksLength: baseTasks.length,
       shouldUseFilterAPI,
       searchText: searchText.trim(),
+      debouncedSearchText: debouncedSearchText.trim(),
+      isSearching,
       activeAPI: shouldUseFilterAPI ? 'FILTER' : 'SEARCH',
       sampleTask: baseTasks[0] ? {
         id: baseTasks[0]._id,
@@ -463,10 +428,17 @@ export const useBrowseFiltersAPI = () => {
       tasksWithOffers: baseTasks.filter(t => (t.offerCount || 0) > 0).length
     });
     
-    // If using Search API, return results as-is (backend already filtered)
-    if (!shouldUseFilterAPI) {
-      console.log('✅ Using Search API results directly (no client-side filtering)');
-      return baseTasks;
+    // CRITICAL: If user is typing (searchText exists but debounced hasn't caught up),
+    // apply client-side filtering immediately with the current searchText
+    if (searchText.trim() && searchText.trim() !== debouncedSearchText.trim()) {
+      console.log('⚡ User is typing - applying immediate client-side filter with searchText:', searchText.trim());
+      return filterTasksBySearch(baseTasks, searchText);
+    }
+    
+    // If using Search API with debounced text, still apply client-side filtering for TITLE PRIORITIZATION
+    if (!shouldUseFilterAPI && debouncedSearchText.trim()) {
+      console.log('🎯 Search API results - applying title prioritization filter');
+      return filterTasksBySearch(baseTasks, debouncedSearchText);
     }
     
     // If using Filter API without search text, return all results
@@ -475,12 +447,39 @@ export const useBrowseFiltersAPI = () => {
       return baseTasks;
     }
     
-    // This shouldn't happen, but keep as fallback
-    console.log('⚠️ Unexpected state - applying client-side filter');
-    return filterTasksBySearch(baseTasks, searchText);
-  }, [allLoadedTasks, searchText, shouldUseFilterAPI]);
+    // Fallback: apply client-side filter
+    console.log('⚠️ Fallback - applying client-side filter');
+    return filterTasksBySearch(baseTasks, searchText || debouncedSearchText);
+  }, [tasksWithOfferCounts, searchText, debouncedSearchText, shouldUseFilterAPI, isSearching]);
   
-  const isLoading = shouldUseFilterAPI ? filterLoading : searchLoading;
+  // Calculate loading state properly:
+  // - Show loading during typing (debounce period)
+  // - Show loading when the active API is actually loading
+  // - Don't show loading from disabled queries
+  const activeApiLoading = React.useMemo(() => {
+    if (shouldUseFilterAPI) {
+      // Using Filter API
+      console.log('📊 Loading state - Filter API:', { filterLoading });
+      return filterLoading;
+    } else {
+      // Using Search API - only show loading if search query is enabled
+      const searchEnabled = debouncedSearchText.trim().length > 0;
+      const loading = searchEnabled && searchLoading;
+      console.log('📊 Loading state - Search API:', { searchEnabled, searchLoading, loading });
+      return loading;
+    }
+  }, [shouldUseFilterAPI, filterLoading, searchLoading, debouncedSearchText]);
+  
+  const isLoading = isSearching || activeApiLoading || isProcessingData;
+  
+  console.log('🎯 Final loading state:', { 
+    isSearching, 
+    activeApiLoading,
+    isProcessingData,
+    isLoading,
+    searchText: searchText.trim(),
+    debouncedSearchText: debouncedSearchText.trim()
+  });
   const error = shouldUseFilterAPI ? filterError : searchError;
   const refetch = shouldUseFilterAPI ? filterRefetch : searchRefetch;
   
@@ -505,23 +504,7 @@ export const useBrowseFiltersAPI = () => {
     setShowTasksWithNoOffers(false);
     setSelectedSort(0);
     setSearchText('');
-    setCurrentPage(1);
-    setTotalPages(1);
-    setAllLoadedTasks([]);
-    setHasMorePages(true);
   };
-
-  // Load next page of tasks
-  const loadMoreTasks = useCallback(() => {
-    if (!hasMorePages || isLoading || isLoadingMore) {
-      console.log('⏭️ Skip load more:', { hasMorePages, isLoading, isLoadingMore });
-      return;
-    }
-
-    console.log('📄 Loading page:', currentPage + 1, 'of', totalPages);
-    setIsLoadingMore(true);
-    setCurrentPage(prev => prev + 1);
-  }, [hasMorePages, isLoading, isLoadingMore, currentPage, totalPages]);
 
   return {
     selectedCategory,
@@ -547,12 +530,5 @@ export const useBrowseFiltersAPI = () => {
     totalItems,
     useSearchAPI: !shouldUseFilterAPI,
     activeAPI: shouldUseFilterAPI ? 'FILTER' : 'SEARCH',
-    
-    // 📄 Pagination
-    loadMoreTasks,
-    hasMorePages,
-    isLoadingMore,
-    currentPage,
-    totalPages,
   };
 };
