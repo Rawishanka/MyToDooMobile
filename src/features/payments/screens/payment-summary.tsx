@@ -386,7 +386,7 @@ export default function PaymentSummaryScreen() {
         
         <View style={styles.summaryRow}>
           <View style={[styles.summaryCard, styles.summaryCardSmall]}>
-            <Text style={styles.summaryLabel}>Completed</Text>
+            <Text style={styles.summaryLabel} numberOfLines={1}>Paid</Text>
             <Text style={[styles.summaryNumber, { color: '#28a745' }]}>
               {completedPayments}
             </Text>
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     marginBottom: 16,
-    minHeight: 190,
+    minHeight: 150,
     shadowColor: '#667eea',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
@@ -543,7 +543,7 @@ const styles = StyleSheet.create({
   cardBody: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   cardAmount: {
     fontSize: 36,
@@ -575,7 +575,9 @@ const styles = StyleSheet.create({
   summaryCardSmall: {
     flex: 1,
     marginBottom: 0,
-    minWidth: 100,
+    minWidth: 0,
+    alignItems: 'center', // ✅ HARD CENTER FIX
+    justifyContent: 'center',
   },
   summaryRow: {
     flexDirection: 'row',
@@ -589,7 +591,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     textAlign: 'center',
     flexWrap: 'nowrap',
+    includeFontPadding: false,
   },
+
+
+
+
+
+
   summaryAmount: {
     fontSize: 24,
     fontWeight: '800',
