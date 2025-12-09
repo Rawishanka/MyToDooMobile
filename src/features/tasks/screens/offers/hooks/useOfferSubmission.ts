@@ -24,6 +24,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
   const {
     data: taskOffersData,
     isLoading: isLoadingOffers,
+    refetch: refetchOffers,
   } = useGetTaskOffers(taskId || '', !!taskId);
 
   const offers = taskOffersData?.data?.offers || [];
@@ -77,6 +78,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string>('');
   const [hasUserEditedAmount, setHasUserEditedAmount] = useState(false);
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
 
   // Get currency info based on user's current location (auto geo-location)
   const currencyInfo = useMemo(
@@ -139,6 +141,23 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
   };
 
   const handleSubmitOffer = async () => {
+    // Prevent double submission - if already submitting or submitted within last 3 seconds, ignore
+    const now = Date.now();
+    if (isSubmitting) {
+      console.log('⚠️ Already submitting, ignoring duplicate call');
+      return;
+    }
+    
+    if (now - lastSubmitTime < 3000) {
+      console.log('⚠️ Duplicate submission detected within 3 seconds, ignoring');
+      Alert.alert(
+        'Please Wait',
+        'Your offer is being submitted. Please wait a moment.',
+        [{ text: 'OK', style: 'default' }]
+      );
+      return;
+    }
+
     // Double-check if user already has an offer on this task (safety check)
     if (userHasExistingOffer) {
       Alert.alert(
@@ -163,6 +182,9 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
     if (!validateMessage(message)) return;
 
     setIsSubmitting(true);
+    setLastSubmitTime(now);
+    
+    console.log('🚀 [useOfferSubmission] Starting offer submission...');
 
     try {
       const offerData = {
@@ -174,10 +196,16 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
 
       console.log("📤 [useOfferSubmission] Submitting offer data:", offerData);
 
-      await createOfferMutation.mutateAsync({
+      const result = await createOfferMutation.mutateAsync({
         taskId,
         offerData,
       });
+
+      console.log('✅ [useOfferSubmission] Offer submitted successfully:', result);
+      
+      // Refetch offers to verify the submission and update the list
+      console.log('🔄 Refetching offers to verify submission...');
+      await refetchOffers();
 
       Alert.alert(
         'Offer Submitted!',
@@ -190,13 +218,40 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
         ]
       );
     } catch (error: any) {
-      console.error('Error submitting offer:', error);
-      Alert.alert(
-        'Failed to Submit Offer',
-        error?.message || 'Something went wrong. Please try again.'
-      );
-    } finally {
-      setIsSubmitting(false);
+      console.error('❌ [useOfferSubmission] Error submitting offer:', error);
+      
+      // Even if there's an error, refetch offers to check if it was actually created
+      // (handles case where offer creation succeeded but chat creation failed)
+      console.log('🔄 Refetching offers to check if submission succeeded despite error...');
+      const refetchResult = await refetchOffers();
+      
+      // Check if user now has an offer (meaning it was created despite the error)
+      const updatedOffers = refetchResult.data?.data?.offers || [];
+      const offerWasCreated = updatedOffers.some((offer: any) => {
+        const takerId = offer.taskTakerId?._id || offer.taskTaker?._id || offer.userId?._id || offer.user?._id;
+        return takerId === currentUser?._id;
+      });
+      
+      if (offerWasCreated) {
+        console.log('✅ Offer was created successfully despite error - showing success message');
+        Alert.alert(
+          'Offer Submitted!',
+          "Your offer has been sent to the task creator. You'll be notified when they respond.",
+          [
+            {
+              text: 'OK',
+              onPress: () => router.back(),
+            },
+          ]
+        );
+      } else {
+        console.log('❌ Offer was not created - showing error message');
+        setIsSubmitting(false); // Reset on error so user can retry
+        Alert.alert(
+          'Failed to Submit Offer',
+          error?.message || 'Something went wrong. Please try again.'
+        );
+      }
     }
   };
 
