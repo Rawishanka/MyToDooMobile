@@ -147,6 +147,9 @@ export default function BrowseTasksScreen() {
     activeFiltersCount,
     resetFilters,
     isLoading,
+    isLoadingMore,
+    hasMore,
+    loadMore,
     error,
     refetch,
     totalItems,
@@ -393,11 +396,28 @@ export default function BrowseTasksScreen() {
                 paddingHorizontal: isTablet ? wp('12.5%') : 0,
               }}
               renderItem={renderTaskCard}
-              refreshing={isLoading}
+              refreshing={false}
               onRefresh={() => {
                 console.log("🔄 Pull to refresh triggered in Browse Tasks");
                 refetch();
               }}
+              onEndReached={loadMore}
+              onEndReachedThreshold={0.5}
+              maintainVisibleContentPosition={{
+                minIndexForVisible: 0,
+              }}
+              windowSize={10}
+              maxToRenderPerBatch={10}
+              updateCellsBatchingPeriod={50}
+              initialNumToRender={10}
+              removeClippedSubviews={true}
+              ListFooterComponent={() => 
+                isLoadingMore ? (
+                  <View style={{ padding: 20, alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#007AFF" />
+                  </View>
+                ) : null
+              }
             />
           )}
         </>

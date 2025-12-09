@@ -699,6 +699,9 @@ export default function LoginScreen() {
               placeholder="Enter your password"
               placeholderTextColor="#999"
               secureTextEntry={!showPassword}
+              textContentType="password"
+              autoComplete="password"
+              importantForAutofill="yes"
             />
             <TouchableOpacity 
               style={styles.passwordToggle}
@@ -716,7 +719,20 @@ export default function LoginScreen() {
           {/* Remember Me Checkbox */}
           <TouchableOpacity 
             style={styles.rememberMeContainer}
-            onPress={() => setRememberMe(!rememberMe)}
+            onPress={async () => {
+              const newValue = !rememberMe;
+              setRememberMe(newValue);
+              // Immediately save the Remember Me preference
+              try {
+                await AsyncStorage.setItem('remember_me', newValue.toString());
+                if (!newValue) {
+                  // If unchecking, clear saved credentials immediately
+                  await clearSavedCredentials();
+                }
+              } catch (error) {
+                console.log('⚠️ Error updating Remember Me preference:', error);
+              }
+            }}
             activeOpacity={0.7}
           >
             <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>

@@ -424,12 +424,22 @@ export default function TaskChatScreen() {
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.messagesList}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+        ListHeaderComponent={
+          messagesLoading ? (
+            <View style={styles.loadingHeader}>
+              <ActivityIndicator size="small" color="#007bff" />
+              <Text style={styles.loadingHeaderText}>Loading messages...</Text>
+            </View>
+          ) : null
+        }
         ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <MaterialIcons name="chat-bubble-outline" size={48} color="#ccc" />
-            <Text style={styles.emptyText}>No messages yet</Text>
-            <Text style={styles.emptySubtext}>Start the conversation!</Text>
-          </View>
+          !messagesLoading ? (
+            <View style={styles.emptyState}>
+              <MaterialIcons name="chat-bubble-outline" size={48} color="#ccc" />
+              <Text style={styles.emptyText}>Start a conversation</Text>
+              <Text style={styles.emptySubtext}>Send a message to begin chatting about this task</Text>
+            </View>
+          ) : null
         }
       />
 
@@ -511,6 +521,28 @@ const styles = StyleSheet.create({
   },
   messagesList: {
     padding: 16,
+  },
+  loadingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 8,
+  },
+  loadingHeaderText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  messagesLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  messagesLoadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
   },
   messageContainer: {
     maxWidth: '80%',

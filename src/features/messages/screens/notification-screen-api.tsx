@@ -2,25 +2,25 @@
 import { Notification, sendQuickTestNotification } from '@/src/api/notification-api';
 import { useGetFCMTokens } from '@/src/shared/hooks/useFCM';
 import {
-  useDeleteNotification,
-  useMarkAllAsRead,
-  useMarkAsRead,
-  useNotifications,
-  useUnreadCount,
+    useDeleteNotification,
+    useMarkAllAsRead,
+    useMarkAsRead,
+    useNotifications,
+    useUnreadCount,
 } from '@/src/shared/hooks/useNotifications';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Modal,
-  RefreshControl,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Modal,
+    RefreshControl,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 interface NotificationModalProps {

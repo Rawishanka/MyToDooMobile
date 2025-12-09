@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'MyToDoo',
   slug: 'MyToDooMobile',
-  owner: 'buvindu',
+  owner: 'sulandi',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/mytodoo-icon.png',
@@ -56,7 +56,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     'expo-font',
     'expo-video',
-    'expo-build-properties',
+    [
+      'expo-build-properties',
+      {
+        android: {
+          compileSdkVersion: 35,
+          targetSdkVersion: 35,
+          minSdkVersion: 24,
+        },
+      },
+    ],
     'expo-web-browser',
     '@react-native-firebase/app',
     '@react-native-firebase/messaging',
@@ -85,7 +94,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
     googleClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
     eas: {
-      projectId: "8e6979c7-8beb-4ece-99b8-a8a614eb41b1"
+      projectId: "40f554ac-0795-45a5-b025-d597477e0bea"
     },
   },
 });

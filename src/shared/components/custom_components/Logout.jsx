@@ -44,13 +44,14 @@ export default function LogoutPopup({ onBack }) {
       // STEP 5: Clear all authentication data
       await clearAuth();
       
-      console.log("✅ Logout successful, redirecting to login...");
+      console.log("✅ Logout successful");
       
-      // Close popup first
+      // Close popup
       setShowPopup(false);
       
-      // Redirect to login screen
-      router.replace('/(auth)/login');
+      // NOTE: No manual navigation needed!
+      // The app/index.tsx will automatically detect isAuthenticated=false
+      // and navigate to login screen, preventing duplicate navigation
       
       // Show success message
       Alert.alert('Success', 'You have been logged out successfully!');

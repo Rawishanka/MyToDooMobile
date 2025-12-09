@@ -33,7 +33,12 @@ expoAutolinking.useExpoModules()
 
 rootProject.name = 'MyToDooMobile'
 
-expoAutolinking.useExpoVersionCatalog()
+// Try to use Expo version catalog if available
+try {
+  expoAutolinking.useExpoVersionCatalog()
+} catch (Exception e) {
+  logger.warn("Expo version catalog not available, using default versions: ${e.message}")
+}
 
 include ':app'
 includeBuild(expoAutolinking.reactNativeGradlePlugin)
