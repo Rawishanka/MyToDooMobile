@@ -9,8 +9,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from '@/src/shared/AuthProvider';
 import { DeepLinkHandler } from '@/src/shared/components/DeepLinkHandler';
+import { NotificationPermissionPrompt } from '@/src/shared/components/NotificationPermissionPrompt';
 import ProfessionalSplashScreen from '@/src/shared/components/ProfessionalSplashScreen';
 import { useColorScheme } from '@/src/shared/hooks/useColorScheme';
+import { useInitializeFCM } from '@/src/shared/hooks/useInitializeFCM';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
@@ -54,7 +56,7 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
+  const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...Ionicons.font,
     ...MaterialIcons.font,
@@ -62,6 +64,30 @@ export default function RootLayout() {
     ...AntDesign.font,
   });
   const [showSplash, setShowSplash] = useState(true);
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+
+  // Handle font loading errors gracefully
+  useEffect(() => {
+    if (error) {
+      console.error('❌ Font loading error:', error);
+      console.log('⚠️ App will continue with system fonts');
+    }
+  }, [error]);
+
+  // 🔔 Initialize FCM Push Notifications
+  const fcmStatus = useInitializeFCM();
+
+  // Log FCM status when initialized
+  useEffect(() => {
+    if (fcmStatus.isInitialized) {
+      console.log('📱 ========== PUSH NOTIFICATIONS STATUS ==========');
+      console.log('✅ Initialized:', fcmStatus.isInitialized);
+      console.log('📝 Token Registered:', fcmStatus.isRegistered);
+      console.log('🔔 Permission Granted:', fcmStatus.hasPermission);
+      console.log('❌ Error:', fcmStatus.error || 'None');
+      console.log('==================================================');
+    }
+  }, [fcmStatus]);
 
   useEffect(() => {
     const prepareApp = async () => {
@@ -79,6 +105,12 @@ export default function RootLayout() {
 
   const handleSplashFinish = () => {
     setShowSplash(false);
+    // Show notification permission prompt after splash (only on native build)
+    setShowNotificationPrompt(true);
+  };
+
+  const handleNotificationPromptComplete = () => {
+    setShowNotificationPrompt(false);
   };
 
   // Always show custom splash first
@@ -86,8 +118,9 @@ export default function RootLayout() {
     return <ProfessionalSplashScreen onFinish={handleSplashFinish} duration={3000} />;
   }
 
-  // After splash, check if fonts are loaded
-  if (!loaded) {
+  // After splash, check if fonts are loaded or errored
+  // Continue even if fonts fail to load (will use system fonts)
+  if (!loaded && !error) {
     return null;
   }
 
@@ -111,6 +144,11 @@ export default function RootLayout() {
                 <Stack.Screen name="+not-found" />
               </Stack>
               <StatusBar style="dark" />
+              
+              {/* Notification Permission Prompt - Shows after splash */}
+              {showNotificationPrompt && (
+                <NotificationPermissionPrompt onComplete={handleNotificationPromptComplete} />
+              )}
             </ThemeProvider>
           </SafeAreaProvider>
         </QueryClientProvider>

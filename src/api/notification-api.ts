@@ -244,3 +244,33 @@ export const sendWebhookNotification = async (data: {
   );
   return response.data;
 };
+
+/**
+ * Send test FCM notification (quick test using existing tokens)
+ */
+export const sendQuickTestNotification = async (data: {
+  title: string;
+  body: string;
+}): Promise<{ success: boolean; message: string; sentTo: number }> => {
+  const response = await api.post(
+    `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/quick-test`,
+    data
+  );
+  return response.data;
+};
+
+/**
+ * Send test FCM notification to specific user
+ */
+export const sendTestFCMNotification = async (data: {
+  userId: string;
+  title: string;
+  body: string;
+  data?: any;
+}): Promise<{ success: boolean; message: string }> => {
+  const response = await api.post(
+    `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/test-fcm`,
+    data
+  );
+  return response.data;
+};

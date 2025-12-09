@@ -22,10 +22,12 @@ export function createApi(baseURL: string) {
                                config.url?.includes('/auth/register');
         
         // First try to get token from auth store
-        let token = useAuthStore.getState().token;
+        const authState = useAuthStore.getState();
+        let token = authState.token;
         
         // If no token in store, try to get from AsyncStorage
-        if (!token && !isAuthEndpoint) {
+        // BUT only if user hasn't explicitly logged out (isAuthenticated !== false)
+        if (!token && !isAuthEndpoint && authState.isAuthenticated !== false) {
             try {
                 const storedToken = await AsyncStorage.getItem('token');
                 if (storedToken) {
@@ -37,6 +39,8 @@ export function createApi(baseURL: string) {
                     console.warn("⚠️ Error retrieving token from AsyncStorage:", error?.message);
                 }
             }
+        } else if (!token && !isAuthEndpoint && authState.isAuthenticated === false) {
+            console.log("ℹ️ User logged out - not using AsyncStorage token");
         }
         
         if (token) {

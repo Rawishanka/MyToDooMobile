@@ -2,7 +2,7 @@
 import { Task, TaskFilterParams, TaskSearchParams } from '@/src/api/types/tasks';
 import { useFilterTasks, useSearchTasks } from '@/src/shared/hooks/useTaskApi';
 import * as Location from 'expo-location';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export interface FilterState {
   selectedCategory: string;
@@ -168,6 +168,14 @@ export const useBrowseFiltersAPI = () => {
   const [selectedSort, setSelectedSort] = useState(0);
   const [searchText, setSearchText] = useState('');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  
+  // 📄 Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [allLoadedTasks, setAllLoadedTasks] = useState<Task[]>([]);
+  const [hasMorePages, setHasMorePages] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const previousFiltersRef = useRef<string>('');
   const [tasksWithOfferCounts, setTasksWithOfferCounts] = useState<Task[]>([]);
 
   React.useEffect(() => {
@@ -239,6 +247,8 @@ export const useBrowseFiltersAPI = () => {
     const params: TaskFilterParams = {
       sortBy: FILTER_SORT_MAPPING[selectedSort],
       status: 'open',
+      page: currentPage,
+      limit: 20,
     };
 
     if (selectedCategory !== 'All Categories') params.categories = selectedCategory;
@@ -263,7 +273,7 @@ export const useBrowseFiltersAPI = () => {
     // if (searchText.trim()) params.search = searchText.trim();
 
     return params;
-  }, [selectedCategory, taskType, priceRange, selectedSort, userLocation]);
+  }, [selectedCategory, taskType, priceRange, selectedSort, userLocation, currentPage]);
 
   const {
     data: searchResponse,
@@ -282,16 +292,67 @@ export const useBrowseFiltersAPI = () => {
     refetch: filterRefetch,
   } = useFilterTasks(filterParams, shouldUseFilterAPI);
 
-  // Enhance tasks with offer counts if missing
+  // Reset pagination when filters change
+  useEffect(() => {
+    const currentFilters = JSON.stringify({
+      category: selectedCategory,
+      taskType,
+      priceRange,
+      sort: selectedSort,
+      search: searchText,
+    });
+
+    if (previousFiltersRef.current !== currentFilters) {
+      console.log('🔄 Filters changed, resetting pagination');
+      previousFiltersRef.current = currentFilters;
+      setCurrentPage(1);
+      setAllLoadedTasks([]);
+      setHasMorePages(true);
+    }
+  }, [selectedCategory, taskType, priceRange, selectedSort, searchText]);
+
+  // Enhance tasks with offer counts and accumulate paginated data
   useEffect(() => {
     const enhanceTasksWithOfferCounts = async () => {
       const baseTasks = shouldUseFilterAPI 
         ? (filterResponse?.data || [])
         : (searchResponse?.data || []);
-
+      
+      // Skip if no tasks
       if (baseTasks.length === 0) {
-        setTasksWithOfferCounts([]);
+        // Only update if we're on page 1 (filters changed)
+        if (currentPage === 1) {
+          setAllLoadedTasks([]);
+          setTasksWithOfferCounts([]);
+        }
         return;
+      }
+      
+      // Update pagination info from response
+      if (shouldUseFilterAPI && filterResponse?.pagination) {
+        // TaskFilterResponse has pagination object
+        const pagination = filterResponse.pagination;
+        setHasMorePages(pagination.hasNextPage || false);
+        setTotalPages(pagination.totalPages || 1);
+        console.log('📄 Pagination Info (Filter API):', {
+          currentPage: pagination.currentPage,
+          totalPages: pagination.totalPages,
+          totalItems: pagination.totalItems,
+          hasNextPage: pagination.hasNextPage,
+          loadedSoFar: allLoadedTasks.length + baseTasks.length,
+        });
+      } else if (!shouldUseFilterAPI && searchResponse) {
+        // TasksResponse has individual fields
+        const hasNextPage = (searchResponse.currentPage || 1) < (searchResponse.pages || 1);
+        setHasMorePages(hasNextPage);
+        setTotalPages(searchResponse.pages || 1);
+        console.log('📄 Pagination Info (Search API):', {
+          currentPage: searchResponse.currentPage,
+          totalPages: searchResponse.pages,
+          totalItems: searchResponse.total,
+          hasNextPage,
+          loadedSoFar: allLoadedTasks.length + baseTasks.length,
+        });
       }
 
       // Check if tasks already have offer count data
@@ -300,67 +361,90 @@ export const useBrowseFiltersAPI = () => {
         (!task.offers || task.offers.length === 0)
       );
 
-      if (tasksNeedingOfferCounts.length === 0) {
+      let enhancedTasks = baseTasks;
+
+      if (tasksNeedingOfferCounts.length > 0) {
+        console.log('🔍 [useBrowseFiltersAPI] Fetching offer counts for tasks missing data:', {
+          totalTasks: baseTasks.length,
+          tasksNeedingOfferCounts: tasksNeedingOfferCounts.length
+        });
+
+        try {
+          // Fetch offer counts for tasks in parallel (limit to first 20 to avoid API overload)
+          const tasksToFetch = tasksNeedingOfferCounts.slice(0, 20);
+          const offerCountPromises = tasksToFetch.map(async (task) => {
+            try {
+              const offersResponse = await TaskAPI.getTaskOffers(task._id);
+              const offerCount = offersResponse.data?.offers?.length || 0;
+              return { taskId: task._id, offerCount, offers: offersResponse.data?.offers || [] };
+            } catch (error) {
+              console.warn(`Failed to fetch offers for task ${task._id}:`, error);
+              return { taskId: task._id, offerCount: 0, offers: [] };
+            }
+          });
+
+          const offerCounts = await Promise.all(offerCountPromises);
+          const offerCountMap = Object.fromEntries(
+            offerCounts.map(({ taskId, offerCount, offers }) => [taskId, { offerCount, offers }])
+          );
+
+          // Enhance tasks with offer counts
+          enhancedTasks = baseTasks.map(task => {
+            if (offerCountMap[task._id]) {
+              return {
+                ...task,
+                offerCount: offerCountMap[task._id].offerCount,
+                offers: offerCountMap[task._id].offers
+              };
+            }
+            return task;
+          });
+
+          console.log('✅ [useBrowseFiltersAPI] Enhanced tasks with offer counts:', {
+            totalTasks: enhancedTasks.length,
+            tasksWithOffers: enhancedTasks.filter(t => (t.offerCount || 0) > 0).length,
+            page: currentPage,
+          });
+        } catch (error) {
+          console.error('❌ [useBrowseFiltersAPI] Failed to enhance tasks with offer counts:', error);
+        }
+      } else {
         console.log('🔍 [useBrowseFiltersAPI] All tasks already have offer data');
-        setTasksWithOfferCounts(baseTasks);
-        return;
       }
 
-      console.log('🔍 [useBrowseFiltersAPI] Fetching offer counts for tasks missing data:', {
-        totalTasks: baseTasks.length,
-        tasksNeedingOfferCounts: tasksNeedingOfferCounts.length
+      // Accumulate tasks: append new page to existing tasks
+      setAllLoadedTasks(prevTasks => {
+        // If page 1, replace all tasks (filters changed)
+        if (currentPage === 1) {
+          console.log('📄 Page 1: Replacing all tasks with', enhancedTasks.length, 'items');
+          setIsLoadingMore(false);
+          return enhancedTasks;
+        }
+        
+        // For page 2+, append new tasks avoiding duplicates
+        const existingIds = new Set(prevTasks.map(t => t._id));
+        const newTasks = enhancedTasks.filter(t => !existingIds.has(t._id));
+        
+        // Only update if we have new tasks to add
+        if (newTasks.length === 0) {
+          console.log('📄 Page', currentPage, ': No new tasks to add (all duplicates)');
+          setIsLoadingMore(false);
+          return prevTasks;
+        }
+        
+        console.log('📄 Page', currentPage, ': Adding', newTasks.length, 'new tasks (total:', prevTasks.length + newTasks.length, ')');
+        setIsLoadingMore(false);
+        return [...prevTasks, ...newTasks];
       });
-
-      try {
-        // Fetch offer counts for tasks in parallel (limit to first 20 to avoid API overload)
-        const tasksToFetch = tasksNeedingOfferCounts.slice(0, 20);
-        const offerCountPromises = tasksToFetch.map(async (task) => {
-          try {
-            const offersResponse = await TaskAPI.getTaskOffers(task._id);
-            const offerCount = offersResponse.data?.offers?.length || 0;
-            return { taskId: task._id, offerCount, offers: offersResponse.data?.offers || [] };
-          } catch (error) {
-            console.warn(`Failed to fetch offers for task ${task._id}:`, error);
-            return { taskId: task._id, offerCount: 0, offers: [] };
-          }
-        });
-
-        const offerCounts = await Promise.all(offerCountPromises);
-        const offerCountMap = Object.fromEntries(
-          offerCounts.map(({ taskId, offerCount, offers }) => [taskId, { offerCount, offers }])
-        );
-
-        // Enhance tasks with offer counts
-        const enhancedTasks = baseTasks.map(task => {
-          if (offerCountMap[task._id]) {
-            return {
-              ...task,
-              offerCount: offerCountMap[task._id].offerCount,
-              offers: offerCountMap[task._id].offers
-            };
-          }
-          return task;
-        });
-
-        console.log('✅ [useBrowseFiltersAPI] Enhanced tasks with offer counts:', {
-          totalTasks: enhancedTasks.length,
-          tasksWithOffers: enhancedTasks.filter(t => (t.offerCount || 0) > 0).length
-        });
-
-        setTasksWithOfferCounts(enhancedTasks);
-      } catch (error) {
-        console.error('❌ [useBrowseFiltersAPI] Failed to enhance tasks with offer counts:', error);
-        setTasksWithOfferCounts(baseTasks);
-      }
     };
 
     enhanceTasksWithOfferCounts();
-  }, [shouldUseFilterAPI, filterResponse?.data, searchResponse?.data]);
+  }, [shouldUseFilterAPI, filterResponse?.data, searchResponse?.data, currentPage]);
 
-  // Apply client-side search filter to results ONLY if using Filter API
-  // When using Search API, backend already filtered results
+  // Apply client-side search filter to accumulated tasks
+  // Use allLoadedTasks which contains all pages loaded so far
   const filteredAndSortedTasks = useMemo(() => {
-    const baseTasks = tasksWithOfferCounts;
+    const baseTasks = allLoadedTasks;
     
     // Debug logging for API response data
     console.log('🔍 [useBrowseFiltersAPI] Final Tasks Debug:', {
@@ -394,7 +478,7 @@ export const useBrowseFiltersAPI = () => {
     // This shouldn't happen, but keep as fallback
     console.log('⚠️ Unexpected state - applying client-side filter');
     return filterTasksBySearch(baseTasks, searchText);
-  }, [tasksWithOfferCounts, searchText, shouldUseFilterAPI]);
+  }, [allLoadedTasks, searchText, shouldUseFilterAPI]);
   
   const isLoading = shouldUseFilterAPI ? filterLoading : searchLoading;
   const error = shouldUseFilterAPI ? filterError : searchError;
@@ -421,7 +505,23 @@ export const useBrowseFiltersAPI = () => {
     setShowTasksWithNoOffers(false);
     setSelectedSort(0);
     setSearchText('');
+    setCurrentPage(1);
+    setTotalPages(1);
+    setAllLoadedTasks([]);
+    setHasMorePages(true);
   };
+
+  // Load next page of tasks
+  const loadMoreTasks = useCallback(() => {
+    if (!hasMorePages || isLoading || isLoadingMore) {
+      console.log('⏭️ Skip load more:', { hasMorePages, isLoading, isLoadingMore });
+      return;
+    }
+
+    console.log('📄 Loading page:', currentPage + 1, 'of', totalPages);
+    setIsLoadingMore(true);
+    setCurrentPage(prev => prev + 1);
+  }, [hasMorePages, isLoading, isLoadingMore, currentPage, totalPages]);
 
   return {
     selectedCategory,
@@ -447,5 +547,12 @@ export const useBrowseFiltersAPI = () => {
     totalItems,
     useSearchAPI: !shouldUseFilterAPI,
     activeAPI: shouldUseFilterAPI ? 'FILTER' : 'SEARCH',
+    
+    // 📄 Pagination
+    loadMoreTasks,
+    hasMorePages,
+    isLoadingMore,
+    currentPage,
+    totalPages,
   };
 };

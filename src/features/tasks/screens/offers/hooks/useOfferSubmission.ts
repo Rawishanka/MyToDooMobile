@@ -84,10 +84,15 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
     [countryInfo]
   );
 
-  // Set default offer amount to task budget when available
+  // Set default offer amount to task budget when available (with formatting)
   useEffect(() => {
     if (taskBudget && !hasUserEditedAmount) {
-      setOfferAmount(taskBudget.toString());
+      // Format the default budget value with thousand separators and 2 decimal places
+      const formattedBudget = taskBudget.toLocaleString('en-US', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+      });
+      setOfferAmount(formattedBudget);
     }
   }, [taskBudget, hasUserEditedAmount]);
 
@@ -97,7 +102,8 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
       return false;
     }
 
-    const numericAmount = parseFloat(amount);
+    // Remove commas before parsing
+    const numericAmount = parseFloat(amount.replace(/,/g, ''));
     if (isNaN(numericAmount) || numericAmount <= 0) {
       Alert.alert('Validation Error', 'Please enter a valid positive amount.');
       return false;
@@ -107,7 +113,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
     if (taskBudget && numericAmount > taskBudget) {
       Alert.alert(
         'Amount Too High',
-        `Your offer amount cannot exceed the task budget of ${currencyInfo.symbol}${taskBudget}.`
+        `Your offer amount cannot exceed the task budget of ${currencyInfo.symbol}${taskBudget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`
       );
       return false;
     }
@@ -160,7 +166,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
 
     try {
       const offerData = {
-        amount: parseFloat(offerAmount),
+        amount: parseFloat(offerAmount.replace(/,/g, '')), // Remove commas before parsing
         // Removing currency field as it might be causing 400 error
         // currency: currencyInfo.code,
         message: message.trim(),
@@ -204,11 +210,17 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
   };
 
   const handleOfferAmountChange = (text: string) => {
-    // Only allow numbers and decimal point
+    // Remove all non-numeric characters except decimal point
     const cleanedText = text.replace(/[^0-9.]/g, '');
+    
     // Prevent multiple decimal points
     const parts = cleanedText.split('.');
     if (parts.length > 2) {
+      return;
+    }
+    
+    // Limit to 2 decimal places
+    if (parts.length === 2 && parts[1].length > 2) {
       return;
     }
     
@@ -217,14 +229,25 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
       setHasUserEditedAmount(true);
     }
     
-    // Set the cleaned text as the new value
-    setOfferAmount(cleanedText);
+    // Format the display value with thousand separators
+    let formattedValue = cleanedText;
+    if (cleanedText) {
+      const [integerPart, decimalPart] = cleanedText.split('.');
+      // Add thousand separators to integer part
+      const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      formattedValue = decimalPart !== undefined 
+        ? `${formattedInteger}.${decimalPart}` 
+        : formattedInteger;
+    }
     
-    // Real-time validation
+    // Set the formatted text as the display value
+    setOfferAmount(formattedValue);
+    
+    // Real-time validation using raw numeric value
     if (cleanedText && taskBudget) {
       const numericAmount = parseFloat(cleanedText);
       if (!isNaN(numericAmount) && numericAmount > taskBudget) {
-        setValidationError(`Amount cannot exceed budget of ${currencyInfo.symbol}${taskBudget}`);
+        setValidationError(`Amount cannot exceed budget of ${currencyInfo.symbol}${taskBudget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
       } else {
         setValidationError('');
       }

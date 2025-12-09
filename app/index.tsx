@@ -1,5 +1,6 @@
 import FallingStars from '@/src/shared/components/FallingStars';
 import { useAuthStore } from '@/src/store/auth-task-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ResizeMode, Video } from 'expo-av';
 import { Link, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -13,6 +14,7 @@ const CartoonShears = null; // e.g. require('@/assets/gardening_shears.png')
 import { categoryVideos, getCategoryVideo } from '@/src/shared/utils/videoLoader';
 
 export default function WelcomeScreen() {
+  console.log('🏠 WelcomeScreen component rendering...');
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [nextIndex, setNextIndex] = useState(1);
@@ -20,27 +22,45 @@ export default function WelcomeScreen() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const { isAuthenticated, token } = useAuthStore();
   
+  console.log('🔑 Current auth state:', { isAuthenticated, hasToken: !!token });
+  
   // Check authentication and navigate to appropriate screen
   useEffect(() => {
     const checkAuth = async () => {
       console.log('🔐 Checking authentication status...', { isAuthenticated, hasToken: !!token });
       
-      // Wait a moment for AuthProvider to restore state from AsyncStorage
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for AuthProvider to restore state from AsyncStorage
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       const currentAuthState = useAuthStore.getState();
+      
+      // Check if user has ever logged in before
+      const hasLoggedInBefore = await AsyncStorage.getItem('hasLoggedInBefore');
+      
       console.log('🔐 Auth state after delay:', { 
         isAuthenticated: currentAuthState.isAuthenticated, 
-        hasToken: !!currentAuthState.token 
+        hasToken: !!currentAuthState.token,
+        userId: currentAuthState.user?._id,
+        hasLoggedInBefore: hasLoggedInBefore
       });
       
+      // Priority 1: If user is authenticated with valid token -> go to tabs
       if (currentAuthState.isAuthenticated && currentAuthState.token) {
         console.log('✅ User is authenticated, navigating to tabs...');
         router.replace('/(tabs)' as any);
-      } else {
-        console.log('❌ User not authenticated, showing welcome screen');
-        setIsCheckingAuth(false);
+        return;
       }
+      
+      // Priority 2: If user has logged in before (but now logged out) -> go to login
+      if (hasLoggedInBefore === 'true') {
+        console.log('🔑 User has logged in before but is now logged out, navigating to login screen...');
+        router.replace('/(auth)/login' as any);
+        return;
+      }
+      
+      // Priority 3: First-time user -> show welcome screen
+      console.log('👋 First-time user, showing welcome screen');
+      setIsCheckingAuth(false);
     };
     
     checkAuth();
@@ -75,8 +95,9 @@ export default function WelcomeScreen() {
 
   // Show loading while checking authentication
   if (isCheckingAuth) {
+    console.log('🔄 Showing authentication check loading screen');
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: '#004aad' }]}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#fff" />
           <Text style={styles.loadingText}>Loading...</Text>
@@ -84,6 +105,8 @@ export default function WelcomeScreen() {
       </SafeAreaView>
     );
   }
+  
+  console.log('✅ Rendering welcome screen with video:', currentCategory?.title);
 
   return (
     <SafeAreaView style={styles.container}>

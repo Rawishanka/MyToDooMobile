@@ -48,6 +48,7 @@ export default function BrowseTasksScreen() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showNetworkAlert, setShowNetworkAlert] = useState(false);
   const [networkAlertMessage, setNetworkAlertMessage] = useState('');
+  const [onEndReachedCalledDuringMomentum, setOnEndReachedCalledDuringMomentum] = useState(false);
 
   // Network status monitoring
   const { isConnected } = useNetworkStatus();
@@ -150,6 +151,11 @@ export default function BrowseTasksScreen() {
     totalItems,
     useSearchAPI,
     activeAPI,
+    loadMoreTasks,
+    hasMorePages,
+    isLoadingMore,
+    currentPage,
+    totalPages,
   } = useBrowseFiltersAPI();
 
   // Custom map marker icon - bigger Airtasker marker
@@ -192,8 +198,11 @@ export default function BrowseTasksScreen() {
       totalItems,
       dataLength: filteredAndSortedTasks.length,
       activeFiltersCount,
+      currentPage,
+      hasMorePages,
+      isLoadingMore,
     });
-  }, [categoriesLoading, categoriesError, categories, isLoading, error, totalItems, filteredAndSortedTasks.length, activeFiltersCount, activeAPI, searchText, useSearchAPI]);
+  }, [categoriesLoading, categoriesError, categories, isLoading, error, totalItems, filteredAndSortedTasks.length, activeFiltersCount, activeAPI, searchText, useSearchAPI, currentPage, hasMorePages, isLoadingMore]);
 
   // Refresh on screen focus
   useFocusEffect(
@@ -363,11 +372,42 @@ export default function BrowseTasksScreen() {
               keyExtractor={(item) => item._id}
               contentContainerStyle={{ paddingBottom: 100 }}
               renderItem={renderTaskCard}
-              refreshing={isLoading}
+              refreshing={isLoading && currentPage === 1}
               onRefresh={() => {
                 console.log("🔄 Pull to refresh triggered in Browse Tasks");
                 refetch();
               }}
+              onEndReached={() => {
+                if (!onEndReachedCalledDuringMomentum && hasMorePages && !isLoadingMore) {
+                  console.log('📄 Reached end of list, loading more...', { hasMorePages, isLoadingMore, currentPage });
+                  loadMoreTasks();
+                  setOnEndReachedCalledDuringMomentum(true);
+                }
+              }}
+              onMomentumScrollBegin={() => {
+                setOnEndReachedCalledDuringMomentum(false);
+              }}
+              onEndReachedThreshold={0.5}
+              removeClippedSubviews={false}
+              maxToRenderPerBatch={10}
+              updateCellsBatchingPeriod={50}
+              initialNumToRender={20}
+              windowSize={5}
+              maintainVisibleContentPosition={{
+                minIndexForVisible: 0,
+                autoscrollToTopThreshold: 10,
+              }}
+              ListFooterComponent={
+                isLoadingMore ? (
+                  <View style={styles.loadingFooter}>
+                    <Text style={styles.loadingFooterText}>Loading more tasks...</Text>
+                  </View>
+                ) : !hasMorePages && filteredAndSortedTasks.length > 0 ? (
+                  <View style={styles.endOfListContainer}>
+                    <Text style={styles.endOfListText}>✓ All tasks loaded</Text>
+                  </View>
+                ) : null
+              }
               ListEmptyComponent={
                 <View style={styles.emptyState}>
                   <Ionicons name="search-outline" size={64} color="#ccc" style={{ marginBottom: 16 }} />
@@ -526,9 +566,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
     textAlign: 'center',
+  },
+  loadingFooter: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingFooterText: {
+    color: '#666',
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
+  endOfListContainer: {
+    paddingVertical: 20,
+    alignItems: 'center',
+  },
+  endOfListText: {
+    fontSize: 14,
+    color: '#28a745',
+    fontWeight: '600',
   },
   clearSearchButton: {
     marginTop: 16,

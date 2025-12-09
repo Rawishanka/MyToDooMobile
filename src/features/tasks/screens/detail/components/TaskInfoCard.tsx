@@ -289,17 +289,16 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
     // Enhanced image string extraction with comprehensive support
     const extractImageString = (imageData: any): string | null => {
-      console.log('🔍 Processing image data:', {
-        type: typeof imageData,
-        isNull: imageData === null,
-        isUndefined: imageData === undefined,
-        preview: typeof imageData === 'string' ? imageData.substring(0, 50) : 'Not string'
-      });
-
-      if (!imageData) {
+      // Early null/undefined check before any operations
+      if (!imageData || imageData === null || imageData === undefined) {
         console.log('❌ Image data is null/undefined');
         return null;
       }
+
+      console.log('🔍 Processing image data:', {
+        type: typeof imageData,
+        preview: typeof imageData === 'string' ? imageData.substring(0, 50) : 'Object'
+      });
       
       // If already a string (most common case for CDN URLs or data URIs)
       if (typeof imageData === 'string') {
@@ -317,7 +316,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       }
       
       // If it's an object, try multiple extraction strategies
-      if (typeof imageData === 'object') {
+      if (typeof imageData === 'object' && imageData !== null) {
         const keys = Object.keys(imageData);
         console.log('🔍 Image is object with properties:', keys);
         
@@ -413,7 +412,11 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       .map((imageData, index) => {
         const result = extractImageString(imageData);
         console.log(`📸 Image ${index} extraction:`, {
-          input: typeof imageData === 'object' ? `Object with keys: ${Object.keys(imageData).join(', ')}` : imageData,
+          input: typeof imageData === 'object' && imageData !== null 
+            ? `Object with keys: ${Object.keys(imageData).join(', ')}` 
+            : typeof imageData === 'string' 
+              ? imageData.substring(0, 30) 
+              : 'null/undefined',
           output: result ? `${result.substring(0, 60)}...` : 'null',
           outputLength: result ? result.length : 0
         });

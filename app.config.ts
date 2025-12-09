@@ -23,6 +23,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: './assets/images/mytodoo-icon.png',
       backgroundColor: '#004aad',
     },
+    googleServicesFile: './android/app/google-services.json',
+    permissions: [
+      'CAMERA',
+      'READ_EXTERNAL_STORAGE',
+      'WRITE_EXTERNAL_STORAGE',
+      'ACCESS_FINE_LOCATION',
+      'ACCESS_COARSE_LOCATION',
+      'NOTIFICATIONS',
+    ],
     intentFilters: [
       {
         action: 'VIEW',
@@ -47,6 +56,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     'expo-font',
     'expo-video',
+    'expo-build-properties',
+    'expo-web-browser',
+    '@react-native-firebase/app',
+    '@react-native-firebase/messaging',
+    [
+      'expo-notifications',
+      {
+        icon: './assets/images/notification-icon.png',
+        color: '#004aad',
+        sounds: ['./assets/sounds/notification.wav'],
+      },
+    ],
     [
       'expo-location',
       {

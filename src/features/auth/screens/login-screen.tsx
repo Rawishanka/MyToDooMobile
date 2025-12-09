@@ -163,7 +163,8 @@ export default function LoginScreen() {
       // Force invalidate profile queries to ensure fresh profile data with user context
       if (authState.user?.id) {
         await queryClient.invalidateQueries({ queryKey: ['user-profile'] });
-        console.log('🔄 Profile queries invalidated for user:', authState.user.id);
+        await queryClient.invalidateQueries({ queryKey: ['chats'] }); // Invalidate all chat queries
+        console.log('🔄 Profile and chat queries invalidated for user:', authState.user.id);
       }
       
       // Check for pending actions after successful login
@@ -400,7 +401,8 @@ export default function LoginScreen() {
       
       // Force invalidate profile queries to ensure fresh profile data
       await queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
-      console.log('🔄 Profile queries invalidated for fresh data');
+      await queryClient.invalidateQueries({ queryKey: ['chats'] }); // Invalidate all chat queries
+      console.log('🔄 Profile and chat queries invalidated for fresh data');
       
       // Check if there's a pending task to post
       if (hasPendingTask()) {
