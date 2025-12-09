@@ -3556,6 +3556,37 @@ export async function getUserTasks(userId: string): Promise<{ success: boolean; 
 // ⭐ **PHASE 6: REVIEWS & RATINGS**
 
 /**
+ * ⭐ Check if current user can review a task
+ * Endpoint: GET /api/tasks/:taskId/can-review
+ * Auth: Required
+ */
+export async function checkCanReview(taskId: string): Promise<{ 
+  success: boolean; 
+  data: { 
+    canReview: boolean; 
+    revieweeId?: string;
+    revieweeRole?: 'tasker' | 'poster';
+    message?: string;
+    reason?: string;
+    existingReview?: any;
+  } 
+}> {
+  const api = getApi();
+  try {
+    console.log("⭐ Checking if user can review task:", taskId);
+    
+    const response = await api.get(`/tasks/${taskId}/can-review`);
+    
+    console.log("✅ Can review check success:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error("❌ Can review check failed:", error);
+    console.error("❌ Error response data:", error?.response?.data);
+    throw error;
+  }
+}
+
+/**
  * ⭐ Submit Review for Task
  * Endpoint: POST /api/tasks/:taskId/reviews
  * Auth: Required
@@ -3578,11 +3609,17 @@ export async function submitTaskReview(params: {
     });
     
     // Create FormData for multipart/form-data request
+    // NOTE: Backend determines reviewerId from auth token and revieweeId from task relationship
+    // According to Swagger API spec, we only send: rating, reviewText (optional), attachments (optional)
     const formData = new FormData();
     formData.append('rating', params.rating.toString());
     
+    console.log("📝 FormData includes:");
+    console.log("   - rating:", params.rating);
+    
     if (params.reviewText) {
       formData.append('reviewText', params.reviewText);
+      console.log("   - reviewText: (included)");
     }
     
     // Handle file attachments
@@ -3679,6 +3716,30 @@ export async function getPosterReviews(params?: {
   }
 }
 
+/**
+ * ⭐ Get Reviews for Specific Task
+ * Endpoint: GET /api/tasks/:taskId/reviews
+ * Auth: Required
+ * Returns all reviews for a specific task
+ */
+export async function getTaskReviews(taskId: string): Promise<{ 
+  success: boolean; 
+  data: any[] 
+}> {
+  const api = getApi();
+  try {
+    console.log("⭐ Getting reviews for task:", taskId);
+    
+    const response = await api.get(`/tasks/${taskId}/reviews`);
+    
+    console.log("✅ Get task reviews success:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Get task reviews failed:", error);
+    throw error;
+  }
+}
+
 // 🚀 **EXPORT ALL FUNCTIONS**
 export const TaskAPI = {
   // Phase 1: Core Features
@@ -3735,7 +3796,9 @@ export const TaskAPI = {
   getUserTasks,
   
   // Phase 6: Reviews & Ratings
+  checkCanReview,
   submitTaskReview,
+  getTaskReviews,
   getTaskerReviews,
   getPosterReviews,
 };

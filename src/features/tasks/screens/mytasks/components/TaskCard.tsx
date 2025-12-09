@@ -1414,7 +1414,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             </TouchableOpacity>
           </>
         ) : status === 'completed' && userRole === 'Poster' ? (
-          // Completed tab (Poster): View Receipt + Delete button
+          // Completed tab (Poster): View Receipt + Delete button only (no Rate & Review button)
+          // Rating happens through completion flow popup, not from completed tab
           <>
             <TouchableOpacity 
               style={[
@@ -2272,7 +2273,7 @@ const styles = StyleSheet.create({
     marginRight: isTablet ? wp('2%') : 12,
   },
   title: {
-    fontSize: RFValue(isTablet ? 16 : 14),
+    fontSize: RFValue(isTablet ? 14 : 14),
     fontWeight: '600',
     marginBottom: isTablet ? hp('0.8%') : 8,
     color: '#1a1a1a',
@@ -2330,7 +2331,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   priceText: {
-    fontSize: RFValue(isTablet ? 18 : 16),
+    fontSize: RFValue(isTablet ? 14 : 16),
     fontWeight: '700',
     color: '#007bff',
     marginBottom: isTablet ? hp('0.8%') : 8,
