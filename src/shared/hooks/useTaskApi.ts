@@ -4,13 +4,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TaskAPI } from '../../api/task-api';
 import {
-    CreateOfferRequest,
-    CreateTaskRequest,
-    MyTasksParams,
-    TaskFilterParams,
-    TaskOffer,
-    TaskSearchParams,
-    UpdateTaskRequest
+  CreateOfferRequest,
+  CreateTaskRequest,
+  MyTasksParams,
+  TaskFilterParams,
+  TaskOffer,
+  TaskSearchParams,
+  UpdateTaskRequest
 } from '../../api/types/tasks';
 import { handleAuthenticationError, isAuthError } from '../utils/auth-utils';
 import { isNetworkError } from '../utils/networkErrorHandler';
@@ -33,6 +33,9 @@ export const TASK_QUERY_KEYS = {
   questions: (taskId: string) => [...TASK_QUERY_KEYS.detail(taskId), 'questions'] as const,
   userTasks: (userId: string) => [...TASK_QUERY_KEYS.all, 'user', userId] as const,
   categories: () => [...TASK_QUERY_KEYS.all, 'categories'] as const,
+  reviews: (taskId: string) => [...TASK_QUERY_KEYS.detail(taskId), 'reviews'] as const,
+  taskerReviews: (params?: any) => ['reviews', 'tasker', params] as const,
+  posterReviews: (params?: any) => ['reviews', 'poster', params] as const,
 };
 
 // 🌟 **PHASE 1: CORE TASK FEATURES - QUERY HOOKS**
@@ -881,14 +884,44 @@ export function useSubmitReview() {
     }) => TaskAPI.submitTaskReview(params),
     onSuccess: (data, variables) => {
       // Invalidate task details to show updated review
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.taskDetails(variables.taskId) });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
+      
+      // Invalidate task reviews for this specific task
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.reviews(variables.taskId) });
+      
+      // Invalidate my tasks to reflect review status
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
       
       // Invalidate reviews queries
-      queryClient.invalidateQueries({ queryKey: ['reviews', 'tasker'] });
-      queryClient.invalidateQueries({ queryKey: ['reviews', 'poster'] });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.taskerReviews() });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.posterReviews() });
       
       console.log('✅ Review submitted successfully');
     },
+  });
+}
+
+/**
+ * ⭐ Check if User Can Review Task Query
+ */
+export function useCheckCanReview(taskId: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: [...TASK_QUERY_KEYS.reviews(taskId), 'can-review'],
+    queryFn: () => TaskAPI.checkCanReview(taskId),
+    staleTime: 1000 * 60 * 1, // 1 minute - shorter stale time for eligibility checks
+    enabled: !!taskId && enabled,
+  });
+}
+
+/**
+ * ⭐ Get Reviews for Specific Task Query
+ */
+export function useGetTaskReviews(taskId: string) {
+  return useQuery({
+    queryKey: TASK_QUERY_KEYS.reviews(taskId),
+    queryFn: () => TaskAPI.getTaskReviews(taskId),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: !!taskId,
   });
 }
 
@@ -897,7 +930,7 @@ export function useSubmitReview() {
  */
 export function useGetTaskerReviews(params?: { page?: number; limit?: number }) {
   return useQuery({
-    queryKey: ['reviews', 'tasker', params],
+    queryKey: TASK_QUERY_KEYS.taskerReviews(params),
     queryFn: () => TaskAPI.getTaskerReviews(params),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -908,7 +941,7 @@ export function useGetTaskerReviews(params?: { page?: number; limit?: number }) 
  */
 export function useGetPosterReviews(params?: { page?: number; limit?: number }) {
   return useQuery({
-    queryKey: ['reviews', 'poster', params],
+    queryKey: TASK_QUERY_KEYS.posterReviews(params),
     queryFn: () => TaskAPI.getPosterReviews(params),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -932,6 +965,8 @@ export const TaskHooks = {
   useGetPosterPayments,
   useGetTaskQuestions,
   useGetUserTasks,
+  useCheckCanReview,
+  useGetTaskReviews,
   useGetTaskerReviews,
   useGetPosterReviews,
   
