@@ -4,13 +4,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TaskAPI } from '../../api/task-api';
 import {
-  CreateOfferRequest,
-  CreateTaskRequest,
-  MyTasksParams,
-  TaskFilterParams,
-  TaskOffer,
-  TaskSearchParams,
-  UpdateTaskRequest
+    CreateOfferRequest,
+    CreateTaskRequest,
+    MyTasksParams,
+    TaskFilterParams,
+    TaskOffer,
+    TaskSearchParams,
+    UpdateTaskRequest
 } from '../../api/types/tasks';
 import { handleAuthenticationError, isAuthError } from '../utils/auth-utils';
 import { isNetworkError } from '../utils/networkErrorHandler';
