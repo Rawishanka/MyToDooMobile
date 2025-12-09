@@ -2330,7 +2330,7 @@ export async function createOffer(taskId: string, offerData: CreateOfferRequest)
             taskId: taskId,
             // We don't have the offer ID, but that's okay - the UI will refetch
           }
-        } as CreateOfferResponse;
+        } as unknown as CreateOfferResponse;
       }
       
       // For other 500 errors, throw with better message

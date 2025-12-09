@@ -122,7 +122,8 @@ export const getUserChats = async (): Promise<GetChatsResponse> => {
   try {
     console.log('📋 Fetching user chats...');
     
-    const response = await api.get<any>('/chats/user');
+    // Request populated fields for full participant details
+    const response = await api.get<any>('/chats/user?populate=posterId,taskerId,taskId');
     
     // Handle different response structures from backend
     let chats = [];
@@ -305,7 +306,8 @@ export const getChatById = async (chatId: string): Promise<GetChatResponse> => {
   try {
     console.log('🔍 Fetching chat details:', chatId);
     
-    const response = await api.get<any>(`/chats/${chatId}`);
+    // Request populated posterId and taskerId to get participant details
+    const response = await api.get<any>(`/chats/${chatId}?populate=posterId,taskerId`);
     
     console.log('📦 Raw chat response:', JSON.stringify(response.data, null, 2));
     
@@ -396,8 +398,9 @@ export const getChatMessages = async (
   try {
     console.log('📨 Fetching messages for chat:', chatId, { page, limit });
     
+    // Request populated senderId to get sender details
     const response = await api.get<any>(
-      `/chats/${chatId}/messages?page=${page}&limit=${limit}`
+      `/chats/${chatId}/messages?page=${page}&limit=${limit}&populate=senderId`
     );
     
     // Handle different response formats from backend

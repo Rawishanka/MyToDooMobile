@@ -384,7 +384,22 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         return first + last;
       };
       
+      console.log('🔍 CONVERTING MESSAGES - Participants available:', {
+        poster: poster ? `${poster.firstName} ${poster.lastName} (${poster._id})` : 'NULL',
+        tasker: tasker ? `${tasker.firstName} ${tasker.lastName} (${tasker._id})` : 'NULL',
+        currentUserId,
+      });
+      
       const convertedMessages: ChatMessage[] = messagesResponse.messages.map(msg => {
+        console.log('📨 RAW MESSAGE:', {
+          _id: msg._id,
+          senderId: msg.senderId,
+          senderIdType: typeof msg.senderId,
+          content: msg.content.substring(0, 30),
+          messageType: msg.messageType,
+          mediaUrl: msg.mediaUrl,
+        });
+        
         // Handle senderId as both object and string
         const senderIdRaw: any = msg.senderId;
         const senderId = typeof senderIdRaw === 'object' && senderIdRaw?._id 
@@ -394,27 +409,65 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         const isMine = senderId === currentUserId;
         const sender = getParticipant(senderId as string);
         
+        console.log('🔍 SENDER LOOKUP:', {
+          senderId,
+          isMine,
+          senderFound: !!sender,
+          senderName: sender ? `${sender.firstName} ${sender.lastName}` : 'NOT FOUND',
+        });
+        
         // If sender not found in participants, check if senderId is already populated
         let senderName: string;
         let senderInitials: string;
         let senderAvatar: string | undefined;
+        let senderRole: 'poster' | 'tasker' | 'unknown' = 'unknown';
         
         if (sender) {
           senderName = `${sender.firstName} ${sender.lastName || ''}`.trim();
           senderInitials = getInitials(sender.firstName, sender.lastName);
           senderAvatar = sender.avatar || undefined;
+          // Determine role based on which participant matched
+          if (poster && sender._id === poster._id) {
+            senderRole = 'poster';
+          } else if (tasker && sender._id === tasker._id) {
+            senderRole = 'tasker';
+          }
         } else if (typeof senderIdRaw === 'object' && senderIdRaw?.firstName) {
-          // senderId is a populated object with user data
+          // senderId is a populated object with user data from API
+          console.log('✅ Using populated sender from API:', senderIdRaw);
           senderName = `${senderIdRaw.firstName} ${senderIdRaw.lastName || ''}`.trim();
           senderInitials = getInitials(senderIdRaw.firstName, senderIdRaw.lastName || '');
           senderAvatar = senderIdRaw.avatar || undefined;
         } else {
-          senderName = 'Unknown User';
-          senderInitials = '??';
-          senderAvatar = undefined;
+          // Last resort: try to match by ID to determine role
+          console.warn('⚠️ Sender not found in participants or API response:', senderId);
+          if (poster && senderId === poster._id) {
+            senderName = `${poster.firstName} ${poster.lastName || ''}`.trim();
+            senderInitials = getInitials(poster.firstName, poster.lastName);
+            senderAvatar = poster.avatar || undefined;
+            senderRole = 'poster';
+          } else if (tasker && senderId === tasker._id) {
+            senderName = `${tasker.firstName} ${tasker.lastName || ''}`.trim();
+            senderInitials = getInitials(tasker.firstName, tasker.lastName);
+            senderAvatar = tasker.avatar || undefined;
+            senderRole = 'tasker';
+          } else {
+            senderName = 'Unknown User';
+            senderInitials = '??';
+            senderAvatar = undefined;
+          }
         }
         
-        console.log(`📨 Message ${msg._id}: senderId=${senderId}, isMine=${isMine}, sender=${senderName} (${senderInitials})`);
+        console.log(`📨 CONVERTED Message ${msg._id}:`, {
+          senderId,
+          isMine,
+          senderName,
+          senderInitials,
+          senderRole,
+          hasAvatar: !!senderAvatar,
+          messageType: msg.messageType,
+          mediaUrl: msg.mediaUrl,
+        });
         
         return {
           id: msg._id,
@@ -820,8 +873,14 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                     <Image 
                       source={{ uri: msg.mediaUrl }} 
                       style={styles.messageImage}
-                      onError={(e) => console.error('❌ Image load error:', msg.mediaUrl, e.nativeEvent.error)}
-                      onLoad={() => console.log('✅ Image loaded:', msg.mediaUrl)}
+                      onError={(e) => {
+                        console.error('❌ Image load error:', {
+                          url: msg.mediaUrl,
+                          error: e.nativeEvent.error,
+                          messageId: msg.id
+                        });
+                      }}
+                      onLoad={() => console.log('✅ Image loaded successfully:', msg.mediaUrl)}
                     />
                     {msg.text && msg.text !== 'Photo' && (
                       <Text style={[

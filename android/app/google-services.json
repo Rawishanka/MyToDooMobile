@@ -1,8 +1,9 @@
 {
   "project_info": {
     "project_number": "697863453994",
+    "firebase_url": "https://mytodoo-40c87.firebaseio.com",
     "project_id": "mytodoo-40c87",
-    "storage_bucket": "mytodoo-40c87.firebasestorage.app"
+    "storage_bucket": "mytodoo-40c87.appspot.com"
   },
   "client": [
     {
@@ -12,7 +13,12 @@
           "package_name": "com.nowanya.mytodoomobile"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "697863453994-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyACCrN_zK5NKUUM7GtZulp4Sy53ewb495M"
@@ -20,7 +26,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "697863453994-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

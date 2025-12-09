@@ -31,14 +31,9 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
 }
 expoAutolinking.useExpoModules()
 
-rootProject.name = 'MyToDooMobile'
+rootProject.name = 'MyToDoo'
 
-// Try to use Expo version catalog if available
-try {
-  expoAutolinking.useExpoVersionCatalog()
-} catch (Exception e) {
-  logger.warn("Expo version catalog not available, using default versions: ${e.message}")
-}
+expoAutolinking.useExpoVersionCatalog()
 
 include ':app'
 includeBuild(expoAutolinking.reactNativeGradlePlugin)
