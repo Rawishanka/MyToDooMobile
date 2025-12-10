@@ -1,3 +1,4 @@
+import { normalizeCDNUrl } from '@/src/api/cdn-api';
 import { Task } from '@/src/api/types/tasks';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
@@ -137,7 +138,11 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
     
     let correctedUri = uri;
     
-    // Fix all known S3 URL typos
+    // CRITICAL FIX: First normalize CDN URLs (relative -> absolute HTTPS)
+    // This is essential for APK builds where relative URLs don't work
+    correctedUri = normalizeCDNUrl(correctedUri);
+    
+    // Then fix all known S3 URL typos
     const typoFixes: [RegExp, string][] = [
       // Domain typos
       [/amazoonaws\.com/g, 'amazonaws.com'],           // amazoonaws -> amazonaws
@@ -307,16 +312,16 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       // If already a string (most common case for CDN URLs or data URIs)
       if (typeof imageData === 'string') {
         console.log('✅ Image is already a string, length:', imageData.length);
-        // Handle various URL patterns
-        if (imageData.startsWith('http') || imageData.startsWith('https') || imageData.startsWith('data:')) {
-          return imageData;
-        }
-        // Handle relative URLs or file paths
-        if (imageData.startsWith('/') || imageData.includes('cloudinary') || imageData.includes('s3') || imageData.includes('cdn')) {
-          return imageData.startsWith('/') ? `https://your-api-domain.com${imageData}` : imageData;
-        }
-        // Return as-is and let React Native handle it
-        return imageData;
+        
+        // Let normalizeCDNUrl handle all URL formatting
+        // This ensures APK compatibility for relative/HTTP URLs
+        const normalized = normalizeCDNUrl(imageData);
+        console.log('✅ Image URL normalized:', {
+          original: imageData.substring(0, 60),
+          normalized: normalized.substring(0, 60)
+        });
+        
+        return normalized;
       }
       
       // If it's an object, try multiple extraction strategies

@@ -10,19 +10,19 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  BackHandler,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    BackHandler,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -30,9 +30,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OCRAPI } from '@/src/api/ocr-api';
 
 import {
-  DateOptionSelector,
-  TimeOfDayGrid,
-  TimeToggle,
+    DateOptionSelector,
+    TimeOfDayGrid,
+    TimeToggle,
 } from './components';
 
 // Helper function to copy image to persistent storage
@@ -142,18 +142,18 @@ export default function CreateTaskScreen() {
   // Fetch categories
   const { data: categoriesResponse, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
 
-  // Handle pre-selected category from params
+  // Handle pre-selected category from params (only once on mount)
   useEffect(() => {
     if (params.selectedCategory) {
       const categoryName = String(params.selectedCategory);
       console.log('📌 Pre-selected category from params:', categoryName);
-      console.log('   Current selectedCategory state:', selectedCategory);
       console.log('   Setting category to:', categoryName);
       setSelectedCategory(categoryName);
       setTouched(prev => ({ ...prev, category: true }));
       console.log('   ✅ Category state updated to:', categoryName);
     }
-  }, [params.selectedCategory, selectedCategory]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.selectedCategory]); // Only depend on params.selectedCategory, not selectedCategory state
 
   // Debug: Log when selectedCategory changes
   useEffect(() => {
@@ -928,23 +928,33 @@ Please remove phone numbers and addresses from the image.`,
             )}
 
             {showCategoryDropdown && (
-              <View style={styles.categoryDropdown}>
-                <View style={styles.searchContainer}>
-                  <Ionicons name="search" size={18} color="#999" />
-                  <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search categories..."
-                    value={categorySearchQuery}
-                    onChangeText={setCategorySearchQuery}
-                    placeholderTextColor="#999"
-                  />
-                </View>
+              <>
+                {/* Overlay to close dropdown when tapping outside */}
+                <TouchableOpacity 
+                  style={styles.dropdownOverlay}
+                  activeOpacity={1}
+                  onPress={() => {
+                    setShowCategoryDropdown(false);
+                    setCategorySearchQuery('');
+                  }}
+                />
+                <View style={styles.categoryDropdown}>
+                  <View style={styles.searchContainer}>
+                    <Ionicons name="search" size={18} color="#999" />
+                    <TextInput
+                      style={styles.searchInput}
+                      placeholder="Search categories..."
+                      value={categorySearchQuery}
+                      onChangeText={setCategorySearchQuery}
+                      placeholderTextColor="#999"
+                    />
+                  </View>
 
-                <ScrollView 
-                  style={styles.categoriesList} 
-                  nestedScrollEnabled={true}
-                  keyboardShouldPersistTaps="handled"
-                >
+                  <ScrollView 
+                    style={styles.categoriesList} 
+                    nestedScrollEnabled={true}
+                    keyboardShouldPersistTaps="handled"
+                  >
                   {loadingCategories ? (
                     <ActivityIndicator size="small" color="#0057FF" style={styles.loader} />
                   ) : categoriesError ? (
@@ -978,6 +988,7 @@ Please remove phone numbers and addresses from the image.`,
                   )}
                 </ScrollView>
               </View>
+            </>
             )}
           </View>
 
@@ -1294,9 +1305,20 @@ const styles = StyleSheet.create({
   placeholder: {
     color: '#999',
   },
+  dropdownOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 998,
+    backgroundColor: 'transparent',
+  },
   categoryDropdown: {
     marginTop: 8,
     backgroundColor: '#fff',
+    position: 'relative',
+    zIndex: 999,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E5EA',

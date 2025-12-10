@@ -257,30 +257,19 @@ export async function calculateServiceFee(
       throw new Error(errorMessage);
     }
     
-    // Fallback calculation if API is not available or returns 403/404/503
+    // Log expected errors but don't use hardcoded fallback
+    // The backend payment intent creation will handle service fee calculation
     if (isExpectedFallbackError) {
       const reason = statusCode === 403 ? 'Forbidden (admin only)' : 
                      statusCode === 404 ? 'Endpoint not found' : 
                      'Service unavailable';
       
       if (__DEV__) {
-        console.log(`ℹ️ Service fee API returned ${statusCode} (${reason}) - using fallback calculation (10%)`);
+        console.log(`ℹ️ Service fee API returned ${statusCode} (${reason}) - backend will calculate during payment intent creation`);
       }
       
-      const amount = feeData.amount;
-      const serviceFee = Math.round(amount * 0.10 * 100) / 100; // 10% fee
-      const totalAmount = amount + serviceFee;
-      
-      return {
-        success: true,
-        calculation: {
-          budgetAmount: amount,
-          serviceFee,
-          totalAmount,
-          currency: feeData.currency || 'USD',
-          breakdown: {},
-        },
-      };
+      // Throw error so the payment intent creation handles the calculation
+      throw new Error(`Service fee calculation temporarily unavailable (${reason}). Payment intent will calculate the fee.`);
     }
     
     throw new Error(error?.response?.data?.message || error?.message || "Failed to calculate service fee. Please try again.");
@@ -464,6 +453,6 @@ export async function updateServiceFeeConfig(configData: {
 
 // Export all payment functions
 export {
-    createPaymentIntent as default
+  createPaymentIntent as default
 };
 

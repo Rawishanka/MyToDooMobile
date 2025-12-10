@@ -1,3 +1,4 @@
+import { normalizeCDNUrl } from '@/src/api/cdn-api';
 import { LocationAutocomplete, LocationData } from '@/src/shared/components/LocationAutocomplete';
 import { useGetCategories, useUpdateTask, useUpdateTaskWithImages } from '@/src/shared/hooks/useTaskApi';
 import { formatNumber, getCurrencyFromLocation, getMinimumBudget } from '@/src/shared/utils/currency';
@@ -152,9 +153,26 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
   const [title, setTitle] = useState(() => taskData?.title || '');
   const [description, setDescription] = useState(() => taskData?.details || '');
-  const [images, setImages] = useState<string[]>(() => taskData?.images || []);
-  // Track which images are new (local URIs) vs existing (Cloudinary URLs)
-  const [existingImages] = useState<string[]>(() => taskData?.images || []);
+  
+  // CRITICAL FIX: Normalize image URLs for APK compatibility
+  // Backend may return relative URLs like /api/cdn/secure/... which don't work in APK
+  const [images, setImages] = useState<string[]>(() => {
+    const taskImages = taskData?.images || [];
+    const normalizedImages = taskImages.map((img: string) => normalizeCDNUrl(img));
+    console.log('📸 Edit Task - Normalized images:', {
+      original: taskImages.length,
+      normalized: normalizedImages.length,
+      sample: normalizedImages[0]?.substring(0, 100)
+    });
+    return normalizedImages;
+  });
+  
+  // Track which images are new (local URIs) vs existing (CDN URLs)
+  const [existingImages] = useState<string[]>(() => {
+    const taskImages = taskData?.images || [];
+    return taskImages.map((img: string) => normalizeCDNUrl(img));
+  });
+  
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(initialLocation);
   
   // When/Time states - match Create Task screen

@@ -5,22 +5,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'MyToDoo',
   slug: 'MyToDooMobile',
-  owner: 'sulandi',
+  owner: 'unexo',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/mytodoo-icon.png',
   scheme: 'mytodoo',
   userInterfaceStyle: 'light',
   newArchEnabled: false,
-  ios: {
-    supportsTablet: true,
-    bundleIdentifier: 'com.nowanya.mytodoomobile',
-    associatedDomains: ['applinks:mytodoomobile.com'],
-  },
   android: {
-    package: 'com.nowanya.mytodoomobile',
     adaptiveIcon: {
-      foregroundImage: './assets/images/mytodoo-icon.png',
+      foregroundImage: './assets/images/mytodoo-adaptive-icon.png',
       backgroundColor: '#004aad',
     },
     googleServicesFile: './android/app/google-services.json',
@@ -94,7 +88,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
     googleClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
     eas: {
-      projectId: "40f554ac-0795-45a5-b025-d597477e0bea"
-    },
+      projectId: "6cecdd43-f052-4a47-b01a-466c61d3f8a8"
+    }
   },
 });

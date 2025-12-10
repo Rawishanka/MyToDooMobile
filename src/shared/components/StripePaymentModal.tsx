@@ -84,13 +84,13 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
       };
     }
     
-    // Fallback calculation ONLY before backend response
-    console.log('⚠️ Using fallback calculation (waiting for backend):', offerAmount);
-    const serviceFee = Math.round(offerAmount * 0.10 * 100) / 100;
+    // Minimal fallback - show offer amount while waiting for backend calculation
+    // The actual service fee will be calculated by the backend based on admin configuration
+    console.log('⏳ Waiting for backend service fee calculation...');
     return {
       budgetAmount: offerAmount,
-      serviceFee,
-      totalAmount: offerAmount + serviceFee,
+      serviceFee: 0, // Will be calculated by backend
+      totalAmount: offerAmount, // Will be updated once backend responds
       currency: currency,
     };
   };

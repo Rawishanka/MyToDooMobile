@@ -1,6 +1,7 @@
 // ChatWindow using NEW task-based chat API
 
 import { uploadChatFile, uploadChatImage } from '@/src/api/cdn-api';
+import API_CONFIG from '@/src/api/config';
 import type { ChatParticipant } from '@/src/api/task-chat-api';
 import { useCreateOrGetTaskChat, useGetChatById, useGetChatMessages, useMarkMessagesAsRead, useSendMessage } from '@/src/shared/hooks/useTaskChat';
 import { useAuthStore } from '@/src/store/auth-task-store';
@@ -10,21 +11,39 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
-    ActionSheetIOS,
-    Alert,
-    FlatList,
-    Image,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActionSheetIOS,
+  Alert,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import type { ChatMessage, Message } from './message-types';
+
+// URL normalization helper for APK builds
+const normalizeMediaUrl = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  
+  // Already absolute URL
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url.replace(/^http:\/\//i, 'https://'); // Force HTTPS
+  }
+  
+  // Relative URL - make it absolute
+  if (url.startsWith('/')) {
+    const baseUrl = API_CONFIG.BASE_URL.replace('/api', '');
+    return `${baseUrl}${url}`;
+  }
+  
+  return url;
+};
 
 interface ChatScreenProps {
   visible: boolean;
@@ -469,6 +488,13 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
           mediaUrl: msg.mediaUrl,
         });
         
+        // Normalize mediaUrl for APK compatibility
+        const normalizedMediaUrl = normalizeMediaUrl(msg.mediaUrl);
+        
+        if (msg.mediaUrl && normalizedMediaUrl !== msg.mediaUrl) {
+          console.log('🔄 Media URL normalized:', { original: msg.mediaUrl, normalized: normalizedMediaUrl });
+        }
+        
         return {
           id: msg._id,
           text: msg.content,
@@ -481,7 +507,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
           senderAvatar,
           senderInitials,
           messageType: msg.messageType || 'text',
-          mediaUrl: msg.mediaUrl || null,
+          mediaUrl: normalizedMediaUrl,
           isRead: msg.isRead || false,
           readAt: msg.readAt || null,
         };
@@ -772,16 +798,21 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={styles.chatContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-        
-        {/* Chat Header */}
-        <View style={styles.chatHeader}>
-          <TouchableOpacity onPress={onClose} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#000" />
-          </TouchableOpacity>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
+        <View style={styles.chatContainer}>
+          <StatusBar barStyle="dark-content" backgroundColor="#fff" />
           
-          <View style={styles.chatHeaderInfo}>
+          {/* Chat Header */}
+          <View style={styles.chatHeader}>
+            <TouchableOpacity onPress={onClose} style={styles.backButton}>
+              <Ionicons name="chevron-back" size={24} color="#000" />
+            </TouchableOpacity>
+            
+            <View style={styles.chatHeaderInfo}>
             {otherPerson ? (
               <>
                 {otherPerson.avatar ? (
@@ -834,6 +865,8 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
           style={styles.messagesContainer}
           contentContainerStyle={styles.messagesContentContainer}
           showsVerticalScrollIndicator={false}
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="handled"
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>
               <Ionicons name="chatbubbles-outline" size={64} color="#E1E8ED" />
@@ -941,35 +974,31 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         />
 
         {/* Message Input */}
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-        >
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <TouchableOpacity onPress={handleAttachment} style={styles.attachButton}>
-                <Ionicons name="attach" size={22} color="#666" />
-              </TouchableOpacity>
-              <TextInput
-                style={styles.messageInput}
-                placeholder="Type a message..."
-                placeholderTextColor="#999"
-                value={newMessage}
-                onChangeText={setNewMessage}
-                multiline
-                maxLength={500}
-              />
-              <TouchableOpacity 
-                onPress={sendMessage} 
-                style={[styles.sendButton, isLoading && styles.sendButtonDisabled]}
-                disabled={isLoading}
-              >
-                <Ionicons name="send" size={20} color={isLoading ? "#ccc" : "#007AFF"} />
-              </TouchableOpacity>
-            </View>
+        <View style={styles.inputContainer}>
+          <View style={styles.inputWrapper}>
+            <TouchableOpacity onPress={handleAttachment} style={styles.attachButton}>
+              <Ionicons name="attach" size={22} color="#666" />
+            </TouchableOpacity>
+            <TextInput
+              style={styles.messageInput}
+              placeholder="Type a message..."
+              placeholderTextColor="#999"
+              value={newMessage}
+              onChangeText={setNewMessage}
+              multiline
+              maxLength={500}
+            />
+            <TouchableOpacity 
+              onPress={sendMessage} 
+              style={[styles.sendButton, isLoading && styles.sendButtonDisabled]}
+              disabled={isLoading}
+            >
+              <Ionicons name="send" size={20} color={isLoading ? "#ccc" : "#007AFF"} />
+            </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </View>
+    </KeyboardAvoidingView>
     </Modal>
   );
 };
