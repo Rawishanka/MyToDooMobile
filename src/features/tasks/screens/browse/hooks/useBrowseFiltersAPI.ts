@@ -1,5 +1,6 @@
 ﻿import { TaskAPI } from '@/src/api/task-api';
 import { Task, TaskFilterParams, TaskSearchParams } from '@/src/api/types/tasks';
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useFilterTasks, useSearchTasks } from '@/src/shared/hooks/useTaskApi';
 import * as Location from 'expo-location';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -14,6 +15,88 @@ export interface FilterState {
   searchText: string;
   useFilterAPI: boolean;
 }
+
+/**
+ * Filter tasks by user's country location
+ * Tasks will only be shown if they match the user's detected country
+ * Also handles remote/online tasks that don't have a specific location
+ */
+const filterTasksByCountry = (tasks: Task[], userCountry: string): Task[] => {
+  if (!userCountry) {
+    console.log('🌍 No user country detected, showing all tasks');
+    return tasks;
+  }
+
+  const userCountryLower = userCountry.toLowerCase().trim();
+  
+  console.log('🌍 Filtering tasks by country:', {
+    userCountry,
+    totalTasks: tasks.length,
+  });
+
+  const filtered = tasks.filter(task => {
+    // Handle tasks with no location or remote tasks
+    const locationAddress = task.location?.address?.toLowerCase() || '';
+    const isRemoteTask = locationAddress.includes('remote') || locationAddress.includes('online');
+    
+    // Remote tasks can be seen by anyone
+    if (isRemoteTask) {
+      return true;
+    }
+
+    // Check if task has country in location
+    // @ts-ignore - Handle country field that might exist on task.location
+    const taskCountry = task.location?.country?.toLowerCase()?.trim() || '';
+    
+    // If task has explicit country, match it
+    if (taskCountry) {
+      const matches = taskCountry === userCountryLower || 
+                     taskCountry.includes(userCountryLower) ||
+                     userCountryLower.includes(taskCountry);
+      return matches;
+    }
+
+    // Check address string for country name
+    if (locationAddress) {
+      // Check if address contains the country name
+      const addressMatchesCountry = locationAddress.includes(userCountryLower);
+      
+      // Also check for common country-specific terms
+      const countryKeywords: Record<string, string[]> = {
+        'sri lanka': ['sri lanka', 'colombo', 'kandy', 'galle', 'negombo', 'jaffna', 'lk'],
+        'australia': ['australia', 'sydney', 'melbourne', 'brisbane', 'perth', 'adelaide', 'au', 'nsw', 'vic', 'qld'],
+        'new zealand': ['new zealand', 'auckland', 'wellington', 'christchurch', 'nz'],
+        'united states': ['usa', 'united states', 'america', 'new york', 'california', 'texas', 'us'],
+        'united kingdom': ['uk', 'united kingdom', 'britain', 'england', 'london', 'manchester', 'gb'],
+        'india': ['india', 'mumbai', 'delhi', 'bangalore', 'chennai', 'in'],
+        'singapore': ['singapore', 'sg'],
+        'malaysia': ['malaysia', 'kuala lumpur', 'my'],
+      };
+
+      // Get keywords for user's country
+      const keywords = countryKeywords[userCountryLower] || [userCountryLower];
+      const hasCountryKeyword = keywords.some(keyword => locationAddress.includes(keyword));
+      
+      if (addressMatchesCountry || hasCountryKeyword) {
+        return true;
+      }
+    }
+
+    // If no location info, exclude the task (could be incomplete data)
+    // Or include it - depends on your business logic
+    // For now, exclude tasks with no clear location
+    return false;
+  });
+
+  console.log('🌍 Country filter result:', {
+    userCountry,
+    inputTasks: tasks.length,
+    filteredTasks: filtered.length,
+    removed: tasks.length - filtered.length,
+  });
+
+  return filtered;
+};
 
 /**
  * Client-side search filter for tasks with STRICT TITLE PRIORITIZATION
@@ -175,6 +258,18 @@ export const useBrowseFiltersAPI = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  // Get user's country from geo-location for filtering tasks
+  const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
+
+  // Log country detection status
+  useEffect(() => {
+    console.log('🌍 [useBrowseFiltersAPI] User country detected:', {
+      countryName: countryInfo.countryName,
+      countryCode: countryInfo.countryCode,
+      isDetecting: isDetectingCountry,
+    });
+  }, [countryInfo, isDetectingCountry]);
 
   // Debounce search text for API calls (300ms delay)
   useEffect(() => {
@@ -438,7 +533,7 @@ export const useBrowseFiltersAPI = () => {
   // Apply client-side search filter to results with TITLE PRIORITIZATION
   // During debounce period OR when using Search API, apply client-side filtering
   const filteredAndSortedTasks = useMemo(() => {
-    const baseTasks = tasksWithOfferCounts;
+    let baseTasks = tasksWithOfferCounts;
     
     // Debug logging for API response data
     console.log('🔍 [useBrowseFiltersAPI] Final Tasks Debug:', {
@@ -448,16 +543,27 @@ export const useBrowseFiltersAPI = () => {
       debouncedSearchText: debouncedSearchText.trim(),
       isSearching,
       activeAPI: shouldUseFilterAPI ? 'FILTER' : 'SEARCH',
+      userCountry: countryInfo.countryName,
       sampleTask: baseTasks[0] ? {
         id: baseTasks[0]._id,
         title: baseTasks[0].title,
         offerCount: baseTasks[0].offerCount,
         offersLength: baseTasks[0].offers?.length,
         offersExists: !!baseTasks[0].offers,
-        status: baseTasks[0].status
+        status: baseTasks[0].status,
+        // @ts-ignore
+        locationCountry: baseTasks[0].location?.country || 'N/A',
+        locationAddress: baseTasks[0].location?.address || 'N/A',
       } : null,
       tasksWithOffers: baseTasks.filter(t => (t.offerCount || 0) > 0).length
     });
+
+    // FIRST: Apply country-based filtering (filter tasks by user's location)
+    // This ensures users only see tasks from their country
+    if (countryInfo.countryName && !isDetectingCountry) {
+      baseTasks = filterTasksByCountry(baseTasks, countryInfo.countryName);
+      console.log('🌍 After country filter:', baseTasks.length, 'tasks for', countryInfo.countryName);
+    }
     
     // CRITICAL: If user is typing (searchText exists but debounced hasn't caught up),
     // apply client-side filtering immediately with the current searchText
@@ -481,7 +587,7 @@ export const useBrowseFiltersAPI = () => {
     // Fallback: apply client-side filter
     console.log('⚠️ Fallback - applying client-side filter');
     return filterTasksBySearch(baseTasks, searchText || debouncedSearchText);
-  }, [tasksWithOfferCounts, searchText, debouncedSearchText, shouldUseFilterAPI, isSearching]);
+  }, [tasksWithOfferCounts, searchText, debouncedSearchText, shouldUseFilterAPI, isSearching, countryInfo.countryName, isDetectingCountry]);
   
   // Calculate loading state properly:
   // - Show loading during typing (debounce period)
@@ -501,15 +607,17 @@ export const useBrowseFiltersAPI = () => {
     }
   }, [shouldUseFilterAPI, filterLoading, searchLoading, debouncedSearchText]);
   
-  const isLoading = isSearching || activeApiLoading || isProcessingData;
+  const isLoading = isSearching || activeApiLoading || isProcessingData || isDetectingCountry;
   
   console.log('🎯 Final loading state:', { 
     isSearching, 
     activeApiLoading,
     isProcessingData,
+    isDetectingCountry,
     isLoading,
     searchText: searchText.trim(),
-    debouncedSearchText: debouncedSearchText.trim()
+    debouncedSearchText: debouncedSearchText.trim(),
+    userCountry: countryInfo.countryName,
   });
   const error = shouldUseFilterAPI ? filterError : searchError;
   const refetch = shouldUseFilterAPI ? filterRefetch : searchRefetch;
@@ -582,5 +690,9 @@ export const useBrowseFiltersAPI = () => {
     totalItems,
     useSearchAPI: !shouldUseFilterAPI,
     activeAPI: shouldUseFilterAPI ? 'FILTER' : 'SEARCH',
+    // User's detected country for location-based filtering
+    userCountry: countryInfo.countryName,
+    userCountryCode: countryInfo.countryCode,
+    isDetectingCountry,
   };
 };

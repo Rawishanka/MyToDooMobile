@@ -1,15 +1,23 @@
 // OTP Verification Modals for Email and SMS
+// Fixed: Keyboard overlap issue and OTP deletion functionality
 
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  NativeSyntheticEvent,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  TextInputKeyPressEventData,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import type { VerificationStep } from './signup-types';
@@ -50,6 +58,89 @@ interface OTPModalProps {
   onClose?: () => void;
 }
 
+// Enhanced OTP Input Component with proper backspace handling
+interface OTPInputProps {
+  otp: string[];
+  otpRefs: React.MutableRefObject<(TextInput | null)[]>;
+  onOtpChange: (value: string, index: number) => void;
+  disabled?: boolean;
+}
+
+const OTPInput: React.FC<OTPInputProps> = ({ otp, otpRefs, onOtpChange, disabled }) => {
+  
+  // Handle key press for backspace detection - allows deleting any digit
+  const handleKeyPress = useCallback((
+    e: NativeSyntheticEvent<TextInputKeyPressEventData>,
+    index: number
+  ) => {
+    if (e.nativeEvent.key === 'Backspace') {
+      if (!otp[index] && index > 0) {
+        // If current box is empty and we press backspace, clear previous and focus it
+        onOtpChange('', index - 1);
+        otpRefs.current[index - 1]?.focus();
+      } else if (otp[index]) {
+        // If current box has value, clear it but stay focused
+        onOtpChange('', index);
+      }
+    }
+  }, [otp, onOtpChange, otpRefs]);
+
+  // Handle text change with paste support
+  const handleChange = useCallback((value: string, index: number) => {
+    // Only allow digits
+    if (!/^\d*$/.test(value)) return;
+    
+    // Handle paste - if multiple digits pasted
+    if (value.length > 1) {
+      const digits = value.replace(/\D/g, '').split('').slice(0, 6 - index);
+      digits.forEach((digit, i) => {
+        if (index + i < 6) {
+          onOtpChange(digit, index + i);
+        }
+      });
+      // Focus appropriate box after paste
+      const nextIndex = Math.min(index + digits.length, 5);
+      setTimeout(() => otpRefs.current[nextIndex]?.focus(), 10);
+      return;
+    }
+    
+    // Single digit input
+    if (value) {
+      onOtpChange(value, index);
+      // Move to next input if not last
+      if (index < 5) {
+        setTimeout(() => otpRefs.current[index + 1]?.focus(), 10);
+      }
+    }
+  }, [onOtpChange, otpRefs]);
+
+  return (
+    <View style={styles.otpInputContainer}>
+      {otp.map((digit, index) => (
+        <TextInput
+          key={index}
+          ref={(ref) => { otpRefs.current[index] = ref; }}
+          style={[
+            styles.otpBox,
+            digit && styles.otpBoxFilled,
+            disabled && styles.otpBoxDisabled,
+          ]}
+          value={digit}
+          onChangeText={(value) => handleChange(value, index)}
+          onKeyPress={(e) => handleKeyPress(e, index)}
+          keyboardType="number-pad"
+          maxLength={6}
+          textAlign="center"
+          selectTextOnFocus
+          editable={!disabled}
+          autoComplete="one-time-code"
+          textContentType="oneTimeCode"
+        />
+      ))}
+    </View>
+  );
+};
+
 export const OTPModal: React.FC<OTPModalProps> = ({
   verificationStep,
   email,
@@ -84,6 +175,20 @@ export const OTPModal: React.FC<OTPModalProps> = ({
       );
     }
   };
+
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
+  const formatTimer = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins > 0) {
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${secs}s`;
+  };
+
   return (
     <>
       {/* Email Verification Modal */}
@@ -99,76 +204,106 @@ export const OTPModal: React.FC<OTPModalProps> = ({
           );
         }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            {onClose && (
-              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-                <Ionicons name="close-circle" size={28} color="#999" />
-              </TouchableOpacity>
-            )}
-            <View style={styles.modalHeader}>
-              <View style={styles.iconCircle}>
-                <Ionicons name="shield-checkmark-outline" size={32} color="#007BFF" />
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.keyboardAvoidingView}
+          keyboardVerticalOffset={0}
+        >
+          <TouchableWithoutFeedback onPress={dismissKeyboard}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalInnerContainer}>
+                <ScrollView 
+                  contentContainerStyle={styles.scrollContent}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                  bounces={false}
+                  keyboardDismissMode="on-drag"
+                >
+                  <View style={styles.modalContainer}>
+                  {onClose && (
+                    <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                      <Ionicons name="close" size={24} color="#666" />
+                    </TouchableOpacity>
+                  )}
+                  
+                  <View style={styles.modalHeader}>
+                    <View style={styles.iconCircle}>
+                      <Ionicons name="mail-outline" size={36} color="#007BFF" />
+                    </View>
+                    <Text style={styles.modalTitle}>Verify Your Email</Text>
+                    <Text style={styles.modalSubtitle}>
+                      We&apos;ve sent a 6-digit code to
+                    </Text>
+                    <Text style={styles.contactText}>{email}</Text>
+                  </View>
+
+                  {/* Progress Indicator */}
+                  <View style={styles.progressContainer}>
+                    <View style={styles.progressStep}>
+                      <View style={[styles.progressDot, styles.progressDotActive]}>
+                        <Text style={styles.progressDotText}>1</Text>
+                      </View>
+                      <Text style={[styles.progressLabel, styles.progressLabelActive]}>Email</Text>
+                    </View>
+                    <View style={styles.progressLine} />
+                    <View style={styles.progressStep}>
+                      <View style={styles.progressDot}>
+                        <Text style={styles.progressDotTextInactive}>2</Text>
+                      </View>
+                      <Text style={styles.progressLabel}>Phone</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.otpSection}>
+                    <Text style={styles.otpLabel}>Enter verification code</Text>
+                    <OTPInput
+                      otp={emailOtp}
+                      otpRefs={emailOtpRefs}
+                      onOtpChange={handleEmailOtpChange}
+                      disabled={verifyLoading}
+                    />
+                    
+                    {emailTimer > 0 ? (
+                      <Text style={styles.timerText}>
+                        Resend code in <Text style={styles.timerHighlight}>{formatTimer(emailTimer)}</Text>
+                      </Text>
+                    ) : (
+                      <TouchableOpacity onPress={handleResendEmail} style={styles.resendInlineButton}>
+                        <Text style={styles.resendInlineText}>Didn&apos;t receive code? </Text>
+                        <Text style={styles.resendInlineLink}>Resend</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+
+                  <TouchableOpacity 
+                    style={[
+                      styles.verifyButton, 
+                      emailOtp.join('').length !== 6 && styles.verifyButtonDisabled
+                    ]} 
+                    onPress={handleVerifyEmail} 
+                    disabled={verifyLoading || emailOtp.join('').length !== 6}
+                    activeOpacity={0.8}
+                  >
+                    {verifyLoading ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : (
+                      <>
+                        <Text style={styles.verifyButtonText}>Verify & Continue</Text>
+                        <Ionicons name="arrow-forward" size={20} color="#fff" />
+                      </>
+                    )}
+                  </TouchableOpacity>
+
+                  <View style={styles.securityNote}>
+                    <Ionicons name="shield-checkmark-outline" size={14} color="#28a745" />
+                    <Text style={styles.securityNoteText}>Your information is secure and encrypted</Text>
+                  </View>
+                </View>
+                </ScrollView>
               </View>
-              <Text style={styles.modalTitle}>Verify Your Email</Text>
-              <Text style={styles.modalSubtitle}>Enter the code sent to</Text>
-              <Text style={styles.contactText}>{email}</Text>
             </View>
-
-            <View style={styles.verificationTabs}>
-              <View style={[styles.tab, styles.activeTab]}>
-                <Ionicons name="mail" size={20} color="#007BFF" />
-                <Text style={styles.activeTabText}>Email Verification</Text>
-              </View>
-              <View style={styles.tab}>
-                <Ionicons name="phone-portrait-outline" size={20} color="#999" />
-                <Text style={styles.tabText}>SMS Verification</Text>
-              </View>
-            </View>
-
-            <View style={styles.otpContainer}>
-              <Text style={styles.otpLabel}>Enter verification code</Text>
-              <View style={styles.otpInputContainer}>
-                {emailOtp.map((digit, index) => (
-                  <TextInput
-                    key={index}
-                    ref={(ref) => { emailOtpRefs.current[index] = ref; }}
-                    style={styles.otpBox}
-                    value={digit}
-                    onChangeText={(value) => handleEmailOtpChange(value, index)}
-                    keyboardType="numeric"
-                    maxLength={1}
-                    textAlign="center"
-                  />
-                ))}
-              </View>
-              <Text style={styles.timerText}>
-                Resend code in {emailTimer}s
-              </Text>
-            </View>
-
-            <TouchableOpacity 
-              style={[styles.verifyButton, emailOtp.join('').length !== 6 && styles.verifyButtonDisabled]} 
-              onPress={handleVerifyEmail} 
-              disabled={verifyLoading || emailOtp.join('').length !== 6}
-            >
-              {verifyLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <>
-                  <Text style={styles.verifyButtonText}>Verify & Continue</Text>
-                  <Ionicons name="shield-checkmark" size={20} color="#fff" />
-                </>
-              )}
-            </TouchableOpacity>
-
-            {emailTimer === 0 && (
-              <TouchableOpacity style={styles.resendButton} onPress={handleResendEmail}>
-                <Text style={styles.resendButtonText}>Didn&apos;t receive a code? Resend</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* SMS Verification Modal */}
@@ -184,134 +319,179 @@ export const OTPModal: React.FC<OTPModalProps> = ({
           );
         }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            {onClose && (
-              <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-                <Ionicons name="close-circle" size={28} color="#999" />
-              </TouchableOpacity>
-            )}
-            <View style={styles.modalHeader}>
-              <View style={styles.iconCircle}>
-                <Ionicons name="shield-checkmark-outline" size={32} color="#007BFF" />
-              </View>
-              <Text style={styles.modalTitle}>Verify Your Phone</Text>
-              <Text style={styles.modalSubtitle}>Enter the code sent to</Text>
-              <Text style={styles.contactText}>{phoneCode}{phone}</Text>
-            </View>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.keyboardAvoidingView}
+          keyboardVerticalOffset={0}
+        >
+          <TouchableWithoutFeedback onPress={dismissKeyboard}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalInnerContainer}>
+                <ScrollView 
+                  contentContainerStyle={styles.scrollContent}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                  bounces={false}
+                  keyboardDismissMode="on-drag"
+                >
+                  <View style={styles.modalContainer}>
+                  {onClose && (
+                    <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                      <Ionicons name="close" size={24} color="#666" />
+                    </TouchableOpacity>
+                  )}
+                  
+                  <View style={styles.modalHeader}>
+                    <View style={styles.iconCircle}>
+                      <Ionicons name="phone-portrait-outline" size={36} color="#007BFF" />
+                    </View>
+                    <Text style={styles.modalTitle}>Verify Your Phone</Text>
+                    <Text style={styles.modalSubtitle}>
+                      We&apos;ve sent a 6-digit code to
+                    </Text>
+                    <Text style={styles.contactText}>{phoneCode}{phone}</Text>
+                  </View>
 
-            <View style={styles.verificationTabs}>
-              <View style={styles.tab}>
-                <Ionicons name="mail" size={20} color="#28a745" />
-                <Text style={styles.verifiedTabText}>Email Verification</Text>
-                <Ionicons name="checkmark-circle" size={16} color="#28a745" />
-              </View>
-              <View style={[styles.tab, styles.activeTab]}>
-                <Ionicons name="phone-portrait-outline" size={20} color="#007BFF" />
-                <Text style={styles.activeTabText}>SMS Verification</Text>
-              </View>
-            </View>
+                  {/* Progress Indicator - Email Complete */}
+                  <View style={styles.progressContainer}>
+                    <View style={styles.progressStep}>
+                      <View style={[styles.progressDot, styles.progressDotComplete]}>
+                        <Ionicons name="checkmark" size={14} color="#fff" />
+                      </View>
+                      <Text style={[styles.progressLabel, styles.progressLabelComplete]}>Email</Text>
+                    </View>
+                    <View style={[styles.progressLine, styles.progressLineComplete]} />
+                    <View style={styles.progressStep}>
+                      <View style={[styles.progressDot, styles.progressDotActive]}>
+                        <Text style={styles.progressDotText}>2</Text>
+                      </View>
+                      <Text style={[styles.progressLabel, styles.progressLabelActive]}>Phone</Text>
+                    </View>
+                  </View>
 
-            <View style={styles.otpContainer}>
-              <Text style={styles.otpLabel}>Enter verification code</Text>
-              <View style={styles.otpInputContainer}>
-                {smsOtp.map((digit, index) => (
-                  <TextInput
-                    key={index}
-                    ref={(ref) => { smsOtpRefs.current[index] = ref; }}
+                  <View style={styles.otpSection}>
+                    <Text style={styles.otpLabel}>Enter verification code</Text>
+                    <OTPInput
+                      otp={smsOtp}
+                      otpRefs={smsOtpRefs}
+                      onOtpChange={handleSmsOtpChange}
+                      disabled={verifyLoading || smsVerified}
+                    />
+                    
+                    {smsVerified && (
+                      <View style={styles.successBadge}>
+                        <Ionicons name="checkmark-circle" size={18} color="#28a745" />
+                        <Text style={styles.successBadgeText}>Verified successfully!</Text>
+                      </View>
+                    )}
+                    
+                    {!smsVerified && (
+                      smsTimer > 0 ? (
+                        <Text style={styles.timerText}>
+                          Resend code in <Text style={styles.timerHighlight}>{formatTimer(smsTimer)}</Text>
+                        </Text>
+                      ) : (
+                        <TouchableOpacity onPress={handleResendSms} style={styles.resendInlineButton}>
+                          <Text style={styles.resendInlineText}>Didn&apos;t receive code? </Text>
+                          <Text style={styles.resendInlineLink}>Resend</Text>
+                        </TouchableOpacity>
+                      )
+                    )}
+                  </View>
+
+                  <TouchableOpacity 
                     style={[
-                      styles.otpBox,
-                      digit && styles.otpBoxFilled
-                    ]}
-                    value={digit}
-                    onChangeText={(value) => handleSmsOtpChange(value, index)}
-                    keyboardType="numeric"
-                    maxLength={1}
-                    textAlign="center"
-                  />
-                ))}
-              </View>
-              {smsOtp.join('').length === 6 && !verifyLoading && (
-                <View style={styles.successTextContainer}>
-                  <Ionicons name="checkmark-circle" size={16} color="#28a745" />
-                  <Text style={styles.successText}>Verification successful! Redirecting...</Text>
+                      styles.verifyButton,
+                      smsVerified && styles.verifiedButton,
+                      smsOtp.join('').length !== 6 && !smsVerified && styles.verifyButtonDisabled
+                    ]} 
+                    onPress={handleVerifySms} 
+                    disabled={verifyLoading || smsOtp.join('').length !== 6}
+                    activeOpacity={0.8}
+                  >
+                    {verifyLoading ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : smsVerified ? (
+                      <>
+                        <Ionicons name="checkmark-circle" size={20} color="#fff" />
+                        <Text style={styles.verifyButtonText}>Verified!</Text>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.verifyButtonText}>Complete Verification</Text>
+                        <Ionicons name="checkmark-done" size={20} color="#fff" />
+                      </>
+                    )}
+                  </TouchableOpacity>
+
+                  <View style={styles.securityNote}>
+                    <Ionicons name="shield-checkmark-outline" size={14} color="#28a745" />
+                    <Text style={styles.securityNoteText}>Your information is secure and encrypted</Text>
+                  </View>
                 </View>
-              )}
-              <Text style={styles.timerText}>
-                Resend code in {smsTimer}s
-              </Text>
+                </ScrollView>
+              </View>
             </View>
-
-            <TouchableOpacity 
-              style={[
-                styles.verifyButton,
-                smsVerified && styles.verifiedButton,
-                smsOtp.join('').length !== 6 && styles.verifyButtonDisabled
-              ]} 
-              onPress={handleVerifySms} 
-              disabled={verifyLoading || smsOtp.join('').length !== 6}
-            >
-              {verifyLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : smsVerified ? (
-                <>
-                  <Ionicons name="checkmark-circle" size={20} color="#fff" />
-                  <Text style={styles.verifyButtonText}>Verified Successfully</Text>
-                </>
-              ) : (
-                <>
-                  <Text style={styles.verifyButtonText}>Verify & Complete</Text>
-                  <Ionicons name="shield-checkmark" size={20} color="#fff" />
-                </>
-              )}
-            </TouchableOpacity>
-
-            {smsTimer === 0 && (
-              <TouchableOpacity style={styles.resendButton} onPress={handleResendSms}>
-                <Text style={styles.resendButtonText}>Didn&apos;t receive a code? Resend</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Modal>
     </>
   );
 };
 
 const styles = StyleSheet.create({
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
-    alignItems: 'center',
+  },
+  modalInnerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 16,
   },
   modalContainer: {
-    width: '90%',
     backgroundColor: 'white',
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 24,
+    marginHorizontal: 4,
+    maxHeight: '90%',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
   },
   closeButton: {
     position: 'absolute',
-    top: 12,
-    right: 12,
+    top: 16,
+    right: 16,
     zIndex: 10,
-    padding: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalHeader: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
+    marginTop: 8,
   },
   iconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#E3F2FD',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#E8F4FD',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -319,7 +499,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#000',
+    color: '#1a1a1a',
     marginBottom: 8,
   },
   modalSubtitle: {
@@ -332,97 +512,152 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#007BFF',
   },
-  verificationTabs: {
-    flexDirection: 'row',
-    marginBottom: 24,
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  tab: {
-    flex: 1,
+  progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    backgroundColor: '#F5F5F5',
-    gap: 6,
+    marginBottom: 24,
+    paddingHorizontal: 40,
   },
-  activeTab: {
-    backgroundColor: '#E3F2FD',
+  progressStep: {
+    alignItems: 'center',
   },
-  tabText: {
+  progressDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#E0E0E0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  progressDotActive: {
+    backgroundColor: '#007BFF',
+  },
+  progressDotComplete: {
+    backgroundColor: '#28a745',
+  },
+  progressDotText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  progressDotTextInactive: {
+    color: '#999',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  progressLine: {
+    flex: 1,
+    height: 3,
+    backgroundColor: '#E0E0E0',
+    marginHorizontal: 12,
+    marginBottom: 24,
+    borderRadius: 2,
+  },
+  progressLineComplete: {
+    backgroundColor: '#28a745',
+  },
+  progressLabel: {
     fontSize: 12,
     color: '#999',
     fontWeight: '500',
   },
-  activeTabText: {
-    fontSize: 12,
+  progressLabelActive: {
     color: '#007BFF',
     fontWeight: '600',
   },
-  verifiedTabText: {
-    fontSize: 12,
+  progressLabelComplete: {
     color: '#28a745',
     fontWeight: '600',
   },
-  otpContainer: {
-    marginBottom: 24,
+  otpSection: {
+    marginBottom: 20,
   },
   otpLabel: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 12,
+    marginBottom: 16,
     textAlign: 'center',
+    fontWeight: '500',
   },
   otpInputContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 10,
     marginBottom: 16,
   },
   otpBox: {
-    width: 45,
-    height: 50,
+    width: 46,
+    height: 54,
     borderWidth: 2,
     borderColor: '#E0E0E0',
-    borderRadius: 8,
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#000',
+    borderRadius: 12,
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    backgroundColor: '#fafafa',
   },
   otpBoxFilled: {
     borderColor: '#007BFF',
+    backgroundColor: '#E8F4FD',
+  },
+  otpBoxDisabled: {
+    backgroundColor: '#f0f0f0',
+    borderColor: '#ddd',
   },
   timerText: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: 13,
+    color: '#666',
     textAlign: 'center',
-    marginTop: 8,
   },
-  successTextContainer: {
+  timerHighlight: {
+    color: '#007BFF',
+    fontWeight: '600',
+  },
+  resendInlineButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  resendInlineText: {
+    fontSize: 13,
+    color: '#666',
+  },
+  resendInlineLink: {
+    fontSize: 13,
+    color: '#007BFF',
+    fontWeight: '600',
+  },
+  successBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
-    gap: 6,
+    backgroundColor: '#E8F5E9',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginTop: 8,
+    gap: 8,
   },
-  successText: {
-    fontSize: 13,
+  successBadgeText: {
+    fontSize: 14,
     color: '#28a745',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   verifyButton: {
     backgroundColor: '#007BFF',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 10,
-    gap: 8,
+    paddingVertical: 16,
+    borderRadius: 14,
+    gap: 10,
+    marginBottom: 16,
   },
   verifyButtonDisabled: {
-    backgroundColor: '#CCCCCC',
+    backgroundColor: '#B0C4DE',
   },
   verifiedButton: {
     backgroundColor: '#28a745',
@@ -430,16 +665,16 @@ const styles = StyleSheet.create({
   verifyButtonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  resendButton: {
-    marginTop: 16,
-    paddingVertical: 12,
+  securityNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
-  resendButtonText: {
-    color: '#007BFF',
-    fontSize: 14,
-    fontWeight: '500',
-    textAlign: 'center',
+  securityNoteText: {
+    fontSize: 12,
+    color: '#666',
   },
 });
