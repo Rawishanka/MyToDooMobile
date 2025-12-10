@@ -4,17 +4,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import {
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { OTPModal } from '../components/OTPModal';
 import { SignupForm } from '../components/SignupForm';
@@ -67,15 +65,18 @@ export default function SignUpScreen() {
 
       {/* Scrollable Form Section */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.innerContainer}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.contentWrapper}>
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          bounces={true}
+          overScrollMode="always"
+          nestedScrollEnabled={true}
         >
           <SignupForm
             firstName={signup.firstName}
@@ -123,8 +124,6 @@ export default function SignUpScreen() {
             </TouchableOpacity>
           </View>
         </ScrollView>
-          </View>
-        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
 
       <OTPModal
@@ -198,14 +197,11 @@ const styles = StyleSheet.create({
   innerContainer: {
     flex: 1,
   },
-  contentWrapper: {
-    flex: 1,
-  },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
     paddingTop: 24,
-    paddingBottom: 40,
+    paddingBottom: 60, // Increased for better bottom spacing
   },
   title: {
     fontSize: 28,

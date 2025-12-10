@@ -152,6 +152,8 @@ export default function BrowseTasksScreen() {
     totalItems,
     useSearchAPI,
     activeAPI,
+    userCountry,
+    isDetectingCountry,
   } = useBrowseFiltersAPI();
 
   // Custom map marker icon - bigger Airtasker marker
@@ -194,8 +196,10 @@ export default function BrowseTasksScreen() {
       totalItems,
       dataLength: filteredAndSortedTasks.length,
       activeFiltersCount,
+      userCountry,
+      isDetectingCountry,
     });
-  }, [categoriesLoading, categoriesError, categories, isLoading, error, totalItems, filteredAndSortedTasks.length, activeFiltersCount, activeAPI, searchText, useSearchAPI]);
+  }, [categoriesLoading, categoriesError, categories, isLoading, error, totalItems, filteredAndSortedTasks.length, activeFiltersCount, activeAPI, searchText, useSearchAPI, userCountry, isDetectingCountry]);
 
   // Refresh on screen focus
   useFocusEffect(
@@ -305,6 +309,16 @@ export default function BrowseTasksScreen() {
           }}>
             <Ionicons name="close-circle" size={20} color="#666" />
           </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Location Indicator - Shows which country's tasks are being displayed */}
+      {userCountry && !isDetectingCountry && (
+        <View style={styles.locationIndicator}>
+          <Ionicons name="location" size={14} color="#007bff" />
+          <Text style={styles.locationIndicatorText}>
+            Showing tasks in {userCountry}
+          </Text>
         </View>
       )}
 
@@ -577,5 +591,19 @@ const styles = StyleSheet.create({
   retryButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  locationIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: hp('0.8%'),
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    backgroundColor: '#e6f2ff',
+    gap: wp('1%'),
+  },
+  locationIndicatorText: {
+    fontSize: RFValue(11),
+    color: '#007bff',
+    fontWeight: '500',
   },
 });

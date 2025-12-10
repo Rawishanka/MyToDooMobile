@@ -2,13 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useUserRating } from '../../hooks';
 import {
-    ErrorState,
-    LoadingState,
-    StatsCard,
-    TasksTabsSection,
-    UserInfoCard,
-    UserProfileHeader,
-    UserTasksList,
+  ErrorState,
+  LoadingState,
+  StatsCard,
+  TasksTabsSection,
+  UserInfoCard,
+  UserProfileHeader,
+  UserTasksList,
 } from './components';
 import { GetMoreReviewsSection } from './components/GetMoreReviewsSection';
 import { OverallRatingSection } from './components/OverallRatingSection';
@@ -19,7 +19,6 @@ export default function UserProfileScreen() {
   const {
     isLoading,
     isError,
-    error,
     refetch,
     userData,
     activeTab,
@@ -36,8 +35,6 @@ export default function UserProfileScreen() {
   const {
     ratingData,
     loading: ratingLoading,
-    error: ratingError,
-    loadMoreReviews
   } = useUserRating(userId);
 
   if (isLoading) {
@@ -91,19 +88,12 @@ export default function UserProfileScreen() {
               averageRating={ratingData.stats.averageRating || 0}
               totalReviews={ratingData.stats.totalReviews || 0}
               ratingDistribution={ratingData.stats.ratingDistribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
-              completionRate={userData?.user?.completionRate || 90}
+              completionRate={90}
               totalTasks={userData?.user?.completedTasks || 0}
             />
             
             <GetMoreReviewsSection 
               userId={userId}
-            />
-            
-            <ReviewsList
-              reviews={ratingData?.reviews || []}
-              loading={ratingLoading}
-              onLoadMore={loadMoreReviews}
-              hasMore={ratingData?.pagination?.hasMore || false}
             />
           </>
         )}
@@ -122,15 +112,11 @@ export default function UserProfileScreen() {
             <GetMoreReviewsSection 
               userId={userId}
             />
-            
-            <ReviewsList
-              reviews={[]}
-              loading={false}
-              onLoadMore={() => {}}
-              hasMore={false}
-            />
           </>
         )}
+
+        {/* Reviews List - Manages its own data fetching */}
+        <ReviewsList />
 
         <TasksTabsSection
           activeTab={activeTab}

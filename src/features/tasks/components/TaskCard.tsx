@@ -4,11 +4,11 @@ import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 // Import Task type
@@ -16,11 +16,11 @@ import { Task } from '@/src/api/types/tasks';
 
 // Import responsive utilities
 import {
-  getResponsiveValue,
-  hp,
-  isTablet,
-  RFValue,
-  wp
+    getResponsiveValue,
+    hp,
+    isTablet,
+    RFValue,
+    wp
 } from '@/src/shared/utils/responsive';
 
 export interface TaskCardProps {
@@ -92,7 +92,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const getTimePreference = () => {
     if (task.dateType === 'before') return 'Before specific date';
     if (task.dateType === 'no-rush') return 'No rush';
-    if (task.time && task.time !== 'Anytime') return task.time;
+    if (task.time && task.time !== 'Anytime') {
+      return task.time.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+    }
     return 'Flexible';
   };
 

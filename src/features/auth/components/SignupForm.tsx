@@ -132,119 +132,136 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
 
-  const validateField = (field: string, value: any) => {
+  const validateField = (field: string, value: any, skipRequiredCheck: boolean = false) => {
     const newErrors = { ...errors };
 
     switch (field) {
       case 'firstName':
-        // Check if empty or whitespace only
-        if (!value || value.trim() === '') {
-          newErrors.firstName = 'First name is required';
+        // Skip empty check if skipRequiredCheck is true (for onBlur validation)
+        if (!skipRequiredCheck && (!value || value.trim() === '')) {
+          newErrors.firstName = 'Required';
         }
-        // Check for numbers only
-        else if (/^\d+$/.test(value.trim())) {
-          newErrors.firstName = 'Only letters allowed';
-        }
-        // Check for special characters or numbers
-        else if (!/^[a-zA-Z\s'-]+$/.test(value.trim())) {
-          newErrors.firstName = 'Only letters allowed';
-        }
-        // Check maximum length (50 characters)
-        else if (value.trim().length > 50) {
-          newErrors.firstName = 'First name must not exceed 50 characters';
-        }
-        // Valid input
-        else {
+        // Only validate format if field has value
+        else if (value && value.trim() !== '') {
+          if (/^\d+$/.test(value.trim())) {
+            newErrors.firstName = 'Only letters allowed';
+          } else if (!/^[a-zA-Z\s'-]+$/.test(value.trim())) {
+            newErrors.firstName = 'Only letters allowed';
+          } else if (value.trim().length > 50) {
+            newErrors.firstName = 'First name must not exceed 50 characters';
+          } else {
+            delete newErrors.firstName;
+          }
+        } else if (skipRequiredCheck) {
+          // If skipping required check and field is empty, don't show error
           delete newErrors.firstName;
         }
         break;
 
       case 'lastName':
-        // Check if empty or whitespace only
-        if (!value || value.trim() === '') {
-          newErrors.lastName = 'Last name is required';
+        // Skip empty check if skipRequiredCheck is true (for onBlur validation)
+        if (!skipRequiredCheck && (!value || value.trim() === '')) {
+          newErrors.lastName = 'Required';
         }
-        // Check for numbers only
-        else if (/^\d+$/.test(value.trim())) {
-          newErrors.lastName = 'Only letters allowed';
-        }
-        // Check for special characters or numbers
-        else if (!/^[a-zA-Z\s'-]+$/.test(value.trim())) {
-          newErrors.lastName = 'Only letters allowed';
-        }
-        // Check maximum length (50 characters)
-        else if (value.trim().length > 50) {
-          newErrors.lastName = 'Last name must not exceed 50 characters';
-        }
-        // Valid input
-        else {
+        // Only validate format if field has value
+        else if (value && value.trim() !== '') {
+          if (/^\d+$/.test(value.trim())) {
+            newErrors.lastName = 'Only letters allowed';
+          } else if (!/^[a-zA-Z\s'-]+$/.test(value.trim())) {
+            newErrors.lastName = 'Only letters allowed';
+          } else if (value.trim().length > 50) {
+            newErrors.lastName = 'Last name must not exceed 50 characters';
+          } else {
+            delete newErrors.lastName;
+          }
+        } else if (skipRequiredCheck) {
           delete newErrors.lastName;
         }
         break;
 
       case 'email':
-        if (!value || value.trim() === '') {
-          newErrors.email = 'Email is required';
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          newErrors.email = 'Please enter a valid email address';
-        } else {
+        if (!skipRequiredCheck && (!value || value.trim() === '')) {
+          newErrors.email = 'Required';
+        } else if (value && value.trim() !== '') {
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            newErrors.email = 'Please enter a valid email address';
+          } else {
+            delete newErrors.email;
+          }
+        } else if (skipRequiredCheck) {
           delete newErrors.email;
         }
         break;
 
       case 'phone':
-        if (!value || value.trim() === '') {
-          newErrors.phone = 'Mobile number is required';
-        } else if (!/^[0-9]{7,15}$/.test(value.replace(/[\s-]/g, ''))) {
-          newErrors.phone = 'Please enter a valid phone number';
-        } else {
+        if (!skipRequiredCheck && (!value || value.trim() === '')) {
+          newErrors.phone = 'Required';
+        } else if (value && value.trim() !== '') {
+          if (!/^[0-9]{7,15}$/.test(value.replace(/[\s-]/g, ''))) {
+            newErrors.phone = 'Please enter a valid phone number';
+          } else {
+            delete newErrors.phone;
+          }
+        } else if (skipRequiredCheck) {
           delete newErrors.phone;
         }
         break;
 
       case 'password':
-        if (!value) {
-          newErrors.password = 'Password is required';
-        } else if (value.length < 8) {
-          newErrors.password = 'Password must be at least 8 characters';
-        } else if (!/(?=.*[a-z])/.test(value)) {
-          newErrors.password = 'Password must contain at least one lowercase letter';
-        } else if (!/(?=.*[A-Z])/.test(value)) {
-          newErrors.password = 'Password must contain at least one uppercase letter';
-        } else if (!/(?=.*\d)/.test(value)) {
-          newErrors.password = 'Password must contain at least one number';
-        } else {
+        if (!skipRequiredCheck && !value) {
+          newErrors.password = 'Required';
+        } else if (value) {
+          if (value.length < 8) {
+            newErrors.password = 'Password must be at least 8 characters';
+          } else if (!/(?=.*[a-z])/.test(value)) {
+            newErrors.password = 'Password must contain at least one lowercase letter';
+          } else if (!/(?=.*[A-Z])/.test(value)) {
+            newErrors.password = 'Password must contain at least one uppercase letter';
+          } else if (!/(?=.*\d)/.test(value)) {
+            newErrors.password = 'Password must contain at least one number';
+          } else {
+            delete newErrors.password;
+          }
+        } else if (skipRequiredCheck) {
           delete newErrors.password;
         }
         break;
 
       case 'confirmPassword':
-        if (!value) {
+        if (!skipRequiredCheck && !value) {
           newErrors.confirmPassword = 'Please confirm your password';
-        } else if (value !== password) {
-          newErrors.confirmPassword = 'Passwords do not match';
-        } else {
+        } else if (value) {
+          if (value !== password) {
+            newErrors.confirmPassword = 'Passwords do not match';
+          } else {
+            delete newErrors.confirmPassword;
+          }
+        } else if (skipRequiredCheck) {
           delete newErrors.confirmPassword;
         }
         break;
 
       case 'dateOfBirth':
-        if (!value) {
-          newErrors.dateOfBirth = 'Date of birth is required';
-        } else {
+        if (!skipRequiredCheck && !value) {
+          newErrors.dateOfBirth = 'Required';
+        } else if (value) {
           const age = new Date().getFullYear() - value.getFullYear();
           if (age < 18) {
             newErrors.dateOfBirth = 'You must be at least 18 years old';
           } else {
             delete newErrors.dateOfBirth;
           }
+        } else if (skipRequiredCheck) {
+          delete newErrors.dateOfBirth;
         }
         break;
 
       case 'location':
-        if (!selectedLocation) {
-          newErrors.location = 'Location is required';
-        } else {
+        if (!skipRequiredCheck && !selectedLocation) {
+          newErrors.location = 'Required';
+        } else if (selectedLocation) {
+          delete newErrors.location;
+        } else if (skipRequiredCheck) {
           delete newErrors.location;
         }
         break;
@@ -256,30 +273,31 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   const handleBlur = (field: string) => {
     setTouched({ ...touched, [field]: true });
     
+    // Pass true to skip required validation on blur - only validate format
     switch (field) {
       case 'firstName':
-        validateField('firstName', firstName);
+        validateField('firstName', firstName, true);
         break;
       case 'lastName':
-        validateField('lastName', lastName);
+        validateField('lastName', lastName, true);
         break;
       case 'email':
-        validateField('email', email);
+        validateField('email', email, true);
         break;
       case 'phone':
-        validateField('phone', phone);
+        validateField('phone', phone, true);
         break;
       case 'password':
-        validateField('password', password);
+        validateField('password', password, true);
         break;
       case 'confirmPassword':
-        validateField('confirmPassword', confirmPassword);
+        validateField('confirmPassword', confirmPassword, true);
         break;
       case 'dateOfBirth':
-        validateField('dateOfBirth', dateOfBirth);
+        validateField('dateOfBirth', dateOfBirth, true);
         break;
       case 'location':
-        validateField('location', selectedLocation);
+        validateField('location', selectedLocation, true);
         break;
     }
   };
@@ -288,6 +306,17 @@ export const SignupForm: React.FC<SignupFormProps> = ({
     setSelectedCountry(country);
     setSelectedLocation(null);
     setShowCountryPicker(false);
+  };
+
+  // Wrapper for handleDateChange to clear Required error
+  const wrappedHandleDateChange = (event: any, selectedDate?: Date) => {
+    handleDateChange(event, selectedDate);
+    // Clear 'Required' error when date is selected
+    if (selectedDate && errors.dateOfBirth === 'Required') {
+      const newErrors = { ...errors };
+      delete newErrors.dateOfBirth;
+      setErrors(newErrors);
+    }
   };
 
   const wrappedHandleSignUp = () => {
@@ -299,13 +328,73 @@ export const SignupForm: React.FC<SignupFormProps> = ({
     });
     setTouched(newTouched);
 
-    // Collect all validation errors
+    // First, check if any required fields are empty (for generic "fill all fields" message)
+    const emptyFields: string[] = [];
+    if (!firstName || firstName.trim() === '') emptyFields.push('firstName');
+    if (!lastName || lastName.trim() === '') emptyFields.push('lastName');
+    if (!email || email.trim() === '') emptyFields.push('email');
+    if (!phone || phone.trim() === '') emptyFields.push('phone');
+    if (!password) emptyFields.push('password');
+    if (!confirmPassword) emptyFields.push('confirmPassword');
+    if (!dateOfBirth) emptyFields.push('dateOfBirth');
+    if (!selectedLocation) emptyFields.push('location');
+
+    // If there are empty required fields, show generic message
+    if (emptyFields.length > 0) {
+      // Set errors for empty fields (to show red borders)
+      const validationErrors: ValidationErrors = {};
+      if (emptyFields.includes('firstName')) validationErrors.firstName = 'Required';
+      if (emptyFields.includes('lastName')) validationErrors.lastName = 'Required';
+      if (emptyFields.includes('email')) validationErrors.email = 'Required';
+      if (emptyFields.includes('phone')) validationErrors.phone = 'Required';
+      if (emptyFields.includes('password')) validationErrors.password = 'Required';
+      if (emptyFields.includes('confirmPassword')) validationErrors.confirmPassword = 'Required';
+      if (emptyFields.includes('dateOfBirth')) validationErrors.dateOfBirth = 'Required';
+      if (emptyFields.includes('location')) validationErrors.location = 'Required';
+      
+      setErrors(validationErrors);
+      
+      Alert.alert(
+        'Required Fields',
+        'Please fill out all the required fields.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Focus on first empty field
+              const firstEmptyField = emptyFields[0];
+              switch(firstEmptyField) {
+                case 'firstName':
+                  firstNameRef.current?.focus();
+                  break;
+                case 'lastName':
+                  lastNameRef.current?.focus();
+                  break;
+                case 'email':
+                  emailRef.current?.focus();
+                  break;
+                case 'phone':
+                  phoneRef.current?.focus();
+                  break;
+                case 'password':
+                  passwordRef.current?.focus();
+                  break;
+                case 'confirmPassword':
+                  confirmPasswordRef.current?.focus();
+                  break;
+              }
+            }
+          }
+        ]
+      );
+      return;
+    }
+
+    // All fields are filled - now check for format/validation errors
     const validationErrors: ValidationErrors = {};
     
-    // Validate each field and collect errors
-    if (!firstName || firstName.trim() === '') {
-      validationErrors.firstName = 'First name is required';
-    } else if (/^\d+$/.test(firstName.trim())) {
+    // Validate firstName format (not empty check since we already did that)
+    if (/^\d+$/.test(firstName.trim())) {
       validationErrors.firstName = 'Only letters allowed';
     } else if (!/^[a-zA-Z\s'-]+$/.test(firstName.trim())) {
       validationErrors.firstName = 'Only letters allowed';
@@ -313,9 +402,8 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       validationErrors.firstName = 'First name must not exceed 50 characters';
     }
     
-    if (!lastName || lastName.trim() === '') {
-      validationErrors.lastName = 'Last name is required';
-    } else if (/^\d+$/.test(lastName.trim())) {
+    // Validate lastName format
+    if (/^\d+$/.test(lastName.trim())) {
       validationErrors.lastName = 'Only letters allowed';
     } else if (!/^[a-zA-Z\s'-]+$/.test(lastName.trim())) {
       validationErrors.lastName = 'Only letters allowed';
@@ -323,21 +411,18 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       validationErrors.lastName = 'Last name must not exceed 50 characters';
     }
     
-    if (!email || email.trim() === '') {
-      validationErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    // Validate email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       validationErrors.email = 'Please enter a valid email address';
     }
     
-    if (!phone || phone.trim() === '') {
-      validationErrors.phone = 'Mobile number is required';
-    } else if (!/^[0-9]{7,15}$/.test(phone.replace(/[\s-]/g, ''))) {
+    // Validate phone format
+    if (!/^[0-9]{7,15}$/.test(phone.replace(/[\s-]/g, ''))) {
       validationErrors.phone = 'Please enter a valid phone number';
     }
     
-    if (!password) {
-      validationErrors.password = 'Password is required';
-    } else if (password.length < 8) {
+    // Validate password requirements
+    if (password.length < 8) {
       validationErrors.password = 'Password must be at least 8 characters';
     } else if (!/(?=.*[a-z])/.test(password)) {
       validationErrors.password = 'Password must contain at least one lowercase letter';
@@ -347,56 +432,43 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       validationErrors.password = 'Password must contain at least one number';
     }
     
-    if (!confirmPassword) {
-      validationErrors.confirmPassword = 'Please confirm your password';
-    } else if (confirmPassword !== password) {
+    // Validate confirm password match
+    if (confirmPassword !== password) {
       validationErrors.confirmPassword = 'Passwords do not match';
     }
     
-    if (!dateOfBirth) {
-      validationErrors.dateOfBirth = 'Date of birth is required';
-    } else {
-      const age = new Date().getFullYear() - dateOfBirth.getFullYear();
-      if (age < 18) {
-        validationErrors.dateOfBirth = 'You must be at least 18 years old';
-      }
-    }
-    
-    if (!selectedLocation) {
-      validationErrors.location = 'Location is required';
+    // Validate age
+    const age = new Date().getFullYear() - dateOfBirth!.getFullYear();
+    if (age < 18) {
+      validationErrors.dateOfBirth = 'You must be at least 18 years old';
     }
     
     // Set all errors at once
     setErrors(validationErrors);
     
-    // If there are errors, show alert and focus on first error field
+    // If there are validation errors, show specific error messages
     if (Object.keys(validationErrors).length > 0) {
       // Find first error field
       const firstErrorField = allFields.find(field => validationErrors[field as keyof ValidationErrors]);
       
-      // Create error message with specific field names
-      const errorCount = Object.keys(validationErrors).length;
-      const missingFields = Object.keys(validationErrors).map(field => {
-        switch(field) {
-          case 'firstName': return 'First Name';
-          case 'lastName': return 'Last Name';
-          case 'email': return 'Email';
-          case 'phone': return 'Mobile Number';
-          case 'password': return 'Password';
-          case 'confirmPassword': return 'Confirm Password';
-          case 'dateOfBirth': return 'Date of Birth';
-          case 'location': return 'Location';
-          default: return field;
-        }
+      // Get specific error messages for display
+      const errorMessages = Object.entries(validationErrors).map(([field, message]) => {
+        const fieldName = {
+          firstName: 'First Name',
+          lastName: 'Last Name',
+          email: 'Email',
+          phone: 'Mobile Number',
+          password: 'Password',
+          confirmPassword: 'Confirm Password',
+          dateOfBirth: 'Date of Birth',
+          location: 'Location',
+        }[field] || field;
+        return `${fieldName}: ${message}`;
       });
       
-      const errorMessage = errorCount === 1 
-        ? `Please fill in: ${missingFields[0]}`
-        : `Please fill in the following fields:\n• ${missingFields.join('\n• ')}`;
-      
       Alert.alert(
-        'Please Complete Form',
-        errorMessage,
+        'Validation Error',
+        errorMessages.join('\n'),
         [
           {
             text: 'OK',
@@ -449,7 +521,16 @@ export const SignupForm: React.FC<SignupFormProps> = ({
               // Limit to 50 characters
               if (text.length <= 50) {
                 setFirstName(text);
-                if (touched.firstName) validateField('firstName', text);
+                // Clear 'Required' error if user starts typing
+                if (errors.firstName === 'Required') {
+                  const newErrors = { ...errors };
+                  delete newErrors.firstName;
+                  setErrors(newErrors);
+                }
+                // Validate format if field was touched
+                if (touched.firstName && text.trim() !== '') {
+                  validateField('firstName', text, true);
+                }
               }
             }}
             onBlur={() => handleBlur('firstName')}
@@ -477,7 +558,16 @@ export const SignupForm: React.FC<SignupFormProps> = ({
               // Limit to 50 characters
               if (text.length <= 50) {
                 setLastName(text);
-                if (touched.lastName) validateField('lastName', text);
+                // Clear 'Required' error if user starts typing
+                if (errors.lastName === 'Required') {
+                  const newErrors = { ...errors };
+                  delete newErrors.lastName;
+                  setErrors(newErrors);
+                }
+                // Validate format if field was touched
+                if (touched.lastName && text.trim() !== '') {
+                  validateField('lastName', text, true);
+                }
               }
             }}
             onBlur={() => handleBlur('lastName')}
@@ -504,7 +594,16 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         value={email}
         onChangeText={(text) => {
           setEmail(text);
-          if (touched.email) validateField('email', text);
+          // Clear 'Required' error if user starts typing
+          if (errors.email === 'Required') {
+            const newErrors = { ...errors };
+            delete newErrors.email;
+            setErrors(newErrors);
+          }
+          // Validate format if field was touched
+          if (touched.email && text.trim() !== '') {
+            validateField('email', text, true);
+          }
         }}
         onBlur={() => handleBlur('email')}
         placeholder="Enter your email"
@@ -534,7 +633,15 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       <LocationInput
         selectedLocation={selectedLocation}
         countryCode={selectedCountry.code}
-        onLocationSelect={(loc) => setSelectedLocation(loc)}
+        onLocationSelect={(loc) => {
+          setSelectedLocation(loc);
+          // Clear 'Required' error when location is selected
+          if (errors.location === 'Required' && loc) {
+            const newErrors = { ...errors };
+            delete newErrors.location;
+            setErrors(newErrors);
+          }
+        }}
         hasError={!!(touched.location && errors.location)}
         onDropdownStateChange={setIsLocationDropdownOpen}
       />
@@ -550,7 +657,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         dateOfBirth={dateOfBirth}
         showDatePicker={showDatePicker}
         onTogglePicker={setShowDatePicker}
-        onDateChange={handleDateChange}
+        onDateChange={wrappedHandleDateChange}
         hasError={!!(touched.dateOfBirth && errors.dateOfBirth)}
       />
       {touched.dateOfBirth && errors.dateOfBirth && (
@@ -571,7 +678,16 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           value={phone}
           onChangeText={(text) => {
             setPhone(text);
-            if (touched.phone) validateField('phone', text);
+            // Clear 'Required' error if user starts typing
+            if (errors.phone === 'Required') {
+              const newErrors = { ...errors };
+              delete newErrors.phone;
+              setErrors(newErrors);
+            }
+            // Validate format if field was touched
+            if (touched.phone && text.trim() !== '') {
+              validateField('phone', text, true);
+            }
           }}
           onBlur={() => handleBlur('phone')}
           placeholder="Mobile number"
@@ -596,7 +712,16 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           value={password}
           onChangeText={(text) => {
             setPassword(text);
-            if (touched.password) validateField('password', text);
+            // Clear 'Required' error if user starts typing
+            if (errors.password === 'Required') {
+              const newErrors = { ...errors };
+              delete newErrors.password;
+              setErrors(newErrors);
+            }
+            // Validate format if field was touched
+            if (touched.password && text.trim() !== '') {
+              validateField('password', text, true);
+            }
           }}
           onBlur={() => handleBlur('password')}
           placeholder="Create a password"
@@ -632,7 +757,16 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           value={confirmPassword}
           onChangeText={(text) => {
             setConfirmPassword(text);
-            if (touched.confirmPassword) validateField('confirmPassword', text);
+            // Clear 'Required' error if user starts typing
+            if (errors.confirmPassword === 'Required') {
+              const newErrors = { ...errors };
+              delete newErrors.confirmPassword;
+              setErrors(newErrors);
+            }
+            // Validate format if field was touched
+            if (touched.confirmPassword && text.trim() !== '') {
+              validateField('confirmPassword', text, true);
+            }
           }}
           onBlur={() => handleBlur('confirmPassword')}
           placeholder="Confirm your password"
