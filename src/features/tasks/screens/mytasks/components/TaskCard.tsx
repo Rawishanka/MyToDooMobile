@@ -1101,7 +1101,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     if (task.dateType === 'before' || task.dateType === 'DoneBy') return '🕐 Before specific date';
     if (task.dateType === 'no-rush' || task.dateType === 'Easy' || task.dateType === 'Flexible') return '⏰ No rush';
     if (task.dateType === 'on_time' || task.dateType === 'Specific') return '📅 Specific date';
-    if (task.time && task.time !== 'Anytime') return `🕒 ${task.time}`;
+    if (task.time && task.time !== 'Anytime') {
+      const formattedTime = task.time.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+      return `🕒 ${formattedTime}`;
+    }
     return '⏰ Flexible timing';
   };
 

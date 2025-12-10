@@ -722,9 +722,6 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         <Text style={styles.posterName}>
           {task.createdBy?.firstName} {task.createdBy?.lastName}
         </Text>
-        <View style={styles.newBadge}>
-          <Text style={styles.newBadgeText}>New!</Text>
-        </View>
       </View>
 
       {/* Task Creation Date */}
@@ -765,7 +762,9 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {/* Timing */}
       <View style={styles.detailRow}>
         <Ionicons name="calendar-outline" size={16} color="#666" />
-        <Text style={styles.detailText}>{getTimeDisplay()}</Text>
+        <Text style={styles.detailText}>
+          {getTimeDisplay().replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
+        </Text>
       </View>
 
       {/* Budget */}
@@ -854,7 +853,7 @@ const styles = StyleSheet.create({
     marginRight: wp('2%'),
   },
   newBadge: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#007BFF',
     paddingHorizontal: wp('2%'),
     paddingVertical: hp('0.3%'),
     borderRadius: 4,

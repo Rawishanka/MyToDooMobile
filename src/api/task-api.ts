@@ -11,22 +11,22 @@ import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-  AllOffersResponse,
-  CreateOfferRequest,
-  CreateOfferResponse,
-  CreateTaskRequest,
-  CreateTaskResponse,
-  MyTasksParams,
-  PaymentStatusResponse,
-  SingleTaskResponse,
-  Task,
-  TaskCompletionStatusResponse,
-  TaskFilterParams,
-  TaskFilterResponse,
-  TaskOffersResponse,
-  TaskSearchParams,
-  TasksResponse,
-  UpdateTaskRequest
+    AllOffersResponse,
+    CreateOfferRequest,
+    CreateOfferResponse,
+    CreateTaskRequest,
+    CreateTaskResponse,
+    MyTasksParams,
+    PaymentStatusResponse,
+    SingleTaskResponse,
+    Task,
+    TaskCompletionStatusResponse,
+    TaskFilterParams,
+    TaskFilterResponse,
+    TaskOffersResponse,
+    TaskSearchParams,
+    TasksResponse,
+    UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -3671,16 +3671,21 @@ export async function getTaskerReviews(params?: {
 }): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("⭐ Getting tasker reviews");
+    console.log("⭐ Getting tasker reviews with params:", params);
     
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     
     const url = `/reviews/tasker${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    console.log("🌐 API URL:", url);
+    
     const response = await api.get(url);
     
-    console.log("✅ Get tasker reviews success:", response.data);
+    console.log("✅ Get tasker reviews RAW response:", JSON.stringify(response.data, null, 2));
+    console.log("📊 Reviews count:", response.data?.data?.reviews?.length || 0);
+    console.log("📊 Rating stats:", response.data?.data?.ratingStats);
+    
     return response.data;
   } catch (error) {
     console.error("❌ Get tasker reviews failed:", error);
@@ -3699,16 +3704,21 @@ export async function getPosterReviews(params?: {
 }): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("⭐ Getting poster reviews");
+    console.log("⭐ Getting poster reviews with params:", params);
     
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     
     const url = `/reviews/poster${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    console.log("🌐 API URL:", url);
+    
     const response = await api.get(url);
     
-    console.log("✅ Get poster reviews success:", response.data);
+    console.log("✅ Get poster reviews RAW response:", JSON.stringify(response.data, null, 2));
+    console.log("📊 Reviews count:", response.data?.data?.reviews?.length || 0);
+    console.log("📊 Rating stats:", response.data?.data?.ratingStats);
+    
     return response.data;
   } catch (error) {
     console.error("❌ Get poster reviews failed:", error);
