@@ -18,7 +18,7 @@ import {
   TextInputKeyPressEventData,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  View,
+  View
 } from 'react-native';
 import type { VerificationStep } from './signup-types';
 
@@ -204,27 +204,26 @@ export const OTPModal: React.FC<OTPModalProps> = ({
           );
         }}
       >
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardAvoidingView}
-          keyboardVerticalOffset={0}
-        >
-          <TouchableWithoutFeedback onPress={dismissKeyboard}>
-            <View style={styles.modalOverlay}>
+        <TouchableWithoutFeedback onPress={dismissKeyboard}>
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView 
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={styles.keyboardAvoidingView}
+              keyboardVerticalOffset={0}
+            >
               <View style={styles.modalInnerContainer}>
-                <ScrollView 
+                <ScrollView
                   contentContainerStyle={styles.scrollContent}
                   keyboardShouldPersistTaps="handled"
                   showsVerticalScrollIndicator={false}
                   bounces={false}
-                  keyboardDismissMode="on-drag"
                 >
                   <View style={styles.modalContainer}>
-                  {onClose && (
-                    <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-                      <Ionicons name="close" size={24} color="#666" />
-                    </TouchableOpacity>
-                  )}
+                    {onClose && (
+                      <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                        <Ionicons name="close" size={24} color="#666" />
+                      </TouchableOpacity>
+                    )}
                   
                   <View style={styles.modalHeader}>
                     <View style={styles.iconCircle}>
@@ -299,12 +298,12 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                     <Text style={styles.securityNoteText}>Your information is secure and encrypted</Text>
                   </View>
                 </View>
-                </ScrollView>
-              </View>
+              </ScrollView>
             </View>
-          </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
-      </Modal>
+          </KeyboardAvoidingView>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
 
       {/* SMS Verification Modal */}
       <Modal
@@ -319,27 +318,26 @@ export const OTPModal: React.FC<OTPModalProps> = ({
           );
         }}
       >
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.keyboardAvoidingView}
-          keyboardVerticalOffset={0}
-        >
-          <TouchableWithoutFeedback onPress={dismissKeyboard}>
-            <View style={styles.modalOverlay}>
+        <TouchableWithoutFeedback onPress={dismissKeyboard}>
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView 
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={styles.keyboardAvoidingView}
+              keyboardVerticalOffset={0}
+            >
               <View style={styles.modalInnerContainer}>
-                <ScrollView 
+                <ScrollView
                   contentContainerStyle={styles.scrollContent}
                   keyboardShouldPersistTaps="handled"
                   showsVerticalScrollIndicator={false}
                   bounces={false}
-                  keyboardDismissMode="on-drag"
                 >
                   <View style={styles.modalContainer}>
-                  {onClose && (
-                    <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-                      <Ionicons name="close" size={24} color="#666" />
-                    </TouchableOpacity>
-                  )}
+                    {onClose && (
+                      <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                        <Ionicons name="close" size={24} color="#666" />
+                      </TouchableOpacity>
+                    )}
                   
                   <View style={styles.modalHeader}>
                     <View style={styles.iconCircle}>
@@ -424,16 +422,16 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                     )}
                   </TouchableOpacity>
 
-                  <View style={styles.securityNote}>
-                    <Ionicons name="shield-checkmark-outline" size={14} color="#28a745" />
-                    <Text style={styles.securityNoteText}>Your information is secure and encrypted</Text>
+                    <View style={styles.securityNote}>
+                      <Ionicons name="shield-checkmark-outline" size={14} color="#28a745" />
+                      <Text style={styles.securityNoteText}>Your information is secure and encrypted</Text>
+                    </View>
                   </View>
-                </View>
                 </ScrollView>
               </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+          </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </>
   );
@@ -442,30 +440,29 @@ export const OTPModal: React.FC<OTPModalProps> = ({
 const styles = StyleSheet.create({
   keyboardAvoidingView: {
     flex: 1,
+    justifyContent: 'flex-end',
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
   },
   modalInnerContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    maxHeight: '85%',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
   scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 16,
+    flexGrow: 0,
   },
   modalContainer: {
     backgroundColor: 'white',
-    borderRadius: 24,
-    padding: 24,
-    marginHorizontal: 4,
-    maxHeight: '90%',
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 32,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 8,
@@ -484,31 +481,31 @@ const styles = StyleSheet.create({
   },
   modalHeader: {
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 8,
+    marginBottom: 16,
+    marginTop: 4,
   },
   iconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: '#E8F4FD',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: '#1a1a1a',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   modalSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#666',
     marginBottom: 4,
   },
   contactText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: '#007BFF',
   },
@@ -516,8 +513,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
-    paddingHorizontal: 40,
+    marginBottom: 20,
+    paddingHorizontal: 30,
   },
   progressStep: {
     alignItems: 'center',
@@ -572,28 +569,28 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   otpSection: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   otpLabel: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#666',
-    marginBottom: 16,
+    marginBottom: 12,
     textAlign: 'center',
     fontWeight: '500',
   },
   otpInputContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 10,
-    marginBottom: 16,
+    gap: 8,
+    marginBottom: 12,
   },
   otpBox: {
-    width: 46,
-    height: 54,
+    width: 44,
+    height: 52,
     borderWidth: 2,
     borderColor: '#E0E0E0',
     borderRadius: 12,
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
     color: '#1a1a1a',
     backgroundColor: '#fafafa',
@@ -651,10 +648,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 14,
-    gap: 10,
-    marginBottom: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+    marginBottom: 12,
   },
   verifyButtonDisabled: {
     backgroundColor: '#B0C4DE',
@@ -664,7 +661,7 @@ const styles = StyleSheet.create({
   },
   verifyButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   securityNote: {
