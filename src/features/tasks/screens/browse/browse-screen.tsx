@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -32,7 +32,6 @@ import {
 // Network components
 import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
-import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 
 // Custom Hooks
 import { useBrowseFiltersAPI } from './hooks/useBrowseFiltersAPI';
@@ -41,6 +40,9 @@ import { useBrowseFiltersAPI } from './hooks/useBrowseFiltersAPI';
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 
 export default function BrowseTasksScreen() {
+  // FlatList ref for scroll position management
+  const flatListRef = useRef<FlatList>(null);
+  
   // Modal visibility states
   const [sortVisible, setSortVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
@@ -49,10 +51,6 @@ export default function BrowseTasksScreen() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showNetworkAlert, setShowNetworkAlert] = useState(false);
-  const [networkAlertMessage, setNetworkAlertMessage] = useState('');
-
-  // Network status monitoring
-  const { isConnected } = useNetworkStatus();
   
   // Track selectedTaskId changes
   useEffect(() => {
@@ -124,7 +122,7 @@ export default function BrowseTasksScreen() {
       console.log('📂 Final categories being passed to FilterModal:', result);
       return result;
     },
-    [categoriesWithAll]
+    [categoriesWithAll, categoriesLoading, categoriesError?.message]
   );
 
   // Use combined API-based hook (intelligently uses search OR filter API)
@@ -148,7 +146,6 @@ export default function BrowseTasksScreen() {
     resetFilters,
     isLoading,
     isLoadingMore,
-    hasMore,
     loadMore,
     error,
     refetch,
@@ -403,6 +400,7 @@ export default function BrowseTasksScreen() {
             </View>
           ) : (
             <FlatList
+              ref={flatListRef}
               data={filteredAndSortedTasks}
               keyExtractor={(item) => item._id}
               contentContainerStyle={{ 
@@ -416,19 +414,24 @@ export default function BrowseTasksScreen() {
                 refetch();
               }}
               onEndReached={loadMore}
-              onEndReachedThreshold={0.5}
+              onEndReachedThreshold={0.3}
+              windowSize={5}
+              maxToRenderPerBatch={5}
+              updateCellsBatchingPeriod={100}
+              initialNumToRender={10}
+              removeClippedSubviews={false}
               maintainVisibleContentPosition={{
                 minIndexForVisible: 0,
+                autoscrollToTopThreshold: 10
               }}
-              windowSize={10}
-              maxToRenderPerBatch={10}
-              updateCellsBatchingPeriod={50}
-              initialNumToRender={10}
-              removeClippedSubviews={true}
+              onScrollToIndexFailed={(info) => {
+                console.log('Scroll to index failed:', info);
+              }}
               ListFooterComponent={() => 
                 isLoadingMore ? (
                   <View style={{ padding: 20, alignItems: 'center' }}>
                     <ActivityIndicator size="large" color="#007AFF" />
+                    <Text style={styles.loadingText}>Loading more tasks...</Text>
                   </View>
                 ) : null
               }
@@ -476,7 +479,7 @@ export default function BrowseTasksScreen() {
       <NetworkAlert
         visible={showNetworkAlert}
         onClose={() => setShowNetworkAlert(false)}
-        message={networkAlertMessage}
+        message="Network connection issue"
         actionText="OK"
       />
     </View>

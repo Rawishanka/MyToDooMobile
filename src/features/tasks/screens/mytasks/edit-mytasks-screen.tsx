@@ -9,18 +9,18 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -200,6 +200,10 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     when: false 
   });
 
+  // Image processing states
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isOCRProcessing, setIsOCRProcessing] = useState(false);
+
   // Keyboard visibility
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
@@ -348,6 +352,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   // Image picker function with OCR validation
   const pickImage = async () => {
     if (images.length >= 10) return;
+    if (isProcessing || isOCRProcessing) return;
 
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -356,6 +361,7 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     }
 
     try {
+      setIsProcessing(true);
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -367,11 +373,14 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
         const imageUri = result.assets[0].uri;
         
         // ✅ Validate with OCR API
+        setIsProcessing(false);
+        setIsOCRProcessing(true);
         console.log('🔍 Validating image with OCR API:', imageUri);
         const validation = await OCRAPI.validateImageForUpload(imageUri);
         
         if (!validation.isValid) {
           console.warn('❌ Image contains sensitive data:', validation.reason);
+          setIsOCRProcessing(false);
           Alert.alert(
             'Sensitive Data Detected',
             `This image contains sensitive information and cannot be uploaded:
@@ -386,9 +395,14 @@ Please remove phone numbers and addresses from the image.`,
         
         console.log('✅ Image passed OCR validation');
         setImages(prevImages => [...prevImages, imageUri]);
+        setIsOCRProcessing(false);
+      } else {
+        setIsProcessing(false);
       }
     } catch (error) {
       console.error('Error selecting image:', error);
+      setIsProcessing(false);
+      setIsOCRProcessing(false);
       Alert.alert('Error', 'Failed to select image. Please try again.');
     }
   };
@@ -936,9 +950,24 @@ Please remove phone numbers and addresses from the image.`,
               </View>
             ))}
             {images.length < 10 && (
-              <TouchableOpacity style={styles.uploadBox} onPress={pickImage}>
-                <Ionicons name="camera" size={24} color="#467FFF" />
-                <Ionicons name="add" size={16} color="#467FFF" style={styles.addIcon} />
+              <TouchableOpacity 
+                style={[styles.uploadBox, (isProcessing || isOCRProcessing) && styles.uploadBoxDisabled]} 
+                onPress={pickImage}
+                disabled={isProcessing || isOCRProcessing}
+              >
+                {isProcessing || isOCRProcessing ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="#467FFF" />
+                    {isOCRProcessing && (
+                      <Text style={styles.loadingText}>Checking...</Text>
+                    )}
+                  </View>
+                ) : (
+                  <>
+                    <Ionicons name="camera" size={24} color="#467FFF" />
+                    <Ionicons name="add" size={16} color="#467FFF" style={styles.addIcon} />
+                  </>
+                )}
               </TouchableOpacity>
             )}
           </View>
@@ -1424,6 +1453,20 @@ const styles = StyleSheet.create({
     borderColor: '#E4E7EC',
     borderStyle: 'dashed',
     position: 'relative',
+  },
+  uploadBoxDisabled: {
+    opacity: 0.6,
+    backgroundColor: '#E8E8E8',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    fontSize: 9,
+    color: '#467FFF',
+    marginTop: 4,
+    fontWeight: '500',
   },
   addIcon: {
     position: 'absolute',

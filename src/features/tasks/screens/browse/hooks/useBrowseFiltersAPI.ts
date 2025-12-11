@@ -273,6 +273,11 @@ export const useBrowseFiltersAPI = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isPaginatingRef, setIsPaginatingRef] = useState(false);
+  
+  // Track the last processed page to prevent duplicate processing
+  const lastProcessedPageRef = React.useRef<number>(0);
+  const lastProcessedDataHashRef = React.useRef<string>('');
 
   // Get user's country from geo-location for filtering tasks
   const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
@@ -431,26 +436,49 @@ export const useBrowseFiltersAPI = () => {
         ? (filterResponse?.data || [])
         : (searchResponse?.data || []);
 
+      // Create a hash of the current data to detect if it's actually new
+      const dataHash = baseTasks.map(t => t._id).join(',');
+      
+      // Skip if we've already processed this exact data for this page
+      if (currentPage === lastProcessedPageRef.current && dataHash === lastProcessedDataHashRef.current) {
+        console.log('⏭️ Skipping duplicate processing - same page and data');
+        return;
+      }
+
+      console.log('🔍 [enhanceTasksWithOfferCounts] Processing new data:', {
+        currentPage,
+        lastProcessedPage: lastProcessedPageRef.current,
+        baseTasksLength: baseTasks.length,
+        shouldUseFilterAPI,
+        isLoadingMore,
+        dataChanged: dataHash !== lastProcessedDataHashRef.current
+      });
+
       // Handle pagination info
       if (shouldUseFilterAPI && filterResponse?.pagination) {
         const { hasNextPage, currentPage: apiPage } = filterResponse.pagination;
         setHasMore(hasNextPage);
-        console.log('📄 Pagination info:', { currentPage: apiPage, hasNextPage });
+        console.log('📄 Pagination info:', { currentPage: apiPage, hasNextPage, receivedTasks: baseTasks.length });
       }
 
-      // Always set processing when data changes
-      setIsProcessingData(true);
-
+      // If no new tasks received, don't process
       if (baseTasks.length === 0) {
+        console.log('⚠️ No tasks in API response');
         // Only clear if it's page 1, otherwise keep existing tasks
         if (currentPage === 1) {
           setTasksWithOfferCounts([]);
+          setIsProcessingData(false);
         }
         setIsLoadingMore(false);
-        // Don't set isProcessingData false here - let it be controlled by API loading states
-        // This prevents flash of empty state while API is still loading
         return;
       }
+
+      // Update tracking refs
+      lastProcessedPageRef.current = currentPage;
+      lastProcessedDataHashRef.current = dataHash;
+
+      // Always set processing when we have data to process
+      setIsProcessingData(true);
 
       // Check if tasks already have offer count data
       const tasksNeedingOfferCounts = baseTasks.filter(task => 
@@ -511,11 +539,23 @@ export const useBrowseFiltersAPI = () => {
         // Append tasks if loading more pages, otherwise replace
         if (currentPage > 1) {
           setTasksWithOfferCounts(prev => {
-            const newTaskIds = new Set(enhancedTasks.map(t => t._id));
-            const uniquePrevTasks = prev.filter(t => !newTaskIds.has(t._id));
-            return [...uniquePrevTasks, ...enhancedTasks];
+            // Create a map of existing task IDs for faster lookup
+            const existingTaskIds = new Set(prev.map(t => t._id));
+            // Filter out duplicates from new tasks
+            const newUniqueTasks = enhancedTasks.filter(t => !existingTaskIds.has(t._id));
+            // Append only new unique tasks to existing list
+            const combined = [...prev, ...newUniqueTasks];
+            console.log('📄 Appending tasks:', {
+              previousCount: prev.length,
+              newTasksCount: enhancedTasks.length,
+              uniqueNewTasks: newUniqueTasks.length,
+              totalCount: combined.length,
+              page: currentPage
+            });
+            return combined;
           });
         } else {
+          console.log('📄 Replacing tasks (page 1):', enhancedTasks.length);
           setTasksWithOfferCounts(enhancedTasks);
         }
         setIsProcessingData(false);
@@ -663,19 +703,43 @@ export const useBrowseFiltersAPI = () => {
     setHasMore(true);
   };
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when filters change (but not during pagination)
   useEffect(() => {
+    // Skip reset if we're in the middle of paginating
+    if (isLoadingMore) {
+      console.log('⏭️ Skipping filter reset - pagination in progress');
+      return;
+    }
+    
+    console.log('🔄 Filter changed, resetting to page 1');
     setCurrentPage(1);
     setTasksWithOfferCounts([]);
     setHasMore(true);
+    setIsLoadingMore(false);
+    // Reset tracking refs
+    lastProcessedPageRef.current = 0;
+    lastProcessedDataHashRef.current = '';
   }, [selectedCategory, taskType, priceRange, selectedSort, debouncedSearchText]);
 
   const loadMore = useCallback(() => {
-    if (!isLoadingMore && hasMore && !isLoading) {
-      console.log('📄 Loading more tasks, page:', currentPage + 1);
-      setIsLoadingMore(true);
-      setCurrentPage(prev => prev + 1);
+    // Prevent multiple simultaneous load attempts
+    if (isLoadingMore || !hasMore || isLoading) {
+      console.log('⏸️ Skipping loadMore - already loading or no more data:', {
+        isLoadingMore,
+        hasMore,
+        isLoading,
+        currentPage
+      });
+      return;
     }
+    
+    console.log('📄 LoadMore triggered - fetching page:', currentPage + 1);
+    setIsLoadingMore(true);
+    setCurrentPage(prev => {
+      const nextPage = prev + 1;
+      console.log('🔢 Page updated from', prev, 'to', nextPage);
+      return nextPage;
+    });
   }, [isLoadingMore, hasMore, isLoading, currentPage]);
 
   return {
