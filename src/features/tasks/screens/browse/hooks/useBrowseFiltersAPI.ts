@@ -41,6 +41,7 @@ const filterTasksByCountry = (tasks: Task[], userCountry: string): Task[] => {
     
     // Remote tasks can be seen by anyone
     if (isRemoteTask) {
+      console.log(`✅ Remote task: "${task.title}"`);
       return true;
     }
 
@@ -53,6 +54,11 @@ const filterTasksByCountry = (tasks: Task[], userCountry: string): Task[] => {
       const matches = taskCountry === userCountryLower || 
                      taskCountry.includes(userCountryLower) ||
                      userCountryLower.includes(taskCountry);
+      if (matches) {
+        console.log(`✅ Country match: "${task.title}" (country: ${taskCountry})`);
+      } else {
+        console.log(`❌ Country mismatch: "${task.title}" (country: ${taskCountry} vs user: ${userCountryLower})`);
+      }
       return matches;
     }
 
@@ -63,7 +69,7 @@ const filterTasksByCountry = (tasks: Task[], userCountry: string): Task[] => {
       
       // Also check for common country-specific terms
       const countryKeywords: Record<string, string[]> = {
-        'sri lanka': ['sri lanka', 'colombo', 'kandy', 'galle', 'negombo', 'jaffna', 'lk'],
+        'sri lanka': ['sri lanka', 'colombo', 'kandy', 'galle', 'negombo', 'jaffna', 'mirigama', 'western province', 'lk'],
         'australia': ['australia', 'sydney', 'melbourne', 'brisbane', 'perth', 'adelaide', 'au', 'nsw', 'vic', 'qld'],
         'new zealand': ['new zealand', 'auckland', 'wellington', 'christchurch', 'nz'],
         'united states': ['usa', 'united states', 'america', 'new york', 'california', 'texas', 'us'],
@@ -78,13 +84,22 @@ const filterTasksByCountry = (tasks: Task[], userCountry: string): Task[] => {
       const hasCountryKeyword = keywords.some(keyword => locationAddress.includes(keyword));
       
       if (addressMatchesCountry || hasCountryKeyword) {
+        console.log(`✅ Keyword match: "${task.title}" (address: ${locationAddress})`);
         return true;
       }
+      
+      // Log why task was filtered out
+      console.log(`❌ No keyword match: "${task.title}" (address: ${locationAddress}, user country: ${userCountryLower})`);
     }
 
-    // If no location info, exclude the task (could be incomplete data)
-    // Or include it - depends on your business logic
-    // For now, exclude tasks with no clear location
+    // ✅ FIX: Include tasks with no clear country info instead of excluding them
+    // This prevents newly posted tasks from being hidden
+    // They should still appear in Browse until we have better location data
+    if (!locationAddress && !taskCountry) {
+      console.log(`⚠️ No location data: "${task.title}" - INCLUDED`);
+      return true;
+    }
+
     return false;
   });
 

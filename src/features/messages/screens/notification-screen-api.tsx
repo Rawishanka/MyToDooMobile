@@ -1,21 +1,14 @@
-// Updated Notification Screen with Firebase FCM Integration
-import { Notification, sendQuickTestNotification } from '@/src/api/notification-api';
+// FCM Notification Screen - Push Notifications Only
+// Note: Backend doesn't have /api/notifications endpoint for history
+// This screen only tests FCM push notification sending
+import { sendQuickTestNotification } from '@/src/api/notification-api';
 import { useGetFCMTokens } from '@/src/shared/hooks/useFCM';
-import {
-    useDeleteNotification,
-    useMarkAllAsRead,
-    useMarkAsRead,
-    useNotifications,
-    useUnreadCount,
-} from '@/src/shared/hooks/useNotifications';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
-    FlatList,
     Modal,
-    RefreshControl,
     StatusBar,
     StyleSheet,
     Text,
@@ -28,141 +21,16 @@ interface NotificationModalProps {
   onClose: () => void;
 }
 
-// Helper function to format time - simple version without date-fns
-const formatTime = (dateString: string) => {
-  try {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-    const diffWeeks = Math.floor(diffDays / 7);
-    const diffMonths = Math.floor(diffDays / 30);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    if (diffWeeks < 4) return `${diffWeeks} week${diffWeeks > 1 ? 's' : ''} ago`;
-    return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
-  } catch {
-    return 'Recently';
-  }
-};
-
-// Helper function to get notification icon
-const getNotificationIcon = (type: string) => {
-  switch (type) {
-    case 'OFFER_MADE':
-      return 'pricetag';
-    case 'OFFER_ACCEPTED':
-      return 'checkmark-circle';
-    case 'TASK_COMPLETED':
-      return 'checkmark-done';
-    case 'PAYMENT_RECEIVED':
-      return 'cash';
-    case 'MESSAGE_RECEIVED':
-      return 'chatbubble';
-    case 'SYSTEM_UPDATE':
-      return 'notifications';
-    default:
-      return 'information-circle';
-  }
-};
-
-// Helper function to get notification color
-const getNotificationColor = (type: string) => {
-  switch (type) {
-    case 'OFFER_MADE':
-      return '#007bff';
-    case 'OFFER_ACCEPTED':
-      return '#28a745';
-    case 'TASK_COMPLETED':
-      return '#17a2b8';
-    case 'PAYMENT_RECEIVED':
-      return '#ffc107';
-    case 'MESSAGE_RECEIVED':
-      return '#6c757d';
-    case 'SYSTEM_UPDATE':
-      return '#dc3545';
-    default:
-      return '#6c757d';
-  }
-};
-
-// Notification Item Component
-const NotificationItemComponent = ({
-  item,
-  onPress,
-  onDelete,
-}: {
-  item: Notification;
-  onPress: () => void;
-  onDelete: () => void;
-}) => {
-  const iconName = getNotificationIcon(item.type);
-  const iconColor = getNotificationColor(item.type);
-
-  return (
-    <TouchableOpacity
-      style={[styles.notificationItem, !item.isRead && styles.unreadItem]}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
-        <Ionicons name={iconName as any} size={24} color={iconColor} />
-      </View>
-
-      <View style={styles.contentContainer}>
-        <Text style={styles.titleText} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <Text style={styles.messageText} numberOfLines={2}>
-          {item.message}
-        </Text>
-        <Text style={styles.timeText}>{formatTime(item.createdAt)}</Text>
-      </View>
-
-      {!item.isRead && <View style={styles.unreadDot} />}
-
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-      >
-        <Ionicons name="trash-outline" size={20} color="#dc3545" />
-      </TouchableOpacity>
-    </TouchableOpacity>
-  );
-};
-
 const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
   visible,
   onClose,
 }) => {
   const [isSendingTest, setIsSendingTest] = useState(false);
   
-  // Check FCM token status (non-blocking)
+  // Check FCM token status
   const { data: fcmTokensData, isLoading: fcmLoading, error: fcmError } = useGetFCMTokens();
-  
-  // Only fetch notifications when modal is visible
-  const {
-    data: notificationsData,
-    isLoading,
-    error,
-    refetch,
-    isRefetching,
-  } = useNotifications({ page: 1, limit: 50 });
 
-  const { data: unreadCountData } = useUnreadCount();
-  const markAsRead = useMarkAsRead();
-  const deleteNotification = useDeleteNotification();
-  const markAllAsRead = useMarkAllAsRead();
-
-  // Check if FCM is properly set up (but don't block notifications)
+  // Check if FCM is properly set up
   const fcmTokens = fcmTokensData?.data?.tokens || [];
   const isFCMConfigured = fcmTokens.length > 0;
 
@@ -206,29 +74,13 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
     }
   };
 
-  // Safely extract data with fallbacks
-  const notifications = React.useMemo(() => {
-    return (notificationsData as any)?.data || [];
-  }, [notificationsData]);
-  
-  const unreadCount = React.useMemo(() => {
-    return (unreadCountData as any)?.count || (unreadCountData as any)?.unreadCount || 0;
-  }, [unreadCountData]);
-
-  // Log detailed status for debugging
+  // Log FCM status for debugging
   useEffect(() => {
     if (visible) {
       const isExpoGo = __DEV__ && !process.env.EAS_BUILD;
       
-      console.log('\n📱 ========== NOTIFICATION SCREEN STATUS ==========');
-      console.log('🔔 Notifications API:');
-      console.log('  - Loading:', isLoading);
-      console.log('  - Error:', error?.message || 'None');
-      console.log('  - Error Status:', (error as any)?.response?.status);
-      console.log('  - Notifications Count:', notifications?.length || 0);
-      console.log('  - Unread Count:', unreadCount);
-      
-      console.log('\n📱 FCM Status:');
+      console.log('\n📱 ========== FCM NOTIFICATION STATUS ==========');
+      console.log('📱 FCM Status:');
       console.log('  - Loading:', fcmLoading);
       console.log('  - Error:', fcmError?.message || 'None');
       console.log('  - Configured:', isFCMConfigured);
@@ -239,80 +91,14 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
         console.log('\n⚠️  EXPO GO DETECTED:');
         console.log('  - Push notifications require native build');
         console.log('  - Run: npx eas build --platform android --profile development');
-        console.log('  - Notifications API will still work for viewing');
       }
       
-      console.log('\n💡 Note: FCM is optional for viewing notifications');
-      console.log('   Notifications work via backend endpoints');
-      console.log('   FCM is only needed for push notifications\n');
+      console.log('\n💡 Note: Backend does not have /api/notifications endpoint');
+      console.log('   Only FCM push notifications are supported');
+      console.log('   Notification history is not available\n');
       console.log('================================================\n');
     }
-  }, [visible, isFCMConfigured, fcmTokensData, fcmLoading, fcmError, isLoading, error, notifications, unreadCount, fcmTokens]);
-
-  // Handle notification press - mark as read
-  const handleNotificationPress = (notification: Notification) => {
-    if (!notification.isRead) {
-      markAsRead.mutate(notification._id as any);
-    }
-
-    // Show notification details
-    Alert.alert(
-      notification.title,
-      notification.message,
-      [
-        {
-          text: 'OK',
-          style: 'default',
-        },
-      ]
-    );
-  };
-
-  // Handle delete notification
-  const handleDeleteNotification = (notificationId: string) => {
-    Alert.alert(
-      'Delete Notification',
-      'Are you sure you want to delete this notification?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            deleteNotification.mutate(notificationId as any);
-          },
-        },
-      ]
-    );
-  };
-
-  // Handle mark all as read
-  const handleMarkAllAsRead = () => {
-    if (unreadCount === 0) {
-      Alert.alert('Info', 'No unread notifications');
-      return;
-    }
-
-    Alert.alert(
-      'Mark All as Read',
-      `Mark all ${unreadCount} notifications as read?`,
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Mark All',
-          onPress: () => {
-            markAllAsRead.mutate();
-          },
-        },
-      ]
-    );
-  };
+  }, [visible, isFCMConfigured, fcmTokensData, fcmLoading, fcmError, fcmTokens]);
 
   return (
     <Modal
@@ -330,103 +116,110 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
             <Ionicons name="chevron-back" size={24} color="#000" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerTitle}>Notifications</Text>
-            {unreadCount > 0 && (
-              <View style={styles.badgeContainer}>
-                <Text style={styles.badgeText}>{unreadCount}</Text>
-              </View>
-            )}
+            <Text style={styles.headerTitle}>Push Notifications</Text>
           </View>
-          <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.markAllButton}>
-            <Ionicons name="checkmark-done" size={24} color="#007bff" />
-          </TouchableOpacity>
+          <View style={styles.markAllButton} />
         </View>
 
         {/* Expo Go Warning */}
         {__DEV__ && !process.env.EAS_BUILD && (
           <View style={styles.expoGoWarning}>
-            <Ionicons name="warning" size={18} color="#FF9500" />
+            <Ionicons name="warning" size={20} color="#856404" />
             <Text style={styles.expoGoWarningText}>
-              Expo Go: Push notifications require native build (APK). Run: npx eas build --platform android
+              Push notifications require a native build. Use: npx eas build
             </Text>
           </View>
         )}
 
-        {/* Loading State */}
-        {isLoading && (
-          <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color="#007bff" />
-            <Text style={styles.loadingText}>Loading notifications...</Text>
-          </View>
-        )}
-
-        {/* Backend Errors (including 404) - Treat as empty state */}
-        {error && !isLoading && (
-          <View style={styles.centerContainer}>
-            <Ionicons name="notifications-off" size={48} color="#ccc" />
-            <Text style={styles.emptyText}>No notifications yet</Text>
-            <Text style={styles.emptySubtext}>
-              You'll receive notifications for new messages, offers, and task updates
-            </Text>
-            
-            {/* FCM Test Button - Only if configured */}
-            {isFCMConfigured && (
-              <TouchableOpacity 
-                style={[styles.testButton, isSendingTest && styles.testButtonDisabled]}
-                onPress={handleSendTestNotification}
-                disabled={isSendingTest}
-              >
-                {isSendingTest ? (
-                  <>
-                    <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-                    <Text style={styles.testButtonText}>Sending...</Text>
-                  </>
-                ) : (
-                  <>
-                    <Ionicons name="notifications" size={20} color="#fff" style={{ marginRight: 8 }} />
-                    <Text style={styles.testButtonText}>Send Test Notification</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-
-        {/* Empty State */}
-        {!isLoading && !error && notifications.length === 0 && (
-          <View style={styles.centerContainer}>
-            <Ionicons name="notifications-off" size={48} color="#ccc" />
-            <Text style={styles.emptyText}>No notifications yet</Text>
-            <Text style={styles.emptySubtext}>
-              You'll see notifications here when you receive offers, messages, and updates
+        {/* FCM Status Card */}
+        <View style={styles.statusCard}>
+          <View style={styles.statusHeader}>
+            <Ionicons 
+              name={isFCMConfigured ? "checkmark-circle" : "alert-circle"} 
+              size={24} 
+              color={isFCMConfigured ? "#28a745" : "#ffc107"} 
+            />
+            <Text style={styles.statusTitle}>
+              {isFCMConfigured 
+                ? 'FCM Configured' 
+                : (__DEV__ && !process.env.EAS_BUILD) 
+                  ? 'Expo Go Mode - FCM Unavailable'
+                  : 'FCM Not Configured'}
             </Text>
           </View>
-        )}
+          
+          <View style={styles.statusDetails}>
+            <Text style={styles.statusLabel}>Status:</Text>
+            <Text style={[styles.statusValue, { color: isFCMConfigured ? '#28a745' : '#ffc107' }]}>
+              {fcmLoading ? 'Loading...' : isFCMConfigured ? 'Ready' : 'Not Ready'}
+            </Text>
+          </View>
+          
+          <View style={styles.statusDetails}>
+            <Text style={styles.statusLabel}>Devices:</Text>
+            <Text style={styles.statusValue}>
+              {fcmTokensData?.data?.totalDevices || 0}
+            </Text>
+          </View>
+          
+          <View style={styles.statusDetails}>
+            <Text style={styles.statusLabel}>Tokens:</Text>
+            <Text style={styles.statusValue}>
+              {fcmTokens.length}
+            </Text>
+          </View>
+        </View>
 
-        {/* Notifications List */}
-        {!isLoading && !error && notifications.length > 0 && (
-          <FlatList
-            data={notifications}
-            renderItem={({ item }) => (
-              <NotificationItemComponent
-                item={item}
-                onPress={() => handleNotificationPress(item)}
-                onDelete={() => handleDeleteNotification(item._id)}
-              />
-            )}
-            keyExtractor={(item) => item._id}
-            style={styles.notificationsList}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefetching}
-                onRefresh={refetch}
-                colors={['#007bff']}
-              />
-            }
-          />
-        )}
+        {/* Info Message */}
+        <View style={styles.infoCard}>
+          <Ionicons name="information-circle" size={20} color="#0c5460" />
+          <Text style={styles.infoText}>
+            Push notifications are sent when you receive messages, offers, or task updates. 
+            They appear in your device's notification tray.
+          </Text>
+        </View>
+
+        {/* Main Content */}
+        <View style={styles.centerContainer}>
+          <Ionicons name="notifications" size={64} color="#ccc" />
+          <Text style={styles.emptyText}>FCM Push Notifications</Text>
+          <Text style={styles.emptySubtext}>
+            This feature sends push notifications to your device. Notification history is not available.
+          </Text>
+          
+          {/* FCM Test Button */}
+          {isFCMConfigured && (
+            <TouchableOpacity 
+              style={[styles.testButton, isSendingTest && styles.testButtonDisabled]}
+              onPress={handleSendTestNotification}
+              disabled={isSendingTest}
+            >
+              {isSendingTest ? (
+                <>
+                  <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={styles.testButtonText}>Sending...</Text>
+                </>
+              ) : (
+                <>
+                  <Ionicons name="notifications" size={20} color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={styles.testButtonText}>Send Test Notification</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
+
+          {/* Warning if not configured */}
+          {!isFCMConfigured && (
+            <View style={styles.warningCard}>
+              <Ionicons name="warning" size={24} color="#856404" />
+              <Text style={styles.warningText}>
+                {__DEV__ && !process.env.EAS_BUILD 
+                  ? "⚠️ Expo Go Detected\nPush notifications require a native build.\n\nBuild with: npx eas build\n\nNote: This is normal in development mode."
+                  : "Build a native APK to enable push notifications"}
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
     </Modal>
   );
@@ -445,271 +238,150 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    paddingTop: (StatusBar.currentHeight || 0) + 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
+    borderBottomColor: '#e0e0e0',
     backgroundColor: '#fff',
   },
   backButton: {
-    padding: 4,
+    padding: 8,
   },
   headerTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
+    marginRight: 40,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
     color: '#000',
-  },
-  badgeContainer: {
-    backgroundColor: '#dc3545',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginLeft: 8,
-    minWidth: 24,
-    alignItems: 'center',
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
   },
   markAllButton: {
-    padding: 4,
+    padding: 8,
+    width: 40,
   },
-  notificationsList: {
-    flex: 1,
-  },
-  notificationItem: {
+  expoGoWarning: {
     flexDirection: 'row',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#fff3cd',
+    borderColor: '#ffc107',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    margin: 16,
   },
-  unreadItem: {
-    backgroundColor: '#f8f9fa',
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  contentContainer: {
+  expoGoWarningText: {
     flex: 1,
-    marginRight: 8,
+    marginLeft: 8,
+    fontSize: 13,
+    color: '#856404',
   },
-  titleText: {
+  statusCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+    margin: 16,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  statusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statusTitle: {
     fontSize: 16,
     fontWeight: '600',
+    marginLeft: 8,
     color: '#000',
-    marginBottom: 4,
   },
-  messageText: {
+  statusDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+  },
+  statusLabel: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+    color: '#6c757d',
   },
-  timeText: {
-    fontSize: 12,
-    color: '#999',
+  statusValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#000',
   },
-  unreadDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#007bff',
-    marginRight: 8,
+  infoCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#d1ecf1',
+    borderColor: '#17a2b8',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    margin: 16,
+    marginTop: 0,
   },
-  deleteButton: {
-    padding: 8,
+  infoText: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 13,
+    color: '#0c5460',
+    lineHeight: 18,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 24,
   },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#666',
-  },
-  errorText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#dc3545',
-    textAlign: 'center',
+  emptyText: {
+    fontSize: 18,
     fontWeight: '600',
-  },
-  errorSubtext: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-    paddingHorizontal: 40,
-  },
-  infoTitle: {
+    color: '#333',
     marginTop: 16,
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#007bff',
     textAlign: 'center',
   },
-  infoSubtext: {
-    marginTop: 12,
+  emptySubtext: {
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
-    paddingHorizontal: 30,
+    marginTop: 8,
     lineHeight: 20,
   },
-  fcmStatusBox: {
-    marginTop: 24,
-    backgroundColor: '#f8f9fa',
-    padding: 16,
-    borderRadius: 12,
-    width: '90%',
-    borderWidth: 1,
-    borderColor: '#dee2e6',
-  },
-  fcmStatusRow: {
+  testButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-  },
-  fcmStatusText: {
-    marginLeft: 12,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#212529',
-  },
-  fcmStatusDetail: {
-    fontSize: 13,
-    color: '#6c757d',
-    marginTop: 4,
-    paddingLeft: 36,
-  },
-  instructionsBox: {
-    marginTop: 20,
-    backgroundColor: '#e7f3ff',
-    padding: 16,
-    borderRadius: 12,
-    width: '90%',
-    borderLeftWidth: 4,
-    borderLeftColor: '#007bff',
-  },
-  instructionsTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#004085',
-    marginBottom: 12,
-  },
-  instructionsItem: {
-    fontSize: 13,
-    color: '#004085',
-    marginBottom: 8,
-    lineHeight: 18,
-  },
-  buildButton: {
-    marginTop: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#007bff',
+    borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  buildButtonText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  testButton: {
-    marginTop: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#28a745',
-    paddingVertical: 14,
-    paddingHorizontal: 28,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginTop: 24,
+    minWidth: 200,
   },
   testButtonDisabled: {
     backgroundColor: '#6c757d',
-    opacity: 0.6,
   },
   testButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
-  },
-  retryButton: {
-    marginTop: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: '#007bff',
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
     fontWeight: '600',
   },
-  infoBox: {
+  warningCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#e7f3ff',
-    padding: 12,
+    backgroundColor: '#fff3cd',
+    borderColor: '#ffc107',
+    borderWidth: 1,
     borderRadius: 8,
-    marginTop: 16,
-    gap: 8,
+    padding: 16,
+    marginTop: 24,
   },
-  expoGoWarning: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#FFF3CD',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#FFE69C',
-    gap: 8,
-  },
-  expoGoWarningText: {
-    flex: 1,
-    fontSize: 12,
-    color: '#856404',
-    lineHeight: 16,
-  },
-  infoText: {
-    fontSize: 12,
-    color: '#0052A2',
-    flex: 1,
-  },
-  emptyText: {
-    marginTop: 12,
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#666',
-    textAlign: 'center',
-  },
-  emptySubtext: {
-    marginTop: 8,
+  warningText: {
+    marginLeft: 12,
     fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-    paddingHorizontal: 40,
+    color: '#856404',
+    fontWeight: '500',
   },
 });
