@@ -24,6 +24,9 @@ export function useClearTaskCaches() {
     queryClient.removeQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
     queryClient.removeQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
     
+    // CRITICAL: Also remove filter API queries
+    queryClient.removeQueries({ queryKey: ['tasks', 'filter'] });
+    
     // Also remove any other task-related queries
     queryClient.removeQueries({ 
       predicate: (query: any) => {
@@ -155,6 +158,10 @@ export function useForceRefreshTasks() {
       type: 'all'
     });
     
+    // CRITICAL: Also invalidate and refetch filter API queries
+    await queryClient.invalidateQueries({ queryKey: ['tasks', 'filter'] });
+    await queryClient.refetchQueries({ queryKey: ['tasks', 'filter'] });
+    
     console.log("✅ All task data refreshed");
   };
 }
@@ -199,6 +206,9 @@ export function clearAllCachesGlobal(queryClient: any) {
     queryClient.removeQueries({ queryKey: TASK_QUERY_KEYS.lists() });
     queryClient.removeQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
     queryClient.removeQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
+    
+    // CRITICAL: Also remove filter API queries
+    queryClient.removeQueries({ queryKey: ['tasks', 'filter'] });
     
     // Clear all categories-related queries
     queryClient.removeQueries({ queryKey: CATEGORIES_QUERY_KEYS.all });
