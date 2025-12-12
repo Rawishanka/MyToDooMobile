@@ -341,7 +341,12 @@ export function useCreateTask() {
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.lists() }); // Force immediate refetch of browse tasks
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() }); // Force immediate refetch of my tasks
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers specifically
-      console.log("✅ Force refetched all task queries after creating new task - browse tasks should update immediately");
+      
+      // CRITICAL FIX: Invalidate filter API queries used by browse screen
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'filter'] }); // Invalidate ALL filter queries
+      queryClient.refetchQueries({ queryKey: ['tasks', 'filter'] }); // Force immediate refetch of filter queries
+      
+      console.log("✅ Force refetched all task queries (including filter API) after creating new task - browse tasks should update immediately");
     },
   });
 }
@@ -366,6 +371,10 @@ export function usePostTaskDirect() {
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
       
+      // CRITICAL FIX: Invalidate filter API queries used by browse screen
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'filter'] }); // Invalidate ALL filter queries
+      queryClient.refetchQueries({ queryKey: ['tasks', 'filter'] }); // Force immediate refetch of filter queries
+      
       // If we have the created task ID, invalidate its specific detail query
       console.log("🔍 Task creation result structure:", JSON.stringify(result, null, 2));
       const createdTaskId = (result as any)?.data?.id || (result as any)?.data?._id;
@@ -376,7 +385,7 @@ export function usePostTaskDirect() {
         console.log("⚠️ Could not extract task ID from result - cannot invalidate specific detail");
       }
       
-      console.log("✅ Task posted successfully (DIRECT) - force refetched all task queries and specific detail");
+      console.log("✅ Task posted successfully (DIRECT) - force refetched all task queries (including filter API) and specific detail");
     },
     onError: (error: any) => {
       if (!isNetworkError(error) && __DEV__) {
@@ -411,7 +420,12 @@ export function usePostTaskWithImages() {
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.lists() }); // Force immediate refetch of browse tasks
       queryClient.refetchQueries({ queryKey: TASK_QUERY_KEYS.myTasks() }); // Force immediate refetch of my tasks
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers specifically
-      console.log("✅ Task with images posted successfully - force refetched all task queries");
+      
+      // CRITICAL FIX: Invalidate filter API queries used by browse screen
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'filter'] }); // Invalidate ALL filter queries
+      queryClient.refetchQueries({ queryKey: ['tasks', 'filter'] }); // Force immediate refetch of filter queries
+      
+      console.log("✅ Task with images posted successfully - force refetched all task queries (including filter API)");
     },
     onError: (error: any) => {
       if (!isNetworkError(error) && __DEV__) {
@@ -442,7 +456,12 @@ export function usePostTask() {
     onSuccess: (result, variables) => {
       // Optimized: Only invalidate queries, let them refetch on demand
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all });
-      console.log("✅ Task posted successfully");
+      
+      // CRITICAL FIX: Invalidate filter API queries used by browse screen
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'filter'] }); // Invalidate ALL filter queries
+      queryClient.refetchQueries({ queryKey: ['tasks', 'filter'] }); // Force immediate refetch of filter queries
+      
+      console.log("✅ Task posted successfully (including filter API invalidation)");
     },
     onError: (error: any) => {
       if (!isNetworkError(error) && __DEV__) {
@@ -492,6 +511,11 @@ export function useUpdateTask() {
       
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers
       console.log('✅ Invalidated my offers query');
+      
+      // CRITICAL FIX: Invalidate filter API queries used by browse screen
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'filter'] }); // Invalidate ALL filter queries
+      queryClient.refetchQueries({ queryKey: ['tasks', 'filter'] }); // Force immediate refetch of filter queries
+      console.log('✅ Invalidated and refetched filter API queries');
       
       console.log("✅ useUpdateTask: All cache operations completed - UI should update immediately");
     },
@@ -555,6 +579,11 @@ export function useUpdateTaskWithImages() {
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers
       console.log('✅ Invalidated my offers query');
       
+      // CRITICAL FIX: Invalidate filter API queries used by browse screen
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'filter'] }); // Invalidate ALL filter queries
+      queryClient.refetchQueries({ queryKey: ['tasks', 'filter'] }); // Force immediate refetch of filter queries
+      console.log('✅ Invalidated and refetched filter API queries');
+      
       console.log("✅ useUpdateTaskWithImages: All cache operations completed - UI should update immediately");
     },
     onError: (error: any, variables) => {
@@ -582,6 +611,10 @@ export function useDeleteTask() {
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.all }); // All views
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.lists() }); // Browse tasks
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() }); // My tasks
+      
+      // CRITICAL FIX: Invalidate filter API queries used by browse screen
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'filter'] }); // Invalidate ALL filter queries
+      queryClient.refetchQueries({ queryKey: ['tasks', 'filter'] }); // Force immediate refetch of filter queries
     },
   });
 }

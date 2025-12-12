@@ -98,6 +98,62 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     return 'Flexible';
   };
 
+  // Helper: Format date for display
+  const formatTaskDate = (date: string | undefined) => {
+    if (!date) return null;
+    try {
+      const dateObj = new Date(date);
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      // Reset hours for date comparison
+      today.setHours(0, 0, 0, 0);
+      tomorrow.setHours(0, 0, 0, 0);
+      const compareDate = new Date(dateObj);
+      compareDate.setHours(0, 0, 0, 0);
+      
+      if (compareDate.getTime() === today.getTime()) {
+        return 'Today';
+      } else if (compareDate.getTime() === tomorrow.getTime()) {
+        return 'Tomorrow';
+      } else {
+        return dateObj.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+        });
+      }
+    } catch {
+      return null;
+    }
+  };
+
+  // Helper: Get date display text
+  const getDateDisplay = () => {
+    if (!task.dateRange) return null;
+    
+    const { start, end } = task.dateRange;
+    const dateType = task.dateType?.toLowerCase();
+    
+    if (dateType === 'doneby' && end) {
+      // "Before" or "By" specific date
+      const formattedDate = formatTaskDate(end);
+      return formattedDate ? `By ${formattedDate}` : null;
+    } else if (dateType === 'doneon' && start) {
+      // "On" specific date
+      const formattedDate = formatTaskDate(start);
+      return formattedDate ? `On ${formattedDate}` : null;
+    } else if (dateType === 'easy' || dateType === 'flexible') {
+      // Flexible - no specific date
+      return null;
+    }
+    
+    return null;
+  };
+
+  const dateDisplay = getDateDisplay();
+
   // Helper: Get status color
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -232,6 +288,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <Ionicons name="time-outline" size={RFValue(14)} color={colors.textSecondary} />
         <Text style={styles.taskRowText}>{getTimePreference()}</Text>
       </View>
+
+      {/* Date Display - Show when specific date is set */}
+      {dateDisplay && (
+        <View style={styles.taskRow}>
+          <Ionicons name="calendar-outline" size={RFValue(14)} color={colors.textSecondary} />
+          <Text style={styles.taskRowText}>{dateDisplay}</Text>
+        </View>
+      )}
 
       {/* Categories */}
       {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
