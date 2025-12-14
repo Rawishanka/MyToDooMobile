@@ -33,6 +33,7 @@ interface PaymentSummaryItem {
   posterName: string;
   acceptedDate: string;
   status: string;
+  taskStatus?: string; // Actual task status (completed, assigned, in_progress, etc.)
   paymentStatus: string;
 }
 
@@ -78,6 +79,17 @@ export default function PaymentSummaryScreen() {
       samplePayments: paymentsData.slice(0, 2),
       currentUserId: currentUser?._id || currentUser?.id
     });
+    
+    // Log full payment structure for debugging
+    if (paymentsData.length > 0) {
+      console.log('📊 Full Payment Data Sample:', {
+        payment: paymentsData[0],
+        task: paymentsData[0]?.task,
+        offer: paymentsData[0]?.offer,
+        paymentStatus: paymentsData[0]?.status,
+        taskStatus: paymentsData[0]?.task?.status
+      });
+    }
     
     // Process payment data from dedicated endpoints
     return paymentsData.map((payment: any) => {
@@ -209,17 +221,64 @@ export default function PaymentSummaryScreen() {
           : `${task.createdBy?.firstName || 'Poster'} ${task.createdBy?.lastName || ''}`.trim(),
         acceptedDate: payment.releasedAt || payment.updatedAt || payment.createdAt,
         status: payment.status,
-        paymentStatus: payment.status === 'completed' || payment.status === 'released' ? 'completed' :
-                      payment.status === 'failed' ? 'failed' : 'pending'
+        taskStatus: task.status, // Store actual task status
+        // Payment status logic:
+        // - 'completed': Payment released after task completion
+        // - 'pending': Task in progress (assigned/in_progress/todo), payment held in escrow
+        // - 'failed': Payment processing failed
+        paymentStatus: 
+          // If payment explicitly failed
+          (payment.status === 'failed' || payment.status === 'canceled') ? 'failed' :
+          // If task completed and payment released
+          (task.status === 'completed' && (payment.status === 'completed' || payment.status === 'released')) ? 'completed' :
+          // If task in progress (payment held in escrow)
+          (task.status === 'assigned' || task.status === 'in_progress' || task.status === 'todo' || task.status === 'in-progress') ? 'pending' :
+          // Fallback: check payment status alone
+          (payment.status === 'completed' || payment.status === 'released') ? 'completed' : 'pending'
       };
     }).sort((a, b) => new Date(b.acceptedDate).getTime() - new Date(a.acceptedDate).getTime());
   }, [taskerPaymentsData?.payments, posterPaymentsData?.payments, userCurrencyInfo, currentUser, userRole]);
   
-  // Calculate totals
+  // Calculate totals - only count payments that should be displayed
   const totalAmount = paymentSummaryItems.reduce((sum, item) => sum + item.offerAmount, 0);
-  const completedPayments = paymentSummaryItems.filter(item => item.paymentStatus === 'completed').length;
-  const pendingPayments = paymentSummaryItems.filter(item => item.paymentStatus === 'pending').length;
-  const failedPayments = paymentSummaryItems.filter(item => item.paymentStatus === 'failed').length;
+  
+  // PAYMENT STATUS LOGIC:
+  // - Paid (completed): Task completed AND payment released to tasker
+  // - Pending: Task in progress (assigned/in_progress/todo), payment held in Stripe escrow
+  // - Failed: Payment processing failed
+  
+  // Count completed payments (released to tasker)
+  const completedPayments = paymentSummaryItems.filter(item => 
+    item.paymentStatus === 'completed'
+  ).length;
+  
+  // Count pending payments (held in escrow)
+  const pendingPayments = paymentSummaryItems.filter(item => 
+    item.paymentStatus === 'pending'
+  ).length;
+  
+  // Count failed payments
+  const failedPayments = paymentSummaryItems.filter(item => 
+    item.paymentStatus === 'failed'
+  ).length;
+  
+  // Debug: Log payment breakdown
+  console.log('💳 Payment Summary Breakdown:', {
+    userRole,
+    totalItems: paymentSummaryItems.length,
+    completed: completedPayments,
+    pending: pendingPayments,
+    failed: failedPayments,
+    totalAmount,
+    itemsBreakdown: paymentSummaryItems.map(item => ({
+      taskId: item.taskId,
+      taskTitle: item.taskTitle,
+      taskStatus: item.taskStatus,
+      paymentStatus: item.paymentStatus,
+      status: item.status,
+      amount: item.offerAmount
+    }))
+  });
   
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
