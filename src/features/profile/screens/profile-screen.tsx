@@ -854,6 +854,7 @@ export default function AccountScreen() {
                   : (ratingData.asPoster?.totalReviews || 0) + (ratingData.asTasker?.totalReviews || 0);
                 
                 console.log('📊 Displaying Total Reviews:', actualTotalReviews);
+                console.log('📊 Rating Distribution:', JSON.stringify(ratingData?.ratingDistribution));
                 
                 return (
                   <OverallRatingSection
@@ -879,7 +880,7 @@ export default function AccountScreen() {
                 userName={userData?.firstName || 'User'}
               />
               
-              <ReviewsList />
+              <ReviewsList userId={userId} />
             </>
           ) : userData ? (
             <>

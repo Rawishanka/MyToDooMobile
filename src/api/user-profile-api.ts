@@ -59,6 +59,30 @@ export interface UpdateProfileRequest {
   };
 }
 
+// Raw API response structure
+export interface RatingStatsApiResponse {
+  asPoster: {
+    average: number;
+    count: number;
+  };
+  asTasker: {
+    average: number;
+    count: number;
+  };
+  distribution: {
+    "1": number;
+    "2": number;
+    "3": number;
+    "4": number;
+    "5": number;
+  };
+  overall: {
+    average: number;
+    count: number;
+  };
+}
+
+// Transformed rating stats for app use
 export interface RatingStats {
   userId: string;
   averageRating: number;
@@ -82,7 +106,7 @@ export interface RatingStats {
 
 export interface RatingStatsResponse {
   success: boolean;
-  data: RatingStats;
+  data: RatingStatsApiResponse;
 }
 
 export interface Review {
@@ -113,12 +137,11 @@ export interface Review {
 
 export interface ReviewsListResponse {
   success: boolean;
-  data: Review[];
-  pagination: {
+  data: {
+    reviews: Review[];
     currentPage: number;
     totalPages: number;
-    totalReviews: number;
-    hasMore: boolean;
+    totalCount: number;
   };
 }
 
@@ -335,10 +358,11 @@ export async function getUserRatingStats(userId: string): Promise<RatingStatsRes
       return {
         success: true,
         data: {
-          userId: userId,
-          averageRating: 4.0,
-          totalReviews: 1,
-          ratingDistribution: {
+          overall: {
+            average: 4.0,
+            count: 1
+          },
+          distribution: {
             "5": 0,
             "4": 1,
             "3": 0,
@@ -346,12 +370,12 @@ export async function getUserRatingStats(userId: string): Promise<RatingStatsRes
             "1": 0
           },
           asPoster: {
-            averageRating: 4.0,
-            totalReviews: 1
+            average: 4.0,
+            count: 1
           },
           asTasker: {
-            averageRating: 0,
-            totalReviews: 0
+            average: 0,
+            count: 0
           }
         }
       };
@@ -372,17 +396,21 @@ export async function getUserReviews(
   userId: string,
   page: number = 1,
   limit: number = 10,
-  role?: "poster" | "tasker",
-  populate?: string
+  role?: "poster" | "tasker"
 ): Promise<ReviewsListResponse> {
   try {
-    console.log(`📝 Fetching reviews for user ${userId}, page: ${page}`);
-    const params: any = { page, limit };
+    console.log(`📝 Fetching reviews for user ${userId}, page: ${page}, role: ${role}`);
+    const params: any = { page, limit, populate: 'reviewer' };
     if (role) params.role = role;
-    if (populate) params.populate = populate;
     
     const response = await api.get(`/users/${userId}/reviews`, { params });
-    console.log("✅ Reviews fetched successfully:", response.data);
+    console.log("✅ Reviews fetched successfully:", JSON.stringify(response.data, null, 2));
+    
+    // Log first review structure if available
+    if (response.data?.data?.reviews?.length > 0) {
+      console.log("📋 First review structure:", JSON.stringify(response.data.data.reviews[0], null, 2));
+    }
+    
     return response.data;
   } catch (error: any) {
     // Network error fallback
@@ -390,12 +418,11 @@ export async function getUserReviews(
       console.log("ℹ️ Network unavailable - Using mock reviews");
       return {
         success: true,
-        data: [],
-        pagination: {
+        data: {
+          reviews: [],
           currentPage: page,
           totalPages: 0,
-          totalReviews: 0,
-          hasMore: false
+          totalCount: 0
         }
       };
     }

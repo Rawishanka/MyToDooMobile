@@ -1,4 +1,4 @@
-import { useGetPosterReviews, useGetTaskerReviews } from '@/src/shared/hooks/useTaskApi';
+import { useGetUserReviews } from '@/src/shared/hooks/useUserProfileApi';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -75,9 +75,31 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
     ));
   };
   
-  // Get reviewer info from either reviewer, reviewerId, or revieweeId
+  // Get reviewer info - handle both populated and non-populated cases
   const reviewer = review.reviewer || review.reviewerId || review.revieweeId;
-  const reviewerName = reviewer ? `${reviewer.firstName} ${reviewer.lastName}` : 'Anonymous';
+  
+  // Check if reviewer is a populated object with firstName/lastName or just an ID string
+  const isPopulated = reviewer && typeof reviewer === 'object' && 'firstName' in reviewer;
+  
+  const reviewerName = isPopulated
+    ? `${reviewer.firstName || ''} ${reviewer.lastName || ''}`.trim() || 'Anonymous'
+    : review.reviewerRole 
+      ? `${review.reviewerRole.charAt(0).toUpperCase() + review.reviewerRole.slice(1)} User`
+      : 'Anonymous';
+  
+  // Get avatar initial
+  const getAvatarInitial = () => {
+    if (isPopulated) {
+      if (reviewer.firstName && reviewer.firstName.length > 0) {
+        return reviewer.firstName.charAt(0).toUpperCase();
+      }
+      if (reviewer.lastName && reviewer.lastName.length > 0) {
+        return reviewer.lastName.charAt(0).toUpperCase();
+      }
+    }
+    // Fallback to role initial if not populated
+    return review.reviewerRole ? review.reviewerRole.charAt(0).toUpperCase() : 'A';
+  };
   
   // Get task title
   let taskTitle = 'Task';
@@ -94,7 +116,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
         <View style={styles.reviewerInfo}>
           <View style={styles.avatarPlaceholder}>
             <Text style={styles.avatarText}>
-              {reviewer ? reviewer.firstName.charAt(0).toUpperCase() : 'A'}
+              {getAvatarInitial()}
             </Text>
           </View>
           <View style={styles.reviewerDetails}>
@@ -136,56 +158,36 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
   );
 };
 
-export const ReviewsList: React.FC = () => {
-  const [activeRole, setActiveRole] = React.useState<'tasker' | 'poster'>('tasker');
+interface ReviewsListProps {
+  userId: string;
+}
+
+export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
+  const [activeRole, setActiveRole] = React.useState<'tasker' | 'poster'>('poster');
   const [currentPage, setCurrentPage] = React.useState(1);
   const limit = 10;
 
-  // Fetch reviews based on active role
+  // Fetch reviews for the specific user (reviews RECEIVED by this user)
   const {
-    data: taskerData,
-    isLoading: taskerLoading,
-    refetch: refetchTasker,
-  } = useGetTaskerReviews({ page: currentPage, limit });
-
-  const {
-    data: posterData,
-    isLoading: posterLoading,
-    refetch: refetchPoster,
-  } = useGetPosterReviews({ page: currentPage, limit });
-
-  // Get active data based on selected role
-  const activeData = activeRole === 'tasker' ? taskerData : posterData;
-  const isLoading = activeRole === 'tasker' ? taskerLoading : posterLoading;
-  const refetch = activeRole === 'tasker' ? refetchTasker : refetchPoster;
+    data: reviewData,
+    isLoading,
+    refetch,
+  } = useGetUserReviews(userId, currentPage, limit, activeRole, !!userId);
 
   // Debug logging
   React.useEffect(() => {
     console.log("🔍 ReviewsList Debug:", {
+      userId,
       activeRole,
       currentPage,
-      taskerLoading,
-      posterLoading,
-      taskerData: taskerData ? {
-        success: taskerData.success,
-        hasData: !!taskerData.data,
-        reviewsCount: taskerData.data?.reviews?.length || 0,
-        ratingStats: taskerData.data?.ratingStats,
-        pagination: taskerData.data?.pagination,
-      } : null,
-      posterData: posterData ? {
-        success: posterData.success,
-        hasData: !!posterData.data,
-        reviewsCount: posterData.data?.reviews?.length || 0,
-        ratingStats: posterData.data?.ratingStats,
-        pagination: posterData.data?.pagination,
-      } : null,
+      isLoading,
+      reviewCount: reviewData?.reviews?.length || 0,
+      hasMore: reviewData?.pagination?.hasMore || false,
     });
-  }, [activeRole, currentPage, taskerData, posterData, taskerLoading, posterLoading]);
+  }, [userId, activeRole, currentPage, reviewData, isLoading]);
 
-  const reviews = activeData?.data?.reviews || [];
-  const pagination = activeData?.data?.pagination;
-  const ratingStats = activeData?.data?.ratingStats;
+  const reviews = reviewData?.reviews || [];
+  const pagination = reviewData?.pagination;
 
   const hasMore = pagination ? pagination.currentPage < pagination.totalPages : false;
 
@@ -211,33 +213,6 @@ export const ReviewsList: React.FC = () => {
   React.useEffect(() => {
     refetch();
   }, [currentPage, refetch]);
-
-  const renderRatingStats = () => {
-    if (!ratingStats) return null;
-
-    return (
-      <View style={styles.statsContainer}>
-        <View style={styles.averageRatingContainer}>
-          <Text style={styles.averageRatingNumber}>
-            {ratingStats.average.toFixed(1)}
-          </Text>
-          <View style={styles.starsRow}>
-            {Array.from({ length: 5 }, (_, index) => (
-              <Ionicons
-                key={index}
-                name={index < Math.round(ratingStats.average) ? "star" : "star-outline"}
-                size={16}
-                color={index < Math.round(ratingStats.average) ? "#FFD700" : "#E0E0E0"}
-              />
-            ))}
-          </View>
-          <Text style={styles.totalReviewsText}>
-            Based on {ratingStats.count} review{ratingStats.count !== 1 ? 's' : ''}
-          </Text>
-        </View>
-      </View>
-    );
-  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
@@ -323,15 +298,11 @@ export const ReviewsList: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Rating Statistics */}
-      {renderRatingStats()}
-
       {/* Debug Info - Remove after testing */}
       {__DEV__ && (
         <View style={{ padding: 10, backgroundColor: '#f0f0f0', marginHorizontal: 16, marginVertical: 8, borderRadius: 4 }}>
           <Text style={{ fontSize: 10, fontFamily: 'monospace' }}>
-            DEBUG: {activeRole} | Loading: {isLoading.toString()} | Reviews: {reviews.length} | 
-            Stats Count: {ratingStats?.count || 0} | Has More: {hasMore.toString()}
+            DEBUG: UserId: {userId} | Role: {activeRole} | Page: {currentPage} | Loading: {isLoading.toString()} | Reviews: {reviews.length} | Has More: {hasMore.toString()}
           </Text>
         </View>
       )}
