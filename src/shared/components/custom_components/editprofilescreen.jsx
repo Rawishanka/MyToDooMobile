@@ -1,6 +1,6 @@
 // EditProfileScreen.tsx
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   Image,
@@ -15,9 +15,14 @@ import {
 
 const EditProfileScreen = ({ onBack, onSave }) => {
   const [firstName, setFirstName] = useState('Prasanna');
-  const [lastName, setLastName] = useState('Jayasinghe');
-  const [bio, setBio] = useState('');
-  const [location, setLocation] = useState('Narre Warren VIC, Australia');
+  const [lastName, setLastName] = useState('Hewapathirana');
+  const [bio, setBio] = useState('Hi I\'m Janidu');
+  const [phone, setPhone] = useState('+94771628274');
+  const [country, setCountry] = useState('Sri Lanka');
+  const [countryCode, setCountryCode] = useState('LK');
+  const [suburb, setSuburb] = useState('Meerigama');
+  const [region, setRegion] = useState('Western Province');
+  const [city, setCity] = useState('Meerigama');
   const [profileImage, setProfileImage] = useState('https://randomuser.me/api/portraits/men/1.jpg');
   const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState('');
@@ -36,45 +41,85 @@ const EditProfileScreen = ({ onBack, onSave }) => {
     { id: 4, uri: 'https://randomuser.me/api/portraits/women/2.jpg', good: false },
   ];
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     // Validate required fields
     if (!firstName.trim() || !lastName.trim()) {
       Alert.alert('Missing Information', 'Please enter both first name and last name.');
       return;
     }
 
-    const profileData = {
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      bio: bio.trim(),
-      location,
-      profileImage,
-      skills,
-      fullName: `${firstName.trim()} ${lastName.trim()}`,
-      completedSections: {
-        profilePicture: !!profileImage,
-        bio: !!bio.trim(),
-        skills: skills.length > 0,
-        personalInfo: !!(firstName.trim() && lastName.trim()),
-        location: !!location,
+    console.log('💾 [Profile Edit] Save Changes button pressed');
+    
+    try {
+      // Flatten skills array for API
+      const flattenedSkills = [
+        ...skills
+      ];
+
+      // Prepare the profile update data
+      const profileUpdateData = {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        phone: phone.trim(),
+        location: `${city.trim()}, ${region.trim()}`, // Format as "City, Region"
+        bio: bio.trim(),
+        skills: flattenedSkills
+      };
+
+      console.log('📤 [Profile Edit] Updating profile with data:', JSON.stringify(profileUpdateData, null, 2));
+
+      // Import the update profile API
+      const { updateUserProfile } = await import('@/src/api/user-profile-api');
+      
+      // Call the API to update profile
+      const response = await updateUserProfile(profileUpdateData);
+
+      console.log('✅ [Profile Edit] Profile updated successfully:', JSON.stringify(response, null, 2));
+
+      if (response.success) {
+        // Show success alert
+        Alert.alert(
+          '✓ Success',
+          'Profile updated successfully!',
+          [
+            { 
+              text: 'OK', 
+              onPress: () => {
+                // Call onSave callback with updated data
+                if (onSave) {
+                  onSave({
+                    firstName: firstName.trim(),
+                    lastName: lastName.trim(),
+                    phone: phone.trim(),
+                    location: `${city.trim()}, ${region.trim()}`,
+                    bio: bio.trim(),
+                    skills: flattenedSkills,
+                    fullName: `${firstName.trim()} ${lastName.trim()}`
+                  });
+                }
+                // Navigate back
+                if (onBack) {
+                  onBack();
+                }
+              }
+            }
+          ]
+        );
       }
-    };
-    
-    // Call the onSave callback with the updated data
-    if (onSave) {
-      onSave(profileData);
+    } catch (error) {
+      console.error('❌ [Profile Edit] Error updating profile:', error);
+      console.error('❌ [Profile Edit] Error details:', {
+        message: error?.message,
+        response: error?.response?.data,
+        status: error?.response?.status,
+      });
+      
+      Alert.alert(
+        'Error',
+        error?.response?.data?.message || error?.message || 'Failed to update profile. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
-    
-    Alert.alert(
-      'Profile Updated',
-      `Your profile has been saved successfully!\n\nName: ${profileData.fullName}\nSkills: ${skills.length} added\nBio: ${bio.trim() ? 'Added' : 'Not added'}`,
-      [
-        {
-          text: 'OK',
-          onPress: () => onBack && onBack(),
-        },
-      ]
-    );
   };
 
   const handleChangePhoto = () => {
@@ -195,7 +240,7 @@ const EditProfileScreen = ({ onBack, onSave }) => {
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit public profile</Text>
+        <Text style={styles.headerTitle}>Edit Profile</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -327,17 +372,74 @@ const EditProfileScreen = ({ onBack, onSave }) => {
           />
         </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Phone Number</Text>
+          <TextInput
+            style={styles.textInput}
+            value={phone}
+            onChangeText={setPhone}
+            placeholder="Phone number"
+            placeholderTextColor="#999"
+            keyboardType="phone-pad"
+          />
+        </View>
+
         {/* Location Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Location</Text>
-          <Text style={styles.sectionSubtext}>
-            Which suburb are you based in?
-          </Text>
-          
-          <TouchableOpacity style={styles.locationButton}>
-            <Ionicons name="location-outline" size={20} color="#666" />
-            <Text style={styles.locationText}>{location}</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>Country</Text>
+          <TextInput
+            style={styles.textInput}
+            value={country}
+            onChangeText={setCountry}
+            placeholder="Enter your country"
+            placeholderTextColor="#999"
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Country Code</Text>
+          <TextInput
+            style={styles.textInput}
+            value={countryCode}
+            onChangeText={setCountryCode}
+            placeholder="e.g., AU, US, UK"
+            placeholderTextColor="#999"
+            autoCapitalize="characters"
+            maxLength={2}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Suburb</Text>
+          <TextInput
+            style={styles.textInput}
+            value={suburb}
+            onChangeText={setSuburb}
+            placeholder="Enter your suburb"
+            placeholderTextColor="#999"
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>State/Region</Text>
+          <TextInput
+            style={styles.textInput}
+            value={region}
+            onChangeText={setRegion}
+            placeholder="Enter your state or region"
+            placeholderTextColor="#999"
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>City</Text>
+          <TextInput
+            style={styles.textInput}
+            value={city}
+            onChangeText={setCity}
+            placeholder="Enter your city"
+            placeholderTextColor="#999"
+          />
         </View>
 
         {/* Save Button */}

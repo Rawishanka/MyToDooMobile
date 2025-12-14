@@ -1,8 +1,8 @@
 import FallingStars from '@/src/shared/components/FallingStars';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ResizeMode, Video } from 'expo-av';
 import { Link, useRouter } from 'expo-router';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -92,6 +92,13 @@ export default function WelcomeScreen() {
   const nextCategory = categoryVideos[nextIndex];
   const currentVideo = getCategoryVideo(currentCategory.id);
   const nextVideo = getCategoryVideo(nextCategory.id);
+  
+  // Create video player for current video
+  const player = useVideoPlayer(currentVideo || undefined, player => {
+    player.loop = true;
+    player.muted = true;
+    player.play();
+  });
 
   // Show loading while checking authentication
   if (isCheckingAuth) {
@@ -121,39 +128,17 @@ export default function WelcomeScreen() {
       {/* Hero Category Video Card */}
       <View style={styles.heroContainer}>
         <View style={styles.heroVideoWrapper}>
-          {currentVideo ? (
-            <Video
-              source={currentVideo}
+          {currentVideo !== null && currentVideo !== undefined ? (
+            <VideoView
+              player={player}
               style={styles.heroVideo}
-              shouldPlay
-              isLooping
-              isMuted
-              useNativeControls={false}
-              resizeMode={ResizeMode.CONTAIN}
-              onError={(error) => {
-                console.warn('Video error for', currentCategory.title, ':', error);
-              }}
-              onLoad={() => {
-                setVideoLoaded(true);
-              }}
+              nativeControls={false}
+              contentFit="contain"
             />
           ) : (
             <View style={styles.videoPlaceholder}>
               <Text style={styles.placeholderText}>{currentCategory.title}</Text>
             </View>
-          )}
-          
-          {/* Preload next video for smooth transitions */}
-          {nextVideo && nextVideo !== currentVideo && (
-            <Video
-              source={nextVideo}
-              style={[styles.heroVideo, { opacity: 0, zIndex: -1 }]}
-              shouldPlay={false}
-              isLooping
-              isMuted
-              useNativeControls={false}
-              resizeMode={ResizeMode.CONTAIN}
-            />
           )}
         </View>
         {/* Show full category title below video */}

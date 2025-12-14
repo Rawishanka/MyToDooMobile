@@ -91,11 +91,9 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       console.log(`📍 Processing task ${index + 1} - ${task.title}:`, {
         id: task._id,
         address: task.location.address,
-        coordsExists: !!coords,
-        coordsType: typeof coords,
-        coordsIsEmpty: coords && Object.keys(coords).length === 0,
-        coordsContent: JSON.stringify(coords, null, 2),
-        coords: coords
+        hasCoordinates: !!coords,
+        coordinatesType: coords ? typeof coords : 'undefined',
+        coordinatesValue: coords ? JSON.stringify(coords) : 'none'
       });
 
       if (coords && Object.keys(coords).length > 0) {
@@ -134,8 +132,12 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         }
       }
 
-      // If no coordinates found OR coordinates are (0,0), try to geocode the address using known locations
-      if ((lat === null || lng === null || isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) && task.location.address) {
+      // If no coordinates found OR coordinates are invalid (0,0), try to geocode the address using known locations
+      // ⚠️ IMPORTANT: Only use geocoding as FALLBACK when coordinates are truly missing or invalid
+      // The database coordinates should ALWAYS take priority for accuracy
+      const needsGeocoding = (lat === null || lng === null || isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0));
+      
+      if (needsGeocoding && task.location.address) {
         console.log(`🔍 No valid API coordinates found (lat: ${lat}, lng: ${lng}), geocoding address for ${task.title}:`, task.location.address);
         const geocodedCoords = geocodeAddressSync(task.location.address);
         if (geocodedCoords) {
@@ -145,6 +147,8 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         } else {
           console.log(`❌ Could not geocode ${task.location.address}`);
         }
+      } else if (!needsGeocoding) {
+        console.log(`✅ Using exact coordinates from database for ${task.title}:`, { lat, lng, address: task.location.address });
       }
 
       // Add marker if we have valid coordinates

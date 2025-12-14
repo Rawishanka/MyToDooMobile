@@ -38,6 +38,8 @@ export default function AccountScreen() {
   const [editAccessStatus, setEditAccessStatus] = useState<'locked' | 'pending' | 'approved'>('locked');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
+  const [isSendingRequest, setIsSendingRequest] = useState(false);
+  const [requestError, setRequestError] = useState<string | null>(null);
   
   // ID Verification request flow states
   const [idVerificationStatus, setIdVerificationStatus] = useState<'locked' | 'pending' | 'approved'>('locked');
@@ -392,29 +394,59 @@ export default function AccountScreen() {
   };
 
   const navigateToProfileUpdate = () => {
-    // Check edit access status
-    if (editAccessStatus === 'locked') {
-      // Show request modal if locked
-      setShowRequestModal(true);
-    } else if (editAccessStatus === 'pending') {
-      // Show pending modal if already requested
-      setShowPendingModal(true);
-    } else {
-      // Only allow editing if approved
-      setCurrentScreen('profile-update');
-    }
+    // Always allow navigation to edit screen
+    // Status check happens when user clicks Save button
+    setCurrentScreen('profile-update');
   };
 
-  const handleSendRequest = () => {
-    setShowRequestModal(false);
-    // TODO: Send request to backend API
-    // For now, just update the status to pending
-    setEditAccessStatus('pending');
+  const handleSendRequest = async () => {
+    setIsSendingRequest(true);
+    setRequestError(null);
     
-    // Show pending modal
-    setTimeout(() => {
-      setShowPendingModal(true);
-    }, 300);
+    try {
+      // TODO: Replace with actual backend API call when endpoint is ready
+      // Example:
+      // const response = await fetch(`${API_CONFIG.BASE_URL}/users/request-edit-access`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Authorization': `Bearer ${token}`,
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({
+      //     userId: userId,
+      //     requestType: 'profile_edit',
+      //     requestedAt: new Date().toISOString()
+      //   })
+      // });
+      // const data = await response.json();
+      // 
+      // if (!data.success) {
+      //   throw new Error(data.message || 'Failed to send request');
+      // }
+      
+      console.log('📤 Sending profile edit access request to admin...');
+      console.log('User ID:', userId);
+      console.log('User Email:', authUser?.email);
+      
+      // Simulate API call for now (remove this when backend is ready)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Update status to pending after successful request
+      setEditAccessStatus('pending');
+      setShowRequestModal(false);
+      
+      // Show success/pending modal
+      setTimeout(() => {
+        setShowPendingModal(true);
+      }, 300);
+      
+      console.log('✅ Profile edit access request sent successfully');
+    } catch (error: any) {
+      console.error('❌ Failed to send edit access request:', error);
+      setRequestError(error.message || 'Failed to send request. Please try again.');
+    } finally {
+      setIsSendingRequest(false);
+    }
   };
 
   const navigateToFAQ = () => {
@@ -459,16 +491,32 @@ export default function AccountScreen() {
     }
   };
 
-  const handleSendIdVerificationRequest = () => {
-    setShowIdRequestModal(false);
-    // TODO: Send request to backend API
-    // For now, just update the status to pending
-    setIdVerificationStatus('pending');
+  const handleSendIdVerificationRequest = async () => {
+    setIsSendingRequest(true);
+    setRequestError(null);
     
-    // Show pending modal
-    setTimeout(() => {
-      setShowIdPendingModal(true);
-    }, 300);
+    try {
+      // TODO: Replace with actual backend API call when endpoint is ready
+      console.log('📤 Sending ID verification access request to admin...');
+      console.log('User ID:', userId);
+      
+      // Simulate API call for now (remove this when backend is ready)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setIdVerificationStatus('pending');
+      setShowIdRequestModal(false);
+      
+      setTimeout(() => {
+        setShowIdPendingModal(true);
+      }, 300);
+      
+      console.log('✅ ID verification access request sent successfully');
+    } catch (error: any) {
+      console.error('❌ Failed to send ID verification request:', error);
+      setRequestError(error.message || 'Failed to send request. Please try again.');
+    } finally {
+      setIsSendingRequest(false);
+    }
   };
 
   // If profile update screen is selected, show profile update form
@@ -622,26 +670,39 @@ export default function AccountScreen() {
             
             // Handle object location
             if (typeof loc === 'object') {
-              // Try nested address first (e.g., { address: { city, state, country } })
-              const nested = (loc as any).address;
-              if (nested && typeof nested === 'object') {
-                const parts = [];
-                if (nested.city) parts.push(nested.city);
-                if (nested.state) parts.push(nested.state);
-                if (nested.country) parts.push(nested.country);
-                if (parts.length > 0) return parts.join(', ');
-              }
-              
-              // Try direct properties (e.g., { city, state, country })
+              // Build location string from available fields (suburb, region, country)
+              // Filter out empty, null, undefined, and "Not specified" values
               const parts = [];
-              if ((loc as any).city) parts.push((loc as any).city);
-              if ((loc as any).state) parts.push((loc as any).state);
-              if ((loc as any).country) parts.push((loc as any).country);
+              
+              const isValidValue = (value: any) => {
+                return value && 
+                       value !== 'Not specified' && 
+                       value !== 'not specified' && 
+                       value.trim().length > 0;
+              };
+              
+              // Add suburb or city first
+              if (isValidValue((loc as any).suburb)) parts.push((loc as any).suburb);
+              else if (isValidValue((loc as any).city)) parts.push((loc as any).city);
+              
+              // Add region or state
+              if (isValidValue((loc as any).region)) parts.push((loc as any).region);
+              else if (isValidValue((loc as any).state)) parts.push((loc as any).state);
+              
+              // Add country
+              if (isValidValue((loc as any).country)) parts.push((loc as any).country);
+              
               if (parts.length > 0) return parts.join(', ');
               
-              // Try suburb or region
-              if ((loc as any).suburb) return (loc as any).suburb;
-              if ((loc as any).region) return (loc as any).region;
+              // Try nested address format
+              const nested = (loc as any).address;
+              if (nested && typeof nested === 'object') {
+                const nestedParts = [];
+                if (nested.city) nestedParts.push(nested.city);
+                if (nested.state) nestedParts.push(nested.state);
+                if (nested.country) nestedParts.push(nested.country);
+                if (nestedParts.length > 0) return nestedParts.join(', ');
+              }
               
               // Try address string
               if ((loc as any).address && typeof (loc as any).address === 'string') {
@@ -686,6 +747,96 @@ export default function AccountScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Skills Section */}
+      {(() => {
+        const skills = userData?.skills;
+        if (!skills || typeof skills !== 'object' || Array.isArray(skills)) return null;
+        
+        const typedSkills = skills as {
+          goodAt?: string[];
+          transport?: string[];
+          languages?: string[];
+          qualifications?: string[];
+          experience?: string[];
+        };
+        
+        return (
+          <View style={styles.skillsSection}>
+            <Text style={styles.skillsSectionTitle}>Skills</Text>
+            
+            {/* What are you good at? */}
+            {typedSkills.goodAt && typedSkills.goodAt.length > 0 && (
+              <View style={styles.skillCategory}>
+                <Text style={styles.skillCategoryTitle}>What are you good at?</Text>
+                <View style={styles.skillTagsContainer}>
+                  {typedSkills.goodAt.map((skill, index) => (
+                    <View key={index} style={styles.skillTagDisplay}>
+                      <Text style={styles.skillTagDisplayText}>{skill}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+            
+            {/* How do you get around? */}
+            {typedSkills.transport && typedSkills.transport.length > 0 && (
+              <View style={styles.skillCategory}>
+                <Text style={styles.skillCategoryTitle}>How do you get around?</Text>
+                <View style={styles.skillTagsContainer}>
+                  {typedSkills.transport.map((trans, index) => (
+                    <View key={index} style={styles.skillTagDisplay}>
+                      <Text style={styles.skillTagDisplayText}>{trans}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+            
+            {/* Languages */}
+            {typedSkills.languages && typedSkills.languages.length > 0 && (
+              <View style={styles.skillCategory}>
+                <Text style={styles.skillCategoryTitle}>Languages</Text>
+                <View style={styles.skillTagsContainer}>
+                  {typedSkills.languages.map((lang, index) => (
+                    <View key={index} style={styles.skillTagDisplay}>
+                      <Text style={styles.skillTagDisplayText}>{lang}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+            
+            {/* Qualifications */}
+            {typedSkills.qualifications && typedSkills.qualifications.length > 0 && (
+              <View style={styles.skillCategory}>
+                <Text style={styles.skillCategoryTitle}>Qualifications</Text>
+                <View style={styles.skillTagsContainer}>
+                  {typedSkills.qualifications.map((qual, index) => (
+                    <View key={index} style={styles.skillTagDisplay}>
+                      <Text style={styles.skillTagDisplayText}>{qual}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+            
+            {/* Work Experience */}
+            {typedSkills.experience && typedSkills.experience.length > 0 && (
+              <View style={styles.skillCategory}>
+                <Text style={styles.skillCategoryTitle}>Work Experience</Text>
+                <View style={styles.skillTagsContainer}>
+                  {typedSkills.experience.map((exp, index) => (
+                    <View key={index} style={styles.skillTagDisplay}>
+                      <Text style={styles.skillTagDisplayText}>{exp}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+          </View>
+        );
+      })()}
+
       {/* Rating and Reviews Section */}
       {userId && (
         <View style={styles.ratingSection}>
@@ -728,16 +879,7 @@ export default function AccountScreen() {
                 userName={userData?.firstName || 'User'}
               />
               
-              <ReviewsList
-                reviews={reviewsData?.reviews ?? []}
-                loading={reviewsLoading}
-                onLoadMore={() => {
-                  if (reviewsData?.pagination?.hasMore) {
-                    setReviewsPage((prev) => prev + 1);
-                  }
-                }}
-                hasMore={reviewsData?.pagination?.hasMore ?? false}
-              />
+              <ReviewsList />
             </>
           ) : userData ? (
             <>
@@ -771,10 +913,8 @@ export default function AccountScreen() {
           icon={<Ionicons name="person-outline" size={20} color="#0052A2" />}
           text="Edit Profile"
           onPress={navigateToProfileUpdate} 
-          subtext={editAccessStatus === 'locked' 
-            ? "Request access to edit" 
-            : editAccessStatus === 'pending' 
-            ? "Pending admin approval" 
+          subtext={editAccessStatus === 'pending' 
+            ? "Pending admin approval - changes won't save yet" 
             : "Update your personal information"}
           disabled={false}
         />
@@ -905,19 +1045,35 @@ export default function AccountScreen() {
               Admin will review your request.
             </Text>
             
+            {requestError && (
+              <View style={styles.modalErrorContainer}>
+                <Ionicons name="alert-circle" size={16} color="#dc3545" />
+                <Text style={styles.modalErrorText}>{requestError}</Text>
+              </View>
+            )}
+            
             <View style={styles.modalButtons}>
               <TouchableOpacity 
                 style={styles.modalCancelButton}
-                onPress={() => setShowRequestModal(false)}
+                onPress={() => {
+                  setShowRequestModal(false);
+                  setRequestError(null);
+                }}
+                disabled={isSendingRequest}
               >
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={styles.modalSendButton}
+                style={[styles.modalSendButton, isSendingRequest && styles.modalButtonDisabled]}
                 onPress={handleSendRequest}
+                disabled={isSendingRequest}
               >
-                <Text style={styles.modalSendText}>Send Request</Text>
+                {isSendingRequest ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.modalSendText}>Send Request</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -987,10 +1143,15 @@ export default function AccountScreen() {
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={styles.modalSendButton}
+                style={[styles.modalSendButton, isSendingRequest && styles.modalButtonDisabled]}
                 onPress={handleSendIdVerificationRequest}
+                disabled={isSendingRequest}
               >
-                <Text style={styles.modalSendText}>Send Request</Text>
+                {isSendingRequest ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.modalSendText}>Send Request</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -1361,6 +1522,43 @@ const styles = StyleSheet.create({
   pendingIconContainer: {
     marginBottom: 16,
   },
+  // Skills Section Styles
+  skillsSection: {
+    backgroundColor: '#fff',
+    padding: 20,
+    marginTop: 12,
+  },
+  skillsSectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 16,
+  },
+  skillCategory: {
+    marginBottom: 20,
+  },
+  skillCategoryTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+  },
+  skillTagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  skillTagDisplay: {
+    backgroundColor: '#e3f2fd',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+  },
+  skillTagDisplayText: {
+    fontSize: 14,
+    color: '#0052A2',
+    fontWeight: '500',
+  },
   pendingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1402,6 +1600,24 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#999',
     textAlign: 'center',
+  },
+  modalButtonDisabled: {
+    opacity: 0.6,
+  },
+  modalErrorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fee',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  modalErrorText: {
+    fontSize: 14,
+    color: '#dc3545',
+    marginLeft: 8,
+    flex: 1,
   },
   bottomNav: {
     flexDirection: 'row',

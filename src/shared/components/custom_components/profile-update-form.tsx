@@ -5,6 +5,7 @@ import { useUpdateUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
+    ActivityIndicator,
     Alert,
     Keyboard,
     KeyboardAvoidingView,
@@ -28,47 +29,94 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
   const [lastName, setLastName] = useState(userData?.lastName || '');
   const [phone, setPhone] = useState(userData?.phone || '');
   
-  // Extract existing location data
-  const existingLocation = typeof userData?.location === 'string' 
-    ? { city: userData.location } 
-    : userData?.location || {};
+  // Extract existing location data - display as single string like web version
+  const getLocationString = () => {
+    if (!userData?.location) return '';
+    
+    if (typeof userData.location === 'string') {
+      return userData.location;
+    }
+    
+    // Build location string from object - filter out "Not specified" values
+    const loc = userData.location as any;
+    const parts = [];
+    
+    const isValidValue = (value: any) => {
+      return value && 
+             value !== 'Not specified' && 
+             value !== 'not specified' && 
+             typeof value === 'string' &&
+             value.trim().length > 0;
+    };
+    
+    if (isValidValue(loc.suburb)) parts.push(loc.suburb);
+    else if (isValidValue(loc.city)) parts.push(loc.city);
+    if (isValidValue(loc.region)) parts.push(loc.region);
+    else if (isValidValue(loc.state)) parts.push(loc.state);
+    if (isValidValue(loc.country)) parts.push(loc.country);
+    
+    return parts.join(', ');
+  };
   
-  const [country, setCountry] = useState(existingLocation.country || '');
-  const [countryCode, setCountryCode] = useState(existingLocation.countryCode || '');
-  const [region, setRegion] = useState(existingLocation.region || '');
-  const [city, setCity] = useState(existingLocation.city || existingLocation.suburb || '');
+  const [location, setLocation] = useState(getLocationString());
   const [bio, setBio] = useState(userData?.bio || '');
+  
+  // Skills state
+  const getSkillsArray = (field: 'goodAt' | 'transport' | 'languages' | 'qualifications' | 'experience') => {
+    if (!userData?.skills) return [];
+    if (typeof userData.skills === 'object' && !Array.isArray(userData.skills)) {
+      return userData.skills[field] || [];
+    }
+    return [];
+  };
+  
+  const [goodAt, setGoodAt] = useState<string[]>(getSkillsArray('goodAt'));
+  const [transport, setTransport] = useState<string[]>(getSkillsArray('transport'));
+  const [languages, setLanguages] = useState<string[]>(getSkillsArray('languages'));
+  const [qualifications, setQualifications] = useState<string[]>(getSkillsArray('qualifications'));
+  const [experience, setExperience] = useState<string[]>(getSkillsArray('experience'));
+  
+  // Input fields for adding new items
+  const [newGoodAt, setNewGoodAt] = useState('');
+  const [newLanguage, setNewLanguage] = useState('');
+  const [newQualification, setNewQualification] = useState('');
+  const [newExperience, setNewExperience] = useState('');
   
   const updateProfile = useUpdateUserProfile();
 
   const handleSaveProfile = async () => {
+    console.log('💾 [Profile Update] Save Profile clicked');
+    
+    // Always proceed with saving - no admin approval needed
     try {
-      // Build location object with all available fields
-      const locationData: any = {};
-      if (country.trim()) locationData.country = country.trim();
-      if (countryCode.trim()) locationData.countryCode = countryCode.trim();
-      if (region.trim()) locationData.region = region.trim();
-      if (city.trim()) locationData.city = city.trim();
-
       const profileData = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         phone: phone.trim(),
-        location: locationData,
+        location: location.trim(),
         bio: bio.trim(),
+        skills: {
+          goodAt,
+          transport,
+          languages,
+          qualifications,
+          experience,
+        },
       };
 
-      console.log("📤 Profile form sending data:", JSON.stringify(profileData, null, 2));
+      console.log("📤 [Profile Update] Sending profile data:", JSON.stringify(profileData, null, 2));
       
       await updateProfile.mutateAsync(profileData);
 
+      console.log("✅ [Profile Update] Profile updated successfully!");
+      
       Alert.alert(
-        'Success',
+        '✓ Success',
         'Profile updated successfully!',
         [{ text: 'OK', onPress: onBack }]
       );
     } catch (error: any) {
-      console.error('❌ Profile update error:', error);
+      console.error('❌ [Profile Update] Error updating profile:', error);
       console.error('❌ Error details:', {
         message: error?.message,
         response: error?.response?.data,
@@ -133,7 +181,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           </View>
           
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Phone Number</Text>
+            <Text style={styles.label}>Phone</Text>
             <TextInput
               style={styles.input}
               value={phone}
@@ -144,58 +192,17 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
             />
           </View>
           
-          <Text style={styles.sectionTitle}>Location</Text>
-          
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Country</Text>
+            <Text style={styles.label}>Location</Text>
             <TextInput
               style={styles.input}
-              value={country}
-              onChangeText={setCountry}
-              placeholder="Enter your country"
+              value={location}
+              onChangeText={setLocation}
+              placeholder="Colombo, Western Province"
               autoCapitalize="words"
               placeholderTextColor="#999"
             />
           </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Country Code</Text>
-            <TextInput
-              style={styles.input}
-              value={countryCode}
-              onChangeText={setCountryCode}
-              placeholder="e.g., AU, US, UK"
-              autoCapitalize="characters"
-              maxLength={2}
-              placeholderTextColor="#999"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>State/Region</Text>
-            <TextInput
-              style={styles.input}
-              value={region}
-              onChangeText={setRegion}
-              placeholder="Enter your state or region"
-              autoCapitalize="words"
-              placeholderTextColor="#999"
-            />
-          </View>
-          
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>City</Text>
-            <TextInput
-              style={styles.input}
-              value={city}
-              onChangeText={setCity}
-              placeholder="Enter your city"
-              autoCapitalize="words"
-              placeholderTextColor="#999"
-            />
-          </View>
-          
-          <Text style={styles.sectionTitle}>About</Text>
           
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Bio</Text>
@@ -209,6 +216,177 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
               textAlignVertical="top"
               placeholderTextColor="#999"
             />
+          </View>
+          
+          {/* Skills Section */}
+          <Text style={styles.sectionTitle}>Skills</Text>
+          
+          {/* What are you good at? */}
+          <View style={styles.skillGroup}>
+            <Text style={styles.label}>What are you good at?</Text>
+            <View style={styles.skillsTagsContainer}>
+              {goodAt.map((skill, index) => (
+                <View key={index} style={styles.skillTag}>
+                  <Text style={styles.skillTagText}>{skill}</Text>
+                  <TouchableOpacity onPress={() => setGoodAt(goodAt.filter((_, i) => i !== index))}>
+                    <Ionicons name="close-circle" size={18} color="#666" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+            <View style={styles.addSkillContainer}>
+              <TextInput
+                style={styles.addSkillInput}
+                value={newGoodAt}
+                onChangeText={setNewGoodAt}
+                placeholder="Add a skill..."
+                placeholderTextColor="#999"
+              />
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => {
+                  if (newGoodAt.trim() && !goodAt.includes(newGoodAt.trim())) {
+                    setGoodAt([...goodAt, newGoodAt.trim()]);
+                    setNewGoodAt('');
+                  }
+                }}
+              >
+                <Text style={styles.addButtonText}>Add</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          {/* How do you get around? */}
+          <View style={styles.skillGroup}>
+            <Text style={styles.label}>How do you get around?</Text>
+            <View style={styles.transportOptions}>
+              {['Bicycle', 'Car', 'Online', 'Scooter', 'Truck', 'Walk'].map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={[
+                    styles.transportOption,
+                    transport.includes(option) && styles.transportOptionSelected
+                  ]}
+                  onPress={() => {
+                    if (transport.includes(option)) {
+                      setTransport(transport.filter(t => t !== option));
+                    } else {
+                      setTransport([...transport, option]);
+                    }
+                  }}
+                >
+                  <Text style={[
+                    styles.transportOptionText,
+                    transport.includes(option) && styles.transportOptionTextSelected
+                  ]}>{option}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+          
+          {/* Languages */}
+          <View style={styles.skillGroup}>
+            <Text style={styles.label}>What languages can you speak/write?</Text>
+            <View style={styles.skillsTagsContainer}>
+              {languages.map((lang, index) => (
+                <View key={index} style={styles.skillTag}>
+                  <Text style={styles.skillTagText}>{lang}</Text>
+                  <TouchableOpacity onPress={() => setLanguages(languages.filter((_, i) => i !== index))}>
+                    <Ionicons name="close-circle" size={18} color="#666" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+            <View style={styles.addSkillContainer}>
+              <TextInput
+                style={styles.addSkillInput}
+                value={newLanguage}
+                onChangeText={setNewLanguage}
+                placeholder="Add a language..."
+                placeholderTextColor="#999"
+              />
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => {
+                  if (newLanguage.trim() && !languages.includes(newLanguage.trim())) {
+                    setLanguages([...languages, newLanguage.trim()]);
+                    setNewLanguage('');
+                  }
+                }}
+              >
+                <Text style={styles.addButtonText}>Add</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          {/* Qualifications */}
+          <View style={styles.skillGroup}>
+            <Text style={styles.label}>What qualifications do you have?</Text>
+            <View style={styles.skillsTagsContainer}>
+              {qualifications.map((qual, index) => (
+                <View key={index} style={styles.skillTag}>
+                  <Text style={styles.skillTagText}>{qual}</Text>
+                  <TouchableOpacity onPress={() => setQualifications(qualifications.filter((_, i) => i !== index))}>
+                    <Ionicons name="close-circle" size={18} color="#666" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+            <View style={styles.addSkillContainer}>
+              <TextInput
+                style={styles.addSkillInput}
+                value={newQualification}
+                onChangeText={setNewQualification}
+                placeholder="Add a qualification..."
+                placeholderTextColor="#999"
+              />
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => {
+                  if (newQualification.trim() && !qualifications.includes(newQualification.trim())) {
+                    setQualifications([...qualifications, newQualification.trim()]);
+                    setNewQualification('');
+                  }
+                }}
+              >
+                <Text style={styles.addButtonText}>Add</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          {/* Work Experience */}
+          <View style={styles.skillGroup}>
+            <Text style={styles.label}>What's your work experience?</Text>
+            <View style={styles.skillsTagsContainer}>
+              {experience.map((exp, index) => (
+                <View key={index} style={styles.skillTag}>
+                  <Text style={styles.skillTagText}>{exp}</Text>
+                  <TouchableOpacity onPress={() => setExperience(experience.filter((_, i) => i !== index))}>
+                    <Ionicons name="close-circle" size={18} color="#666" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+            <View style={styles.addSkillContainer}>
+              <TextInput
+                style={styles.addSkillInput}
+                value={newExperience}
+                onChangeText={setNewExperience}
+                placeholder="Add work experience..."
+                placeholderTextColor="#999"
+              />
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => {
+                  if (newExperience.trim() && !experience.includes(newExperience.trim())) {
+                    setExperience([...experience, newExperience.trim()]);
+                    setNewExperience('');
+                  }
+                }}
+              >
+                <Text style={styles.addButtonText}>Add</Text>
+              </TouchableOpacity>
+            </View>
           </View>
           
           {/* Extra padding to ensure fields are visible above keyboard */}
@@ -225,9 +403,11 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           onPress={handleSaveProfile}
           disabled={updateProfile.isPending}
         >
-          <Text style={styles.saveButtonText}>
-            {updateProfile.isPending ? 'Saving...' : 'Save Changes'}
-          </Text>
+          {updateProfile.isPending ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          )}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -317,6 +497,208 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#fff',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 8,
+    lineHeight: 22,
+  },
+  modalSubMessage: {
+    fontSize: 13,
+    color: '#999',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalCancelButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#666',
+  },
+  modalSendButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    backgroundColor: '#0052A2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  modalSendText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  pendingIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#f3e5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  pendingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff3cd',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginVertical: 20,
+    borderWidth: 1,
+    borderColor: '#ffc107',
+  },
+  pendingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ff9800',
+    marginRight: 8,
+  },
+  pendingText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#856404',
+  },
+  backToProfileButton: {
+    backgroundColor: '#0052A2',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    marginBottom: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  backToProfileText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  modalFooterText: {
+    fontSize: 12,
+    color: '#999',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  // Skills Styles
+  skillGroup: {
+    marginBottom: 24,
+  },
+  skillsTagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  skillTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e3f2fd',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    gap: 6,
+  },
+  skillTagText: {
+    fontSize: 14,
+    color: '#0052A2',
+  },
+  addSkillContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  addSkillInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 15,
+    backgroundColor: '#f9f9f9',
+  },
+  addButton: {
+    backgroundColor: '#0052A2',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  transportOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  transportOption: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#f9f9f9',
+  },
+  transportOptionSelected: {
+    backgroundColor: '#0052A2',
+    borderColor: '#0052A2',
+  },
+  transportOptionText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  transportOptionTextSelected: {
+    color: '#fff',
     fontWeight: '600',
   },
 });

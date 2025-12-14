@@ -34,7 +34,8 @@ const videoAssets = {
 };
 
 export const getCategoryVideo = (id: string) => {
-  return videoAssets[id as keyof typeof videoAssets] || null;
+  const video = videoAssets[id as keyof typeof videoAssets];
+  return video !== undefined ? video : null;
 };
 
 export const categoryVideos = [

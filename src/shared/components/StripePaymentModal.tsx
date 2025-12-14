@@ -2,13 +2,13 @@ import { StripeProvider, usePaymentSheet } from '@stripe/stripe-react-native';
 import { router } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Modal,
-    StyleSheet,
-    Text,
-    View
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Modal,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 import API_CONFIG from '../../api/config';
 import * as PaymentAPI from '../../api/payment-api';
@@ -43,6 +43,22 @@ const COUNTRIES = [
   { label: 'Singapore', value: 'SG' },
   { label: 'Malaysia', value: 'MY' },
 ];
+
+// Helper function to map currency to country code for billing
+const getCurrencyCountryCode = (currencyCode: string): string => {
+  const currencyCountryMap: Record<string, string> = {
+    'LKR': 'LK', // Sri Lanka
+    'AUD': 'AU', // Australia
+    'NZD': 'NZ', // New Zealand
+    'USD': 'US', // United States
+    'GBP': 'GB', // United Kingdom
+    'CAD': 'CA', // Canada
+    'INR': 'IN', // India
+    'SGD': 'SG', // Singapore
+    'MYR': 'MY', // Malaysia
+  };
+  return currencyCountryMap[currencyCode] || 'LK'; // Default to Sri Lanka if unknown
+};
 
 const PaymentForm: React.FC<StripePaymentModalProps> = ({
   visible,
@@ -168,13 +184,16 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
       
       setPaymentIntentData(paymentResult);
 
+      const billingCountry = getCurrencyCountryCode(currency || 'LKR');
+      console.log('🌍 Setting billing country:', billingCountry, 'for currency:', currency);
+
       // Initialize the Payment Sheet
       const { error: initError } = await initPaymentSheet({
         merchantDisplayName: 'MyToDoo',
         paymentIntentClientSecret: paymentResult.clientSecret,
         defaultBillingDetails: {
           address: {
-            country: 'LK',
+            country: billingCountry,
           },
         },
         allowsDelayedPaymentMethods: false,
@@ -220,7 +239,9 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
       console.log('❌ Payment Sheet initialization error:', {
         message: error.message,
         code: error.code || 'Unknown',
-        name: error.name || 'Unknown'
+        name: error.name || 'Unknown',
+        currency: currency,
+        billingCountry: getCurrencyCountryCode(currency || 'LKR')
       });
       
       // Handle specific backend endpoint errors
@@ -236,7 +257,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
       } else if (error.message?.includes('500') || error.message?.includes('Internal Server Error')) {
         Alert.alert(
           'Payment Service Error', 
-          'Payment service is temporarily unavailable. Please try again in a few minutes.',
+          `Payment service encountered an error. This may be a backend configuration issue.\n\nCurrency: ${currency}\nPlease contact support if this persists.`,
           [
             { text: 'Close', onPress: onClose },
             { text: 'Retry', onPress: initializeAndPresentPaymentSheet },
@@ -246,10 +267,14 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
       } else if (error.message?.includes('temporarily unavailable')) {
         Alert.alert(
           'Payment Service Unavailable', 
-          'The payment service is currently unavailable. Please try again in a few minutes.',
+          `The payment service is currently unavailable for ${currency} payments.\n\nIf you're in Australia/NZ, this may be a backend Stripe configuration issue. Please contact support.`,
           [
             { text: 'Close', onPress: onClose },
-            { text: 'Retry', onPress: initializeAndPresentPaymentSheet }
+            { text: 'Retry', onPress: initializeAndPresentPaymentSheet },
+            { text: 'Contact Support', onPress: () => {
+              // You can add support contact functionality here
+              onClose();
+            }}
           ]
         );
       } else if (error.message?.includes('Authentication')) {

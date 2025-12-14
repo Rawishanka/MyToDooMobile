@@ -430,7 +430,7 @@ export default function TaskChatScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
       <View style={{ flex: 1 }}>
@@ -474,7 +474,7 @@ export default function TaskChatScreen() {
         />
 
         {/* Input Area */}
-        <View style={[styles.inputContainer, { paddingBottom: insets.bottom || 10 }]}>
+        <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <TouchableOpacity
             style={styles.attachButton}
             onPress={() => {
