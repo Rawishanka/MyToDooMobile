@@ -288,6 +288,18 @@ export async function getAllTasks(): Promise<TasksResponse> {
       
       console.log(`✅ Successfully fetched all ${allTasksData.length} tasks from ${response.data.pages} pages`);
       
+      // 🔧 FIX: Parse location for each task if returned as string (same as getMyTasks)
+      allTasksData.forEach((task: any) => {
+        if (task.location && typeof task.location === 'string') {
+          try {
+            task.location = JSON.parse(task.location);
+            console.log('📍 AllTasks (multi-page): Parsed location for task:', task._id);
+          } catch {
+            console.warn('⚠️ AllTasks (multi-page): Could not parse location for task:', task._id);
+          }
+        }
+      });
+      
       // Return combined results
       return {
         ...response.data,
@@ -298,7 +310,25 @@ export async function getAllTasks(): Promise<TasksResponse> {
     }
     
     console.log(`✅ Single page response: ${allTasksData.length} tasks`);
-    return response.data;
+    
+    // 🔧 FIX: Parse location for each task if returned as string (same as getMyTasks)
+    if (allTasksData && Array.isArray(allTasksData)) {
+      allTasksData.forEach((task: any) => {
+        if (task.location && typeof task.location === 'string') {
+          try {
+            task.location = JSON.parse(task.location);
+            console.log('📍 AllTasks: Parsed location for task:', task._id);
+          } catch {
+            console.warn('⚠️ AllTasks: Could not parse location for task:', task._id, 'Location:', task.location);
+          }
+        }
+      });
+    }
+    
+    return {
+      ...response.data,
+      data: allTasksData
+    };
   } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
@@ -372,6 +402,20 @@ export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskF
       dataLength: response.data.data?.length,
       pagination: response.data.pagination
     });
+    
+    // 🔧 FIX: Parse location for each task if returned as string (same as getMyTasks)
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      response.data.data.forEach((task: any) => {
+        if (task.location && typeof task.location === 'string') {
+          try {
+            task.location = JSON.parse(task.location);
+            console.log('📍 FilteredTasks: Parsed location for task:', task._id);
+          } catch {
+            console.warn('⚠️ FilteredTasks: Could not parse location for task:', task._id);
+          }
+        }
+      });
+    }
     
     return response.data;
   } catch (error: any) {
@@ -1278,6 +1322,18 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
           }
         };
         
+        // 🔧 FIX: Parse location for each task if returned as string
+        filterResponse.data.forEach((task: any) => {
+          if (task.location && typeof task.location === 'string') {
+            try {
+              task.location = JSON.parse(task.location);
+              console.log('📍 filterTasks (search): Parsed location for task:', task._id);
+            } catch {
+              console.warn('⚠️ filterTasks (search): Could not parse location for task:', task._id);
+            }
+          }
+        });
+        
         return filterResponse;
       } 
       // This is already a filter response
@@ -1287,6 +1343,21 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
           currentPage: response.data.pagination?.currentPage,
           totalPages: response.data.pagination?.totalPages,
         });
+        
+        // 🔧 FIX: Parse location for each task if returned as string
+        if (response.data.data && Array.isArray(response.data.data)) {
+          response.data.data.forEach((task: any) => {
+            if (task.location && typeof task.location === 'string') {
+              try {
+                task.location = JSON.parse(task.location);
+                console.log('📍 filterTasks (filter): Parsed location for task:', task._id);
+              } catch {
+                console.warn('⚠️ filterTasks (filter): Could not parse location for task:', task._id);
+              }
+            }
+          });
+        }
+        
         return response.data;
       }
       // Handle edge case where response format is unexpected
@@ -1308,6 +1379,18 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
             hasPreviousPage: false
           }
         };
+        
+        // 🔧 FIX: Parse location for each task if returned as string
+        filterResponse.data.forEach((task: any) => {
+          if (task.location && typeof task.location === 'string') {
+            try {
+              task.location = JSON.parse(task.location);
+              console.log('📍 filterTasks (unknown): Parsed location for task:', task._id);
+            } catch {
+              console.warn('⚠️ filterTasks (unknown): Could not parse location for task:', task._id);
+            }
+          }
+        });
         
         return filterResponse;
       }

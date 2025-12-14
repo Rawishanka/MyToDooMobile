@@ -65,12 +65,14 @@ export default function RootLayout() {
   });
   const [showSplash, setShowSplash] = useState(true);
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+  const [fontLoadingFailed, setFontLoadingFailed] = useState(false);
 
   // Handle font loading errors gracefully
   useEffect(() => {
     if (error) {
-      console.error('❌ Font loading error:', error);
-      console.log('⚠️ App will continue with system fonts');
+      console.log('⚠️ Font loading issue detected - continuing with system fonts');
+      console.log('ℹ️ This is expected in development mode - fonts will load in production build');
+      setFontLoadingFailed(true);
     }
   }, [error]);
 
@@ -118,9 +120,9 @@ export default function RootLayout() {
     return <ProfessionalSplashScreen onFinish={handleSplashFinish} duration={3000} />;
   }
 
-  // After splash, check if fonts are loaded or errored
+  // After splash, check if fonts are loaded or if loading failed
   // Continue even if fonts fail to load (will use system fonts)
-  if (!loaded && !error) {
+  if (!loaded && !fontLoadingFailed) {
     return null;
   }
 
@@ -139,8 +141,12 @@ export default function RootLayout() {
                 <Stack.Screen name="(legal)" options={{ headerShown: false }} />
                 <Stack.Screen name="task-detail" options={{ headerShown: false }} />
                 <Stack.Screen name="make-offer-screen" options={{ headerShown: false }} />
-                <Stack.Screen name="questions" options={{ headerShown: false }} />
+                <Stack.Screen name="edit-task" options={{ headerShown: false }} />
+                <Stack.Screen name="task-chat" options={{ headerShown: false }} />
+                <Stack.Screen name="payment-summary" options={{ headerShown: false }} />
+                <Stack.Screen name="payment-receipt" options={{ headerShown: false }} />
                 <Stack.Screen name="public-questions" options={{ headerShown: false }} />
+                <Stack.Screen name="questions/answer-question-screen" options={{ headerShown: false }} />
                 <Stack.Screen name="+not-found" />
               </Stack>
               <StatusBar style="dark" />

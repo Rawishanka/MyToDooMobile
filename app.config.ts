@@ -5,25 +5,24 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'MyToDoo',
   slug: 'MyToDooMobile',
-  owner: 'sulandi',
+  owner: 'sumathipala',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/mytodoo-icon.png',
   scheme: 'mytodoo',
   userInterfaceStyle: 'light',
-  newArchEnabled: false,
-  ios: {
-    supportsTablet: true,
-    bundleIdentifier: 'com.nowanya.mytodoomobile',
-    associatedDomains: ['applinks:mytodoomobile.com'],
+  newArchEnabled: true,
+  assetBundlePatterns: ['**/*'],
+  updates: {
+    url: 'https://u.expo.dev/ecd84912-2ee5-47e4-bf2c-d9cc3def4fcc',
   },
+  runtimeVersion: '1.0.0',
   android: {
-    package: 'com.nowanya.mytodoomobile',
+    package: 'com.unexo.mytodoomobile',
     adaptiveIcon: {
-      foregroundImage: './assets/images/mytodoo-icon.png',
+      foregroundImage: './assets/images/mytodoo-adaptive-icon.png',
       backgroundColor: '#004aad',
     },
-    googleServicesFile: './android/app/google-services.json',
     permissions: [
       'CAMERA',
       'READ_EXTERNAL_STORAGE',
@@ -56,6 +55,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-router',
     'expo-font',
     'expo-video',
+    'expo-updates',
     [
       'expo-build-properties',
       {
@@ -72,9 +72,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-notifications',
       {
-        icon: './assets/images/notification-icon.png',
         color: '#004aad',
-        sounds: ['./assets/sounds/notification.wav'],
       },
     ],
     [
@@ -94,7 +92,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
     googleClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
     eas: {
-      projectId: "40f554ac-0795-45a5-b025-d597477e0bea"
-    },
+      projectId: "ecd84912-2ee5-47e4-bf2c-d9cc3def4fcc"
+    }
   },
 });

@@ -378,9 +378,36 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     }, 300); // Wait 300ms after user stops typing
   };
 
+  const extractSuburbAddress = (suggestion: LocationResult): string => {
+    // For Australian and New Zealand addresses, extract just suburb and state
+    // Mapbox place_name format: "Street Address, Suburb, State, Country"
+    // We want: "Suburb, State"
+    
+    const placeParts = suggestion.place_name.split(',').map(p => p.trim());
+    
+    // If it's an address type (has street address), skip the first part
+    const isAddress = suggestion.place_type?.includes('address');
+    
+    if (isAddress && placeParts.length >= 3) {
+      // Format: ["Street", "Suburb", "State", "Country"]
+      // Return: "Suburb, State"
+      return `${placeParts[1]}, ${placeParts[2]}`;
+    } else if (placeParts.length >= 2) {
+      // Format: ["Suburb", "State", "Country"] or ["City", "Country"]
+      // Return: "Suburb, State" or "City, Country"
+      return placeParts.slice(0, 2).join(', ');
+    }
+    
+    // Fallback to full place_name if parsing fails
+    return suggestion.place_name;
+  };
+
   const handleSelect = (suggestion: LocationResult) => {
+    // Extract clean suburb name instead of full address
+    const cleanAddress = extractSuburbAddress(suggestion);
+    
     const locationData: LocationData = {
-      address: suggestion.place_name,
+      address: cleanAddress,
       coordinates: {
         lat: suggestion.center[1], // Mapbox returns [lng, lat]
         lng: suggestion.center[0],
@@ -388,9 +415,11 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     };
 
     console.log('📍 Location selected:', locationData);
+    console.log('   Original place_name:', suggestion.place_name);
+    console.log('   Extracted address:', cleanAddress);
     
     onSelect(locationData);
-    setQuery(suggestion.place_name);
+    setQuery(cleanAddress);
     setSuggestions([]);
     setShowSuggestions(false);
     onDropdownStateChange?.(false);

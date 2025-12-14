@@ -10,12 +10,14 @@
     },
     "preview": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
       },
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.mytodoo.com/api"
-      }
+      },
+      "channel": "preview"
     },
     "production": {
       "android": {

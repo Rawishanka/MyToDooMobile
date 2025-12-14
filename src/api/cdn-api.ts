@@ -10,6 +10,50 @@ import API_CONFIG from './config';
 
 const api = createApi(API_CONFIG.BASE_URL);
 
+// ==================== URL HELPERS ====================
+
+/**
+ * Normalize CDN URL to ensure it's an absolute HTTPS URL
+ * This is critical for APK builds where relative URLs don't work
+ * 
+ * EXPORTED for use in components that display task images
+ */
+export const normalizeCDNUrl = (url: string | undefined | null): string => {
+  if (!url) {
+    console.warn('⚠️ Empty CDN URL received');
+    return '';
+  }
+
+  // Already a complete URL with protocol
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    // Convert HTTP to HTTPS for security and APK compatibility
+    const secureUrl = url.replace(/^http:\/\//i, 'https://');
+    console.log('✅ CDN URL normalized:', { original: url, secure: secureUrl });
+    return secureUrl;
+  }
+
+  // Relative URL starting with /api/cdn or /cdn
+  if (url.startsWith('/api/cdn') || url.startsWith('/cdn')) {
+    const baseUrl = API_CONFIG.BASE_URL.replace('/api', ''); // Remove /api suffix if present
+    const absoluteUrl = `${baseUrl}${url}`;
+    console.log('✅ Relative CDN URL converted to absolute:', { original: url, absolute: absoluteUrl });
+    return absoluteUrl;
+  }
+
+  // Cloudinary or other CDN direct URL
+  if (url.includes('cloudinary.com') || url.includes('cloudfront.net') || url.includes('s3.amazonaws.com')) {
+    const secureUrl = url.replace(/^http:\/\//i, 'https://');
+    console.log('✅ External CDN URL:', secureUrl);
+    return secureUrl;
+  }
+
+  // Last resort: assume it's a relative path and prepend API base URL
+  const baseUrl = API_CONFIG.BASE_URL.replace('/api', '');
+  const absoluteUrl = `${baseUrl}${url.startsWith('/') ? url : '/' + url}`;
+  console.warn('⚠️ Unexpected URL format, converting to absolute:', { original: url, absolute: absoluteUrl });
+  return absoluteUrl;
+};
+
 // ==================== TYPES ====================
 
 export interface UploadFileRequest {
@@ -93,13 +137,23 @@ export const uploadFileToCDN = async (
       }
     );
 
+    // Normalize URL for APK compatibility
+    const normalizedUrl = normalizeCDNUrl(response.data.data.url);
+    
     console.log('✅ File uploaded successfully:', {
       fileId: response.data.data.fileId,
-      url: response.data.data.url,
+      originalUrl: response.data.data.url,
+      normalizedUrl: normalizedUrl,
       size: response.data.data.size
     });
 
-    return response.data;
+    return {
+      ...response.data,
+      data: {
+        ...response.data.data,
+        url: normalizedUrl // Use normalized URL
+      }
+    };
   } catch (error: any) {
     console.error('❌ Failed to upload file:', error);
 
@@ -141,7 +195,9 @@ export const uploadChatImage = async (
     type: 'chat',
   });
 
-  return response.data.url;
+  const normalizedUrl = normalizeCDNUrl(response.data.url);
+  console.log('📸 Chat image URL normalized:', normalizedUrl);
+  return normalizedUrl;
 };
 
 /**
@@ -165,5 +221,7 @@ export const uploadChatFile = async (
     type: 'chat',
   });
 
-  return response.data.url;
+  const normalizedUrl = normalizeCDNUrl(response.data.url);
+  console.log('📎 Chat file URL normalized:', normalizedUrl);
+  return normalizedUrl;
 };

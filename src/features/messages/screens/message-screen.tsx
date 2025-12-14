@@ -147,15 +147,43 @@ const MessageScreen: React.FC = () => {
         const otherUser = participants.find((p: any) => p && p._id !== chat.currentUserId);
         
         // Generate avatar with safe fallbacks
-        let avatarUrl = 'https://ui-avatars.com/api/?name=User&background=007AFF&color=fff&size=100';
-        if (otherUser?.profileImage) {
-          avatarUrl = otherUser.profileImage;
-        } else if (otherUser?.firstName || otherUser?.lastName) {
-          const firstName = otherUser.firstName || '';
-          const lastName = otherUser.lastName || '';
-          const name = `${firstName}+${lastName}`.trim() || 'User';
-          avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=007AFF&color=fff&size=100&bold=true&rounded=true`;
+        // Priority: 1) otherUser.avatar 2) posterId/taskerId avatar 3) generate from name
+        let avatarUrl = '';
+        
+        if (otherUser?.avatar) {
+          // Use actual profile picture from otherUser
+          avatarUrl = otherUser.avatar;
+        } else if (posterId?.avatar || taskerId?.avatar) {
+          // Use actual profile picture from posterId or taskerId
+          const otherParticipant = posterId?._id !== chat.currentUserId ? posterId : taskerId;
+          avatarUrl = otherParticipant?.avatar || '';
         }
+        
+        // Fallback to generated avatar if no profile picture exists
+        if (!avatarUrl) {
+          if (otherUser?.firstName || otherUser?.lastName) {
+            const firstName = otherUser.firstName || '';
+            const lastName = otherUser.lastName || '';
+            const name = `${firstName}+${lastName}`.trim() || 'User';
+            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=007AFF&color=fff&size=100&bold=true&rounded=true`;
+          } else if (posterId?.firstName || taskerId?.firstName) {
+            const participant = posterId?._id !== chat.currentUserId ? posterId : taskerId;
+            const firstName = participant?.firstName || '';
+            const lastName = participant?.lastName || '';
+            const name = `${firstName}+${lastName}`.trim() || 'User';
+            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=007AFF&color=fff&size=100&bold=true&rounded=true`;
+          } else {
+            avatarUrl = 'https://ui-avatars.com/api/?name=User&background=007AFF&color=fff&size=100';
+          }
+        }
+        
+        console.log('🖼️ Avatar URL:', {
+          chatId: chat._id,
+          hasOtherUserAvatar: !!otherUser?.avatar,
+          hasPosterAvatar: !!posterId?.avatar,
+          hasTaskerAvatar: !!taskerId?.avatar,
+          finalAvatarUrl: avatarUrl?.substring(0, 50) + '...'
+        });
         
         // Safe date handling
         let dateStr = 'Recently';

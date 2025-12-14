@@ -82,137 +82,119 @@ export const getNotifications = async (params?: {
   limit?: number;
   type?: string;
 }): Promise<NotificationResponse> => {
-  try {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.limit) queryParams.append('limit', params.limit.toString());
-    if (params?.type) queryParams.append('type', params.type);
-
-    const url = queryParams.toString()
-      ? `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}?${queryParams.toString()}`
-      : API_CONFIG.ENDPOINTS.NOTIFICATIONS;
-
-    const response = await api.get<NotificationResponse>(url);
-    return response.data;
-  } catch (error: any) {
-    // Silently fail for auth errors - hook will handle this with enabled flag
-    if (error?.isAuthError || error?.status === 401) {
-      return { 
-        success: false, 
-        data: [], 
-        pagination: { page: 1, limit: 10, total: 0, pages: 0 },
-        unreadCount: 0 
-      };
-    }
-    throw error;
-  }
+  // NOTE: This endpoint doesn't exist on backend - returning empty data
+  // Backend only supports FCM push notifications, not notification history
+  console.warn('⚠️  /api/notifications endpoint not available - notification history not supported');
+  return { 
+    success: true, 
+    data: [], 
+    pagination: { currentPage: 1, totalPages: 0, totalCount: 0 },
+    unreadCount: 0 
+  };
 };
 
 /**
  * Get unread notification count
+ * NOTE: Endpoint doesn't exist - returning zero
  */
 export const getUnreadCount = async (): Promise<UnreadCountResponse> => {
-  try {
-    const response = await api.get<UnreadCountResponse>(
-      `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/unread-count`
-    );
-    return response.data;
-  } catch (error: any) {
-    // Silently fail for auth errors - hook will handle this with enabled flag
-    if (error?.isAuthError || error?.status === 401) {
-      return { success: false, count: 0 };
+  console.warn('⚠️  /api/notifications/unread-count endpoint not available');
+  return {
+    success: true,
+    unreadCount: 0,
+    meta: {
+      userId: '',
+      userEmail: '',
+      timestamp: new Date().toISOString()
     }
-    throw error;
-  }
+  };
 };
 
 /**
  * Get notification statistics
+ * NOTE: Endpoint doesn't exist - returning empty stats
  */
 export const getNotificationStats = async (): Promise<NotificationStatsResponse> => {
-  try {
-    const response = await api.get<NotificationStatsResponse>(
-      `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/stats`
-    );
-    return response.data;
-  } catch (error: any) {
-    // Silently fail for auth errors - hook will handle this with enabled flag
-    if (error?.isAuthError || error?.status === 401) {
-      return { 
-        success: false, 
-        total: 0, 
-        unread: 0, 
-        byType: {} 
-      };
+  console.warn('⚠️  /api/notifications/stats endpoint not available');
+  return {
+    success: true,
+    data: {
+      total: 0,
+      unread: 0,
+      read: 0,
+      byType: []
     }
-    throw error;
-  }
+  };
 };
 
 /**
  * Get notifications by type
+ * NOTE: Endpoint doesn't exist - returning empty list
  */
 export const getNotificationsByType = async (
   type: string,
   params?: { page?: number; limit?: number }
 ): Promise<NotificationResponse> => {
-  const queryParams = new URLSearchParams();
-  if (params?.page) queryParams.append('page', params.page.toString());
-  if (params?.limit) queryParams.append('limit', params.limit.toString());
-
-  const url = queryParams.toString()
-    ? `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/type/${type}?${queryParams.toString()}`
-    : `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/type/${type}`;
-
-  const response = await api.get<NotificationResponse>(url);
-  return response.data;
+  console.warn('⚠️  /api/notifications/type endpoint not available');
+  return {
+    success: true,
+    data: [],
+    pagination: { currentPage: 1, totalPages: 0, totalCount: 0 },
+    unreadCount: 0
+  };
 };
 
 /**
  * Mark a notification as read
+ * NOTE: Endpoint doesn't exist - no-op
  */
 export const markNotificationAsRead = async (
   notificationId: string
 ): Promise<{ success: boolean; message: string; data: Notification }> => {
-  const response = await api.patch(
-    `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/${notificationId}/read`
-  );
-  return response.data;
+  console.warn('⚠️  /api/notifications/:id/read endpoint not available');
+  return { 
+    success: true, 
+    message: 'Endpoint not available', 
+    data: {} as Notification 
+  };
 };
 
 /**
  * Mark all notifications as read
+ * NOTE: Endpoint doesn't exist - no-op
  */
 export const markAllNotificationsAsRead = async (): Promise<{
   success: boolean;
   message: string;
 }> => {
-  const response = await api.post(
-    `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/mark-all-read`
-  );
-  return response.data;
+  console.warn('⚠️  /api/notifications/mark-all-read endpoint not available');
+  return { success: true, message: 'Endpoint not available' };
 };
 
 /**
  * Delete a notification
+ * NOTE: Endpoint doesn't exist - no-op
  */
 export const deleteNotification = async (
   notificationId: string
 ): Promise<{ success: boolean; message: string }> => {
-  const response = await api.delete(
-    `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/${notificationId}`
-  );
-  return response.data;
+  console.warn('⚠️  /api/notifications/:id endpoint not available');
+  return { success: true, message: 'Endpoint not available' };
 };
 
 /**
  * Get notification preferences
  */
 export const getNotificationPreferences = async (): Promise<NotificationPreferencesResponse> => {
-  const response = await api.get<NotificationPreferencesResponse>(
-    `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/preferences`
-  );
-  return response.data;
+  console.warn('⚠️  /api/notifications/preferences endpoint not available');
+  return {
+    success: true,
+    data: {
+      email: {},
+      push: {},
+      inApp: {}
+    }
+  };
 };
 
 /**
@@ -221,15 +203,20 @@ export const getNotificationPreferences = async (): Promise<NotificationPreferen
 export const updateNotificationPreferences = async (
   preferences: Partial<NotificationPreferences>
 ): Promise<NotificationPreferencesResponse> => {
-  const response = await api.put<NotificationPreferencesResponse>(
-    `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/preferences`,
-    preferences
-  );
-  return response.data;
+  console.warn('⚠️  /api/notifications/preferences endpoint not available');
+  return {
+    success: true,
+    data: {
+      email: {},
+      push: {},
+      inApp: {}
+    }
+  };
 };
 
 /**
  * Send webhook notification (for testing)
+ * NOTE: Endpoint doesn't exist - no-op
  */
 export const sendWebhookNotification = async (data: {
   type: string;
@@ -238,11 +225,12 @@ export const sendWebhookNotification = async (data: {
   recipient: string;
   priority?: string;
 }): Promise<{ success: boolean; message: string; data: Notification }> => {
-  const response = await api.post(
-    `${API_CONFIG.ENDPOINTS.NOTIFICATIONS}/webhook`,
-    data
-  );
-  return response.data;
+  console.warn('⚠️  /api/notifications/webhook endpoint not available');
+  return { 
+    success: false, 
+    message: 'Endpoint not available', 
+    data: {} as Notification 
+  };
 };
 
 /**

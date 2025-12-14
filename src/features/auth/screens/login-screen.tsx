@@ -277,7 +277,7 @@ export default function LoginScreen() {
       locationString = myTask.location || '';
     }
     
-    return {
+    const taskData: any = {
       title: myTask.title || "Untitled Task",
       category: category,
       details: myTask.description || "",
@@ -290,6 +290,19 @@ export default function LoginScreen() {
       currency: "LKR",
       images: [],
     };
+    
+    // ✅ Include coordinates if available from location selection
+    if (!myTask.isRemoval && myTask.coordinates && myTask.coordinates.lat && myTask.coordinates.lng) {
+      taskData.coordinates = {
+        lat: myTask.coordinates.lat,
+        lng: myTask.coordinates.lng
+      };
+      console.log('📍 Including coordinates in task request:', taskData.coordinates);
+    } else {
+      console.log('⚠️ No coordinates available from myTask');
+    }
+    
+    return taskData;
   };
 
   // Helper function to post pending task after login

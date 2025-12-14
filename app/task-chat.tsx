@@ -6,6 +6,7 @@
  */
 
 import { uploadChatFile, uploadChatImage } from '@/src/api/cdn-api';
+import API_CONFIG from '@/src/api/config';
 import { Message } from '@/src/api/task-chat-api';
 import {
     useCreateOrGetTaskChat,
@@ -34,6 +35,24 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// URL normalization helper for APK builds
+const normalizeMediaUrl = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  
+  // Already absolute URL
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url.replace(/^http:\/\//i, 'https://'); // Force HTTPS
+  }
+  
+  // Relative URL - make it absolute
+  if (url.startsWith('/')) {
+    const baseUrl = API_CONFIG.BASE_URL.replace('/api', '');
+    return `${baseUrl}${url}`;
+  }
+  
+  return url;
+};
 
 export default function TaskChatScreen() {
   const { taskId, taskTitle, posterId, taskerId, chatId: chatIdParam } = useLocalSearchParams<{ 
@@ -321,22 +340,26 @@ export default function TaskChatScreen() {
   const renderMessage = ({ item }: { item: Message }) => {
     const isMine = item.senderId === user?._id;
     
+    // Normalize mediaUrl for APK compatibility
+    const normalizedMediaUrl = normalizeMediaUrl(item.mediaUrl);
+    
     // Debug logging for ALL messages to understand structure
     console.log('🎨 Rendering message:', {
       id: item._id,
       type: item.messageType,
       content: item.content,
-      mediaUrl: item.mediaUrl,
+      originalMediaUrl: item.mediaUrl,
+      normalizedMediaUrl: normalizedMediaUrl,
       hasContent: !!item.content,
-      hasMediaUrl: !!item.mediaUrl,
+      hasMediaUrl: !!normalizedMediaUrl,
       isMine
     });
     
     // Debug logging for problematic messages
-    if (!item.content && !item.mediaUrl) {
+    if (!item.content && !normalizedMediaUrl) {
       console.warn('⚠️ Empty message detected:', JSON.stringify(item, null, 2));
     }
-    if (item.messageType === 'image' && !item.mediaUrl) {
+    if (item.messageType === 'image' && !normalizedMediaUrl) {
       console.warn('⚠️ Image message without mediaUrl:', JSON.stringify(item, null, 2));
     }
 
@@ -347,16 +370,20 @@ export default function TaskChatScreen() {
           isMine ? styles.myMessage : styles.theirMessage,
         ]}
       >
-        {item.messageType === 'image' && item.mediaUrl ? (
+        {item.messageType === 'image' && normalizedMediaUrl ? (
           <View>
             <Image 
-              source={{ uri: item.mediaUrl }} 
+              source={{ uri: normalizedMediaUrl }} 
               style={styles.messageImage}
               onError={(error) => {
-                console.error('❌ Image load error:', item.mediaUrl, error.nativeEvent.error);
+                console.error('❌ Image load error:', {
+                  original: item.mediaUrl,
+                  normalized: normalizedMediaUrl,
+                  error: error.nativeEvent.error
+                });
               }}
               onLoad={() => {
-                console.log('✅ Image loaded successfully:', item.mediaUrl);
+                console.log('✅ Image loaded successfully:', normalizedMediaUrl);
               }}
             />
             {item.content && item.content !== 'Photo' && (
@@ -404,85 +431,89 @@ export default function TaskChatScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          {taskTitle || 'Chat'}
-        </Text>
-      </View>
+      <View style={{ flex: 1 }}>
+        {/* Header */}
+        <View style={[styles.header, { paddingTop: insets.top }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <MaterialIcons name="arrow-back" size={24} color="#000" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {taskTitle || 'Chat'}
+          </Text>
+        </View>
 
-      {/* Messages List */}
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        renderItem={renderMessage}
-        keyExtractor={(item) => item._id}
-        contentContainerStyle={styles.messagesList}
-        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-        ListHeaderComponent={
-          messagesLoading ? (
-            <View style={styles.loadingHeader}>
-              <ActivityIndicator size="small" color="#007bff" />
-              <Text style={styles.loadingHeaderText}>Loading messages...</Text>
-            </View>
-          ) : null
-        }
-        ListEmptyComponent={
-          !messagesLoading ? (
-            <View style={styles.emptyState}>
-              <MaterialIcons name="chat-bubble-outline" size={48} color="#ccc" />
-              <Text style={styles.emptyText}>Start a conversation</Text>
-              <Text style={styles.emptySubtext}>Send a message to begin chatting about this task</Text>
-            </View>
-          ) : null
-        }
-      />
-
-      {/* Input Area */}
-      <View style={[styles.inputContainer, { paddingBottom: insets.bottom || 10 }]}>
-        <TouchableOpacity
-          style={styles.attachButton}
-          onPress={() => {
-            Alert.alert('Attach', 'Choose attachment type', [
-              { text: 'Image', onPress: handleImagePicker },
-              { text: 'File', onPress: handleDocumentPicker },
-              { text: 'Cancel', style: 'cancel' },
-            ]);
-          }}
-          disabled={isUploading}
-        >
-          <MaterialIcons name="attach-file" size={24} color="#666" />
-        </TouchableOpacity>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Type a message..."
-          value={messageText}
-          onChangeText={setMessageText}
-          multiline
-          maxLength={1000}
+        {/* Messages List */}
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.messagesList}
+          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          ListHeaderComponent={
+            messagesLoading ? (
+              <View style={styles.loadingHeader}>
+                <ActivityIndicator size="small" color="#007bff" />
+                <Text style={styles.loadingHeaderText}>Loading messages...</Text>
+              </View>
+            ) : null
+          }
+          ListEmptyComponent={
+            !messagesLoading ? (
+              <View style={styles.emptyState}>
+                <MaterialIcons name="chat-bubble-outline" size={48} color="#ccc" />
+                <Text style={styles.emptyText}>Start a conversation</Text>
+                <Text style={styles.emptySubtext}>Send a message to begin chatting about this task</Text>
+              </View>
+            ) : null
+          }
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="handled"
         />
 
-        <TouchableOpacity
-          style={[
-            styles.sendButton,
-            (!messageText.trim() || sendMessageMutation.isPending || isUploading) &&
-              styles.sendButtonDisabled,
-          ]}
-          onPress={handleSendMessage}
-          disabled={!messageText.trim() || sendMessageMutation.isPending || isUploading}
-        >
-          {sendMessageMutation.isPending || isUploading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <MaterialIcons name="send" size={20} color="#fff" />
-          )}
-        </TouchableOpacity>
+        {/* Input Area */}
+        <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <TouchableOpacity
+            style={styles.attachButton}
+            onPress={() => {
+              Alert.alert('Attach', 'Choose attachment type', [
+                { text: 'Image', onPress: handleImagePicker },
+                { text: 'File', onPress: handleDocumentPicker },
+                { text: 'Cancel', style: 'cancel' },
+              ]);
+            }}
+            disabled={isUploading}
+          >
+            <MaterialIcons name="attach-file" size={24} color="#666" />
+          </TouchableOpacity>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Type a message..."
+            value={messageText}
+            onChangeText={setMessageText}
+            multiline
+            maxLength={1000}
+          />
+
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              (!messageText.trim() || sendMessageMutation.isPending || isUploading) &&
+                styles.sendButtonDisabled,
+            ]}
+            onPress={handleSendMessage}
+            disabled={!messageText.trim() || sendMessageMutation.isPending || isUploading}
+          >
+            {sendMessageMutation.isPending || isUploading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <MaterialIcons name="send" size={20} color="#fff" />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );

@@ -13,13 +13,13 @@ import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -127,9 +127,17 @@ export default function DetailScreen() {
 
   // Helper function to get coordinates from task
   const getCoordinatesFromTask = () => {
-    // For now, return default Colombo coordinates
-    // TODO: Implement proper geocoding based on location
-    return { lat: 6.9271, lng: 79.8612 };
+    // Return actual coordinates if available from location selection
+    if (!myTask.isRemoval && myTask.coordinates && myTask.coordinates.lat && myTask.coordinates.lng) {
+      console.log('📍 Using actual coordinates from myTask:', myTask.coordinates);
+      return {
+        lat: myTask.coordinates.lat,
+        lng: myTask.coordinates.lng
+      };
+    }
+    // Fallback: return undefined if no coordinates (backend will handle)
+    console.log('⚠️ No coordinates available in myTask');
+    return undefined;
   };
 
   // Convert myTask to CreateTaskRequest format matching server expectations
@@ -153,6 +161,15 @@ export default function DetailScreen() {
       currency: myTask.currency || currencyInfo.code, // Include currency in task creation
       images: myTask.photos || [], // ✅ Include images from store
     };
+    
+    // ✅ Include coordinates if available from location selection
+    const coordinates = getCoordinatesFromTask();
+    if (coordinates) {
+      taskRequest.coordinates = coordinates;
+      console.log('📍 Including coordinates in task request:', coordinates);
+    } else {
+      console.log('⚠️ No coordinates to include in task request');
+    }
     
     console.log('📸 Task request includes images:', taskRequest.images?.length || 0);
     console.log('📸 Image URIs:', taskRequest.images);
