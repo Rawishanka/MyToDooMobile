@@ -73,7 +73,24 @@ export function useGetUserRatingStats(userId: string, enabled = true) {
     queryFn: () => UserProfileAPI.getUserRatingStats(userId),
     enabled: enabled && !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    select: (response) => response.data,
+    select: (response) => {
+      const data = response.data;
+      // Transform API response to match expected format
+      return {
+        userId: userId,
+        averageRating: data.overall?.average || 0,
+        totalReviews: data.overall?.count || 0,
+        ratingDistribution: data.distribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0},
+        asPoster: {
+          averageRating: data.asPoster?.average || 0,
+          totalReviews: data.asPoster?.count || 0,
+        },
+        asTasker: {
+          averageRating: data.asTasker?.average || 0,
+          totalReviews: data.asTasker?.count || 0,
+        },
+      };
+    },
   });
 }
 
@@ -92,15 +109,22 @@ export function useGetUserReviews(
     queryFn: () => UserProfileAPI.getUserReviews(userId, page, limit, role),
     enabled: enabled && !!userId,
     staleTime: 2 * 60 * 1000, // 2 minutes
-    select: (response) => ({
-      reviews: response?.data || [],
-      pagination: response?.pagination || {
-        currentPage: 1,
-        totalPages: 0,
-        totalReviews: 0,
-        hasMore: false,
-      },
-    }),
+    select: (response: any) => {
+      console.log('🔍 useGetUserReviews select - raw response:', response);
+      
+      // Handle the actual API response structure
+      const data = response?.data || {};
+      
+      return {
+        reviews: data.reviews || [],
+        pagination: {
+          currentPage: data.currentPage || 1,
+          totalPages: data.totalPages || 0,
+          totalReviews: data.totalCount || 0,
+          hasMore: (data.currentPage || 1) < (data.totalPages || 0),
+        },
+      };
+    },
   });
 }
 
