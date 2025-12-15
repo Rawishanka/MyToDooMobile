@@ -22,6 +22,12 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose, 
     }
   };
 
+  const handleTextChange = (text: string) => {
+    // Pass the text as-is, but trim leading/trailing spaces
+    // Don't convert case here - let the search logic handle normalization
+    onChangeText(text);
+  };
+
   return (
     <View style={styles.searchContainer}>
       <TouchableOpacity onPress={onClose} style={styles.backButton}>
@@ -35,7 +41,7 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose, 
           placeholder="Search by title, location, category..."
           placeholderTextColor="#999"
           value={searchText}
-          onChangeText={onChangeText}
+          onChangeText={handleTextChange}
           onSubmitEditing={handleSearch}
           autoFocus
           autoCapitalize="none"
