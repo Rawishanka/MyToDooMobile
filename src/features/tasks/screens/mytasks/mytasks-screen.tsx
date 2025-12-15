@@ -352,6 +352,52 @@ export default function MyTasksScreen() {
       });
     };
 
+    // Helper function to check if a task is overdue
+    const isTaskOverdue = (task: Task): boolean => {
+      // Task must have a dateRange with an end date
+      if (!task.dateRange || !task.dateRange.end) {
+        return false;
+      }
+
+      // Don't mark completed or cancelled tasks as overdue
+      if (task.status === 'completed' || task.status === 'cancelled') {
+        return false;
+      }
+
+      // Check if backend already marked it as overdue
+      if (task.status === 'overdue') {
+        return true;
+      }
+
+      try {
+        const currentDate = new Date();
+        const endDate = new Date(task.dateRange.end);
+        
+        // Set both dates to midnight for fair comparison (ignore time)
+        currentDate.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
+        
+        // Task is overdue if current date is after the end date
+        const overdue = currentDate > endDate;
+        
+        if (overdue) {
+          console.log('⏰ Task is overdue:', {
+            taskId: task._id,
+            title: task.title,
+            status: task.status,
+            endDate: task.dateRange.end,
+            currentDate: currentDate.toISOString(),
+            daysOverdue: Math.floor((currentDate.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24))
+          });
+        }
+        
+        return overdue;
+      } catch (error) {
+        console.error('Error checking if task is overdue:', error, task._id);
+        return false;
+      }
+    };
+
     // For Tasker role - show available tasks and their offer status
     if (userRole === 'Tasker') {
 
@@ -460,20 +506,27 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
         // and assigns the task to the tasker (assignedTo field set, userRole = "assignee")
         // We show tasks that are ready to work on (not completed, overdue, or cancelled)
         // NOTE: Tasks with pending cancellation requests keep status until approved
-        const isActiveTask = task.status === 'todo' || 
-                            task.status === 'assigned' || 
-                            task.status === 'in_progress' ||
-                            task.status === 'pending_cancellation' || // Backend might add this
-                            task.status === 'awaiting_cancellation'; // Backend might add this
-        
-        // Alternative: Exclude only completed, cancelled, overdue, and open tasks
-        const isExcluded = task.status === 'completed' || 
-                          task.status === 'cancelled' || 
-                          task.status === 'overdue' ||
-                          task.status === 'open';
         
         // Verify task is actually assigned to current user (userRole should be 'assignee')
         const isAssignedToMe = (task as any).userRole === 'assignee';
+        if (!isAssignedToMe) return false;
+        
+        // Check if task is overdue (by date or status) - exclude from Todoo if overdue
+        const taskIsOverdue = isTaskOverdue(task);
+        if (taskIsOverdue) {
+          console.log('⚠️ Excluding overdue task from Todoo Tasks:', {
+            taskId: task._id,
+            title: task.title,
+            status: task.status,
+            endDate: task.dateRange?.end
+          });
+          return false; // Overdue tasks should go to Overdue tab, not Todoo tab
+        }
+        
+        // Exclude completed, cancelled, and open tasks
+        const isExcluded = task.status === 'completed' || 
+                          task.status === 'cancelled' || 
+                          task.status === 'open';
         
         const shouldInclude = !isExcluded && isAssignedToMe;
         
@@ -484,13 +537,13 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
             status: task.status,
             budget: task.budget,
             userRole: (task as any).userRole,
-            isActiveTask,
             isAssignedToMe,
+            taskIsOverdue,
             shouldInclude,
             reason: shouldInclude ? 'INCLUDED: Task assigned and active' : 
-                   !isActiveTask ? 'EXCLUDED: Task not active (completed/cancelled/overdue)' :
+                   taskIsOverdue ? 'EXCLUDED: Task is overdue (moved to Overdue tab)' :
                    !isAssignedToMe ? 'EXCLUDED: Not assigned to current user' :
-                   'EXCLUDED: Unknown reason'
+                   'EXCLUDED: Task completed/cancelled/open'
           });
         }
         
@@ -520,9 +573,75 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
         taskerAssignedTasks.filter((task: Task) => task.status === 'completed')
       ));
       
-      const overdueTasks = sortByCreatedDate(filterBySearch(
-        taskerAssignedTasks.filter((task: Task) => task.status === 'overdue')
-      ));
+      // Overdue Tasks: Include tasks assigned to tasker that are past their due date
+      // Check both backend status and client-side date comparison
+      console.log('🔍 Checking Tasker Overdue Tasks from assigned tasks:', {
+        totalAssignedTasks: taskerAssignedTasks.length,
+        tasksWithEndDates: taskerAssignedTasks.filter(t => t.dateRange?.end).length,
+        sampleTasksWithDates: taskerAssignedTasks.filter(t => t.dateRange?.end).slice(0, 3).map(t => ({
+          id: t._id,
+          title: t.title,
+          status: t.status,
+          endDate: t.dateRange?.end,
+          userRole: (t as any).userRole,
+          isPastDue: new Date() > new Date(t.dateRange.end)
+        }))
+      });
+      
+      const overdueTasksFiltered = taskerAssignedTasks.filter((task: Task) => {
+        // Must be assigned to current user
+        const isAssignedToMe = (task as any).userRole === 'assignee';
+        if (!isAssignedToMe) {
+          if (taskerAssignedTasks.length <= 10) {
+            console.log('❌ Not assigned to me:', {
+              taskId: task._id,
+              title: task.title,
+              userRole: (task as any).userRole
+            });
+          }
+          return false;
+        }
+        
+        // Check if task is overdue (either status='overdue' or past due date)
+        const overdue = isTaskOverdue(task);
+        
+        if (overdue) {
+          console.log('📌 Tasker Overdue Task FOUND:', {
+            taskId: task._id,
+            title: task.title,
+            status: task.status,
+            endDate: task.dateRange?.end,
+            currentDate: new Date().toISOString(),
+            isAssignedToMe,
+            userRole: (task as any).userRole
+          });
+        } else if (taskerAssignedTasks.length <= 10) {
+          console.log('✅ Task NOT overdue:', {
+            taskId: task._id,
+            title: task.title,
+            status: task.status,
+            endDate: task.dateRange?.end,
+            hasEndDate: !!task.dateRange?.end
+          });
+        }
+        
+        return overdue;
+      });
+      
+      const overdueTasks = sortByCreatedDate(filterBySearch(overdueTasksFiltered));
+      
+      console.log('⏰ Tasker Overdue Tasks Result:', {
+        totalAssignedTasks: taskerAssignedTasks.length,
+        overdueFiltered: overdueTasksFiltered.length,
+        finalOverdue: overdueTasks.length,
+        taskSample: overdueTasks.slice(0, 3).map(t => ({
+          id: t._id,
+          title: t.title,
+          status: t.status,
+          endDate: t.dateRange?.end,
+          daysOverdue: t.dateRange?.end ? Math.floor((new Date().getTime() - new Date(t.dateRange.end).getTime()) / (1000 * 60 * 60 * 24)) : 'N/A'
+        }))
+      });
       
       // Cancelled Tasks: Combine tasks from assigned tasks and all tasks that are cancelled
       const cancelledTasksFromAssigned = taskerAssignedTasks.filter((task: Task) => 
@@ -601,14 +720,43 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       )
     );
     
-    const overdueTasks = sortByCreatedDate(
-      filterBySearch(
-        allTasks.filter((task: Task) => {
-          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
-          return isUsersTask && task.status === 'overdue';
-        })
-      )
-    );
+    // Overdue Tasks: Include tasks created by poster that are past their due date
+    // Check both backend status and client-side date comparison
+    const overdueTasksFiltered = allTasks.filter((task: Task) => {
+      // Must be poster's task
+      const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+      if (!isUsersTask) return false;
+      
+      // Check if task is overdue (either status='overdue' or past due date)
+      const overdue = isTaskOverdue(task);
+      
+      if (overdue) {
+        console.log('📌 Poster Overdue Task:', {
+          taskId: task._id,
+          title: task.title,
+          status: task.status,
+          endDate: task.dateRange?.end,
+          isUsersTask
+        });
+      }
+      
+      return overdue;
+    });
+    
+    const overdueTasks = sortByCreatedDate(filterBySearch(overdueTasksFiltered));
+    
+    console.log('⏰ Poster Overdue Tasks Result:', {
+      totalTasks: allTasks.length,
+      overdueFiltered: overdueTasksFiltered.length,
+      finalOverdue: overdueTasks.length,
+      taskSample: overdueTasks.slice(0, 3).map(t => ({
+        id: t._id,
+        title: t.title,
+        status: t.status,
+        endDate: t.dateRange?.end,
+        daysOverdue: t.dateRange?.end ? Math.floor((new Date().getTime() - new Date(t.dateRange.end).getTime()) / (1000 * 60 * 60 * 24)) : 'N/A'
+      }))
+    });
     
     const cancelledTasks = sortByCreatedDate(
       filterBySearch(
