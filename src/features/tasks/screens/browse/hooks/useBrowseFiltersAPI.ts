@@ -116,53 +116,61 @@ const filterTasksByCountry = (tasks: Task[], userCountry: string): Task[] => {
  */
 const filterTasksBySearch = (tasks: Task[], searchText: string): Task[] => {
   if (!searchText || searchText.trim().length === 0) {
+    console.log('🔍 No search text provided, returning all tasks:', tasks.length);
     return tasks;
   }
 
   const searchLower = searchText.toLowerCase().trim();
-  const searchTerms = searchLower.split(/\s+/); // Split by whitespace for multi-word search
+  const searchTerms = searchLower.split(/\s+/).filter(term => term.length > 0); // Split by whitespace, remove empty
 
   console.log('🔍 Search Filter Debug:', {
-    searchText,
+    originalSearch: searchText,
+    searchLower,
     searchTerms,
     totalTasks: tasks.length,
   });
 
-  // Multiple priority levels for title matching
+  // Multiple priority levels for matching
+  const titleExactMatch: Task[] = [];
   const titleStartsWith: Task[] = [];
-  const titleWholeWord: Task[] = [];
+  const titleWordMatch: Task[] = [];
   const titleContains: Task[] = [];
+  const locationMatches: Task[] = [];
   const otherMatches: Task[] = [];
 
   tasks.forEach((task) => {
-    const titleLower = (task.title || '').toLowerCase();
-    const titleWords = titleLower.split(/\s+/);
+    const titleLower = (task.title || '').toLowerCase().trim();
+    const titleWords = titleLower.split(/\s+/).filter(w => w.length > 0);
     
-    // Check different levels of title matching
-    let titleMatchLevel = 0; // 0=no match, 1=contains, 2=whole word, 3=starts with
+    let matched = false;
     
-    // Level 3: Title starts with search text (highest priority)
-    if (titleLower.startsWith(searchLower)) {
-      titleMatchLevel = 3;
+    // PRIORITY 1: Exact title match (ignoring case)
+    if (titleLower === searchLower) {
+      titleExactMatch.push(task);
+      console.log(`🏆 EXACT MATCH: "${task.title}" === "${searchText}"`);
+      matched = true;
+    }
+    // PRIORITY 2: Title starts with search text
+    else if (titleLower.startsWith(searchLower)) {
       titleStartsWith.push(task);
-      console.log(`🥇 TITLE STARTS WITH: "${task.title}" starts with "${searchText}"`);
+      console.log(`🥇 STARTS WITH: "${task.title}" starts with "${searchText}"`);
+      matched = true;
     }
-    // Level 2: Title contains search as whole word
-    else if (titleWords.some(word => word === searchLower || searchTerms.every(term => titleWords.some(w => w === term)))) {
-      titleMatchLevel = 2;
-      titleWholeWord.push(task);
-      console.log(`🥈 TITLE WHOLE WORD: "${task.title}" has whole word match for "${searchText}"`);
+    // PRIORITY 3: Any title word starts with search (for partial word matching)
+    else if (titleWords.some(word => word.startsWith(searchLower))) {
+      titleWordMatch.push(task);
+      console.log(`🥈 WORD STARTS: "${task.title}" has word starting with "${searchText}"`);
+      matched = true;
     }
-    // Level 1: Title contains search text anywhere
+    // PRIORITY 4: Title contains all search terms anywhere
     else if (searchTerms.every(term => titleLower.includes(term))) {
-      titleMatchLevel = 1;
       titleContains.push(task);
-      console.log(`🥉 TITLE CONTAINS: "${task.title}" contains "${searchText}"`);
+      console.log(`🥉 CONTAINS: "${task.title}" contains "${searchText}"`);
+      matched = true;
     }
 
-    // Only check other fields if NO title match at all
-    if (titleMatchLevel === 0) {
-      // Extract all location fields for searching
+    // PRIORITY 5: Location matches (only if no title match)
+    if (!matched) {
       const locationText = task.location ? [
         task.location.address || '',
         // @ts-ignore - Handle additional location fields that might exist
@@ -175,23 +183,30 @@ const filterTasksBySearch = (tasks: Task[], searchText: string): Task[] => {
         task.location.postcode || '',
         // @ts-ignore
         task.location.country || '',
-      ].filter(Boolean).join(' ') : '';
+      ].filter(Boolean).join(' ').toLowerCase() : '';
 
+      if (locationText && searchTerms.every(term => locationText.includes(term))) {
+        locationMatches.push(task);
+        console.log(`📍 LOCATION: "${task.title}" matched in location for "${searchText}"`);
+        matched = true;
+      }
+    }
+
+    // PRIORITY 6: Other fields (category, description, etc.) - only if no other match
+    if (!matched) {
       // Extract categories - handle both string array and object array
       const categoriesText = Array.isArray(task.categories) 
         ? task.categories.map(cat => 
             typeof cat === 'string' ? cat : (cat as any).name || ''
-          ).join(' ')
+          ).join(' ').toLowerCase()
         : '';
 
-      // Build searchable text from other fields (excluding title)
+      // Build searchable text from other fields (excluding title and location)
       const searchableFields = [
         task.details || '',
-        locationText,
         categoriesText,
         task.budget?.toString() || '',
         task.currency || '',
-        `${task.budget} ${task.currency}`,
         // @ts-ignore - Handle potential tags field
         ...(Array.isArray(task.tags) ? task.tags : []),
       ];
@@ -202,26 +217,35 @@ const filterTasksBySearch = (tasks: Task[], searchText: string): Task[] => {
         .replace(/\s+/g, ' '); // Normalize whitespace
 
       // Check if all search terms are found in other fields
-      const matchesOtherFields = searchTerms.every(term => combinedText.includes(term));
-      
-      if (matchesOtherFields) {
+      if (searchTerms.every(term => combinedText.includes(term))) {
         otherMatches.push(task);
-        console.log(`📋 OTHER FIELD MATCH: "${task.title}" matched in other fields for "${searchText}"`);
+        console.log(`📋 OTHER: "${task.title}" matched in other fields for "${searchText}"`);
+        matched = true;
       }
     }
   });
 
-  // Combine results in priority order: starts with > whole word > contains > other fields
-  const filtered = [...titleStartsWith, ...titleWholeWord, ...titleContains, ...otherMatches];
+  // Combine results in priority order: exact > starts with > word match > contains > location > other
+  const filtered = [
+    ...titleExactMatch,
+    ...titleStartsWith, 
+    ...titleWordMatch,
+    ...titleContains,
+    ...locationMatches,
+    ...otherMatches
+  ];
 
   console.log('🔍 Search Filter Result:', {
     inputTasks: tasks.length,
-    titleStartsWith: titleStartsWith.length,
-    titleWholeWord: titleWholeWord.length,
-    titleContains: titleContains.length,
+    exactMatches: titleExactMatch.length,
+    startsWithMatches: titleStartsWith.length,
+    wordMatches: titleWordMatch.length,
+    containsMatches: titleContains.length,
+    locationMatches: locationMatches.length,
     otherMatches: otherMatches.length,
     totalFiltered: filtered.length,
-    searchText
+    searchText,
+    searchLower
   });
 
   return filtered;
@@ -353,7 +377,7 @@ export const useBrowseFiltersAPI = () => {
     }
 
     const params: TaskSearchParams = {
-      q: debouncedSearchText.trim(), // Required parameter for search endpoint
+      q: debouncedSearchText.trim().toLowerCase(), // Normalize to lowercase for consistent cache keys
       sort: SEARCH_SORT_MAPPING[selectedSort],
     };
 
