@@ -284,3 +284,46 @@ export const getMinimumBudget = (currencyCode: string): number => {
 export const getDefaultBudget = (currencyCode: string): number => {
   return getMinimumBudget(currencyCode);
 };
+
+/**
+ * Maximum price range amounts for different currencies
+ * Used for filter price range sliders
+ */
+const MAX_PRICE_MAP: Record<string, number> = {
+  'USD': 10000,
+  'AUD': 10000,    // $10,000 AUD
+  'NZD': 15000,    // $15,000 NZD
+  'LKR': 1000000,  // Rs 1,000,000 LKR
+  'SGD': 13500,    // $13,500 SGD
+  'MYR': 45000,    // RM 45,000 MYR
+  'IDR': 157500000, // Rp 157,500,000 IDR
+  'THB': 350000,   // ฿350,000 THB
+  'PHP': 550000,   // ₱550,000 PHP
+  'VND': 250000000, // ₫250,000,000 VND
+  'INR': 825000,   // ₹825,000 INR
+  'PKR': 2800000,  // ₨2,800,000 PKR
+  'BDT': 1100000,  // ৳1,100,000 BDT
+  'JPY': 1500000,  // ¥1,500,000 JPY
+  'CNY': 72500,    // ¥72,500 CNY
+  'KRW': 13500000, // ₩13,500,000 KRW
+  'HKD': 77500,    // $77,500 HKD
+  'CAD': 14000,    // $14,000 CAD
+  'MXN': 170000,   // $170,000 MXN
+  'BRL': 50000,    // R$50,000 BRL
+  'GBP': 8000,     // £8,000 GBP
+  'EUR': 9500,     // €9,500 EUR
+  'CHF': 9000,     // Fr 9,000 CHF
+  'SEK': 107500,   // 107,500 kr SEK
+  'NOK': 107500,   // 107,500 kr NOK
+  'DKK': 70000,    // 70,000 kr DKK
+  'ZAR': 185000,   // R185,000 ZAR
+};
+
+/**
+ * Get maximum price for filter range based on currency
+ * @param currencyCode - Currency code (e.g., 'USD', 'LKR', 'AUD')
+ * @returns Maximum price amount for the currency
+ */
+export const getMaxPriceForCurrency = (currencyCode: string): number => {
+  return MAX_PRICE_MAP[currencyCode] || 10000;
+};

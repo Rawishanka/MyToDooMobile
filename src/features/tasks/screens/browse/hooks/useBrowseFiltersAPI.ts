@@ -2,6 +2,7 @@
 import { Task, TaskFilterParams, TaskSearchParams } from '@/src/api/types/tasks';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useFilterTasks, useSearchTasks } from '@/src/shared/hooks/useTaskApi';
+import { getMaxPriceForCurrency } from '@/src/shared/utils/currency';
 import * as Location from 'expo-location';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -276,7 +277,13 @@ const FILTER_SORT_MAPPING = [
 export const useBrowseFiltersAPI = () => {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [taskType, setTaskType] = useState<'all' | 'in-person' | 'remote'>('all');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  
+  // Get user's country from geo-location for filtering tasks
+  const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
+  
+  // Use dynamic max price based on user's currency
+  const MAX_PRICE = getMaxPriceForCurrency(countryInfo.currency);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, MAX_PRICE]);
   const [availableTasksOnly, setAvailableTasksOnly] = useState(false);
   const [showTasksWithNoOffers, setShowTasksWithNoOffers] = useState(false);
   const [selectedSort, setSelectedSort] = useState(0);
@@ -294,9 +301,6 @@ export const useBrowseFiltersAPI = () => {
   // Track the last processed page to prevent duplicate processing
   const lastProcessedPageRef = React.useRef<number>(0);
   const lastProcessedDataHashRef = React.useRef<string>('');
-
-  // Get user's country from geo-location for filtering tasks
-  const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
 
   // Log country detection status
   useEffect(() => {
@@ -700,22 +704,24 @@ export const useBrowseFiltersAPI = () => {
     let count = 0;
     if (selectedCategory !== 'All Categories') count++;
     if (taskType !== 'all') count++;
-    if (priceRange[0] !== 0 || priceRange[1] !== 10000) count++;
+    if (priceRange[0] !== 0 || priceRange[1] !== MAX_PRICE) count++;
     if (availableTasksOnly) count++;
     if (showTasksWithNoOffers) count++;
     return count;
   };
 
   const resetFilters = () => {
+    console.log('🔄 Resetting all filters to defaults (MAX_PRICE:', MAX_PRICE, ')');
     setSelectedCategory('All Categories');
     setTaskType('all');
-    setPriceRange([0, 10000]);
+    setPriceRange([0, MAX_PRICE]);
     setAvailableTasksOnly(false);
     setShowTasksWithNoOffers(false);
     setSelectedSort(0);
     setSearchText('');
     setCurrentPage(1);
-    setTasksWithOfferCounts([]);
+    // Don't clear tasks - let them reload from API with reset filters
+    // setTasksWithOfferCounts([]); // REMOVED: This was causing tasks to disappear
     setHasMore(true);
   };
 
