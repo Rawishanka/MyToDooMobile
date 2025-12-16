@@ -3,7 +3,6 @@ import { Task, TaskFilterParams, TaskSearchParams } from '@/src/api/types/tasks'
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useFilterTasks, useSearchTasks } from '@/src/shared/hooks/useTaskApi';
 import { getMaxPriceForCurrency } from '@/src/shared/utils/currency';
-import * as Location from 'expo-location';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 export interface FilterState {
@@ -252,26 +251,32 @@ const filterTasksBySearch = (tasks: Task[], searchText: string): Task[] => {
   return filtered;
 };
 
+// Sort mapping for browse-screen.tsx sort options:
+// 0: 'Recommended' → 'latest'
+// 1: 'Price: High to low' → 'price-high'
+// 2: 'Price: Low to High' → 'price-low'
+// 3: 'Due date: Earliest' → 'earliest'
+// 4: 'Due date: Latest' → 'latest'
+// 5: 'Newest tasks' → 'newest'
+// 6: 'Oldest tasks' → 'oldest'
 const SEARCH_SORT_MAPPING = [
-  'latest',
-  'price-high', 
-  'price-low',
-  'earliest',
-  'latest',
-  'newest',
-  'oldest',
-  'nearest',
+  'latest',      // 0: Recommended
+  'price-high',  // 1: Price: High to low
+  'price-low',   // 2: Price: Low to High
+  'earliest',    // 3: Due date: Earliest
+  'latest',      // 4: Due date: Latest
+  'newest',      // 5: Newest tasks
+  'oldest',      // 6: Oldest tasks
 ] as const;
 
 const FILTER_SORT_MAPPING = [
-  'latest',
-  'price-high',
-  'price-low', 
-  'earliest',
-  'latest',
-  'newest',
-  'oldest',
-  'nearest',
+  'latest',      // 0: Recommended
+  'price-high',  // 1: Price: High to low
+  'price-low',   // 2: Price: Low to High
+  'earliest',    // 3: Due date: Earliest
+  'latest',      // 4: Due date: Latest
+  'newest',      // 5: Newest tasks
+  'oldest',      // 6: Oldest tasks
 ] as const;
 
 export const useBrowseFiltersAPI = () => {
@@ -291,16 +296,15 @@ export const useBrowseFiltersAPI = () => {
   const [debouncedSearchText, setDebouncedSearchText] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isProcessingData, setIsProcessingData] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [tasksWithOfferCounts, setTasksWithOfferCounts] = useState<Task[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isPaginatingRef, setIsPaginatingRef] = useState(false);
   
   // Track the last processed page to prevent duplicate processing
   const lastProcessedPageRef = React.useRef<number>(0);
   const lastProcessedDataHashRef = React.useRef<string>('');
+  const isResettingRef = React.useRef<boolean>(false);
 
   // Log country detection status
   useEffect(() => {
@@ -335,29 +339,6 @@ export const useBrowseFiltersAPI = () => {
     }
   }, [searchText, debouncedSearchText]);
 
-  React.useEffect(() => {
-    const getLocation = async () => {
-      if (selectedSort === 7) {
-        try {
-          const { status } = await Location.requestForegroundPermissionsAsync();
-          if (status === 'granted') {
-            const location = await Location.getCurrentPositionAsync({});
-            setUserLocation({
-              lat: location.coords.latitude,
-              lng: location.coords.longitude,
-            });
-          } else {
-            setSelectedSort(0);
-          }
-        } catch (err) {
-          console.error('Location error:', err);
-          setSelectedSort(0);
-        }
-      }
-    };
-    getLocation();
-  }, [selectedSort]);
-
   const shouldUseFilterAPI = React.useMemo(() => {
     // Use Search API ONLY when there's actual search text (at least 1 character)
     // This ensures we call /tasks/search endpoint only for searches
@@ -387,7 +368,7 @@ export const useBrowseFiltersAPI = () => {
 
     if (selectedCategory !== 'All Categories') params.category = selectedCategory;
     
-    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === 10000;
+    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === MAX_PRICE;
     if (!isDefaultPriceRange) {
       params.minBudget = priceRange[0];
       params.maxBudget = priceRange[1];
@@ -398,7 +379,7 @@ export const useBrowseFiltersAPI = () => {
 
     console.log('🔍 [useBrowseFiltersAPI] Search Params:', params);
     return params;
-  }, [selectedCategory, taskType, priceRange, selectedSort, debouncedSearchText]);
+  }, [selectedCategory, taskType, priceRange, selectedSort, debouncedSearchText, MAX_PRICE]);
 
   const filterParams: TaskFilterParams = useMemo(() => {
     const params: TaskFilterParams = {
@@ -410,7 +391,7 @@ export const useBrowseFiltersAPI = () => {
 
     if (selectedCategory !== 'All Categories') params.categories = selectedCategory;
     
-    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === 10000;
+    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === MAX_PRICE;
     if (!isDefaultPriceRange) {
       params.minBudget = priceRange[0];
       params.maxBudget = priceRange[1];
@@ -419,18 +400,15 @@ export const useBrowseFiltersAPI = () => {
     if (taskType === 'in-person') params.locationType = 'In-person';
     else if (taskType === 'remote') params.locationType = 'Online';
 
-    if (selectedSort === 7 && userLocation) {
-      params.lat = userLocation.lat;
-      params.lng = userLocation.lng;
-      params.radius = 50;
-    }
+    // Note: 'nearest' sort option was removed from browse-screen sort options
+    // If you need location-based sorting, add it back to browse-screen.tsx sortOptions
 
     // DON'T send search text to backend - we do comprehensive client-side filtering
     // Backend search only searches title field, we want to search ALL fields
     // if (searchText.trim()) params.search = searchText.trim();
 
     return params;
-  }, [selectedCategory, taskType, priceRange, selectedSort, userLocation, currentPage]);
+  }, [selectedCategory, taskType, priceRange, selectedSort, currentPage, MAX_PRICE]);
 
   const {
     data: searchResponse,
@@ -712,6 +690,10 @@ export const useBrowseFiltersAPI = () => {
 
   const resetFilters = () => {
     console.log('🔄 Resetting all filters to defaults (MAX_PRICE:', MAX_PRICE, ')');
+    
+    // Set flag to indicate we're resetting - prevents clearing tasks in useEffect
+    isResettingRef.current = true;
+    
     setSelectedCategory('All Categories');
     setTaskType('all');
     setPriceRange([0, MAX_PRICE]);
@@ -723,10 +705,21 @@ export const useBrowseFiltersAPI = () => {
     // Don't clear tasks - let them reload from API with reset filters
     // setTasksWithOfferCounts([]); // REMOVED: This was causing tasks to disappear
     setHasMore(true);
+    
+    // Clear the flag after a short delay to allow state updates to propagate
+    setTimeout(() => {
+      isResettingRef.current = false;
+    }, 100);
   };
 
   // Reset to page 1 when filters change (but not during pagination)
   useEffect(() => {
+    // Skip if we're resetting - let reset handle it
+    if (isResettingRef.current) {
+      console.log('⏭️ Skipping filter reset - reset operation in progress');
+      return;
+    }
+    
     // Skip reset if we're in the middle of paginating
     if (isLoadingMore) {
       console.log('⏭️ Skipping filter reset - pagination in progress');
