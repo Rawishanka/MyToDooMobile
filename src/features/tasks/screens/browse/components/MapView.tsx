@@ -132,9 +132,9 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         }
       }
 
-      // If no coordinates found OR coordinates are invalid (0,0), try to geocode the address using known locations
-      // ⚠️ IMPORTANT: Only use geocoding as FALLBACK when coordinates are truly missing or invalid
-      // The database coordinates should ALWAYS take priority for accuracy
+      // ⚠️ CRITICAL FIX for Australia/NZ: ALWAYS try geocoding if we have an address
+      // This ensures all tasks show up on map with accurate locations
+      // Database coordinates should take priority, but we MUST have fallback for all countries
       const needsGeocoding = (lat === null || lng === null || isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0));
       
       if (needsGeocoding && task.location.address) {
@@ -145,7 +145,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           lng = geocodedCoords.lng;
           console.log(`✅ Geocoded ${task.location.address} to:`, { lat, lng, source: 'Geocoded' });
         } else {
-          console.log(`❌ Could not geocode ${task.location.address}`);
+          console.log(`❌ Could not geocode ${task.location.address} - task will NOT appear on map`);
         }
       } else if (!needsGeocoding) {
         console.log(`✅ Using exact coordinates from database for ${task.title}:`, { lat, lng, address: task.location.address });

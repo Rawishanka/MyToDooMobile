@@ -11,19 +11,21 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
-  ActionSheetIOS,
-  Alert,
-  FlatList,
-  Image,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActionSheetIOS,
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Image,
+    KeyboardAvoidingView,
+    Linking,
+    Modal,
+    Platform,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import type { ChatMessage, Message } from './message-types';
 
@@ -71,14 +73,26 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
   const [newMessage, setNewMessage] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [lastTaskId, setLastTaskId] = useState<string | null>(null);
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
-  const [chatId, setChatId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [lastTaskId, setLastTaskId] = useState<string | null>(taskId || null);
+  const [lastChatId, setLastChatId] = useState<string | null>(chatIdProp || null);
+  const [chatId, setChatId] = useState<string | null>(chatIdProp || null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Get current user from auth store
   const user = useAuthStore((state) => state.user);
   const currentUserId = user?._id || user?.id || '';
   const currentUserName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'You';
+  
+  // Reset state when modal closes to prevent stale data on next open
+  useEffect(() => {
+    if (!visible) {
+      console.log('🚪 Modal closed, clearing chat state');
+      setChatMessages([]);
+      setNewMessage('');
+      setPreviewImage(null);
+    }
+  }, [visible]);
   
   // Debug user info
   useEffect(() => {
@@ -270,12 +284,12 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
     return [];
   };
 
-  // Initialize chatId from prop if available
+  // Update chatId when prop changes or modal closes
   useEffect(() => {
-    if (visible && chatIdProp) {
-      console.log('🆔 Setting chatId from prop:', chatIdProp);
+    if (visible && chatIdProp && chatIdProp !== chatId) {
+      console.log('🆔 Updating chatId from prop:', chatIdProp);
       setChatId(chatIdProp);
-    } else if (!visible) {
+    } else if (!visible && chatId !== null) {
       // Reset chatId when chat closes
       console.log('🔄 Resetting chatId (chat closed)');
       setChatId(null);
@@ -326,20 +340,35 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
 
   // Reset chat when switching to a different task
   useEffect(() => {
-    if (taskId !== lastTaskId && visible) {
+    if (taskId && lastTaskId && taskId !== lastTaskId && visible) {
       console.log(`🔄 Switching chat from ${lastTaskId} to ${taskId}`);
-      setIsFirstLoad(true);
       setChatMessages([]);
       setChatId(null); // Reset chatId when switching tasks
-      setLastTaskId(taskId || null);
+      setLastTaskId(taskId);
+    } else if (taskId && !lastTaskId && visible) {
+      // First time setting taskId
+      setLastTaskId(taskId);
     }
   }, [taskId, lastTaskId, visible]);
+
+  // Reset messages when switching to a different chat (chatIdProp changes)
+  useEffect(() => {
+    if (visible && chatIdProp && lastChatId && chatIdProp !== lastChatId) {
+      console.log(`🔄 Switching from chat ${lastChatId} to ${chatIdProp}`);
+      setChatMessages([]);
+      setLastChatId(chatIdProp);
+    } else if (visible && chatIdProp && !lastChatId) {
+      // First time setting chatId
+      setLastChatId(chatIdProp);
+    }
+  }, [chatIdProp, lastChatId, visible]);
 
   // Load messages from API when chatId is available
   useEffect(() => {
     if (messagesResponse?.messages && visible && currentUserId && chatId) {
       console.log(`📡 Loading ${messagesResponse.messages.length} messages from API for chat: ${chatId}`);
       console.log('👤 Comparing with currentUserId:', currentUserId);
+      console.log('🔄 Chat visible, messages will be rendered immediately');
       
       // Get participant info from chat details API or fallback to props
       let poster: ChatParticipant | null = null;
@@ -515,15 +544,12 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
       
       console.log('📬 Sample converted message:', JSON.stringify(convertedMessages[0], null, 2));
       
-      // Update messages state
-      if (convertedMessages.length > 0) {
-        setChatMessages(convertedMessages);
-        
-        // Save to storage
-        if (taskId) {
-          saveMessagesToStorage(taskId, convertedMessages);
-        }
-        
+      // Always update messages state - even if empty
+      setChatMessages(convertedMessages);
+      
+      // Save to storage if we have messages
+      if (convertedMessages.length > 0 && taskId) {
+        saveMessagesToStorage(taskId, convertedMessages);
         console.log(`✅ Loaded ${convertedMessages.length} messages for chat`);
         
         // Mark messages as read when opening chat
@@ -537,19 +563,20 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
             }
           });
         }
-      } else if (isFirstLoad) {
-        // No messages yet, load from storage or start empty
-        const loadFromStorage = async () => {
-          if (taskId) {
-            const storedMessages = await loadMessagesFromStorage(taskId);
-            setChatMessages(storedMessages);
-          }
-          setIsFirstLoad(false);
-        };
-        loadFromStorage();
+      } else if (convertedMessages.length === 0) {
+        console.log('📦 No messages in chat yet');
+        // Still try to load from storage as backup
+        if (taskId) {
+          loadMessagesFromStorage(taskId).then(storedMessages => {
+            if (storedMessages.length > 0) {
+              console.log(`💾 Loaded ${storedMessages.length} messages from storage as fallback`);
+              setChatMessages(storedMessages);
+            }
+          });
+        }
       }
     }
-  }, [messagesResponse, visible, currentUserId, chatId, taskId, isFirstLoad, currentUserName, chatDetailsResponse, posterIdProp, taskerIdProp]);
+  }, [messagesResponse, visible, currentUserId, chatId, taskId, currentUserName, chatDetailsResponse, posterIdProp, taskerIdProp]);
 
   const sendMessage = async () => {
     if (newMessage.trim() && chatId) {
@@ -675,6 +702,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
       });
 
       if (!result.canceled && result.assets[0]) {
+        setIsUploading(true);
         console.log('📤 Uploading image from ChatWindow:', result.assets[0].uri);
         
         // Upload to CDN
@@ -695,8 +723,10 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
             onSuccess: () => {
               console.log('✅ Image message sent from ChatWindow');
               refetchMessages();
+              setIsUploading(false);
             },
             onError: (error) => {
+              setIsUploading(false);
               console.error('❌ Failed to send image:', error);
               Alert.alert('Error', 'Failed to send image');
             },
@@ -704,8 +734,47 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         );
       }
     } catch (error) {
+      setIsUploading(false);
       console.error('❌ Image upload error:', error);
       Alert.alert('Error', 'Failed to upload image');
+    }
+  };
+
+  const handleFileDownload = async (fileUrl: string | null, fileName: string) => {
+    if (!fileUrl) {
+      Alert.alert('Error', 'File URL not available');
+      return;
+    }
+
+    try {
+      console.log('📥 Opening file:', fileUrl);
+      Alert.alert(
+        'Open File',
+        `Do you want to open ${fileName}?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Open',
+            onPress: async () => {
+              try {
+                const supported = await Linking.canOpenURL(fileUrl);
+                if (supported) {
+                  await Linking.openURL(fileUrl);
+                  console.log('✅ File opened:', fileUrl);
+                } else {
+                  Alert.alert('Error', 'Cannot open this file type');
+                }
+              } catch (openError) {
+                console.error('❌ Open error:', openError);
+                Alert.alert('Error', 'Failed to open file');
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('❌ File open error:', error);
+      Alert.alert('Error', 'Failed to open file');
     }
   };
 
@@ -722,6 +791,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
       });
 
       if (!result.canceled && result.assets[0]) {
+        setIsUploading(true);
         console.log('📤 Uploading file from ChatWindow:', result.assets[0].name);
         
         // Upload to CDN
@@ -747,8 +817,10 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
             onSuccess: () => {
               console.log('✅ File message sent from ChatWindow');
               refetchMessages();
+              setIsUploading(false);
             },
             onError: (error) => {
+              setIsUploading(false);
               console.error('❌ Failed to send file:', error);
               Alert.alert('Error', 'Failed to send file');
             },
@@ -756,6 +828,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         );
       }
     } catch (error) {
+      setIsUploading(false);
       console.error('❌ File upload error:', error);
       Alert.alert('Error', 'Failed to upload file');
     }
@@ -801,7 +874,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
       <KeyboardAvoidingView 
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <View style={styles.chatContainer}>
           <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -832,9 +905,9 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                   <Text style={styles.chatTitle} numberOfLines={1}>
                     {`${otherPerson.firstName} ${otherPerson.lastName || ''}`.trim()}
                   </Text>
-                  <Text style={styles.chatStatus}>
-                    {taskId ? (isLoadingMessages ? 'Loading...' : 'Online') : 'Demo Mode'}
-                  </Text>
+                  {isLoadingMessages && (
+                    <Text style={styles.chatStatus}>Loading...</Text>
+                  )}
                 </View>
               </>
             ) : (
@@ -845,17 +918,13 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                 />
                 <View style={styles.chatHeaderText}>
                   <Text style={styles.chatTitle} numberOfLines={1}>{message.title}</Text>
-                  <Text style={styles.chatStatus}>
-                    {taskId ? (isLoadingMessages ? 'Loading...' : 'Online') : 'Demo Mode'}
-                  </Text>
+                  {isLoadingMessages && (
+                    <Text style={styles.chatStatus}>Loading...</Text>
+                  )}
                 </View>
               </>
             )}
           </View>
-          
-          <TouchableOpacity style={styles.moreButton}>
-            <Ionicons name="ellipsis-vertical" size={20} color="#000" />
-          </TouchableOpacity>
         </View>
 
         {/* Messages List */}
@@ -868,11 +937,18 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           ListEmptyComponent={() => (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="chatbubbles-outline" size={64} color="#E1E8ED" />
-              <Text style={styles.emptyTitle}>Start a conversation</Text>
-              <Text style={styles.emptySubtext}>Send a message to begin chatting about this task</Text>
-            </View>
+            isLoadingMessages ? (
+              <View style={styles.emptyContainer}>
+                <ActivityIndicator size="large" color="#007AFF" />
+                <Text style={styles.loadingText}>Loading messages...</Text>
+              </View>
+            ) : (
+              <View style={styles.emptyContainer}>
+                <Ionicons name="chatbubbles-outline" size={64} color="#E1E8ED" />
+                <Text style={styles.emptyTitle}>Start a conversation</Text>
+                <Text style={styles.emptySubtext}>Send a message to begin chatting about this task</Text>
+              </View>
+            )
           )}
           renderItem={({ item: msg }) => (
             <View
@@ -903,18 +979,19 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
               >
                 {msg.messageType === 'image' && msg.mediaUrl ? (
                   <View>
-                    <Image 
-                      source={{ uri: msg.mediaUrl }} 
-                      style={styles.messageImage}
-                      onError={(e) => {
-                        console.error('❌ Image load error:', {
-                          url: msg.mediaUrl,
-                          error: e.nativeEvent.error,
-                          messageId: msg.id
-                        });
-                      }}
-                      onLoad={() => console.log('✅ Image loaded successfully:', msg.mediaUrl)}
-                    />
+                    <TouchableOpacity onPress={() => setPreviewImage(normalizeMediaUrl(msg.mediaUrl))}>
+                      <Image 
+                        source={{ uri: msg.mediaUrl }} 
+                        style={styles.messageImage}
+                        onError={(e) => {
+                          // Silently handle CDN image errors (401, 404, etc.)
+                          // These are usually auth token issues from backend
+                          if (__DEV__) {
+                            console.log('🖼️ Image unavailable (CDN auth issue):', msg.id);
+                          }
+                        }}
+                      />
+                    </TouchableOpacity>
                     {msg.text && msg.text !== 'Photo' && (
                       <Text style={[
                         styles.messageText,
@@ -926,15 +1003,17 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                     )}
                   </View>
                 ) : msg.messageType === 'file' && msg.mediaUrl ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Ionicons name="document-attach" size={24} color={msg.sender === 'me' ? '#fff' : '#007AFF'} />
-                    <Text style={[
-                      styles.messageText,
-                      msg.sender === 'me' ? styles.myMessageText : styles.otherMessageText
-                    ]}>
-                      {msg.text}
-                    </Text>
-                  </View>
+                  <TouchableOpacity onPress={() => handleFileDownload(normalizeMediaUrl(msg.mediaUrl), msg.text || 'File')}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <Ionicons name="document-attach" size={24} color={msg.sender === 'me' ? '#fff' : '#007AFF'} />
+                      <Text style={[
+                        styles.messageText,
+                        msg.sender === 'me' ? styles.myMessageText : styles.otherMessageText
+                      ]}>
+                        {msg.text}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
                 ) : (
                   <Text style={[
                     styles.messageText,
@@ -997,6 +1076,48 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Upload Loading Overlay */}
+        {isUploading && (
+          <View style={styles.uploadOverlay}>
+            <View style={styles.uploadOverlayContent}>
+              <Ionicons name="cloud-upload" size={48} color="#007AFF" />
+              <Text style={styles.uploadOverlayText}>Uploading...</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Image Preview Modal */}
+        <Modal
+          visible={!!previewImage}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setPreviewImage(null)}
+        >
+          <View style={styles.previewModalContainer}>
+            <TouchableOpacity
+              style={styles.previewModalBackground}
+              activeOpacity={1}
+              onPress={() => setPreviewImage(null)}
+            >
+              <View style={styles.previewModalContent}>
+                <TouchableOpacity
+                  style={styles.previewCloseButton}
+                  onPress={() => setPreviewImage(null)}
+                >
+                  <Ionicons name="close" size={30} color="#fff" />
+                </TouchableOpacity>
+                {previewImage && (
+                  <Image
+                    source={{ uri: previewImage }}
+                    style={styles.previewImage}
+                    resizeMode="contain"
+                  />
+                )}
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Modal>
       </View>
     </KeyboardAvoidingView>
     </Modal>
@@ -1201,6 +1322,12 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     paddingHorizontal: 40,
   },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 12,
+    textAlign: 'center',
+  },
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
@@ -1214,5 +1341,57 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     textAlign: 'center',
     lineHeight: 20,
+  },
+  uploadOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  uploadOverlayContent: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    minWidth: 150,
+  },
+  uploadOverlayText: {
+    marginTop: 12,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  previewModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+  },
+  previewModalBackground: {
+    flex: 1,
+  },
+  previewModalContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewCloseButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 1,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
   },
 });

@@ -3,6 +3,7 @@
  * This will auto-detect the user's country for location filtering and currency
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import { useEffect, useState } from 'react';
 
@@ -31,27 +32,84 @@ const COUNTRY_MAP: Record<string, CountryInfo> = {
   'Indonesia': { countryCode: 'ID', countryName: 'Indonesia', currency: 'IDR' },
 };
 
-// Default fallback (Sri Lanka for testing - can be changed later)
+// Default fallback - Australia (primary target country for this app)
 const DEFAULT_COUNTRY: CountryInfo = {
-  countryCode: 'LK',
-  countryName: 'Sri Lanka', 
-  currency: 'LKR'
+  countryCode: 'AU',
+  countryName: 'Australia', 
+  currency: 'AUD'
 };
 
+// AsyncStorage key for caching detected country
+const COUNTRY_CACHE_KEY = '@user_country_info';
+
+// Global cache to store country info across hook instances
+let globalCachedCountry: CountryInfo | null = null;
+let isCacheLoaded = false;
+
+// Load cache once on module import (runs before any component renders)
+(async () => {
+  try {
+    const cached = await AsyncStorage.getItem(COUNTRY_CACHE_KEY);
+    if (cached) {
+      globalCachedCountry = JSON.parse(cached) as CountryInfo;
+      isCacheLoaded = true;
+      console.log('⚡ Pre-loaded country from cache on module load:', globalCachedCountry.countryName);
+    } else {
+      isCacheLoaded = true;
+      console.log('ℹ️ No cached country found on module load');
+    }
+  } catch (error) {
+    isCacheLoaded = true;
+    console.log('⚠️ Failed to load cached country on module load:', error);
+  }
+})();
+
 export const useLocationCountry = () => {
-  const [countryInfo, setCountryInfo] = useState<CountryInfo>(DEFAULT_COUNTRY);
-  const [isDetecting, setIsDetecting] = useState(false);
+  // Initialize with cached value if available, otherwise use default
+  const [countryInfo, setCountryInfo] = useState<CountryInfo>(() => {
+    const initial = globalCachedCountry || DEFAULT_COUNTRY;
+    console.log('🏗️ useLocationCountry initializing with:', initial.countryName);
+    return initial;
+  });
+  const [isDetecting, setIsDetecting] = useState(!isCacheLoaded); // Only detecting if cache not loaded yet
   const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(isCacheLoaded);
 
-  console.log('🏗️ useLocationCountry hook initialized with default:', DEFAULT_COUNTRY);
-
+  // Load and detect country on mount
   useEffect(() => {
-    detectCurrentCountry();
+    const initializeCountry = async () => {
+      try {
+        // If cache wasn't loaded at module level, load it now
+        if (!isCacheLoaded) {
+          const cachedCountry = await AsyncStorage.getItem(COUNTRY_CACHE_KEY);
+          if (cachedCountry) {
+            const parsedCountry = JSON.parse(cachedCountry) as CountryInfo;
+            console.log('⚡ Loaded cached country in useEffect:', parsedCountry.countryName);
+            setCountryInfo(parsedCountry);
+            globalCachedCountry = parsedCountry;
+          }
+          isCacheLoaded = true;
+          setIsInitialized(true);
+        }
+        
+        // Always detect in background to update if user moved
+        setIsDetecting(false);
+        detectCurrentCountry(false);
+      } catch (error) {
+        console.log('⚠️ Error in initializeCountry:', error);
+        setIsInitialized(true);
+        await detectCurrentCountry(true);
+      }
+    };
+
+    initializeCountry();
   }, []);
 
-  const detectCurrentCountry = async () => {
+  const detectCurrentCountry = async (showLoading: boolean = true) => {
     try {
-      setIsDetecting(true);
+      if (showLoading) {
+        setIsDetecting(true);
+      }
       setError(null);
 
       console.log('🌍 Starting country detection...');
@@ -61,6 +119,8 @@ export const useLocationCountry = () => {
       if (status !== 'granted') {
         console.log('❌ Location permission denied, using default country:', DEFAULT_COUNTRY.countryName);
         setCountryInfo(DEFAULT_COUNTRY);
+        // Cache the default country
+        await AsyncStorage.setItem(COUNTRY_CACHE_KEY, JSON.stringify(DEFAULT_COUNTRY));
         return;
       }
 
@@ -100,21 +160,26 @@ export const useLocationCountry = () => {
         });
 
         if (detectedCountry && COUNTRY_MAP[detectedCountry]) {
-          const countryInfo = COUNTRY_MAP[detectedCountry];
+          const newCountryInfo = COUNTRY_MAP[detectedCountry];
           console.log('✅ Using detected country info:', {
-            countryName: countryInfo.countryName,
-            countryCode: countryInfo.countryCode,
-            currency: countryInfo.currency
+            countryName: newCountryInfo.countryName,
+            countryCode: newCountryInfo.countryCode,
+            currency: newCountryInfo.currency
           });
-          setCountryInfo(countryInfo);
+          setCountryInfo(newCountryInfo);
+          // Cache the detected country for future use
+          await AsyncStorage.setItem(COUNTRY_CACHE_KEY, JSON.stringify(newCountryInfo));
+          console.log('💾 Cached country info to AsyncStorage');
         } else {
           console.log('⚠️ Country not in supported list, using default:', detectedCountry);
           console.log('📋 Supported countries:', Object.keys(COUNTRY_MAP));
           setCountryInfo(DEFAULT_COUNTRY);
+          await AsyncStorage.setItem(COUNTRY_CACHE_KEY, JSON.stringify(DEFAULT_COUNTRY));
         }
       } else {
         console.log('⚠️ No reverse geocode results, using default country');
         setCountryInfo(DEFAULT_COUNTRY);
+        await AsyncStorage.setItem(COUNTRY_CACHE_KEY, JSON.stringify(DEFAULT_COUNTRY));
       }
       
     } catch (error: any) {
@@ -127,6 +192,12 @@ export const useLocationCountry = () => {
       }
       setError('Unable to detect location');
       setCountryInfo(DEFAULT_COUNTRY);
+      // Cache default on error
+      try {
+        await AsyncStorage.setItem(COUNTRY_CACHE_KEY, JSON.stringify(DEFAULT_COUNTRY));
+      } catch (e) {
+        console.log('⚠️ Failed to cache default country:', e);
+      }
     } finally {
       setIsDetecting(false);
       console.log('🏁 Country detection completed');
@@ -136,6 +207,7 @@ export const useLocationCountry = () => {
   return {
     countryInfo,
     isDetecting,
+    isInitialized, // NEW: Flag to indicate if initial cache load is complete
     error,
     refetch: detectCurrentCountry,
   };

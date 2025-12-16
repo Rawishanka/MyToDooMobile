@@ -1,7 +1,9 @@
+import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Dimensions, Platform, View } from 'react-native';
+import React from 'react';
+import { Dimensions, Platform, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import screens from features
@@ -54,6 +56,20 @@ export default function TabNavigator() {
   // Don't check auth here - let individual screens handle auth if needed
   // This prevents unwanted redirects during navigation
   const insets = useSafeAreaInsets();
+  
+  // Get chat data to calculate total unread count
+  const { data: chatData } = useGetUserChats();
+  
+  // Calculate total unread messages count from all chats
+  const totalUnreadCount = React.useMemo(() => {
+    if (!chatData?.chats) return 0;
+    
+    return chatData.chats.reduce((total: number, chat: any) => {
+      const unreadCount = chat.unreadCount || 0;
+      return total + unreadCount;
+    }, 0);
+  }, [chatData]);
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -98,7 +114,16 @@ export default function TabNavigator() {
                 <Ionicons name="list" size={iconSize} color={iconColor} />
               )}
               {route.name === 'message' && (
-                <Ionicons name="chatbubbles" size={iconSize} color={iconColor} />
+                <View style={{ position: 'relative' }}>
+                  <Ionicons name="chatbubbles" size={iconSize} color={iconColor} />
+                  {totalUnreadCount > 0 && (
+                    <View style={styles.messageBadge}>
+                      <Text style={styles.messageBadgeText}>
+                        {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               )}
               {route.name === 'account' && (
                 <Ionicons name="person-circle" size={iconSize} color={iconColor} />
@@ -116,3 +141,26 @@ export default function TabNavigator() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  messageBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -10,
+    backgroundColor: '#FF3B30',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  messageBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});

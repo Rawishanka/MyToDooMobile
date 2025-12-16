@@ -1,7 +1,9 @@
 import { Task } from '@/src/api/types/tasks';
+import { ChatWindow } from '@/src/features/messages/components/ChatWindow';
+import type { Message } from '@/src/features/messages/components/message-types';
 import { RatingReviewModal } from '@/src/features/tasks/components/RatingReviewModal';
 import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
-import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+
 import {
     useAcceptOffer,
     useCancelTask,
@@ -15,12 +17,12 @@ import {
     useSubmitReview
 } from '@/src/shared/hooks/useTaskApi';
 import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
-import { formatCurrency, getCurrencyFromLocation, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
+import { formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // Responsive utilities
@@ -39,9 +41,6 @@ interface TaskCardProps {
 export default function TaskCard({ task, onPress, status, userRole, onTaskCancelled, onTaskDeleted, onTaskCompleted }: TaskCardProps) {
   const router = useRouter();
   
-  // Use current user's location for currency auto-detection
-  const { countryInfo } = useLocationCountry();
-  
   // Get current user from auth store
   const { user: currentUser } = useAuthStore();
   
@@ -56,6 +55,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const [showOffersModal, setShowOffersModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false); // NEW: Rating & Review modal
+  const [showChatModal, setShowChatModal] = useState(false); // NEW: Chat modal
+  const [chatMessage, setChatMessage] = useState<Message | null>(null); // NEW: Selected message for chat
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [selectedCancelReason, setSelectedCancelReason] = useState<number | null>(null);
   const [selectedCancelReasonData, setSelectedCancelReasonData] = useState<any | null>(null);
@@ -137,54 +138,23 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     reasons: cancellationReasons.map((r: any) => r.reason)
   });
 
-  // Auto-show cancellation request modal when there's a pending request from the other party
-  useEffect(() => {
-    if (pendingCancellationRequest && pendingCancellationRequest.status === 'pending') {
-      console.log('🔍 Checking pending cancellation request:', {
-        requestId: pendingCancellationRequest._id,
-        requestedBy: pendingCancellationRequest.requestedBy,
-        requestedById: pendingCancellationRequest.requestedBy?._id,
-        currentUserId: currentUser?._id || currentUser?.id,
-        taskCreatedBy: task.createdBy?._id,
-        userRole,
-        status: pendingCancellationRequest.status,
-        reason: pendingCancellationRequest.reason
-      });
-      
-      // Get the ID of who requested the cancellation
-      const requesterId = typeof pendingCancellationRequest.requestedBy === 'string' 
-        ? pendingCancellationRequest.requestedBy 
-        : pendingCancellationRequest.requestedBy?._id;
-      
-      // Get current user's ID
-      const currentUserId = currentUser?._id || currentUser?.id;
-      
-      if (!currentUserId) {
-        console.warn('⚠️ No current user ID found, cannot determine if modal should show');
-        return;
-      }
-      
-      // Only show modal if the request was made by the OTHER party (not current user)
-      const requestedByCurrentUser = requesterId === currentUserId;
-      
-      console.log('🔍 Modal display logic:', {
-        requesterId,
-        currentUserId,
-        requestedByCurrentUser,
-        userRole,
-        shouldShowModal: !requestedByCurrentUser
-      });
-      
-      if (!requestedByCurrentUser) {
-        console.log('🔔 Pending cancellation request from OTHER party detected, showing modal');
-        setShowCancelRequestModal(true);
-      } else {
-        console.log('ℹ️ Current user made the request, not showing modal');
-      }
-    } else if (pendingCancellationRequest) {
-      console.log('ℹ️ Cancellation request exists but status is not pending:', pendingCancellationRequest.status);
+  // Check if there's a pending cancellation request from the other party (for visual indicator)
+  const hasPendingCancelRequestFromOther = useMemo(() => {
+    if (!pendingCancellationRequest || pendingCancellationRequest.status !== 'pending') {
+      return false;
     }
-  }, [pendingCancellationRequest, currentUser, userRole, task.createdBy]);
+    
+    const requesterId = typeof pendingCancellationRequest.requestedBy === 'string' 
+      ? pendingCancellationRequest.requestedBy 
+      : pendingCancellationRequest.requestedBy?._id;
+    
+    const currentUserId = currentUser?._id || currentUser?.id;
+    
+    if (!currentUserId) return false;
+    
+    // Return true only if the request was made by the OTHER party
+    return requesterId !== currentUserId;
+  }, [pendingCancellationRequest, currentUser]);
 
   // Debouncing helper function to prevent multiple rapid clicks
   const withDebounce = useCallback((callback: () => void, delay: number = 300) => {
@@ -202,66 +172,96 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     return /^[0-9a-fA-F]{24}$/.test(id);
   }, []);
 
-  // Helper function to handle chat navigation
+  // Helper function to handle chat modal
   const handleOpenChat = useCallback(() => {
-    console.log('💬 Chat button touched for task:', task._id);
+    console.log('💬 Chat button touched for task:', task._id, task.title);
     
-    // First, check if a chat already exists for this task
-    const existingChat = chatsData?.chats?.find((chat: any) => {
+    // Find the chat for this task
+    const taskChat = chatsData?.chats?.find((chat: any) => {
       const chatTaskId = typeof chat.taskId === 'string' ? chat.taskId : chat.taskId?._id;
       return chatTaskId === task._id;
     });
-
-    if (existingChat) {
-      // Chat exists - navigate with chatId to directly open the chat
-      console.log('✅ Found existing chat:', existingChat._id);
-      router.push({
-        pathname: '/task-chat',
-        params: {
-          taskId: task._id,
-          taskTitle: task.title,
-          chatId: existingChat._id
-        }
-      });
-      return;
+    
+    // Extract FULL poster object (task creator)
+    let posterObj: any = null;
+    if (typeof task.createdBy === 'object' && task.createdBy?._id) {
+      posterObj = {
+        _id: task.createdBy._id,
+        firstName: task.createdBy.firstName || '',
+        lastName: task.createdBy.lastName || '',
+        avatar: task.createdBy.avatar || task.createdBy.profilePicture || null,
+      };
     }
-
-    // Chat doesn't exist - need to create one with posterId and taskerId
-    console.log('📝 No existing chat found, will create new chat');
     
-    // Get poster ID (task creator)
-    const posterId = typeof task.createdBy === 'object' && task.createdBy?._id 
-      ? task.createdBy._id 
-      : (typeof task.createdBy === 'string' ? task.createdBy : null);
-    
-    // Get tasker ID (assigned user or accepted offer user)
-    let taskerId = null;
+    // Extract FULL tasker object (assigned user or accepted offer user)
+    let taskerObj: any = null;
     const assignedTo = (task as any).assignedTo;
     if (typeof assignedTo === 'object' && assignedTo?._id) {
-      taskerId = assignedTo._id;
-    } else if (typeof assignedTo === 'string') {
-      taskerId = assignedTo;
+      taskerObj = {
+        _id: assignedTo._id,
+        firstName: assignedTo.firstName || '',
+        lastName: assignedTo.lastName || '',
+        avatar: assignedTo.avatar || assignedTo.profilePicture || null,
+      };
     } else if (task.offers && Array.isArray(task.offers)) {
-      // Find accepted offer and get the offer creator (task taker)
+      // Find accepted offer and get the full tasker object
       const acceptedOffer = task.offers.find((o: any) => o.status === 'accepted');
       if (acceptedOffer) {
-        const taskTaker = acceptedOffer.taskTaker || acceptedOffer.taskTakerId;
-        taskerId = typeof taskTaker === 'object' ? taskTaker?._id : taskTaker;
+        const taskTaker: any = acceptedOffer.taskTaker || acceptedOffer.taskTakerId;
+        if (typeof taskTaker === 'object' && taskTaker?._id) {
+          taskerObj = {
+            _id: taskTaker._id,
+            firstName: taskTaker.firstName || '',
+            lastName: taskTaker.lastName || '',
+            avatar: taskTaker.avatar || taskTaker.profilePicture || null,
+          };
+        }
       }
     }
     
-    console.log('💬 Creating new chat with participants:', { posterId, taskerId });
-    
-    router.push({
-      pathname: '/task-chat',
-      params: {
-        taskId: task._id,
-        taskTitle: task.title,
-        posterId: posterId || '',
-        taskerId: taskerId || ''
-      }
+    console.log('💬 Opening chat modal for task:', { 
+      taskId: task._id, 
+      taskTitle: task.title,
+      chatId: taskChat?._id, 
+      poster: posterObj ? `${posterObj.firstName} ${posterObj.lastName} (${posterObj._id})` : 'null',
+      tasker: taskerObj ? `${taskerObj.firstName} ${taskerObj.lastName} (${taskerObj._id})` : 'null',
+      existingChat: taskChat ? 'YES' : 'NO'
     });
-  }, [task, chatsData, router]);
+    
+    // Extract participant objects from chat if available
+    const posterFromChat = typeof taskChat?.posterId === 'object' ? taskChat.posterId : null;
+    const taskerFromChat = typeof taskChat?.taskerId === 'object' ? taskChat.taskerId : null;
+    
+    // Use chat participants if available, otherwise use task participants
+    const finalPoster = posterFromChat || posterObj;
+    const finalTasker = taskerFromChat || taskerObj;
+    
+    console.log('👥 FINAL PARTICIPANTS FOR CHAT:', {
+      posterId: finalPoster?._id,
+      posterName: finalPoster ? `${finalPoster.firstName} ${finalPoster.lastName}` : 'NULL',
+      taskerId: finalTasker?._id,
+      taskerName: finalTasker ? `${finalTasker.firstName} ${finalTasker.lastName}` : 'NULL'
+    });
+    
+    // Create a message object to pass to ChatWindow (with extended properties)
+    const messageForChat: any = {
+      id: taskChat?._id || task._id,
+      chatId: taskChat?._id || '',
+      title: task.title,
+      preview: '',
+      date: '',
+      avatar: '',
+      unreadCount: 0,
+      taskId: task._id,
+      posterId: finalPoster?._id || '',
+      taskerId: finalTasker?._id || '',
+      posterObj: finalPoster,
+      taskerObj: finalTasker
+    };
+    
+    setChatMessage(messageForChat);
+    setShowChatModal(true);
+  }, [task, chatsData]);
 
 
   const handleMarkAsCompleted = useCallback(async () => {
@@ -872,36 +872,52 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     let currency = task.currency || 'USD';
     let acceptedDate = task.createdAt;
     
-    // Try to get accepted offer details
+    // Try to get accepted offer details and actual service fee from payment data
+    let actualServiceFee = null;
     if (task.offers && Array.isArray(task.offers)) {
       const acceptedOffer = task.offers.find(o => o.status === 'accepted');
       if (acceptedOffer) {
         offerAmount = acceptedOffer.amount || acceptedOffer.offer?.amount || offerAmount;
         currency = acceptedOffer.currency || acceptedOffer.offer?.currency || currency;
         acceptedDate = acceptedOffer.createdAt || acceptedDate;
+        // Get actual service fee from payment details if available
+        actualServiceFee = (acceptedOffer as any).serviceFee || (acceptedOffer as any).paymentDetails?.serviceFee || null;
       }
+    }
+    
+    // Also check task-level payment details for service fee
+    if (!actualServiceFee && (task as any).paymentDetails?.serviceFee) {
+      actualServiceFee = (task as any).paymentDetails.serviceFee;
     }
     
     // Parse location
     const parsedLocation = parseLocation(task.location);
     const taskLocation = parsedLocation?.address || 'Location not specified';
     
-    // Navigate to receipt screen
+    // Navigate to receipt screen with actual service fee if available
+    const receiptParams: any = {
+      taskId: task._id,
+      taskTitle: task.title,
+      taskLocation: taskLocation,
+      offerAmount: offerAmount.toString(),
+      currency: currency,
+      taskerName: taskerName,
+      posterName: posterName,
+      acceptedDate: acceptedDate,
+      completedDate: task.updatedAt || task.createdAt,
+      paymentId: (task as any).paymentIntentId || task._id,
+      userRole: userRole,
+    };
+    
+    // Add service fee if available from payment data
+    if (actualServiceFee !== null) {
+      receiptParams.serviceFee = actualServiceFee.toString();
+      console.log('📊 Passing actual service fee to receipt:', actualServiceFee);
+    }
+    
     router.push({
       pathname: '/payment-receipt',
-      params: {
-        taskId: task._id,
-        taskTitle: task.title,
-        taskLocation: taskLocation,
-        offerAmount: offerAmount.toString(),
-        currency: currency,
-        taskerName: taskerName,
-        posterName: posterName,
-        acceptedDate: acceptedDate,
-        completedDate: task.updatedAt || task.createdAt,
-        paymentId: (task as any).paymentIntentId || task._id,
-        userRole: userRole,
-      }
+      params: receiptParams
     } as any);
   }, [task, userRole, router]);
 
@@ -1192,29 +1208,40 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     }
   };
 
-  // Get currency info and format budget with thousand separators
-  // Use user's current location for currency display (auto geo-location feature)
-  const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
-  const taskLocationCurrencyInfo = getCurrencyFromLocation(task.location);
-  
-  // Prioritize user's current location currency for auto geo-location
+  // Get task's original currency - DO NOT convert to user's location currency
+  // Tasks should display in their original posted currency (LKR, AUD, etc.)
   const formattedBudgetDisplay = task.formattedBudget || 
-    (task.budget ? formatCurrency(task.budget, userCurrencyInfo) : 
-    `${userCurrencyInfo.symbol}0.00`);
-    
-  console.log('💰 TaskCard currency info:', {
-    taskId: task._id.substring(0, 8),
-    userCountry: countryInfo.countryName,
-    userCurrency: userCurrencyInfo.code,
-    userSymbol: userCurrencyInfo.symbol,
-    taskLocation: task.location?.address,
-    taskCurrency: taskLocationCurrencyInfo.code,
-    originalBudget: task.budget,
-    formattedBudget: formattedBudgetDisplay
-  });
+    (task.budget && task.currency ? formatCurrency(task.budget, { code: task.currency, symbol: getCurrencySymbol(task.currency) }) : 
+    'Budget not specified');
 
   return (
-    <View style={styles.card} pointerEvents="auto">
+    <View style={[
+      styles.card,
+      hasPendingCancelRequestFromOther && styles.cardWithCancelRequest
+    ]} pointerEvents="auto">
+      {/* Pending Cancellation Request Banner */}
+      {hasPendingCancelRequestFromOther && (
+        <TouchableOpacity 
+          style={styles.cancelRequestBanner}
+          onPress={() => setShowCancelRequestModal(true)}
+          activeOpacity={0.7}
+        >
+          <MaterialIcons name="warning" size={20} color="#fff" />
+          <Text style={styles.cancelRequestBannerText}>
+            {(() => {
+              const requesterId = typeof pendingCancellationRequest.requestedBy === 'string' 
+                ? pendingCancellationRequest.requestedBy 
+                : pendingCancellationRequest.requestedBy?._id;
+              const posterId = task.createdBy?._id;
+              return requesterId === posterId 
+                ? 'Poster requested cancellation - Tap to respond' 
+                : 'Tasker requested cancellation - Tap to respond';
+            })()}
+          </Text>
+          <MaterialIcons name="chevron-right" size={20} color="#fff" />
+        </TouchableOpacity>
+      )}
+      
       {/* Clickable Card Content - Navigates to Details (disabled for Completed tab) */}
       <TouchableOpacity
         style={styles.cardContent}
@@ -2031,7 +2058,11 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                     </View>
                     <View style={styles.offerAmount}>
                       <Text style={styles.offerPrice}>
-                        {formatCurrency(offer.amount || offer.offer?.amount || 0, userCurrencyInfo)}
+                        {(() => {
+                          const offerAmount = offer.amount || offer.offer?.amount || 0;
+                          const offerCurrency = offer.currency || offer.offer?.currency || task.currency || 'AUD';
+                          return formatCurrency(offerAmount, { code: offerCurrency, symbol: getCurrencySymbol(offerCurrency) });
+                        })()}
                       </Text>
                     </View>
                   </View>
@@ -2094,6 +2125,21 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         taskTitle={task.title}
         userRole={userRole === 'Tasker' ? 'tasker' : 'poster'}
       />
+
+      {/* Chat Modal */}
+      <ChatWindow
+        visible={showChatModal}
+        onClose={() => {
+          setShowChatModal(false);
+          setChatMessage(null);
+        }}
+        message={chatMessage}
+        taskId={task._id}
+        posterId={(chatMessage as any)?.posterId}
+        taskerId={(chatMessage as any)?.taskerId}
+        posterIdProp={(chatMessage as any)?.posterObj}
+        taskerIdProp={(chatMessage as any)?.taskerObj}
+      />
     </View>
   );
 }
@@ -2106,6 +2152,27 @@ const styles = StyleSheet.create({
     borderRadius: isTablet ? 12 : 10,
     marginBottom: isTablet ? hp('1.5%') : hp('2%'),
     position: 'relative',
+  },
+  cardWithCancelRequest: {
+    borderWidth: 3,
+    borderColor: '#dc3545',
+    backgroundColor: '#fff5f5',
+  },
+  cancelRequestBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#dc3545',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    gap: 8,
+  },
+  cancelRequestBannerText: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   cardContent: {
     flex: 1,

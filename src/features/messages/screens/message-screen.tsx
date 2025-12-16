@@ -150,16 +150,29 @@ const MessageScreen: React.FC = () => {
         // Priority: 1) otherUser.avatar 2) posterId/taskerId avatar 3) generate from name
         let avatarUrl = '';
         
-        if (otherUser?.avatar) {
+        // Helper to validate avatar URL (must be valid http/https URL)
+        const isValidAvatarUrl = (url: string | null | undefined): boolean => {
+          if (!url || typeof url !== 'string') return false;
+          try {
+            const urlObj = new URL(url);
+            return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+          } catch {
+            return false;
+          }
+        };
+        
+        if (otherUser?.avatar && isValidAvatarUrl(otherUser.avatar)) {
           // Use actual profile picture from otherUser
           avatarUrl = otherUser.avatar;
-        } else if (posterId?.avatar || taskerId?.avatar) {
-          // Use actual profile picture from posterId or taskerId
-          const otherParticipant = posterId?._id !== chat.currentUserId ? posterId : taskerId;
-          avatarUrl = otherParticipant?.avatar || '';
+        } else if (posterId?.avatar && isValidAvatarUrl(posterId.avatar)) {
+          // Use actual profile picture from posterId
+          avatarUrl = posterId.avatar;
+        } else if (taskerId?.avatar && isValidAvatarUrl(taskerId.avatar)) {
+          // Use actual profile picture from taskerId
+          avatarUrl = taskerId.avatar;
         }
         
-        // Fallback to generated avatar if no profile picture exists
+        // Fallback to generated avatar if no valid profile picture exists
         if (!avatarUrl) {
           if (otherUser?.firstName || otherUser?.lastName) {
             const firstName = otherUser.firstName || '';

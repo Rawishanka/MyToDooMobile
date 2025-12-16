@@ -1,5 +1,6 @@
 import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
@@ -35,6 +36,9 @@ export default function TaskDetailScreen() {
   const [showNetworkAlert, setShowNetworkAlert] = useState(false);
   // Network status is monitored by OfflineBanner component
   useNetworkStatus();
+  
+  // Get user's location for currency detection
+  const { countryInfo } = useLocationCountry();
   
   // Check if user came from Tasker's Todoo Tasks or Completed tab
   // These are tasks where the current user is the assignee (tasker role)
@@ -212,7 +216,7 @@ export default function TaskDetailScreen() {
         taskId={taskId!}
         offerId={selectedOfferId || ''}
         offerAmount={selectedOffer?.offer?.amount || selectedOffer?.amount || 0}
-        currency={selectedOffer?.offer?.currency || selectedOffer?.currency || 'LKR'}
+        currency={selectedOffer?.offer?.currency || selectedOffer?.currency || countryInfo?.currency || 'AUD'}
         taskTitle={task?.title || 'Task'}
         taskCategory={task?.categories?.[0]}
         onClose={handleClosePaymentModal}

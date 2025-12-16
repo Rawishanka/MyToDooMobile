@@ -20,13 +20,15 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
     FlatList,
     Image,
     KeyboardAvoidingView,
+    Linking,
+    Modal,
     Platform,
     StyleSheet,
     Text,
@@ -70,6 +72,7 @@ export default function TaskChatScreen() {
   const [chatId, setChatId] = useState<string | null>(chatIdParam || null);
   const [messageText, setMessageText] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Create or get chat
   const createChatMutation = useCreateOrGetTaskChat();
@@ -93,6 +96,62 @@ export default function TaskChatScreen() {
 
   const chat = chatData?.chat;
   const messages = messagesData?.messages || [];
+  
+  // Calculate other person (the one you're chatting with)
+  const otherPerson = useMemo(() => {
+    if (!chat || !user?._id) return null;
+
+    // Extract poster and tasker from chat
+    let poster: any = null;
+    let tasker: any = null;
+
+    const chatData = chat as any;
+
+    if (chatData.poster && typeof chatData.poster === 'object') {
+      poster = chatData.poster;
+    } else if (typeof chat.posterId === 'object') {
+      poster = chat.posterId;
+    }
+
+    if (chatData.tasker && typeof chatData.tasker === 'object') {
+      tasker = chatData.tasker;
+    } else if (typeof chat.taskerId === 'object') {
+      tasker = chat.taskerId;
+    }
+
+    // If current user is poster, show tasker; if tasker, show poster
+    if (poster && poster._id === user._id) {
+      return tasker;
+    }
+    if (tasker && tasker._id === user._id) {
+      return poster;
+    }
+
+    return null;
+  }, [chat, user]);
+  
+  // Debug: Verify chat and task alignment
+  useEffect(() => {
+    if (chat && chatId) {
+      const chatTaskId = typeof chat.taskId === 'string' ? chat.taskId : chat.taskId?._id;
+      const chatTaskTitle = typeof chat.taskId === 'object' ? chat.taskId?.title : 'Unknown';
+      console.log('🔍 CHAT VERIFICATION:', {
+        chatId,
+        paramTaskId: taskId,
+        chatTaskId,
+        paramTaskTitle: taskTitle,
+        chatTaskTitle,
+        MATCH: chatTaskId === taskId
+      });
+      
+      if (chatTaskId && taskId && chatTaskId !== taskId) {
+        console.error('❌ MISMATCH: Chat belongs to different task!', {
+          expected: taskId,
+          actual: chatTaskId
+        });
+      }
+    }
+  }, [chat, chatId, taskId, taskTitle]);
   
   // Debug log messages
   useEffect(() => {
@@ -281,6 +340,44 @@ export default function TaskChatScreen() {
     }
   };
 
+  const handleFileDownload = async (fileUrl: string | null, fileName: string) => {
+    if (!fileUrl) {
+      Alert.alert('Error', 'File URL not available');
+      return;
+    }
+
+    try {
+      console.log('📥 Opening file:', fileUrl);
+      Alert.alert(
+        'Open File',
+        `Do you want to open ${fileName}?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Open',
+            onPress: async () => {
+              try {
+                const supported = await Linking.canOpenURL(fileUrl);
+                if (supported) {
+                  await Linking.openURL(fileUrl);
+                  console.log('✅ File opened:', fileUrl);
+                } else {
+                  Alert.alert('Error', 'Cannot open this file type');
+                }
+              } catch (openError) {
+                console.error('❌ Open error:', openError);
+                Alert.alert('Error', 'Failed to open file');
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('❌ File open error:', error);
+      Alert.alert('Error', 'Failed to open file');
+    }
+  };
+
   const handleDocumentPicker = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -372,20 +469,19 @@ export default function TaskChatScreen() {
       >
         {item.messageType === 'image' && normalizedMediaUrl ? (
           <View>
-            <Image 
-              source={{ uri: normalizedMediaUrl }} 
-              style={styles.messageImage}
-              onError={(error) => {
-                console.error('❌ Image load error:', {
-                  original: item.mediaUrl,
-                  normalized: normalizedMediaUrl,
-                  error: error.nativeEvent.error
-                });
-              }}
-              onLoad={() => {
-                console.log('✅ Image loaded successfully:', normalizedMediaUrl);
-              }}
-            />
+            <TouchableOpacity onPress={() => setPreviewImage(normalizedMediaUrl)}>
+              <Image 
+                source={{ uri: normalizedMediaUrl }} 
+                style={styles.messageImage}
+                onError={(error) => {
+                  // Silently handle CDN image errors (401, 404, etc.)
+                  // These are usually auth token issues from backend CDN
+                  if (__DEV__) {
+                    console.log('🖼️ Image unavailable (CDN auth issue):', item._id);
+                  }
+                }}
+              />
+            </TouchableOpacity>
             {item.content && item.content !== 'Photo' && (
               <Text style={[styles.messageText, isMine && styles.myMessageText, { marginTop: 8 }]}>
                 {item.content}
@@ -395,10 +491,7 @@ export default function TaskChatScreen() {
         ) : item.messageType === 'file' && item.mediaUrl ? (
           <TouchableOpacity
             style={styles.fileMessage}
-            onPress={() => {
-              console.log('📄 Opening file:', item.mediaUrl);
-              Alert.alert('File', item.content || 'Unknown file');
-            }}
+            onPress={() => handleFileDownload(normalizedMediaUrl, item.content || 'File')}
           >
             <MaterialIcons name="insert-drive-file" size={24} color="#007bff" />
             <Text style={styles.fileName}>{item.content || 'File'}</Text>
@@ -430,8 +523,8 @@ export default function TaskChatScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <View style={{ flex: 1 }}>
         {/* Header */}
@@ -439,9 +532,30 @@ export default function TaskChatScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <MaterialIcons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            {taskTitle || 'Chat'}
-          </Text>
+          
+          {otherPerson ? (
+            <View style={styles.headerInfo}>
+              {otherPerson.avatar ? (
+                <Image source={{ uri: otherPerson.avatar }} style={styles.headerAvatar} />
+              ) : (
+                <View style={styles.headerAvatarFallback}>
+                  <Text style={styles.headerAvatarInitials}>
+                    {otherPerson.firstName?.charAt(0)?.toUpperCase() || ''}
+                    {otherPerson.lastName?.charAt(0)?.toUpperCase() || ''}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.headerTextContainer}>
+                <Text style={styles.headerTitle} numberOfLines={1}>
+                  {`${otherPerson.firstName || ''} ${otherPerson.lastName || ''}`.trim() || 'User'}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <Text style={styles.headerTitle} numberOfLines={1}>
+              {taskTitle || 'Chat'}
+            </Text>
+          )}
         </View>
 
         {/* Messages List */}
@@ -514,6 +628,48 @@ export default function TaskChatScreen() {
             )}
           </TouchableOpacity>
         </View>
+
+        {/* Upload Loading Overlay */}
+        {isUploading && (
+          <View style={styles.uploadOverlay}>
+            <View style={styles.uploadOverlayContent}>
+              <ActivityIndicator size="large" color="#007bff" />
+              <Text style={styles.uploadOverlayText}>Uploading...</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Image Preview Modal */}
+        <Modal
+          visible={!!previewImage}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setPreviewImage(null)}
+        >
+          <View style={styles.previewModalContainer}>
+            <TouchableOpacity
+              style={styles.previewModalBackground}
+              activeOpacity={1}
+              onPress={() => setPreviewImage(null)}
+            >
+              <View style={styles.previewModalContent}>
+                <TouchableOpacity
+                  style={styles.previewCloseButton}
+                  onPress={() => setPreviewImage(null)}
+                >
+                  <MaterialIcons name="close" size={30} color="#fff" />
+                </TouchableOpacity>
+                {previewImage && (
+                  <Image
+                    source={{ uri: previewImage }}
+                    style={styles.previewImage}
+                    resizeMode="contain"
+                  />
+                )}
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Modal>
       </View>
     </KeyboardAvoidingView>
   );
@@ -545,10 +701,43 @@ const styles = StyleSheet.create({
   backButton: {
     marginRight: 12,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+  headerInfo: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  headerAvatarFallback: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#007bff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  headerAvatarInitials: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+  },
+  headerStatus: {
+    fontSize: 12,
+    color: '#34C759',
+    marginTop: 2,
   },
   messagesList: {
     padding: 16,
@@ -672,5 +861,57 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: '#ccc',
+  },
+  uploadOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  uploadOverlayContent: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    minWidth: 150,
+  },
+  uploadOverlayText: {
+    marginTop: 12,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  previewModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+  },
+  previewModalBackground: {
+    flex: 1,
+  },
+  previewModalContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewCloseButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 1,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
   },
 });

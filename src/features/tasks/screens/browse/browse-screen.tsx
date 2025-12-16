@@ -312,16 +312,6 @@ export default function BrowseTasksScreen() {
         </View>
       )}
 
-      {/* Location Indicator - Shows which country's tasks are being displayed */}
-      {userCountry && !isDetectingCountry && (
-        <View style={styles.locationIndicator}>
-          <Ionicons name="location" size={14} color="#007bff" />
-          <Text style={styles.locationIndicatorText}>
-            Showing tasks in {userCountry}
-          </Text>
-        </View>
-      )}
-
       {/* Filter & Sort Row */}
       <View style={styles.filterSortRow}>
         <FilterButton 

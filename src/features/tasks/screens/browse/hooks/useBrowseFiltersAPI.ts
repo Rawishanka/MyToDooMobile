@@ -38,13 +38,15 @@ const filterTasksByCountry = (tasks: Task[], userCountry: string): Task[] => {
     const locationAddress = task.location?.address?.toLowerCase() || '';
     
     // 1. ✅ PRIORITY: If task has coordinates, ALWAYS include it
-    // The backend handles geospatial filtering, we don't need to filter by city names
+    // The backend handles geospatial filtering, we trust database coordinates
     const taskCoords = task.location?.coordinates as any;
     const hasCoordinates = taskCoords && (
       // GeoJSON format: { type: 'Point', coordinates: [lng, lat] }
-      (Array.isArray(taskCoords.coordinates)) ||
+      (Array.isArray(taskCoords.coordinates) && taskCoords.coordinates.length === 2) ||
       // Direct coordinates format: { lat: number, lng: number }
-      (typeof taskCoords.lat === 'number' && typeof taskCoords.lng === 'number')
+      (typeof taskCoords.lat === 'number' && typeof taskCoords.lng === 'number') ||
+      // Alternative format: { latitude: number, longitude: number }
+      (typeof taskCoords.latitude === 'number' && typeof taskCoords.longitude === 'number')
     );
     
     if (hasCoordinates) {
@@ -75,12 +77,81 @@ const filterTasksByCountry = (tasks: Task[], userCountry: string): Task[] => {
       }
     }
 
-    // 4. ✅ Simple country name check in address (NO hardcoded city lists!)
+    // 4. ✅ ENHANCED: Check address for country name OR major cities/states
     if (locationAddress) {
-      const addressContainsCountry = locationAddress.includes(userCountryLower);
-      if (addressContainsCountry) {
-        console.log(`✅ Address contains country: "${task.title}" (address: ${locationAddress})`);
-        return true;
+      // Define country patterns with cities, states, and country names
+      const countryLocationMap: Record<string, {
+        patterns: string[];
+        states?: string[];
+        cities?: string[];
+        regions?: string[];
+      }> = {
+        'australia': {
+          patterns: ['australia', 'australian'],
+          states: ['nsw', 'vic', 'qld', 'wa', 'sa', 'tas', 'act', 'nt', 'new south wales', 'victoria', 'queensland', 'western australia', 'south australia', 'tasmania', 'northern territory'],
+          cities: ['sydney', 'melbourne', 'brisbane', 'perth', 'adelaide', 'gold coast', 'canberra', 'newcastle', 'wollongong', 'hobart', 'geelong', 'townsville', 'cairns', 'toowoomba', 'darwin', 'ballarat', 'bendigo', 'albury', 'launceston', 'mackay', 'rockhampton', 'bunbury', 'bundaberg', 'wagga wagga', 'hervey bay', 'mildura', 'shepparton', 'port macquarie', 'gladstone', 'tamworth']
+        },
+        'new zealand': {
+          patterns: ['new zealand', 'zealand'],
+          regions: ['auckland', 'wellington', 'christchurch', 'hamilton', 'tauranga', 'napier', 'dunedin', 'palmerston north', 'nelson', 'rotorua', 'whangarei', 'invercargill', 'whanganui', 'gisborne', 'queenstown']
+        },
+        'sri lanka': {
+          patterns: ['sri lanka', 'lanka'],
+          cities: ['colombo', 'kandy', 'galle', 'jaffna', 'negombo', 'anuradhapura', 'trincomalee', 'batticaloa', 'matara', 'kurunegala', 'gampaha', 'kalutara', 'ratnapura']
+        }
+      };
+      
+      const userLocationData = countryLocationMap[userCountryLower];
+      if (userLocationData) {
+        // Check country name/patterns
+        const hasCountryName = userLocationData.patterns.some((pattern: string) => 
+          locationAddress.includes(pattern.toLowerCase())
+        );
+        if (hasCountryName) {
+          console.log(`✅ Address contains country name: "${task.title}" (address: ${locationAddress})`);
+          return true;
+        }
+        
+        // Check states (for Australia)
+        if (userLocationData.states) {
+          const hasState = userLocationData.states.some((state: string) => 
+            locationAddress.includes(` ${state.toLowerCase()} `) || 
+            locationAddress.includes(` ${state.toLowerCase()},`) ||
+            locationAddress.endsWith(` ${state.toLowerCase()}`)
+          );
+          if (hasState) {
+            console.log(`✅ Address contains state/region: "${task.title}" (address: ${locationAddress})`);
+            return true;
+          }
+        }
+        
+        // Check cities
+        if (userLocationData.cities) {
+          const hasCity = userLocationData.cities.some((city: string) => 
+            locationAddress.includes(city.toLowerCase())
+          );
+          if (hasCity) {
+            console.log(`✅ Address contains city: "${task.title}" (address: ${locationAddress})`);
+            return true;
+          }
+        }
+        
+        // Check regions (for New Zealand)
+        if (userLocationData.regions) {
+          const hasRegion = userLocationData.regions.some((region: string) => 
+            locationAddress.includes(region.toLowerCase())
+          );
+          if (hasRegion) {
+            console.log(`✅ Address contains region: "${task.title}" (address: ${locationAddress})`);
+            return true;
+          }
+        }
+      } else {
+        // Fallback for other countries - just check country name
+        if (locationAddress.includes(userCountryLower)) {
+          console.log(`✅ Address contains country: "${task.title}" (address: ${locationAddress})`);
+          return true;
+        }
       }
     }
 

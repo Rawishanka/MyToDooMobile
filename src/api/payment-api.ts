@@ -100,7 +100,7 @@ export async function createPaymentIntent(
       offerId: paymentData.offerId,
       // Include amount and currency to ensure backend uses correct values
       amount: paymentData.amount,
-      currency: paymentData.currency || 'LKR'
+      currency: paymentData.currency || 'AUD'
     };
     
     const response = await api.post('/payments/create-intent', requestBody);
@@ -453,6 +453,6 @@ export async function updateServiceFeeConfig(configData: {
 
 // Export all payment functions
 export {
-  createPaymentIntent as default
+    createPaymentIntent as default
 };
 

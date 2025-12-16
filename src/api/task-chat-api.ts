@@ -251,22 +251,48 @@ export const createOrGetTaskChat = async (
       data
     );
     
+    console.log('📦 Full API Response:', JSON.stringify(response.data, null, 2));
+    
     // Handle different response formats
     let chat = null;
     let isNew = false;
     
+    // Try all possible response structures
     if (response.data?.chat) {
+      // Format: { success: true, chat: {...}, isNew: boolean }
       chat = response.data.chat;
       isNew = response.data.isNew || false;
     } else if (response.data?.data?.chat) {
+      // Format: { success: true, data: { chat: {...}, isNew: boolean } }
       chat = response.data.data.chat;
       isNew = response.data.data.isNew || false;
+    } else if (response.data?.data?._id) {
+      // Format: { success: true, data: { _id, taskId, ... } }
+      chat = response.data.data;
+      isNew = response.data.data.isNew || response.data.isNew || false;
     } else if (response.data?._id) {
+      // Format: { _id, taskId, posterId, taskerId, ... }
       chat = response.data;
-      isNew = true;
+      isNew = response.data.isNew || true;
+    } else if (response.data?.success && typeof response.data === 'object') {
+      // Last resort: check if response.data itself looks like a chat object
+      const dataKeys = Object.keys(response.data);
+      console.log('⚠️ Unexpected format, data keys:', dataKeys);
+      
+      // If it has taskId field, it might be the chat object wrapped differently
+      if ('taskId' in response.data || 'posterId' in response.data) {
+        chat = response.data;
+        isNew = true;
+      }
     }
     
     if (!chat || !chat._id) {
+      console.error('❌ Could not extract chat from response');
+      console.error('📋 Response structure:', {
+        hasData: !!response.data,
+        dataKeys: response.data ? Object.keys(response.data) : [],
+        dataType: typeof response.data,
+      });
       throw new Error('Invalid response format: missing chat data');
     }
     

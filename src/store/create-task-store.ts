@@ -12,7 +12,7 @@ const defaultTask: CreateTask = {
   title: '',
   description: '',
   budget: 0,
-  currency: 'LKR', // Default to Sri Lankan Rupee
+  currency: 'AUD', // Default to Australian Dollar (primary target market)
   date: '',
   time: '',
   photo: '',

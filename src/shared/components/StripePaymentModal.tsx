@@ -2,13 +2,13 @@ import { StripeProvider, usePaymentSheet } from '@stripe/stripe-react-native';
 import { router } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  Modal,
-  StyleSheet,
-  Text,
-  View
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Modal,
+    StyleSheet,
+    Text,
+    View
 } from 'react-native';
 import API_CONFIG from '../../api/config';
 import * as PaymentAPI from '../../api/payment-api';
@@ -67,7 +67,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
   taskId,
   offerId,
   offerAmount,
-  currency = 'LKR',
+  currency = 'AUD',
   taskTitle,
   taskCategory,
   offerDetails,
@@ -147,7 +147,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
       try {
         serviceFeeResult = await PaymentAPI.calculateServiceFee({
           amount: offerAmount,
-          currency: currency || 'LKR',
+          currency: currency || 'AUD',
         });
 
         console.log('✅ Service fee calculated:', {
@@ -168,7 +168,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
         taskId,
         offerId,
         amount: offerAmount,
-        currency: currency || 'LKR',
+        currency: currency || 'AUD',
       });
 
       if (!paymentResult.success || !paymentResult.clientSecret) {
@@ -184,7 +184,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
       
       setPaymentIntentData(paymentResult);
 
-      const billingCountry = getCurrencyCountryCode(currency || 'LKR');
+      const billingCountry = getCurrencyCountryCode(currency || 'AUD');
       console.log('🌍 Setting billing country:', billingCountry, 'for currency:', currency);
 
       // Initialize the Payment Sheet
@@ -241,7 +241,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
         code: error.code || 'Unknown',
         name: error.name || 'Unknown',
         currency: currency,
-        billingCountry: getCurrencyCountryCode(currency || 'LKR')
+        billingCountry: getCurrencyCountryCode(currency || 'AUD')
       });
       
       // Handle specific backend endpoint errors
