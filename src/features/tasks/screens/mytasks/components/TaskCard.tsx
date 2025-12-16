@@ -1124,15 +1124,58 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     return '⏰ Flexible timing';
   };
 
-  // Helper function to format task date
+  // Helper function to format task date with smart display
+  const formatTaskDate = (date: string | undefined) => {
+    if (!date) return null;
+    try {
+      const dateObj = new Date(date);
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      // Reset hours for date comparison
+      today.setHours(0, 0, 0, 0);
+      tomorrow.setHours(0, 0, 0, 0);
+      const compareDate = new Date(dateObj);
+      compareDate.setHours(0, 0, 0, 0);
+      
+      if (compareDate.getTime() === today.getTime()) {
+        return 'Today';
+      } else if (compareDate.getTime() === tomorrow.getTime()) {
+        return 'Tomorrow';
+      } else {
+        return dateObj.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: dateObj.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+        });
+      }
+    } catch {
+      return null;
+    }
+  };
+
+  // Helper function to get task date with date type context
   const getTaskDate = () => {
-    // Priority: dateRange.start > dateRange.end > createdAt
-    if (task.dateRange?.start) {
-      return new Date(task.dateRange.start).toLocaleDateString();
+    if (!task.dateRange) {
+      return new Date(task.createdAt).toLocaleDateString();
     }
-    if (task.dateRange?.end) {
-      return new Date(task.dateRange.end).toLocaleDateString();
+
+    const { start, end } = task.dateRange;
+    const dateType = task.dateType?.toLowerCase();
+    
+    if (dateType === 'doneby' && end) {
+      const formattedDate = formatTaskDate(end);
+      return formattedDate ? `By ${formattedDate}` : new Date(end).toLocaleDateString();
+    } else if (dateType === 'doneon' && start) {
+      const formattedDate = formatTaskDate(start);
+      return formattedDate ? `On ${formattedDate}` : new Date(start).toLocaleDateString();
+    } else if (start) {
+      return formatTaskDate(start) || new Date(start).toLocaleDateString();
+    } else if (end) {
+      return formatTaskDate(end) || new Date(end).toLocaleDateString();
     }
+    
     return new Date(task.createdAt).toLocaleDateString();
   };
 
