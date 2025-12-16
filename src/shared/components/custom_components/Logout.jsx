@@ -1,3 +1,5 @@
+import { removeFCMToken } from '@/src/api/fcm-api';
+import { getPushToken } from '@/src/services/notification-service';
 import { useClearAllCaches } from '@/src/shared/utils/cache-utils';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
@@ -25,23 +27,38 @@ export default function LogoutPopup({ onBack }) {
       setIsLoggingOut(true);
       console.log("🔐 Starting logout process...");
       
-      // STEP 1: Clear React Query cache FIRST while user is still authenticated
+      // STEP 1: Delete FCM token from backend (while still authenticated)
+      try {
+        console.log("🗑️ Removing FCM token from backend...");
+        const currentToken = await getPushToken();
+        if (currentToken) {
+          await removeFCMToken({ token: currentToken });
+          console.log("✅ FCM token removed from backend successfully");
+        } else {
+          console.log("ℹ️ No FCM token to remove");
+        }
+      } catch (fcmError) {
+        // Don't block logout if FCM deletion fails
+        console.warn("⚠️ Failed to remove FCM token (continuing logout):", fcmError);
+      }
+      
+      // STEP 2: Clear React Query cache FIRST while user is still authenticated
       console.log("🧹 Clearing all caches...");
       clearAllCaches();
       
-      // STEP 2: Reset task creation form to clear any unsaved data
+      // STEP 3: Reset task creation form to clear any unsaved data
       console.log("🧹 Resetting task creation form...");
       resetTask();
       
-      // STEP 3: Wait a moment for cache clearing to complete
+      // STEP 4: Wait a moment for cache clearing to complete
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // STEP 4: Disable auth queries
+      // STEP 5: Disable auth queries
       console.log("🚫 Disabling all React Query hooks...");
       const { disableAuth } = useAuthStore.getState();
       disableAuth();
       
-      // STEP 5: Clear all authentication data
+      // STEP 6: Clear all authentication data
       await clearAuth();
       
       console.log("✅ Logout successful");

@@ -849,7 +849,8 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       <div id="map"></div>
       <script>
         // Initialize the map with appropriate zoom level and constraints
-        const initialZoom = ${focusTaskId ? '14' : markers.length > 0 ? '10' : '6'};
+        // When no tasks: show full country/region view (zoom 5), not zoomed in
+        const initialZoom = ${focusTaskId ? '14' : markers.length > 0 ? '10' : '1'};
         const map = L.map('map', {
           center: [${centerLat}, ${centerLng}],
           zoom: initialZoom,
@@ -950,7 +951,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           marker.bindPopup(popupContent);
         });
 
-        // Handle specific task focus
+        // Auto-fit map view based on markers
         ${focusTaskId ? `
         console.log('🎯 Focusing on task:', '${focusTaskId}');
         const focusMarker = markers.find(m => m.id === '${focusTaskId}');
@@ -977,24 +978,24 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
             if (markers.length === 1) {
               map.setView([markers[0].lat, markers[0].lng], 12);
             } else {
-              const group = new L.featureGroup(markers.map(m => L.marker([m.lat, m.lng])));
+              const group = new L.featureGroup(leafletMarkers.map(lm => lm.marker));
               map.fitBounds(group.getBounds().pad(0.1));
             }
           }
         }
         ` : `
-        // Fit map to show all markers if no specific focus
+        // Fit map to show all markers nicely - auto zoom to fit all points
         if (markers.length > 0) {
           if (markers.length === 1) {
+            // Single marker: center on it with city-level zoom
             map.setView([markers[0].lat, markers[0].lng], 12);
           } else {
-            const group = new L.featureGroup(markers.map(m => L.marker([m.lat, m.lng])));
-            map.fitBounds(group.getBounds().pad(0.1));
+            // Multiple markers: auto-fit bounds to show all markers
+            const group = new L.featureGroup(leafletMarkers.map(lm => lm.marker));
+            map.fitBounds(group.getBounds().pad(0.1), { maxZoom: 14 });
           }
-        } else {
-          console.log('⚠️ No markers to display, using default Adelaide view');
-          map.setView([-34.9285, 138.6007], 10);
         }
+        // If no markers, keep default center/zoom from initialization (zoom 12)
         `}
 
         // Handle action buttons

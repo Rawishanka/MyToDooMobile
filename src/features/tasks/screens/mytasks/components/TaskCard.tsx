@@ -22,7 +22,7 @@ import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // Responsive utilities
@@ -155,6 +155,34 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     // Return true only if the request was made by the OTHER party
     return requesterId !== currentUserId;
   }, [pendingCancellationRequest, currentUser]);
+
+  // Check if poster has requested cancellation (any status, not just pending) - for hiding tasker's cancel button
+  const posterHasRequestedCancellation = useMemo(() => {
+    // Check if task status indicates poster cancellation request
+    if (task.status === 'cancel_request_by_poster') {
+      return true;
+    }
+    
+    // Check if there's an active cancellation request from the poster
+    if (!pendingCancellationRequest) {
+      return false;
+    }
+    
+    // Only consider non-rejected requests (pending, admin_review, accepted statuses)
+    const activeStatuses = ['pending', 'admin_review', 'accepted'];
+    if (!activeStatuses.includes(pendingCancellationRequest.status)) {
+      return false;
+    }
+    
+    const requesterId = typeof pendingCancellationRequest.requestedBy === 'string' 
+      ? pendingCancellationRequest.requestedBy 
+      : pendingCancellationRequest.requestedBy?._id;
+    
+    const posterId = task.createdBy?._id;
+    
+    // Return true if the poster is the one who requested cancellation
+    return requesterId === posterId;
+  }, [pendingCancellationRequest, task]);
 
   // Debouncing helper function to prevent multiple rapid clicks
   const withDebounce = useCallback((callback: () => void, delay: number = 300) => {
@@ -1529,38 +1557,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           // Cancelled tab (Both Tasker and Poster): No buttons at all
           null
         ) : status === 'open' && userRole === 'Tasker' ? (
-          // Tasker Open Tasks: Only Cancel button
-          <TouchableOpacity 
-            style={[
-              styles.actionButton,
-              isProcessing && styles.disabledButton
-            ]} 
-            activeOpacity={0.6}
-            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            onPress={handleCancelTask}
-            disabled={isProcessing}
-          >
-            <MaterialIcons 
-              name="cancel" 
-              size={20} 
-              color={isProcessing ? "#999" : "#dc3545"} 
-            />
-          </TouchableOpacity>
-        ) : status === 'assigned' && userRole === 'Tasker' ? (
-          // Tasker Todoo Tasks: Chat + Cancel button
-          <>
-            <TouchableOpacity 
-              style={[styles.chatButton]}
-              onPress={handleOpenChat}
-              activeOpacity={0.7}
-              delayPressIn={0}
-            >
-              <MaterialIcons 
-                name="chat" 
-                size={20} 
-                color="#007bff" 
-              />
-            </TouchableOpacity>
+          // Tasker Open Tasks: Only Cancel button (hidden if poster already requested cancellation)
+          posterHasRequestedCancellation ? null : (
             <TouchableOpacity 
               style={[
                 styles.actionButton,
@@ -1577,9 +1575,50 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 color={isProcessing ? "#999" : "#dc3545"} 
               />
             </TouchableOpacity>
-          </>
+          )
+        ) : status === 'assigned' && userRole === 'Tasker' ? (
+          // Tasker Todoo Tasks: Chat + Cancel button (cancel hidden if poster already requested cancellation)
+          (() => {
+            // Hide cancel button if poster has requested cancellation
+            const shouldHideCancelButton = posterHasRequestedCancellation;
+            
+            return (
+              <>
+                <TouchableOpacity 
+                  style={[styles.chatButton]}
+                  onPress={handleOpenChat}
+                  activeOpacity={0.7}
+                  delayPressIn={0}
+                >
+                  <MaterialIcons 
+                    name="chat" 
+                    size={20} 
+                    color="#007bff" 
+                  />
+                </TouchableOpacity>
+                {!shouldHideCancelButton && (
+                  <TouchableOpacity 
+                    style={[
+                      styles.actionButton,
+                      isProcessing && styles.disabledButton
+                    ]} 
+                    activeOpacity={0.6}
+                    hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                    onPress={handleCancelTask}
+                    disabled={isProcessing}
+                  >
+                    <MaterialIcons 
+                      name="cancel" 
+                      size={20} 
+                      color={isProcessing ? "#999" : "#dc3545"} 
+                    />
+                  </TouchableOpacity>
+                )}
+              </>
+            );
+          })()
         ) : status === 'accepted' ? (
-          // Accepted Offers tab: Chat + Mark as Completed + Cancel
+          // Accepted Offers tab: Chat + Mark as Completed + Cancel (cancel hidden if poster already requested cancellation)
           <>
             <TouchableOpacity 
               style={[styles.chatButton]}
@@ -1621,27 +1660,29 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 </Text>
               )}
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[
-                styles.cancelButton,
-                isProcessing && styles.disabledButton
-              ]}
-              onPress={() => {
-                console.log('🔥 Cancel button (Accepted) touched!');
-                if (!isProcessing) {
-                  handleCancelTask();
-                }
-              }}
-              activeOpacity={0.7}
-              delayPressIn={0}
-              disabled={isProcessing}
-            >
-              <MaterialIcons 
-                name="close" 
-                size={20} 
-                color={isProcessing ? "#999" : "#fff"} 
-              />
-            </TouchableOpacity>
+            {!posterHasRequestedCancellation && (
+              <TouchableOpacity 
+                style={[
+                  styles.cancelButton,
+                  isProcessing && styles.disabledButton
+                ]}
+                onPress={() => {
+                  console.log('🔥 Cancel button (Accepted) touched!');
+                  if (!isProcessing) {
+                    handleCancelTask();
+                  }
+                }}
+                activeOpacity={0.7}
+                delayPressIn={0}
+                disabled={isProcessing}
+              >
+                <MaterialIcons 
+                  name="close" 
+                  size={20} 
+                  color={isProcessing ? "#999" : "#fff"} 
+                />
+              </TouchableOpacity>
+            )}
           </>
         ) : (
           // Posted tab or other tabs: Edit + Delete + Cancel (except Cancel for Poster in Posted tab)

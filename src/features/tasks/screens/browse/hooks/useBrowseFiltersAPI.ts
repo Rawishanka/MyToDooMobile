@@ -676,12 +676,10 @@ export const useBrowseFiltersAPI = () => {
       tasksWithOffers: baseTasks.filter(t => (t.offerCount || 0) > 0).length
     });
 
-    // FIRST: Apply country-based filtering (filter tasks by user's location)
-    // This ensures users only see tasks from their country
-    if (countryInfo.countryName && !isDetectingCountry) {
-      baseTasks = filterTasksByCountry(baseTasks, countryInfo.countryName);
-      console.log('🌍 After country filter:', baseTasks.length, 'tasks for', countryInfo.countryName);
-    }
+    // Backend already handles location-based filtering correctly
+    // Frontend country filtering is disabled to prevent filtering out valid tasks
+    // that backend has already validated based on coordinates and location
+    console.log('🌍 Using backend-filtered tasks:', baseTasks.length, 'tasks');
     
     // CRITICAL: If user is typing (searchText exists but debounced hasn't caught up),
     // apply client-side filtering immediately with the current searchText
