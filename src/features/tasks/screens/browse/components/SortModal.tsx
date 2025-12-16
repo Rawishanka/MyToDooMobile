@@ -43,7 +43,11 @@ export default function SortModal({
               <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>
-          <ScrollView>
+          <ScrollView 
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={true}
+          >
             {sortOptions.map((option, index) => (
               <TouchableOpacity
                 key={index}
@@ -87,6 +91,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '70%',
+    paddingBottom: 20, // Add bottom padding to prevent content from being hidden by nav bar
   },
   sortHeader: {
     flexDirection: 'row',
@@ -99,6 +104,12 @@ const styles = StyleSheet.create({
   sortTitle: {
     fontSize: 18,
     fontWeight: '600',
+  },
+  scrollView: {
+    flexGrow: 0, // Prevent ScrollView from expanding beyond maxHeight
+  },
+  scrollContent: {
+    paddingBottom: 24, // Extra padding at bottom for better scrolling experience
   },
   sortOption: {
     flexDirection: 'row',

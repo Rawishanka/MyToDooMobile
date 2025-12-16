@@ -121,7 +121,7 @@ export const OffersList: React.FC<OffersListProps> = ({
 };
 
 // Component to display offer amount and status
-const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean }> = ({ offer, isTaskPoster }) => {
+const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean; showStatus?: boolean }> = ({ offer, isTaskPoster, showStatus = true }) => {
   const { countryInfo } = useLocationCountry();
   const currencyInfo = getCurrencyFromUserLocation(countryInfo);
   
@@ -139,22 +139,25 @@ const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean }> = ({ of
           </Text>
         </View>
       )}
-      <View style={[
-        styles.offerStatusBadge,
-        status === 'accepted' ? styles.acceptedStatusBadge : styles.pendingStatusBadge
-      ]}>
-        <Ionicons 
-          name={status === 'accepted' ? 'checkmark-circle' : 'time'} 
-          size={14} 
-          color={status === 'accepted' ? '#4CAF50' : '#FFA500'} 
-        />
-        <Text style={[
-          styles.offerStatusText,
-          status === 'accepted' ? styles.acceptedStatusText : styles.pendingStatusText
+      {/* Only show status badge if showStatus is true (hidden for other taskers' offers) */}
+      {showStatus && (
+        <View style={[
+          styles.offerStatusBadge,
+          status === 'accepted' ? styles.acceptedStatusBadge : styles.pendingStatusBadge
         ]}>
-          {status === 'accepted' ? 'Accepted' : 'Pending'}
-        </Text>
-      </View>
+          <Ionicons 
+            name={status === 'accepted' ? 'checkmark-circle' : 'time'} 
+            size={14} 
+            color={status === 'accepted' ? '#4CAF50' : '#FFA500'} 
+          />
+          <Text style={[
+            styles.offerStatusText,
+            status === 'accepted' ? styles.acceptedStatusText : styles.pendingStatusText
+          ]}>
+            {status === 'accepted' ? 'Accepted' : 'Pending'}
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -304,8 +307,12 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                     )}
                   </View>
 
-                  {/* Offer Amount and Status - Only visible to task poster */}
-                  <OfferAmountStatus offer={offer} isTaskPoster={isTaskPoster || false} />
+                  {/* Offer Amount and Status - Hide status for other taskers viewing offers */}
+                  <OfferAmountStatus 
+                    offer={offer} 
+                    isTaskPoster={isTaskPoster || false} 
+                    showStatus={isTaskPoster || false}
+                  />
 
                   {/* Rating and Stats Row */}
                   <View style={styles.offerStatsRow}>
