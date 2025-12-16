@@ -1,7 +1,7 @@
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
-import { getCurrencySymbol } from '@/src/shared/utils/currency';
+import { getCurrencySymbol, getMaxPriceForCurrency } from '@/src/shared/utils/currency';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Modal,
   PanResponder,
@@ -61,7 +61,8 @@ export default function FilterModal({
   const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null);
 
   const MIN_PRICE = 0;
-  const MAX_PRICE = 10000;
+  // Dynamic MAX_PRICE based on user's currency (e.g., 10000 for AUD, 3000000 for LKR)
+  const MAX_PRICE = getMaxPriceForCurrency(countryInfo.currency);
 
   // Filter categories based on search text with prioritized sorting
   const filteredCategories = useMemo(() => {
@@ -322,7 +323,7 @@ export default function FilterModal({
               </View>
               <View style={styles.sliderLabels}>
                 <Text style={styles.sliderLabel}>{currencySymbol}0</Text>
-                <Text style={styles.sliderLabel}>{currencySymbol}10,000+</Text>
+                <Text style={styles.sliderLabel}>{currencySymbol}{MAX_PRICE.toLocaleString()}+</Text>
               </View>
             </View>
           </View>
