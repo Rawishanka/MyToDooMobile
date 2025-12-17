@@ -26,10 +26,13 @@ if (isNativeBuild && Platform.OS === 'android') {
         title: remoteMessage.notification?.title,
         body: remoteMessage.notification?.body,
         data: remoteMessage.data,
+        type: remoteMessage.data?.type,
       });
       
       // Process the notification in the background
       // This runs even when the app is killed
+      // Note: QueryClient cache invalidation happens when app opens (in setupFirebaseHandlers)
+      // Background handler just logs the notification for debugging
       return Promise.resolve();
     });
     

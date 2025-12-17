@@ -53,7 +53,7 @@ export default function FilterModal({
 }: FilterModalProps) {
   // Get geolocation-based currency
   const { countryInfo } = useLocationCountry();
-  const currencySymbol = getCurrencySymbol(countryInfo.currency);
+  const currencySymbol = getCurrencySymbol(countryInfo?.currency || 'AUD');
   
   const [categoryDropdownVisible, setCategoryDropdownVisible] = useState(false);
   const [categorySearchText, setCategorySearchText] = useState('');
@@ -62,7 +62,7 @@ export default function FilterModal({
 
   const MIN_PRICE = 0;
   // Dynamic MAX_PRICE based on user's currency (e.g., 10000 for AUD, 3000000 for LKR)
-  const MAX_PRICE = getMaxPriceForCurrency(countryInfo.currency);
+  const MAX_PRICE = getMaxPriceForCurrency(countryInfo?.currency || 'AUD');
 
   // Filter categories based on search text with prioritized sorting
   const filteredCategories = useMemo(() => {

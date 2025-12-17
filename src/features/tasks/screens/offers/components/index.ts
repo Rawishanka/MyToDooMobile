@@ -11,6 +11,7 @@ export { default as TermsCheckbox } from './TermsCheckbox';
 export { OfferForm } from './OfferForm';
 export { OfferFormHeader } from './OfferFormHeader';
 export { ErrorState, LoadingState } from './OfferStates';
+export { default as PayoutAccountRequiredModal } from './PayoutAccountRequiredModal';
 export { TaskSummarySection } from './TaskSummarySection';
 export { TipsSection } from './TipsSection';
 

@@ -523,7 +523,7 @@ export default function TaskChatScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <View style={{ flex: 1 }}>
@@ -587,8 +587,15 @@ export default function TaskChatScreen() {
           keyboardShouldPersistTaps="handled"
         />
 
-        {/* Input Area */}
-        <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        {/* Input Area - Fixed for APK edge-to-edge mode with Android nav buttons */}
+        <View style={[
+          styles.inputContainer, 
+          { 
+            paddingBottom: Platform.OS === 'android' 
+              ? (insets.bottom > 0 ? insets.bottom + 10 : 50) // Add extra space for Android nav buttons in APK
+              : Math.max(insets.bottom, 16)
+          }
+        ]}>
           <TouchableOpacity
             style={styles.attachButton}
             onPress={() => {
@@ -741,6 +748,7 @@ const styles = StyleSheet.create({
   },
   messagesList: {
     padding: 16,
+    paddingBottom: 20,
   },
   loadingHeader: {
     flexDirection: 'row',
@@ -833,6 +841,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingTop: 10,
+    // paddingBottom handled dynamically in component for safe area
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
   },

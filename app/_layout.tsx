@@ -41,12 +41,12 @@ const queryClient = new QueryClient({
         // Retry other errors up to 2 times
         return failureCount < 2;
       },
-      refetchOnWindowFocus: true, // ✅ FIXED: Refetch when app comes to foreground
-      refetchOnMount: true, // ✅ FIXED: Refetch when component mounts
-      refetchOnReconnect: true, // ✅ NEW: Refetch when internet reconnects
-      staleTime: 0, // ✅ FIXED: Data always considered stale - refetch immediately
+      refetchOnWindowFocus: true, // ✅ Refetch when app comes to foreground
+      refetchOnMount: true, // ✅ Refetch when component mounts
+      refetchOnReconnect: true, // ✅ Refetch when internet reconnects
+      staleTime: 5000, // ✅ FIXED: 5 second stale time prevents constant refetching on fresh installs
       gcTime: 5 * 60 * 1000, // Cache for 5 minutes (formerly cacheTime)
-      refetchInterval: 30000, // ✅ NEW: Auto-refetch every 30 seconds for real-time updates
+      refetchInterval: false, // ✅ FIXED: Disabled auto-refetch that was causing race conditions in APK
     },
     mutations: {
       retry: false, // Don't retry mutations by default
@@ -76,8 +76,8 @@ export default function RootLayout() {
     }
   }, [error]);
 
-  // 🔔 Initialize FCM Push Notifications
-  const fcmStatus = useInitializeFCM();
+  // 🔔 Initialize FCM Push Notifications with QueryClient for real-time sync
+  const fcmStatus = useInitializeFCM(queryClient);
 
   // Log FCM status when initialized
   useEffect(() => {

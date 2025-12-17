@@ -358,7 +358,7 @@ export const useBrowseFiltersAPI = () => {
   const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
   
   // Use dynamic max price based on user's currency
-  const MAX_PRICE = getMaxPriceForCurrency(countryInfo.currency);
+  const MAX_PRICE = getMaxPriceForCurrency(countryInfo?.currency || 'AUD');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, MAX_PRICE]);
   const [availableTasksOnly, setAvailableTasksOnly] = useState(false);
   const [showTasksWithNoOffers, setShowTasksWithNoOffers] = useState(false);
@@ -380,8 +380,8 @@ export const useBrowseFiltersAPI = () => {
   // Log country detection status
   useEffect(() => {
     console.log('🌍 [useBrowseFiltersAPI] User country detected:', {
-      countryName: countryInfo.countryName,
-      countryCode: countryInfo.countryCode,
+      countryName: countryInfo?.countryName || 'Unknown',
+      countryCode: countryInfo?.countryCode || 'Unknown',
       isDetecting: isDetectingCountry,
     });
   }, [countryInfo, isDetectingCountry]);
@@ -667,7 +667,7 @@ export const useBrowseFiltersAPI = () => {
       debouncedSearchText: debouncedSearchText.trim(),
       isSearching,
       activeAPI: shouldUseFilterAPI ? 'FILTER' : 'SEARCH',
-      userCountry: countryInfo.countryName,
+      userCountry: countryInfo?.countryName || 'Unknown',
       sampleTask: baseTasks[0] ? {
         id: baseTasks[0]._id,
         title: baseTasks[0].title,
@@ -709,7 +709,7 @@ export const useBrowseFiltersAPI = () => {
     // Fallback: apply client-side filter
     console.log('⚠️ Fallback - applying client-side filter');
     return filterTasksBySearch(baseTasks, searchText || debouncedSearchText);
-  }, [tasksWithOfferCounts, searchText, debouncedSearchText, shouldUseFilterAPI, isSearching, countryInfo.countryName, isDetectingCountry]);
+  }, [tasksWithOfferCounts, searchText, debouncedSearchText, shouldUseFilterAPI, isSearching, countryInfo?.countryName, isDetectingCountry]);
   
   // Calculate loading state properly:
   // - Show loading during typing (debounce period)
@@ -739,7 +739,7 @@ export const useBrowseFiltersAPI = () => {
     isLoading,
     searchText: searchText.trim(),
     debouncedSearchText: debouncedSearchText.trim(),
-    userCountry: countryInfo.countryName,
+    userCountry: countryInfo?.countryName || 'Unknown',
   });
   const error = shouldUseFilterAPI ? filterError : searchError;
   const refetch = shouldUseFilterAPI ? filterRefetch : searchRefetch;
@@ -854,8 +854,8 @@ export const useBrowseFiltersAPI = () => {
     useSearchAPI: !shouldUseFilterAPI,
     activeAPI: shouldUseFilterAPI ? 'FILTER' : 'SEARCH',
     // User's detected country for location-based filtering
-    userCountry: countryInfo.countryName,
-    userCountryCode: countryInfo.countryCode,
+    userCountry: countryInfo?.countryName || 'Unknown',
+    userCountryCode: countryInfo?.countryCode || 'AU',
     isDetectingCountry,
   };
 };

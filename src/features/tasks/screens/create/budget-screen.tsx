@@ -10,6 +10,7 @@ import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -23,12 +24,13 @@ export default function BudgetScreen() {
   const insets = useSafeAreaInsets();
 
   // Auto-detect country for currency if no location set yet
-  const { countryInfo, isDetecting } = useLocationCountry();
+  const { countryInfo, isDetecting, isInitialized } = useLocationCountry();
 
   console.log('🏗️ Budget screen useLocationCountry state:', {
     countryInfo,
     isDetecting,
-    hookResult: { countryInfo, isDetecting }
+    isInitialized,
+    hookResult: { countryInfo, isDetecting, isInitialized }
   });
 
   // Get currency based on task location or detected country
@@ -43,8 +45,8 @@ export default function BudgetScreen() {
   // Always use user's current GPS location for currency in budget screen (auto geo-location feature)
   // This ensures users see budget amounts in their local currency regardless of task location
   const currencyInfo = { 
-    code: countryInfo.currency, 
-    symbol: getCurrencySymbol(countryInfo.currency) 
+    code: countryInfo?.currency || 'AUD', 
+    symbol: getCurrencySymbol(countryInfo?.currency || 'AUD') 
   };
 
   const minimumBudget = getMinimumBudget(currencyInfo.code);
@@ -52,8 +54,8 @@ export default function BudgetScreen() {
 
   console.log('💰 Budget screen currency info:', {
     hasLocation: !!locationForCurrency,
-    detectedCountry: countryInfo.countryName,
-    detectedCurrency: countryInfo.currency,
+    detectedCountry: countryInfo?.countryName || 'Unknown',
+    detectedCurrency: countryInfo?.currency || 'AUD',
     finalCurrency: currencyInfo.code,
     symbol: currencyInfo.symbol,
     minimumBudget,
@@ -147,6 +149,16 @@ export default function BudgetScreen() {
   // Check if budget is valid (user has entered a value and it meets minimum)
   const currentBudgetValue = budget || (!hasUserInteracted ? defaultBudgetAmount : 0);
   const isBudgetValid = hasUserInteracted ? (budget && Number(budget) >= minimumBudget) : (Number(currentBudgetValue) >= minimumBudget);
+
+  // Show loading state while location is being detected to prevent currency flicker
+  if (!isInitialized || isDetecting) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={styles.loadingText}>Detecting your location...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -305,6 +317,16 @@ const styles = StyleSheet.create({
   keyText: {
     fontSize: RFValue(isTablet ? 24 : 20),
     color: '#002366',
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: hp('2%'),
+    fontSize: RFValue(16),
+    color: '#6e6e6e',
+    textAlign: 'center',
   },
   button: {
     backgroundColor: '#0050C8',

@@ -670,9 +670,8 @@ export default function AccountScreen() {
             
             // Handle object location
             if (typeof loc === 'object') {
-              // Build location string from available fields (suburb, region, country)
+              // Build location string - show only suburb to avoid duplication
               // Filter out empty, null, undefined, and "Not specified" values
-              const parts = [];
               
               const isValidValue = (value: any) => {
                 return value && 
@@ -681,27 +680,36 @@ export default function AccountScreen() {
                        value.trim().length > 0;
               };
               
-              // Add suburb or city first
-              if (isValidValue((loc as any).suburb)) parts.push((loc as any).suburb);
-              else if (isValidValue((loc as any).city)) parts.push((loc as any).city);
+              // Priority: Show suburb only (cleanest display)
+              if (isValidValue((loc as any).suburb)) {
+                return (loc as any).suburb;
+              }
               
-              // Add region or state
-              if (isValidValue((loc as any).region)) parts.push((loc as any).region);
-              else if (isValidValue((loc as any).state)) parts.push((loc as any).state);
+              // Fallback: Show city if no suburb
+              if (isValidValue((loc as any).city)) {
+                return (loc as any).city;
+              }
               
-              // Add country
-              if (isValidValue((loc as any).country)) parts.push((loc as any).country);
+              // Fallback: Show region/state if no city
+              if (isValidValue((loc as any).region)) {
+                return (loc as any).region;
+              }
+              if (isValidValue((loc as any).state)) {
+                return (loc as any).state;
+              }
               
-              if (parts.length > 0) return parts.join(', ');
+              // Last resort: Show country
+              if (isValidValue((loc as any).country)) {
+                return (loc as any).country;
+              }
               
               // Try nested address format
               const nested = (loc as any).address;
               if (nested && typeof nested === 'object') {
-                const nestedParts = [];
-                if (nested.city) nestedParts.push(nested.city);
-                if (nested.state) nestedParts.push(nested.state);
-                if (nested.country) nestedParts.push(nested.country);
-                if (nestedParts.length > 0) return nestedParts.join(', ');
+                if (nested.suburb) return nested.suburb;
+                if (nested.city) return nested.city;
+                if (nested.state) return nested.state;
+                if (nested.country) return nested.country;
               }
               
               // Try address string
@@ -713,9 +721,6 @@ export default function AccountScreen() {
             return 'Location not set';
           })()}
         </Text>
-        <TouchableOpacity style={styles.row}>
-          <Text style={styles.linkText}>See your public profile</Text>
-        </TouchableOpacity>
         
         {/* Rating and Stats */}
         {userData && (

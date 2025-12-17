@@ -17,12 +17,14 @@ interface TaskSummarySectionProps {
 
 export const TaskSummarySection: React.FC<TaskSummarySectionProps> = ({ task }) => {
   // Use user's current location for currency display (auto geo-location)
-  const { countryInfo } = useLocationCountry();
+  const { countryInfo, isInitialized } = useLocationCountry();
   const currencyInfo = getCurrencyFromUserLocation(countryInfo);
   
   // Format the budget with location-appropriate currency
-  const displayBudget = task.formattedBudget || 
-    (task.budget ? formatCurrency(task.budget, currencyInfo) : 'Budget not specified');
+  const displayBudget = !isInitialized 
+    ? 'Loading...'
+    : task.formattedBudget || 
+      (task.budget ? formatCurrency(task.budget, currencyInfo) : 'Budget not specified');
 
   return (
     <View style={styles.taskSummary}>

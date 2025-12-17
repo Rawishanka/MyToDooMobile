@@ -311,13 +311,15 @@ export const deleteFCMToken = async (): Promise<boolean> => {
 
 /**
  * Setup notification handlers (works in both environments)
+ * 
+ * @param queryClient - Optional QueryClient for cache invalidation on notification receive
  */
-export const setupNotificationHandlers = () => {
+export const setupNotificationHandlers = (queryClient?: any) => {
   console.log('🔔 Setting up notification handlers...');
 
   // Native Build: Use Firebase handlers
   if (isNativeBuild && messaging) {
-    setupFirebaseHandlers();
+    setupFirebaseHandlers(queryClient);
     console.log('✅ Firebase notification handlers setup complete');
   } else {
     // Expo Go: Notification handlers not available in SDK 53+
@@ -327,9 +329,76 @@ export const setupNotificationHandlers = () => {
 };
 
 /**
+ * Invalidate React Query caches based on notification type for real-time sync
+ */
+const handleNotificationDataRefresh = (notificationType: string, queryClient: any) => {
+  if (!queryClient) return;
+
+  console.log('🔄 [Real-time Sync] Invalidating caches for notification type:', notificationType);
+
+  try {
+    switch (notificationType) {
+      case 'NEW_TASK':
+      case 'TASK_CREATED':
+        // Invalidate all task lists
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        console.log('✅ Invalidated tasks cache');
+        break;
+
+      case 'OFFER_MADE':
+      case 'NEW_OFFER':
+        // Invalidate offers and task details
+        queryClient.invalidateQueries({ queryKey: ['offers'] });
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        console.log('✅ Invalidated offers and tasks cache');
+        break;
+
+      case 'OFFER_ACCEPTED':
+      case 'OFFER_REJECTED':
+        // Invalidate offers and my tasks
+        queryClient.invalidateQueries({ queryKey: ['offers'] });
+        queryClient.invalidateQueries({ queryKey: ['tasks', 'my-tasks'] });
+        queryClient.invalidateQueries({ queryKey: ['tasks', 'my-offers'] });
+        console.log('✅ Invalidated offers and my tasks cache');
+        break;
+
+      case 'NEW_MESSAGE':
+      case 'MESSAGE_RECEIVED':
+        // Invalidate chat and message lists
+        queryClient.invalidateQueries({ queryKey: ['chats'] });
+        queryClient.invalidateQueries({ queryKey: ['chat-messages'] });
+        console.log('✅ Invalidated chats cache');
+        break;
+
+      case 'TASK_COMPLETED':
+      case 'TASK_STATUS_CHANGED':
+        // Invalidate all task-related caches
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        console.log('✅ Invalidated all tasks cache');
+        break;
+
+      case 'PAYMENT_RECEIVED':
+      case 'PAYMENT_SENT':
+        // Invalidate payment and task caches
+        queryClient.invalidateQueries({ queryKey: ['payments'] });
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        console.log('✅ Invalidated payments and tasks cache');
+        break;
+
+      default:
+        // For any other notification, invalidate all task caches as safety measure
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        console.log('✅ Invalidated tasks cache (default)');
+    }
+  } catch (error) {
+    console.error('❌ Error invalidating caches:', error);
+  }
+};
+
+/**
  * Setup Firebase FCM handlers (native builds)
  */
-const setupFirebaseHandlers = () => {
+const setupFirebaseHandlers = (queryClient?: any) => {
   if (!messaging) return;
 
   console.log('🔥 Setting up Firebase FCM handlers...');
@@ -341,6 +410,11 @@ const setupFirebaseHandlers = () => {
       body: remoteMessage.notification?.body,
       data: remoteMessage.data,
     });
+    
+    // 🚀 NEW: Trigger real-time data refresh when notification arrives
+    if (remoteMessage.data?.type) {
+      handleNotificationDataRefresh(remoteMessage.data.type, queryClient);
+    }
     
     // On Android, we need to create a local notification to display it
     // because foreground messages don't automatically show
@@ -365,6 +439,12 @@ const setupFirebaseHandlers = () => {
       body: remoteMessage.notification?.body,
       data: remoteMessage.data,
     });
+    
+    // 🚀 NEW: Trigger real-time data refresh when user opens notification
+    if (remoteMessage.data?.type) {
+      handleNotificationDataRefresh(remoteMessage.data.type, queryClient);
+    }
+    
     // TODO: Navigate to appropriate screen based on remoteMessage.data
   });
 
@@ -378,6 +458,12 @@ const setupFirebaseHandlers = () => {
           body: remoteMessage.notification?.body,
           data: remoteMessage.data,
         });
+        
+        // 🚀 NEW: Trigger real-time data refresh when app opens from notification
+        if (remoteMessage.data?.type) {
+          handleNotificationDataRefresh(remoteMessage.data.type, queryClient);
+        }
+        
         // TODO: Navigate to appropriate screen based on remoteMessage.data
       }
     });

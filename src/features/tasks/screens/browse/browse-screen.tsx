@@ -4,7 +4,10 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     FlatList,
+    Linking,
+    Platform,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -343,8 +346,40 @@ export default function BrowseTasksScreen() {
                       params: { taskId }
                     });
                   } else if (action === 'openInMaps') {
-                    // Open in device maps app - could implement later
-                    console.log('Open in Maps for task:', taskId);
+                    // Find the task to get its coordinates
+                    const task = filteredAndSortedTasks.find(t => t._id === taskId);
+                    const coordinates = task?.location?.coordinates as { type: string; coordinates: [number, number] } | undefined;
+                    if (task && coordinates && 'coordinates' in coordinates && Array.isArray(coordinates.coordinates)) {
+                      const [longitude, latitude] = coordinates.coordinates;
+                      const label = encodeURIComponent(task.title || 'Task Location');
+                      
+                      // Create Google Maps URL with coordinates
+                      const googleMapsUrl = Platform.select({
+                        ios: `maps://app?daddr=${latitude},${longitude}&q=${label}`,
+                        android: `geo:${latitude},${longitude}?q=${latitude},${longitude}(${label})`,
+                      });
+                      
+                      // Fallback to browser Google Maps
+                      const browserUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+                      
+                      console.log('📍 Opening maps for task:', { taskId, title: task.title, latitude, longitude });
+                      
+                      // Try to open native maps app first
+                      Linking.canOpenURL(googleMapsUrl!).then((supported) => {
+                        if (supported) {
+                          return Linking.openURL(googleMapsUrl!);
+                        } else {
+                          // Fallback to browser
+                          return Linking.openURL(browserUrl);
+                        }
+                      }).catch((err) => {
+                        console.error('Error opening maps:', err);
+                        Alert.alert('Error', 'Could not open maps application');
+                      });
+                    } else {
+                      console.warn('⚠️ Task location not available:', taskId);
+                      Alert.alert('Location Unavailable', 'This task does not have location coordinates');
+                    }
                   }
                 }}
               />

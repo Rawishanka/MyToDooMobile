@@ -57,7 +57,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 }) => {
   // Auto-detect country if not provided
   const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
-  const effectiveCountry = country || countryInfo.countryCode;
+  const effectiveCountry = country || countryInfo?.countryCode || 'AU';
 
   const [query, setQuery] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<LocationResult[]>([]);
@@ -91,13 +91,13 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   // Show country detection status in placeholder when detecting
   const dynamicPlaceholder = isDetectingCountry 
     ? "Detecting your location..." 
-    : `${placeholder} (${countryInfo.countryName})`;
+    : countryInfo ? `${placeholder} (${countryInfo.countryName})` : placeholder;
 
   console.log('🌍 Using country for location search:', {
     provided: country,
-    detected: countryInfo.countryCode,
+    detected: countryInfo?.countryCode || 'Unknown',
     effective: effectiveCountry,
-    countryName: countryInfo.countryName
+    countryName: countryInfo?.countryName || 'Unknown'
   });
 
   const requestLocationPermission = async (): Promise<boolean> => {

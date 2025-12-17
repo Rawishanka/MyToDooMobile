@@ -25,7 +25,7 @@ export default function PaymentReceiptScreen() {
   const params = useLocalSearchParams();
   const router = useRouter();
   const { countryInfo } = useLocationCountry();
-  const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
+  const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
   
   // Parse params FIRST before using them in state initialization
   const taskId = params.taskId as string;
