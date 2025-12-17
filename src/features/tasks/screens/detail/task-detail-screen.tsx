@@ -10,17 +10,18 @@ import StripePaymentModal from '../../../../shared/components/StripePaymentModal
 // Responsive utilities
 import { isTablet, wp } from '@/src/shared/utils/responsive';
 import {
-    AskQuestionModal,
-    DetailHeader,
-    ErrorState,
-    LoadingState,
-    MakeOfferSection,
-    MyOfferCard,
-    OffersList,
-    QuestionsList,
-    TabsSection,
-    TaskInfoCard,
+  AskQuestionModal,
+  DetailHeader,
+  ErrorState,
+  LoadingState,
+  MakeOfferSection,
+  MyOfferCard,
+  OffersList,
+  QuestionsList,
+  TabsSection,
+  TaskInfoCard,
 } from './components';
+import { TaskActionButtons } from './components/TaskActionButtons';
 import { useTaskDetail } from './hooks/useTaskDetail';
 
 export default function TaskDetailScreen() {
@@ -159,6 +160,17 @@ export default function TaskDetailScreen() {
           getLocationIcon={getLocationIcon}
           getTimeDisplay={getTimeDisplay}
           refetch={refetch}
+        />
+
+        {/* Action Buttons for Poster in Accepted Tasks */}
+        <TaskActionButtons 
+          task={task}
+          currentUserId={currentUser?._id}
+          onTaskCompleted={refetch}
+          onCancelTask={() => {
+            // Handle cancel task - can be expanded with modal later
+            console.log('Cancel task button pressed');
+          }}
         />
 
         {/* Show user's own offer if they made one (Tasker only) */}
