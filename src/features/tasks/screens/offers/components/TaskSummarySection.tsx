@@ -18,7 +18,7 @@ interface TaskSummarySectionProps {
 export const TaskSummarySection: React.FC<TaskSummarySectionProps> = ({ task }) => {
   // Use user's current location for currency display (auto geo-location)
   const { countryInfo, isInitialized } = useLocationCountry();
-  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
   
   // Format the budget with location-appropriate currency
   const displayBudget = !isInitialized 

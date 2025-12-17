@@ -33,9 +33,14 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
   // Populate form when config data is loaded
   useEffect(() => {
     if (configData?.config) {
-      setBasePercentage((configData.config.BASE_PERCENTAGE * 100).toString());
-      setMinFeeUsd(configData.config.MIN_FEE_USD.toString());
-      setMaxFeeUsd(configData.config.MAX_FEE_USD.toString());
+      // Add null checks and default values to prevent toString() errors
+      const basePercentageValue = configData.config.BASE_PERCENTAGE ?? 0.1; // Default 10%
+      const minFeeValue = configData.config.MIN_FEE_USD ?? 5; // Default $5
+      const maxFeeValue = configData.config.MAX_FEE_USD ?? 50; // Default $50
+      
+      setBasePercentage((basePercentageValue * 100).toString());
+      setMinFeeUsd(minFeeValue.toString());
+      setMaxFeeUsd(maxFeeValue.toString());
     }
   }, [configData]);
 
@@ -87,9 +92,14 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
 
   const handleReset = () => {
     if (configData?.config) {
-      setBasePercentage((configData.config.BASE_PERCENTAGE * 100).toString());
-      setMinFeeUsd(configData.config.MIN_FEE_USD.toString());
-      setMaxFeeUsd(configData.config.MAX_FEE_USD.toString());
+      // Add null checks and default values to prevent toString() errors
+      const basePercentageValue = configData.config.BASE_PERCENTAGE ?? 0.1; // Default 10%
+      const minFeeValue = configData.config.MIN_FEE_USD ?? 5; // Default $5
+      const maxFeeValue = configData.config.MAX_FEE_USD ?? 50; // Default $50
+      
+      setBasePercentage((basePercentageValue * 100).toString());
+      setMinFeeUsd(minFeeValue.toString());
+      setMaxFeeUsd(maxFeeValue.toString());
     }
   };
 

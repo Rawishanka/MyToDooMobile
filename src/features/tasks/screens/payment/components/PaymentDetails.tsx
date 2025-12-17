@@ -25,7 +25,7 @@ export default function PaymentDetails({
 }: PaymentDetailsProps) {
   // Use user's current location for currency display (auto geo-location)
   const { countryInfo, isInitialized } = useLocationCountry();
-  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
   
   return (
     <View style={styles.container}>
