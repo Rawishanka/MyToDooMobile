@@ -6,7 +6,6 @@ import React, { useState } from 'react';
 import {
     ActionSheetIOS,
     Alert,
-    FlatList,
     Image,
     Platform,
     StyleSheet,
@@ -274,13 +273,13 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
     <View style={[styles.container, style]}>
       {/* Attachments List */}
       {attachments.length > 0 && (
-        <FlatList
-          data={attachments}
-          renderItem={renderAttachmentItem}
-          keyExtractor={(item) => item.id}
-          style={styles.attachmentsList}
-          showsVerticalScrollIndicator={false}
-        />
+        <View style={styles.attachmentsList}>
+          {attachments.map((item) => (
+            <View key={item.id}>
+              {renderAttachmentItem({ item })}
+            </View>
+          ))}
+        </View>
       )}
 
       {/* Add Attachment Button */}
