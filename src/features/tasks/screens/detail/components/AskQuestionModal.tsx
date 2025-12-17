@@ -1,6 +1,6 @@
 import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface AskQuestionModalProps {
@@ -21,6 +21,13 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
   isSubmitting,
 }) => {
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
+
+  // Cleanup attachments when modal closes
+  useEffect(() => {
+    if (!visible) {
+      setAttachments([]);
+    }
+  }, [visible]);
 
   const handleSubmit = () => {
     onSubmit(attachments);
