@@ -15,6 +15,7 @@ export const STRIPE_CONNECT_QUERY_KEYS = {
 
 /**
  * Get Stripe Connect account status
+ * Returns error with status 404 if no account exists (expected behavior)
  */
 export function useGetStripeAccountStatus(enabled: boolean = true) {
   return useQuery<StripeAccountStatus, any>({
@@ -22,13 +23,17 @@ export function useGetStripeAccountStatus(enabled: boolean = true) {
     queryFn: () => StripeConnectAPI.getAccountStatus(),
     enabled,
     retry: (failureCount, error) => {
-      // Don't retry on 404 (no account exists)
+      // Don't retry on 404 (no account exists - this is expected)
       if (error?.status === 404) {
         return false;
       }
       return failureCount < 2;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
+    // Suppress React Query error logging for 404 - it's expected when no account exists
+    meta: {
+      errorMessage: 'Failed to check payout account status'
+    }
   });
 }
 

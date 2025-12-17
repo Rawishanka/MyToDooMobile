@@ -353,16 +353,20 @@ export function useApiFunctions() {
     }
   }
 
-  async function handleGoogleSignIn(credential: string) {
-    // API_CONFIG.BASE_URL already handles the env variable and fallback
+  async function handleGoogleSignIn(firebaseIdToken: string) {
+    // NEW: Use Firebase authentication endpoint
     const api = createApi(API_CONFIG.BASE_URL);
-    console.log("Calling Google Sign-In API:", API_CONFIG.BASE_URL + "/auth/google");
-    console.log("With credential token");
+    console.log("🔐 Calling Firebase Auth API:", API_CONFIG.BASE_URL + "/users/firebase-auth");
+    console.log("📤 Sending Firebase ID Token to backend");
 
     try {
-      const response = await api.post('/auth/google', { credential });
-      console.log("✅ Google Sign-In Success Response:", response.data);
-      const { token, user, expiresIn } = response.data;
+      // Send Firebase ID Token to backend for verification
+      const response = await api.post('/users/firebase-auth', { 
+        firebaseToken: firebaseIdToken 
+      });
+      
+      console.log("✅ Firebase Auth Success Response:", response.data);
+      const { token, user } = response.data;
       
       // Enhanced validation with detailed logging
       console.log("🔍 Backend response details:", {
@@ -390,14 +394,14 @@ export function useApiFunctions() {
       }
       
       console.log("✅ Calling setAuthData with validated data...");
-      await setAuthData(token, user, expiresIn);
+      await setAuthData(token, user);
       setStoredToken(token);
       
       console.log("✅ Returning data to React Query...");
       return { token, user };
     } catch (error: any) {
       // Log detailed error information
-      console.error("❌ Google Sign-In failed:");
+      console.error("❌ Firebase Google Sign-In failed:");
       console.error("Status:", error?.response?.status);
       console.error("Status Text:", error?.response?.statusText);
       console.error("Response Data:", error?.response?.data);

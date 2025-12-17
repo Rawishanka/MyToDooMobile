@@ -38,13 +38,15 @@ const filterTasksByCountry = (tasks: Task[], userCountry: string): Task[] => {
     const locationAddress = task.location?.address?.toLowerCase() || '';
     
     // 1. ✅ PRIORITY: If task has coordinates, ALWAYS include it
-    // The backend handles geospatial filtering, we don't need to filter by city names
+    // The backend handles geospatial filtering, we trust database coordinates
     const taskCoords = task.location?.coordinates as any;
     const hasCoordinates = taskCoords && (
       // GeoJSON format: { type: 'Point', coordinates: [lng, lat] }
-      (Array.isArray(taskCoords.coordinates)) ||
+      (Array.isArray(taskCoords.coordinates) && taskCoords.coordinates.length === 2) ||
       // Direct coordinates format: { lat: number, lng: number }
-      (typeof taskCoords.lat === 'number' && typeof taskCoords.lng === 'number')
+      (typeof taskCoords.lat === 'number' && typeof taskCoords.lng === 'number') ||
+      // Alternative format: { latitude: number, longitude: number }
+      (typeof taskCoords.latitude === 'number' && typeof taskCoords.longitude === 'number')
     );
     
     if (hasCoordinates) {
@@ -75,12 +77,81 @@ const filterTasksByCountry = (tasks: Task[], userCountry: string): Task[] => {
       }
     }
 
-    // 4. ✅ Simple country name check in address (NO hardcoded city lists!)
+    // 4. ✅ ENHANCED: Check address for country name OR major cities/states
     if (locationAddress) {
-      const addressContainsCountry = locationAddress.includes(userCountryLower);
-      if (addressContainsCountry) {
-        console.log(`✅ Address contains country: "${task.title}" (address: ${locationAddress})`);
-        return true;
+      // Define country patterns with cities, states, and country names
+      const countryLocationMap: Record<string, {
+        patterns: string[];
+        states?: string[];
+        cities?: string[];
+        regions?: string[];
+      }> = {
+        'australia': {
+          patterns: ['australia', 'australian'],
+          states: ['nsw', 'vic', 'qld', 'wa', 'sa', 'tas', 'act', 'nt', 'new south wales', 'victoria', 'queensland', 'western australia', 'south australia', 'tasmania', 'northern territory'],
+          cities: ['sydney', 'melbourne', 'brisbane', 'perth', 'adelaide', 'gold coast', 'canberra', 'newcastle', 'wollongong', 'hobart', 'geelong', 'townsville', 'cairns', 'toowoomba', 'darwin', 'ballarat', 'bendigo', 'albury', 'launceston', 'mackay', 'rockhampton', 'bunbury', 'bundaberg', 'wagga wagga', 'hervey bay', 'mildura', 'shepparton', 'port macquarie', 'gladstone', 'tamworth']
+        },
+        'new zealand': {
+          patterns: ['new zealand', 'zealand'],
+          regions: ['auckland', 'wellington', 'christchurch', 'hamilton', 'tauranga', 'napier', 'dunedin', 'palmerston north', 'nelson', 'rotorua', 'whangarei', 'invercargill', 'whanganui', 'gisborne', 'queenstown']
+        },
+        'sri lanka': {
+          patterns: ['sri lanka', 'lanka'],
+          cities: ['colombo', 'kandy', 'galle', 'jaffna', 'negombo', 'anuradhapura', 'trincomalee', 'batticaloa', 'matara', 'kurunegala', 'gampaha', 'kalutara', 'ratnapura']
+        }
+      };
+      
+      const userLocationData = countryLocationMap[userCountryLower];
+      if (userLocationData) {
+        // Check country name/patterns
+        const hasCountryName = userLocationData.patterns.some((pattern: string) => 
+          locationAddress.includes(pattern.toLowerCase())
+        );
+        if (hasCountryName) {
+          console.log(`✅ Address contains country name: "${task.title}" (address: ${locationAddress})`);
+          return true;
+        }
+        
+        // Check states (for Australia)
+        if (userLocationData.states) {
+          const hasState = userLocationData.states.some((state: string) => 
+            locationAddress.includes(` ${state.toLowerCase()} `) || 
+            locationAddress.includes(` ${state.toLowerCase()},`) ||
+            locationAddress.endsWith(` ${state.toLowerCase()}`)
+          );
+          if (hasState) {
+            console.log(`✅ Address contains state/region: "${task.title}" (address: ${locationAddress})`);
+            return true;
+          }
+        }
+        
+        // Check cities
+        if (userLocationData.cities) {
+          const hasCity = userLocationData.cities.some((city: string) => 
+            locationAddress.includes(city.toLowerCase())
+          );
+          if (hasCity) {
+            console.log(`✅ Address contains city: "${task.title}" (address: ${locationAddress})`);
+            return true;
+          }
+        }
+        
+        // Check regions (for New Zealand)
+        if (userLocationData.regions) {
+          const hasRegion = userLocationData.regions.some((region: string) => 
+            locationAddress.includes(region.toLowerCase())
+          );
+          if (hasRegion) {
+            console.log(`✅ Address contains region: "${task.title}" (address: ${locationAddress})`);
+            return true;
+          }
+        }
+      } else {
+        // Fallback for other countries - just check country name
+        if (locationAddress.includes(userCountryLower)) {
+          console.log(`✅ Address contains country: "${task.title}" (address: ${locationAddress})`);
+          return true;
+        }
       }
     }
 
@@ -287,7 +358,7 @@ export const useBrowseFiltersAPI = () => {
   const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
   
   // Use dynamic max price based on user's currency
-  const MAX_PRICE = getMaxPriceForCurrency(countryInfo.currency);
+  const MAX_PRICE = getMaxPriceForCurrency(countryInfo?.currency || 'AUD');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, MAX_PRICE]);
   const [availableTasksOnly, setAvailableTasksOnly] = useState(false);
   const [showTasksWithNoOffers, setShowTasksWithNoOffers] = useState(false);
@@ -309,8 +380,8 @@ export const useBrowseFiltersAPI = () => {
   // Log country detection status
   useEffect(() => {
     console.log('🌍 [useBrowseFiltersAPI] User country detected:', {
-      countryName: countryInfo.countryName,
-      countryCode: countryInfo.countryCode,
+      countryName: countryInfo?.countryName || 'Unknown',
+      countryCode: countryInfo?.countryCode || 'Unknown',
       isDetecting: isDetectingCountry,
     });
   }, [countryInfo, isDetectingCountry]);
@@ -596,7 +667,7 @@ export const useBrowseFiltersAPI = () => {
       debouncedSearchText: debouncedSearchText.trim(),
       isSearching,
       activeAPI: shouldUseFilterAPI ? 'FILTER' : 'SEARCH',
-      userCountry: countryInfo.countryName,
+      userCountry: countryInfo?.countryName || 'Unknown',
       sampleTask: baseTasks[0] ? {
         id: baseTasks[0]._id,
         title: baseTasks[0].title,
@@ -611,12 +682,10 @@ export const useBrowseFiltersAPI = () => {
       tasksWithOffers: baseTasks.filter(t => (t.offerCount || 0) > 0).length
     });
 
-    // FIRST: Apply country-based filtering (filter tasks by user's location)
-    // This ensures users only see tasks from their country
-    if (countryInfo.countryName && !isDetectingCountry) {
-      baseTasks = filterTasksByCountry(baseTasks, countryInfo.countryName);
-      console.log('🌍 After country filter:', baseTasks.length, 'tasks for', countryInfo.countryName);
-    }
+    // Backend already handles location-based filtering correctly
+    // Frontend country filtering is disabled to prevent filtering out valid tasks
+    // that backend has already validated based on coordinates and location
+    console.log('🌍 Using backend-filtered tasks:', baseTasks.length, 'tasks');
     
     // CRITICAL: If user is typing (searchText exists but debounced hasn't caught up),
     // apply client-side filtering immediately with the current searchText
@@ -640,7 +709,7 @@ export const useBrowseFiltersAPI = () => {
     // Fallback: apply client-side filter
     console.log('⚠️ Fallback - applying client-side filter');
     return filterTasksBySearch(baseTasks, searchText || debouncedSearchText);
-  }, [tasksWithOfferCounts, searchText, debouncedSearchText, shouldUseFilterAPI, isSearching, countryInfo.countryName, isDetectingCountry]);
+  }, [tasksWithOfferCounts, searchText, debouncedSearchText, shouldUseFilterAPI, isSearching, countryInfo?.countryName, isDetectingCountry]);
   
   // Calculate loading state properly:
   // - Show loading during typing (debounce period)
@@ -670,7 +739,7 @@ export const useBrowseFiltersAPI = () => {
     isLoading,
     searchText: searchText.trim(),
     debouncedSearchText: debouncedSearchText.trim(),
-    userCountry: countryInfo.countryName,
+    userCountry: countryInfo?.countryName || 'Unknown',
   });
   const error = shouldUseFilterAPI ? filterError : searchError;
   const refetch = shouldUseFilterAPI ? filterRefetch : searchRefetch;
@@ -785,8 +854,8 @@ export const useBrowseFiltersAPI = () => {
     useSearchAPI: !shouldUseFilterAPI,
     activeAPI: shouldUseFilterAPI ? 'FILTER' : 'SEARCH',
     // User's detected country for location-based filtering
-    userCountry: countryInfo.countryName,
-    userCountryCode: countryInfo.countryCode,
+    userCountry: countryInfo?.countryName || 'Unknown',
+    userCountryCode: countryInfo?.countryCode || 'AU',
     isDetectingCountry,
   };
 };

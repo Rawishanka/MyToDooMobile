@@ -29,6 +29,7 @@ const isExpoGo = Constants.appOwnership === 'expo';
 let firebase: any = null;
 let db: any = null;
 let fcm: any = null;
+let auth: any = null;
 
 // Try to load React Native Firebase (only works in native builds)
 if (!isExpoGo) {
@@ -49,12 +50,23 @@ if (!isExpoGo) {
     firebase = firebaseApp;
     db = firebaseFirestore();
     fcm = firebaseMessaging();
+    
+    // Try to load Firebase Auth module (but don't initialize yet to avoid crashes)
+    try {
+      const firebaseAuth = require('@react-native-firebase/auth').default;
+      auth = firebaseAuth; // Store the module, not the instance
+      console.log('🔥 Firebase Auth module loaded (will initialize on demand)');
+    } catch (authError) {
+      console.log('ℹ️ Firebase Auth module not available - Google Sign-In will be disabled');
+      auth = null;
+    }
   } catch (error) {
     console.log('⚠️ React Native Firebase not available - using Expo mode');
+    console.error('Firebase initialization error:', error);
   }
 } else {
   console.log('📱 Running in Expo Go - Firebase native modules not available');
 }
 
-export { db, fcm };
+export { auth, db, fcm };
 export default firebase;

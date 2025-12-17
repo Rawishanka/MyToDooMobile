@@ -1,4 +1,5 @@
 import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
+import { auth } from '@/src/config/firebase';
 import { useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
 import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
 import { USER_PROFILE_QUERY_KEYS } from '@/src/shared/hooks/useUserProfileApi';
@@ -10,10 +11,7 @@ import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
-import * as Google from 'expo-auth-session/providers/google';
-import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -31,11 +29,6 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
-
-WebBrowser.maybeCompleteAuthSession();
-
-// Warm up the browser for better OAuth performance
-WebBrowser.warmUpAsync();
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -55,31 +48,10 @@ export default function LoginScreen() {
   const postTaskMutation = useCreateTask();
   const { pendingAction } = usePendingActionStore();
 
-  // Get Google Client ID from environment
-  const googleClientId = Constants.expoConfig?.extra?.googleClientId || process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
-
-  // Use the correct owner from app.config.ts
-  const owner = Constants.expoConfig?.owner || 'janidu5678';
-  const slug = Constants.expoConfig?.slug || 'MyToDooMobile';
+  // Check if Firebase Auth is available (native build only)
+  const isFirebaseAvailable = !!auth;
   
-  // Always use Expo auth proxy for better compatibility
-  const redirectUri = `https://auth.expo.io/@${owner}/${slug}`;
-  
-  console.log('📱 Redirect URI for Google OAuth:', redirectUri);
-  console.log('🔐 Google Client ID:', googleClientId ? 'Configured' : 'Not configured');
-  console.log('🔐 Google Sign-In Configuration:', {
-    'Client ID': googleClientId,
-    'Redirect URI': redirectUri,
-    'Owner': owner,
-    'Slug': slug,
-  });
-  
-  // Configure Google Sign-In - Use Web Client ID for mobile
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: googleClientId,
-    redirectUri: redirectUri,
-    scopes: ['openid', 'profile', 'email'],
-  });
+  console.log('🔐 Firebase Auth Status:', isFirebaseAvailable ? 'Available' : 'Not Available (Expo Go)');
 
   // Load saved credentials on mount
   useEffect(() => {
@@ -196,70 +168,6 @@ export default function LoginScreen() {
       setGoogleLoading(false);
     }
   }, [googleSignIn, clearCachesOnLogin, queryClient, router]);
-
-  // Handle Google Sign-In response
-  useEffect(() => {
-    if (!response) return;
-
-    console.log('🔍 Google OAuth Response:', {
-      type: response.type,
-      params: (response as any).params,
-      error: (response as any).error,
-    });
-
-    if (response?.type === 'success') {
-      const { id_token, authentication } = (response as any).params;
-      const token = id_token || authentication?.idToken;
-      
-      if (token) {
-        handleGoogleSignInSuccess(token);
-      } else {
-        console.log('⚠️ No ID token in response:', (response as any).params);
-        Alert.alert(
-          'Authentication Failed',
-          'Unable to complete Google Sign-In. The authentication token was not received.\n\nPlease try again or use email/password login.',
-          [{ text: 'OK' }]
-        );
-        setGoogleLoading(false);
-      }
-    } else if (response?.type === 'error') {
-      console.log('❌ Google Sign-In error:', (response as any).error?.message || 'Unknown error');
-      setGoogleLoading(false);
-      
-      // Check for specific error
-      const errorMsg = (response as any).error?.message || '';
-      const errorDescription = (response as any).error?.description || '';
-      
-      if (errorMsg.includes('invalid_request') || errorMsg.includes('400')) {
-        Alert.alert(
-          'Configuration Error',
-          'Google Sign-In is not properly configured.\n\nPlease use email/password login or contact support.',
-          [{ text: 'OK' }]
-        );
-      } else if (errorMsg.includes('access_denied') || errorDescription.includes('access_denied')) {
-        Alert.alert(
-          'Access Denied',
-          'Google Sign-In was denied. Please grant the necessary permissions or try email/password login.',
-          [{ text: 'OK' }]
-        );
-      } else if (errorMsg.includes('network') || errorMsg.includes('timeout')) {
-        Alert.alert(
-          'Connection Problem',
-          'Unable to connect to Google services. Please check your internet connection and try again.',
-          [{ text: 'OK' }]
-        );
-      } else {
-        Alert.alert(
-          'Google Sign-In Failed',
-          'Unable to sign in with Google. Please try again or use email/password login.',
-          [{ text: 'OK' }]
-        );
-      }
-    } else if (response?.type === 'dismiss' || response?.type === 'cancel') {
-      console.log('ℹ️ User cancelled Google Sign-In');
-      setGoogleLoading(false);
-    }
-  }, [response, handleGoogleSignInSuccess]);
 
   // Helper function to check if there's a pending task
   const hasPendingTask = () => {
@@ -577,60 +485,49 @@ export default function LoginScreen() {
     try {
       setGoogleLoading(true);
       
-      // Validate Google configuration
-      if (!googleClientId) {
+      // Check if Firebase Auth is available (only in APK, not Expo Go)
+      if (!isFirebaseAvailable) {
         Alert.alert(
-          'Setup Required',
-          'Google Sign-In is not configured for this app. Please use email/password login or contact support.',
-          [{ text: 'OK' }]
-        );
-        setGoogleLoading(false);
-        return;
-      }
-
-      if (!request) {
-        Alert.alert(
-          'Not Ready',
-          'Google Sign-In is initializing. Please wait a moment and try again.',
+          '📱 Native Build Required',
+          'Google Sign-In requires native Firebase modules and only works in APK builds.\n\n✅ You can use email/password login in Expo Go.',
           [{ text: 'OK' }]
         );
         setGoogleLoading(false);
         return;
       }
       
-      // Log configuration for debugging
-      console.log('🔐 Initiating Google Sign-In...');
-      console.log('Client ID:', googleClientId.substring(0, 20) + '...');
-      console.log('Redirect URI:', redirectUri);
+      console.log('🔐 Starting Firebase Google Sign-In...');
       
-      // Trigger Google Sign-In flow
-      const result = await promptAsync();
-      console.log('Google Sign-In result type:', result?.type);
+      // Import Firebase Auth service
+      const { signInWithGoogle } = await import('@/src/services/firebase-auth-service');
+      
+      // Get Firebase ID Token (Firebase SDK handles everything!)
+      const firebaseIdToken = await signInWithGoogle();
+      console.log('✅ Got Firebase ID Token');
+      
+      // Send to backend /users/firebase-auth
+      await handleGoogleSignInSuccess(firebaseIdToken);
       
     } catch (error: any) {
-      console.log('❌ Google Sign-In Error:', error?.message || 'Unknown error');
+      console.log('❌ Firebase Google Sign-In Error:', error?.message || 'Unknown error');
+      console.log('Error code:', error?.code);
       
-      const errorMessage = error?.message || '';
+      let errorMessage = 'Unable to complete Google Sign-In. Please try again.';
       
-      if (errorMessage.includes('network') || errorMessage.includes('Network')) {
-        Alert.alert(
-          'Connection Error',
-          'Unable to connect to Google. Please check your internet connection and try again.',
-          [{ text: 'OK' }]
-        );
-      } else if (errorMessage.includes('popup') || errorMessage.includes('Popup')) {
-        Alert.alert(
-          'Browser Error',
-          'Unable to open Google Sign-In. Please try again or use email/password login.',
-          [{ text: 'OK' }]
-        );
-      } else {
-        Alert.alert(
-          'Sign-In Error',
-          'Unable to complete Google Sign-In. Please try again or use email/password login.',
-          [{ text: 'OK' }]
-        );
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        errorMessage = 'An account already exists with the same email address.';
+      } else if (error.code === 'auth/invalid-credential') {
+        errorMessage = 'Invalid Google credentials. Please try again.';
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Network error. Please check your internet connection.';
+      } else if (error.code === -5) {
+        // User cancelled
+        console.log('User cancelled Google Sign-In');
+        setGoogleLoading(false);
+        return;
       }
+      
+      Alert.alert('Sign-In Error', errorMessage, [{ text: 'OK' }]);
     } finally {
       setGoogleLoading(false);
     }
@@ -779,7 +676,7 @@ export default function LoginScreen() {
           <TouchableOpacity 
             style={styles.googleButton} 
             onPress={handleGoogleSignIn} 
-            disabled={googleLoading || loading || !request}
+            disabled={googleLoading || loading}
           >
             {googleLoading ? (
               <ActivityIndicator color="#666" />

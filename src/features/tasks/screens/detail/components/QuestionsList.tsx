@@ -397,6 +397,16 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                             size={22} 
                             color="#007AFF" 
                           />
+                          
+                          {/* Image Preview Thumbnail */}
+                          {attachment.resourceType === 'image' && (attachment.url || attachment.secureUrl) && (
+                            <Image 
+                              source={{ uri: attachment.secureUrl || attachment.url }}
+                              style={styles.attachmentThumbnail}
+                              resizeMode="cover"
+                            />
+                          )}
+                          
                           <Text style={styles.attachmentName} numberOfLines={1}>
                             {attachment.fileId?.split('/').pop() || 'Attachment'}
                           </Text>
@@ -456,6 +466,16 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                                 size={20} 
                                 color="#4CAF50" 
                               />
+                              
+                              {/* Image Preview Thumbnail */}
+                              {attachment.resourceType === 'image' && (attachment.url || attachment.secureUrl) && (
+                                <Image 
+                                  source={{ uri: attachment.secureUrl || attachment.url }}
+                                  style={styles.answerAttachmentThumbnail}
+                                  resizeMode="cover"
+                                />
+                              )}
+                              
                               <Text style={styles.answerAttachmentName} numberOfLines={1}>
                                 {attachment.fileId?.split('/').pop() || 'Attachment'}
                               </Text>
@@ -845,6 +865,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#B3D9FF',
   },
+  attachmentThumbnail: {
+    width: 50,
+    height: 50,
+    borderRadius: 6,
+    marginLeft: 10,
+    marginRight: 6,
+    backgroundColor: '#f0f0f0',
+  },
   attachmentName: {
     fontSize: 14,
     color: '#1a1a1a',
@@ -868,6 +896,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#A5D6A7',
+  },
+  answerAttachmentThumbnail: {
+    width: 50,
+    height: 50,
+    borderRadius: 6,
+    marginLeft: 10,
+    marginRight: 6,
+    backgroundColor: '#f0f0f0',
   },
   answerAttachmentName: {
     fontSize: 14,

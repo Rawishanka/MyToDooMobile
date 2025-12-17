@@ -1,6 +1,5 @@
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
-import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 interface PaymentDetailsProps {
@@ -25,7 +24,7 @@ export default function PaymentDetails({
   taskLocation,
 }: PaymentDetailsProps) {
   // Use user's current location for currency display (auto geo-location)
-  const { countryInfo } = useLocationCountry();
+  const { countryInfo, isInitialized } = useLocationCountry();
   const currencyInfo = getCurrencyFromUserLocation(countryInfo);
   
   return (
@@ -50,7 +49,7 @@ export default function PaymentDetails({
         <View style={styles.row}>
           <Text style={styles.label}>Agreed Amount:</Text>
           <Text style={styles.amount}>
-            {amount ? formatCurrency(amount, currencyInfo) : 'N/A'}
+            {!isInitialized ? 'Loading...' : (amount ? formatCurrency(amount, currencyInfo) : 'N/A')}
           </Text>
         </View>
         

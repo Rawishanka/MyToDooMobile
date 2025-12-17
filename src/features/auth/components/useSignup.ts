@@ -641,29 +641,14 @@ export const useSignup = () => {
       setGoogleLoading(true);
       console.log('🔐 Starting Google Sign-In for signup...');
       
-      if (!googleClientId) {
-        Alert.alert(
-          'Configuration Error',
-          'Google Sign-In is not configured. Please contact support.',
-          [{ text: 'OK' }]
-        );
-        return;
-      }
-      
-      if (!googleRequest) {
-        console.error('❌ Google request not ready');
-        Alert.alert('Error', 'Google Sign-In is not ready. Please try again.');
-        return;
-      }
-      
-      console.log('🔐 Google Sign-In Configuration:');
-      console.log('Client ID:', googleClientId);
-      console.log('Redirect URI:', redirectUri);
-      console.log('Request ready:', !!googleRequest);
-      
-      console.log('🚀 Prompting Google OAuth...');
-      const result = await promptGoogleAsync();
-      console.log('Google Sign-In result:', result);
+      // Show message that Google Sign-In requires APK build
+      Alert.alert(
+        '📱 Native Build Required',
+        'Google Sign-In/Sign-Up requires native Firebase modules and only works in APK builds.\n\n✅ You can still create an account with email/password in Expo Go.\n\n🔧 To use Google Sign-Up:\n1. Build APK with: eas build --platform android\n2. Install APK on device\n3. Test Google Sign-Up',
+        [{ text: 'OK, I Understand' }]
+      );
+      setGoogleLoading(false);
+      return;
       
     } catch (error: any) {
       if (__DEV__) {

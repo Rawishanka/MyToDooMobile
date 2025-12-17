@@ -1,6 +1,5 @@
-import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { cardStyles, colors } from '@/src/shared/theme';
-import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
+import { formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -38,9 +37,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   showMapButton = true,
   variant = 'default',
 }) => {
-  // Use current user's location for currency auto-detection
-  const { countryInfo } = useLocationCountry();
-  
   // Helper function to parse location if it's a string
   const parseLocation = (location: any) => {
     if (!location) return null;
@@ -170,11 +166,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   const locationInfo = getLocationInfo();
   
-  // Use user's current location currency for auto geo-location feature
-  const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
+  // Use task's original currency and formatted budget from backend
+  // If backend provides formattedBudget, use it directly
+  // Otherwise, format using task's original currency
   const formattedBudget = task.formattedBudget || 
-    (task.budget ? formatCurrency(task.budget, userCurrencyInfo) : 
-    `${userCurrencyInfo.symbol}0.00`);
+    (task.budget && task.currency ? formatCurrency(task.budget, { code: task.currency, symbol: getCurrencySymbol(task.currency) }) : 
+    'Budget not specified');
 
   // Compact variant (for lists with many items)
   if (variant === 'compact') {

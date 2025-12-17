@@ -3,12 +3,15 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Linking,
+    Platform,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 // API and Hooks
@@ -20,13 +23,13 @@ import NotificationModal from '@/src/features/messages/screens/notification-scre
 import { TaskCard } from '@/src/features/tasks/components';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import {
-  FilterButton,
-  FilterModal,
-  MapView,
-  SearchBar,
-  SortButton,
-  SortModal,
-  ViewModeToggle
+    FilterButton,
+    FilterModal,
+    MapView,
+    SearchBar,
+    SortButton,
+    SortModal,
+    ViewModeToggle
 } from './components';
 
 // Network components
@@ -311,16 +314,6 @@ export default function BrowseTasksScreen() {
         </View>
       )}
 
-      {/* Location Indicator - Shows which country's tasks are being displayed */}
-      {userCountry && !isDetectingCountry && (
-        <View style={styles.locationIndicator}>
-          <Ionicons name="location" size={14} color="#007bff" />
-          <Text style={styles.locationIndicatorText}>
-            Showing tasks in {userCountry}
-          </Text>
-        </View>
-      )}
-
       {/* Filter & Sort Row */}
       <View style={styles.filterSortRow}>
         <FilterButton 
@@ -353,8 +346,40 @@ export default function BrowseTasksScreen() {
                       params: { taskId }
                     });
                   } else if (action === 'openInMaps') {
-                    // Open in device maps app - could implement later
-                    console.log('Open in Maps for task:', taskId);
+                    // Find the task to get its coordinates
+                    const task = filteredAndSortedTasks.find(t => t._id === taskId);
+                    const coordinates = task?.location?.coordinates as { type: string; coordinates: [number, number] } | undefined;
+                    if (task && coordinates && 'coordinates' in coordinates && Array.isArray(coordinates.coordinates)) {
+                      const [longitude, latitude] = coordinates.coordinates;
+                      const label = encodeURIComponent(task.title || 'Task Location');
+                      
+                      // Create Google Maps URL with coordinates
+                      const googleMapsUrl = Platform.select({
+                        ios: `maps://app?daddr=${latitude},${longitude}&q=${label}`,
+                        android: `geo:${latitude},${longitude}?q=${latitude},${longitude}(${label})`,
+                      });
+                      
+                      // Fallback to browser Google Maps
+                      const browserUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+                      
+                      console.log('📍 Opening maps for task:', { taskId, title: task.title, latitude, longitude });
+                      
+                      // Try to open native maps app first
+                      Linking.canOpenURL(googleMapsUrl!).then((supported) => {
+                        if (supported) {
+                          return Linking.openURL(googleMapsUrl!);
+                        } else {
+                          // Fallback to browser
+                          return Linking.openURL(browserUrl);
+                        }
+                      }).catch((err) => {
+                        console.error('Error opening maps:', err);
+                        Alert.alert('Error', 'Could not open maps application');
+                      });
+                    } else {
+                      console.warn('⚠️ Task location not available:', taskId);
+                      Alert.alert('Location Unavailable', 'This task does not have location coordinates');
+                    }
                   }
                 }}
               />

@@ -30,10 +30,12 @@ export interface FCMInitializationStatus {
  * 
  * Usage in _layout.tsx:
  * ```tsx
- * const { isInitialized, isRegistered, hasPermission } = useInitializeFCM();
+ * const { isInitialized, isRegistered, hasPermission } = useInitializeFCM(queryClient);
  * ```
+ * 
+ * @param queryClient - React Query QueryClient for real-time cache invalidation
  */
-export const useInitializeFCM = () => {
+export const useInitializeFCM = (queryClient?: any) => {
   const isAuthenticated = useAuthStore((state) => !!state.user);
   const [status, setStatus] = useState<FCMInitializationStatus>({
     isInitialized: false,
@@ -90,9 +92,9 @@ export const useInitializeFCM = () => {
         console.log('🚀 Initializing Push Notifications...');
         console.log(`🔍 Mode: ${env.usingFirebase ? 'Firebase FCM (Native)' : 'Expo Push Notifications'}`);
 
-        // Step 1: Setup notification handlers
-        setupNotificationHandlers();
-        console.log('✅ Notification handlers set up');
+        // Step 1: Setup notification handlers with QueryClient for real-time sync
+        setupNotificationHandlers(queryClient);
+        console.log('✅ Notification handlers set up with real-time sync');
 
         // Step 2: Request permissions (CRITICAL FOR ANDROID 13+)
         console.log('📱 Requesting notification permissions...');

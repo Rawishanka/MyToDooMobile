@@ -16,6 +16,11 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
     onPress(message);
   }, [message, onPress]);
 
+  // Memoize avatar URL to ensure it's always valid
+  const avatarUri = React.useMemo(() => {
+    return message.avatar || 'https://ui-avatars.com/api/?name=User&background=007AFF&color=fff&size=100';
+  }, [message.avatar]);
+
   return (
     <TouchableOpacity 
       style={[
@@ -27,9 +32,15 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
     >
       <View style={styles.avatarContainer}>
         <Image 
-          source={{ uri: message.avatar || 'https://ui-avatars.com/api/?name=User&background=007AFF&color=fff&size=100' }} 
+          source={{ uri: avatarUri }} 
           style={styles.avatar}
           resizeMode="cover"
+          onError={(e) => {
+            // Silently handle image load errors - fallback URL will be used
+            if (__DEV__) {
+              console.log('Avatar load fallback for:', message.title);
+            }
+          }}
         />
         {message.unreadCount && message.unreadCount > 0 && (
           <View style={styles.unreadDot} />

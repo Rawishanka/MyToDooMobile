@@ -1,6 +1,5 @@
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
-import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 interface TaskSummaryCardProps {
@@ -19,8 +18,29 @@ export default function TaskSummaryCard({
   budget 
 }: TaskSummaryCardProps) {
   // Use user's current location for currency display (auto geo-location)
-  const { countryInfo } = useLocationCountry();
+  const { countryInfo, isInitialized } = useLocationCountry();
   const currencyInfo = getCurrencyFromUserLocation(countryInfo);
+  
+  // Show loading state while currency is being determined
+  if (!isInitialized) {
+    return (
+      <View style={styles.taskSummary}>
+        <Text style={styles.taskTitle}>{title}</Text>
+        {creatorFirstName && creatorLastName && (
+          <Text style={styles.taskCreator}>
+            Posted by {creatorFirstName} {creatorLastName}
+          </Text>
+        )}
+        <Text style={styles.taskLocation}>
+          {location || 'Location not specified'}
+        </Text>
+        <View style={styles.budgetContainer}>
+          <Text style={styles.budgetLabel}>Budget:</Text>
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </View>
+    );
+  }
   
   return (
     <View style={styles.taskSummary}>
@@ -78,5 +98,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#28a745',
     fontWeight: '700',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#999',
+    fontStyle: 'italic',
   },
 });

@@ -24,7 +24,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   refetch, // Added refetch prop
 }) => {
   // Use current user's location for currency auto-detection
-  const { countryInfo } = useLocationCountry();
+  const { countryInfo, isInitialized } = useLocationCountry();
   
   // Helper: Format date for display
   const formatTaskDate = (date: string | undefined) => {
@@ -845,6 +845,9 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         <View style={styles.budgetInfo}>
           <Text style={styles.budgetAmount}>
             {(() => {
+              if (!isInitialized || !countryInfo) {
+                return 'Loading...';
+              }
               const budget = task.budget;
               // Use user's current location for currency display (auto geo-location)
               const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);

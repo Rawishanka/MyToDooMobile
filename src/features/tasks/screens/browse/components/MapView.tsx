@@ -132,9 +132,9 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         }
       }
 
-      // If no coordinates found OR coordinates are invalid (0,0), try to geocode the address using known locations
-      // ⚠️ IMPORTANT: Only use geocoding as FALLBACK when coordinates are truly missing or invalid
-      // The database coordinates should ALWAYS take priority for accuracy
+      // ⚠️ CRITICAL FIX for Australia/NZ: ALWAYS try geocoding if we have an address
+      // This ensures all tasks show up on map with accurate locations
+      // Database coordinates should take priority, but we MUST have fallback for all countries
       const needsGeocoding = (lat === null || lng === null || isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0));
       
       if (needsGeocoding && task.location.address) {
@@ -145,7 +145,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           lng = geocodedCoords.lng;
           console.log(`✅ Geocoded ${task.location.address} to:`, { lat, lng, source: 'Geocoded' });
         } else {
-          console.log(`❌ Could not geocode ${task.location.address}`);
+          console.log(`❌ Could not geocode ${task.location.address} - task will NOT appear on map`);
         }
       } else if (!needsGeocoding) {
         console.log(`✅ Using exact coordinates from database for ${task.title}:`, { lat, lng, address: task.location.address });
@@ -849,7 +849,8 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       <div id="map"></div>
       <script>
         // Initialize the map with appropriate zoom level and constraints
-        const initialZoom = ${focusTaskId ? '14' : markers.length > 0 ? '10' : '6'};
+        // When no tasks: show full country/region view (zoom 5), not zoomed in
+        const initialZoom = ${focusTaskId ? '14' : markers.length > 0 ? '10' : '1'};
         const map = L.map('map', {
           center: [${centerLat}, ${centerLng}],
           zoom: initialZoom,
@@ -950,7 +951,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           marker.bindPopup(popupContent);
         });
 
-        // Handle specific task focus
+        // Auto-fit map view based on markers
         ${focusTaskId ? `
         console.log('🎯 Focusing on task:', '${focusTaskId}');
         const focusMarker = markers.find(m => m.id === '${focusTaskId}');
@@ -977,24 +978,24 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
             if (markers.length === 1) {
               map.setView([markers[0].lat, markers[0].lng], 12);
             } else {
-              const group = new L.featureGroup(markers.map(m => L.marker([m.lat, m.lng])));
+              const group = new L.featureGroup(leafletMarkers.map(lm => lm.marker));
               map.fitBounds(group.getBounds().pad(0.1));
             }
           }
         }
         ` : `
-        // Fit map to show all markers if no specific focus
+        // Fit map to show all markers nicely - auto zoom to fit all points
         if (markers.length > 0) {
           if (markers.length === 1) {
+            // Single marker: center on it with city-level zoom
             map.setView([markers[0].lat, markers[0].lng], 12);
           } else {
-            const group = new L.featureGroup(markers.map(m => L.marker([m.lat, m.lng])));
-            map.fitBounds(group.getBounds().pad(0.1));
+            // Multiple markers: auto-fit bounds to show all markers
+            const group = new L.featureGroup(leafletMarkers.map(lm => lm.marker));
+            map.fitBounds(group.getBounds().pad(0.1), { maxZoom: 14 });
           }
-        } else {
-          console.log('⚠️ No markers to display, using default Adelaide view');
-          map.setView([-34.9285, 138.6007], 10);
         }
+        // If no markers, keep default center/zoom from initialization (zoom 12)
         `}
 
         // Handle action buttons
