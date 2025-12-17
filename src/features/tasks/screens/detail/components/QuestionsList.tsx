@@ -181,35 +181,29 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
 
   // Helper function to check if user can answer a specific question
   const canUserAnswerQuestion = (question: any): boolean => {
-    // Allow both task creators and taskers to answer questions
     if (!currentUserId || !taskCreatorId) {
       console.log('❌ Missing user IDs - currentUserId:', currentUserId, 'taskCreatorId:', taskCreatorId);
       return false;
     }
     
-    // Check if current user is the task creator (poster)
+    // Get the ID of who asked this question
+    const questionAskerId = question.askedBy?._id || question.userId || question.user?._id;
+    
+    // 1. User can always answer their own question
+    const isQuestionAsker = currentUserId === questionAskerId;
+    if (isQuestionAsker) {
+      console.log('✅ User can answer their own question:', currentUserId);
+      return true;
+    }
+    
+    // 2. Check if current user is the task creator (poster)
     const isTaskCreator = currentUserId === taskCreatorId;
     
-    // Enhanced debugging for task offers
-    console.log('🔍 Debugging taskOffers for user permission:', {
-      currentUserId,
-      taskOffersLength: taskOffers.length,
-      taskOffers: taskOffers.map((offer: any) => ({
-        offerId: offer._id,
-        taskTakerId: offer.taskTakerId,
-        userId: offer.userId,
-        user: offer.user,
-        userFromOffer: offer.user?._id,
-        directUserId: offer.userId,
-        taskTakerIdObj: offer.taskTakerId?._id,
-        taskTakerName: offer.taskTakerId?.firstName + ' ' + offer.taskTakerId?.lastName
-      }))
-    });
+    // 3. Check if the question was asked by the poster
+    const wasAskedByPoster = questionAskerId === taskCreatorId;
     
-    // Check if current user is a tasker (has made an offer on this task)
-    // Try multiple possible user ID fields in offers
+    // 4. Check if current user is a tasker (has made an offer on this task)
     const isTasker = taskOffers.some((offer: any) => {
-      // Try all possible ways to identify the user in an offer
       const possibleUserIds = [
         offer.user?._id,
         offer.userId,
@@ -232,28 +226,27 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
       return matches;
     });
     
-    // Check if user asked the question (they can answer their own questions too)
-    const isQuestionAsker = currentUserId === (question.askedBy?._id || question.userId || question.user?._id);
-    
-    // For Q&A functionality, allow any authenticated user to answer questions
-    // This ensures better collaboration and participation
-    const isAuthenticatedUser = !!currentUserId;
-    
-    console.log('✅ Permission check for question', question._id, ':', {
+    console.log('🔍 Permission check for question', question._id, ':', {
+      questionAskerId,
+      wasAskedByPoster,
       isTaskCreator,
       isTasker,
-      isQuestionAsker,
-      isAuthenticatedUser,
       currentUserId,
-      taskCreatorId,
-      offersCount: taskOffers.length,
-      questionAskedBy: question.askedBy?._id || question.userId || question.user?._id,
-      finalDecision: isTaskCreator || isTasker || isQuestionAsker || isAuthenticatedUser
+      taskCreatorId
     });
     
-    // Allow task creator, taskers who made offers, question askers, or any authenticated user to answer
-    // This ensures the Q&A system is open and collaborative
-    return isTaskCreator || isTasker || isQuestionAsker || isAuthenticatedUser;
+    // RULE 1: If poster asked the question → All taskers and poster can answer
+    if (wasAskedByPoster) {
+      const canAnswer = isTaskCreator || isTasker;
+      console.log('📋 Poster asked question - taskers can answer:', canAnswer);
+      return canAnswer;
+    }
+    
+    // RULE 2: If tasker asked the question → Only poster can answer
+    // (The asker themselves can also answer, but that's handled in step 1)
+    const canAnswer = isTaskCreator;
+    console.log('👤 Tasker asked question - only poster can answer:', canAnswer);
+    return canAnswer;
   };
 
   // Helper function to check if question has an answer
