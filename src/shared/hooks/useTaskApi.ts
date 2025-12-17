@@ -870,8 +870,16 @@ export function usePostTaskQuestion() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ taskId, question }: { taskId: string; question: string }) => 
-      TaskAPI.postTaskQuestion(taskId, question),
+    mutationFn: ({ 
+      taskId, 
+      question, 
+      files 
+    }: { 
+      taskId: string; 
+      question: string;
+      files?: { uri: string; name: string; type: string }[];
+    }) => 
+      TaskAPI.postTaskQuestion(taskId, question, files),
     onSuccess: (data, variables) => {
       console.log('✅ Question posted successfully, invalidating queries');
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.questions(variables.taskId) });
@@ -901,8 +909,18 @@ export function useAnswerTaskQuestion() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ taskId, questionId, answer }: { taskId: string; questionId: string; answer: string }) => 
-      TaskAPI.answerTaskQuestion(taskId, questionId, answer),
+    mutationFn: ({ 
+      taskId, 
+      questionId, 
+      answer,
+      files
+    }: { 
+      taskId: string; 
+      questionId: string; 
+      answer: string;
+      files?: { uri: string; name: string; type: string }[];
+    }) => 
+      TaskAPI.answerTaskQuestion(taskId, questionId, answer, files),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.questions(variables.taskId) });
     },

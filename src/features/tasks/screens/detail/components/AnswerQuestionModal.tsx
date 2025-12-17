@@ -3,15 +3,15 @@ import { useAnswerTaskQuestion } from '@/src/shared/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 interface AnswerQuestionModalProps {
@@ -67,20 +67,18 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
         attachments: attachments.length,
       });
 
-      // TODO: Update API to support attachments
-      // For now, we'll include attachment info in the answer text if there are any
-      let finalAnswer = answer.trim();
-      if (attachments.length > 0) {
-        const attachmentInfo = attachments.map(att => 
-          `📎 ${att.type === 'image' ? '🖼️' : '📄'} ${att.name}`
-        ).join('\n');
-        finalAnswer += `\n\nAttached files:\n${attachmentInfo}`;
-      }
+      // Convert attachments to the format expected by the API
+      const files = attachments.map(att => ({
+        uri: att.uri,
+        name: att.name,
+        type: att.type === 'image' ? 'image/jpeg' : 'application/pdf'
+      }));
 
       await answerQuestionMutation.mutateAsync({
         taskId: questionTaskId,
         questionId: question._id,
-        answer: finalAnswer,
+        answer: answer.trim(),
+        files: files.length > 0 ? files : undefined,
       });
 
       console.log('✅ Answer posted successfully');
