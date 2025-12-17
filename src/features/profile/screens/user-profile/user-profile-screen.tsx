@@ -1,6 +1,6 @@
+import { useGetUserRatingStats } from '@/src/shared/hooks/useUserProfileApi';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useUserRating } from '../../hooks';
 import {
   ErrorState,
   LoadingState,
@@ -30,12 +30,13 @@ export default function UserProfileScreen() {
 
   // Get the user ID from userData
   const userId = userData?.user?._id || '';
+  const userName = userData?.user?.firstName || 'User';
   
-  // Use the user rating hook
+  // Use the rating stats hook (ReviewsList manages its own review fetching)
   const {
-    ratingData,
-    loading: ratingLoading,
-  } = useUserRating(userId);
+    data: ratingStatsData,
+    isLoading: ratingLoading,
+  } = useGetUserRatingStats(userId, !!userId);
 
   if (isLoading) {
     return <LoadingState />;
@@ -82,24 +83,25 @@ export default function UserProfileScreen() {
         <StatsCard stats={userData.stats} />
 
         {/* Rating and Reviews Section */}
-        {ratingData && (
+        {ratingStatsData && (
           <>
             <OverallRatingSection
-              averageRating={ratingData.stats.averageRating || 0}
-              totalReviews={ratingData.stats.totalReviews || 0}
-              ratingDistribution={ratingData.stats.ratingDistribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
+              averageRating={ratingStatsData.averageRating || 0}
+              totalReviews={ratingStatsData.totalReviews || 0}
+              ratingDistribution={ratingStatsData.ratingDistribution || {"5": 0, "4": 0, "3": 0, "2": 0, "1": 0}}
               completionRate={90}
               totalTasks={userData?.user?.completedTasks || 0}
             />
             
             <GetMoreReviewsSection 
               userId={userId}
+              userName={userName}
             />
           </>
         )}
 
         {/* Show default rating section when loading or no data */}
-        {!ratingData && !ratingLoading && (
+        {!ratingStatsData && !ratingLoading && (
           <>
             <OverallRatingSection
               averageRating={0}
@@ -111,12 +113,13 @@ export default function UserProfileScreen() {
             
             <GetMoreReviewsSection 
               userId={userId}
+              userName={userName}
             />
           </>
         )}
 
         {/* Reviews List - Manages its own data fetching */}
-        <ReviewsList />
+        {userId && <ReviewsList userId={userId} />}
 
         <TasksTabsSection
           activeTab={activeTab}
