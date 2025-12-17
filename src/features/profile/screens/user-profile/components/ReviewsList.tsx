@@ -1,7 +1,7 @@
 import { useGetUserReviews } from '@/src/shared/hooks/useUserProfileApi';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface Review {
   _id: string;
@@ -43,9 +43,14 @@ interface Review {
     respondedAt: string;
   };
   attachments?: {
+    fileId?: string;
     url: string;
+    secureUrl?: string;
     thumbnail?: string;
     resourceType: string;
+    format?: string;
+    size?: number;
+    uploadedAt?: string;
   }[];
   createdAt: string;
   updatedAt: string;
@@ -145,6 +150,33 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
         <Text style={styles.reviewComment}>{review.reviewText}</Text>
       )}
       
+      {/* Attachments */}
+      {review.attachments && review.attachments.length > 0 && (
+        <View style={styles.attachmentsContainer}>
+          <Text style={styles.attachmentsLabel}>Attachments:</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.attachmentsScroll}>
+            {review.attachments.map((attachment, index) => (
+              <View key={index} style={styles.attachmentItem}>
+                {attachment.resourceType === 'image' ? (
+                  <Image
+                    source={{ uri: attachment.url || attachment.secureUrl }}
+                    style={styles.attachmentImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.attachmentFile}>
+                    <Ionicons name="document-outline" size={32} color="#007AFF" />
+                    <Text style={styles.attachmentFileName} numberOfLines={1}>
+                      {attachment.format || 'file'}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+      
       {/* Response */}
       {review.response && (
         <View style={styles.responseContainer}>
@@ -171,7 +203,6 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
   const {
     data: reviewData,
     isLoading,
-    refetch,
   } = useGetUserReviews(userId, currentPage, limit, activeRole, !!userId);
 
   // Debug logging
@@ -209,10 +240,8 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
     setCurrentPage(1);
   };
 
-  // Refetch data when page changes
-  React.useEffect(() => {
-    refetch();
-  }, [currentPage, refetch]);
+  // React Query automatically refetches when query key changes (currentPage, activeRole)
+  // No need for manual refetch - removing to prevent infinite loop!
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
@@ -542,5 +571,44 @@ const styles = StyleSheet.create({
   totalReviewsText: {
     fontSize: 14,
     color: '#666',
+  },
+  attachmentsContainer: {
+    marginTop: 12,
+  },
+  attachmentsLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  attachmentsScroll: {
+    flexDirection: 'row',
+  },
+  attachmentItem: {
+    marginRight: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  attachmentImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    backgroundColor: '#F0F0F0',
+  },
+  attachmentFile: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    backgroundColor: '#F0F8FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  attachmentFileName: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+    textAlign: 'center',
   },
 });
