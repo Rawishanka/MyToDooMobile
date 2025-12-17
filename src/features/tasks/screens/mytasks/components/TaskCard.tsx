@@ -1515,7 +1515,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             </TouchableOpacity>
           </>
         ) : status === 'completed' && userRole === 'Poster' ? (
-          // Completed tab (Poster): View Receipt + Delete button only (no Rate & Review button)
+          // Completed tab (Poster): View Receipt button only (no Delete button, no Rate & Review button)
           // Rating happens through completion flow popup, not from completed tab
           <>
             <TouchableOpacity 
@@ -1533,23 +1533,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 name="receipt" 
                 size={20} 
                 color={isProcessing ? "#999" : "#007AFF"} 
-              />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[
-                styles.actionButton, 
-                styles.deleteButton, 
-                (deleteTaskMutation.isPending || isProcessing) && styles.disabledButton
-              ]} 
-              activeOpacity={0.6}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-              onPress={handleDeleteTask}
-              disabled={deleteTaskMutation.isPending || isProcessing}
-            >
-              <MaterialIcons 
-                name="delete" 
-                size={20} 
-                color={(deleteTaskMutation.isPending || isProcessing) ? "#999" : "#dc3545"} 
               />
             </TouchableOpacity>
           </>

@@ -174,7 +174,6 @@ export default function BrowseTasksScreen() {
     'Due date: Latest',
     'Newest tasks',
     'Oldest tasks',
-    'Closest to me',
   ];
 
   // Debug logging
@@ -315,7 +314,7 @@ export default function BrowseTasksScreen() {
       {/* Filter & Sort Row */}
       <View style={styles.filterSortRow}>
         <FilterButton 
-          activeFiltersCount={activeFiltersCount}
+          filteredTasksCount={filteredAndSortedTasks.length}
           onPress={() => setFilterVisible(true)}
         />
         <SortButton onPress={() => setSortVisible(true)} />

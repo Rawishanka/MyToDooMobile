@@ -19,7 +19,14 @@ import { isNetworkError } from '../utils/networkErrorHandler';
 export const TASK_QUERY_KEYS = {
   all: ['tasks'] as const,
   lists: () => [...TASK_QUERY_KEYS.all, 'list'] as const,
-  list: (filters: any) => [...TASK_QUERY_KEYS.lists(), { filters }] as const,
+  list: (filters: any) => {
+    // Normalize search query to lowercase for consistent cache keys
+    const normalizedFilters = { ...filters };
+    if (normalizedFilters.q && typeof normalizedFilters.q === 'string') {
+      normalizedFilters.q = normalizedFilters.q.toLowerCase().trim();
+    }
+    return [...TASK_QUERY_KEYS.lists(), { filters: normalizedFilters }] as const;
+  },
   details: () => [...TASK_QUERY_KEYS.all, 'detail'] as const,
   detail: (id: string) => [...TASK_QUERY_KEYS.details(), id] as const,
   myTasks: (params?: MyTasksParams) => [...TASK_QUERY_KEYS.all, 'my-tasks', params] as const,

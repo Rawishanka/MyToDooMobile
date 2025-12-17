@@ -2,7 +2,7 @@
 import { Task, TaskFilterParams, TaskSearchParams } from '@/src/api/types/tasks';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useFilterTasks, useSearchTasks } from '@/src/shared/hooks/useTaskApi';
-import * as Location from 'expo-location';
+import { getMaxPriceForCurrency } from '@/src/shared/utils/currency';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 export interface FilterState {
@@ -187,53 +187,61 @@ const filterTasksByCountry = (tasks: Task[], userCountry: string): Task[] => {
  */
 const filterTasksBySearch = (tasks: Task[], searchText: string): Task[] => {
   if (!searchText || searchText.trim().length === 0) {
+    console.log('🔍 No search text provided, returning all tasks:', tasks.length);
     return tasks;
   }
 
   const searchLower = searchText.toLowerCase().trim();
-  const searchTerms = searchLower.split(/\s+/); // Split by whitespace for multi-word search
+  const searchTerms = searchLower.split(/\s+/).filter(term => term.length > 0); // Split by whitespace, remove empty
 
   console.log('🔍 Search Filter Debug:', {
-    searchText,
+    originalSearch: searchText,
+    searchLower,
     searchTerms,
     totalTasks: tasks.length,
   });
 
-  // Multiple priority levels for title matching
+  // Multiple priority levels for matching
+  const titleExactMatch: Task[] = [];
   const titleStartsWith: Task[] = [];
-  const titleWholeWord: Task[] = [];
+  const titleWordMatch: Task[] = [];
   const titleContains: Task[] = [];
+  const locationMatches: Task[] = [];
   const otherMatches: Task[] = [];
 
   tasks.forEach((task) => {
-    const titleLower = (task.title || '').toLowerCase();
-    const titleWords = titleLower.split(/\s+/);
+    const titleLower = (task.title || '').toLowerCase().trim();
+    const titleWords = titleLower.split(/\s+/).filter(w => w.length > 0);
     
-    // Check different levels of title matching
-    let titleMatchLevel = 0; // 0=no match, 1=contains, 2=whole word, 3=starts with
+    let matched = false;
     
-    // Level 3: Title starts with search text (highest priority)
-    if (titleLower.startsWith(searchLower)) {
-      titleMatchLevel = 3;
+    // PRIORITY 1: Exact title match (ignoring case)
+    if (titleLower === searchLower) {
+      titleExactMatch.push(task);
+      console.log(`🏆 EXACT MATCH: "${task.title}" === "${searchText}"`);
+      matched = true;
+    }
+    // PRIORITY 2: Title starts with search text
+    else if (titleLower.startsWith(searchLower)) {
       titleStartsWith.push(task);
-      console.log(`🥇 TITLE STARTS WITH: "${task.title}" starts with "${searchText}"`);
+      console.log(`🥇 STARTS WITH: "${task.title}" starts with "${searchText}"`);
+      matched = true;
     }
-    // Level 2: Title contains search as whole word
-    else if (titleWords.some(word => word === searchLower || searchTerms.every(term => titleWords.some(w => w === term)))) {
-      titleMatchLevel = 2;
-      titleWholeWord.push(task);
-      console.log(`🥈 TITLE WHOLE WORD: "${task.title}" has whole word match for "${searchText}"`);
+    // PRIORITY 3: Any title word starts with search (for partial word matching)
+    else if (titleWords.some(word => word.startsWith(searchLower))) {
+      titleWordMatch.push(task);
+      console.log(`🥈 WORD STARTS: "${task.title}" has word starting with "${searchText}"`);
+      matched = true;
     }
-    // Level 1: Title contains search text anywhere
+    // PRIORITY 4: Title contains all search terms anywhere
     else if (searchTerms.every(term => titleLower.includes(term))) {
-      titleMatchLevel = 1;
       titleContains.push(task);
-      console.log(`🥉 TITLE CONTAINS: "${task.title}" contains "${searchText}"`);
+      console.log(`🥉 CONTAINS: "${task.title}" contains "${searchText}"`);
+      matched = true;
     }
 
-    // Only check other fields if NO title match at all
-    if (titleMatchLevel === 0) {
-      // Extract all location fields for searching
+    // PRIORITY 5: Location matches (only if no title match)
+    if (!matched) {
       const locationText = task.location ? [
         task.location.address || '',
         // @ts-ignore - Handle additional location fields that might exist
@@ -246,23 +254,30 @@ const filterTasksBySearch = (tasks: Task[], searchText: string): Task[] => {
         task.location.postcode || '',
         // @ts-ignore
         task.location.country || '',
-      ].filter(Boolean).join(' ') : '';
+      ].filter(Boolean).join(' ').toLowerCase() : '';
 
+      if (locationText && searchTerms.every(term => locationText.includes(term))) {
+        locationMatches.push(task);
+        console.log(`📍 LOCATION: "${task.title}" matched in location for "${searchText}"`);
+        matched = true;
+      }
+    }
+
+    // PRIORITY 6: Other fields (category, description, etc.) - only if no other match
+    if (!matched) {
       // Extract categories - handle both string array and object array
       const categoriesText = Array.isArray(task.categories) 
         ? task.categories.map(cat => 
             typeof cat === 'string' ? cat : (cat as any).name || ''
-          ).join(' ')
+          ).join(' ').toLowerCase()
         : '';
 
-      // Build searchable text from other fields (excluding title)
+      // Build searchable text from other fields (excluding title and location)
       const searchableFields = [
         task.details || '',
-        locationText,
         categoriesText,
         task.budget?.toString() || '',
         task.currency || '',
-        `${task.budget} ${task.currency}`,
         // @ts-ignore - Handle potential tags field
         ...(Array.isArray(task.tags) ? task.tags : []),
       ];
@@ -273,57 +288,78 @@ const filterTasksBySearch = (tasks: Task[], searchText: string): Task[] => {
         .replace(/\s+/g, ' '); // Normalize whitespace
 
       // Check if all search terms are found in other fields
-      const matchesOtherFields = searchTerms.every(term => combinedText.includes(term));
-      
-      if (matchesOtherFields) {
+      if (searchTerms.every(term => combinedText.includes(term))) {
         otherMatches.push(task);
-        console.log(`📋 OTHER FIELD MATCH: "${task.title}" matched in other fields for "${searchText}"`);
+        console.log(`📋 OTHER: "${task.title}" matched in other fields for "${searchText}"`);
+        matched = true;
       }
     }
   });
 
-  // Combine results in priority order: starts with > whole word > contains > other fields
-  const filtered = [...titleStartsWith, ...titleWholeWord, ...titleContains, ...otherMatches];
+  // Combine results in priority order: exact > starts with > word match > contains > location > other
+  const filtered = [
+    ...titleExactMatch,
+    ...titleStartsWith, 
+    ...titleWordMatch,
+    ...titleContains,
+    ...locationMatches,
+    ...otherMatches
+  ];
 
   console.log('🔍 Search Filter Result:', {
     inputTasks: tasks.length,
-    titleStartsWith: titleStartsWith.length,
-    titleWholeWord: titleWholeWord.length,
-    titleContains: titleContains.length,
+    exactMatches: titleExactMatch.length,
+    startsWithMatches: titleStartsWith.length,
+    wordMatches: titleWordMatch.length,
+    containsMatches: titleContains.length,
+    locationMatches: locationMatches.length,
     otherMatches: otherMatches.length,
     totalFiltered: filtered.length,
-    searchText
+    searchText,
+    searchLower
   });
 
   return filtered;
 };
 
+// Sort mapping for browse-screen.tsx sort options:
+// 0: 'Recommended' → 'latest'
+// 1: 'Price: High to low' → 'price-high'
+// 2: 'Price: Low to High' → 'price-low'
+// 3: 'Due date: Earliest' → 'earliest'
+// 4: 'Due date: Latest' → 'latest'
+// 5: 'Newest tasks' → 'newest'
+// 6: 'Oldest tasks' → 'oldest'
 const SEARCH_SORT_MAPPING = [
-  'latest',
-  'price-high', 
-  'price-low',
-  'earliest',
-  'latest',
-  'newest',
-  'oldest',
-  'nearest',
+  'latest',      // 0: Recommended
+  'price-high',  // 1: Price: High to low
+  'price-low',   // 2: Price: Low to High
+  'earliest',    // 3: Due date: Earliest
+  'latest',      // 4: Due date: Latest
+  'newest',      // 5: Newest tasks
+  'oldest',      // 6: Oldest tasks
 ] as const;
 
 const FILTER_SORT_MAPPING = [
-  'latest',
-  'price-high',
-  'price-low', 
-  'earliest',
-  'latest',
-  'newest',
-  'oldest',
-  'nearest',
+  'latest',      // 0: Recommended
+  'price-high',  // 1: Price: High to low
+  'price-low',   // 2: Price: Low to High
+  'earliest',    // 3: Due date: Earliest
+  'latest',      // 4: Due date: Latest
+  'newest',      // 5: Newest tasks
+  'oldest',      // 6: Oldest tasks
 ] as const;
 
 export const useBrowseFiltersAPI = () => {
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [taskType, setTaskType] = useState<'all' | 'in-person' | 'remote'>('all');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  
+  // Get user's country from geo-location for filtering tasks
+  const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
+  
+  // Use dynamic max price based on user's currency
+  const MAX_PRICE = getMaxPriceForCurrency(countryInfo.currency);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, MAX_PRICE]);
   const [availableTasksOnly, setAvailableTasksOnly] = useState(false);
   const [showTasksWithNoOffers, setShowTasksWithNoOffers] = useState(false);
   const [selectedSort, setSelectedSort] = useState(0);
@@ -331,19 +367,15 @@ export const useBrowseFiltersAPI = () => {
   const [debouncedSearchText, setDebouncedSearchText] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isProcessingData, setIsProcessingData] = useState(false);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [tasksWithOfferCounts, setTasksWithOfferCounts] = useState<Task[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isPaginatingRef, setIsPaginatingRef] = useState(false);
   
   // Track the last processed page to prevent duplicate processing
   const lastProcessedPageRef = React.useRef<number>(0);
   const lastProcessedDataHashRef = React.useRef<string>('');
-
-  // Get user's country from geo-location for filtering tasks
-  const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
+  const isResettingRef = React.useRef<boolean>(false);
 
   // Log country detection status
   useEffect(() => {
@@ -378,29 +410,6 @@ export const useBrowseFiltersAPI = () => {
     }
   }, [searchText, debouncedSearchText]);
 
-  React.useEffect(() => {
-    const getLocation = async () => {
-      if (selectedSort === 7) {
-        try {
-          const { status } = await Location.requestForegroundPermissionsAsync();
-          if (status === 'granted') {
-            const location = await Location.getCurrentPositionAsync({});
-            setUserLocation({
-              lat: location.coords.latitude,
-              lng: location.coords.longitude,
-            });
-          } else {
-            setSelectedSort(0);
-          }
-        } catch (err) {
-          console.error('Location error:', err);
-          setSelectedSort(0);
-        }
-      }
-    };
-    getLocation();
-  }, [selectedSort]);
-
   const shouldUseFilterAPI = React.useMemo(() => {
     // Use Search API ONLY when there's actual search text (at least 1 character)
     // This ensures we call /tasks/search endpoint only for searches
@@ -424,13 +433,13 @@ export const useBrowseFiltersAPI = () => {
     }
 
     const params: TaskSearchParams = {
-      q: debouncedSearchText.trim(), // Required parameter for search endpoint
+      q: debouncedSearchText.trim().toLowerCase(), // Normalize to lowercase for consistent cache keys
       sort: SEARCH_SORT_MAPPING[selectedSort],
     };
 
     if (selectedCategory !== 'All Categories') params.category = selectedCategory;
     
-    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === 10000;
+    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === MAX_PRICE;
     if (!isDefaultPriceRange) {
       params.minBudget = priceRange[0];
       params.maxBudget = priceRange[1];
@@ -441,7 +450,7 @@ export const useBrowseFiltersAPI = () => {
 
     console.log('🔍 [useBrowseFiltersAPI] Search Params:', params);
     return params;
-  }, [selectedCategory, taskType, priceRange, selectedSort, debouncedSearchText]);
+  }, [selectedCategory, taskType, priceRange, selectedSort, debouncedSearchText, MAX_PRICE]);
 
   const filterParams: TaskFilterParams = useMemo(() => {
     const params: TaskFilterParams = {
@@ -453,7 +462,7 @@ export const useBrowseFiltersAPI = () => {
 
     if (selectedCategory !== 'All Categories') params.categories = selectedCategory;
     
-    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === 10000;
+    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === MAX_PRICE;
     if (!isDefaultPriceRange) {
       params.minBudget = priceRange[0];
       params.maxBudget = priceRange[1];
@@ -462,18 +471,15 @@ export const useBrowseFiltersAPI = () => {
     if (taskType === 'in-person') params.locationType = 'In-person';
     else if (taskType === 'remote') params.locationType = 'Online';
 
-    if (selectedSort === 7 && userLocation) {
-      params.lat = userLocation.lat;
-      params.lng = userLocation.lng;
-      params.radius = 50;
-    }
+    // Note: 'nearest' sort option was removed from browse-screen sort options
+    // If you need location-based sorting, add it back to browse-screen.tsx sortOptions
 
     // DON'T send search text to backend - we do comprehensive client-side filtering
     // Backend search only searches title field, we want to search ALL fields
     // if (searchText.trim()) params.search = searchText.trim();
 
     return params;
-  }, [selectedCategory, taskType, priceRange, selectedSort, userLocation, currentPage]);
+  }, [selectedCategory, taskType, priceRange, selectedSort, currentPage, MAX_PRICE]);
 
   const {
     data: searchResponse,
@@ -745,27 +751,44 @@ export const useBrowseFiltersAPI = () => {
     let count = 0;
     if (selectedCategory !== 'All Categories') count++;
     if (taskType !== 'all') count++;
-    if (priceRange[0] !== 0 || priceRange[1] !== 10000) count++;
+    if (priceRange[0] !== 0 || priceRange[1] !== MAX_PRICE) count++;
     if (availableTasksOnly) count++;
     if (showTasksWithNoOffers) count++;
     return count;
   };
 
   const resetFilters = () => {
+    console.log('🔄 Resetting all filters to defaults (MAX_PRICE:', MAX_PRICE, ')');
+    
+    // Set flag to indicate we're resetting - prevents clearing tasks in useEffect
+    isResettingRef.current = true;
+    
     setSelectedCategory('All Categories');
     setTaskType('all');
-    setPriceRange([0, 10000]);
+    setPriceRange([0, MAX_PRICE]);
     setAvailableTasksOnly(false);
     setShowTasksWithNoOffers(false);
     setSelectedSort(0);
     setSearchText('');
     setCurrentPage(1);
-    setTasksWithOfferCounts([]);
+    // Don't clear tasks - let them reload from API with reset filters
+    // setTasksWithOfferCounts([]); // REMOVED: This was causing tasks to disappear
     setHasMore(true);
+    
+    // Clear the flag after a short delay to allow state updates to propagate
+    setTimeout(() => {
+      isResettingRef.current = false;
+    }, 100);
   };
 
   // Reset to page 1 when filters change (but not during pagination)
   useEffect(() => {
+    // Skip if we're resetting - let reset handle it
+    if (isResettingRef.current) {
+      console.log('⏭️ Skipping filter reset - reset operation in progress');
+      return;
+    }
+    
     // Skip reset if we're in the middle of paginating
     if (isLoadingMore) {
       console.log('⏭️ Skipping filter reset - pagination in progress');

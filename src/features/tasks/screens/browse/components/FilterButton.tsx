@@ -1,18 +1,17 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 interface FilterButtonProps {
-  activeFiltersCount: number;
+  filteredTasksCount: number;
   onPress: () => void;
 }
 
-export default function FilterButton({ activeFiltersCount, onPress }: FilterButtonProps) {
+export default function FilterButton({ filteredTasksCount, onPress }: FilterButtonProps) {
   return (
     <TouchableOpacity style={styles.filterBtn} onPress={onPress}>
       <MaterialCommunityIcons name="filter-variant" size={20} />
       <Text style={styles.filterText}>
-        Filter {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+        Filter ({filteredTasksCount})
       </Text>
     </TouchableOpacity>
   );
