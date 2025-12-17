@@ -115,10 +115,6 @@ export function useFilterTasks(params: TaskFilterParams, enabled = true) {
     queryFn: () => TaskAPI.filterTasks(params),
     enabled: enabled && Object.keys(params).length > 0,
     staleTime: 0, // Use global config for real-time updates
-    // NOTE: This query will automatically refetch when:
-    // 1. invalidateQueries is called with ['tasks', 'filter'] prefix
-    // 2. The component remounts (refetchOnMount: true from global config)
-    // 3. Window regains focus (refetchOnWindowFocus: true from global config)
     retry: (failureCount, error: any) => {
       // Don't retry on backend routing conflicts (500 errors with ObjectId)
       if (error?.response?.status === 500 && 
@@ -354,19 +350,10 @@ export function useCreateTask() {
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() }); // My offers specifically
       
       // CRITICAL FIX: Invalidate filter API queries used by browse screen
-      // Use more aggressive invalidation with refetchType: 'active' to ensure mounted queries refetch
-      queryClient.invalidateQueries({ 
-        queryKey: ['tasks', 'filter'],
-        refetchType: 'active' // Only refetch queries that are currently mounted/active
-      });
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'filter'] }); // Invalidate ALL filter queries
+      queryClient.refetchQueries({ queryKey: ['tasks', 'filter'] }); // Force immediate refetch of filter queries
       
-      // Also invalidate search queries that might be active
-      queryClient.invalidateQueries({ 
-        queryKey: ['tasks', 'search'],
-        refetchType: 'active'
-      });
-      
-      console.log("✅ Force refetched all task queries (including filter/search API) after creating new task - browse tasks should update immediately");
+      console.log("✅ Force refetched all task queries (including filter API) after creating new task - browse tasks should update immediately");
     },
   });
 }
@@ -392,17 +379,8 @@ export function usePostTaskDirect() {
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
       
       // CRITICAL FIX: Invalidate filter API queries used by browse screen
-      // Use more aggressive invalidation with refetchType: 'active' to ensure mounted queries refetch
-      queryClient.invalidateQueries({ 
-        queryKey: ['tasks', 'filter'],
-        refetchType: 'active' // Only refetch queries that are currently mounted/active
-      });
-      
-      // Also invalidate search queries that might be active
-      queryClient.invalidateQueries({ 
-        queryKey: ['tasks', 'search'],
-        refetchType: 'active'
-      });
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'filter'] }); // Invalidate ALL filter queries
+      queryClient.refetchQueries({ queryKey: ['tasks', 'filter'] }); // Force immediate refetch of filter queries
       
       // If we have the created task ID, invalidate its specific detail query
       console.log("🔍 Task creation result structure:", JSON.stringify(result, null, 2));
@@ -414,7 +392,7 @@ export function usePostTaskDirect() {
         console.log("⚠️ Could not extract task ID from result - cannot invalidate specific detail");
       }
       
-      console.log("✅ Task posted successfully (DIRECT) - force refetched all task queries (including filter/search API) and specific detail");
+      console.log("✅ Task posted successfully (DIRECT) - force refetched all task queries (including filter API) and specific detail");
     },
     onError: (error: any) => {
       if (!isNetworkError(error) && __DEV__) {
@@ -892,8 +870,16 @@ export function usePostTaskQuestion() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ taskId, question }: { taskId: string; question: string }) => 
-      TaskAPI.postTaskQuestion(taskId, question),
+    mutationFn: ({ 
+      taskId, 
+      question, 
+      files 
+    }: { 
+      taskId: string; 
+      question: string;
+      files?: { uri: string; name: string; type: string }[];
+    }) => 
+      TaskAPI.postTaskQuestion(taskId, question, files),
     onSuccess: (data, variables) => {
       console.log('✅ Question posted successfully, invalidating queries');
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.questions(variables.taskId) });
@@ -923,8 +909,18 @@ export function useAnswerTaskQuestion() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ taskId, questionId, answer }: { taskId: string; questionId: string; answer: string }) => 
-      TaskAPI.answerTaskQuestion(taskId, questionId, answer),
+    mutationFn: ({ 
+      taskId, 
+      questionId, 
+      answer,
+      files
+    }: { 
+      taskId: string; 
+      questionId: string; 
+      answer: string;
+      files?: { uri: string; name: string; type: string }[];
+    }) => 
+      TaskAPI.answerTaskQuestion(taskId, questionId, answer, files),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.questions(variables.taskId) });
     },

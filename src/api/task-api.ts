@@ -11,22 +11,22 @@ import * as FileSystem from 'expo-file-system/legacy';
 import API_CONFIG from "./config";
 import { MockApiService } from "./mock-api";
 import {
-    AllOffersResponse,
-    CreateOfferRequest,
-    CreateOfferResponse,
-    CreateTaskRequest,
-    CreateTaskResponse,
-    MyTasksParams,
-    PaymentStatusResponse,
-    SingleTaskResponse,
-    Task,
-    TaskCompletionStatusResponse,
-    TaskFilterParams,
-    TaskFilterResponse,
-    TaskOffersResponse,
-    TaskSearchParams,
-    TasksResponse,
-    UpdateTaskRequest
+  AllOffersResponse,
+  CreateOfferRequest,
+  CreateOfferResponse,
+  CreateTaskRequest,
+  CreateTaskResponse,
+  MyTasksParams,
+  PaymentStatusResponse,
+  SingleTaskResponse,
+  Task,
+  TaskCompletionStatusResponse,
+  TaskFilterParams,
+  TaskFilterResponse,
+  TaskOffersResponse,
+  TaskSearchParams,
+  TasksResponse,
+  UpdateTaskRequest
 } from "./types/tasks";
 
 // 🔧 **AUTHENTICATION HELPER FUNCTIONS**
@@ -3461,11 +3461,35 @@ export async function getTaskQuestions(taskId: string): Promise<{ success: boole
  * Endpoint: POST /api/tasks/:taskId/questions
  * Auth: Required
  */
-export async function postTaskQuestion(taskId: string, question: string): Promise<{ success: boolean; data: any }> {
+export async function postTaskQuestion(
+  taskId: string, 
+  question: string, 
+  files?: { uri: string; name: string; type: string }[]
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("❓ Posting question for task:", taskId, question);
-    const response = await api.post(`/tasks/${taskId}/questions`, { question });
+    console.log("❓ Posting question for task:", taskId, question, "Files:", files?.length || 0);
+    
+    // Create FormData for multipart upload
+    const formData = new FormData();
+    formData.append('question', question);
+    
+    // Add files if provided
+    if (files && files.length > 0) {
+      files.forEach((file, index) => {
+        formData.append('images', {
+          uri: file.uri,
+          name: file.name,
+          type: file.type || 'image/jpeg'
+        } as any);
+      });
+    }
+    
+    const response = await api.post(`/tasks/${taskId}/questions`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     console.log("✅ Post task question success:", response.data);
     return response.data;
   } catch (error: any) {
@@ -3493,14 +3517,38 @@ export async function postTaskQuestion(taskId: string, question: string): Promis
  * Endpoint: POST /api/tasks/:taskId/questions/:questionId/answer
  * Auth: Required
  */
-export async function answerTaskQuestion(taskId: string, questionId: string, answer: string): Promise<{ success: boolean; data: any }> {
+export async function answerTaskQuestion(
+  taskId: string, 
+  questionId: string, 
+  answer: string,
+  files?: { uri: string; name: string; type: string }[]
+): Promise<{ success: boolean; data: any }> {
   const api = getApi();
   try {
-    console.log("💬 Answering question:", { taskId, questionId, answer });
+    console.log("💬 Answering question:", { taskId, questionId, answer, filesCount: files?.length || 0 });
+    
+    // Create FormData for multipart upload
+    const formData = new FormData();
+    formData.append('answer', answer);
+    
+    // Add files if provided
+    if (files && files.length > 0) {
+      files.forEach((file, index) => {
+        formData.append('images', {
+          uri: file.uri,
+          name: file.name,
+          type: file.type || 'image/jpeg'
+        } as any);
+      });
+    }
     
     // Try the primary answer endpoint first
     try {
-      const response = await api.post(`/tasks/${taskId}/questions/${questionId}/answer`, { answer });
+      const response = await api.post(`/tasks/${taskId}/questions/${questionId}/answer`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       console.log("✅ Answer task question success:", response.data);
       return response.data;
     } catch (primaryError: any) {
@@ -3512,10 +3560,10 @@ export async function answerTaskQuestion(taskId: string, questionId: string, ans
         
         try {
           // Try updating the question directly with answer
-          const altResponse = await api.put(`/tasks/${taskId}/questions/${questionId}`, { 
-            answer,
-            status: 'answered',
-            answeredAt: new Date().toISOString()
+          const altResponse = await api.put(`/tasks/${taskId}/questions/${questionId}`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
           });
           console.log("✅ Answer task question success (alt method):", altResponse.data);
           return altResponse.data;
@@ -3523,10 +3571,10 @@ export async function answerTaskQuestion(taskId: string, questionId: string, ans
           console.warn("⚠️ Alternative endpoint also failed, trying PATCH method");
           
           // Try PATCH method as final fallback
-          const patchResponse = await api.patch(`/tasks/${taskId}/questions/${questionId}`, { 
-            answer,
-            status: 'answered',
-            answeredAt: new Date().toISOString()
+          const patchResponse = await api.patch(`/tasks/${taskId}/questions/${questionId}`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
           });
           console.log("✅ Answer task question success (patch method):", patchResponse.data);
           return patchResponse.data;
