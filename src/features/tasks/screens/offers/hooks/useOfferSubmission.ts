@@ -77,6 +77,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState<string>('');
+  const [messageError, setMessageError] = useState<string>('');
   const [hasUserEditedAmount, setHasUserEditedAmount] = useState(false);
   const [lastSubmitTime, setLastSubmitTime] = useState(0);
 
@@ -100,43 +101,43 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
 
   const validateOfferAmount = (amount: string): boolean => {
     if (!amount || amount.trim() === '') {
-      Alert.alert('Validation Error', 'Please enter an offer amount.');
+      setValidationError('Please enter an offer amount.');
       return false;
     }
 
     // Remove commas before parsing
     const numericAmount = parseFloat(amount.replace(/,/g, ''));
     if (isNaN(numericAmount) || numericAmount <= 0) {
-      Alert.alert('Validation Error', 'Please enter a valid positive amount.');
+      setValidationError('Please enter a valid positive amount.');
       return false;
     }
 
     // Validate maximum amount against task budget (offer should be <= budget)
     if (taskBudget && numericAmount > taskBudget) {
-      Alert.alert(
-        'Amount Too High',
+      setValidationError(
         `Your offer amount cannot exceed the task budget of ${currencyInfo.symbol}${taskBudget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`
       );
       return false;
     }
 
+    setValidationError('');
     return true;
   };
 
   const validateMessage = (msg: string): boolean => {
     if (!msg || msg.trim() === '') {
-      Alert.alert('Validation Error', 'Please include a message with your offer.');
+      setMessageError('Please include a message with your offer.');
       return false;
     }
 
     if (msg.trim().length < 10) {
-      Alert.alert(
-        'Validation Error',
+      setMessageError(
         'Your message should be at least 10 characters long.'
       );
       return false;
     }
 
+    setMessageError('');
     return true;
   };
 
@@ -263,6 +264,21 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
       setValidationError('');
     }
   };
+  
+  const handleMessageChange = (text: string) => {
+    setMessage(text);
+    // Clear message error when user starts typing
+    if (messageError) {
+      setMessageError('');
+    }
+  };
+  
+  const handleMessageFocus = () => {
+    // Clear message error when user focuses on the field
+    if (messageError) {
+      setMessageError('');
+    }
+  };
 
   const handleOfferAmountChange = (text: string) => {
     // Remove all non-numeric characters except decimal point
@@ -298,16 +314,25 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
     // Set the formatted text as the display value
     setOfferAmount(formattedValue);
     
-    // Real-time validation using raw numeric value
-    if (cleanedText && taskBudget) {
+    // Real-time validation - clear errors when user types valid input
+    if (cleanedText) {
       const numericAmount = parseFloat(cleanedText);
-      if (!isNaN(numericAmount) && numericAmount > taskBudget) {
+      
+      // Check if amount exceeds budget
+      if (taskBudget && !isNaN(numericAmount) && numericAmount > taskBudget) {
         setValidationError(`Amount cannot exceed budget of ${currencyInfo.symbol}${taskBudget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
-      } else {
+      } else if (!isNaN(numericAmount) && numericAmount > 0) {
+        // Valid positive amount entered - clear any validation error
         setValidationError('');
+      } else if (numericAmount === 0) {
+        // Zero is not valid
+        setValidationError('Please enter a valid positive amount.');
       }
     } else {
-      setValidationError('');
+      // Field is empty - only clear error if user is actively editing (not from submit)
+      if (hasUserEditedAmount) {
+        setValidationError('');
+      }
     }
   };
 
@@ -319,10 +344,12 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
     userHasExistingOffer,
     currencySymbol: currencyInfo.symbol,
     validationError,
+    messageError,
     taskBudget,
-    setMessage,
+    setMessage: handleMessageChange,
     handleOfferAmountChange,
     handleOfferAmountFocus,
+    handleMessageFocus,
     handleSubmitOffer,
   };
 };

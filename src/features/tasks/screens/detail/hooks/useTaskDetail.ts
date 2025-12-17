@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     useAcceptOffer,
     useGetTaskById,
@@ -61,6 +61,18 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
 
   // Accept offer mutation
   const acceptOfferMutation = useAcceptOffer();
+
+  // Cleanup modal states when component unmounts or taskId changes
+  useEffect(() => {
+    return () => {
+      // Reset modal states on cleanup
+      setShowAskQuestion(false);
+      setQuestionText('');
+      setShowPaymentModal(false);
+      setSelectedOfferId(null);
+      setSelectedOffer(null);
+    };
+  }, [taskId]);
 
   const task = taskData?.data;
   const user = taskData?.user;
@@ -198,8 +210,8 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
       setQuestionText('');
       setShowAskQuestion(false);
       
-      // Refresh questions list
-      refetchQuestions();
+      // Questions list will auto-refresh via React Query cache invalidation
+      console.log('💫 Questions will refresh automatically via cache invalidation');
     } catch (error: any) {
       console.error('❌ Failed to post question:', error);
       // The error will be handled by the mutation's onError callback

@@ -535,11 +535,8 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           question={selectedQuestion}
           taskId={taskId || ''}
           onAnswerSubmitted={() => {
-            // Refresh questions list after answer is submitted
-            console.log('🔄 Refreshing questions after answer submission...');
-            if (onRefreshQuestions) {
-              onRefreshQuestions();
-            }
+            // React Query will auto-refresh questions via cache invalidation
+            console.log('🔄 Questions will refresh automatically via React Query cache invalidation');
           }}
         />
       )}
