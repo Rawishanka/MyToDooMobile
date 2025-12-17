@@ -867,9 +867,9 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {renderImageGallery()}
 
       {/* Note */}
-      <Text style={styles.note}>
+      {/* <Text style={styles.note}>
         Note: It is equity share not the 10 dollar listed above
-      </Text>
+      </Text> */}
 
       {/* Image Modal */}
       {renderImageModal()}
