@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { ActivityIndicator, Dimensions, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnswerQuestionModal } from './AnswerQuestionModal';
@@ -75,44 +75,56 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=0052A2&color=fff&size=80`;
   };
   
-  // Helper function to extract and parse attachments from text
-  const parseAttachments = (text: string) => {
-    if (!text) return [];
-    
-    const attachments: { type: 'image' | 'file', name: string, url?: string }[] = [];
-    const lines = text.split('\n');
-    let inAttachmentsSection = false;
-    
-    for (const line of lines) {
-      if (line.includes('Attached files:')) {
-        inAttachmentsSection = true;
-        continue;
-      }
-      
-      if (inAttachmentsSection && line.trim()) {
-        // Extract Cloudinary URL from the filename if present
-        const cloudinaryMatch = line.match(/(https:\/\/res\.cloudinary\.com\/[^\s]+)/);
-        const imageMatch = line.match(/🖼️\s*(.+\.(?:jpg|jpeg|png|gif|webp))/i);
-        const fileMatch = line.match(/\s*(.+)/i);
-        
-        if (imageMatch) {
-          const imageName = imageMatch[1].trim();
-          attachments.push({ 
-            type: 'image', 
-            name: imageName,
-            url: cloudinaryMatch ? cloudinaryMatch[1] : undefined
-          });
-        } else if (fileMatch && !line.includes('Attached files:')) {
-          attachments.push({ 
-            type: 'file', 
-            name: fileMatch[1].trim(),
-            url: cloudinaryMatch ? cloudinaryMatch[1] : undefined
-          });
-        }
-      }
+  // Helper function to get question attachments from API response
+  const getQuestionAttachments = (question: any) => {
+    // Check if question object has attachments array
+    if (question.question?.attachments && Array.isArray(question.question.attachments)) {
+      return question.question.attachments;
     }
     
-    return attachments;
+    // Fallback: check if questionAttachments exists at top level
+    if (question.questionAttachments && Array.isArray(question.questionAttachments)) {
+      return question.questionAttachments;
+    }
+    
+    return [];
+  };
+  
+  // Helper function to get answer attachments from API response
+  const getAnswerAttachments = (question: any) => {
+    // Check if answer object has attachments array
+    if (question.answer?.attachments && Array.isArray(question.answer.attachments)) {
+      return question.answer.attachments;
+    }
+    
+    // Fallback: check if answerAttachments exists at top level
+    if (question.answerAttachments && Array.isArray(question.answerAttachments)) {
+      return question.answerAttachments;
+    }
+    
+    return [];
+  };
+  
+  // Helper function to get question text
+  const getQuestionText = (question: any) => {
+    if (typeof question.question === 'string') {
+      return question.question;
+    }
+    if (question.question?.text) {
+      return question.question.text;
+    }
+    return 'No question text';
+  };
+  
+  // Helper function to get answer text
+  const getAnswerText = (question: any) => {
+    if (typeof question.answer === 'string') {
+      return question.answer;
+    }
+    if (question.answer?.text) {
+      return question.answer.text;
+    }
+    return '';
   };
   
   // Function to open image viewer
@@ -128,17 +140,6 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
     setSelectedImageUrl(null);
   };
   
-  // Helper function to clean text by removing attachment section
-  const cleanTextContent = (text: string) => {
-    if (!text) return '';
-    
-    const attachmentIndex = text.indexOf('Attached files:');
-    if (attachmentIndex !== -1) {
-      return text.substring(0, attachmentIndex).trim();
-    }
-    
-    return text.trim();
-  };
   const [showAnswerModal, setShowAnswerModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<any>(null);
   
@@ -237,14 +238,14 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
     // RULE 1: If poster asked the question → All taskers and poster can answer
     if (wasAskedByPoster) {
       const canAnswer = isTaskCreator || isTasker;
-      console.log('📗 Poster asked question - taskers can answer:', canAnswer);
+      console.log('📋 Poster asked question - taskers can answer:', canAnswer);
       return canAnswer;
     }
     
     // RULE 2: If tasker asked the question → Only poster can answer
     // (The asker themselves can also answer, but that's handled in step 1)
     const canAnswer = isTaskCreator;
-    console.log('🔒 Tasker asked question - only poster can answer:', canAnswer);
+    console.log('👤 Tasker asked question - only poster can answer:', canAnswer);
     return canAnswer;
   };
 
@@ -355,58 +356,62 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                 {/* Question Status Badge */}
                 <View style={[
                   styles.statusBadge, 
-                  question.status === 'answered' ? styles.statusAnswered : styles.statusPending
+                  hasValidAnswer(question) ? styles.statusAnswered : styles.statusPending
                 ]}>
                   <Text style={[
                     styles.statusText,
-                    question.status === 'answered' ? styles.statusAnsweredText : styles.statusPendingText
+                    hasValidAnswer(question) ? styles.statusAnsweredText : styles.statusPendingText
                   ]}>
-                    {question.status === 'answered' ? 'Answered' : 'Pending'}
+                    {hasValidAnswer(question) ? 'Answered' : 'Pending'}
                   </Text>
                 </View>
               </View>
 
               <Text style={styles.questionText}>
-                {(() => {
-                  const questionText = typeof question.question === 'string'
-                    ? question.question
-                    : question.question?.text || 'No question text';
-                  return cleanTextContent(questionText);
-                })()}
+                {getQuestionText(question)}
               </Text>
               
-              {/* Display question attachments if any */}
+              {/* Display question attachments from API response */}
               {(() => {
-                const questionText = typeof question.question === 'string'
-                  ? question.question
-                  : question.question?.text || '';
-                const attachments = parseAttachments(questionText);
+                const attachments = getQuestionAttachments(question);
                 
                 if (attachments.length > 0) {
                   return (
                     <View style={styles.attachmentsContainer}>
-                      <Text style={styles.attachmentsLabel}>📎 Attachments:</Text>
-                      {attachments.map((attachment, index) => (
+                      <Text style={styles.attachmentsLabel}>📎 Attachments ({attachments.length}):</Text>
+                      {attachments.map((attachment: any, index: number) => (
                         <TouchableOpacity 
-                          key={index} 
+                          key={attachment._id || index} 
                           style={styles.attachmentItem}
                           onPress={() => {
-                            if (attachment.type === 'image' && attachment.url) {
-                              openImageViewer(attachment.url);
+                            if (attachment.resourceType === 'image' && (attachment.url || attachment.secureUrl)) {
+                              openImageViewer(attachment.secureUrl || attachment.url);
                             } else {
-                              console.log('📎 File attachment clicked:', attachment.name);
+                              console.log('📎 File attachment clicked:', attachment.fileId);
                             }
                           }}
-                          activeOpacity={attachment.type === 'image' && attachment.url ? 0.7 : 1}
+                          activeOpacity={attachment.resourceType === 'image' ? 0.7 : 1}
                         >
                           <Ionicons 
-                            name={attachment.type === 'image' ? 'image-outline' : 'document-outline'} 
-                            size={16} 
+                            name={attachment.resourceType === 'image' ? 'image-outline' : 'document-outline'} 
+                            size={22} 
                             color="#007AFF" 
                           />
-                          <Text style={styles.attachmentName}>{attachment.name}</Text>
-                          {attachment.type === 'image' && attachment.url && (
-                            <Ionicons name="eye-outline" size={14} color="#007AFF" style={{ marginLeft: 8 }} />
+                          
+                          {/* Image Preview Thumbnail */}
+                          {attachment.resourceType === 'image' && (attachment.url || attachment.secureUrl) && (
+                            <Image 
+                              source={{ uri: attachment.secureUrl || attachment.url }}
+                              style={styles.attachmentThumbnail}
+                              resizeMode="cover"
+                            />
+                          )}
+                          
+                          <Text style={styles.attachmentName} numberOfLines={1}>
+                            {attachment.fileId?.split('/').pop() || 'Attachment'}
+                          </Text>
+                          {attachment.resourceType === 'image' && (
+                            <Ionicons name="eye-outline" size={20} color="#007AFF" style={{ marginLeft: 'auto' }} />
                           )}
                         </TouchableOpacity>
                       ))}
@@ -432,45 +437,50 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                     })()}:
                   </Text>
                   <Text style={styles.answerText}>
-                    {(() => {
-                      const answerText = typeof question.answer === 'string'
-                        ? question.answer
-                        : question.answer?.text || 'No answer text';
-                      return cleanTextContent(answerText);
-                    })()}
+                    {getAnswerText(question)}
                   </Text>
                   
-                  {/* Display answer attachments if any */}
+                  {/* Display answer attachments from API response */}
                   {(() => {
-                    const answerText = typeof question.answer === 'string'
-                      ? question.answer
-                      : question.answer?.text || '';
-                    const attachments = parseAttachments(answerText);
+                    const attachments = getAnswerAttachments(question);
                     
                     if (attachments.length > 0) {
                       return (
                         <View style={styles.answerAttachmentsContainer}>
-                          {attachments.map((attachment, index) => (
+                          <Text style={[styles.attachmentsLabel, { color: '#2E7D32' }]}>📎 Attachments ({attachments.length}):</Text>
+                          {attachments.map((attachment: any, index: number) => (
                             <TouchableOpacity
-                              key={index} 
+                              key={attachment._id || index} 
                               style={styles.answerAttachmentItem}
                               onPress={() => {
-                                if (attachment.type === 'image' && attachment.url) {
-                                  openImageViewer(attachment.url);
+                                if (attachment.resourceType === 'image' && (attachment.url || attachment.secureUrl)) {
+                                  openImageViewer(attachment.secureUrl || attachment.url);
                                 } else {
-                                  console.log('📎 File attachment clicked:', attachment.name);
+                                  console.log('📎 File attachment clicked:', attachment.fileId);
                                 }
                               }}
-                              activeOpacity={attachment.type === 'image' && attachment.url ? 0.7 : 1}
+                              activeOpacity={attachment.resourceType === 'image' ? 0.7 : 1}
                             >
                               <Ionicons 
-                                name={attachment.type === 'image' ? 'image' : 'document'} 
-                                size={14} 
+                                name={attachment.resourceType === 'image' ? 'image' : 'document'} 
+                                size={20} 
                                 color="#4CAF50" 
                               />
-                              <Text style={styles.answerAttachmentName}>{attachment.name}</Text>
-                              {attachment.type === 'image' && attachment.url && (
-                                <Ionicons name="eye" size={12} color="#4CAF50" style={{ marginLeft: 4 }} />
+                              
+                              {/* Image Preview Thumbnail */}
+                              {attachment.resourceType === 'image' && (attachment.url || attachment.secureUrl) && (
+                                <Image 
+                                  source={{ uri: attachment.secureUrl || attachment.url }}
+                                  style={styles.answerAttachmentThumbnail}
+                                  resizeMode="cover"
+                                />
+                              )}
+                              
+                              <Text style={styles.answerAttachmentName} numberOfLines={1}>
+                                {attachment.fileId?.split('/').pop() || 'Attachment'}
+                              </Text>
+                              {attachment.resourceType === 'image' && (
+                                <Ionicons name="eye" size={18} color="#4CAF50" style={{ marginLeft: 'auto' }} />
                               )}
                             </TouchableOpacity>
                           ))}
@@ -503,7 +513,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                         style={styles.answerButton} 
                         onPress={() => handleAnswerQuestion(question)}
                       >
-                        <Ionicons name="chatbubble-ellipses-outline" size={16} color="#007AFF" />
+                        <Ionicons name="chatbubble-ellipses" size={20} color="#fff" />
                         <Text style={styles.answerButtonText}>Answer this question</Text>
                       </TouchableOpacity>
                     );
@@ -645,18 +655,28 @@ const styles = StyleSheet.create({
   },
   questionCard: {
     backgroundColor: '#fff',
-    padding: isTablet ? wp('3%') : wp('4%'),
-    marginBottom: hp('1.5%'),
+    padding: 16,
+    marginBottom: 16,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   questionHeader: {
-    marginBottom: hp('1.5%'),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
   },
   questionUserSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    marginRight: 8,
   },
   questionAvatar: {
     width: isTablet ? 50 : 40,
@@ -679,28 +699,34 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   questionText: {
-    fontSize: 14,
-    color: '#333',
-    lineHeight: 20,
-    marginBottom: 12,
+    fontSize: 15,
+    color: '#1a1a1a',
+    lineHeight: 22,
+    marginBottom: 16,
+    fontWeight: '400',
   },
   answerSection: {
-    backgroundColor: '#f8f9fa',
-    padding: 12,
-    borderRadius: 8,
-    borderLeftWidth: 3,
+    backgroundColor: '#F0F9F4',
+    padding: 14,
+    borderRadius: 10,
+    borderLeftWidth: 4,
     borderLeftColor: '#4CAF50',
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#D4EDDA',
   },
   answerLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#4CAF50',
-    marginBottom: 6,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#2E7D32',
+    marginBottom: 8,
+    letterSpacing: 0.3,
   },
   answerText: {
-    fontSize: 14,
-    color: '#333',
-    lineHeight: 20,
+    fontSize: 15,
+    color: '#1a1a1a',
+    lineHeight: 22,
+    fontWeight: '400',
   },
   askQuestionButtonContainer: {
     marginTop: 24,
@@ -731,9 +757,10 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    alignSelf: 'flex-start',
   },
   statusAnswered: {
     backgroundColor: '#E8F5E8',
@@ -742,8 +769,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF3E0',
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   statusAnsweredText: {
     color: '#4CAF50',
@@ -752,41 +781,49 @@ const styles = StyleSheet.create({
     color: '#FF9800',
   },
   answerTime: {
-    fontSize: 11,
-    color: '#666',
-    marginTop: 6,
+    fontSize: 12,
+    color: '#2E7D32',
+    marginTop: 8,
     fontStyle: 'italic',
+    fontWeight: '500',
   },
   answerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F3F8FF',
-    paddingVertical: 10,
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#007AFF',
-    marginTop: 8,
+    borderRadius: 8,
+    marginTop: 16,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
   },
   answerButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#007AFF',
-    marginLeft: 6,
+    color: '#fff',
+    marginLeft: 8,
   },
   noAnswerYet: {
-    backgroundColor: '#F5F5F5',
-    paddingVertical: 10,
+    backgroundColor: '#FFF9E6',
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 6,
-    marginTop: 8,
+    borderRadius: 8,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#FFE0B2',
+    alignItems: 'center',
   },
   noAnswerText: {
-    fontSize: 13,
-    color: '#666',
+    fontSize: 14,
+    color: '#E65100',
     fontStyle: 'italic',
     textAlign: 'center',
+    fontWeight: '500',
   },
   taskContextHeader: {
     flexDirection: 'row',
@@ -806,47 +843,77 @@ const styles = StyleSheet.create({
   attachmentsContainer: {
     marginTop: 12,
     padding: 12,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 8,
-    borderLeftWidth: 3,
+    backgroundColor: '#F0F8FF',
+    borderRadius: 10,
+    borderLeftWidth: 4,
     borderLeftColor: '#007AFF',
+    borderWidth: 1,
+    borderColor: '#CCE5FF',
   },
   attachmentsLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#007AFF',
-    marginBottom: 8,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0056B3',
+    marginBottom: 10,
+    letterSpacing: 0.3,
   },
   attachmentItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
-    paddingVertical: 4,
+    backgroundColor: '#fff',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#B3D9FF',
+  },
+  attachmentThumbnail: {
+    width: 50,
+    height: 50,
+    borderRadius: 6,
+    marginLeft: 10,
+    marginRight: 6,
+    backgroundColor: '#f0f0f0',
   },
   attachmentName: {
-    fontSize: 13,
-    color: '#333',
-    marginLeft: 8,
+    fontSize: 14,
+    color: '#1a1a1a',
+    marginLeft: 10,
     flex: 1,
+    fontWeight: '500',
   },
   answerAttachmentsContainer: {
-    marginTop: 8,
-    paddingTop: 8,
+    marginTop: 12,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: '#C8E6C9',
   },
   answerAttachmentItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
-    paddingVertical: 2,
+    backgroundColor: '#fff',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#A5D6A7',
+  },
+  answerAttachmentThumbnail: {
+    width: 50,
+    height: 50,
+    borderRadius: 6,
+    marginLeft: 10,
+    marginRight: 6,
+    backgroundColor: '#f0f0f0',
   },
   answerAttachmentName: {
-    fontSize: 12,
-    color: '#4CAF50',
-    marginLeft: 6,
+    fontSize: 14,
+    color: '#2E7D32',
+    marginLeft: 10,
     flex: 1,
-    fontStyle: 'italic',
+    fontWeight: '500',
   },
   imageModalContainer: {
     flex: 1,
