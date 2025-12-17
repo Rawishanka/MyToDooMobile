@@ -64,10 +64,12 @@ export default function MakeOfferScreen() {
     userHasExistingOffer,
     currencySymbol,
     validationError,
+    messageError,
     taskBudget,
     setMessage,
     handleOfferAmountChange,
     handleOfferAmountFocus,
+    handleMessageFocus,
     handleSubmitOffer,
   } = useOfferSubmission({ 
     taskId: taskId!,
@@ -142,9 +144,13 @@ export default function MakeOfferScreen() {
             currencySymbol={currencySymbol}
             budget={taskBudget}
             validationError={validationError}
+            messageError={messageError}
             onAmountChange={handleOfferAmountChange}
             onAmountFocus={handleOfferAmountFocus}
-            onMessageFocus={() => scrollRef.current?.scrollToEnd({ animated: true })}
+            onMessageFocus={() => {
+              handleMessageFocus();
+              scrollRef.current?.scrollToEnd({ animated: true });
+            }}
             onMessageChange={setMessage}
           />
 

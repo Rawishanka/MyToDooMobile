@@ -1,7 +1,7 @@
 import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { useAnswerTaskQuestion } from '@/src/shared/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -48,6 +48,14 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
   // Use the specific task ID from the question if available (for public questions)
   const questionTaskId = (question as any)?.taskIdToUse || taskId;
 
+  // Cleanup state when modal closes
+  useEffect(() => {
+    if (!visible) {
+      setAnswer('');
+      setAttachments([]);
+    }
+  }, [visible]);
+
   const handleSubmitAnswer = async () => {
     if (!answer.trim()) {
       Alert.alert('Missing Answer', 'Please enter your answer.');
@@ -83,25 +91,22 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
 
       console.log('✅ Answer posted successfully');
       
-      Alert.alert(
-        'Answer Posted!',
-        'Your answer has been sent to the person who asked the question.',
-        [{ text: 'OK' }]
-      );
-
+      // Close modal first to prevent navigation blocking
       setAnswer('');
       setAttachments([]);
       onClose();
       
-      // Call the refresh callback to reload questions
-      if (onAnswerSubmitted) {
-        onAnswerSubmitted();
-      } else {
-        // Small delay to allow backend to process before any potential refresh
-        setTimeout(() => {
-          console.log('💫 Answer submitted successfully, questions should refresh automatically');
-        }, 500);
-      }
+      // Show success alert after modal is closed
+      setTimeout(() => {
+        Alert.alert(
+          'Answer Posted!',
+          'Your answer has been sent to the person who asked the question.',
+          [{ text: 'OK' }]
+        );
+      }, 300);
+      
+      // Questions list will auto-refresh via React Query cache invalidation
+      console.log('💫 Answer submitted, questions will refresh automatically via cache invalidation');
 
     } catch (error: any) {
       console.error('❌ Failed to post answer:', error);

@@ -8,6 +8,7 @@ interface OfferFormProps {
   currencySymbol: string;
   budget?: number;
   validationError?: string;
+  messageError?: string;
   onAmountChange: (text: string) => void;
   onMessageChange: (text: string) => void;
   onAmountFocus?: () => void;
@@ -20,6 +21,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
   currencySymbol,
   budget,
   validationError,
+  messageError,
   onAmountChange,
   onMessageChange,
   onAmountFocus,
@@ -57,7 +59,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
       <View style={styles.inputContainer}>
         <Text style={styles.inputLabel}>Your Message *</Text>
         <TextInput
-          style={styles.messageInput}
+          style={[styles.messageInput, messageError ? styles.errorBorder : undefined]}
           placeholder="Why are you the best person for this task?"
           multiline
           numberOfLines={5}
@@ -67,9 +69,13 @@ export const OfferForm: React.FC<OfferFormProps> = ({
           placeholderTextColor="#999"
           textAlignVertical="top"
         />
-        <Text style={styles.inputHint}>
-          Explain your relevant experience and approach (min. 10 characters)
-        </Text>
+        {messageError ? (
+          <Text style={styles.errorText}>{messageError}</Text>
+        ) : (
+          <Text style={styles.inputHint}>
+            Explain your relevant experience and approach (min. 10 characters)
+          </Text>
+        )}
       </View>
     </View>
   );
