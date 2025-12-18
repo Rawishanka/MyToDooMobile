@@ -11,22 +11,23 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
-    ActionSheetIOS,
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Image,
-    KeyboardAvoidingView,
-    Linking,
-    Modal,
-    Platform,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActionSheetIOS,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Linking,
+  Modal,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ChatMessage, Message } from './message-types';
 
 // URL normalization helper for APK builds
@@ -78,6 +79,11 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
   const [lastChatId, setLastChatId] = useState<string | null>(chatIdProp || null);
   const [chatId, setChatId] = useState<string | null>(chatIdProp || null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  // Get SafeArea insets for proper bottom padding (Android nav bar fix)
+  const insets = useSafeAreaInsets();
+  // Use SafeArea inset directly, with fallback ONLY when it's 0 (broken Android APKs)
+  const inputBottomPadding = Platform.OS === 'android' && insets.bottom === 0 ? 16 : insets.bottom;
 
   // Get current user from auth store
   const user = useAuthStore((state) => state.user);
@@ -1053,7 +1059,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         />
 
         {/* Message Input */}
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, { paddingBottom: inputBottomPadding }]}>
           <View style={styles.inputWrapper}>
             <TouchableOpacity onPress={handleAttachment} style={styles.attachButton}>
               <Ionicons name="attach" size={22} color="#666" />
@@ -1285,8 +1291,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e8e8e8',
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+    paddingTop: 8,
+    // paddingBottom is dynamic via inline style with SafeArea insets
+    zIndex: 99,
+    elevation: 5, // Android shadow to keep above other layers
+    minHeight: 60, // Prevent collapse
   },
   inputWrapper: {
     flexDirection: 'row',
