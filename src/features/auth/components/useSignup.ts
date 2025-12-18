@@ -3,7 +3,7 @@
 import API_CONFIG from '@/src/api/config';
 import { useCreateSignUpToken, useVerifyOTP } from '@/src/api/user-api';
 import { useGoogleSignIn } from '@/src/shared/hooks/useApi';
-import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
+import { usePostTaskDirect } from '@/src/shared/hooks/useTaskApi';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { useFocusEffect } from '@react-navigation/native';
@@ -37,7 +37,7 @@ export const useSignup = () => {
     scopes: ['openid', 'profile', 'email'],
   });
   const { myTask, resetTask } = useCreateTaskStore();
-  const postTaskMutation = useCreateTask();
+  const postTaskMutation = usePostTaskDirect(); // ✅ Use postTaskDirect for proper image handling
   
   // Form state
   const [firstName, setFirstName] = useState('');
@@ -184,8 +184,10 @@ export const useSignup = () => {
       locationType: !myTask.isRemoval ? (myTask.locationType || 'In-person') : 'In-person',
       budget: myTask.budget || 0,
       currency: "LKR",
-      images: [],
+      images: myTask.photos || [],
     };
+    
+    console.log('📸 Task images from myTask.photos:', myTask.photos?.length || 0, 'images');
     
     // ✅ Include coordinates if available from location selection
     if (!myTask.isRemoval && myTask.coordinates && myTask.coordinates.lat && myTask.coordinates.lng) {
@@ -216,7 +218,17 @@ export const useSignup = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const taskData = convertTaskToAPIFormat();
-      console.log('📝 Task data:', taskData);
+      console.log('📝 [SIGNUP] Task data prepared for posting:', {
+        title: taskData.title,
+        hasImages: !!taskData.images,
+        imageCount: taskData.images?.length || 0,
+        firstImagePreview: taskData.images?.[0]?.substring(0, 50)
+      });
+      console.log('📸 [SIGNUP] CRITICAL: Verifying myTask.photos from store:', {
+        photosExist: !!myTask.photos,
+        photosCount: myTask.photos?.length || 0,
+        photosPreview: myTask.photos?.map(p => p.substring(0, 30))
+      });
       
       const result = await postTaskMutation.mutateAsync(taskData);
       console.log('✅ Pending task posted successfully:', result);
