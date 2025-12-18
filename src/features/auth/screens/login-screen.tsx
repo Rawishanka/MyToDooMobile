@@ -1,7 +1,7 @@
 import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
 import { auth } from '@/src/config/firebase';
 import { useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
-import { useCreateTask } from '@/src/shared/hooks/useTaskApi';
+import { usePostTaskDirect } from '@/src/shared/hooks/useTaskApi';
 import { USER_PROFILE_QUERY_KEYS } from '@/src/shared/hooks/useUserProfileApi';
 import { useClearCachesOnLogin } from '@/src/shared/utils/cache-utils';
 import { checkPendingAction, executePendingAction } from '@/src/shared/utils/pending-action-utils';
@@ -45,7 +45,7 @@ export default function LoginScreen() {
   
   // Task store and mutation for auto-posting pending tasks
   const { myTask, resetTask } = useCreateTaskStore();
-  const postTaskMutation = useCreateTask();
+  const postTaskMutation = usePostTaskDirect(); // ✅ Use postTaskDirect for proper image handling
   const { pendingAction } = usePendingActionStore();
 
   // Check if Firebase Auth is available (native build only)
@@ -196,8 +196,10 @@ export default function LoginScreen() {
       locationType: !myTask.isRemoval ? (myTask.locationType || 'In-person') : 'In-person',
       budget: myTask.budget || 0,
       currency: "LKR",
-      images: [],
+      images: myTask.photos || [],
     };
+    
+    console.log('📸 Task images from myTask.photos:', myTask.photos?.length || 0, 'images');
     
     // ✅ Include coordinates if available from location selection
     if (!myTask.isRemoval && myTask.coordinates && myTask.coordinates.lat && myTask.coordinates.lng) {
@@ -228,7 +230,17 @@ export default function LoginScreen() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const taskData = convertTaskToAPIFormat();
-      console.log('📝 Task data:', taskData);
+      console.log('📝 Task data prepared for posting:', {
+        title: taskData.title,
+        hasImages: !!taskData.images,
+        imageCount: taskData.images?.length || 0,
+        firstImagePreview: taskData.images?.[0]?.substring(0, 50)
+      });
+      console.log('📸 CRITICAL: Verifying myTask.photos from store:', {
+        photosExist: !!myTask.photos,
+        photosCount: myTask.photos?.length || 0,
+        photosPreview: myTask.photos?.map(p => p.substring(0, 30))
+      });
       
       const result = await postTaskMutation.mutateAsync(taskData);
       console.log('✅ Pending task posted successfully:', result);
