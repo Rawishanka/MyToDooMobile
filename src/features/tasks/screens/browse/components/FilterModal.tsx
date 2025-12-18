@@ -3,15 +3,15 @@ import { getCurrencySymbol, getMaxPriceForCurrency } from '@/src/shared/utils/cu
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import {
-  Modal,
-  PanResponder,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Modal,
+    PanResponder,
+    ScrollView,
+    StyleSheet,
+    Switch,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 interface FilterModalProps {

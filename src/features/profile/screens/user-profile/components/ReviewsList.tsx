@@ -1,3 +1,4 @@
+import { normalizeCDNUrl } from '@/src/api/cdn-api';
 import { useGetUserReviews } from '@/src/shared/hooks/useUserProfileApi';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
@@ -159,7 +160,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
               <View key={index} style={styles.attachmentItem}>
                 {attachment.resourceType === 'image' ? (
                   <Image
-                    source={{ uri: attachment.url || attachment.secureUrl }}
+                    source={{ uri: normalizeCDNUrl(attachment.secureUrl || attachment.url) }}
                     style={styles.attachmentImage}
                     resizeMode="cover"
                   />

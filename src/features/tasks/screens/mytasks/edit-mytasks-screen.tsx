@@ -9,18 +9,18 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -589,7 +589,6 @@ Please remove phone numbers and addresses from the image.`,
       if (descriptionLength < 20) missingFields.push('Description (min 20 chars)');
       if (!selectedLocation) missingFields.push('Location');
       if (selectedOption === '') missingFields.push('When');
-      if (!isBudgetValid) missingFields.push(`Budget (min ${currencySymbol}${formatNumber(minimumBudget, { forceDecimals: true })})`);
       
       Alert.alert(
         'Incomplete Form',
@@ -598,8 +597,7 @@ Please remove phone numbers and addresses from the image.`,
         (titleLength < 10 ? '• Title must be at least 10 characters\n' : '') +
         (descriptionLength < 20 ? '• Description must be at least 20 characters\n' : '') +
         (!selectedLocation ? '• Select a location\n' : '') +
-        (selectedOption === '' ? '• Select when you need this done\n' : '') +
-        (!isBudgetValid ? `• Budget must be at least ${currencySymbol}${formatNumber(minimumBudget, { forceDecimals: true })}` : '')
+        (selectedOption === '' ? '• Select when you need this done' : '')
       );
       return;
     }
@@ -1123,37 +1121,8 @@ Please remove phone numbers and addresses from the image.`,
         {/* Divider */}
         <View style={styles.divider} />
 
-        {/* SECTION 4: BUDGET */}
-        <View style={styles.section}>
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Budget (Optional)</Text>
-            <Text style={styles.helperText}>
-              Minimum recommended: {currencySymbol}{formatNumber(minimumBudget)}. You can negotiate the final price later.
-            </Text>
-            <View style={[
-              styles.budgetInputContainer,
-              budgetError && budgetTouched && styles.inputError
-            ]}>
-              <Text style={styles.currencySymbol}>{currencySymbol}</Text>
-              <TextInput
-                style={styles.budgetTextInput}
-                value={budget}
-                onChangeText={handleBudgetChange}
-                onFocus={handleBudgetFocus}
-                onBlur={handleBudgetBlur}
-                keyboardType="decimal-pad"
-                placeholder={minimumBudget.toString()}
-                placeholderTextColor="#999"
-              />
-            </View>
-            {budgetError && budgetTouched && (
-              <Text style={styles.errorText}>{budgetError}</Text>
-            )}
-            {budget && !budgetError && parseFloat(budget) >= minimumBudget && (
-              <Text style={styles.successText}>✓ Valid budget amount</Text>
-            )}
-          </View>
-        </View>
+        {/* SECTION 4: BUDGET - HIDDEN (Cannot be changed after task creation) */}
+        {/* Budget field is intentionally hidden in edit mode to prevent changes after task creation */}
         </ScrollView>
 
         {/* Date Picker */}

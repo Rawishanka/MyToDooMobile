@@ -3,7 +3,6 @@ import { useGetTaskOffers } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
 import {
     FlatList,
     StatusBar,

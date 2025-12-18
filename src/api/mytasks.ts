@@ -356,12 +356,12 @@ export function useApiFunctions() {
   async function handleGoogleSignIn(firebaseIdToken: string) {
     // NEW: Use Firebase authentication endpoint
     const api = createApi(API_CONFIG.BASE_URL);
-    console.log("🔐 Calling Firebase Auth API:", API_CONFIG.BASE_URL + "/users/firebase-auth");
+    console.log("🔐 Calling Firebase Auth API:", API_CONFIG.BASE_URL + "/auth/google");
     console.log("📤 Sending Firebase ID Token to backend");
 
     try {
       // Send Firebase ID Token to backend for verification
-      const response = await api.post('/users/firebase-auth', { 
+      const response = await api.post('/auth/google', { 
         firebaseToken: firebaseIdToken 
       });
       

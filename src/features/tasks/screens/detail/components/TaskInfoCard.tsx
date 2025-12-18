@@ -1,7 +1,6 @@
 import { normalizeCDNUrl } from '@/src/api/cdn-api';
 import { Task } from '@/src/api/types/tasks';
-import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
-import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
+import { CurrencyInfo, formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
 import { TaskImageDebug } from '@/src/shared/utils/task-image-debug';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
@@ -23,8 +22,6 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   getTimeDisplay,
   refetch, // Added refetch prop
 }) => {
-  // Use current user's location for currency auto-detection
-  const { countryInfo, isInitialized } = useLocationCountry();
   
   // Helper: Format date for display
   const formatTaskDate = (date: string | undefined) => {
@@ -845,13 +842,12 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         <View style={styles.budgetInfo}>
           <Text style={styles.budgetAmount}>
             {(() => {
-              if (!isInitialized || !countryInfo) {
-                return 'Loading...';
-              }
               const budget = task.budget;
-              // Use user's current location for currency display (auto geo-location)
-              const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
-              return budget ? formatCurrency(budget, userCurrencyInfo) : `${userCurrencyInfo.symbol}0.00`;
+              // Use task's own currency instantly (from backend)
+              const taskCurrency = task.currency || 'LKR';
+              const symbol = getCurrencySymbol(taskCurrency);
+              const currencyInfo: CurrencyInfo = { code: taskCurrency, symbol: symbol };
+              return budget ? formatCurrency(budget, currencyInfo) : `${symbol}0.00`;
             })()}
           </Text>
           <Text style={styles.budgetLabel}>Budget</Text>

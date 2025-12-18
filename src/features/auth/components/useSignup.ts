@@ -641,20 +641,54 @@ export const useSignup = () => {
       setGoogleLoading(true);
       console.log('🔐 Starting Google Sign-In for signup...');
       
-      // Show message that Google Sign-In requires APK build
-      Alert.alert(
-        '📱 Native Build Required',
-        'Google Sign-In/Sign-Up requires native Firebase modules and only works in APK builds.\n\n✅ You can still create an account with email/password in Expo Go.\n\n🔧 To use Google Sign-Up:\n1. Build APK with: eas build --platform android\n2. Install APK on device\n3. Test Google Sign-Up',
-        [{ text: 'OK, I Understand' }]
-      );
-      setGoogleLoading(false);
-      return;
+      // Check if in Expo Go
+      const Constants = await import('expo-constants').then(m => m.default);
+      const isExpoGo = Constants.appOwnership === 'expo';
+      
+      if (isExpoGo) {
+        // Show message that Google Sign-In requires APK build
+        Alert.alert(
+          '📱 Native Build Required',
+          'Google Sign-In/Sign-Up requires native Firebase modules and only works in APK builds.\n\n✅ You can still create an account with email/password in Expo Go.\n\n🔧 To use Google Sign-Up:\n1. Build APK with: eas build --platform android\n2. Install APK on device\n3. Test Google Sign-Up',
+          [{ text: 'OK, I Understand' }]
+        );
+        setGoogleLoading(false);
+        return;
+      }
+      
+      console.log('🔐 Starting Firebase Google Sign-In for signup...');
+      
+      // Import Firebase Auth service
+      const { signInWithGoogle } = await import('@/src/services/firebase-auth-service');
+      
+      // Get Firebase ID Token (Firebase SDK handles everything!)
+      const firebaseIdToken = await signInWithGoogle();
+      console.log('✅ Got Firebase ID Token');
+      
+      // Send to backend /users/firebase-auth
+      await handleGoogleSignInSuccess(firebaseIdToken);
       
     } catch (error: any) {
-      if (__DEV__) {
-        console.log('ℹ️ Google Sign-In error:', error?.message);
+      console.log('❌ Firebase Google Sign-In Error:', error?.message || 'Unknown error');
+      console.log('Error code:', error?.code);
+      
+      let errorMessage = 'Unable to complete Google Sign-In. Please try again.';
+      
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        errorMessage = 'An account already exists with the same email address.';
+      } else if (error.code === 'auth/invalid-credential') {
+        errorMessage = 'Invalid Google credentials. Please try again.';
+      } else if (error.code === 'auth/network-request-failed') {
+        errorMessage = 'Network error. Please check your internet connection.';
+      } else if (error.code === -5) {
+        // User cancelled
+        console.log('User cancelled Google Sign-In');
+        setGoogleLoading(false);
+        return;
       }
-      Alert.alert('Error', 'Failed to start Google Sign-In. Please try again.');
+      
+      Alert.alert('Sign-In Error', errorMessage, [{ text: 'OK' }]);
+    } finally {
       setGoogleLoading(false);
     }
   };

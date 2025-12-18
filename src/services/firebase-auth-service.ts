@@ -40,10 +40,11 @@ export const signInWithGoogle = async (): Promise<string> => {
     
     console.log('🔐 Configuring Google Sign-In with Firebase...');
     
-    // Configure Google Sign-In - Web Client ID will be automatically retrieved from google-services.json
-    // If not present, we'll get the ID token directly without Firebase Auth
+    // Configure Google Sign-In with Web Client ID for APK build
+    // This is required for Google Sign-In to work in production builds
     try {
       await GoogleSignin.configure({
+        webClientId: 'BO7gNAaYv5CF2jCkBkPW2I6JpO1rBMYSQE0pkhesIBGJ7mVadKq6oTwkVxjivYVnCmr-lWnAEP6rWGOFUO12CFs',
         scopes: ['email', 'profile'],
         offlineAccess: false,
       });

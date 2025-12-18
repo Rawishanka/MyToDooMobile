@@ -724,12 +724,6 @@ export default function AccountScreen() {
             <View style={styles.statItem}>
               <Text style={styles.statText}>{userData.completedTasks || 0} tasks completed</Text>
             </View>
-            {userData.isVerified && (
-              <View style={styles.verifiedBadge}>
-                <Ionicons name="checkmark-circle" size={16} color="#28a745" />
-                <Text style={styles.verifiedText}>Verified</Text>
-              </View>
-            )}
           </View>
         )}
         
@@ -914,17 +908,6 @@ export default function AccountScreen() {
             : "Update your personal information"}
           disabled={false}
         />
-        <MenuItem 
-          icon={<Ionicons name="shield-checkmark-outline" size={20} color="#0052A2" />}
-          text="ID Verification"
-          onPress={navigateToIDVerification} 
-          subtext={idVerificationStatus === 'locked'
-            ? "Request access to verify"
-            : idVerificationStatus === 'pending'
-            ? "Pending admin approval"
-            : userData?.isVerified ? "Identity verified" : "Verify your identity to build trust"}
-          disabled={false}
-        />
         
         <Text style={styles.sectionTitle}>ACCOUNT SETTINGS</Text>
         <MenuItem 
@@ -952,20 +935,6 @@ export default function AccountScreen() {
           text="Task alerts for Taskers"
           subtext="Be the first to know relevant tasks" 
           onPress={navigateToTaskAlerts}        
-        />
-
-        <Text style={styles.sectionTitle}>FOR TASKERS</Text>
-        <MenuItem 
-          icon={<Feather name="bar-chart-2" size={20} color="#0052A2" />}
-          text="My dashboard" 
-          subtext={undefined} 
-          onPress={navigateToDashboard}        
-        />
-        <MenuItem 
-          icon={<Feather name="list" size={20} color="#0052A2" />}
-          text="List my services"
-          subtext="Create listings for your services so customers come to you" 
-          onPress={undefined}        
         />
 
         <Text style={styles.sectionTitle}>HELP AND SUPPORT</Text>

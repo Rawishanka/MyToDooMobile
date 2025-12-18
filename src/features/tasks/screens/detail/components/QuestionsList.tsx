@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { ActivityIndicator, Dimensions, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import { normalizeCDNUrl } from '@/src/api/cdn-api';
 import { isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -129,8 +130,9 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   
   // Function to open image viewer
   const openImageViewer = (imageUrl: string) => {
-    console.log('📸 Opening image viewer for:', imageUrl);
-    setSelectedImageUrl(imageUrl);
+    const normalizedUrl = normalizeCDNUrl(imageUrl);
+    console.log('📸 Opening image viewer for:', { original: imageUrl, normalized: normalizedUrl });
+    setSelectedImageUrl(normalizedUrl);
     setImageModalVisible(true);
   };
   
@@ -401,7 +403,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                           {/* Image Preview Thumbnail */}
                           {attachment.resourceType === 'image' && (attachment.url || attachment.secureUrl) && (
                             <Image 
-                              source={{ uri: attachment.secureUrl || attachment.url }}
+                              source={{ uri: normalizeCDNUrl(attachment.secureUrl || attachment.url) }}
                               style={styles.attachmentThumbnail}
                               resizeMode="cover"
                             />
@@ -470,7 +472,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                               {/* Image Preview Thumbnail */}
                               {attachment.resourceType === 'image' && (attachment.url || attachment.secureUrl) && (
                                 <Image 
-                                  source={{ uri: attachment.secureUrl || attachment.url }}
+                                  source={{ uri: normalizeCDNUrl(attachment.secureUrl || attachment.url) }}
                                   style={styles.answerAttachmentThumbnail}
                                   resizeMode="cover"
                                 />

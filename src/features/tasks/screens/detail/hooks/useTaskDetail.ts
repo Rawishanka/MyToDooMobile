@@ -1,11 +1,11 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  useAcceptOffer,
-  useGetTaskById,
-  useGetTaskOffers,
-  useGetTaskQuestions,
-  usePostTaskQuestion,
+    useAcceptOffer,
+    useGetTaskById,
+    useGetTaskOffers,
+    useGetTaskQuestions,
+    usePostTaskQuestion,
 } from '../../../../../shared/hooks/useTaskApi';
 import { useAuthStore } from '../../../../../store/auth-task-store';
 
