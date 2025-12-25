@@ -44,9 +44,9 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: true, // ✅ Refetch when app comes to foreground
       refetchOnMount: true, // ✅ Refetch when component mounts
       refetchOnReconnect: true, // ✅ Refetch when internet reconnects
-      staleTime: 5000, // ✅ FIXED: 5 second stale time prevents constant refetching on fresh installs
+      staleTime: 1000, // ✅ OPTIMIZED: 1 second stale time for faster real-time updates between devices
       gcTime: 5 * 60 * 1000, // Cache for 5 minutes (formerly cacheTime)
-      refetchInterval: false, // ✅ FIXED: Disabled auto-refetch that was causing race conditions in APK
+      refetchInterval: 1000, // ✅ REAL-TIME: Auto-refetch every 1 second for immediate cross-device synchronization
     },
     mutations: {
       retry: false, // Don't retry mutations by default

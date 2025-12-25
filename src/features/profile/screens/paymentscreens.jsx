@@ -24,30 +24,6 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount }) => (
         <Text style={styles.menuText}>Setup Payout Account</Text>
         <Ionicons name="chevron-forward" size={20} color="#999" />
       </TouchableOpacity>
-      
-      <TouchableOpacity 
-        style={styles.menuItem}
-        onPress={() => onNavigate('payoutHistory')}
-      >
-        <Text style={styles.menuText}>View Payout History</Text>
-        <Ionicons name="chevron-forward" size={20} color="#999" />
-      </TouchableOpacity>
-      
-      <TouchableOpacity 
-        style={styles.menuItem}
-        onPress={() => onNavigate('paymentHistory')}
-      >
-        <Text style={styles.menuText}>Payment history</Text>
-        <Ionicons name="chevron-forward" size={20} color="#999" />
-      </TouchableOpacity>
-      
-      <TouchableOpacity 
-        style={styles.menuItem}
-        onPress={() => onNavigate('paymentMethods')}
-      >
-        <Text style={styles.menuText}>Update payment methods</Text>
-        <Ionicons name="chevron-forward" size={20} color="#999" />
-      </TouchableOpacity>
     </View>
   </View>
 );

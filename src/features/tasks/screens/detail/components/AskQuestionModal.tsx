@@ -1,7 +1,7 @@
 import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 interface AskQuestionModalProps {
   visible: boolean;
@@ -46,63 +46,72 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
       onRequestClose={handleClose}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Ask a Question</Text>
-            <TouchableOpacity onPress={handleClose}>
-              <Ionicons name="close" size={24} color="#000" />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.keyboardAvoidingView}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Ask a Question</Text>
+              <TouchableOpacity onPress={handleClose}>
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView 
+              style={styles.scrollContainer} 
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Question Input */}
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.questionInput}
+                  placeholder="Type your question here..."
+                  placeholderTextColor="#999"
+                  value={questionText}
+                  onChangeText={onChangeText}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                />
+              </View>
+
+              {/* Compact AttachmentPicker */}
+              <AttachmentPicker
+                attachments={attachments}
+                onAttachmentsChange={setAttachments}
+                maxAttachments={3}
+                allowImages={true}
+                allowDocuments={true}
+              />
+
+              {/* Guidelines */}
+              <View style={styles.guidelinesContainer}>
+                <Text style={styles.guidelinesTitle}>💡 Question Tips:</Text>
+                <Text style={styles.guideline}>• Be specific and clear in your question</Text>
+                <Text style={styles.guideline}>• Include images if they help explain your question</Text>
+                <Text style={styles.guideline}>• Attach relevant documents if needed</Text>
+                <Text style={styles.guideline}>• Ask about task details, requirements, or timeline</Text>
+              </View>
+            </ScrollView>
+
+            <TouchableOpacity
+              style={[
+                styles.submitQuestionButton,
+                !questionText.trim() && styles.submitQuestionButtonDisabled,
+              ]}
+              onPress={handleSubmit}
+              disabled={!questionText.trim() || isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.submitQuestionButtonText}>Submit Question</Text>
+              )}
             </TouchableOpacity>
           </View>
-
-          <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-            {/* Question Input */}
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.questionInput}
-                placeholder="Type your question here..."
-                placeholderTextColor="#999"
-                value={questionText}
-                onChangeText={onChangeText}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-              />
-            </View>
-
-            {/* Compact AttachmentPicker */}
-            <AttachmentPicker
-              attachments={attachments}
-              onAttachmentsChange={setAttachments}
-              maxAttachments={3}
-              allowImages={true}
-              allowDocuments={true}
-            />
-
-            {/* Guidelines */}
-            <View style={styles.guidelinesContainer}>
-              <Text style={styles.guidelinesTitle}>💡 Question Tips:</Text>
-              <Text style={styles.guideline}>• Be specific and clear in your question</Text>
-              <Text style={styles.guideline}>• Include images if they help explain your question</Text>
-              <Text style={styles.guideline}>• Attach relevant documents if needed</Text>
-              <Text style={styles.guideline}>• Ask about task details, requirements, or timeline</Text>
-            </View>
-          </ScrollView>
-
-          <TouchableOpacity
-            style={[
-              styles.submitQuestionButton,
-              !questionText.trim() && styles.submitQuestionButtonDisabled,
-            ]}
-            onPress={handleSubmit}
-            disabled={!questionText.trim() || isSubmitting}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.submitQuestionButtonText}>Submit Question</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
@@ -113,6 +122,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
+  },
+  keyboardAvoidingView: {
+    width: '100%',
   },
   modalContent: {
     backgroundColor: '#fff',

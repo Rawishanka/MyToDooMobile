@@ -106,18 +106,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     console.log("🚫 isAuthenticated set to FALSE in store");
     
     // Clear stored credentials from AsyncStorage
+    // NOTE: We preserve 'saved_email', 'saved_password', and 'remember_me' for Remember Me functionality
     try {
       await AsyncStorage.multiRemove([
         'token', 
         'user', 
         'expiresIn',
         'userEmail', 
-        'userPassword',
-        'saved_email',
-        'saved_password',
-        'remember_me'
+        'userPassword'
       ]);
-      console.log("✅ All auth data cleared from AsyncStorage");
+      console.log("✅ Auth tokens cleared from AsyncStorage (Remember Me credentials preserved)");
       
       // Verify token was actually removed
       const verifyToken = await AsyncStorage.getItem('token');

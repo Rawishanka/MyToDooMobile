@@ -28,14 +28,25 @@ export function useGetUserProfile() {
   const { isAuthenticated, token, user } = useAuthStore();
   const queryClient = useQueryClient();
   
-  // Clear profile cache whenever user changes
+  // Track previous user ID to only clear cache when user actually changes
+  const prevUserIdRef = React.useRef<string | undefined>(undefined);
+  
+  // Clear profile cache only when user ID actually changes (not on every mount)
   React.useEffect(() => {
-    console.log("🔄 Auth user changed - clearing profile cache", { 
-      userId: user?._id, 
-      userEmail: user?.email 
-    });
-    queryClient.removeQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
-  }, [user?._id, queryClient]);
+    const currentUserId = user?._id;
+    
+    // Only clear if user ID changed from a different value (not initial mount or same user)
+    if (prevUserIdRef.current !== undefined && prevUserIdRef.current !== currentUserId) {
+      console.log("🔄 User changed - clearing profile cache", { 
+        prevUserId: prevUserIdRef.current,
+        newUserId: currentUserId,
+        userEmail: user?.email 
+      });
+      queryClient.removeQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
+    }
+    
+    prevUserIdRef.current = currentUserId;
+  }, [user?._id, user?.email, queryClient]);
   
   // Check if we have minimum auth requirements
   const hasMinimumAuth = isAuthenticated && !!token;
@@ -72,7 +83,8 @@ export function useGetUserRatingStats(userId: string, enabled = true) {
     queryKey: USER_PROFILE_QUERY_KEYS.ratingStats(userId),
     queryFn: () => UserProfileAPI.getUserRatingStats(userId),
     enabled: enabled && !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 1000, // 10 seconds - optimized for real-time rating updates
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
     select: (response) => {
       const data = response.data;
       // Transform API response to match expected format
@@ -108,7 +120,8 @@ export function useGetUserReviews(
     queryKey: [...USER_PROFILE_QUERY_KEYS.reviews(userId), page, limit, role],
     queryFn: () => UserProfileAPI.getUserReviews(userId, page, limit, role),
     enabled: enabled && !!userId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 10 * 1000, // 10 seconds - optimized for real-time review updates
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
     select: (response: any) => {
       console.log('🔍 useGetUserReviews select - raw response:', response);
       
@@ -136,7 +149,8 @@ export function useCanReviewUser(userId: string, enabled = true) {
     queryKey: USER_PROFILE_QUERY_KEYS.canReview(userId),
     queryFn: () => UserProfileAPI.canReviewUser(userId),
     enabled: enabled && !!userId,
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 5 * 1000, // 5 seconds - optimized for real-time review eligibility updates
+    refetchInterval: 5000, // Auto-refresh every 5 seconds
   });
 }
 

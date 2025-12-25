@@ -28,9 +28,15 @@ interface UserProfile {
 interface UserInfoCardProps {
   user: UserProfile;
   formatDate: (date: string) => string;
+  actualRating?: number;
+  actualTotalReviews?: number;
 }
 
-export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, formatDate }) => {
+export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, formatDate, actualRating, actualTotalReviews }) => {
+  // Use actual rating data if available, otherwise fall back to user data
+  const displayRating = actualRating !== undefined ? actualRating : (user.rating || 0);
+  const displayReviews = actualTotalReviews !== undefined ? actualTotalReviews : (user.totalReviews || 0);
+  
   const renderStars = (rating: number) => {
     return (
       <View style={styles.starsContainer}>
@@ -70,9 +76,9 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, formatDate }) 
           </Text>
 
           <View style={styles.ratingContainer}>
-            {renderStars(user.rating)}
+            {renderStars(displayRating)}
             <Text style={styles.ratingText}>
-              {user.rating.toFixed(1)} ({user.totalReviews} reviews)
+              {displayRating.toFixed(1)} ({displayReviews} review{displayReviews !== 1 ? 's' : ''})
             </Text>
           </View>
 

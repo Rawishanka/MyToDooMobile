@@ -1,12 +1,13 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  useAcceptOffer,
-  useGetTaskById,
-  useGetTaskOffers,
-  useGetTaskQuestions,
-  usePostTaskQuestion,
+    useAcceptOffer,
+    useGetTaskById,
+    useGetTaskOffers,
+    useGetTaskQuestions,
+    usePostTaskQuestion,
 } from '../../../../../shared/hooks/useTaskApi';
+import { useGetStripeAccountStatus } from '../../../../../shared/hooks/useStripeConnectApi';
 import { useAuthStore } from '../../../../../store/auth-task-store';
 
 interface UseTaskDetailProps {
@@ -24,6 +25,9 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
+  
+  // Stripe Payout Account Modal State (for Make Offer check)
+  const [showPayoutModal, setShowPayoutModal] = useState(false);
 
   // Fetch task details
   const {
@@ -61,6 +65,10 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
 
   // Accept offer mutation
   const acceptOfferMutation = useAcceptOffer();
+  
+  // Check if user has setup payout account (for Make Offer button)
+  const { data: accountStatus, isLoading: isLoadingStripe, error: stripeError } = useGetStripeAccountStatus(true);
+  const hasPayoutAccount = !stripeError && accountStatus && accountStatus.detailsSubmitted && accountStatus.payoutsEnabled;
 
   // Cleanup modal states when component unmounts or taskId changes
   useEffect(() => {
@@ -71,6 +79,7 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
       setShowPaymentModal(false);
       setSelectedOfferId(null);
       setSelectedOffer(null);
+      setShowPayoutModal(false);
     };
   }, [taskId]);
 
@@ -125,6 +134,21 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
   );
 
   const handleMakeOffer = () => {
+    console.log('🔘 [TaskDetail] Make Offer button clicked');
+    console.log('💳 Payout check:', { 
+      hasPayoutAccount, 
+      willShowModal: !hasPayoutAccount,
+      stripeError: stripeError?.message || stripeError?.status
+    });
+    
+    // Check if payout account is setup BEFORE navigating to offer screen
+    if (!hasPayoutAccount) {
+      console.log('⚠️ No payout account - showing modal');
+      setShowPayoutModal(true);
+      return;
+    }
+    
+    console.log('✅ Payout account verified - navigating to offer screen');
     router.push(`/make-offer-screen?taskId=${taskId}`);
   };
 
@@ -268,5 +292,10 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     selectedOffer,
     handleClosePaymentModal,
     handlePaymentSuccess,
+    // Stripe Payout Modal (for Make Offer)
+    showPayoutModal,
+    setShowPayoutModal,
+    hasPayoutAccount,
+    isLoadingStripe,
   };
 };

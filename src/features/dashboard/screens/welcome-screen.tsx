@@ -234,7 +234,7 @@ export default function WelcomeScreen() {
           
           <TextInput
             style={styles.input}
-            placeholder="In a few words what do you need done?"
+            placeholder="In a few words what do you need"
             placeholderTextColor="#999"
             value={taskInput}
             onChangeText={(text) => {
@@ -486,9 +486,9 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    paddingHorizontal: wp('3%'),
+    paddingHorizontal: wp('4%'),
     paddingVertical: hp('1.8%'),
-    fontSize: RFValue(isTablet ? 14 : 15),
+    fontSize: RFValue(isTablet ? 14 : 13),
     marginBottom: hp('2%'),
     minHeight: isTablet ? hp('6%') : hp('6.5%'),
     width: '100%',
@@ -502,6 +502,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 3,
     flexShrink: 1,
+    includeFontPadding: false,
   },
   errorText: {
     color: '#ff4444',

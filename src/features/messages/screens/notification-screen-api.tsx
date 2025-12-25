@@ -1,10 +1,9 @@
-// FCM Notification Screen - Push Notifications Only
-// Note: Backend doesn't have /api/notifications endpoint for history
-// This screen only tests FCM push notification sending
+// FCM Notification Screen - With Local History Storage
+// Notifications are stored locally in AsyncStorage (similar to web's localStorage)
 import { sendQuickTestNotification } from '@/src/api/notification-api';
 import { useGetFCMTokens } from '@/src/shared/hooks/useFCM';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -15,6 +14,15 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import {
+  getNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteNotification,
+  getNotificationStats,
+  type StoredNotification,
+} from '@/src/services/notification-storage';
+import { NotificationHistoryList } from '@/src/features/messages/components/NotificationHistoryList';
 
 interface NotificationModalProps {
   visible: boolean;
@@ -26,6 +34,10 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
   onClose,
 }) => {
   const [isSendingTest, setIsSendingTest] = useState(false);
+  const [notifications, setNotifications] = useState<StoredNotification[]>([]);
+  const [notificationStats, setNotificationStats] = useState({ total: 0, unread: 0, read: 0 });
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<'all' | 'unread' | 'read'>('all');
   
   // Check FCM token status
   const { data: fcmTokensData, isLoading: fcmLoading, error: fcmError } = useGetFCMTokens();
@@ -33,6 +45,55 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
   // Check if FCM is properly set up
   const fcmTokens = fcmTokensData?.data?.tokens || [];
   const isFCMConfigured = fcmTokens.length > 0;
+
+  // Load notification history
+  const loadNotifications = useCallback(async () => {
+    setIsLoadingHistory(true);
+    try {
+      const [allNotifications, stats] = await Promise.all([
+        getNotifications(),
+        getNotificationStats(),
+      ]);
+      setNotifications(allNotifications);
+      setNotificationStats(stats);
+    } catch (error) {
+      console.error('❌ Error loading notifications:', error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, []);
+
+  // Load notifications when modal opens
+  useEffect(() => {
+    if (visible) {
+      loadNotifications();
+    }
+  }, [visible, loadNotifications]);
+
+  // Filter notifications based on selected tab
+  const filteredNotifications = notifications.filter(n => {
+    if (selectedTab === 'unread') return !n.isRead;
+    if (selectedTab === 'read') return n.isRead;
+    return true;
+  });
+
+  // Handle mark as read
+  const handleMarkAsRead = async (id: string) => {
+    await markNotificationAsRead(id);
+    await loadNotifications();
+  };
+
+  // Handle mark all as read
+  const handleMarkAllAsRead = async () => {
+    await markAllNotificationsAsRead();
+    await loadNotifications();
+  };
+
+  // Handle delete
+  const handleDelete = async (id: string) => {
+    await deleteNotification(id);
+    await loadNotifications();
+  };
 
   // Handle sending test notification via backend
   const handleSendTestNotification = async () => {
@@ -77,6 +138,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
   // Log FCM status for debugging
   useEffect(() => {
     if (visible) {
+      // Log FCM status for debugging
       const isExpoGo = __DEV__ && !process.env.EAS_BUILD;
       
       console.log('\n📱 ========== FCM NOTIFICATION STATUS ==========');
@@ -86,6 +148,10 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
       console.log('  - Configured:', isFCMConfigured);
       console.log('  - Total Devices:', fcmTokensData?.data?.totalDevices || 0);
       console.log('  - Tokens:', fcmTokens.length);
+      console.log('\n📜 Notification History (AsyncStorage):');
+      console.log('  - Total:', notificationStats.total);
+      console.log('  - Unread:', notificationStats.unread);
+      console.log('  - Read:', notificationStats.read);
       
       if (isExpoGo) {
         console.log('\n⚠️  EXPO GO DETECTED:');
@@ -93,12 +159,11 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
         console.log('  - Run: npx eas build --platform android --profile development');
       }
       
-      console.log('\n💡 Note: Backend does not have /api/notifications endpoint');
-      console.log('   Only FCM push notifications are supported');
-      console.log('   Notification history is not available\n');
+      console.log('\n💡 Note: Notifications are stored locally in AsyncStorage');
+      console.log('   Similar to web implementation using localStorage');
       console.log('================================================\n');
     }
-  }, [visible, isFCMConfigured, fcmTokensData, fcmLoading, fcmError, fcmTokens]);
+  }, [visible, isFCMConfigured, fcmTokensData, fcmLoading, fcmError, fcmTokens, notificationStats]);
 
   return (
     <Modal
@@ -116,9 +181,22 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
             <Ionicons name="chevron-back" size={24} color="#000" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerTitle}>Push Notifications</Text>
+            <Text style={styles.headerTitle}>Notifications</Text>
+            {notificationStats.total > 0 && (
+              <View style={styles.headerBadge}>
+                <Text style={styles.headerBadgeText}>{notificationStats.total}</Text>
+              </View>
+            )}
           </View>
-          <View style={styles.markAllButton} />
+          {notificationStats.unread > 0 && (
+            <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.markAllButton}>
+              <Ionicons name="checkmark-done" size={20} color="#007bff" />
+              <Text style={styles.markAllText}>Mark all read</Text>
+            </TouchableOpacity>
+          )}
+          {notificationStats.unread === 0 && (
+            <View style={styles.markAllButton} />
+          )}
         </View>
 
         {/* Expo Go Warning */}
@@ -131,85 +209,65 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
           </View>
         )}
 
-        {/* FCM Status Card */}
-        <View style={styles.statusCard}>
-          <View style={styles.statusHeader}>
-            <Ionicons 
-              name={isFCMConfigured ? "checkmark-circle" : "alert-circle"} 
-              size={24} 
-              color={isFCMConfigured ? "#28a745" : "#ffc107"} 
-            />
-            <Text style={styles.statusTitle}>
-              {isFCMConfigured 
-                ? 'FCM Configured' 
-                : (__DEV__ && !process.env.EAS_BUILD) 
-                  ? 'Expo Go Mode - FCM Unavailable'
-                  : 'FCM Not Configured'}
-            </Text>
-          </View>
-          
-          <View style={styles.statusDetails}>
-            <Text style={styles.statusLabel}>Status:</Text>
-            <Text style={[styles.statusValue, { color: isFCMConfigured ? '#28a745' : '#ffc107' }]}>
-              {fcmLoading ? 'Loading...' : isFCMConfigured ? 'Ready' : 'Not Ready'}
-            </Text>
-          </View>
-          
-          <View style={styles.statusDetails}>
-            <Text style={styles.statusLabel}>Devices:</Text>
-            <Text style={styles.statusValue}>
-              {fcmTokensData?.data?.totalDevices || 0}
-            </Text>
-          </View>
-          
-          <View style={styles.statusDetails}>
-            <Text style={styles.statusLabel}>Tokens:</Text>
-            <Text style={styles.statusValue}>
-              {fcmTokens.length}
-            </Text>
-          </View>
-        </View>
-
         {/* Info Message */}
         <View style={styles.infoCard}>
           <Ionicons name="information-circle" size={20} color="#0c5460" />
           <Text style={styles.infoText}>
             Push notifications are sent when you receive messages, offers, or task updates. 
-            They appear in your device's notification tray.
+            {isFCMConfigured ? ' Notification history is stored locally on your device.' : ' They appear in your device\'s notification tray.'}
           </Text>
         </View>
 
-        {/* Main Content */}
-        <View style={styles.centerContainer}>
-          <Ionicons name="notifications" size={64} color="#ccc" />
-          <Text style={styles.emptyText}>FCM Push Notifications</Text>
-          <Text style={styles.emptySubtext}>
-            This feature sends push notifications to your device. Notification history is not available.
-          </Text>
-          
-          {/* FCM Test Button */}
-          {isFCMConfigured && (
-            <TouchableOpacity 
-              style={[styles.testButton, isSendingTest && styles.testButtonDisabled]}
-              onPress={handleSendTestNotification}
-              disabled={isSendingTest}
+        {/* Tabs */}
+        {notifications.length > 0 && (
+          <View style={styles.tabContainer}>
+            <TouchableOpacity
+              style={[styles.tab, selectedTab === 'all' && styles.tabActive]}
+              onPress={() => setSelectedTab('all')}
             >
-              {isSendingTest ? (
-                <>
-                  <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-                  <Text style={styles.testButtonText}>Sending...</Text>
-                </>
-              ) : (
-                <>
-                  <Ionicons name="notifications" size={20} color="#fff" style={{ marginRight: 8 }} />
-                  <Text style={styles.testButtonText}>Send Test Notification</Text>
-                </>
-              )}
+              <Text style={[styles.tabText, selectedTab === 'all' && styles.tabTextActive]}>
+                All ({notificationStats.total})
+              </Text>
             </TouchableOpacity>
-          )}
+            <TouchableOpacity
+              style={[styles.tab, selectedTab === 'unread' && styles.tabActive]}
+              onPress={() => setSelectedTab('unread')}
+            >
+              <Text style={[styles.tabText, selectedTab === 'unread' && styles.tabTextActive]}>
+                Unread ({notificationStats.unread})
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tab, selectedTab === 'read' && styles.tabActive]}
+              onPress={() => setSelectedTab('read')}
+            >
+              <Text style={[styles.tabText, selectedTab === 'read' && styles.tabTextActive]}>
+                Read ({notificationStats.read})
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-          {/* Warning if not configured */}
-          {!isFCMConfigured && (
+        {/* Notification History List */}
+        <View style={styles.listContainer}>
+          <NotificationHistoryList
+            notifications={filteredNotifications}
+            loading={isLoadingHistory}
+            onRefresh={loadNotifications}
+            onMarkAsRead={handleMarkAsRead}
+            onDelete={handleDelete}
+            onNotificationPress={(notification) => {
+              console.log('Notification pressed:', notification);
+              // TODO: Navigate to relevant screen based on notification.data
+            }}
+          />
+        </View>
+
+        {/* Warning if not configured */}
+        {!isFCMConfigured && notifications.length === 0 && (
+          <View style={styles.centerContainer}>
+            <Ionicons name="notifications-off" size={64} color="#ccc" />
+            <Text style={styles.emptyText}>FCM Not Configured</Text>
             <View style={styles.warningCard}>
               <Ionicons name="warning" size={24} color="#856404" />
               <Text style={styles.warningText}>
@@ -218,8 +276,8 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
                   : "Build a native APK to enable push notifications"}
               </Text>
             </View>
-          )}
-        </View>
+          </View>
+        )}
       </View>
     </Modal>
   );
@@ -230,7 +288,7 @@ export default NotificationModalWithAPI;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   header: {
     flexDirection: 'row',
@@ -250,16 +308,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    marginRight: 40,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#000',
   },
+  headerBadge: {
+    backgroundColor: '#007bff',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginLeft: 8,
+  },
+  headerBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   markAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 8,
-    width: 40,
+  },
+  markAllText: {
+    fontSize: 12,
+    color: '#007bff',
+    marginLeft: 4,
+    fontWeight: '500',
   },
   expoGoWarning: {
     flexDirection: 'row',
@@ -278,7 +354,7 @@ const styles = StyleSheet.create({
     color: '#856404',
   },
   statusCard: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     margin: 16,
@@ -329,6 +405,36 @@ const styles = StyleSheet.create({
     color: '#0c5460',
     lineHeight: 18,
   },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabActive: {
+    borderBottomColor: '#007bff',
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#6c757d',
+    fontWeight: '500',
+  },
+  tabTextActive: {
+    color: '#007bff',
+    fontWeight: '600',
+  },
+  listContainer: {
+    flex: 1,
+  },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -349,6 +455,12 @@ const styles = StyleSheet.create({
     marginTop: 8,
     lineHeight: 20,
   },
+  bottomButtonContainer: {
+    padding: 16,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
   testButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -357,8 +469,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,
-    marginTop: 24,
-    minWidth: 200,
   },
   testButtonDisabled: {
     backgroundColor: '#6c757d',

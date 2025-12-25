@@ -13,6 +13,7 @@ import { removeFCMToken, saveFCMToken } from '@/src/api/fcm-api';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { PermissionsAndroid, Platform } from 'react-native';
+import { saveNotification } from './notification-storage';
 
 // ==================== ENVIRONMENT DETECTION ====================
 
@@ -411,7 +412,16 @@ const setupFirebaseHandlers = (queryClient?: any) => {
       data: remoteMessage.data,
     });
     
-    // 🚀 NEW: Trigger real-time data refresh when notification arrives
+    // Save notification to local storage (AsyncStorage) - NON-BLOCKING
+    saveNotification({
+      title: remoteMessage.notification?.title || 'Notification',
+      body: remoteMessage.notification?.body || '',
+      data: remoteMessage.data,
+    }).catch(error => {
+      console.error('Failed to save notification to storage:', error);
+    });
+    
+    // Trigger real-time data refresh when notification arrives
     if (remoteMessage.data?.type) {
       handleNotificationDataRefresh(remoteMessage.data.type, queryClient);
     }
@@ -420,12 +430,28 @@ const setupFirebaseHandlers = (queryClient?: any) => {
     // because foreground messages don't automatically show
     if (Platform.OS === 'android') {
       try {
-        // Display notification using React Native's notification display
-        const notificationId = Date.now().toString();
-        console.log('📱 Displaying foreground notification with ID:', notificationId);
+        const Notifications = require('expo-notifications');
         
-        // The notification will be shown by Android's notification system
-        // This is handled by Firebase internally when properly configured
+        // Configure notification behavior
+        await Notifications.setNotificationHandler({
+          handleNotification: async () => ({
+            shouldShowAlert: true,
+            shouldPlaySound: true,
+            shouldSetBadge: true,
+          }),
+        });
+        
+        // Display the notification locally
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: remoteMessage.notification?.title || 'New Notification',
+            body: remoteMessage.notification?.body || '',
+            data: remoteMessage.data || {},
+          },
+          trigger: null, // Show immediately
+        });
+        
+        console.log('✅ Foreground notification displayed on Android');
       } catch (error) {
         console.error('❌ Error displaying foreground notification:', error);
       }
@@ -440,7 +466,14 @@ const setupFirebaseHandlers = (queryClient?: any) => {
       data: remoteMessage.data,
     });
     
-    // 🚀 NEW: Trigger real-time data refresh when user opens notification
+    // � Save notification to local storage (AsyncStorage) if not already saved
+    saveNotification({
+      title: remoteMessage.notification?.title || 'Notification',
+      body: remoteMessage.notification?.body || '',
+      data: remoteMessage.data,
+    });
+    
+    // �🚀 NEW: Trigger real-time data refresh when user opens notification
     if (remoteMessage.data?.type) {
       handleNotificationDataRefresh(remoteMessage.data.type, queryClient);
     }
@@ -459,7 +492,14 @@ const setupFirebaseHandlers = (queryClient?: any) => {
           data: remoteMessage.data,
         });
         
-        // 🚀 NEW: Trigger real-time data refresh when app opens from notification
+        // � Save notification to local storage (AsyncStorage)
+        saveNotification({
+          title: remoteMessage.notification?.title || 'Notification',
+          body: remoteMessage.notification?.body || '',
+          data: remoteMessage.data,
+        });
+        
+        // �🚀 NEW: Trigger real-time data refresh when app opens from notification
         if (remoteMessage.data?.type) {
           handleNotificationDataRefresh(remoteMessage.data.type, queryClient);
         }

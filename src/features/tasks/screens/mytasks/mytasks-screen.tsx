@@ -8,9 +8,9 @@ import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'r
 // Components
 import { Ionicons } from '@expo/vector-icons';
 import {
-  LoadingState,
-  MyTasksHeader,
-  TaskCard,
+    LoadingState,
+    MyTasksHeader,
+    TaskCard,
 } from './components';
 import SearchBar from './components/SearchModal';
 
@@ -364,6 +364,12 @@ export default function MyTasksScreen() {
         return false;
       }
 
+      // Don't mark tasks with pending cancellation requests as overdue
+      // These should remain in Todoo tab for tasker to respond
+      if (task.status === 'cancel_request_by_poster') {
+        return false;
+      }
+
       // Check if backend already marked it as overdue
       if (task.status === 'overdue') {
         return true;
@@ -502,10 +508,10 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       });
       
       const todoTasksFiltered = taskerAssignedTasks.filter((task: Task) => {
-        // IMPORTANT: After payment, backend sets status to "todo", "assigned", or "in_progress"
+        // IMPORTANT: After payment, backend sets status to "accepted", "todo", "assigned", or "in_progress"
         // and assigns the task to the tasker (assignedTo field set, userRole = "assignee")
         // We show tasks that are ready to work on (not completed, overdue, or cancelled)
-        // NOTE: Tasks with pending cancellation requests keep status until approved
+        // NOTE: Tasks with pending cancellation requests (cancel_request_by_poster) keep status until approved
         
         // Verify task is actually assigned to current user (userRole should be 'assignee')
         const isAssignedToMe = (task as any).userRole === 'assignee';
@@ -524,11 +530,17 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
         }
         
         // Exclude completed, cancelled, and open tasks
+        // BUT INCLUDE tasks with pending cancellation requests (cancel_request_by_poster)
+        // so tasker can see and respond to the cancellation request
         const isExcluded = task.status === 'completed' || 
                           task.status === 'cancelled' || 
                           task.status === 'open';
         
-        const shouldInclude = !isExcluded && isAssignedToMe;
+        // IMPORTANT: Tasks with status 'cancel_request_by_poster' should show in Todoo
+        // so tasker can accept/reject the poster's cancellation request
+        const hasPendingCancellation = task.status === 'cancel_request_by_poster';
+        
+        const shouldInclude = (hasPendingCancellation || !isExcluded) && isAssignedToMe;
         
         if (taskerAssignedTasks.length <= 10) {
           console.log('🎯 Tasker Todoo Tasks Filter (from my-tasks?role=tasker):', {
@@ -539,8 +551,11 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
             userRole: (task as any).userRole,
             isAssignedToMe,
             taskIsOverdue,
+            hasPendingCancellation,
             shouldInclude,
-            reason: shouldInclude ? 'INCLUDED: Task assigned and active' : 
+            reason: shouldInclude ? 
+                   hasPendingCancellation ? 'INCLUDED: Task has pending cancellation request from poster' :
+                   'INCLUDED: Task assigned and active' : 
                    taskIsOverdue ? 'EXCLUDED: Task is overdue (moved to Overdue tab)' :
                    !isAssignedToMe ? 'EXCLUDED: Not assigned to current user' :
                    'EXCLUDED: Task completed/cancelled/open'

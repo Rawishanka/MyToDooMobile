@@ -38,7 +38,7 @@ export default function AcceptOfferScreen() {
 
   // Use user's current location for currency display (auto geo-location)
   const { countryInfo } = useLocationCountry();
-  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
 
   const handleAcceptOffer = async () => {
     try {

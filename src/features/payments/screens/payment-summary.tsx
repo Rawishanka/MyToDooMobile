@@ -41,7 +41,7 @@ export default function PaymentSummaryScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { countryInfo } = useLocationCountry();
-  const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
+  const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
   const currentUser = useAuthStore((state: any) => state.user);
   
   // Role state management

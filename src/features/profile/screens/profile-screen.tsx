@@ -4,11 +4,10 @@ import TermsConditionsScreen from '@/src/features/legal/screens/TermsConditionsS
 import CommunityGuideLines from '@/src/shared/components/custom_components/community-guidelines';
 import ContactUs from '@/src/shared/components/custom_components/contact-us';
 import EditProfileScreen from '@/src/shared/components/custom_components/editprofilescreen';
-import FAQ from '@/src/shared/components/custom_components/faq-screen';
+import FAQScreen from '@/src/shared/components/custom_components/faq-screen';
 import LegalScreen from '@/src/shared/components/custom_components/legal-screen';
 import Logout from '@/src/shared/components/custom_components/Logout';
 import ProfileUpdateForm from '@/src/shared/components/custom_components/profile-update-form';
-import ZendeskHelp from '@/src/shared/components/custom_components/zendesk-help';
 import { useGetUserProfile, useGetUserRatingStats, useGetUserReviews, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
 import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
@@ -30,7 +29,6 @@ import IDVerificationScreen from './id-verification-screen';
 import InsuranceProtection from './isuranceprotection';
 import NotificationPreferences from './notificationpreferences';
 import PaymentScreensApp from './paymentscreens';
-import ServiceFeeConfigScreen from './service-fee-config';
 import TaskAlerts from './taskalerts';
 
 export default function AccountScreen() {
@@ -363,10 +361,6 @@ export default function AccountScreen() {
     setCurrentScreen('payment');
   };
 
-  const navigateToServiceFeeConfig = () => {
-    setCurrentScreen('service-fee-config');
-  };
-
   const navigateToAccount = () => {
     setCurrentScreen('account');
     // Refresh user profile when returning to account screen
@@ -450,7 +444,7 @@ export default function AccountScreen() {
   };
 
   const navigateToFAQ = () => {
-    setCurrentScreen('zendesk');
+    setCurrentScreen('faq');
   };
 
   const navigateToCommunityGuidelines = () => {
@@ -540,11 +534,6 @@ export default function AccountScreen() {
     return <PaymentScreensApp onBackToAccount={navigateToAccount} />;
   }
 
-  // If service fee config screen is selected, show service fee configuration (Admin only)
-  if (currentScreen === 'service-fee-config') {
-    return <ServiceFeeConfigScreen onBackToAccount={navigateToAccount} />;
-  }
-
   // If account info screen is selected, show account information
   if (currentScreen === 'account-info') {
     return <AccountInformation onBack={navigateToAccount} />;
@@ -570,11 +559,7 @@ export default function AccountScreen() {
   }
 
   if (currentScreen === 'faq') {
-    return <FAQ visible={true} onClose={navigateToAccount} />;
-  } 
-
-  if (currentScreen === 'zendesk') {
-    return <ZendeskHelp visible={true} onClose={navigateToAccount} />;
+    return <FAQScreen visible={true} onClose={navigateToAccount} onContactSupport={navigateToContactUs} />;
   }
 
   if (currentScreen === 'community-guidelines') {
@@ -734,12 +719,6 @@ export default function AccountScreen() {
             <View style={styles.statItem}>
               <Text style={styles.statText}>{userData.completedTasks || 0} tasks completed</Text>
             </View>
-            {userData.isVerified && (
-              <View style={styles.verifiedBadge}>
-                <Ionicons name="checkmark-circle" size={16} color="#28a745" />
-                <Text style={styles.verifiedText}>Verified</Text>
-              </View>
-            )}
           </View>
         )}
         
@@ -880,10 +859,13 @@ export default function AccountScreen() {
                 );
               })()}
               
-              <GetMoreReviewsSection 
-                userId={userId}
-                userName={userData?.firstName || 'User'}
-              />
+              {/* Hidden: Get More Reviews Section - kept for future use */}
+              {false && (
+                <GetMoreReviewsSection 
+                  userId={userId}
+                  userName={userData?.firstName || 'User'}
+                />
+              )}
               
               <ReviewsList userId={userId} />
             </>
@@ -924,17 +906,6 @@ export default function AccountScreen() {
             : "Update your personal information"}
           disabled={false}
         />
-        <MenuItem 
-          icon={<Ionicons name="shield-checkmark-outline" size={20} color="#0052A2" />}
-          text="ID Verification"
-          onPress={navigateToIDVerification} 
-          subtext={idVerificationStatus === 'locked'
-            ? "Request access to verify"
-            : idVerificationStatus === 'pending'
-            ? "Pending admin approval"
-            : userData?.isVerified ? "Identity verified" : "Verify your identity to build trust"}
-          disabled={false}
-        />
         
         <Text style={styles.sectionTitle}>ACCOUNT SETTINGS</Text>
         <MenuItem 
@@ -942,12 +913,6 @@ export default function AccountScreen() {
           text="Payment options"
           onPress={navigateToPayment} 
           subtext={undefined}        
-        />
-        <MenuItem 
-          icon={<MaterialIcons name="settings" size={20} color="#0052A2" />}
-          text="Service Fee Configuration"
-          onPress={navigateToServiceFeeConfig} 
-          subtext="Configure platform service fee settings (Admin only)"        
         />
         <MenuItem 
           icon={<Feather name="lock" size={20} color="#0052A2" />}
@@ -968,20 +933,6 @@ export default function AccountScreen() {
           text="Task alerts for Taskers"
           subtext="Be the first to know relevant tasks" 
           onPress={navigateToTaskAlerts}        
-        />
-
-        <Text style={styles.sectionTitle}>FOR TASKERS</Text>
-        <MenuItem 
-          icon={<Feather name="bar-chart-2" size={20} color="#0052A2" />}
-          text="My dashboard" 
-          subtext={undefined} 
-          onPress={navigateToDashboard}        
-        />
-        <MenuItem 
-          icon={<Feather name="list" size={20} color="#0052A2" />}
-          text="List my services"
-          subtext="Create listings for your services so customers come to you" 
-          onPress={undefined}        
         />
 
         <Text style={styles.sectionTitle}>HELP AND SUPPORT</Text>

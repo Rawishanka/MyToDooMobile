@@ -123,7 +123,7 @@ export const OffersList: React.FC<OffersListProps> = ({
 // Component to display offer amount and status
 const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean; showStatus?: boolean }> = ({ offer, isTaskPoster, showStatus = true }) => {
   const { countryInfo } = useLocationCountry();
-  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
   
   const offerAmount = offer.offer?.amount || offer.amount || 0;
   const status = offer.status || 'pending';
@@ -222,8 +222,8 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
         
         // 🔥 USE REAL DATA FROM RATING STATS API
         const realRatingStats = ratingStatsData?.data;
-        const rating = realRatingStats?.averageRating || 0;
-        const totalReviews = realRatingStats?.totalReviews || 0;
+        const rating = realRatingStats?.overall?.average || 0;
+        const totalReviews = realRatingStats?.overall?.count || 0;
         
         // ⚠️ IMPORTANT: completedTasks should come from user profile, NOT from totalReviews
         // totalReviews is the number of reviews, NOT the number of completed tasks
@@ -299,12 +299,6 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                     <Text style={styles.offerUserName}>
                       {userName}
                     </Text>
-                    {isVerified && (
-                      <View style={styles.verifiedBadgeSmall}>
-                        <Ionicons name="checkmark-circle" size={12} color="#28a745" />
-                        <Text style={styles.verifiedTextSmall}>Verified</Text>
-                      </View>
-                    )}
                   </View>
 
                   {/* Offer Amount and Status - Hide status for other taskers viewing offers */}

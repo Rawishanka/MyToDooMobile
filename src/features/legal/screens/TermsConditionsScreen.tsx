@@ -37,8 +37,8 @@ export default function TermsConditionsScreen({ onBack }: TermsConditionsScreenP
         >
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Terms & Conditions</Text>
-        <View style={styles.placeholder} />
+        <Text style={styles.headerTitle} numberOfLines={1}>Terms & Conditions</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
       {/* Content */}
@@ -55,112 +55,66 @@ export default function TermsConditionsScreen({ onBack }: TermsConditionsScreenP
             <Text style={styles.sectionTitle}>Introduction</Text>
           </View>
           
-          <View style={styles.subsection}>
-            <Text style={styles.subsectionTitle}>1.1 Agreement Overview</Text>
-            <Text style={styles.bodyText}>
-              These Terms and Conditions ("Agreement") govern your access to and use of the MyToDoo website, mobile application and related services (together, the "Platform"). The Platform is operated by [Name of the Company] (ACN […………………]) ("MyToDoo", "we", "our" or "us").
-            </Text>
-          </View>
+          <Text style={styles.bodyText}>
+            These Terms and Conditions govern your use of the MyToDoo platform. By creating an account or using our services, you agree to these terms, including our Privacy Policy and Community Guidelines.
+          </Text>
 
-          <View style={styles.subsection}>
-            <Text style={styles.subsectionTitle}>1.2 Acceptance of Terms</Text>
-            <Text style={styles.bodyText}>
-              By creating an account, posting a task, making or accepting an offer, or otherwise using the Platform, you agree to be bound by this Agreement, together with our Privacy Policy, Community Guidelines and any other policies published on the Platform (collectively, the "Policies"). If you do not agree, you must not use the Platform.
-            </Text>
-          </View>
-
-          <View style={styles.subsection}>
-            <Text style={styles.subsectionTitle}>1.3 Nature of Platform</Text>
-            <Text style={styles.bodyText}>
-              MyToDoo provides an online marketplace that allows registered users ("Users") to connect with one another for the purpose of offering and receiving services ("Tasks"). We are not a party to any contract for services between Users. Each contract for services is formed directly between the User who posts a task ("Poster") and the User who agrees to perform the task ("Tasker").
-            </Text>
-          </View>
-
-          <View style={styles.subsection}>
-            <Text style={styles.subsectionTitle}>1.4 Policies Incorporated</Text>
-            <Text style={styles.bodyText}>
-              All Policies referred to in this Agreement form part of this Agreement. We may update our Policies from time to time, and you agree to comply with them as updated.
-            </Text>
-          </View>
+          <Text style={styles.bodyText}>
+            MyToDoo is an online marketplace connecting users who post tasks ("Posters") with users who complete them ("Taskers"). We facilitate connections but are not party to contracts between users.
+          </Text>
 
           {/* Scope of Services */}
           <View style={styles.section}>
             <Text style={styles.sectionNumber}>2.</Text>
-            <Text style={styles.sectionTitle}>Scope of Services</Text>
+            <Text style={styles.sectionTitle}>Platform Services</Text>
           </View>
 
-          <View style={styles.subsection}>
-            <Text style={styles.subsectionTitle}>2.1 Marketplace Role</Text>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(a)</Text>
-              <Text style={styles.bodyText}>MyToDoo provides the Platform as an online marketplace that enables Users to connect for the purpose of publishing, offering, and performing services ("Tasks").</Text>
-            </View>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(b)</Text>
-              <Text style={styles.bodyText}>MyToDoo does not itself perform Tasks and is not a party to any Task Contract between Users.</Text>
-            </View>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(c)</Text>
-              <Text style={styles.bodyText}>MyToDoo does not guarantee, endorse, or verify the quality, safety, legality, accuracy, or suitability of any Task, Posted Task, Offer, or Task Contract, nor the competence, qualifications, licences, insurance, or background of any User.</Text>
-            </View>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(d)</Text>
-              <Text style={styles.bodyText}>Each User is solely responsible for conducting their own due diligence before entering into a Task Contract.</Text>
-            </View>
+          <View style={styles.bulletContainer}>
+            <Text style={styles.bulletPoint}>•</Text>
+            <Text style={styles.bodyText}>MyToDoo provides a marketplace for posting and completing tasks</Text>
+          </View>
+          <View style={styles.bulletContainer}>
+            <Text style={styles.bulletPoint}>•</Text>
+            <Text style={styles.bodyText}>We don't guarantee task quality or verify user qualifications</Text>
+          </View>
+          <View style={styles.bulletContainer}>
+            <Text style={styles.bulletPoint}>•</Text>
+            <Text style={styles.bodyText}>Users are responsible for their own due diligence</Text>
+          </View>
+          <View style={styles.bulletContainer}>
+            <Text style={styles.bulletPoint}>•</Text>
+            <Text style={styles.bodyText}>Tasks must be accurate, lawful, and comply with our policies</Text>
+          </View>
+          <View style={styles.bulletContainer}>
+            <Text style={styles.bulletPoint}>•</Text>
+            <Text style={styles.bodyText}>Accepting an offer creates a binding contract between users</Text>
           </View>
 
-          <View style={styles.subsection}>
-            <Text style={styles.subsectionTitle}>2.2 Task Creation and Offers</Text>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(a)</Text>
-              <Text style={styles.bodyText}>A User seeking services ("Poster") may create and publish a request for services on the Platform ("Posted Task"). Posters warrant that their Posted Tasks are accurate, complete, lawful, and do not breach any third-party rights.</Text>
-            </View>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(b)</Text>
-              <Text style={styles.bodyText}>Other Users ("Taskers") may respond by making an offer to perform the Task ("Offer"). Taskers warrant that they are competent, qualified, licensed, and insured (where required) to perform the Task safely and lawfully.</Text>
-            </View>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(c)</Text>
-              <Text style={styles.bodyText}>When a Poster accepts an Offer, a separate binding contract ("Task Contract") is formed directly between the Poster and Tasker. The Task Contract incorporates the terms of this Agreement and any additional terms expressly agreed between those Users through the Platform.</Text>
-            </View>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(d)</Text>
-              <Text style={styles.bodyText}>MyToDoo may, at its discretion and without liability, reject, suspend, or remove any Posted Task or Offer that it considers misleading, inappropriate, unlawful, or otherwise unsuitable for the Platform.</Text>
-            </View>
-          </View>
-
-          {/* User Accounts & Eligibility */}
+          {/* User Accounts */}
           <View style={styles.section}>
             <Text style={styles.sectionNumber}>3.</Text>
-            <Text style={styles.sectionTitle}>User Accounts & Eligibility</Text>
+            <Text style={styles.sectionTitle}>Your Account</Text>
           </View>
 
-          <View style={styles.subsection}>
-            <Text style={styles.subsectionTitle}>3.1 Account Creation</Text>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(a)</Text>
-              <Text style={styles.bodyText}>To access and use the Platform, you must register for an account and provide accurate, current and complete information.</Text>
-            </View>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(b)</Text>
-              <Text style={styles.bodyText}>You must keep your login credentials secure. You are responsible for all activity conducted under your account, whether authorised by you or not.</Text>
-            </View>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(c)</Text>
-              <Text style={styles.bodyText}>You must immediately notify MyToDoo of any unauthorised use of your account or suspected security breach.</Text>
-            </View>
+          <View style={styles.bulletContainer}>
+            <Text style={styles.bulletPoint}>•</Text>
+            <Text style={styles.bodyText}>You must be at least 18 years old to use MyToDoo</Text>
           </View>
-
-          <View style={styles.subsection}>
-            <Text style={styles.subsectionTitle}>3.2 Eligibility</Text>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(a)</Text>
-              <Text style={styles.bodyText}>You must be at least 18 years of age and have the legal capacity to enter into binding contracts.</Text>
-            </View>
-            <View style={styles.bulletContainer}>
-              <Text style={styles.bulletPoint}>(b)</Text>
-              <Text style={styles.bodyText}>By creating an account, you warrant that you meet all eligibility requirements and that any information provided by you is true, complete, and not misleading.</Text>
-            </View>
+          <View style={styles.bulletContainer}>
+            <Text style={styles.bulletPoint}>•</Text>
+            <Text style={styles.bodyText}>Provide accurate and complete registration information</Text>
+          </View>
+          <View style={styles.bulletContainer}>
+            <Text style={styles.bulletPoint}>•</Text>
+            <Text style={styles.bodyText}>Keep your login credentials secure and confidential</Text>
+          </View>
+          <View style={styles.bulletContainer}>
+            <Text style={styles.bulletPoint}>•</Text>
+            <Text style={styles.bodyText}>You're responsible for all activity under your account</Text>
+          </View>
+          <View style={styles.bulletContainer}>
+            <Text style={styles.bulletPoint}>•</Text>
+            <Text style={styles.bodyText}>Report any unauthorized access immediately</Text>
           </View>
 
           {/* Important Notice */}
@@ -193,62 +147,70 @@ export default function TermsConditionsScreen({ onBack }: TermsConditionsScreenP
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f8f9fa',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: '#e1e4e8',
     backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 3,
   },
   backButton: {
     padding: 8,
+    marginRight: 8,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    flex: 1,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1a1a1a',
     textAlign: 'center',
+    marginHorizontal: 8,
   },
-  placeholder: {
+  headerSpacer: {
     width: 40,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: 32,
   },
   contentContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
   },
   section: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 16,
-    marginTop: 24,
+    marginBottom: 12,
+    marginTop: 28,
   },
   sectionNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#007bff',
-    marginRight: 8,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0052A2',
+    marginRight: 10,
     marginTop: 2,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '700',
+    color: '#1a1a1a',
     flex: 1,
+    lineHeight: 26,
   },
   subsection: {
     marginBottom: 16,
-    marginLeft: 28,
+    marginLeft: 0,
   },
   subsectionTitle: {
     fontSize: 16,
@@ -258,57 +220,66 @@ const styles = StyleSheet.create({
   },
   bodyText: {
     fontSize: 14,
-    lineHeight: 20,
-    color: '#555',
-    textAlign: 'justify',
-    flex: 1,
+    lineHeight: 22,
+    color: '#4a5568',
+    marginBottom: 12,
+    marginLeft: 32,
   },
   bulletContainer: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: 10,
+    marginLeft: 32,
     alignItems: 'flex-start',
+    paddingRight: 8,
   },
   bulletPoint: {
-    fontSize: 14,
-    color: '#555',
-    marginRight: 8,
-    marginTop: 1,
-    minWidth: 20,
+    fontSize: 16,
+    color: '#0052A2',
+    marginRight: 10,
+    marginTop: 2,
+    fontWeight: '600',
   },
   noticeContainer: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#E8F2FF',
     borderRadius: 12,
-    padding: 16,
+    padding: 18,
     marginTop: 32,
     marginBottom: 24,
+    marginHorizontal: 0,
     borderLeftWidth: 4,
-    borderLeftColor: '#007bff',
+    borderLeftColor: '#0052A2',
+    shadowColor: '#0052A2',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   noticeTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0052A2',
     marginBottom: 8,
   },
   noticeText: {
-    fontSize: 14,
+    fontSize: 13,
     lineHeight: 20,
-    color: '#555',
-    textAlign: 'justify',
+    color: '#4a5568',
   },
   lastUpdated: {
     alignItems: 'center',
     marginTop: 32,
-    paddingTop: 20,
+    marginBottom: 16,
+    paddingTop: 24,
+    paddingHorizontal: 16,
     borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
+    borderTopColor: '#e1e4e8',
   },
   lastUpdatedText: {
     fontSize: 12,
-    color: '#888',
+    color: '#718096',
     fontStyle: 'italic',
   },
   bottomSpacing: {
-    height: 40,
+    height: 32,
   },
 });

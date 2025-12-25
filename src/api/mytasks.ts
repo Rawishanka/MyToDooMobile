@@ -358,12 +358,19 @@ export function useApiFunctions() {
     const api = createApi(API_CONFIG.BASE_URL);
     console.log("🔐 Calling Firebase Auth API:", API_CONFIG.BASE_URL + "/users/firebase-auth");
     console.log("📤 Sending Firebase ID Token to backend");
+    console.log("🎫 Token length:", firebaseIdToken?.length);
+    console.log("🎫 Token preview (first 50 chars):", firebaseIdToken?.substring(0, 50) + "...");
 
     try {
       // Send Firebase ID Token to backend for verification
-      const response = await api.post('/users/firebase-auth', { 
-        firebaseToken: firebaseIdToken 
-      });
+      // Backend expects: { firebaseToken: "..." }
+      const requestBody = { 
+        firebaseToken: firebaseIdToken
+      };
+      
+      console.log("📤 Sending request with body:", { firebaseToken: firebaseIdToken.substring(0, 30) + "..." });
+      
+      const response = await api.post('/users/firebase-auth', requestBody);
       
       console.log("✅ Firebase Auth Success Response:", response.data);
       const { token, user } = response.data;
@@ -400,15 +407,38 @@ export function useApiFunctions() {
       console.log("✅ Returning data to React Query...");
       return { token, user };
     } catch (error: any) {
-      // Log detailed error information
-      console.error("❌ Firebase Google Sign-In failed:");
-      console.error("Status:", error?.response?.status);
-      console.error("Status Text:", error?.response?.statusText);
-      console.error("Response Data:", error?.response?.data);
-      console.error("Error Message:", error?.message);
+      // 🔍 ENHANCED ERROR LOGGING for debugging
+      console.error("❌ Firebase Google Sign-In API call failed:");
+      console.error("📍 Endpoint:", API_CONFIG.BASE_URL + "/users/firebase-auth");
+      console.error("📊 Status Code:", error?.response?.status);
+      console.error("📊 Status Text:", error?.response?.statusText);
+      console.error("📦 Response Data:", JSON.stringify(error?.response?.data, null, 2));
+      console.error("💬 Error Message:", error?.message);
+      console.error("🔍 Request Config:", error?.config ? {
+        url: error.config.url,
+        method: error.config.method,
+        headers: error.config.headers,
+        data: error.config.data
+      } : 'No config');
       
-      // Re-throw the error to be handled by the UI layer
-      throw error;
+      // Provide user-friendly error message based on status code
+      let userMessage = 'Unable to complete Google Sign-In. Please try again.';
+      
+      if (error?.response?.status === 400) {
+        userMessage = error?.response?.data?.message || 'Invalid authentication data. Please try again.';
+      } else if (error?.response?.status === 401) {
+        userMessage = 'Firebase token validation failed. Please try signing in again.';
+      } else if (error?.response?.status === 500) {
+        userMessage = 'Server error during authentication. Please try again later.';
+      } else if (error?.message?.includes('Network Error') || error?.code === 'ERR_NETWORK') {
+        userMessage = 'Network error. Please check your internet connection and try again.';
+      }
+      
+      // Re-throw with enhanced message
+      const enhancedError = new Error(userMessage);
+      (enhancedError as any).response = error?.response;
+      (enhancedError as any).originalError = error;
+      throw enhancedError;
     }
   }
 

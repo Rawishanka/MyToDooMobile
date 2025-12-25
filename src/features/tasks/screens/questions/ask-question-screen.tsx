@@ -2,7 +2,7 @@ import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/Attach
 import { useGetTaskById, usePostTaskQuestion } from '@/src/shared/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
     ActivityIndicator,
     Alert,

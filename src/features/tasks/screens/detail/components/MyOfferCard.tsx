@@ -15,7 +15,7 @@ interface MyOfferCardProps {
 export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, onAcceptOffer, taskLocation }) => {
   // Use user's current location for currency display (auto geo-location)
   const { countryInfo } = useLocationCountry();
-  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
   
   // Handle both nested and flat offer structures
   const offerAmount = offer.offer?.amount || offer.amount || 0;

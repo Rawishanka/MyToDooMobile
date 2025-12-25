@@ -41,7 +41,7 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
 
   const renderTaskItem = ({ item }: { item: Task }) => {
     // Use user's current location for currency display (auto geo-location)
-    const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo);
+    const userCurrencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
     const formattedPrice = item.formattedBudget || 
       (item.budget ? formatCurrency(item.budget, userCurrencyInfo) : 
       `${userCurrencyInfo.symbol}0.00`);

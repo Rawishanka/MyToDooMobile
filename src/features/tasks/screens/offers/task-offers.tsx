@@ -3,7 +3,6 @@ import { useGetTaskOffers } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
 import {
     FlatList,
     StatusBar,
@@ -55,7 +54,7 @@ export default function TaskOffersScreen() {
 
   // Use user's current location for currency display (auto geo-location)
   const { countryInfo } = useLocationCountry();
-  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
   
   // Format budget with location-appropriate currency
   const displayBudget = task?.formattedBudget || 

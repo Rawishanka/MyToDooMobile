@@ -14,20 +14,20 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from 'react-native';
 
 export default function LoginScreen() {
@@ -64,11 +64,18 @@ export default function LoginScreen() {
       const savedPassword = await AsyncStorage.getItem('saved_password');
       const rememberMeValue = await AsyncStorage.getItem('remember_me');
       
+      // Load Remember Me checkbox state independently
+      if (rememberMeValue === 'true') {
+        setRememberMe(true);
+      }
+      
+      // Load saved credentials if they exist and Remember Me is checked
       if (rememberMeValue === 'true' && savedEmail && savedPassword) {
         setEmail(savedEmail);
         setPassword(savedPassword);
-        setRememberMe(true);
         console.log('✅ Loaded saved credentials');
+      } else if (rememberMeValue === 'true') {
+        console.log('⚠️ Remember Me is enabled but no saved credentials found');
       }
     } catch (error) {
       console.log('⚠️ Error loading saved credentials:', error);
@@ -80,7 +87,7 @@ export default function LoginScreen() {
       await AsyncStorage.setItem('saved_email', email);
       await AsyncStorage.setItem('saved_password', password);
       await AsyncStorage.setItem('remember_me', 'true');
-      console.log('✅ Credentials saved');
+      console.log('✅ Credentials saved successfully', { email: email.substring(0, 5) + '***' });
     } catch (error) {
       console.log('⚠️ Error saving credentials:', error);
     }
@@ -327,8 +334,10 @@ export default function LoginScreen() {
       
       // Save or clear credentials based on Remember Me checkbox
       if (rememberMe) {
+        console.log('💾 Remember Me is checked, saving credentials...');
         await saveCredentials(trimmedEmail, trimmedPassword);
       } else {
+        console.log('🗑️ Remember Me is unchecked, clearing saved credentials...');
         await clearSavedCredentials();
       }
       
@@ -644,9 +653,11 @@ export default function LoginScreen() {
             onPress={async () => {
               const newValue = !rememberMe;
               setRememberMe(newValue);
+              console.log('🔄 Remember Me toggled:', newValue);
               // Immediately save the Remember Me preference
               try {
-                await AsyncStorage.setItem('remember_me', newValue.toString());
+                await AsyncStorage.setItem('remember_me', newValue ? 'true' : 'false');
+                console.log('✅ Remember Me preference saved:', newValue);
                 if (!newValue) {
                   // If unchecking, clear saved credentials immediately
                   await clearSavedCredentials();

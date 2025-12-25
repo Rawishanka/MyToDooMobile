@@ -72,19 +72,24 @@ class StripeConnectAPIService {
       if (response.status === 404) {
         // No account exists - this is expected, not an error
         // Throw specific error object that will be caught by React Query
-        throw { status: 404, message: 'No Stripe Connect account found' };
+        const notFoundError: any = new Error('No Stripe Connect account found');
+        notFoundError.status = 404;
+        notFoundError.isExpected = true;
+        throw notFoundError;
       }
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to get account status');
+        const errorData = await response.json().catch(() => ({}));
+        const error: any = new Error(errorData.message || 'Failed to get account status');
+        error.status = response.status;
+        throw error;
       }
 
       const result = await response.json();
       return result.data;
     } catch (error: any) {
-      // Only log actual errors, not 404 (which is expected when no account exists)
-      if (error?.status !== 404) {
+      // Only log actual errors, not 404 or network errors (which are expected)
+      if (error?.status !== 404 && !error?.isExpected && error?.message !== 'Network request failed') {
         console.error('❌ Get account status error:', error);
       }
       throw error;

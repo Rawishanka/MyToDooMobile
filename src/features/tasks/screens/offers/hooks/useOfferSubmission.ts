@@ -83,7 +83,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
 
   // Get currency info based on user's current location (auto geo-location)
   const currencyInfo = useMemo(
-    () => getCurrencyFromUserLocation(countryInfo),
+    () => getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' }),
     [countryInfo]
   );
 

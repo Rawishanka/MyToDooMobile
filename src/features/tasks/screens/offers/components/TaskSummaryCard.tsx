@@ -19,7 +19,7 @@ export default function TaskSummaryCard({
 }: TaskSummaryCardProps) {
   // Use user's current location for currency display (auto geo-location)
   const { countryInfo, isInitialized } = useLocationCountry();
-  const currencyInfo = getCurrencyFromUserLocation(countryInfo);
+  const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
   
   // Show loading state while currency is being determined
   if (!isInitialized) {

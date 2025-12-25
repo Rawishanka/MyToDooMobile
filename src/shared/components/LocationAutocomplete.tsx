@@ -279,13 +279,18 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     onDropdownStateChange?.(true);
 
     try {
+      // 🎯 CRITICAL FIX: For Australia and NZ, exclude street addresses - show only suburbs
+      const isAustraliaOrNZ = effectiveCountry === 'AU' || effectiveCountry === 'NZ';
+      
       // Use Mapbox Geocoding API exactly like your web implementation
       const params: any = {
         access_token: MAPBOX_ACCESS_TOKEN,
         country: effectiveCountry, // Use detected country code
-        types: 'address,place,postcode,region', // Match web version types
+        // For AU/NZ: Only show place, postcode, region (NO addresses/streets)
+        // For other countries: Show all types including address
+        types: isAustraliaOrNZ ? 'place,postcode,region' : 'address,place,postcode,region',
         autocomplete: true,
-        limit: 5, // Match web version limit
+        limit: 10, // Request more so we can filter out street addresses
         language: 'en',
       };
       
@@ -307,15 +312,38 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
       console.log('🗺️ Mapbox response:', response.data);
 
-      const features = response.data.features || [];
-      console.log(`   Found ${features.length} suggestions`);
+      let features = response.data.features || [];
+      console.log(`   Found ${features.length} raw suggestions`);
+      
+      // 🎯 FILTER: For AU/NZ, remove any street address results to show only suburbs
+      if (isAustraliaOrNZ) {
+        const beforeFilter = features.length;
+        features = features.filter((f: LocationResult) => {
+          // Keep only: place, postcode, region, locality
+          // Remove: address (street names)
+          const placeTypes = f.place_type || [];
+          const isStreetAddress = placeTypes.includes('address');
+          
+          // Also check if the name looks like a street (contains "Road", "Street", "Avenue", etc.)
+          const hasStreetKeyword = /\b(road|rd|street|st|avenue|ave|place|pl|drive|dr|lane|ln|court|ct|way|terrace|tce)\b/i.test(f.text || '');
+          
+          return !isStreetAddress && !hasStreetKeyword;
+        });
+        console.log(`   Filtered ${beforeFilter} → ${features.length} suggestions (removed street addresses)`);
+      }
+      
+      // Limit to top 5 results after filtering
+      features = features.slice(0, 5);
       setSuggestions(features);
       
       if (features.length === 0) {
-        console.log('   No locations found');
+        console.log('   No locations found after filtering');
         setError("No locations found. Try a different search term.");
       } else {
-        console.log('   Suggestions:', features.map((f: LocationResult) => f.place_name));
+        console.log('   Final suggestions (suburbs only):', features.map((f: LocationResult) => {
+          const parts = f.place_name.split(',');
+          return `${parts[0]} (${f.place_type?.join(',') || 'unknown'})`;
+        }));
       }
       
     } catch (error: any) {
@@ -430,8 +458,26 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     // Extract location components for better display
     const isManual = item.place_type?.includes('manual');
     const locationParts = item.place_name.split(',');
-    const mainLocation = locationParts[0]?.trim() || item.text;
-    const subLocation = locationParts.slice(1).join(',').trim();
+    
+    // 🎯 CRITICAL FIX: For Australian/NZ addresses, show suburb not street names
+    // Mapbox returns: "Street Name, Suburb, State, Country" for addresses
+    // We want to show: "Suburb, State" only
+    const isAddress = item.place_type?.includes('address');
+    const isAustraliaOrNZ = effectiveCountry === 'AU' || effectiveCountry === 'NZ';
+    
+    let mainLocation: string;
+    let subLocation: string;
+    
+    if (isAddress && isAustraliaOrNZ && locationParts.length >= 3) {
+      // Skip street name (first part), show suburb (second part) as main
+      mainLocation = locationParts[1]?.trim() || item.text;
+      // Show state and country as subLocation
+      subLocation = locationParts.slice(2).join(',').trim();
+    } else {
+      // Default behavior for other location types (place, postcode, region)
+      mainLocation = locationParts[0]?.trim() || item.text;
+      subLocation = locationParts.slice(1).join(',').trim();
+    }
     
     return (
       <TouchableOpacity

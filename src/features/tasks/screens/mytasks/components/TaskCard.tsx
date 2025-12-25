@@ -5,16 +5,16 @@ import { RatingReviewModal } from '@/src/features/tasks/components/RatingReviewM
 import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
 
 import {
-    useAcceptOffer,
-    useCancelTask,
-    useCompleteTask,
-    useCompleteTaskPayment,
-    useCreateCancellationRequest,
-    useDeleteTask,
-    useGetCancellationReasons,
-    useGetCancellationRequest,
-    useRespondToCancellationRequest,
-    useSubmitReview
+  useAcceptOffer,
+  useCancelTask,
+  useCompleteTask,
+  useCompleteTaskPayment,
+  useCreateCancellationRequest,
+  useDeleteTask,
+  useGetCancellationReasons,
+  useGetCancellationRequest,
+  useRespondToCancellationRequest,
+  useSubmitReview
 } from '@/src/shared/hooks/useTaskApi';
 import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
 import { formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
@@ -47,6 +47,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   // Get user's chats to check if chat exists for this task
   const { data: chatsData } = useGetUserChats();
   
+  // Chat modal state
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [chatMessage, setChatMessage] = useState<Message | null>(null);
   
   const [showPosterCancelModal, setShowPosterCancelModal] = useState(false);
   const [showTaskerCancelModal, setShowTaskerCancelModal] = useState(false);
@@ -55,8 +58,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const [showOffersModal, setShowOffersModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false); // NEW: Rating & Review modal
-  const [showChatModal, setShowChatModal] = useState(false); // NEW: Chat modal
-  const [chatMessage, setChatMessage] = useState<Message | null>(null); // NEW: Selected message for chat
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
   const [selectedCancelReason, setSelectedCancelReason] = useState<number | null>(null);
   const [selectedCancelReasonData, setSelectedCancelReasonData] = useState<any | null>(null);
@@ -200,94 +201,91 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     return /^[0-9a-fA-F]{24}$/.test(id);
   }, []);
 
-  // Helper function to handle chat modal
+  // Helper function to handle chat modal opening
   const handleOpenChat = useCallback(() => {
     console.log('💬 Chat button touched for task:', task._id, task.title);
     
-    // Find the chat for this task
-    const taskChat = chatsData?.chats?.find((chat: any) => {
-      const chatTaskId = typeof chat.taskId === 'string' ? chat.taskId : chat.taskId?._id;
-      return chatTaskId === task._id;
-    });
+    // Get poster info (task creator)
+    const createdByObj = typeof task.createdBy === 'object' ? task.createdBy : null;
+    const posterId = createdByObj?._id || (typeof task.createdBy === 'string' ? task.createdBy : null);
+    const posterName = createdByObj ? `${createdByObj.firstName || ''} ${createdByObj.lastName || ''}`.trim() : '';
+    const posterAvatar = createdByObj?.avatar || createdByObj?.profilePicture || '';
     
-    // Extract FULL poster object (task creator)
-    let posterObj: any = null;
-    if (typeof task.createdBy === 'object' && task.createdBy?._id) {
-      posterObj = {
-        _id: task.createdBy._id,
-        firstName: task.createdBy.firstName || '',
-        lastName: task.createdBy.lastName || '',
-        avatar: task.createdBy.avatar || task.createdBy.profilePicture || null,
-      };
-    }
-    
-    // Extract FULL tasker object (assigned user or accepted offer user)
-    let taskerObj: any = null;
+    // Get tasker info (assigned user or accepted offer user)
+    let taskerId = null;
+    let taskerName = '';
+    let taskerAvatar = '';
     const assignedTo = (task as any).assignedTo;
+    
     if (typeof assignedTo === 'object' && assignedTo?._id) {
-      taskerObj = {
-        _id: assignedTo._id,
-        firstName: assignedTo.firstName || '',
-        lastName: assignedTo.lastName || '',
-        avatar: assignedTo.avatar || assignedTo.profilePicture || null,
-      };
+      taskerId = assignedTo._id;
+      taskerName = `${assignedTo.firstName || ''} ${assignedTo.lastName || ''}`.trim();
+      taskerAvatar = assignedTo.avatar || assignedTo.profilePicture || '';
+    } else if (typeof assignedTo === 'string') {
+      taskerId = assignedTo;
     } else if (task.offers && Array.isArray(task.offers)) {
-      // Find accepted offer and get the full tasker object
       const acceptedOffer = task.offers.find((o: any) => o.status === 'accepted');
       if (acceptedOffer) {
         const taskTaker: any = acceptedOffer.taskTaker || acceptedOffer.taskTakerId;
-        if (typeof taskTaker === 'object' && taskTaker?._id) {
-          taskerObj = {
-            _id: taskTaker._id,
-            firstName: taskTaker.firstName || '',
-            lastName: taskTaker.lastName || '',
-            avatar: taskTaker.avatar || taskTaker.profilePicture || null,
-          };
+        if (typeof taskTaker === 'object') {
+          taskerId = taskTaker?._id;
+          taskerName = `${taskTaker?.firstName || ''} ${taskTaker?.lastName || ''}`.trim();
+          taskerAvatar = taskTaker?.avatar || taskTaker?.profilePicture || '';
+        } else {
+          taskerId = taskTaker;
         }
       }
     }
     
-    console.log('💬 Opening chat modal for task:', { 
-      taskId: task._id, 
-      taskTitle: task.title,
-      chatId: taskChat?._id, 
-      poster: posterObj ? `${posterObj.firstName} ${posterObj.lastName} (${posterObj._id})` : 'null',
-      tasker: taskerObj ? `${taskerObj.firstName} ${taskerObj.lastName} (${taskerObj._id})` : 'null',
-      existingChat: taskChat ? 'YES' : 'NO'
+    console.log('👥 Final participant info:', {
+      posterId,
+      posterName,
+      posterAvatar,
+      taskerId,
+      taskerName,
+      taskerAvatar
     });
     
-    // Extract participant objects from chat if available
-    const posterFromChat = typeof taskChat?.posterId === 'object' ? taskChat.posterId : null;
-    const taskerFromChat = typeof taskChat?.taskerId === 'object' ? taskChat.taskerId : null;
-    
-    // Use chat participants if available, otherwise use task participants
-    const finalPoster = posterFromChat || posterObj;
-    const finalTasker = taskerFromChat || taskerObj;
-    
-    console.log('👥 FINAL PARTICIPANTS FOR CHAT:', {
-      posterId: finalPoster?._id,
-      posterName: finalPoster ? `${finalPoster.firstName} ${finalPoster.lastName}` : 'NULL',
-      taskerId: finalTasker?._id,
-      taskerName: finalTasker ? `${finalTasker.firstName} ${finalTasker.lastName}` : 'NULL'
+    // Check if a chat already exists for this task
+    const existingChat = chatsData?.chats?.find((chatItem: any) => {
+      const chatTaskId = typeof chatItem.taskId === 'string' 
+        ? chatItem.taskId 
+        : chatItem.taskId?._id;
+      return chatTaskId === task._id;
     });
+
+    const existingChatId = existingChat ? ((existingChat as any).chatId || existingChat._id) : undefined;
     
-    // Create a message object to pass to ChatWindow (with extended properties)
-    const messageForChat: any = {
-      id: taskChat?._id || task._id,
-      chatId: taskChat?._id || '',
-      title: task.title,
-      preview: '',
-      date: '',
-      avatar: '',
-      unreadCount: 0,
-      taskId: task._id,
-      posterId: finalPoster?._id || '',
-      taskerId: finalTasker?._id || '',
-      posterObj: finalPoster,
-      taskerObj: finalTasker
+    // Create message object for ChatWindow modal
+    const otherUserName = currentUser?._id === posterId ? taskerName : posterName;
+    const otherUserAvatar = currentUser?._id === posterId ? taskerAvatar : posterAvatar;
+    
+    const messageData: Message = {
+      id: existingChatId || `temp-${task._id}`,
+      title: otherUserName || 'Chat',
+      preview: `Chat about: ${task.title}`,
+      date: new Date().toLocaleString(),
+      avatar: otherUserAvatar || undefined,
+      unreadCount: 0
     };
     
-    setChatMessage(messageForChat);
+    // Store additional task data for ChatWindow to access
+    (messageData as any).chatId = existingChatId || null; // Important: pass chatId for existing chats
+    (messageData as any).taskId = task._id;
+    (messageData as any).taskTitle = task.title;
+    (messageData as any).posterId = posterId || '';
+    (messageData as any).taskerId = taskerId || '';
+    (messageData as any).posterName = posterName || 'Poster';
+    (messageData as any).taskerName = taskerName || 'Tasker';
+    (messageData as any).posterAvatar = posterAvatar || '';
+    (messageData as any).taskerAvatar = taskerAvatar || '';
+    
+    console.log('📱 Opening ChatWindow modal with data:', messageData);
+    console.log('   TaskId:', task._id);
+    console.log('   ChatId:', existingChatId || 'will create new');
+    console.log('   PosterId:', posterId);
+    console.log('   TaskerId:', taskerId);
+    setChatMessage(messageData);
     setShowChatModal(true);
   }, [task, chatsData]);
 
@@ -2193,20 +2191,21 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         userRole={userRole === 'Tasker' ? 'tasker' : 'poster'}
       />
 
-      {/* Chat Modal */}
-      <ChatWindow
-        visible={showChatModal}
-        onClose={() => {
-          setShowChatModal(false);
-          setChatMessage(null);
-        }}
-        message={chatMessage}
-        taskId={task._id}
-        posterId={(chatMessage as any)?.posterId}
-        taskerId={(chatMessage as any)?.taskerId}
-        posterIdProp={(chatMessage as any)?.posterObj}
-        taskerIdProp={(chatMessage as any)?.taskerObj}
-      />
+      {/* Chat Modal Window */}
+      {showChatModal && chatMessage && (
+        <ChatWindow
+          visible={showChatModal}
+          onClose={() => {
+            setShowChatModal(false);
+            setChatMessage(null);
+          }}
+          message={chatMessage}
+          taskId={(chatMessage as any).taskId}
+          posterId={(chatMessage as any).posterId}
+          taskerId={(chatMessage as any).taskerId}
+          chatIdProp={(chatMessage as any).chatId}
+        />
+      )}
     </View>
   );
 }

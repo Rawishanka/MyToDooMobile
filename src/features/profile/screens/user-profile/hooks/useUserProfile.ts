@@ -1,5 +1,6 @@
 import { Task } from '@/src/api/types/tasks';
 import { useGetUserTasks } from '@/src/shared/hooks/useTaskApi';
+import { useGetUserRatingStats } from '@/src/shared/hooks/useUserProfileApi';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 
@@ -50,11 +51,20 @@ export const useUserProfile = () => {
 
   const {
     data: userTasksData,
-    isLoading,
+    isLoading: isLoadingTasks,
     isError,
     error,
     refetch,
   } = useGetUserTasks(userId || '');
+
+  // Fetch rating stats to get actual rating and review count
+  const {
+    data: ratingStatsData,
+    isLoading: isLoadingRating,
+  } = useGetUserRatingStats(userId || '', !!userId);
+
+  // Combined loading state
+  const isLoading = isLoadingTasks || isLoadingRating;
 
   const userData: UserTasksData | null = userTasksData?.data
     ? {
@@ -63,12 +73,16 @@ export const useUserProfile = () => {
           firstName: 'John',
           lastName: 'Doe',
           email: 'user@example.com',
-          rating: 4.5,
-          totalReviews: 10,
+          // Use actual rating data from API
+          rating: ratingStatsData?.averageRating ?? 0,
+          totalReviews: ratingStatsData?.totalReviews ?? 0,
           verified: true,
           joinedDate: new Date().toISOString(),
           lastActive: new Date().toISOString(),
-          completedTasks: 0,
+          // Count completed tasks from the tasks array
+          completedTasks: Array.isArray(userTasksData.data) 
+            ? userTasksData.data.filter((task: Task) => task.status === 'completed').length 
+            : 0,
           activeOffers: 0,
         },
         tasks: {
@@ -78,8 +92,10 @@ export const useUserProfile = () => {
         },
         stats: {
           totalTasksCreated: 0,
-          totalTasksCompleted: 0,
-          averageRating: 4.5,
+          totalTasksCompleted: Array.isArray(userTasksData.data) 
+            ? userTasksData.data.filter((task: Task) => task.status === 'completed').length 
+            : 0,
+          averageRating: ratingStatsData?.averageRating ?? 0,
           totalEarnings: 0,
           responseTime: '2 hours',
         },

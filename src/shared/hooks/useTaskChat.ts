@@ -40,7 +40,8 @@ export const useGetUserChats = () => {
     queryKey: CHAT_KEYS.list(),
     queryFn: getUserChats,
     enabled: isAuthenticated,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 2 * 1000, // 2 seconds - optimized for real-time updates
+    refetchInterval: 3000, // Auto-refresh every 3 seconds for immediate chat list updates
     retry: 1,
   });
 };
@@ -71,7 +72,8 @@ export const useGetChatById = (chatId: string | null, enabled: boolean = true) =
     queryKey: CHAT_KEYS.detail(chatId || ''),
     queryFn: () => getChatById(chatId!),
     enabled: isAuthenticated && !!chatId && enabled,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 2 * 1000, // 2 seconds - optimized for real-time updates
+    refetchInterval: 3000, // Auto-refresh every 3 seconds for immediate chat detail updates
     retry: 1,
   });
 };
@@ -91,7 +93,8 @@ export const useGetChatMessages = (
     queryKey: [...CHAT_KEYS.messages(chatId || ''), page, limit],
     queryFn: () => getChatMessages(chatId!, page, limit),
     enabled: isAuthenticated && !!chatId && enabled,
-    staleTime: 10 * 1000, // 10 seconds
+    staleTime: 2 * 1000, // 2 seconds - optimized for real-time message updates
+    refetchInterval: 2000, // Auto-refresh every 2 seconds for immediate message synchronization
     retry: 1,
   });
 };
