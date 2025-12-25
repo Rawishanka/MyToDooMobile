@@ -1,8 +1,8 @@
 import { normalizeCDNUrl } from '@/src/api/cdn-api';
 import { useGetUserReviews } from '@/src/shared/hooks/useUserProfileApi';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface Review {
   _id: string;
@@ -58,6 +58,8 @@ interface Review {
 }
 
 const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -157,7 +159,16 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
           <Text style={styles.attachmentsLabel}>Attachments:</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.attachmentsScroll}>
             {review.attachments.map((attachment, index) => (
-              <View key={index} style={styles.attachmentItem}>
+              <TouchableOpacity 
+                key={index} 
+                style={styles.attachmentItem}
+                onPress={() => {
+                  if (attachment.resourceType === 'image') {
+                    setSelectedImage(normalizeCDNUrl(attachment.secureUrl || attachment.url));
+                  }
+                }}
+                activeOpacity={attachment.resourceType === 'image' ? 0.7 : 1}
+              >
                 {attachment.resourceType === 'image' ? (
                   <Image
                     source={{ uri: normalizeCDNUrl(attachment.secureUrl || attachment.url) }}
@@ -172,11 +183,44 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
                     </Text>
                   </View>
                 )}
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
       )}
+      
+      {/* Image Preview Modal */}
+      <Modal
+        visible={!!selectedImage}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setSelectedImage(null)}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity 
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setSelectedImage(null)}
+          >
+            <View style={styles.modalContent}>
+              <TouchableOpacity 
+                style={styles.closeButton}
+                onPress={() => setSelectedImage(null)}
+              >
+                <Ionicons name="close-circle" size={40} color="#FFF" />
+              </TouchableOpacity>
+              
+              {selectedImage && (
+                <Image
+                  source={{ uri: selectedImage }}
+                  style={styles.fullScreenImage}
+                  resizeMode="contain"
+                />
+              )}
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
       
       {/* Response */}
       {review.response && (
@@ -611,5 +655,35 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
     textAlign: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+  },
+  fullScreenImage: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
   },
 });

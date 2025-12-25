@@ -1,6 +1,8 @@
+import { getHelpArticles, groupArticlesByCategory, HelpArticle, searchHelpArticles } from '@/src/api/help-support-api';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Modal,
     ScrollView,
     StyleSheet,
@@ -13,261 +15,89 @@ import {
 interface HelpSupportProps {
   visible: boolean;
   onClose: () => void;
+  onContactSupport?: () => void;
 }
 
-const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose }) => {
+const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onContactSupport }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
+  const [articles, setArticles] = useState<HelpArticle[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const helpCategories = [
-    {
-      id: 'customer',
-      title: 'I am a Customer',
-      icon: 'person-outline',
-      questions: [
-        {
-          id: 'c1',
-          question: 'How do I post a task?',
-          answer: `To post a task:
+  // Fetch help articles from API
+  useEffect(() => {
+    if (visible) {
+      loadHelpArticles();
+    }
+  }, [visible]);
 
-1. Tap "Get Done" at the bottom of the screen
-2. Describe what you need done
-3. Set your budget and location
-4. Add photos (optional but recommended)
-5. Review and post your task
+  const loadHelpArticles = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      console.log("📖 Loading help articles from API...");
+      const response = await getHelpArticles();
+      
+      if (response.data && response.data.length > 0) {
+        // Filter only active articles
+        const activeArticles = response.data.filter(article => article.isActive);
+        setArticles(activeArticles);
+        console.log("✅ Help articles loaded successfully:", activeArticles.length);
+      } else {
+        console.log("ℹ️ No help articles found");
+        setArticles([]);
+      }
+    } catch (err: any) {
+      console.error("❌ Failed to load help articles:", err);
+      setError('Failed to load help articles. Please try again.');
+      setArticles([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-You'll start receiving offers from taskers right away!`
-        },
-        {
-          id: 'c2',
-          question: 'How do I choose a tasker?',
-          answer: `When choosing a tasker:
+  // Map category names to icons
+  const getCategoryIcon = (categoryName: string): string => {
+    const lowerCategory = categoryName.toLowerCase();
+    
+    if (lowerCategory.includes('getting started') || lowerCategory.includes('general')) {
+      return 'rocket-outline';
+    } else if (lowerCategory.includes('post') || lowerCategory.includes('task')) {
+      return 'create-outline';
+    } else if (lowerCategory.includes('tasker') || lowerCategory.includes('becoming')) {
+      return 'construct-outline';
+    } else if (lowerCategory.includes('payment') || lowerCategory.includes('pricing')) {
+      return 'card-outline';
+    } else if (lowerCategory.includes('safety') || lowerCategory.includes('security')) {
+      return 'shield-checkmark-outline';
+    } else if (lowerCategory.includes('account') || lowerCategory.includes('setting')) {
+      return 'settings-outline';
+    } else {
+      return 'help-circle-outline';
+    }
+  };
 
-1. Review all offers received
-2. Check their ratings and reviews
-3. Read their profile and experience
-4. Look at their completion rate
-5. Compare prices and timelines
-6. Message them if you have questions
-7. Accept the best offer
-
-Take your time to choose the right person for your task!`
-        },
-        {
-          id: 'c3',
-          question: 'How do I make a payment?',
-          answer: `Payment process:
-
-1. When you accept an offer, you'll be asked to make payment
-2. We securely hold your payment until task is complete
-3. Once the tasker completes the work, mark it as complete
-4. Payment is released to the tasker
-
-Your payment is protected and only released when you're satisfied with the work.`
-        },
-        {
-          id: 'c4',
-          question: 'What if I\'m not happy with the work?',
-          answer: `If you're not satisfied:
-
-1. First, communicate with your tasker about the issue
-2. Give them a chance to fix the problem
-3. If unresolved, contact our support team
-4. We'll help mediate and find a solution
-5. In valid cases, you may be eligible for a refund
-
-Contact: support@mytodo.com`
-        },
-      ]
-    },
-    {
-      id: 'tasker',
-      title: 'I am a Tasker',
-      icon: 'construct-outline',
-      questions: [
-        {
-          id: 't1',
-          question: 'How do I make an offer on a task?',
-          answer: `To make an offer:
-
-1. Browse tasks in the "Browse" tab
-2. Find a task that matches your skills
-3. Tap on the task to view details
-4. Tap "Make an Offer"
-5. Enter your price
-6. Write a personalized message explaining why you're the best fit
-7. Submit your offer
-
-Pro tip: Personalized offers get more responses!`
-        },
-        {
-          id: 't2',
-          question: 'How do I set up my payout account?',
-          answer: `To receive payments:
-
-1. Go to your Profile
-2. Tap "Account settings"
-3. Tap "Payment options"
-4. Tap "Setup Payout Account"
-5. Enter your bank account details
-6. Verify your email
-7. You're ready to receive payments!
-
-Payments are processed within 2-3 business days after task completion.`
-        },
-        {
-          id: 't3',
-          question: 'When do I get paid?',
-          answer: `Payment timeline:
-
-1. Customer accepts your offer and pays
-2. We hold the payment securely
-3. You complete the task
-4. Customer marks task as complete
-5. Payment is released to your account
-6. Funds appear in 2-3 business days
-
-You can track all payments in Profile → Payment options → Payment history.`
-        },
-        {
-          id: 't4',
-          question: 'What are the tasker fees?',
-          answer: `Tasker fees:
-
-- Service fee: Platform service fee applies to each task
-- This covers insurance, payment processing, and platform maintenance
-- You'll see the exact fee before accepting a task
-
-Example: For a $100 task, the service fee will be deducted from your earnings.
-
-Building your reputation can unlock lower fees through our tier system! 
-
-Note: Service fee rates are set by platform administrators and may vary.`
-        },
-        {
-          id: 't5',
-          question: 'What is the cancellation policy?',
-          answer: `Cancellation policy for taskers:
-
-If you cancel after accepting:
-- Within 24 hours of acceptance: Warning
-- Less than 24 hours before start: Cancellation fee may apply
-- After task starts: Full cancellation fee
-
-Valid cancellation reasons (no fee):
-- Customer requests cancellation
-- Safety concerns
-- Task details significantly different
-
-Multiple cancellations affect your account standing.`
-        },
-      ]
-    },
-    {
-      id: 'account',
-      title: 'Account & Settings',
-      icon: 'settings-outline',
-      questions: [
-        {
-          id: 'a1',
-          question: 'How do I reset my password?',
-          answer: `To reset your password:
-
-1. On the login screen, tap "Forgot password?"
-2. Enter your email address
-3. Check your email for reset link
-4. Click the link and enter new password
-5. You can now login with your new password
-
-Didn't receive the email? Check your spam folder or try again.`
-        },
-        {
-          id: 'a2',
-          question: 'How do I update my profile?',
-          answer: `To update your profile:
-
-1. Go to Profile (Account tab)
-2. Tap your profile picture or "Edit Profile"
-3. Update your information
-4. Add skills and experience (for taskers)
-5. Upload a profile picture
-6. Save changes
-
-A complete profile helps build trust!`
-        },
-        {
-          id: 'a3',
-          question: 'How do I verify my account?',
-          answer: `Account verification:
-
-1. Email verification: Click link sent to your email
-2. Phone verification: Enter code sent via SMS
-3. ID verification: Go to Profile → Account settings → ID Verification
-
-Verified accounts:
-- Get more trust from users
-- Can access higher-value tasks
-- Better visibility in search`
-        },
-      ]
-    },
-    {
-      id: 'safety',
-      title: 'Safety & Guidelines',
-      icon: 'shield-checkmark-outline',
-      questions: [
-        {
-          id: 's1',
-          question: 'What are the community guidelines?',
-          answer: `Community guidelines:
-
-✓ Be respectful and professional
-✓ Communicate clearly and honestly
-✓ Complete tasks as agreed
-✓ Pay/work on time
-✓ Leave honest reviews
-
-✗ No harassment or discrimination
-✗ No off-platform payments
-✗ No fake profiles or reviews
-✗ No illegal activities
-
-Violations may result in account suspension.`
-        },
-        {
-          id: 's2',
-          question: 'How do I report a problem?',
-          answer: `To report an issue:
-
-1. In the task or chat, tap the menu (⋮)
-2. Select "Report"
-3. Choose the issue type
-4. Provide details
-5. Submit report
-
-Or contact support directly:
-Email: support@mytodo.com
-Response time: Within 24 hours
-
-We take all reports seriously and investigate promptly.`
-        },
-        {
-          id: 's3',
-          question: 'Is my payment information safe?',
-          answer: `Payment security:
-
-✓ All payments processed through secure Stripe
-✓ We never store your full card details
-✓ Bank-level encryption (256-bit SSL)
-✓ PCI DSS compliant
-✓ Two-factor authentication available
-
-Your payment information is protected with industry-leading security standards.`
-        },
-      ]
-    },
-  ];
+  // Group and filter articles
+  const filteredArticles = searchQuery 
+    ? searchHelpArticles(articles, searchQuery) 
+    : articles;
+  
+  const groupedArticles = groupArticlesByCategory(filteredArticles);
+  
+  // Convert to categories format for UI
+  const helpCategories = Object.entries(groupedArticles).map(([category, categoryArticles]) => ({
+    id: category.toLowerCase().replace(/\s+/g, '-'),
+    title: category,
+    icon: getCategoryIcon(category),
+    questions: categoryArticles.map(article => ({
+      id: article._id,
+      question: article.question,
+      answer: article.answer,
+    }))
+  }));
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
@@ -277,15 +107,6 @@ Your payment information is protected with industry-leading security standards.`
   const toggleQuestion = (questionId: string) => {
     setExpandedQuestion(expandedQuestion === questionId ? null : questionId);
   };
-
-  const filteredCategories = helpCategories.map(category => ({
-    ...category,
-    questions: category.questions.filter(q =>
-      searchQuery === '' ||
-      q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      q.answer.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  })).filter(category => category.questions.length > 0);
 
   return (
     <Modal
@@ -300,8 +121,17 @@ Your payment information is protected with industry-leading security standards.`
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Ionicons name="close" size={24} color="#0052A2" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Help & Support</Text>
+          <Text style={styles.headerTitle}>Frequently Asked Questions</Text>
           <View style={styles.placeholder} />
+        </View>
+
+        {/* Info Banner */}
+        <View style={styles.infoBanner}>
+          <Ionicons name="information-circle" size={60} color="#0052A2" style={styles.infoIcon} />
+          <Text style={styles.infoTitle}>How can we help you?</Text>
+          <Text style={styles.infoSubtitle}>
+            Browse through our frequently asked questions to find answers to common queries about MyToDoo.
+          </Text>
         </View>
 
         {/* Search Bar */}
@@ -322,8 +152,27 @@ Your payment information is protected with industry-leading security standards.`
         </View>
 
         <ScrollView style={styles.content}>
+          {/* Loading State */}
+          {loading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#0052A2" />
+              <Text style={styles.loadingText}>Loading help articles...</Text>
+            </View>
+          )}
+
+          {/* Error State */}
+          {error && !loading && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle" size={48} color="#ff3b30" />
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity style={styles.retryButton} onPress={loadHelpArticles}>
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           {/* Categories */}
-          {filteredCategories.map((category) => (
+          {!loading && !error && helpCategories.map((category) => (
             <View key={category.id} style={styles.categoryContainer}>
               <TouchableOpacity
                 style={styles.categoryHeader}
@@ -332,7 +181,7 @@ Your payment information is protected with industry-leading security standards.`
                 <View style={styles.categoryTitleContainer}>
                   <Ionicons name={category.icon as any} size={24} color="#0052A2" />
                   <Text style={styles.categoryTitle}>{category.title}</Text>
-                  <Text style={styles.questionCount}>({category.questions.length})</Text>
+                  <Text style={styles.questionCount}>({category.questions.length} questions)</Text>
                 </View>
                 <Ionicons
                   name={expandedCategory === category.id ? "chevron-up" : "chevron-down"}
@@ -369,11 +218,21 @@ Your payment information is protected with industry-leading security standards.`
             </View>
           ))}
 
-          {filteredCategories.length === 0 && searchQuery.length > 0 && (
+          {/* No Results */}
+          {!loading && !error && helpCategories.length === 0 && searchQuery.length > 0 && (
             <View style={styles.noResults}>
               <Ionicons name="search" size={48} color="#ccc" />
               <Text style={styles.noResultsText}>No results found for "{searchQuery}"</Text>
               <Text style={styles.noResultsSubtext}>Try different keywords or browse categories</Text>
+            </View>
+          )}
+
+          {/* Empty State (No Articles) */}
+          {!loading && !error && articles.length === 0 && searchQuery.length === 0 && (
+            <View style={styles.noResults}>
+              <Ionicons name="document-text-outline" size={48} color="#ccc" />
+              <Text style={styles.noResultsText}>No help articles available</Text>
+              <Text style={styles.noResultsSubtext}>Please check back later or contact support</Text>
             </View>
           )}
 
@@ -383,7 +242,14 @@ Your payment information is protected with industry-leading security standards.`
             <Text style={styles.contactText}>
               Can't find what you're looking for? Our support team is here to help!
             </Text>
-            <TouchableOpacity style={styles.contactButton}>
+            <TouchableOpacity 
+              style={styles.contactButton}
+              onPress={() => {
+                if (onContactSupport) {
+                  onContactSupport();
+                }
+              }}
+            >
               <Ionicons name="mail-outline" size={20} color="#fff" />
               <Text style={styles.contactButtonText}>Contact Support</Text>
             </TouchableOpacity>
@@ -427,12 +293,38 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 32,
   },
+  infoBanner: {
+    backgroundColor: '#fff',
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e1e4e8',
+    marginBottom: 8,
+  },
+  infoIcon: {
+    marginBottom: 12,
+  },
+  infoTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  infoSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 16,
+  },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
     marginHorizontal: 16,
-    marginVertical: 12,
+    marginBottom: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 8,
@@ -449,6 +341,40 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 16,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 32,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#ff3b30',
+    marginTop: 16,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#0052A2',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   categoryContainer: {
     marginBottom: 8,

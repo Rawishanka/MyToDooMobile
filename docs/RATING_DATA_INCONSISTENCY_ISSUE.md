@@ -12,7 +12,7 @@ There is a **backend data inconsistency** causing different ratings to be displa
 
 ### Profile Screen (Screenshot 2)
 **User:** Janidu D.
-- **Rating shown:** ⭐ 4.0/5
+- **Rating shown:** ⭐ 0.0/5
 - **Tasks completed:** 0 tasks completed
 - **Verified:** ✅ Verified
 - **Data source:** `GET /api/users/profile`

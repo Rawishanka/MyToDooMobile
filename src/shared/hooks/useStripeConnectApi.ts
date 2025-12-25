@@ -24,13 +24,18 @@ export function useGetStripeAccountStatus(enabled: boolean = true) {
     enabled,
     retry: (failureCount, error) => {
       // Don't retry on 404 (no account exists - this is expected)
-      if (error?.status === 404) {
+      if (error?.status === 404 || error?.isExpected) {
+        return false;
+      }
+      // Don't retry on network errors
+      if (error?.message === 'Network request failed') {
         return false;
       }
       return failureCount < 2;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
-    // Suppress React Query error logging for 404 - it's expected when no account exists
+    // Suppress error logging for expected cases
+    throwOnError: false,
     meta: {
       errorMessage: 'Failed to check payout account status'
     }

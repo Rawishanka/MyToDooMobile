@@ -207,7 +207,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
         <TouchableWithoutFeedback onPress={dismissKeyboard}>
           <View style={styles.modalOverlay}>
             <KeyboardAvoidingView 
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
               style={styles.keyboardAvoidingView}
               keyboardVerticalOffset={0}
             >
@@ -321,7 +321,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
         <TouchableWithoutFeedback onPress={dismissKeyboard}>
           <View style={styles.modalOverlay}>
             <KeyboardAvoidingView 
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
               style={styles.keyboardAvoidingView}
               keyboardVerticalOffset={0}
             >

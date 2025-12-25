@@ -6,6 +6,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
+import { PayoutAccountRequiredModal } from '../offers/components';
 
 // Responsive utilities
 import { isTablet, wp } from '@/src/shared/utils/responsive';
@@ -83,6 +84,9 @@ export default function TaskDetailScreen() {
     selectedOffer,
     handleClosePaymentModal,
     handlePaymentSuccess,
+    // Stripe Payout Modal (for Make Offer)
+    showPayoutModal,
+    setShowPayoutModal,
   } = useTaskDetail({ taskId: taskId! });
 
   // Handle tab change with auto-scroll
@@ -233,6 +237,11 @@ export default function TaskDetailScreen() {
         taskCategory={task?.categories?.[0]}
         onClose={handleClosePaymentModal}
         onSuccess={handlePaymentSuccess}
+      />
+
+      <PayoutAccountRequiredModal
+        visible={showPayoutModal}
+        onClose={() => setShowPayoutModal(false)}
       />
       </View>
 

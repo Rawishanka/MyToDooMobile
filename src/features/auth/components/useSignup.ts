@@ -3,6 +3,7 @@
 import API_CONFIG from '@/src/api/config';
 import { useCreateSignUpToken, useVerifyOTP } from '@/src/api/user-api';
 import { useGoogleSignIn } from '@/src/shared/hooks/useApi';
+import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { usePostTaskDirect } from '@/src/shared/hooks/useTaskApi';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
@@ -39,6 +40,15 @@ export const useSignup = () => {
   const { myTask, resetTask } = useCreateTaskStore();
   const postTaskMutation = usePostTaskDirect(); // ✅ Use postTaskDirect for proper image handling
   
+  // 🌍 Auto-detect user's country
+  const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
+  
+  // Helper function to find country in COUNTRIES array by country code
+  const findCountryByCode = (countryCode: string): CountryData => {
+    const country = COUNTRIES.find(c => c.code === countryCode);
+    return country || COUNTRIES[2]; // Fallback to Sri Lanka if not found
+  };
+  
   // Form state
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -51,8 +61,17 @@ export const useSignup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  // Location state - Default to Sri Lanka
-  const [selectedCountry, setSelectedCountry] = useState<CountryData>(COUNTRIES[2]);
+  // Location state - Auto-detect country based on GPS location
+  const [selectedCountry, setSelectedCountry] = useState<CountryData>(() => {
+    // Initialize with detected country if available, otherwise use Sri Lanka as fallback
+    if (countryInfo?.countryCode) {
+      const detectedCountry = findCountryByCode(countryInfo.countryCode);
+      console.log('🌍 Signup: Initializing with detected country:', detectedCountry.name);
+      return detectedCountry;
+    }
+    console.log('🌍 Signup: No country detected yet, using Sri Lanka as fallback');
+    return COUNTRIES[2]; // Sri Lanka as fallback
+  });
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   
@@ -78,6 +97,20 @@ export const useSignup = () => {
   // API hooks
   const { mutateAsync: signUp } = useCreateSignUpToken();
   const { mutateAsync: verifyOTP } = useVerifyOTP();
+  
+  // 🌍 Update selected country when GPS detection completes
+  useEffect(() => {
+    if (countryInfo?.countryCode && !isDetectingCountry) {
+      const detectedCountry = findCountryByCode(countryInfo.countryCode);
+      // Only update if different from current selection
+      if (detectedCountry.code !== selectedCountry.code) {
+        console.log('🌍 Signup: Country detected, updating from', selectedCountry.name, 'to', detectedCountry.name);
+        setSelectedCountry(detectedCountry);
+        // Clear location when country changes
+        setSelectedLocation(null);
+      }
+    }
+  }, [countryInfo?.countryCode, isDetectingCountry]);
   
   // Google OAuth Response Handler
   useEffect(() => {

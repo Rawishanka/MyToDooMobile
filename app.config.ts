@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'MyToDoo',
   slug: 'MyToDooMobile',
-  owner: 'sithila123',
+  owner: 'novadya',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/mytodoo-icon.png',
@@ -83,13 +83,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     typedRoutes: true,
   },
   extra: {
+    eas: {
+      projectId: '5ad77f0f-ad33-4a24-8c41-f2115921cb55',
+    },
     apiUrl: process.env.API_URL,
     easApiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://api.mytodoo.com/api',
     environment: process.env.ENVIRONMENT,
     mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
     googleClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
-    eas: {
-      projectId: "93c3a1b8-efab-4f7f-b1db-403a06bdbcf7"
-    }
   },
 });

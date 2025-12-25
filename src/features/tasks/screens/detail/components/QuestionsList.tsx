@@ -188,24 +188,67 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
       return false;
     }
     
-    // Get the ID of who asked this question
-    const questionAskerId = question.askedBy?._id || question.userId || question.user?._id;
+    // Get the ID of who asked this question - try multiple possible field paths
+    const questionAskerId = 
+      question.askedBy?._id || 
+      question.userId?._id || 
+      question.userId || 
+      question.user?._id || 
+      question.user || 
+      question.questioner?._id || 
+      question.questioner ||
+      question.createdBy?._id ||
+      question.createdBy;
     
-    // 1. User can always answer their own question
-    const isQuestionAsker = currentUserId === questionAskerId;
-    if (isQuestionAsker) {
-      console.log('✅ User can answer their own question:', currentUserId);
-      return true;
+    console.log('🔍 DEBUG: Extracting question asker ID:', {
+      questionId: question._id,
+      questionAskerId,
+      currentUserId,
+      possibleFields: {
+        'askedBy._id': question.askedBy?._id,
+        'userId._id': question.userId?._id,
+        'userId': question.userId,
+        'user._id': question.user?._id,
+        'user': question.user,
+        'questioner._id': question.questioner?._id,
+        'questioner': question.questioner,
+        'createdBy._id': question.createdBy?._id,
+        'createdBy': question.createdBy,
+      }
+    });
+    
+    if (!questionAskerId) {
+      console.log('❌ Cannot determine who asked the question - denying answer permission');
+      return false;
     }
     
-    // 2. Check if current user is the task creator (poster)
+    // ⚠️ CRITICAL: Users can NEVER answer their own questions
+    const isQuestionAsker = currentUserId === questionAskerId;
+    if (isQuestionAsker) {
+      console.log('❌ BLOCKED: User cannot answer their own question:', {
+        currentUserId,
+        questionAskerId,
+        questionId: question._id,
+        match: true
+      });
+      return false;
+    }
+    
+    console.log('✅ User is NOT the question asker - checking other permissions:', {
+      currentUserId,
+      questionAskerId,
+      areEqual: currentUserId === questionAskerId
+    });
+    
+    // Check if current user is the task creator (poster)
     const isTaskCreator = currentUserId === taskCreatorId;
     
-    // 3. Check if the question was asked by the poster
+    // Check if the question was asked by the poster
     const wasAskedByPoster = questionAskerId === taskCreatorId;
     
-    // 4. Check if current user is a tasker (has made an offer on this task)
-    const isTasker = taskOffers.some((offer: any) => {
+    // Check if current user is a tasker (has made an offer on this task)
+    // NOTE: We check offers array exists and has length to avoid issues when no offers yet
+    const isTasker = taskOffers && taskOffers.length > 0 ? taskOffers.some((offer: any) => {
       const possibleUserIds = [
         offer.user?._id,
         offer.userId,
@@ -226,7 +269,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
         });
       }
       return matches;
-    });
+    }) : false;
     
     console.log('🔍 Permission check for question', question._id, ':', {
       questionAskerId,
@@ -234,18 +277,25 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
       isTaskCreator,
       isTasker,
       currentUserId,
-      taskCreatorId
+      taskCreatorId,
+      hasOffers: taskOffers && taskOffers.length > 0
     });
     
-    // RULE 1: If poster asked the question → All taskers and poster can answer
+    // RULE 1: If poster asked the question → Anyone except the poster can answer
+    // (Taskers with offers can answer, and poster cannot answer their own question)
     if (wasAskedByPoster) {
-      const canAnswer = isTaskCreator || isTasker;
-      console.log('📋 Poster asked question - taskers can answer:', canAnswer);
+      // If user is a tasker with an offer, they can answer
+      // If user is NOT the poster, they can answer (any other user viewing the task)
+      const canAnswer = isTasker || !isTaskCreator;
+      console.log('📋 Poster asked question - others can answer:', canAnswer, {
+        isTasker,
+        isTaskCreator,
+        reasoning: isTasker ? 'User is a tasker with offer' : !isTaskCreator ? 'User is not the poster' : 'User is poster (blocked)'
+      });
       return canAnswer;
     }
     
     // RULE 2: If tasker asked the question → Only poster can answer
-    // (The asker themselves can also answer, but that's handled in step 1)
     const canAnswer = isTaskCreator;
     console.log('👤 Tasker asked question - only poster can answer:', canAnswer);
     return canAnswer;

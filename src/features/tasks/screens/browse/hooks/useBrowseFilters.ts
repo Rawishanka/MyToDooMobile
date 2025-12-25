@@ -15,7 +15,7 @@ export const useBrowseFilters = (allTasks: Task[]) => {
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [taskType, setTaskType] = useState<'all' | 'in-person' | 'remote'>('all');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [availableTasksOnly, setAvailableTasksOnly] = useState(false);
   const [showTasksWithNoOffers, setShowTasksWithNoOffers] = useState(false);
   const [selectedSort, setSelectedSort] = useState(0);
@@ -26,7 +26,7 @@ export const useBrowseFilters = (allTasks: Task[]) => {
     let count = 0;
     if (selectedCategory !== 'All Categories') count++;
     if (taskType !== 'all') count++;
-    if (priceRange[0] !== 0 || priceRange[1] !== 10000) count++;
+    if (priceRange[0] !== 0 || priceRange[1] !== 1000000) count++;
     if (availableTasksOnly) count++;
     if (showTasksWithNoOffers) count++;
     return count;
@@ -36,7 +36,7 @@ export const useBrowseFilters = (allTasks: Task[]) => {
   const resetFilters = () => {
     setSelectedCategory('All Categories');
     setTaskType('all');
-    setPriceRange([0, 10000]);
+    setPriceRange([0, 1000000]);
     setAvailableTasksOnly(false);
     setShowTasksWithNoOffers(false);
   };
@@ -74,7 +74,7 @@ export const useBrowseFilters = (allTasks: Task[]) => {
     }
 
     // Apply price range filter - only if user has adjusted it from default
-    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === 10000;
+    const isDefaultPriceRange = priceRange[0] === 0 && priceRange[1] === 1000000;
     if (!isDefaultPriceRange) {
       filtered = filtered.filter(task => 
         task.budget >= priceRange[0] && task.budget <= priceRange[1]

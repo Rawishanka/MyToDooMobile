@@ -918,10 +918,47 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           }`).join(',')}
         ];
 
+        // Helper function to apply offset to overlapping markers
+        function applyMarkerOffset(markers) {
+          const grouped = {};
+          const offsetDistance = 0.0008; // Small offset in degrees (~90 meters)
+          
+          // Group markers by location
+          markers.forEach(function(marker, index) {
+            const key = marker.lat.toFixed(6) + ',' + marker.lng.toFixed(6);
+            if (!grouped[key]) {
+              grouped[key] = [];
+            }
+            grouped[key].push({ marker: marker, originalIndex: index });
+          });
+          
+          // Apply circular offset to overlapping markers
+          Object.keys(grouped).forEach(function(key) {
+            const group = grouped[key];
+            if (group.length > 1) {
+              // Spread markers in a circle
+              group.forEach(function(item, index) {
+                const angle = (360 / group.length) * index;
+                const angleRad = angle * (Math.PI / 180);
+                const offsetLat = Math.sin(angleRad) * offsetDistance;
+                const offsetLng = Math.cos(angleRad) * offsetDistance;
+                
+                item.marker.lat = item.marker.lat + offsetLat;
+                item.marker.lng = item.marker.lng + offsetLng;
+              });
+            }
+          });
+          
+          return markers;
+        }
+        
+        // Apply offset to markers at same location
+        const offsetMarkers = applyMarkerOffset(markers);
+
         // Keep track of created markers for focus functionality
         const leafletMarkers = [];
         
-        markers.forEach(function(markerData) {
+        offsetMarkers.forEach(function(markerData) {
           const marker = L.marker([markerData.lat, markerData.lng], { icon: airtaskerIcon })
             .addTo(map);
           
@@ -954,7 +991,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         // Auto-fit map view based on markers
         ${focusTaskId ? `
         console.log('🎯 Focusing on task:', '${focusTaskId}');
-        const focusMarker = markers.find(m => m.id === '${focusTaskId}');
+        const focusMarker = offsetMarkers.find(m => m.id === '${focusTaskId}');
         if (focusMarker) {
           console.log('✅ Found focus marker:', focusMarker);
           
@@ -974,21 +1011,21 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         } else {
           console.log('❌ Focus marker not found for ID: ${focusTaskId}');
           // Still show all markers even if focus task not found
-          if (markers.length > 0) {
-            if (markers.length === 1) {
-              map.setView([markers[0].lat, markers[0].lng], 12);
+          if (offsetMarkers.length > 0) {
+            if (offsetMarkers.length === 1) {
+              map.setView([offsetMarkers[0].lat, offsetMarkers[0].lng], 12);
             } else {
               const group = new L.featureGroup(leafletMarkers.map(lm => lm.marker));
-              map.fitBounds(group.getBounds().pad(0.1));
+              map.fitBounds(group.getBounds().pad(0.1), { maxZoom: 14 });
             }
           }
         }
         ` : `
         // Fit map to show all markers nicely - auto zoom to fit all points
-        if (markers.length > 0) {
-          if (markers.length === 1) {
+        if (offsetMarkers.length > 0) {
+          if (offsetMarkers.length === 1) {
             // Single marker: center on it with city-level zoom
-            map.setView([markers[0].lat, markers[0].lng], 12);
+            map.setView([offsetMarkers[0].lat, offsetMarkers[0].lng], 12);
           } else {
             // Multiple markers: auto-fit bounds to show all markers
             const group = new L.featureGroup(leafletMarkers.map(lm => lm.marker));

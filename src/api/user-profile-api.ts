@@ -15,22 +15,30 @@ export interface UserProfile {
   lastName: string;
   email: string;
   phone: string;
-  location: string;
-  bio: string;
-  skills: {
-    goodAt: string[];
-    transport: string[];
-    languages: string[];
-    qualifications: string[];
-    experience: string[];
+  location: string | {
+    country?: string;
+    countryCode?: string;
+    region?: string;
+    city?: string;
+    suburb?: string;
+  };
+  bio?: string;
+  skills?: {
+    goodAt?: string[];
+    transport?: string[];
+    languages?: string[];
+    qualifications?: string[];
+    experience?: string[];
   };
   avatar?: string; // Base64 image data
   profilePicture?: string; // URL to profile picture
-  rating: number;
-  completedTasks: number;
+  rating?: number;
+  completedTasks?: number;
   createdAt: string;
   isVerified: boolean;
   role?: string; // Added for compatibility with User type
+  age?: number;
+  ageRange?: string;
 }
 
 export interface UserProfileResponse {
@@ -359,19 +367,19 @@ export async function getUserRatingStats(userId: string): Promise<RatingStatsRes
         success: true,
         data: {
           overall: {
-            average: 4.0,
-            count: 1
+            average: 0,
+            count: 0
           },
           distribution: {
             "5": 0,
-            "4": 1,
+            "4": 0,
             "3": 0,
             "2": 0,
             "1": 0
           },
           asPoster: {
-            average: 4.0,
-            count: 1
+            average: 0,
+            count: 0
           },
           asTasker: {
             average: 0,

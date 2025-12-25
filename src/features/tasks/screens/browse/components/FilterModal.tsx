@@ -327,37 +327,6 @@ export default function FilterModal({
               </View>
             </View>
           </View>
-
-          {/* Toggle Filters */}
-          <View style={styles.filterSection}>
-            <Text style={styles.sectionTitle}>Other filters</Text>
-            
-            <View style={styles.toggleRow}>
-              <View style={styles.toggleTextContainer}>
-                <Text style={styles.toggleLabel}>Available Mytodoo tasks only</Text>
-                <Text style={styles.toggleSubtitle}>Hide tasks that are already assigned</Text>
-              </View>
-              <Switch
-                value={availableTasksOnly}
-                onValueChange={onAvailableTasksChange}
-                trackColor={{ false: '#e0e0e0', true: '#007bff' }}
-                thumbColor="#ffffff"
-              />
-            </View>
-            
-            <View style={styles.toggleRow}>
-              <View style={styles.toggleTextContainer}>
-                <Text style={styles.toggleLabel}>Show tasks with no offers</Text>
-                <Text style={styles.toggleSubtitle}>Hide tasks that have offers</Text>
-              </View>
-              <Switch
-                value={showTasksWithNoOffers}
-                onValueChange={onShowTasksWithNoOffersChange}
-                trackColor={{ false: '#e0e0e0', true: '#007bff' }}
-                thumbColor="#ffffff"
-              />
-            </View>
-          </View>
         </ScrollView>
 
         {/* Bottom buttons */}
@@ -387,43 +356,56 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: '#e8e8e8',
+    backgroundColor: '#fff',
   },
   filterTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1a1a1a',
   },
   resetText: {
     color: '#007bff',
     fontSize: 16,
+    fontWeight: '600',
   },
   filterContent: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   filterSection: {
-    marginBottom: 32,
+    marginBottom: 24,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#e8e8e8',
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 16,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#2c3e50',
+    marginBottom: 18,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase' as const,
   },
   categorySelector: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#d0d0d0',
   },
   categorySelectorText: {
     fontSize: 16,
-    color: '#333',
+    color: '#1a1a1a',
+    fontWeight: '500',
   },
   categoryDropdown: {
     backgroundColor: '#fff',
@@ -530,27 +512,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
-    gap: 16,
+    marginBottom: 28,
+    gap: 20,
   },
   priceBox: {
     backgroundColor: '#f8f9fa',
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 20,
-    borderRadius: 12,
+    borderRadius: 7,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    minWidth: 120,
+    borderColor: '#d0d0d0',
+    minWidth: 100,
     alignItems: 'center',
   },
   priceBoxLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#666',
-    marginBottom: 4,
-    fontWeight: '500',
+    marginBottom: 6,
+    fontWeight: '600',
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
   },
   priceBoxValue: {
-    fontSize: 18,
+    fontSize: 20,
     color: '#007bff',
     fontWeight: '700',
   },
@@ -636,19 +620,21 @@ const styles = StyleSheet.create({
   },
   filterFooter: {
     flexDirection: 'row',
-    padding: 16,
-    paddingBottom: 52,
+    padding: 20,
+    paddingBottom: 24,
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: '#e8e8e8',
     backgroundColor: '#fff',
   },
   resetButton: {
     flex: 1,
-    padding: 16,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 10,
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
+    borderWidth: 1.5,
+    borderColor: '#007bff',
   },
   resetButtonText: {
     fontSize: 16,
@@ -657,8 +643,8 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     flex: 1,
-    padding: 16,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 10,
     alignItems: 'center',
     backgroundColor: '#007bff',
   },

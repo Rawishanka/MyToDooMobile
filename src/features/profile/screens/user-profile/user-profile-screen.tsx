@@ -78,7 +78,12 @@ export default function UserProfileScreen() {
       <UserProfileHeader />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <UserInfoCard user={userData.user} formatDate={formatDate} />
+        <UserInfoCard 
+          user={userData.user} 
+          formatDate={formatDate} 
+          actualRating={ratingStatsData?.averageRating}
+          actualTotalReviews={ratingStatsData?.totalReviews}
+        />
 
         <StatsCard stats={userData.stats} />
 
@@ -93,10 +98,13 @@ export default function UserProfileScreen() {
               totalTasks={userData?.user?.completedTasks || 0}
             />
             
-            <GetMoreReviewsSection 
-              userId={userId}
-              userName={userName}
-            />
+            {/* Hidden: Get More Reviews Section - kept for future use */}
+            {false && (
+              <GetMoreReviewsSection 
+                userId={userId}
+                userName={userName}
+              />
+            )}
           </>
         )}
 
@@ -111,10 +119,13 @@ export default function UserProfileScreen() {
               totalTasks={0}
             />
             
-            <GetMoreReviewsSection 
-              userId={userId}
-              userName={userName}
-            />
+            {/* Hidden: Get More Reviews Section - kept for future use */}
+            {false && (
+              <GetMoreReviewsSection 
+                userId={userId}
+                userName={userName}
+              />
+            )}
           </>
         )}
 

@@ -4,11 +4,10 @@ import TermsConditionsScreen from '@/src/features/legal/screens/TermsConditionsS
 import CommunityGuideLines from '@/src/shared/components/custom_components/community-guidelines';
 import ContactUs from '@/src/shared/components/custom_components/contact-us';
 import EditProfileScreen from '@/src/shared/components/custom_components/editprofilescreen';
-import FAQ from '@/src/shared/components/custom_components/faq-screen';
+import FAQScreen from '@/src/shared/components/custom_components/faq-screen';
 import LegalScreen from '@/src/shared/components/custom_components/legal-screen';
 import Logout from '@/src/shared/components/custom_components/Logout';
 import ProfileUpdateForm from '@/src/shared/components/custom_components/profile-update-form';
-import ZendeskHelp from '@/src/shared/components/custom_components/zendesk-help';
 import { useGetUserProfile, useGetUserRatingStats, useGetUserReviews, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
 import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
@@ -445,7 +444,7 @@ export default function AccountScreen() {
   };
 
   const navigateToFAQ = () => {
-    setCurrentScreen('zendesk');
+    setCurrentScreen('faq');
   };
 
   const navigateToCommunityGuidelines = () => {
@@ -560,11 +559,7 @@ export default function AccountScreen() {
   }
 
   if (currentScreen === 'faq') {
-    return <FAQ visible={true} onClose={navigateToAccount} />;
-  } 
-
-  if (currentScreen === 'zendesk') {
-    return <ZendeskHelp visible={true} onClose={navigateToAccount} />;
+    return <FAQScreen visible={true} onClose={navigateToAccount} onContactSupport={navigateToContactUs} />;
   }
 
   if (currentScreen === 'community-guidelines') {
@@ -864,10 +859,13 @@ export default function AccountScreen() {
                 );
               })()}
               
-              <GetMoreReviewsSection 
-                userId={userId}
-                userName={userData?.firstName || 'User'}
-              />
+              {/* Hidden: Get More Reviews Section - kept for future use */}
+              {false && (
+                <GetMoreReviewsSection 
+                  userId={userId}
+                  userName={userData?.firstName || 'User'}
+                />
+              )}
               
               <ReviewsList userId={userId} />
             </>

@@ -760,7 +760,8 @@ export function useGetCancellationRequest(taskId: string, enabled: boolean = tru
     queryKey: ['cancellation-request', taskId],
     queryFn: () => TaskAPI.getCancellationRequest(taskId),
     enabled: enabled && !!taskId,
-    staleTime: 1000 * 30, // 30 seconds - check frequently for updates
+    staleTime: 3 * 1000, // 3 seconds - optimized for real-time cancellation updates
+    refetchInterval: 3000, // Auto-refresh every 3 seconds for immediate cancellation status sync
     retry: 1, // Only retry once to avoid spam
     retryDelay: 1000, // Wait 1 second before retry
     // Suppress errors in UI - 400/404 are expected for tasks without cancellation requests
@@ -966,7 +967,8 @@ export function useCheckCanReview(taskId: string, enabled: boolean = true) {
   return useQuery({
     queryKey: [...TASK_QUERY_KEYS.reviews(taskId), 'can-review'],
     queryFn: () => TaskAPI.checkCanReview(taskId),
-    staleTime: 1000 * 60 * 1, // 1 minute - shorter stale time for eligibility checks
+    staleTime: 5 * 1000, // 5 seconds - optimized for real-time review eligibility updates
+    refetchInterval: 5000, // Auto-refresh every 5 seconds
     enabled: !!taskId && enabled,
   });
 }
@@ -978,7 +980,8 @@ export function useGetTaskReviews(taskId: string) {
   return useQuery({
     queryKey: TASK_QUERY_KEYS.reviews(taskId),
     queryFn: () => TaskAPI.getTaskReviews(taskId),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 10 * 1000, // 10 seconds - optimized for real-time review updates
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
     enabled: !!taskId,
   });
 }
@@ -990,7 +993,8 @@ export function useGetTaskerReviews(params?: { page?: number; limit?: number }) 
   return useQuery({
     queryKey: TASK_QUERY_KEYS.taskerReviews(params),
     queryFn: () => TaskAPI.getTaskerReviews(params),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 10 * 1000, // 10 seconds - optimized for real-time review updates
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
   });
 }
 
@@ -1001,7 +1005,8 @@ export function useGetPosterReviews(params?: { page?: number; limit?: number }) 
   return useQuery({
     queryKey: TASK_QUERY_KEYS.posterReviews(params),
     queryFn: () => TaskAPI.getPosterReviews(params),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 10 * 1000, // 10 seconds - optimized for real-time review updates
+    refetchInterval: 10000, // Auto-refresh every 10 seconds
   });
 }
 

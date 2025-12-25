@@ -299,12 +299,6 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                     <Text style={styles.offerUserName}>
                       {userName}
                     </Text>
-                    {isVerified && (
-                      <View style={styles.verifiedBadgeSmall}>
-                        <Ionicons name="checkmark-circle" size={12} color="#28a745" />
-                        <Text style={styles.verifiedTextSmall}>Verified</Text>
-                      </View>
-                    )}
                   </View>
 
                   {/* Offer Amount and Status - Hide status for other taskers viewing offers */}

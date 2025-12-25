@@ -57,12 +57,26 @@ const normalizeMediaUrl = (url: string | null | undefined): string | null => {
 };
 
 export default function TaskChatScreen() {
-  const { taskId, taskTitle, posterId, taskerId, chatId: chatIdParam } = useLocalSearchParams<{ 
+  const { 
+    taskId, 
+    taskTitle, 
+    posterId, 
+    taskerId, 
+    chatId: chatIdParam,
+    posterName,
+    posterAvatar,
+    taskerName,
+    taskerAvatar
+  } = useLocalSearchParams<{ 
     taskId: string; 
     taskTitle: string;
     posterId?: string;
     taskerId?: string;
     chatId?: string;
+    posterName?: string;
+    posterAvatar?: string;
+    taskerName?: string;
+    taskerAvatar?: string;
   }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -97,38 +111,98 @@ export default function TaskChatScreen() {
   const chat = chatData?.chat;
   const messages = messagesData?.messages || [];
   
+  // Debug: Log all messages
+  useEffect(() => {
+    if (messages.length > 0) {
+      console.log('📬 MESSAGES LOADED:', messages.length);
+      messages.forEach((msg, index) => {
+        console.log(`Message ${index + 1}:`, {
+          id: msg._id,
+          type: msg.messageType,
+          content: typeof msg.content === 'string' ? msg.content.substring(0, 100) : msg.content,
+          contentType: typeof msg.content,
+          hasMediaUrl: !!msg.mediaUrl
+        });
+      });
+    }
+  }, [messages]);
+  
   // Calculate other person (the one you're chatting with)
   const otherPerson = useMemo(() => {
-    if (!chat || !user?._id) return null;
-
-    // Extract poster and tasker from chat
-    let poster: any = null;
-    let tasker: any = null;
-
-    const chatData = chat as any;
-
-    if (chatData.poster && typeof chatData.poster === 'object') {
-      poster = chatData.poster;
-    } else if (typeof chat.posterId === 'object') {
-      poster = chat.posterId;
+    if (!user?._id) {
+      console.log('❌ No user ID available');
+      return null;
     }
 
-    if (chatData.tasker && typeof chatData.tasker === 'object') {
-      tasker = chatData.tasker;
-    } else if (typeof chat.taskerId === 'object') {
-      tasker = chat.taskerId;
+    console.log('🔍 Calculating otherPerson:', {
+      userId: user._id,
+      hasChat: !!chat,
+      posterId,
+      taskerId,
+      posterName,
+      taskerName,
+      posterAvatar,
+      taskerAvatar
+    });
+
+    // First, try to get from chat API data
+    if (chat) {
+      let poster: any = null;
+      let tasker: any = null;
+
+      const chatData = chat as any;
+
+      if (chatData.poster && typeof chatData.poster === 'object') {
+        poster = chatData.poster;
+      } else if (typeof chat.posterId === 'object') {
+        poster = chat.posterId;
+      }
+
+      if (chatData.tasker && typeof chatData.tasker === 'object') {
+        tasker = chatData.tasker;
+      } else if (typeof chat.taskerId === 'object') {
+        tasker = chat.taskerId;
+      }
+
+      // If current user is poster, show tasker; if tasker, show poster
+      if (poster && poster._id === user._id && tasker) {
+        console.log('✅ From chat API: showing tasker', tasker);
+        return tasker;
+      }
+      if (tasker && tasker._id === user._id && poster) {
+        console.log('✅ From chat API: showing poster', poster);
+        return poster;
+      }
     }
 
-    // If current user is poster, show tasker; if tasker, show poster
-    if (poster && poster._id === user._id) {
-      return tasker;
-    }
-    if (tasker && tasker._id === user._id) {
-      return poster;
+    // Fallback: Use params passed from navigation
+    // If current user is poster, show tasker info; if current user is tasker, show poster info
+    if (posterId === user._id && taskerId) {
+      const taskerInfo = {
+        _id: taskerId,
+        firstName: taskerName ? taskerName.split(' ')[0] : '',
+        lastName: taskerName ? taskerName.split(' ').slice(1).join(' ') : '',
+        avatar: taskerAvatar || null,
+        displayName: taskerName || 'Tasker'
+      };
+      console.log('✅ From params: current user is poster, showing tasker', taskerInfo);
+      return taskerInfo;
+    } else if (taskerId === user._id && posterId) {
+      const posterInfo = {
+        _id: posterId,
+        firstName: posterName ? posterName.split(' ')[0] : '',
+        lastName: posterName ? posterName.split(' ').slice(1).join(' ') : '',
+        avatar: posterAvatar || null,
+        displayName: posterName || 'Poster'
+      };
+      console.log('✅ From params: current user is tasker, showing poster', posterInfo);
+      return posterInfo;
     }
 
+    console.log('❌ Could not determine other person - no ID match');
+    console.log('   Debug: posterId:', posterId, 'taskerId:', taskerId, 'user._id:', user._id);
     return null;
-  }, [chat, user]);
+  }, [chat, user, posterId, taskerId, posterName, posterAvatar, taskerName, taskerAvatar]);
   
   // Debug: Verify chat and task alignment
   useEffect(() => {
@@ -547,7 +621,12 @@ export default function TaskChatScreen() {
               )}
               <View style={styles.headerTextContainer}>
                 <Text style={styles.headerTitle} numberOfLines={1}>
-                  {`${otherPerson.firstName || ''} ${otherPerson.lastName || ''}`.trim() || 'User'}
+                  {(() => {
+                    const fullName = `${otherPerson.firstName || ''} ${otherPerson.lastName || ''}`.trim();
+                    const displayName = fullName || (otherPerson as any).displayName || 'User';
+                    console.log('🏷️ Header displaying name:', displayName, 'from otherPerson:', otherPerson);
+                    return displayName;
+                  })()}
                 </Text>
               </View>
             </View>

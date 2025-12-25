@@ -185,7 +185,42 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
   const [needSpecificTime, setNeedSpecificTime] = useState(false);
   
   const [budget, setBudget] = useState(() => taskData?.budget?.toString() || '');
-  const [currencySymbol, setCurrencySymbol] = useState('$');
+  const [currencySymbol, setCurrencySymbol] = useState(() => {
+    // Always use the task's existing currency - never change it
+    if (taskData?.currency) {
+      const currencyMap: Record<string, string> = {
+        'LKR': 'Rs',
+        'USD': '$',
+        'AUD': '$',
+        'NZD': '$',
+        'INR': '₹',
+        'GBP': '£',
+        'EUR': '€',
+        'SGD': '$',
+        'MYR': 'RM',
+        'IDR': 'Rp',
+        'THB': '฿',
+        'PHP': '₱',
+        'VND': '₫',
+        'PKR': '₨',
+        'BDT': '৳',
+        'JPY': '¥',
+        'CNY': '¥',
+        'KRW': '₩',
+        'HKD': '$',
+        'CAD': '$',
+        'MXN': '$',
+        'BRL': 'R$',
+        'CHF': 'Fr',
+        'SEK': 'kr',
+        'NOK': 'kr',
+        'DKK': 'kr',
+        'ZAR': 'R'
+      };
+      return currencyMap[taskData.currency] || '$';
+    }
+    return '$';
+  });
   const [budgetError, setBudgetError] = useState('');
   const [budgetTouched, setBudgetTouched] = useState(false);
 
@@ -224,7 +259,9 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
         'on_time': 'on_time',
         'Easy': 'no_rush',
         'Specific': 'on_time',
-        'Before': 'before'
+        'Before': 'before',
+        'DoneBy': 'before',
+        'DoneOn': 'on_time'
       };
       setSelectedOption(dateTypeMap[taskData.dateType] || 'no_rush');
     }
@@ -276,15 +313,8 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
     }
   }, [selectedOption]);
 
-  // Update currency symbol based on location using utility function
-  useEffect(() => {
-    if (selectedLocation) {
-      const currencyInfo = getCurrencyFromLocation(selectedLocation);
-      setCurrencySymbol(currencyInfo.symbol);
-    } else {
-      setCurrencySymbol('$'); // Default to USD
-    }
-  }, [selectedLocation]);
+  // Currency symbol is locked to task's original currency - never changes
+  // This ensures consistency and prevents currency confusion
 
   // Calculate minimum budget based on currency
   const minimumBudget = useMemo(() => {
@@ -624,15 +654,22 @@ Please remove phone numbers and addresses from the image.`,
       console.log('💰 EDIT TASK: Currency info:', currencyInfo);
 
       // Prepare the update request body matching backend API expectations
+      // Keep the original budget and currency - they cannot be changed in edit mode
       const updateRequest: any = {
         title: title.trim(),
         details: description.trim(), // Backend expects 'details' field
-        budget: budget ? parseFloat(budget) : undefined,
-        currency: currencyInfo.code,
+        budget: taskData?.budget, // Keep original budget
+        currency: taskData?.currency || currencyInfo.code, // Keep original currency
         time: selectedTimeBlock || undefined,
         date: selectedDate ? selectedDate.toISOString().split('T')[0] : undefined,
         dateType: selectedOption === 'no_rush' ? 'Easy' : selectedOption === 'on_time' ? 'DoneOn' : 'DoneBy',
       };
+      
+      console.log('💰 EDIT TASK: Budget locked (not editable):', {
+        originalBudget: taskData?.budget,
+        originalCurrency: taskData?.currency,
+        lockedInRequest: true
+      });
       
       console.log('🗓️ EDIT TASK: Date type mapping:', {
         selectedOption,
@@ -940,8 +977,12 @@ Please remove phone numbers and addresses from the image.`,
 
           <View style={styles.imageSection}>
             {images.map((uri, index) => (
-              <View key={uri} style={styles.imageWrapper}>
-                <Image source={{ uri }} style={styles.uploadedImage} />
+              <View key={`${uri}-${index}`} style={styles.imageWrapper}>
+                <Image 
+                  source={{ uri }} 
+                  style={styles.uploadedImage}
+                  key={`img-${uri}-${index}`}
+                />
                 <TouchableOpacity style={styles.deleteBtn} onPress={() => removeImage(uri)}>
                   <Ionicons name="close-circle" size={22} color="#FF4D4F" />
                 </TouchableOpacity>
@@ -1121,8 +1162,22 @@ Please remove phone numbers and addresses from the image.`,
         {/* Divider */}
         <View style={styles.divider} />
 
-        {/* SECTION 4: BUDGET - HIDDEN (Cannot be changed after task creation) */}
-        {/* Budget field is intentionally hidden in edit mode to prevent changes after task creation */}
+        {/* SECTION 4: BUDGET (Read-Only - Cannot be changed after task creation) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Budget</Text>
+          <Text style={styles.sectionSubtitle}>How much are you willing to pay?</Text>
+          
+          <View style={[styles.budgetInputContainer, styles.budgetReadOnly]}>
+            <Text style={styles.currencySymbol}>{currencySymbol}</Text>
+            <Text style={styles.budgetDisplayText}>
+              {budget ? parseFloat(budget).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+            </Text>
+          </View>
+          
+          <Text style={styles.helperText}>
+            Budget cannot be changed after task creation
+          </Text>
+        </View>
         </ScrollView>
 
         {/* Date Picker */}
@@ -1149,7 +1204,9 @@ Please remove phone numbers and addresses from the image.`,
           style={[
             styles.saveButton,
             isFormValid && styles.saveButtonEnabled,
-            { bottom: Math.max(insets.bottom, 20) },
+            { 
+              bottom: Platform.OS === 'android' ? Math.max(insets.bottom, 16) + 48 : Math.max(insets.bottom, 20)
+            },
             (updateTaskMutation.isPending || updateTaskWithImagesMutation.isPending) && styles.saveButtonDisabled
           ]}
           onPress={handleSave}
@@ -1215,7 +1272,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 120,
+    paddingBottom: 140,
   },
   section: {
     marginBottom: 20,
@@ -1609,6 +1666,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'transparent',
+  },
+  budgetReadOnly: {
+    backgroundColor: '#E8E8ED',
+    opacity: 0.7,
+  },
+  budgetDisplayText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#000',
+    fontWeight: '500',
   },
   currencySymbol: {
     fontSize: 16,

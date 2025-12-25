@@ -1,4 +1,3 @@
-import { useGetStripeAccountStatus } from '@/src/shared/hooks/useStripeConnectApi';
 import { useGetTaskById } from '@/src/shared/hooks/useTaskApi';
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
@@ -17,7 +16,6 @@ import {
     LoadingState,
     OfferForm,
     OfferFormHeader,
-    PayoutAccountRequiredModal,
     TaskSummarySection,
     TipsSection,
 } from './components';
@@ -36,25 +34,6 @@ export default function MakeOfferScreen() {
 
   const insets = useSafeAreaInsets();
   const scrollRef = React.useRef<ScrollView>(null);
-
-  // Check if user has setup payout account
-  const { data: accountStatus, isLoading: isLoadingStripe, error: stripeError } = useGetStripeAccountStatus(true);
-  const [showPayoutModal, setShowPayoutModal] = React.useState(false);
-
-  // Check if payout account is properly setup
-  // If there's an error (404 = no account, or any other error), treat as no payout account
-  const hasPayoutAccount = !stripeError && accountStatus && accountStatus.detailsSubmitted && accountStatus.payoutsEnabled;
-  
-  console.log('💳 [MakeOfferScreen] Payout Account Check:', {
-    hasPayoutAccount,
-    stripeError: stripeError?.status || stripeError?.message,
-    accountStatus: accountStatus ? {
-      detailsSubmitted: accountStatus.detailsSubmitted,
-      payoutsEnabled: accountStatus.payoutsEnabled,
-      status: accountStatus.status
-    } : null,
-    isLoadingStripe
-  });
 
   const {
     offerAmount,
@@ -77,34 +56,11 @@ export default function MakeOfferScreen() {
     taskLocation: task?.location
   });
 
-  // Handle submit with payout account check
-  const handleSubmitWithPayoutCheck = () => {
-    console.log('🔘 [MakeOfferScreen] Submit button clicked');
-    console.log('🔘 Payout check:', { 
-      hasPayoutAccount, 
-      willShowModal: !hasPayoutAccount,
-      stripeError: stripeError?.message || stripeError?.status
-    });
-    
-    // Check if payout account is setup (or if there was an error checking)
-    if (!hasPayoutAccount) {
-      console.log('⚠️ No payout account - showing modal');
-      setShowPayoutModal(true);
-      return;
-    }
-    
-    console.log('✅ Payout account verified - proceeding with offer submission');
-    // Proceed with normal offer submission
-    handleSubmitOffer();
-  };
-
   // Debug logging for button state
   console.log('🔧 [MakeOfferScreen] Button State:', {
     isSubmitting,
     isLoadingOffers,
     userHasExistingOffer,
-    hasPayoutAccount,
-    isLoadingStripe,
     buttonDisabled: isSubmitting || userHasExistingOffer || isLoadingOffers,
     taskId: taskId
   });
@@ -170,18 +126,18 @@ export default function MakeOfferScreen() {
           <TouchableOpacity
             style={[
               styles.submitButton, 
-              (isSubmitting || userHasExistingOffer || isLoadingOffers || isLoadingStripe || !!validationError) && styles.disabledButton
+              (isSubmitting || userHasExistingOffer || isLoadingOffers || !!validationError) && styles.disabledButton
             ]}
-            onPress={userHasExistingOffer ? undefined : handleSubmitWithPayoutCheck}
-            disabled={isSubmitting || userHasExistingOffer || isLoadingOffers || isLoadingStripe || !!validationError}
+            onPress={userHasExistingOffer ? undefined : handleSubmitOffer}
+            disabled={isSubmitting || userHasExistingOffer || isLoadingOffers || !!validationError}
           >
-            {isSubmitting || isLoadingOffers || isLoadingStripe ? (
+            {isSubmitting || isLoadingOffers ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <Text style={styles.submitButtonText}>
                 {userHasExistingOffer 
                   ? 'Already Offer Submitted' 
-                  : isLoadingOffers || isLoadingStripe
+                  : isLoadingOffers
                     ? 'Loading...' 
                     : 'Submit Offer'
                 }
@@ -189,12 +145,6 @@ export default function MakeOfferScreen() {
             )}
           </TouchableOpacity>
         </View>
-
-        {/* Payout Account Required Modal */}
-        <PayoutAccountRequiredModal
-          visible={showPayoutModal}
-          onClose={() => setShowPayoutModal(false)}
-        />
       </View>
     </View>
   );

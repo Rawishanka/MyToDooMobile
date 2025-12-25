@@ -715,6 +715,7 @@ export const useBrowseFiltersAPI = () => {
   // - Show loading during typing (debounce period)
   // - Show loading when the active API is actually loading
   // - Don't show loading from disabled queries
+  // - Show loading if API returned data but we haven't processed it yet
   const activeApiLoading = React.useMemo(() => {
     if (shouldUseFilterAPI) {
       // Using Filter API
@@ -729,13 +730,21 @@ export const useBrowseFiltersAPI = () => {
     }
   }, [shouldUseFilterAPI, filterLoading, searchLoading, debouncedSearchText]);
   
-  const isLoading = isSearching || activeApiLoading || isProcessingData || isDetectingCountry;
+  // Check if we have received API data but haven't processed it yet (initial load race condition)
+  const hasApiData = shouldUseFilterAPI ? !!filterResponse : !!searchResponse;
+  const hasApiError = shouldUseFilterAPI ? !!filterError : !!searchError;
+  const isInitialLoading = hasApiData && tasksWithOfferCounts.length === 0 && !hasApiError && currentPage === 1;
+  
+  const isLoading = isSearching || activeApiLoading || isProcessingData || isDetectingCountry || isInitialLoading;
   
   console.log('🎯 Final loading state:', { 
     isSearching, 
     activeApiLoading,
     isProcessingData,
     isDetectingCountry,
+    isInitialLoading,
+    hasApiData,
+    tasksCount: tasksWithOfferCounts.length,
     isLoading,
     searchText: searchText.trim(),
     debouncedSearchText: debouncedSearchText.trim(),
