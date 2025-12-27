@@ -42,7 +42,8 @@ export const useGetUserChats = () => {
     enabled: isAuthenticated,
     staleTime: 2 * 1000, // 2 seconds - optimized for real-time updates
     refetchInterval: 3000, // Auto-refresh every 3 seconds for immediate chat list updates
-    retry: 1,
+    retry: 3, // Increased retry count for better error recovery
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000), // Exponential backoff
   });
 };
 

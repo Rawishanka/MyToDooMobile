@@ -3,6 +3,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
+import { hp, RFValue, wp } from '@/src/shared/utils/responsive';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -170,64 +171,64 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: Platform.OS === 'android' ? 48 : 0, // Cover Android navigation bar area
+    height: Platform.OS === 'android' ? hp('6%') : 0, // Cover Android navigation bar area
   },
   fixedHeader: {
     backgroundColor: '#fff',
-    paddingHorizontal: 24,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : 8,
-    paddingBottom: 16,
+    paddingHorizontal: wp('6%'),
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + hp('1%') : hp('1%'),
+    paddingBottom: hp('2%'),
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   closeIcon: {
     position: 'absolute',
-    top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : 8,
-    right: 20,
+    top: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + hp('1%') : hp('1%'),
+    right: wp('5%'),
     zIndex: 10,
-    width: 40,
-    height: 40,
+    width: wp('10%'),
+    height: wp('10%'),
     alignItems: 'center',
     justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
-    paddingTop: 8,
+    paddingTop: hp('1%'),
   },
   innerContainer: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 60, // Increased for better bottom spacing
+    paddingHorizontal: wp('6%'),
+    paddingTop: hp('3%'),
+    paddingBottom: hp('7.5%'), // Increased for better bottom spacing
   },
   title: {
-    fontSize: 28,
+    fontSize: RFValue(28),
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: hp('1%'),
     color: '#333',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 32, // Added margin to avoid overlay with system navigation
+    marginTop: hp('2.5%'),
+    marginBottom: hp('4%'), // Added margin to avoid overlay with system navigation
   },
   footerText: {
     color: '#666',
-    fontSize: 14,
+    fontSize: RFValue(14),
   },
   registerText: {
     color: '#0057FF',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: RFValue(14),
   },
   disabledText: {
     color: '#999',

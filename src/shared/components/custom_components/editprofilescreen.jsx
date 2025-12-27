@@ -1,17 +1,24 @@
 // EditProfileScreen.tsx
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Alert,
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
+  ActivityIndicator,
 } from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const EditProfileScreen = ({ onBack, onSave }) => {
   const [firstName, setFirstName] = useState('Prasanna');
@@ -56,31 +63,42 @@ const EditProfileScreen = ({ onBack, onSave }) => {
         ...skills
       ];
 
-      // Prepare the profile update data
+      // Prepare the profile update data with location object
       const profileUpdateData = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         phone: phone.trim(),
-        location: `${city.trim()}, ${region.trim()}`, // Format as "City, Region"
+        location: {
+          country: country.trim(),
+          countryCode: countryCode.trim(),
+          region: region.trim(),
+          city: city.trim()
+        },
         bio: bio.trim(),
-        skills: flattenedSkills
+        skills: {
+          goodAt: flattenedSkills,
+          transport: [],
+          languages: [],
+          qualifications: [],
+          experience: []
+        }
       };
 
-      console.log('📤 [Profile Edit] Updating profile with data:', JSON.stringify(profileUpdateData, null, 2));
+      console.log('📤 [Profile Edit] Submitting profile update:', JSON.stringify(profileUpdateData, null, 2));
 
-      // Import the update profile API
+      // Import the user profile API (PUT /users/profile)
       const { updateUserProfile } = await import('@/src/api/user-profile-api');
       
-      // Call the API to update profile
+      // Submit profile update (backend handles admin approval)
       const response = await updateUserProfile(profileUpdateData);
 
-      console.log('✅ [Profile Edit] Profile updated successfully:', JSON.stringify(response, null, 2));
+      console.log('✅ [Profile Edit] Profile update submitted:', JSON.stringify(response, null, 2));
 
-      if (response.success) {
-        // Show success alert
+      if (response) {
+        // Show success alert with admin approval message
         Alert.alert(
-          '✓ Success',
-          'Profile updated successfully!',
+          '✓ Request Submitted',
+          response.message || 'Profile update submitted for admin approval. You will be notified once approved.',
           [
             { 
               text: 'OK', 
@@ -91,7 +109,7 @@ const EditProfileScreen = ({ onBack, onSave }) => {
                     firstName: firstName.trim(),
                     lastName: lastName.trim(),
                     phone: phone.trim(),
-                    location: `${city.trim()}, ${region.trim()}`,
+                    location: profileUpdateData.location,
                     bio: bio.trim(),
                     skills: flattenedSkills,
                     fullName: `${firstName.trim()} ${lastName.trim()}`
@@ -107,18 +125,42 @@ const EditProfileScreen = ({ onBack, onSave }) => {
         );
       }
     } catch (error) {
-      console.error('❌ [Profile Edit] Error updating profile:', error);
+      console.error('❌ [Profile Edit] Error submitting profile update:', error);
       console.error('❌ [Profile Edit] Error details:', {
         message: error?.message,
         response: error?.response?.data,
         status: error?.response?.status,
       });
       
-      Alert.alert(
-        'Error',
-        error?.response?.data?.message || error?.message || 'Failed to update profile. Please try again.',
-        [{ text: 'OK' }]
-      );
+      // Check if error is about pending request
+      const errorData = error?.response?.data;
+      const errorMessage = errorData?.message || error?.message || 'Failed to submit profile update. Please try again.';
+      
+      // Check if this is the "pending request" error
+      if (errorMessage?.toLowerCase().includes('pending') || 
+          errorMessage?.toLowerCase().includes('already have')) {
+        Alert.alert(
+          '⏳ Pending Request Blocking Updates',
+          'You have an existing profile update waiting for admin approval. Your backend only allows 1 pending request at a time.\n\n' +
+          '📧 Contact your admin at:\nadministration@mytodoo.com\n\n' +
+          'Ask them to approve or reject your pending request so you can make new updates.',
+          [
+            { text: 'OK', style: 'default' },
+            { 
+              text: 'Copy Admin Email', 
+              onPress: () => {
+                Alert.alert('Admin Email', 'administration@mytodoo.com\n\nPlease contact them to clear your pending request.');
+              }
+            }
+          ]
+        );
+      } else {
+        Alert.alert(
+          'Error',
+          errorMessage,
+          [{ text: 'OK' }]
+        );
+      }
     }
   };
 
@@ -244,7 +286,18 @@ const EditProfileScreen = ({ onBack, onSave }) => {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            <ScrollView 
+              style={styles.content} 
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
         {/* Info Banner */}
         <View style={styles.infoBanner}>
           <Ionicons name="bulb-outline" size={20} color="#0052A2" />
@@ -448,7 +501,10 @@ const EditProfileScreen = ({ onBack, onSave }) => {
         </TouchableOpacity>
 
         <View style={{ height: 30 }} />
-      </ScrollView>
+            </ScrollView>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
 
       {/* Photo Change Modal */}
       <Modal
@@ -626,26 +682,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingTop: 50,
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.5%'),
+    paddingTop: hp('6%'),
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
     backgroundColor: '#fff',
   },
   backButton: {
-    padding: 4,
-    width: 32,
+    padding: wp('1%'),
+    width: wp('8%'),
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
     textAlign: 'center',
     flex: 1,
   },
   placeholder: {
-    width: 32,
+    width: wp('8%'),
   },
   content: {
     flex: 1,
@@ -654,73 +710,104 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     backgroundColor: '#f0f8ff',
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
+    margin: wp('4%'),
+    padding: wp('4%'),
+    borderRadius: wp('2%'),
   },
   infoBannerText: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: wp('3%'),
   },
   infoBannerTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
-    marginBottom: 4,
+    marginBottom: hp('0.5%'),
   },
   infoBannerSubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
-    lineHeight: 18,
+    lineHeight: RFValue(18),
+  },
+  pendingBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fff3cd',
+    marginHorizontal: wp('4%'),
+    marginBottom: hp('2%'),
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('2%'),
+    borderRadius: wp('2%'),
+    borderWidth: 1,
+    borderColor: '#ffc107',
+  },
+  pendingDot: {
+    width: wp('2%'),
+    height: wp('2%'),
+    borderRadius: wp('1%'),
+    backgroundColor: '#ff9800',
+    marginRight: wp('2%'),
+  },
+  pendingText: {
+    fontSize: RFValue(15),
+    fontWeight: '700',
+    color: '#856404',
+    marginBottom: hp('0.5%'),
+  },
+  pendingSubtext: {
+    fontSize: RFValue(13),
+    fontWeight: '400',
+    color: '#856404',
+    lineHeight: RFValue(18),
   },
   section: {
-    paddingHorizontal: 16,
-    marginBottom: 32,
+    paddingHorizontal: wp('4%'),
+    marginBottom: hp('4%'),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
-    marginBottom: 8,
+    marginBottom: hp('1%'),
   },
   sectionSubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
-    marginBottom: 16,
-    lineHeight: 18,
+    marginBottom: hp('2%'),
+    lineHeight: RFValue(18),
   },
   profilePictureContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   profilePicture: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    marginRight: 16,
+    width: wp('18%'),
+    height: wp('18%'),
+    borderRadius: wp('9%'),
+    marginRight: wp('4%'),
   },
   changePhotoButton: {
-    paddingVertical: 8,
+    paddingVertical: hp('1%'),
   },
   changePhotoText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#0052A2',
     fontWeight: '500',
   },
   bioInput: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
-    minHeight: 120,
+    borderRadius: wp('2%'),
+    padding: wp('4%'),
+    fontSize: RFValue(16),
+    minHeight: hp('15%'),
     backgroundColor: '#f9f9f9',
   },
   addPortfolioButton: {
-    width: 80,
-    height: 80,
+    width: wp('20%'),
+    height: wp('20%'),
     backgroundColor: '#f5f5f5',
-    borderRadius: 8,
+    borderRadius: wp('2%'),
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -731,14 +818,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f9f9f9',
-    padding: 16,
-    borderRadius: 8,
+    padding: wp('4%'),
+    borderRadius: wp('2%'),
   },
   verificationIcon: {
-    marginRight: 12,
+    marginRight: wp('3%'),
   },
   verificationText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     fontWeight: '500',
   },
@@ -747,44 +834,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addSkillsText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#0052A2',
     fontWeight: '500',
-    marginLeft: 8,
+    marginLeft: wp('2%'),
   },
   textInput: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
+    borderRadius: wp('2%'),
+    padding: wp('4%'),
+    fontSize: RFValue(16),
     backgroundColor: '#f9f9f9',
   },
   locationButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f9f9f9',
-    padding: 16,
-    borderRadius: 8,
+    padding: wp('4%'),
+    borderRadius: wp('2%'),
     borderWidth: 1,
     borderColor: '#ddd',
   },
   locationText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
-    marginLeft: 12,
+    marginLeft: wp('3%'),
   },
   saveButton: {
     backgroundColor: '#0052A2',
-    marginHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 25,
+    marginHorizontal: wp('4%'),
+    paddingVertical: hp('2%'),
+    borderRadius: wp('6%'),
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: hp('2.5%'),
   },
   saveButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
   },
   // Modal styles
@@ -796,17 +883,17 @@ const styles = StyleSheet.create({
   },
   modalBottom: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 40,
-    paddingTop: 10,
+    borderTopLeftRadius: wp('5%'),
+    borderTopRightRadius: wp('5%'),
+    paddingBottom: hp('5%'),
+    paddingTop: hp('1.2%'),
   },
   modalOption: {
-    paddingVertical: 20,
+    paddingVertical: hp('2.5%'),
     alignItems: 'center',
   },
   modalOptionText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     color: '#0052A2',
   },
   modalDivider: {
@@ -814,11 +901,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
   },
   cancelOption: {
-    marginTop: 10,
+    marginTop: hp('1.2%'),
     backgroundColor: '#f8f8f8',
   },
   cancelOptionText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     color: '#dc3545',
     fontWeight: '500',
   },
@@ -832,14 +919,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingTop: 50,
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.5%'),
+    paddingTop: hp('6%'),
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
   modalHeaderTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
     textAlign: 'center',
@@ -847,51 +934,51 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    padding: 16,
+    padding: wp('4%'),
   },
   profileImageContainer: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: hp('3.5%'),
   },
   largeProfileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: wp('30%'),
+    height: wp('30%'),
+    borderRadius: wp('15%'),
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: RFValue(24),
     fontWeight: '600',
     color: '#000',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: hp('2%'),
   },
   modalSubtext: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 40,
+    lineHeight: RFValue(24),
+    marginBottom: hp('5%'),
   },
   examplePhotos: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 40,
+    marginBottom: hp('5%'),
   },
   examplePhotoContainer: {
     position: 'relative',
   },
   examplePhoto: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: wp('18%'),
+    height: wp('18%'),
+    borderRadius: wp('9%'),
   },
   photoStatus: {
     position: 'absolute',
-    bottom: -5,
-    right: -5,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    bottom: wp('-1.2%'),
+    right: wp('-1.2%'),
+    width: wp('6%'),
+    height: wp('6%'),
+    borderRadius: wp('3%'),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -902,43 +989,43 @@ const styles = StyleSheet.create({
     backgroundColor: '#dc3545',
   },
   photoTips: {
-    marginTop: 20,
+    marginTop: hp('2.5%'),
   },
   photoTip: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   photoTipText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
-    marginLeft: 12,
+    marginLeft: wp('3%'),
   },
   // Skills styles
   skillsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 16,
+    marginBottom: hp('2%'),
   },
   skillChip: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f0f8ff',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginRight: 8,
-    marginBottom: 8,
+    paddingVertical: hp('1%'),
+    paddingHorizontal: wp('3%'),
+    borderRadius: wp('5%'),
+    marginRight: wp('2%'),
+    marginBottom: hp('1%'),
     borderWidth: 1,
     borderColor: '#0052A2',
   },
   skillText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#0052A2',
-    marginRight: 4,
+    marginRight: wp('1%'),
   },
   removeSkillButton: {
-    marginLeft: 4,
+    marginLeft: wp('1%'),
   },
   // Skills Modal styles
   skillsModalContainer: {
@@ -949,55 +1036,55 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingTop: 50,
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.5%'),
+    paddingTop: hp('6%'),
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
-    minHeight: 60,
+    minHeight: hp('7.5%'),
   },
   skillsModalTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
   cancelSkillsText: {
-    padding: 4
+    padding: wp('1%')
   },
   saveSkillsText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#0052A2',
     fontWeight: '600',
   },
   skillsModalContent: {
     flex: 1,
-    padding: 16,
+    padding: wp('4%'),
   },
   skillsModalSubtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
-    marginBottom: 24,
-    lineHeight: 22,
+    marginBottom: hp('3%'),
+    lineHeight: RFValue(22),
   },
   skillInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: hp('3%'),
   },
   skillInput: {
     flex: 1,
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
+    borderRadius: wp('2%'),
+    padding: wp('4%'),
+    fontSize: RFValue(16),
     backgroundColor: '#f9f9f9',
-    marginRight: 12,
+    marginRight: wp('3%'),
   },
   addSkillButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: wp('12%'),
+    height: wp('12%'),
+    borderRadius: wp('6%'),
     backgroundColor: '#f0f8ff',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1005,38 +1092,38 @@ const styles = StyleSheet.create({
     borderColor: '#0052A2',
   },
   addedSkillsSection: {
-    marginBottom: 32,
+    marginBottom: hp('4%'),
   },
   addedSkillsTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
-    marginBottom: 16,
+    marginBottom: hp('2%'),
   },
   suggestedSkillsSection: {
-    marginBottom: 32,
+    marginBottom: hp('4%'),
   },
   suggestedSkillsTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
-    marginBottom: 16,
+    marginBottom: hp('2%'),
   },
   suggestedSkillChip: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f9f9f9',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginRight: 8,
-    marginBottom: 8,
+    paddingVertical: hp('1%'),
+    paddingHorizontal: wp('3%'),
+    borderRadius: wp('5%'),
+    marginRight: wp('2%'),
+    marginBottom: hp('1%'),
     borderWidth: 1,
     borderColor: '#ddd',
   },
   suggestedSkillText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
-    marginRight: 4,
+    marginRight: wp('1%'),
   },
 });  

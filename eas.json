@@ -13,6 +13,10 @@
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"
       },
+      "ios": {
+        "simulator": true,
+        "buildConfiguration": "Release"
+      },
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.mytodoo.com/api"
@@ -22,6 +26,9 @@
     "production": {
       "android": {
         "buildType": "apk"
+      },
+      "ios": {
+        "buildConfiguration": "Release"
       },
       "env": {
         "_comment": "This URL is set specifically for production builds. For local development, change the .env file instead.",

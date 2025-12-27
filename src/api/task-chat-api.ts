@@ -222,11 +222,19 @@ export const getUserChats = async (): Promise<GetChatsResponse> => {
       total: validChats.length
     };
   } catch (error: any) {
-    console.error('❌ Failed to fetch user chats:', error);
-    
-    if (error?.response?.status === 401) {
-      throw new Error('Authentication required');
+    // Handle auth errors gracefully - they will be auto-retried
+    if (error?.isAuthError || error?.response?.status === 401) {
+      console.log('🔄 Chat fetch requires authentication - will auto-retry after token refresh');
+      // Return empty chats instead of throwing, so UI doesn't break
+      // The retry logic will fetch chats after token is refreshed
+      return {
+        success: false,
+        chats: [],
+        total: 0
+      };
     }
+    
+    console.error('❌ Failed to fetch user chats:', error);
     
     throw new Error(
       error?.response?.data?.message || 'Failed to fetch chats. Please try again.'

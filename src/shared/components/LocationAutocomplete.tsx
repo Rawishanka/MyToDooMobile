@@ -13,6 +13,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { hp, RFValue, wp } from '@/src/shared/utils/responsive';
 
 export interface Coordinates {
   lat: number;
@@ -88,10 +89,10 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     }
   };
 
-  // Show country detection status in placeholder when detecting
+  // Show clean placeholder without country name to avoid text cutoff
   const dynamicPlaceholder = isDetectingCountry 
-    ? "Detecting your location..." 
-    : countryInfo ? `${placeholder} (${countryInfo.countryName})` : placeholder;
+    ? "Detecting location..." 
+    : placeholder;
 
   console.log('🌍 Using country for location search:', {
     provided: country,
@@ -457,7 +458,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const renderSuggestion = (item: LocationResult, index: number) => {
     // Extract location components for better display
     const isManual = item.place_type?.includes('manual');
-    const locationParts = item.place_name.split(',');
+    const locationParts = (item.place_name || '').split(',');
     
     // 🎯 CRITICAL FIX: For Australian/NZ addresses, show suburb not street names
     // Mapbox returns: "Street Name, Suburb, State, Country" for addresses
@@ -465,18 +466,18 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     const isAddress = item.place_type?.includes('address');
     const isAustraliaOrNZ = effectiveCountry === 'AU' || effectiveCountry === 'NZ';
     
-    let mainLocation: string;
-    let subLocation: string;
+    let mainLocation = '';
+    let subLocation = '';
     
     if (isAddress && isAustraliaOrNZ && locationParts.length >= 3) {
       // Skip street name (first part), show suburb (second part) as main
-      mainLocation = locationParts[1]?.trim() || item.text;
+      mainLocation = (locationParts[1] || item.text || '').trim();
       // Show state and country as subLocation
-      subLocation = locationParts.slice(2).join(',').trim();
+      subLocation = (locationParts.slice(2).join(',') || '').trim();
     } else {
       // Default behavior for other location types (place, postcode, region)
-      mainLocation = locationParts[0]?.trim() || item.text;
-      subLocation = locationParts.slice(1).join(',').trim();
+      mainLocation = (locationParts[0] || item.text || '').trim();
+      subLocation = (locationParts.slice(1).join(',') || '').trim();
     }
     
     return (
@@ -492,18 +493,24 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         <View style={styles.suggestionContent}>
           <Ionicons 
             name={isManual ? "create-outline" : "location-outline"} 
-            size={20} 
+            size={wp('5%')} 
             color="#666" 
             style={styles.suggestionIcon} 
           />
           <View style={styles.suggestionTextContainer}>
-            <Text style={styles.suggestionMainText} numberOfLines={1}>{mainLocation}</Text>
-            {subLocation && !isManual && (
-              <Text style={styles.suggestionSubText} numberOfLines={2}>{subLocation}</Text>
-            )}
-            {isManual && (
+            {mainLocation ? (
+              <Text style={styles.suggestionMainText} numberOfLines={1}>
+                {mainLocation}
+              </Text>
+            ) : null}
+            {subLocation && !isManual ? (
+              <Text style={styles.suggestionSubText} numberOfLines={2}>
+                {subLocation}
+              </Text>
+            ) : null}
+            {isManual ? (
               <Text style={styles.manualEntryText}>Tap to enter manually</Text>
-            )}
+            ) : null}
           </View>
         </View>
       </TouchableOpacity>
@@ -530,13 +537,12 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         onPress={getCurrentLocation}
         style={getLocationButtonStyle()}
         disabled={detectingLocation || isDetectingCountry}
-      >
-        {detectingLocation ? (
+      >        {detectingLocation ? (
           <ActivityIndicator size="small" color="#4285F4" />
         ) : (
           <Ionicons 
             name="locate" 
-            size={20} 
+            size={wp('5%')} 
             color={permissionStatus === 'denied' ? '#999' : '#4285F4'} 
           />
         )}
@@ -550,7 +556,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
       {/* Search Input */}
       <View style={styles.inputContainer}>
-        <Ionicons name="search-outline" size={20} color="#999" style={styles.inputIcon} />
+        <Ionicons name="search-outline" size={wp('5%')} color="#999" style={styles.inputIcon} />
         <TextInput
           style={styles.input}
           value={query}
@@ -589,7 +595,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
       {showSuggestions && error && (
         <View style={styles.errorContainer}>
-          <Ionicons name="warning-outline" size={16} color="#FF6B6B" />
+          <Ionicons name="warning-outline" size={wp('4%')} color="#FF6B6B" />
           <Text style={styles.errorText}>{error}</Text>
         </View>
       )}
@@ -609,18 +615,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8F4FF',
     borderWidth: 1,
     borderColor: '#4285F4',
-    borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    gap: 8,
+    borderRadius: wp('2%'),
+    paddingVertical: hp('1.7%'),
+    paddingHorizontal: wp('4%'),
+    marginBottom: hp('1.5%'),
+    gap: wp('2%'),
   },
   currentLocationButtonDisabled: {
     backgroundColor: '#F5F5F5',
     borderColor: '#DDD',
   },
   currentLocationText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#4285F4',
   },
@@ -632,24 +638,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderRadius: wp('2%'),
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.5%'),
     alignItems: 'center',
-    minHeight: 48,
+    minHeight: hp('6%'),
   },
   inputIcon: {
-    marginRight: 12,
+    marginRight: wp('3%'),
     color: '#999',
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     padding: 0,
   },
   loadingIcon: {
-    marginLeft: 8,
+    marginLeft: wp('2%'),
   },
   // Dropdown Styles
   dropdownContainer: {
@@ -658,27 +664,27 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#fff',
-    borderRadius: 8,
-    marginTop: 4,
-    maxHeight: 400,
+    borderRadius: wp('2%'),
+    marginTop: hp('0.5%'),
+    maxHeight: hp('50%'),
     elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: hp('0.5%') },
     shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowRadius: wp('2%'),
     zIndex: 10000,
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
   dropdownList: {
-    maxHeight: 400,
+    maxHeight: hp('50%'),
   },
   dropdownContent: {
-    paddingVertical: 4,
+    paddingVertical: hp('0.5%'),
   },
   suggestionItem: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.7%'),
     borderBottomWidth: 1,
     borderBottomColor: '#E8E8E8',
     backgroundColor: '#fff',
@@ -691,45 +697,45 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   suggestionIcon: {
-    marginRight: 12,
-    marginTop: 3,
+    marginRight: wp('3%'),
+    marginTop: hp('0.4%'),
     color: '#666',
     flexShrink: 0,
   },
   suggestionTextContainer: {
     flex: 1,
     flexShrink: 1,
-    paddingRight: 8,
+    paddingRight: wp('2%'),
   },
   suggestionMainText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
-    marginBottom: 4,
-    lineHeight: 22,
+    marginBottom: hp('0.5%'),
+    lineHeight: hp('2.7%'),
   },
   suggestionSubText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
-    lineHeight: 18,
+    lineHeight: hp('2.2%'),
   },
   manualEntryText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#4285F4',
     fontStyle: 'italic',
   },
   errorContainer: {
     flexDirection: 'row',
-    padding: 12,
+    padding: hp('1.5%'),
     alignItems: 'center',
     backgroundColor: '#FFF3F3',
-    borderRadius: 8,
-    marginTop: 4,
+    borderRadius: wp('2%'),
+    marginTop: hp('0.5%'),
   },
   errorText: {
     color: '#FF6B6B',
-    fontSize: 13,
-    marginLeft: 8,
+    fontSize: RFValue(13),
+    marginLeft: wp('2%'),
     flex: 1,
   },
 });

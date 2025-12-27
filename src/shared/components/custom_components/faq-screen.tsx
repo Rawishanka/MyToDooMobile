@@ -10,6 +10,8 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 interface FAQScreenProps {
   visible: boolean;
@@ -252,7 +254,7 @@ const FAQScreen: React.FC<FAQScreenProps> = ({ visible, onClose, onContactSuppor
         onPress={showBack ? () => setSelectedCategory(null) : onClose} 
         style={styles.backButton}
       >
-        <Ionicons name="chevron-back" size={24} color="#333" />
+        <Ionicons name="chevron-back" size={wp('6%')} color="#333" />
       </TouchableOpacity>
       <Text style={styles.headerTitle}>{title}</Text>
       <View style={styles.headerSpacer} />
@@ -265,7 +267,7 @@ const FAQScreen: React.FC<FAQScreenProps> = ({ visible, onClose, onContactSuppor
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.welcomeSection}>
-          <Ionicons name="information-circle" size={48} color="#0052A2" />
+          <Ionicons name="information-circle" size={wp('12%')} color="#0052A2" />
           <Text style={styles.welcomeTitle}>How can we help you?</Text>
           <Text style={styles.welcomeSubtext}>
             Browse through our frequently asked questions to find answers to common queries about MyToDoo.
@@ -283,7 +285,7 @@ const FAQScreen: React.FC<FAQScreenProps> = ({ visible, onClose, onContactSuppor
         {/* Error State */}
         {error && !loading && (
           <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle" size={48} color="#ff3b30" />
+            <Ionicons name="alert-circle" size={wp('12%')} color="#ff3b30" />
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity style={styles.retryButton} onPress={loadHelpArticles}>
               <Text style={styles.retryButtonText}>Retry</Text>
@@ -294,7 +296,7 @@ const FAQScreen: React.FC<FAQScreenProps> = ({ visible, onClose, onContactSuppor
         {/* Empty State */}
         {!loading && !error && categories.length === 0 && (
           <View style={styles.emptyContainer}>
-            <Ionicons name="document-text-outline" size={48} color="#ccc" />
+            <Ionicons name="document-text-outline" size={wp('12%')} color="#ccc" />
             <Text style={styles.emptyText}>No FAQ articles available</Text>
             <Text style={styles.emptySubtext}>Please check back later or contact support</Text>
           </View>
@@ -309,7 +311,7 @@ const FAQScreen: React.FC<FAQScreenProps> = ({ visible, onClose, onContactSuppor
             activeOpacity={0.7}
           >
             <View style={styles.categoryIconContainer}>
-              <Ionicons name={category.icon} size={24} color="#0052A2" />
+              <Ionicons name={category.icon} size={wp('6%')} color="#0052A2" />
             </View>
             <View style={styles.categoryContent}>
               <Text style={styles.categoryTitle}>{category.title}</Text>
@@ -317,7 +319,7 @@ const FAQScreen: React.FC<FAQScreenProps> = ({ visible, onClose, onContactSuppor
                 {category.faqs.length} questions
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
+            <Ionicons name="chevron-forward" size={wp('5%')} color="#999" />
           </TouchableOpacity>
         ))}
 
@@ -334,7 +336,7 @@ const FAQScreen: React.FC<FAQScreenProps> = ({ visible, onClose, onContactSuppor
               }
             }}
           >
-            <Ionicons name="mail-outline" size={20} color="#fff" />
+            <Ionicons name="mail-outline" size={wp('5%')} color="#fff" />
             <Text style={styles.contactButtonText}>Contact Support</Text>
           </TouchableOpacity>
         </View>
@@ -371,7 +373,7 @@ const FAQScreen: React.FC<FAQScreenProps> = ({ visible, onClose, onContactSuppor
                     </View>
                     <Ionicons 
                       name={isExpanded ? "chevron-up" : "chevron-down"} 
-                      size={20} 
+                      size={wp('5%')} 
                       color="#0052A2" 
                     />
                   </TouchableOpacity>
@@ -400,7 +402,7 @@ const FAQScreen: React.FC<FAQScreenProps> = ({ visible, onClose, onContactSuppor
                 }
               }}
             >
-              <Ionicons name="mail-outline" size={20} color="#fff" />
+              <Ionicons name="mail-outline" size={wp('5%')} color="#fff" />
               <Text style={styles.contactButtonText}>Contact Support</Text>
             </TouchableOpacity>
           </View>
@@ -432,56 +434,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingTop: 50,
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('2%'),
+    paddingTop: hp('6%'),
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
   backButton: {
-    padding: 4,
+    padding: wp('1%'),
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
     flex: 1,
     textAlign: 'center',
-    marginHorizontal: 16,
+    marginHorizontal: wp('4%'),
   },
   headerSpacer: {
-    width: 32,
+    width: wp('8%'),
   },
   content: {
     flex: 1,
   },
   welcomeSection: {
     backgroundColor: '#fff',
-    padding: 24,
+    padding: wp('6%'),
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: hp('2%'),
   },
   welcomeTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '600',
     color: '#333',
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: hp('2%'),
+    marginBottom: hp('1%'),
   },
   welcomeSubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: RFValue(20),
   },
   categoryCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 12,
+    padding: wp('4%'),
+    marginHorizontal: wp('4%'),
+    marginBottom: hp('1.5%'),
+    borderRadius: wp('3%'),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -489,122 +491,122 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   categoryIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: wp('12%'),
+    height: wp('12%'),
+    borderRadius: wp('6%'),
     backgroundColor: '#E6F2FF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginRight: wp('4%'),
   },
   categoryContent: {
     flex: 1,
   },
   categoryTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
-    marginBottom: 4,
+    marginBottom: hp('0.5%'),
   },
   categorySubtext: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
   },
   contactSection: {
     backgroundColor: '#fff',
-    padding: 24,
-    margin: 16,
-    marginTop: 8,
-    borderRadius: 12,
+    padding: wp('6%'),
+    margin: wp('4%'),
+    marginTop: hp('1%'),
+    borderRadius: wp('3%'),
     alignItems: 'center',
   },
   contactTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: hp('1%'),
   },
   contactSubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 20,
+    marginBottom: hp('2%'),
+    lineHeight: RFValue(20),
   },
   contactButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#0052A2',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    gap: 8,
+    paddingVertical: hp('1.5%'),
+    paddingHorizontal: wp('6%'),
+    borderRadius: wp('2%'),
+    gap: wp('2%'),
   },
   contactButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   loadingContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    paddingVertical: hp('7.5%'),
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
-    marginTop: 16,
+    marginTop: hp('2%'),
   },
   errorContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 32,
+    paddingVertical: hp('7.5%'),
+    paddingHorizontal: wp('8%'),
   },
   errorText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#ff3b30',
-    marginTop: 16,
-    marginBottom: 16,
+    marginTop: hp('2%'),
+    marginBottom: hp('2%'),
     textAlign: 'center',
   },
   retryButton: {
     backgroundColor: '#0052A2',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: wp('6%'),
+    paddingVertical: hp('1.5%'),
+    borderRadius: wp('2%'),
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 32,
+    paddingVertical: hp('7.5%'),
+    paddingHorizontal: wp('8%'),
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#666',
-    marginTop: 16,
+    marginTop: hp('2%'),
     textAlign: 'center',
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
-    marginTop: 8,
+    marginTop: hp('1%'),
     textAlign: 'center',
   },
   faqList: {
-    padding: 16,
+    padding: wp('4%'),
   },
   faqItem: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 12,
+    borderRadius: wp('3%'),
+    marginBottom: hp('1.5%'),
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -616,46 +618,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    padding: wp('4%'),
   },
   faqQuestionContent: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    marginRight: 12,
+    marginRight: wp('3%'),
   },
   questionNumber: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: wp('7%'),
+    height: wp('7%'),
+    borderRadius: wp('3.5%'),
     backgroundColor: '#0052A2',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: wp('3%'),
   },
   questionNumberText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
   },
   faqQuestionText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#333',
     flex: 1,
   },
   faqAnswer: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    paddingLeft: 56,
+    paddingHorizontal: wp('4%'),
+    paddingBottom: wp('4%'),
+    paddingLeft: wp('14%'),
   },
   faqAnswerText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
-    lineHeight: 22,
+    lineHeight: RFValue(22),
   },
   bottomPadding: {
-    height: 40,
+    height: hp('5%'),
   },
 });
 

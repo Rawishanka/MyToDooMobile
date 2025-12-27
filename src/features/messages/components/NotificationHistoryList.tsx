@@ -16,6 +16,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import type { StoredNotification } from '@/src/services/notification-storage';
 
 interface NotificationHistoryListProps {
@@ -109,7 +111,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
       >
         <View style={styles.notificationContent}>
           <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
-            <Ionicons name={iconName as any} size={24} color={iconColor} />
+            <Ionicons name={iconName as any} size={wp('6%')} color={iconColor} />
           </View>
 
           <View style={styles.textContainer}>
@@ -133,7 +135,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
               style={styles.deleteButton}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="trash-outline" size={20} color="#dc3545" />
+              <Ionicons name="trash-outline" size={wp('5%')} color="#dc3545" />
             </TouchableOpacity>
           </View>
         </View>
@@ -143,7 +145,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="notifications-outline" size={64} color="#ccc" />
+      <Ionicons name="notifications-outline" size={wp('16%')} color="#ccc" />
       <Text style={styles.emptyText}>No Notifications</Text>
       <Text style={styles.emptySubtext}>
         You'll see notifications here when you receive messages, offers, or task updates
@@ -179,7 +181,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
 
 const styles = StyleSheet.create({
   listContainer: {
-    paddingVertical: 8,
+    paddingVertical: hp('1%'),
   },
   emptyListContainer: {
     flex: 1,
@@ -190,19 +192,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: wp('8%'),
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: hp('2%'),
+    fontSize: RFValue(16),
     color: '#6c757d',
   },
   notificationItem: {
     backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginVertical: 4,
-    borderRadius: 12,
-    padding: 12,
+    marginHorizontal: wp('4%'),
+    marginVertical: hp('0.5%'),
+    borderRadius: wp('3%'),
+    padding: wp('3%'),
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
@@ -215,72 +217,72 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: wp('12%'),
+    height: wp('12%'),
+    borderRadius: wp('6%'),
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: wp('3%'),
   },
   textContainer: {
     flex: 1,
-    marginRight: 8,
+    marginRight: wp('2%'),
   },
   title: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
-    marginBottom: 4,
+    marginBottom: hp('0.5%'),
   },
   unreadText: {
     fontWeight: '700',
     color: '#000',
   },
   body: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
-    marginBottom: 4,
-    lineHeight: 20,
+    marginBottom: hp('0.5%'),
+    lineHeight: RFValue(20),
   },
   time: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
   actionsContainer: {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 8,
+    gap: hp('1%'),
   },
   unreadBadge: {
-    padding: 4,
+    padding: wp('1%'),
   },
   unreadDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: wp('2.5%'),
+    height: wp('2.5%'),
+    borderRadius: wp('1.25%'),
     backgroundColor: '#007bff',
   },
   deleteButton: {
-    padding: 4,
+    padding: wp('1%'),
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: wp('8%'),
   },
   emptyText: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: hp('2%'),
+    marginBottom: hp('1%'),
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: RFValue(20),
   },
 });

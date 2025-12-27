@@ -145,28 +145,59 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
 
   const handleSaveChanges = async () => {
     try {
-      await updateProfileMutation.mutateAsync({
-        firstName,
-        lastName,
-        phone,
-        location: {
-          country: location || 'Unknown',
-          countryCode: 'XX',
-        },
-        bio,
-      });
+      // Build update data with only non-empty fields
+      const updateData: any = {};
+      if (firstName?.trim()) updateData.firstName = firstName.trim();
+      if (lastName?.trim()) updateData.lastName = lastName.trim();
+      if (phone?.trim()) updateData.phone = phone.trim();
+      if (bio?.trim()) updateData.bio = bio.trim();
+      
+      // Add location if available
+      if (location?.trim()) {
+        const locationParts = location.split(',').map(part => part.trim()).filter(part => part);
+        if (locationParts.length > 0) {
+          const locationData: any = {};
+          if (locationParts.length === 1) {
+            locationData.city = locationParts[0];
+          } else if (locationParts.length === 2) {
+            locationData.city = locationParts[0];
+            locationData.country = locationParts[1];
+          } else {
+            locationData.city = locationParts[0];
+            locationData.region = locationParts[1];
+            locationData.country = locationParts[2];
+          }
+          updateData.location = locationData;
+        }
+      }
+      
+      const response = await updateProfileMutation.mutateAsync(updateData);
       
       Alert.alert(
-        'Changes Saved', 
-        'Your personal details have been updated successfully.',
+        '✓ Request Submitted', 
+        response.message || 'Profile update submitted for admin approval. You will be notified once approved.',
         [{ text: 'OK', onPress: () => setCurrentScreen('main') }]
       );
       
       // Refresh profile data
       refetch();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Update profile error:', error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
+      const errorMsg = error?.response?.data?.message || error?.message || 'Failed to update profile. Please try again.';
+      
+      // Check if this is the "pending request" error
+      if (errorMsg?.toLowerCase().includes('pending') || 
+          errorMsg?.toLowerCase().includes('already have')) {
+        Alert.alert(
+          '⏳ Pending Request Blocking Updates',
+          'You have an existing profile update waiting for admin approval. Your backend only allows 1 pending request at a time.\n\n' +
+          '📧 Contact your admin at:\nadministration@mytodoo.com\n\n' +
+          'Ask them to approve or reject your pending request so you can make new updates.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', errorMsg);
+      }
     }
   };
 
@@ -181,13 +212,14 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
           style: 'destructive',
           onPress: async () => {
             try {
-              await updateProfileMutation.mutateAsync({
+              const response = await updateProfileMutation.mutateAsync({
                 phone: '',
               });
               setPhone('');
-              Alert.alert('Mobile Removed', 'Your mobile number has been removed successfully.');
-            } catch (error) {
-              Alert.alert('Error', 'Failed to remove mobile number.');
+              Alert.alert('Request Submitted', response.message || 'Mobile number removal submitted for admin approval.');
+            } catch (error: any) {
+              const errorMsg = error?.response?.data?.message || error?.message || 'Failed to remove mobile number.';
+              Alert.alert('Error', errorMsg);
             }
           }
         }
@@ -202,17 +234,31 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
     }
     
     try {
-      await updateProfileMutation.mutateAsync({
+      const response = await updateProfileMutation.mutateAsync({
         phone: phone.trim(),
       });
       
       Alert.alert(
-        'Mobile Number Updated', 
-        'Your mobile number has been updated successfully.',
+        '✓ Request Submitted', 
+        response.message || 'Mobile number update submitted for admin approval.',
         [{ text: 'OK', onPress: () => setCurrentScreen('main') }]
       );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update mobile number.');
+    } catch (error: any) {
+      const errorMsg = error?.response?.data?.message || error?.message || 'Failed to update mobile number.';
+      
+      // Check if this is the "pending request" error
+      if (errorMsg?.toLowerCase().includes('pending') || 
+          errorMsg?.toLowerCase().includes('already have')) {
+        Alert.alert(
+          '⏳ Pending Request Blocking Updates',
+          'You have an existing profile update waiting for admin approval. Your backend only allows 1 pending request at a time.\n\n' +
+          '📧 Contact your admin at:\nadministration@mytodoo.com\n\n' +
+          'Ask them to approve or reject your pending request so you can make new updates.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', errorMsg);
+      }
     }
   };
 

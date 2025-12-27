@@ -88,10 +88,14 @@ class StripeConnectAPIService {
       const result = await response.json();
       return result.data;
     } catch (error: any) {
-      // Only log actual errors, not 404 or network errors (which are expected)
-      if (error?.status !== 404 && !error?.isExpected && error?.message !== 'Network request failed') {
-        console.error('❌ Get account status error:', error);
+      // Don't log expected errors (404 = no account, network failures)
+      // These are normal conditions, not actual errors
+      if (error?.status === 404 || error?.isExpected || error?.message === 'Network request failed') {
+        // Silently handle expected cases
+        throw error;
       }
+      // Only log unexpected errors
+      console.error('❌ Get account status error:', error);
       throw error;
     }
   }
@@ -228,7 +232,10 @@ class StripeConnectAPIService {
       });
 
       if (response.status === 404) {
-        throw { status: 404, message: 'No Stripe Connect account found' };
+        const notFoundError: any = new Error('No Stripe Connect account found');
+        notFoundError.status = 404;
+        notFoundError.isExpected = true;
+        throw notFoundError;
       }
 
       if (!response.ok) {
@@ -239,6 +246,10 @@ class StripeConnectAPIService {
       const result = await response.json();
       return result.data;
     } catch (error: any) {
+      // Don't log expected errors (404 = no account, network failures)
+      if (error?.status === 404 || error?.isExpected || error?.message === 'Network request failed') {
+        throw error;
+      }
       console.error('❌ Get payout history error:', error);
       throw error;
     }
@@ -256,11 +267,22 @@ class StripeConnectAPIService {
         headers,
       });
 
+      if (response.status === 404) {
+        const notFoundError: any = new Error('No Stripe Connect account found');
+        notFoundError.status = 404;
+        notFoundError.isExpected = true;
+        throw notFoundError;
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to delete account');
       }
     } catch (error: any) {
+      // Don't log expected errors (404 = no account, network failures)
+      if (error?.status === 404 || error?.isExpected || error?.message === 'Network request failed') {
+        throw error;
+      }
       console.error('❌ Delete account error:', error);
       throw error;
     }

@@ -67,6 +67,13 @@ export interface UpdateProfileRequest {
   };
 }
 
+// Profile update approval response (PUT /users/profile returns this)
+export interface ProfileUpdateApprovalResponse {
+  message: string;  // "Profile update submitted for admin approval"
+  pendingUpdateId: string;
+  requestedChanges: UpdateProfileRequest;
+}
+
 // Raw API response structure
 export interface RatingStatsApiResponse {
   asPoster: {
@@ -171,12 +178,12 @@ export interface RequestReviewRequest {
 
 /**
  * Get user profile
- * GET /api/auth/profile
+ * GET /api/users/profile
  */
 export async function getUserProfile(): Promise<UserProfileResponse> {
   try {
     console.log("👤 Fetching user profile...");
-    const response = await api.get('/auth/profile');
+    const response = await api.get('/users/profile');
     console.log("✅ User profile fetched successfully:", response.data);
     return response.data;
   } catch (error: any) {
@@ -214,13 +221,14 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
 
 /**
  * Update user profile
- * PUT /api/auth/profile
+ * PUT /api/users/profile
+ * Note: Changes are submitted for admin verification and approval before being applied
  */
-export async function updateUserProfile(profileData: UpdateProfileRequest): Promise<UserProfileResponse> {
+export async function updateUserProfile(profileData: UpdateProfileRequest): Promise<ProfileUpdateApprovalResponse> {
   try {
-    console.log("📝 Updating user profile with data:", JSON.stringify(profileData, null, 2));
-    const response = await api.put('/auth/profile', profileData);
-    console.log("✅ User profile updated successfully:", response.data);
+    console.log("📝 Submitting profile update for admin approval:", JSON.stringify(profileData, null, 2));
+    const response = await api.put('/users/profile', profileData);
+    console.log("✅ Profile update submitted for approval:", response.data);
     return response.data;
   } catch (error: any) {
     // Log detailed error information
@@ -238,37 +246,7 @@ export async function updateUserProfile(profileData: UpdateProfileRequest): Prom
       throw new Error("Please login to update your profile");
     }
     
-    // Network error fallback
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.log("ℹ️ Network unavailable - Using mock update response");
-      return {
-        success: true,
-        data: {
-          _id: "mock-user-123",
-          firstName: profileData.firstName || "John",
-          lastName: profileData.lastName || "Doe",
-          email: "john@example.com",
-          phone: profileData.phone || "+1234567890",
-          location: typeof profileData.location === 'string' 
-            ? profileData.location 
-            : profileData.location?.city || "Sydney, NSW",
-          bio: profileData.bio || "Hi I'm John",
-          skills: {
-            goodAt: profileData.skills?.goodAt || [],
-            transport: profileData.skills?.transport || [],
-            languages: profileData.skills?.languages || [],
-            qualifications: profileData.skills?.qualifications || [],
-            experience: profileData.skills?.experience || []
-          },
-          rating: 4.5,
-          completedTasks: 25,
-          createdAt: new Date().toISOString(),
-          isVerified: false
-        }
-      };
-    }
-    
-    // For other errors, log and throw
+    // For errors, log and throw
     if (!isNetworkError(error) && __DEV__) {
       console.warn("⚠️ Update user profile failed:", error);
     }

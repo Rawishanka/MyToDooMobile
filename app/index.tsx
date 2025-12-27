@@ -5,6 +5,8 @@ import { Link, useRouter } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const { width: screenWidth } = Dimensions.get('window');
 const MyToDooLogo = require('@/assets/MyToDoo_logo.gif');
@@ -180,11 +182,11 @@ const styles = StyleSheet.create({
     marginBottom: -10,
   },
   logoImage: {
-    width: 480,
-    height: 420,
+    width: wp('120%'),
+    height: hp('55%'),
   },
   welcomeText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     color: '#888',
     textAlign: 'center',
     marginBottom: 12,
@@ -222,21 +224,21 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     color: '#333', // Changed from #fff to dark text for gray background
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     textAlign: 'center',
     paddingHorizontal: 20,
   },
   fullCategoryTitle: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: RFValue(24),
     fontWeight: 'bold',
     textAlign: 'center',
     marginTop: 12,
     marginBottom: 0,
     letterSpacing: 1,
     textShadowColor: '#000',
-    textShadowOffset: { width: 1, height: 1 },
+    textShadowOffset: { width: wp('0.25%'), height: hp('0.125%') },
     textShadowRadius: 4,
   },
   bottomContainer: {
@@ -271,7 +273,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     textAlign: 'center',
   },
@@ -282,7 +284,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     marginTop: 16,
     fontWeight: '500',
   },

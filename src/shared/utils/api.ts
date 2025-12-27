@@ -103,6 +103,7 @@ export function createApi(baseURL: string) {
                 '/notifications',
                 '/service-fee/calculate',
                 '/service-fee/test',
+                '/chats/user', // User chats - will auto-retry on 401
             ];
             
             const isNonCriticalEndpoint = nonCriticalEndpoints.some(endpoint => 

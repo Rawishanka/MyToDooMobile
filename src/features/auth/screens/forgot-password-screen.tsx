@@ -3,6 +3,7 @@ import { forgotPassword } from '@/src/api/auth-api';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { hp, RFValue, wp } from '@/src/shared/utils/responsive';
 import {
   ActivityIndicator,
   Alert,
@@ -113,70 +114,70 @@ export default function ForgotPasswordScreen() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.contentWrapper}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-          scrollEnabled={false}
-        >
-          <View style={styles.innerContainer}>
-            <View style={styles.header}>
-              {/* MyToDoo SVG Logo in Blue Container */}
-              <View style={styles.logoContainer}>
-                <View style={styles.logoBackground}>
-                  <MyToDooLogo 
-                    width={80}
-                    height={80}
-                  />
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            bounces={true}
+          >
+            <View style={styles.innerContainer}>
+              <View style={styles.header}>
+                {/* MyToDoo SVG Logo in Blue Container */}
+                <View style={styles.logoContainer}>
+                  <View style={styles.logoBackground}>
+                    <MyToDooLogo 
+                      width={wp('20%')}
+                      height={wp('20%')}
+                    />
+                  </View>
                 </View>
+                <Text style={styles.title}>Forgot Password?</Text>
+                <Text style={styles.subtitle}>
+                  Enter your email address and we&apos;ll send you instructions to reset your password.
+                </Text>
               </View>
-              <Text style={styles.title}>Forgot Password?</Text>
-              <Text style={styles.subtitle}>
-                Enter your email address and we&apos;ll send you instructions to reset your password.
-              </Text>
+
+              <View style={styles.form}>
+                <Text style={styles.label}>Email Address</Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Enter your email"
+                  placeholderTextColor="#999"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoFocus
+                  editable={!emailSent}
+                />
+
+                <TouchableOpacity
+                  style={[styles.resetButton, (loading || emailSent) && styles.resetButtonDisabled]}
+                  onPress={handleResetPassword}
+                  disabled={loading || emailSent}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.resetButtonText}>
+                      {emailSent ? 'Email Sent' : 'Send Reset Link'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.backToLoginButton}
+                  onPress={() => router.back()}
+                >
+                  <Ionicons name="arrow-back" size={wp('4%')} color="#007BFF" style={styles.backIcon} />
+                  <Text style={styles.backToLoginText}>Back to Login</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Bottom spacer for better layout */}
+              <View style={styles.bottomSpacer} />
             </View>
-
-            <View style={styles.form}>
-              <Text style={styles.label}>Email Address</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter your email"
-                placeholderTextColor="#999"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoFocus
-                editable={!emailSent}
-              />
-
-              <TouchableOpacity
-                style={[styles.resetButton, (loading || emailSent) && styles.resetButtonDisabled]}
-                onPress={handleResetPassword}
-                disabled={loading || emailSent}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.resetButtonText}>
-                    {emailSent ? 'Email Sent' : 'Send Reset Link'}
-                  </Text>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.backToLoginButton}
-                onPress={() => router.back()}
-              >
-                <Ionicons name="arrow-back" size={16} color="#007BFF" style={styles.backIcon} />
-                <Text style={styles.backToLoginText}>Back to Login</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
-          </View>
+          </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -191,85 +192,90 @@ const styles = StyleSheet.create({
   keyboardAvoidingView: {
     flex: 1,
   },
-  contentWrapper: {
-    flex: 1,
-  },
   scrollContent: {
     flexGrow: 1,
+    justifyContent: 'center',
+    minHeight: hp('100%'),
   },
   innerContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 100,
+    paddingHorizontal: wp('6%'),
+    paddingVertical: hp('2%'),
   },
   backButton: {
     position: 'absolute',
-    top: 40,
-    left: 18,
+    top: hp('5%'),
+    left: wp('4.5%'),
     zIndex: 10,
     backgroundColor: 'rgba(255,255,255,0.7)',
-    borderRadius: 16,
-    padding: 4,
+    borderRadius: wp('4%'),
+    padding: wp('1%'),
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
-    marginTop: -15,
+    marginBottom: hp('4%'),
+    marginTop: hp('2%'),
   },
   logoContainer: {
-    marginBottom: 24,
+    marginBottom: hp('3%'),
   },
   logoBackground: {
     backgroundColor: '#0a2d5c',
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: wp('8%'),
+    padding: wp('7%'),
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: hp('0.5%') },
     shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowRadius: wp('2%'),
     elevation: 8,
+    width: wp('36%'),
+    height: wp('36%'),
   },
   title: {
-    fontSize: 28,
+    fontSize: RFValue(26),
     fontWeight: 'bold',
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
     color: '#333',
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 20,
+    lineHeight: RFValue(20),
+    paddingHorizontal: wp('2%'),
   },
   form: {
-    marginTop: -40,
-    marginBottom: 24,
+    width: '100%',
   },
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
-    marginBottom: 8,
+    marginBottom: hp('1%'),
     fontWeight: '500',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 24,
-    fontSize: 16,
+    borderRadius: wp('2%'),
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.75%'),
+    marginBottom: hp('2.5%'),
+    fontSize: RFValue(16),
+    backgroundColor: '#fff',
   },
   resetButton: {
     backgroundColor: '#007BFF',
-    paddingVertical: 14,
-    borderRadius: 8,
+    paddingVertical: hp('2%'),
+    borderRadius: wp('2%'),
     alignItems: 'center',
-    marginBottom: 16,
-    marginTop: -10,
+    marginBottom: hp('2%'),
+    shadowColor: '#007BFF',
+    shadowOffset: { width: 0, height: hp('0.25%') },
+    shadowOpacity: 0.3,
+    shadowRadius: wp('1%'),
+    elevation: 3,
   },
   resetButtonDisabled: {
     backgroundColor: '#99c9ff',
@@ -277,20 +283,23 @@ const styles = StyleSheet.create({
   resetButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   backToLoginButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: hp('2%'),
   },
   backIcon: {
-    marginRight: 6,
+    marginRight: wp('1.5%'),
   },
   backToLoginText: {
     color: '#007BFF',
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
+  },
+  bottomSpacer: {
+    height: hp('5%'),
   },
 });

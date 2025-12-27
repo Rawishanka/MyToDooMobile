@@ -160,6 +160,7 @@ export function useCanReviewUser(userId: string, enabled = true) {
 
 /**
  * Hook to update user profile
+ * Note: Returns approval response, not immediate profile update
  */
 export function useUpdateUserProfile() {
   const queryClient = useQueryClient();
@@ -168,9 +169,11 @@ export function useUpdateUserProfile() {
     mutationFn: (profileData: UpdateProfileRequest) => 
       UserProfileAPI.updateUserProfile(profileData),
     onSuccess: (response) => {
-      // Invalidate and refetch profile
+      // Note: Profile is not immediately updated - waiting for admin approval
+      // Invalidate queries so profile refetch shows current (pre-approval) state
       queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.profile() });
-      console.log('✅ Profile updated successfully:', response.data);
+      console.log('✅ Profile update submitted for approval:', response.message);
+      console.log('   Pending Update ID:', response.pendingUpdateId);
     },
     onError: (error) => {
       console.error('❌ Profile update failed:', error);

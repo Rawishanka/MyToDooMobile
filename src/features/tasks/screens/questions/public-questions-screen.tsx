@@ -5,11 +5,15 @@ import { useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
     StatusBar,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View
 } from 'react-native';
 
@@ -173,74 +177,85 @@ export default function PublicQuestionsScreen() {
         </View>
       </View>
 
-      {/* Search and Filter */}
-      <View style={styles.searchSection}>
-        <View style={styles.searchContainer}>
-          <Ionicons name="search-outline" size={20} color="#666" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search questions..."
-            placeholderTextColor="#999"
-            value={searchText}
-            onChangeText={setSearchText}
-          />
-          {searchText.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchText('')}>
-              <Ionicons name="close-circle" size={20} color="#999" />
-            </TouchableOpacity>
-          )}
-        </View>
-        
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={categories}
-          keyExtractor={(item) => item}
-          style={styles.categoryFilter}
-          renderItem={({ item: category }) => (
-            <TouchableOpacity
-              style={[
-                styles.categoryChip,
-                filterCategory === category && styles.categoryChipActive
-              ]}
-              onPress={() => setFilterCategory(category)}
-            >
-              <Text style={[
-                styles.categoryChipText,
-                filterCategory === category && styles.categoryChipTextActive
-              ]}>
-                {category === 'all' ? 'All Categories' : category}
-              </Text>
-            </TouchableOpacity>
-          )}
-        />
-      </View>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            {/* Search and Filter */}
+            <View style={styles.searchSection}>
+              <View style={styles.searchContainer}>
+                <Ionicons name="search-outline" size={20} color="#666" />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search questions..."
+                  placeholderTextColor="#999"
+                  value={searchText}
+                  onChangeText={setSearchText}
+                />
+                {searchText.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearchText('')}>
+                    <Ionicons name="close-circle" size={20} color="#999" />
+                  </TouchableOpacity>
+                )}
+              </View>
+              
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={categories}
+                keyExtractor={(item) => item}
+                style={styles.categoryFilter}
+                renderItem={({ item: category }) => (
+                  <TouchableOpacity
+                    style={[
+                      styles.categoryChip,
+                      filterCategory === category && styles.categoryChipActive
+                    ]}
+                    onPress={() => setFilterCategory(category)}
+                  >
+                    <Text style={[
+                      styles.categoryChipText,
+                      filterCategory === category && styles.categoryChipTextActive
+                    ]}>
+                      {category === 'all' ? 'All Categories' : category}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
 
-      {/* Questions List */}
-      {filteredQuestions.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons name="help-circle-outline" size={64} color="#ccc" />
-          <Text style={styles.emptyStateTitle}>
-            {searchText || filterCategory !== 'all' ? 'No matching questions' : 'No questions yet'}
-          </Text>
-          <Text style={styles.emptyStateSubtitle}>
-            {searchText || filterCategory !== 'all' 
-              ? 'Try adjusting your search or filter'
-              : 'Be the first to ask a question on a task!'
-            }
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredQuestions}
-          keyExtractor={(item) => item._id}
-          renderItem={renderQuestionCard}
-          contentContainerStyle={styles.questionsList}
-          showsVerticalScrollIndicator={false}
-          refreshing={isLoading}
-          onRefresh={refetch}
-        />
-      )}
+            {/* Questions List */}
+            {filteredQuestions.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="help-circle-outline" size={64} color="#ccc" />
+                <Text style={styles.emptyStateTitle}>
+                  {searchText || filterCategory !== 'all' ? 'No matching questions' : 'No questions yet'}
+                </Text>
+                <Text style={styles.emptyStateSubtitle}>
+                  {searchText || filterCategory !== 'all' 
+                    ? 'Try adjusting your search or filter'
+                    : 'Be the first to ask a question on a task!'
+                  }
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={filteredQuestions}
+                keyExtractor={(item) => item._id}
+                renderItem={renderQuestionCard}
+                contentContainerStyle={styles.questionsList}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                refreshing={isLoading}
+                onRefresh={refetch}
+              />
+            )}
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </View>
   );
 }

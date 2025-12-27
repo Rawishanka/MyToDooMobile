@@ -3,14 +3,20 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
+    Keyboard,
+    KeyboardAvoidingView,
     Modal,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View
 } from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 interface HelpSupportProps {
   visible: boolean;
@@ -151,7 +157,17 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
           )}
         </View>
 
-        <ScrollView style={styles.content}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={{ flex: 1 }}>
+              <ScrollView 
+                style={styles.content}
+                keyboardShouldPersistTaps="handled"
+              >
           {/* Loading State */}
           {loading && (
             <View style={styles.loadingContainer}>
@@ -256,6 +272,9 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
             <Text style={styles.contactEmail}>support@mytodo.com</Text>
           </View>
         </ScrollView>
+            </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
@@ -270,9 +289,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 50,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
+    paddingTop: hp('6.5%'),
+    paddingBottom: hp('2%'),
+    paddingHorizontal: wp('4%'),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e1e4e8',
@@ -283,60 +302,60 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   closeButton: {
-    padding: 4,
+    padding: wp('1%'),
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#0052A2',
   },
   placeholder: {
-    width: 32,
+    width: wp('8%'),
   },
   infoBanner: {
     backgroundColor: '#fff',
-    paddingVertical: 24,
-    paddingHorizontal: 20,
+    paddingVertical: hp('3%'),
+    paddingHorizontal: wp('5%'),
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#e1e4e8',
-    marginBottom: 8,
+    marginBottom: hp('1%'),
   },
   infoIcon: {
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   infoTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '700',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: hp('1%'),
     textAlign: 'center',
   },
   infoSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
-    lineHeight: 20,
-    paddingHorizontal: 16,
+    lineHeight: hp('2.5%'),
+    paddingHorizontal: wp('4%'),
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
+    marginHorizontal: wp('4%'),
+    marginBottom: hp('1.5%'),
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('1.2%'),
+    borderRadius: wp('2%'),
     borderWidth: 1,
     borderColor: '#e1e4e8',
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: wp('2%'),
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#333',
   },
   content: {
@@ -345,49 +364,49 @@ const styles = StyleSheet.create({
   loadingContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    paddingVertical: hp('7.5%'),
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
-    marginTop: 16,
+    marginTop: hp('2%'),
   },
   errorContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 32,
+    paddingVertical: hp('7.5%'),
+    paddingHorizontal: wp('8%'),
   },
   errorText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#ff3b30',
-    marginTop: 16,
-    marginBottom: 16,
+    marginTop: hp('2%'),
+    marginBottom: hp('2%'),
     textAlign: 'center',
   },
   retryButton: {
     backgroundColor: '#0052A2',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: wp('6%'),
+    paddingVertical: hp('1.5%'),
+    borderRadius: wp('2%'),
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   categoryContainer: {
-    marginBottom: 8,
+    marginBottom: hp('1%'),
     backgroundColor: '#fff',
-    borderRadius: 8,
-    marginHorizontal: 16,
+    borderRadius: wp('2%'),
+    marginHorizontal: wp('4%'),
     overflow: 'hidden',
   },
   categoryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    padding: wp('4%'),
     backgroundColor: '#fff',
   },
   categoryTitleContainer: {
@@ -396,15 +415,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   categoryTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
-    marginLeft: 12,
+    marginLeft: wp('3%'),
   },
   questionCount: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
-    marginLeft: 8,
+    marginLeft: wp('2%'),
   },
   questionsContainer: {
     borderTopWidth: 1,
@@ -418,78 +437,78 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    paddingLeft: 52,
+    padding: wp('4%'),
+    paddingLeft: wp('13%'),
   },
   questionText: {
     flex: 1,
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#0052A2',
     fontWeight: '500',
   },
   answerContainer: {
-    paddingHorizontal: 52,
-    paddingBottom: 16,
+    paddingHorizontal: wp('13%'),
+    paddingBottom: wp('4%'),
     backgroundColor: '#f9f9f9',
   },
   answerText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
-    lineHeight: 22,
+    lineHeight: hp('2.7%'),
   },
   noResults: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    paddingVertical: hp('7.5%'),
   },
   noResultsText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#666',
-    marginTop: 16,
+    marginTop: hp('2%'),
   },
   noResultsSubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
-    marginTop: 8,
+    marginTop: hp('1%'),
   },
   contactContainer: {
     backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginVertical: 16,
-    padding: 20,
-    borderRadius: 8,
+    marginHorizontal: wp('4%'),
+    marginVertical: hp('2%'),
+    padding: wp('5%'),
+    borderRadius: wp('2%'),
     alignItems: 'center',
   },
   contactTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: hp('1%'),
   },
   contactText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: hp('2%'),
   },
   contactButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#0052A2',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 12,
+    paddingHorizontal: wp('6%'),
+    paddingVertical: hp('1.5%'),
+    borderRadius: wp('2%'),
+    marginBottom: hp('1.5%'),
   },
   contactButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: wp('2%'),
   },
   contactEmail: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#0052A2',
     fontWeight: '500',
   },

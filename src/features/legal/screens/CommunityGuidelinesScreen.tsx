@@ -10,6 +10,8 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 export default function CommunityGuidelinesScreen() {
   const router = useRouter();
@@ -28,7 +30,7 @@ export default function CommunityGuidelinesScreen() {
           style={styles.backButton}
           onPress={handleBackPress}
         >
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons name="arrow-back" size={wp('6%')} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Community Guidelines</Text>
         <View style={styles.placeholder} />
@@ -271,135 +273,135 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.5%'),
     borderBottomWidth: 1,
     borderBottomColor: '#e5e5e5',
     backgroundColor: '#ffffff',
   },
   backButton: {
-    padding: 8,
+    padding: wp('2%'),
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
     textAlign: 'center',
   },
   placeholder: {
-    width: 40,
+    width: wp('10%'),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: hp('5%'),
   },
   contentContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingHorizontal: wp('5%'),
+    paddingTop: hp('2.5%'),
   },
   introSection: {
-    marginBottom: 32,
-    padding: 20,
+    marginBottom: hp('4%'),
+    padding: wp('5%'),
     backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+    borderRadius: wp('3%'),
     borderLeftWidth: 4,
     borderLeftColor: '#28a745',
   },
   introTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
     textAlign: 'center',
   },
   introText: {
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: RFValue(15),
+    lineHeight: RFValue(22),
     color: '#555',
     textAlign: 'justify',
   },
   section: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 16,
-    marginTop: 24,
+    marginBottom: hp('2%'),
+    marginTop: hp('3%'),
   },
   sectionNumber: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
     color: '#28a745',
-    marginRight: 8,
-    marginTop: 2,
+    marginRight: wp('2%'),
+    marginTop: hp('0.25%'),
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
     color: '#333',
     flex: 1,
   },
   subsectionTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
-    marginBottom: 12,
-    marginLeft: 26,
+    marginBottom: hp('1.5%'),
+    marginLeft: wp('6.5%'),
   },
   ruleContainer: {
     flexDirection: 'row',
-    marginBottom: 10,
-    marginLeft: 26,
+    marginBottom: hp('1.25%'),
+    marginLeft: wp('6.5%'),
     alignItems: 'flex-start',
   },
   bulletPoint: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#28a745',
-    marginRight: 12,
-    marginTop: 1,
+    marginRight: wp('3%'),
+    marginTop: hp('0.125%'),
     fontWeight: 'bold',
   },
   ruleText: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: RFValue(14),
+    lineHeight: RFValue(20),
     color: '#555',
     flex: 1,
     textAlign: 'justify',
   },
   rememberContainer: {
     backgroundColor: '#e8f5e8',
-    borderRadius: 12,
-    padding: 20,
-    marginTop: 32,
-    marginBottom: 24,
+    borderRadius: wp('3%'),
+    padding: wp('5%'),
+    marginTop: hp('4%'),
+    marginBottom: hp('3%'),
     borderLeftWidth: 4,
     borderLeftColor: '#28a745',
   },
   rememberTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: hp('1%'),
   },
   rememberText: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: RFValue(14),
+    lineHeight: RFValue(20),
     color: '#555',
     textAlign: 'justify',
   },
   lastUpdated: {
     alignItems: 'center',
-    marginTop: 32,
-    paddingTop: 20,
+    marginTop: hp('4%'),
+    paddingTop: hp('2.5%'),
     borderTopWidth: 1,
     borderTopColor: '#e5e5e5',
   },
   lastUpdatedText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#888',
     fontStyle: 'italic',
   },
   bottomSpacing: {
-    height: 40,
+    height: hp('5%'),
   },
 });

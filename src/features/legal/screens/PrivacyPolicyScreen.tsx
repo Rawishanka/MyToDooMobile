@@ -9,6 +9,8 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 interface PrivacyPolicyScreenProps {
   onBack?: () => void;
@@ -35,7 +37,7 @@ export default function PrivacyPolicyScreen({ onBack }: PrivacyPolicyScreenProps
           style={styles.backButton}
           onPress={handleBackPress}
         >
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons name="arrow-back" size={wp('6%')} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>Privacy Policy</Text>
         <View style={styles.headerSpacer} />
@@ -216,134 +218,134 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 14,
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('1.8%'),
     borderBottomWidth: 1,
     borderBottomColor: '#e1e4e8',
     backgroundColor: '#ffffff',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: hp('0.25%') },
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 3,
   },
   backButton: {
-    padding: 8,
-    marginRight: 8,
+    padding: wp('2%'),
+    marginRight: wp('2%'),
   },
   headerTitle: {
     flex: 1,
-    fontSize: 17,
+    fontSize: RFValue(17),
     fontWeight: '700',
     color: '#1a1a1a',
     textAlign: 'center',
-    marginHorizontal: 8,
+    marginHorizontal: wp('2%'),
   },
   headerSpacer: {
-    width: 40,
+    width: wp('10%'),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 32,
+    paddingBottom: hp('4%'),
   },
   contentContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('2.5%'),
   },
   section: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 12,
-    marginTop: 28,
+    marginBottom: hp('1.5%'),
+    marginTop: hp('3.5%'),
   },
   sectionNumber: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '800',
     color: '#6c5ce7',
-    marginRight: 10,
-    marginTop: 2,
+    marginRight: wp('2.5%'),
+    marginTop: hp('0.25%'),
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#1a1a1a',
     flex: 1,
-    lineHeight: 26,
+    lineHeight: RFValue(26),
   },
   subsection: {
-    marginBottom: 16,
+    marginBottom: hp('2%'),
     marginLeft: 0,
   },
   subsectionTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: hp('1%'),
   },
   bodyText: {
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: RFValue(14),
+    lineHeight: RFValue(22),
     color: '#4a5568',
-    marginBottom: 12,
-    marginLeft: 32,
+    marginBottom: hp('1.5%'),
+    marginLeft: wp('8%'),
   },
   bulletContainer: {
     flexDirection: 'row',
-    marginBottom: 10,
-    marginLeft: 32,
+    marginBottom: hp('1.25%'),
+    marginLeft: wp('8%'),
     alignItems: 'flex-start',
-    paddingRight: 8,
+    paddingRight: wp('2%'),
   },
   bulletPoint: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#6c5ce7',
-    marginRight: 10,
-    marginTop: 2,
+    marginRight: wp('2.5%'),
+    marginTop: hp('0.25%'),
     fontWeight: '600',
   },
   noticeContainer: {
     backgroundColor: '#f5f3ff',
-    borderRadius: 12,
-    padding: 18,
-    marginTop: 32,
-    marginBottom: 24,
+    borderRadius: wp('3%'),
+    padding: wp('4.5%'),
+    marginTop: hp('4%'),
+    marginBottom: hp('3%'),
     marginHorizontal: 0,
     borderLeftWidth: 4,
     borderLeftColor: '#6c5ce7',
     shadowColor: '#6c5ce7',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: hp('0.25%') },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
   noticeTitle: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '700',
     color: '#6c5ce7',
-    marginBottom: 8,
+    marginBottom: hp('1%'),
   },
   noticeText: {
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: RFValue(13),
+    lineHeight: RFValue(20),
     color: '#4a5568',
   },
   lastUpdated: {
     alignItems: 'center',
-    marginTop: 32,
-    marginBottom: 16,
-    paddingTop: 24,
-    paddingHorizontal: 16,
+    marginTop: hp('4%'),
+    marginBottom: hp('2%'),
+    paddingTop: hp('3%'),
+    paddingHorizontal: wp('4%'),
     borderTopWidth: 1,
     borderTopColor: '#e1e4e8',
   },
   lastUpdatedText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#718096',
     fontStyle: 'italic',
   },
   bottomSpacing: {
-    height: 32,
+    height: hp('4%'),
   },
 });

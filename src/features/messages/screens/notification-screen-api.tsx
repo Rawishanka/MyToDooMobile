@@ -14,6 +14,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import {
   getNotifications,
   markNotificationAsRead,
@@ -178,7 +180,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#000" />
+            <Ionicons name="chevron-back" size={wp('6%')} color="#000" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerTitle}>Notifications</Text>
@@ -190,7 +192,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
           </View>
           {notificationStats.unread > 0 && (
             <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.markAllButton}>
-              <Ionicons name="checkmark-done" size={20} color="#007bff" />
+              <Ionicons name="checkmark-done" size={wp('5%')} color="#007bff" />
               <Text style={styles.markAllText}>Mark all read</Text>
             </TouchableOpacity>
           )}
@@ -202,7 +204,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
         {/* Expo Go Warning */}
         {__DEV__ && !process.env.EAS_BUILD && (
           <View style={styles.expoGoWarning}>
-            <Ionicons name="warning" size={20} color="#856404" />
+            <Ionicons name="warning" size={wp('5%')} color="#856404" />
             <Text style={styles.expoGoWarningText}>
               Push notifications require a native build. Use: npx eas build
             </Text>
@@ -211,7 +213,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
 
         {/* Info Message */}
         <View style={styles.infoCard}>
-          <Ionicons name="information-circle" size={20} color="#0c5460" />
+          <Ionicons name="information-circle" size={wp('5%')} color="#0c5460" />
           <Text style={styles.infoText}>
             Push notifications are sent when you receive messages, offers, or task updates. 
             {isFCMConfigured ? ' Notification history is stored locally on your device.' : ' They appear in your device\'s notification tray.'}
@@ -266,10 +268,10 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
         {/* Warning if not configured */}
         {!isFCMConfigured && notifications.length === 0 && (
           <View style={styles.centerContainer}>
-            <Ionicons name="notifications-off" size={64} color="#ccc" />
+            <Ionicons name="notifications-off" size={wp('16%')} color="#ccc" />
             <Text style={styles.emptyText}>FCM Not Configured</Text>
             <View style={styles.warningCard}>
-              <Ionicons name="warning" size={24} color="#856404" />
+              <Ionicons name="warning" size={wp('6%')} color="#856404" />
               <Text style={styles.warningText}>
                 {__DEV__ && !process.env.EAS_BUILD 
                   ? "⚠️ Expo Go Detected\nPush notifications require a native build.\n\nBuild with: npx eas build\n\nNote: This is normal in development mode."
@@ -294,14 +296,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.5%'),
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
     backgroundColor: '#fff',
   },
   backButton: {
-    padding: 8,
+    padding: wp('2%'),
   },
   headerTitleContainer: {
     flexDirection: 'row',
@@ -310,31 +312,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
   headerBadge: {
     backgroundColor: '#007bff',
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginLeft: 8,
+    borderRadius: wp('3%'),
+    paddingHorizontal: wp('2%'),
+    paddingVertical: hp('0.25%'),
+    marginLeft: wp('2%'),
   },
   headerBadgeText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
   },
   markAllButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 8,
+    padding: wp('2%'),
   },
   markAllText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#007bff',
-    marginLeft: 4,
+    marginLeft: wp('1%'),
     fontWeight: '500',
   },
   expoGoWarning: {
@@ -343,47 +345,47 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff3cd',
     borderColor: '#ffc107',
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    margin: 16,
+    borderRadius: wp('2%'),
+    padding: wp('3%'),
+    margin: wp('4%'),
   },
   expoGoWarningText: {
     flex: 1,
-    marginLeft: 8,
-    fontSize: 13,
+    marginLeft: wp('2%'),
+    fontSize: RFValue(13),
     color: '#856404',
   },
   statusCard: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    margin: 16,
-    marginTop: 8,
+    borderRadius: wp('3%'),
+    padding: wp('4%'),
+    margin: wp('4%'),
+    marginTop: hp('1%'),
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
   statusHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: hp('1.5%'),
   },
   statusTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: wp('2%'),
     color: '#000',
   },
   statusDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: hp('0.75%'),
   },
   statusLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#6c757d',
   },
   statusValue: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '500',
     color: '#000',
   },
@@ -393,29 +395,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#d1ecf1',
     borderColor: '#17a2b8',
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    margin: 16,
+    borderRadius: wp('2%'),
+    padding: wp('3%'),
+    margin: wp('4%'),
     marginTop: 0,
   },
   infoText: {
     flex: 1,
-    marginLeft: 8,
-    fontSize: 13,
+    marginLeft: wp('2%'),
+    fontSize: RFValue(13),
     color: '#0c5460',
-    lineHeight: 18,
+    lineHeight: RFValue(18),
   },
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1%'),
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
   tab: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: hp('1%'),
     alignItems: 'center',
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
@@ -424,7 +426,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#007bff',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#6c757d',
     fontWeight: '500',
   },
@@ -439,24 +441,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: wp('6%'),
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
-    marginTop: 16,
+    marginTop: hp('2%'),
     textAlign: 'center',
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
-    marginTop: 8,
-    lineHeight: 20,
+    marginTop: hp('1%'),
+    lineHeight: RFValue(20),
   },
   bottomButtonContainer: {
-    padding: 16,
+    padding: wp('4%'),
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
@@ -466,16 +468,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#007bff',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    borderRadius: wp('2%'),
+    paddingVertical: hp('1.5%'),
+    paddingHorizontal: wp('6%'),
   },
   testButtonDisabled: {
     backgroundColor: '#6c757d',
   },
   testButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   warningCard: {
@@ -484,13 +486,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff3cd',
     borderColor: '#ffc107',
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 16,
-    marginTop: 24,
+    borderRadius: wp('2%'),
+    padding: wp('4%'),
+    marginTop: hp('3%'),
   },
   warningText: {
-    marginLeft: 12,
-    fontSize: 14,
+    marginLeft: wp('3%'),
+    fontSize: RFValue(14),
     color: '#856404',
     fontWeight: '500',
   },

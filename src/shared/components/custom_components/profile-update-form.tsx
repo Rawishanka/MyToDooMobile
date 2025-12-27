@@ -3,7 +3,7 @@ import { User } from '@/src/api/types/user';
 import { UserProfile } from '@/src/api/user-profile-api';
 import { useUpdateUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -87,32 +87,61 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
   const handleSaveProfile = async () => {
     console.log('💾 [Profile Update] Save Profile clicked');
     
-    // Always proceed with saving - no admin approval needed
     try {
-      const profileData = {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        phone: phone.trim(),
-        location: location.trim(),
-        bio: bio.trim(),
-        skills: {
+      // Parse location string into object - clean format
+      const locationParts = location.split(',').map(part => part.trim()).filter(part => part);
+      
+      // Build location object with only non-empty fields
+      const locationData: any = {};
+      if (locationParts.length > 0) {
+        locationData.city = locationParts[0];
+      }
+      if (locationParts.length > 1) {
+        locationData.region = locationParts[1];
+      }
+      if (locationParts.length > 2) {
+        locationData.country = locationParts[2];
+        // Set country code based on country name
+        if (locationData.country.toLowerCase().includes('lanka')) {
+          locationData.countryCode = 'LK';
+        } else if (locationData.country.toLowerCase().includes('australia')) {
+          locationData.countryCode = 'AU';
+        } else if (locationData.country.toLowerCase().includes('usa') || locationData.country.toLowerCase().includes('america')) {
+          locationData.countryCode = 'US';
+        }
+      }
+
+      // Build profile data with only non-empty fields
+      const profileData: any = {};
+      
+      if (firstName.trim()) profileData.firstName = firstName.trim();
+      if (lastName.trim()) profileData.lastName = lastName.trim();
+      if (phone.trim()) profileData.phone = phone.trim();
+      if (Object.keys(locationData).length > 0) profileData.location = locationData;
+      if (bio.trim()) profileData.bio = bio.trim();
+      
+      // Only add skills if there are any
+      const hasSkills = goodAt.length > 0 || transport.length > 0 || languages.length > 0 || 
+                        qualifications.length > 0 || experience.length > 0;
+      if (hasSkills) {
+        profileData.skills = {
           goodAt,
           transport,
           languages,
           qualifications,
           experience,
-        },
-      };
+        };
+      }
 
-      console.log("📤 [Profile Update] Sending profile data:", JSON.stringify(profileData, null, 2));
+      console.log("📤 [Profile Update] Updating profile with PUT /users/profile:", JSON.stringify(profileData, null, 2));
       
-      await updateProfile.mutateAsync(profileData);
+      const response = await updateProfile.mutateAsync(profileData);
 
-      console.log("✅ [Profile Update] Profile updated successfully!");
+      console.log("✅ [Profile Update] Response:", response);
       
       Alert.alert(
-        '✓ Success',
-        'Profile updated successfully!',
+        '✓ Request Submitted',
+        response.message || 'Profile update submitted for admin approval. You will be notified once approved.',
         [{ text: 'OK', onPress: onBack }]
       );
     } catch (error: any) {
@@ -122,11 +151,38 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
         response: error?.response?.data,
         status: error?.response?.status,
       });
-      Alert.alert(
-        'Error',
-        error?.message || 'Failed to update profile. Please try again.',
-        [{ text: 'OK' }]
-      );
+      
+      // Extract backend error message
+      const backendMessage = error?.response?.data?.message || error?.response?.data?.error;
+      const errorMessage = backendMessage || error?.message || 'Failed to update profile. Please try again.';
+      
+      // Check if this is the "pending request" error
+      if (errorMessage?.toLowerCase().includes('pending') || 
+          errorMessage?.toLowerCase().includes('already have')) {
+        Alert.alert(
+          '⏳ Pending Request Blocking Updates',
+          'You have an existing profile update waiting for admin approval. Your backend only allows 1 pending request at a time.\n\n' +
+          '📧 Contact your admin at:\nadministration@mytodoo.com\n\n' +
+          'Ask them to approve or reject your pending request so you can make new updates.',
+          [
+            { text: 'OK', style: 'default' },
+            { 
+              text: 'Copy Admin Email', 
+              onPress: () => {
+                // You could add Clipboard.setString('administration@mytodoo.com') here
+                Alert.alert('Email', 'administration@mytodoo.com');
+              }
+            }
+          ]
+        );
+      } else {
+        // Show generic error
+        Alert.alert(
+          'Error',
+          errorMessage,
+          [{ text: 'OK' }]
+        );
+      }
     }
   };
   
@@ -448,6 +504,31 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+  },
+  pendingBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fff3cd',
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ffc107',
+  },
+  pendingText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#856404',
+    marginBottom: 4,
+  },
+  pendingSubtext: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: '#856404',
+    lineHeight: 18,
   },
   form: {
     padding: 20,

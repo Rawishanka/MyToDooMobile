@@ -41,13 +41,16 @@ export const signInWithGoogle = async (): Promise<string> => {
     console.log('🔐 Configuring Google Sign-In with Firebase...');
     
     // Configure Google Sign-In with Web Client ID for APK build
-    // This is required for Google Sign-In to work in production builds
+    // Use the Client ID from .env
+    const webClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '430846501483-losl6kogpq7q5tl26p2bk9nevjp2tbif.apps.googleusercontent.com';
+    
     try {
       await GoogleSignin.configure({
-        webClientId: 'BO7gNAaYv5CF2jCkBkPW2I6JpO1rBMYSQE0pkhesIBGJ7mVadKq6oTwkVxjivYVnCmr-lWnAEP6rWGOFUO12CFs',
+        webClientId: webClientId,
         scopes: ['email', 'profile'],
         offlineAccess: false,
       });
+      console.log('✅ Google Sign-In configured with Web Client ID:', webClientId.substring(0, 20) + '...');
     } catch (configError) {
       console.log('ℹ️ Google Sign-In config warning (will proceed):', configError);
     }

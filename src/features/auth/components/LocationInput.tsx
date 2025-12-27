@@ -27,7 +27,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
     <>
       <LocationAutocomplete
         onSelect={onLocationSelect}
-        placeholder="Search for suburb, city or address..."
+        placeholder="Search suburb or city"
         style={{ marginBottom: 4 }}
         country={countryCode}
         onDropdownStateChange={onDropdownStateChange}
