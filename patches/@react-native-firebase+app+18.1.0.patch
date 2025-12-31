@@ -1,0 +1,26 @@
+diff --git a/node_modules/@react-native-firebase/app/lib/internal/registry/app.js b/node_modules/@react-native-firebase/app/lib/internal/registry/app.js
+index 9456630..7d68a68 100644
+--- a/node_modules/@react-native-firebase/app/lib/internal/registry/app.js
++++ b/node_modules/@react-native-firebase/app/lib/internal/registry/app.js
+@@ -21,7 +21,7 @@ import {
+   isObject,
+   isString,
+   isUndefined,
+-} from '@react-native-firebase/app/lib/common';
++} from '@react-native-firebase/app/lib/common/index.js';
+ import FirebaseApp from '../../FirebaseApp';
+ import { DEFAULT_APP_NAME } from '../constants';
+ import { getAppModule } from './nativeModule';
+diff --git a/node_modules/@react-native-firebase/app/lib/internal/registry/namespace.js b/node_modules/@react-native-firebase/app/lib/internal/registry/namespace.js
+index 05a0d93..dce3a7c 100644
+--- a/node_modules/@react-native-firebase/app/lib/internal/registry/namespace.js
++++ b/node_modules/@react-native-firebase/app/lib/internal/registry/namespace.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isString } from '@react-native-firebase/app/lib/common';
++import { isString } from '@react-native-firebase/app/lib/common/index.js';
+ import FirebaseApp from '../../FirebaseApp';
+ import SDK_VERSION from '../../version';
+ import { DEFAULT_APP_NAME, KNOWN_NAMESPACES } from '../constants';

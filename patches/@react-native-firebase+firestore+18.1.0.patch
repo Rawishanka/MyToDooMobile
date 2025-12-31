@@ -1,0 +1,244 @@
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreBlob.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreBlob.js
+index 77c3440..ba8624d 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreBlob.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreBlob.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { Base64, isString } from '@react-native-firebase/app/lib/common';
++import { Base64, isString } from '@react-native-firebase/app/lib/common/index.js';
+ 
+ export default class FirestoreBlob {
+   constructor(internal = false, binaryString) {
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreCollectionReference.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreCollectionReference.js
+index 2dac9fa..8f7c31d 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreCollectionReference.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreCollectionReference.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { generateFirestoreId, isObject } from '@react-native-firebase/app/lib/common';
++import { generateFirestoreId, isObject } from '@react-native-firebase/app/lib/common/index.js';
+ import FirestoreDocumentReference, {
+   provideCollectionReferenceClass,
+ } from './FirestoreDocumentReference';
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreDocumentReference.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreDocumentReference.js
+index 0ffe715..b629aee 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreDocumentReference.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreDocumentReference.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isObject, isString, isUndefined } from '@react-native-firebase/app/lib/common';
++import { isObject, isString, isUndefined } from '@react-native-firebase/app/lib/common/index.js';
+ import NativeError from '@react-native-firebase/app/lib/internal/NativeFirebaseError';
+ import { parseSetOptions, parseSnapshotArgs, parseUpdateArgs } from './utils';
+ import { buildNativeMap, provideDocumentReferenceClass } from './utils/serialize';
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreDocumentSnapshot.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreDocumentSnapshot.js
+index 6f293c7..c278175 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreDocumentSnapshot.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreDocumentSnapshot.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isArray, isString } from '@react-native-firebase/app/lib/common';
++import { isArray, isString } from '@react-native-firebase/app/lib/common/index.js';
+ import FirestoreDocumentReference, {
+   provideDocumentSnapshotClass,
+ } from './FirestoreDocumentReference';
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreFieldPath.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreFieldPath.js
+index d58b6d9..1801473 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreFieldPath.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreFieldPath.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isString } from '@react-native-firebase/app/lib/common';
++import { isString } from '@react-native-firebase/app/lib/common/index.js';
+ 
+ const RESERVED = new RegExp('[~*/\\[\\]]');
+ 
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreFieldValue.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreFieldValue.js
+index 48c0110..9aca06a 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreFieldValue.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreFieldValue.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isArray, isNumber } from '@react-native-firebase/app/lib/common';
++import { isArray, isNumber } from '@react-native-firebase/app/lib/common/index.js';
+ import { buildNativeArray, provideFieldValueClass } from './utils/serialize';
+ 
+ export const TypeFieldValueDelete = 'delete';
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreFilter.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreFilter.js
+index 92ca9d9..6898b64 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreFilter.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreFilter.js
+@@ -1,4 +1,4 @@
+-import { isString, isNull, isUndefined, isArray } from '@react-native-firebase/app/lib/common';
++import { isString, isNull, isUndefined, isArray } from '@react-native-firebase/app/lib/common/index.js';
+ import { fromDotSeparatedString } from './FirestoreFieldPath';
+ import { generateNativeData } from './utils/serialize';
+ import { OPERATORS } from './FirestoreQueryModifiers';
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreGeoPoint.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreGeoPoint.js
+index 2b7e4f9..7924a25 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreGeoPoint.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreGeoPoint.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isFinite, isNumber, isUndefined } from '@react-native-firebase/app/lib/common';
++import { isFinite, isNumber, isUndefined } from '@react-native-firebase/app/lib/common/index.js';
+ 
+ export default class FirestoreGeoPoint {
+   constructor(latitude, longitude) {
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreQuery.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreQuery.js
+index 541f609..da783d6 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreQuery.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreQuery.js
+@@ -21,7 +21,7 @@ import {
+   isObject,
+   isString,
+   isUndefined,
+-} from '@react-native-firebase/app/lib/common';
++} from '@react-native-firebase/app/lib/common/index.js';
+ import NativeError from '@react-native-firebase/app/lib/internal/NativeFirebaseError';
+ import { FirestoreAggregateQuery } from './FirestoreAggregate';
+ import FirestoreDocumentSnapshot from './FirestoreDocumentSnapshot';
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreQueryModifiers.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreQueryModifiers.js
+index 13cdea1..6d2db3b 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreQueryModifiers.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreQueryModifiers.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isNumber } from '@react-native-firebase/app/lib/common';
++import { isNumber } from '@react-native-firebase/app/lib/common/index.js';
+ import FirestoreFieldPath, { DOCUMENT_ID } from './FirestoreFieldPath';
+ import { buildNativeArray, generateNativeData } from './utils/serialize';
+ 
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreQuerySnapshot.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreQuerySnapshot.js
+index 1ea59b9..0fc3c56 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreQuerySnapshot.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreQuerySnapshot.js
+@@ -20,7 +20,7 @@ import {
+   isFunction,
+   isObject,
+   isUndefined,
+-} from '@react-native-firebase/app/lib/common';
++} from '@react-native-firebase/app/lib/common/index.js';
+ import FirestoreDocumentChange from './FirestoreDocumentChange';
+ import FirestoreDocumentSnapshot from './FirestoreDocumentSnapshot';
+ import FirestoreSnapshotMetadata from './FirestoreSnapshotMetadata';
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreSnapshotMetadata.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreSnapshotMetadata.js
+index c78c3ca..3e75119 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreSnapshotMetadata.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreSnapshotMetadata.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isUndefined } from '@react-native-firebase/app/lib/common';
++import { isUndefined } from '@react-native-firebase/app/lib/common/index.js';
+ 
+ export default class FirestoreSnapshotMetadata {
+   constructor(metadata) {
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreTimestamp.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreTimestamp.js
+index 988cd2c..fd3c93d 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreTimestamp.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreTimestamp.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isDate, isNumber } from '@react-native-firebase/app/lib/common';
++import { isDate, isNumber } from '@react-native-firebase/app/lib/common/index.js';
+ 
+ // The earlist date supported by Firestore timestamps (0001-01-01T00:00:00Z).
+ const MIN_SECONDS = -62135596800;
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreTransaction.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreTransaction.js
+index d6d710b..dbe429d 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreTransaction.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreTransaction.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isObject } from '@react-native-firebase/app/lib/common';
++import { isObject } from '@react-native-firebase/app/lib/common/index.js';
+ import FirestoreDocumentReference from './FirestoreDocumentReference';
+ import FirestoreDocumentSnapshot from './FirestoreDocumentSnapshot';
+ import { parseSetOptions, parseUpdateArgs } from './utils';
+diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreWriteBatch.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreWriteBatch.js
+index 257b05f..2185c7d 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/FirestoreWriteBatch.js
++++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreWriteBatch.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isObject } from '@react-native-firebase/app/lib/common';
++import { isObject } from '@react-native-firebase/app/lib/common/index.js';
+ import FirestoreDocumentReference from './FirestoreDocumentReference';
+ import { parseSetOptions, parseUpdateArgs } from './utils';
+ import { buildNativeMap } from './utils/serialize';
+diff --git a/node_modules/@react-native-firebase/firestore/lib/index.js b/node_modules/@react-native-firebase/firestore/lib/index.js
+index 7b7e816..9eda04a 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/index.js
++++ b/node_modules/@react-native-firebase/firestore/lib/index.js
+@@ -23,7 +23,7 @@ import {
+   isString,
+   isUndefined,
+   isAndroid,
+-} from '@react-native-firebase/app/lib/common';
++} from '@react-native-firebase/app/lib/common/index.js';
+ import {
+   createModuleNamespace,
+   FirebaseModule,
+diff --git a/node_modules/@react-native-firebase/firestore/lib/utils/index.js b/node_modules/@react-native-firebase/firestore/lib/utils/index.js
+index 359a7dc..8357a71 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/utils/index.js
++++ b/node_modules/@react-native-firebase/firestore/lib/utils/index.js
+@@ -23,7 +23,7 @@ import {
+   isObject,
+   isString,
+   isUndefined,
+-} from '@react-native-firebase/app/lib/common';
++} from '@react-native-firebase/app/lib/common/index.js';
+ import FirestoreFieldPath, { fromDotSeparatedString } from '../FirestoreFieldPath';
+ 
+ export function extractFieldPathData(data, segments) {
+diff --git a/node_modules/@react-native-firebase/firestore/lib/utils/serialize.js b/node_modules/@react-native-firebase/firestore/lib/utils/serialize.js
+index 43ed254..440b627 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/utils/serialize.js
++++ b/node_modules/@react-native-firebase/firestore/lib/utils/serialize.js
+@@ -24,7 +24,7 @@ import {
+   isObject,
+   isString,
+   isUndefined,
+-} from '@react-native-firebase/app/lib/common';
++} from '@react-native-firebase/app/lib/common/index.js';
+ import FirestoreBlob from '../FirestoreBlob';
+ import { DOCUMENT_ID } from '../FirestoreFieldPath';
+ import FirestoreGeoPoint from '../FirestoreGeoPoint';
+diff --git a/node_modules/@react-native-firebase/firestore/lib/utils/typemap.js b/node_modules/@react-native-firebase/firestore/lib/utils/typemap.js
+index 0317342..d381d03 100644
+--- a/node_modules/@react-native-firebase/firestore/lib/utils/typemap.js
++++ b/node_modules/@react-native-firebase/firestore/lib/utils/typemap.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { hasOwnProperty } from '@react-native-firebase/app/lib/common';
++import { hasOwnProperty } from '@react-native-firebase/app/lib/common/index.js';
+ 
+ const MAP = {
+   nan: 0,

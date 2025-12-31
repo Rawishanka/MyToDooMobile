@@ -1,0 +1,52 @@
+diff --git a/node_modules/@react-native-firebase/auth/lib/PhoneAuthListener.js b/node_modules/@react-native-firebase/auth/lib/PhoneAuthListener.js
+index 9d5378a..dc0f55c 100644
+--- a/node_modules/@react-native-firebase/auth/lib/PhoneAuthListener.js
++++ b/node_modules/@react-native-firebase/auth/lib/PhoneAuthListener.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isAndroid, isFunction, isIOS, promiseDefer } from '@react-native-firebase/app/lib/common';
++import { isAndroid, isFunction, isIOS, promiseDefer } from '@react-native-firebase/app/lib/common/index.js';
+ import NativeFirebaseError from '@react-native-firebase/app/lib/internal/NativeFirebaseError';
+ 
+ let REQUEST_ID = 0;
+diff --git a/node_modules/@react-native-firebase/auth/lib/Settings.js b/node_modules/@react-native-firebase/auth/lib/Settings.js
+index 4ed5e3c..d85b2b4 100644
+--- a/node_modules/@react-native-firebase/auth/lib/Settings.js
++++ b/node_modules/@react-native-firebase/auth/lib/Settings.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isAndroid } from '@react-native-firebase/app/lib/common';
++import { isAndroid } from '@react-native-firebase/app/lib/common/index.js';
+ 
+ export default class Settings {
+   constructor(auth) {
+diff --git a/node_modules/@react-native-firebase/auth/lib/User.js b/node_modules/@react-native-firebase/auth/lib/User.js
+index 8ac80ae..f475a98 100644
+--- a/node_modules/@react-native-firebase/auth/lib/User.js
++++ b/node_modules/@react-native-firebase/auth/lib/User.js
+@@ -15,7 +15,7 @@
+  *
+  */
+ 
+-import { isObject, isString, isUndefined, isBoolean } from '@react-native-firebase/app/lib/common';
++import { isObject, isString, isUndefined, isBoolean } from '@react-native-firebase/app/lib/common/index.js';
+ 
+ export default class User {
+   constructor(auth, user) {
+diff --git a/node_modules/@react-native-firebase/auth/lib/index.js b/node_modules/@react-native-firebase/auth/lib/index.js
+index fe6af99..c305e9b 100644
+--- a/node_modules/@react-native-firebase/auth/lib/index.js
++++ b/node_modules/@react-native-firebase/auth/lib/index.js
+@@ -21,7 +21,7 @@ import {
+   isString,
+   isNull,
+   isValidUrl,
+-} from '@react-native-firebase/app/lib/common';
++} from '@react-native-firebase/app/lib/common/index.js';
+ import {
+   createModuleNamespace,
+   FirebaseModule,
