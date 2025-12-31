@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'MyToDoo',
   slug: 'MyToDooMobile',
-  owner: 'novadya',
+  owner: 'rasindu123',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/mytodoo-icon.png',
