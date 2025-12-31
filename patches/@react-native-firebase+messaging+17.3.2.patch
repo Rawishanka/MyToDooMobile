@@ -1,0 +1,26 @@
+diff --git a/node_modules/@react-native-firebase/messaging/lib/index.js b/node_modules/@react-native-firebase/messaging/lib/index.js
+index 661498a..84c9cc8 100644
+--- a/node_modules/@react-native-firebase/messaging/lib/index.js
++++ b/node_modules/@react-native-firebase/messaging/lib/index.js
+@@ -24,7 +24,7 @@ import {
+   isObject,
+   isString,
+   isUndefined,
+-} from '@react-native-firebase/app/lib/common';
++} from '@react-native-firebase/app/lib/common/index.js';
+ import {
+   createModuleNamespace,
+   FirebaseModule,
+diff --git a/node_modules/@react-native-firebase/messaging/lib/remoteMessageOptions.js b/node_modules/@react-native-firebase/messaging/lib/remoteMessageOptions.js
+index fbc9b63..0b1d112 100644
+--- a/node_modules/@react-native-firebase/messaging/lib/remoteMessageOptions.js
++++ b/node_modules/@react-native-firebase/messaging/lib/remoteMessageOptions.js
+@@ -23,7 +23,7 @@ import {
+   isObject,
+   isString,
+   isUndefined,
+-} from '@react-native-firebase/app/lib/common';
++} from '@react-native-firebase/app/lib/common/index.js';
+ 
+ export default function remoteMessageOptions(messagingSenderId, remoteMessage) {
+   const out = {};

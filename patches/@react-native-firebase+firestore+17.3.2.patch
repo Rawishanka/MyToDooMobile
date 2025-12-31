@@ -76,16 +76,6 @@ index 48c0110..9aca06a 100644
  import { buildNativeArray, provideFieldValueClass } from './utils/serialize';
  
  export const TypeFieldValueDelete = 'delete';
-diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreFilter.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreFilter.js
-index 92ca9d9..6898b64 100644
---- a/node_modules/@react-native-firebase/firestore/lib/FirestoreFilter.js
-+++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreFilter.js
-@@ -1,4 +1,4 @@
--import { isString, isNull, isUndefined, isArray } from '@react-native-firebase/app/lib/common';
-+import { isString, isNull, isUndefined, isArray } from '@react-native-firebase/app/lib/common/index.js';
- import { fromDotSeparatedString } from './FirestoreFieldPath';
- import { generateNativeData } from './utils/serialize';
- import { OPERATORS } from './FirestoreQueryModifiers';
 diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreGeoPoint.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreGeoPoint.js
 index 2b7e4f9..7924a25 100644
 --- a/node_modules/@react-native-firebase/firestore/lib/FirestoreGeoPoint.js
@@ -100,7 +90,7 @@ index 2b7e4f9..7924a25 100644
  export default class FirestoreGeoPoint {
    constructor(latitude, longitude) {
 diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreQuery.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreQuery.js
-index 541f609..da783d6 100644
+index b7c9ce2..1becc40 100644
 --- a/node_modules/@react-native-firebase/firestore/lib/FirestoreQuery.js
 +++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreQuery.js
 @@ -21,7 +21,7 @@ import {
@@ -113,7 +103,7 @@ index 541f609..da783d6 100644
  import { FirestoreAggregateQuery } from './FirestoreAggregate';
  import FirestoreDocumentSnapshot from './FirestoreDocumentSnapshot';
 diff --git a/node_modules/@react-native-firebase/firestore/lib/FirestoreQueryModifiers.js b/node_modules/@react-native-firebase/firestore/lib/FirestoreQueryModifiers.js
-index 13cdea1..6d2db3b 100644
+index 0488a77..855d932 100644
 --- a/node_modules/@react-native-firebase/firestore/lib/FirestoreQueryModifiers.js
 +++ b/node_modules/@react-native-firebase/firestore/lib/FirestoreQueryModifiers.js
 @@ -15,7 +15,7 @@

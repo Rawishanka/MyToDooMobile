@@ -12,7 +12,7 @@ index 9d5378a..dc0f55c 100644
  
  let REQUEST_ID = 0;
 diff --git a/node_modules/@react-native-firebase/auth/lib/Settings.js b/node_modules/@react-native-firebase/auth/lib/Settings.js
-index 4ed5e3c..d85b2b4 100644
+index 6761687..bee0029 100644
 --- a/node_modules/@react-native-firebase/auth/lib/Settings.js
 +++ b/node_modules/@react-native-firebase/auth/lib/Settings.js
 @@ -15,7 +15,7 @@
