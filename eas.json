@@ -27,10 +27,7 @@
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.mytodoo.com/api"
       },
-      "channel": "preview",
-      "postInstall": {
-        "script": "./eas-build-post-install.sh"
-      }
+      "channel": "preview"
     },
     "production": {
       "android": {
