@@ -2,6 +2,7 @@
   "name": "mytodoomobile",
   "main": "index.js",
   "version": "1.0.0",
+  "type": "commonjs",
   "scripts": {
     "start": "expo start",
     "start:clean": "expo start --clear",
