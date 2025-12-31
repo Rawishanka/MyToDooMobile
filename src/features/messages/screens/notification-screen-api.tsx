@@ -8,6 +8,8 @@ import {
     ActivityIndicator,
     Alert,
     Modal,
+    Platform,
+    SafeAreaView,
     StatusBar,
     StyleSheet,
     Text,
@@ -174,32 +176,33 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={wp('6%')} color="#000" />
-          </TouchableOpacity>
-          <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerTitle}>Notifications</Text>
-            {notificationStats.total > 0 && (
-              <View style={styles.headerBadge}>
-                <Text style={styles.headerBadgeText}>{notificationStats.total}</Text>
-              </View>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={onClose} style={styles.backButton}>
+              <Ionicons name="chevron-back" size={wp('6%')} color="#000" />
+            </TouchableOpacity>
+            <View style={styles.headerTitleContainer}>
+              <Text style={styles.headerTitle}>Notifications</Text>
+              {notificationStats.total > 0 && (
+                <View style={styles.headerBadge}>
+                  <Text style={styles.headerBadgeText}>{notificationStats.total}</Text>
+                </View>
+              )}
+            </View>
+            {notificationStats.unread > 0 && (
+              <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.markAllButton}>
+                <Ionicons name="checkmark-done" size={wp('5%')} color="#007bff" />
+                <Text style={styles.markAllText}>Mark all read</Text>
+              </TouchableOpacity>
+            )}
+            {notificationStats.unread === 0 && (
+              <View style={styles.markAllButton} />
             )}
           </View>
-          {notificationStats.unread > 0 && (
-            <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.markAllButton}>
-              <Ionicons name="checkmark-done" size={wp('5%')} color="#007bff" />
-              <Text style={styles.markAllText}>Mark all read</Text>
-            </TouchableOpacity>
-          )}
-          {notificationStats.unread === 0 && (
-            <View style={styles.markAllButton} />
-          )}
-        </View>
 
         {/* Expo Go Warning */}
         {__DEV__ && !process.env.EAS_BUILD && (
@@ -280,7 +283,8 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
             </View>
           </View>
         )}
-      </View>
+        </View>
+      </SafeAreaView>
     </Modal>
   );
 };
@@ -288,6 +292,10 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
 export default NotificationModalWithAPI;
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -298,12 +306,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: wp('4%'),
     paddingVertical: hp('1.5%'),
+    paddingTop: Platform.OS === 'ios' ? hp('1%') : hp('1.5%'),
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
     backgroundColor: '#fff',
   },
   backButton: {
     padding: wp('2%'),
+    minWidth: wp('10%'),
   },
   headerTitleContainer: {
     flexDirection: 'row',

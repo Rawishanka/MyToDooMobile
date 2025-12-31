@@ -42,12 +42,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     edgeToEdgeEnabled: true,
+    googleServicesFile: process.env.GOOGLE_SERVICES_JSON || './google-services.json',
   },
   ios: {
     bundleIdentifier: 'com.unexo.mytodoomobile',
     buildNumber: '1.0.0',
     supportsTablet: true,
+    googleServicesFile: process.env.GOOGLE_SERVICES_INFOPLIST || './GoogleService-Info.plist',
     infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
       NSCameraUsageDescription: 'MyToDoo needs access to your camera to capture photos for task creation and profile pictures.',
       NSPhotoLibraryUsageDescription: 'MyToDoo needs access to your photo library to select images for tasks and profile pictures.',
       NSPhotoLibraryAddUsageDescription: 'MyToDoo needs permission to save photos to your photo library.',
@@ -144,5 +147,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     environment: process.env.ENVIRONMENT,
     mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
     googleClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
+    googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
   },
 });

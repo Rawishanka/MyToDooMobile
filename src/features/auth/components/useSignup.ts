@@ -26,6 +26,7 @@ export const useSignup = () => {
   
   // Google OAuth Configuration
   const googleClientId = Constants.expoConfig?.extra?.googleClientId || process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
+  const googleIosClientId = Constants.expoConfig?.extra?.googleIosClientId || process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
   const owner = Constants.expoConfig?.owner || 'janidu5678';
   const slug = Constants.expoConfig?.slug || 'MyToDooMobile';
   
@@ -34,6 +35,8 @@ export const useSignup = () => {
   
   const [googleRequest, googleResponse, promptGoogleAsync] = Google.useIdTokenAuthRequest({
     clientId: googleClientId,
+    iosClientId: googleIosClientId || googleClientId,
+    androidClientId: googleClientId,
     redirectUri: redirectUri,
     scopes: ['openid', 'profile', 'email'],
   });

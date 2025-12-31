@@ -537,7 +537,8 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         onPress={getCurrentLocation}
         style={getLocationButtonStyle()}
         disabled={detectingLocation || isDetectingCountry}
-      >        {detectingLocation ? (
+      >
+        {detectingLocation ? (
           <ActivityIndicator size="small" color="#4285F4" />
         ) : (
           <Ionicons 

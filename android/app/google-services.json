@@ -12,7 +12,20 @@
           "package_name": "com.unexo.mytodoomobile"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "697863453994-g4qpsorcv5sp3s9jlq1ld25pjf40b9e5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.unexo.mytodoomobile",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "430846501483-losl6kogpq7q5tl26p2bk9nevjp2tbif.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyACCrN_zK5NKUUM7GtZulp4Sy53ewb495M"
