@@ -46,7 +46,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   ios: {
     bundleIdentifier: 'com.unexo.mytodoomobile',
-    buildNumber: '1.0.0',
     supportsTablet: true,
     googleServicesFile: process.env.GOOGLE_SERVICES_INFOPLIST || './GoogleService-Info.plist',
     infoPlist: {
