@@ -140,7 +140,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     eas: {
-      projectId: '5ad77f0f-ad33-4a24-8c41-f2115921cb55',
+      projectId: 'ec4b349c-e90f-46a7-89c5-b1c6ad4bb769',
     },
     apiUrl: process.env.API_URL,
     easApiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://api.mytodoo.com/api',
