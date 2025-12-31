@@ -23,6 +23,44 @@ prepare_react_native_project!
 # Add modular headers for Firebase
 use_modular_headers!
 
+# CRITICAL PRE-INSTALL FIX: Patch BoringSSL-GRPC podspec to remove -G flag
+pre_install do |installer|
+  puts "🔧 [PRE-INSTALL] Patching BoringSSL-GRPC to remove -G compiler flag..."
+  
+  # Modify the BoringSSL-GRPC pod at the podspec level
+  boringssl_podspec_path = installer.sandbox.root.join('BoringSSL-GRPC/BoringSSL-GRPC.podspec')
+  
+  if boringssl_podspec_path.exist?
+    puts "   Patching BoringSSL-GRPC.podspec file..."
+    content = File.read(boringssl_podspec_path)
+    
+    # Remove -G flag from any compiler_flags settings
+    content.gsub!(/-G\s+/, '')
+    content.gsub!(/\s+-G(\s+|['"])/, '\1')
+    
+    File.write(boringssl_podspec_path, content)
+    puts "✅ BoringSSL-GRPC.podspec file patched"
+  end
+  
+  # Also patch at the pod target level
+  installer.pod_targets.each do |pod|
+    if pod.name == 'BoringSSL-GRPC'
+      puts "   Found BoringSSL-GRPC pod target"
+      
+      # Modify the root spec
+      if pod.root_spec
+        pod.root_spec.attributes_hash['compiler_flags'] = pod.root_spec.attributes_hash['compiler_flags'].to_s.gsub(/-G\s*/, '') rescue nil
+        pod.root_spec.attributes_hash['pod_target_xcconfig'] ||= {}
+        pod.root_spec.attributes_hash['pod_target_xcconfig']['OTHER_CFLAGS'] = '$(inherited) -DCOCOAPODS=1'
+        pod.root_spec.attributes_hash['pod_target_xcconfig']['OTHER_CPLUSPLUSFLAGS'] = '$(inherited) -DCOCOAPODS=1'
+        pod.root_spec.attributes_hash['pod_target_xcconfig']['WARNING_CFLAGS'] = '-Wno-everything'
+        pod.root_spec.attributes_hash['pod_target_xcconfig']['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+        puts "✅ BoringSSL-GRPC pod target patched"
+      end
+    end
+  end
+end
+
 target 'MyToDoo' do
   use_expo_modules!
 

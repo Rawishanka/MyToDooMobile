@@ -25,7 +25,9 @@
       },
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.mytodoo.com/api"
+        "EXPO_PUBLIC_API_URL": "https://api.mytodoo.com/api",
+        "OTHER_CFLAGS": "$(inherited) -DCOCOAPODS=1",
+        "OTHER_CPLUSPLUSFLAGS": "$(inherited) -DCOCOAPODS=1"
       },
       "channel": "preview"
     },
