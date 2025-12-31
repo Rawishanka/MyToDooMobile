@@ -20,7 +20,8 @@
       },
       "ios": {
         "simulator": true,
-        "buildConfiguration": "Release"
+        "buildConfiguration": "Release",
+        "scheme": "MyToDoo"
       },
       "distribution": "internal",
       "env": {
