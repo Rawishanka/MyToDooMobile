@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'MyToDoo',
   slug: 'MyToDooMobile',
-  owner: 'Sasika123',
+  owner: 'sasika123',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/mytodoo-icon.png',
@@ -138,7 +138,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     eas: {
-      projectId: 'ec4b349c-e90f-46a7-89c5-b1c6ad4bb769',
+      projectId: '7eddf329-f5b1-47df-a3d0-dcdd136f4a06',
     },
     apiUrl: process.env.API_URL,
     easApiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://api.mytodoo.com/api',
