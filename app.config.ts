@@ -11,7 +11,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: './assets/images/mytodoo-icon.png',
   scheme: 'mytodoo',
   userInterfaceStyle: 'light',
-  newArchEnabled: false,
+  newArchEnabled: true,
   assetBundlePatterns: ['**/*'],
   runtimeVersion: '1.0.0',
   android: {
