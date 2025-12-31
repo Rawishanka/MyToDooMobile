@@ -107,7 +107,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     'expo-web-browser',
     '@react-native-firebase/app',
-    '@react-native-firebase/messaging',
     [
       'expo-notifications',
       {
