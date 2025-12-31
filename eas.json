@@ -19,7 +19,7 @@
         "gradleCommand": ":app:assembleRelease"
       },
       "ios": {
-        "simulator": true,
+        "simulator": false,
         "buildConfiguration": "Release",
         "scheme": "MyToDoo"
       },
