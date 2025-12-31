@@ -103,19 +103,39 @@ target 'MyToDoo' do
       private_headers = pods_root.join('Headers', 'Private', 'openssl_grpc')
       public_headers = pods_root.join('Headers', 'Public', 'openssl_grpc')
       
-      FileUtils.mkdir_p(private_headers) unless private_headers.exist?
-      FileUtils.mkdir_p(public_headers) unless public_headers.exist?
+      FileUtils.mkdir_p(private_headers)
+      FileUtils.mkdir_p(public_headers)
       
-      # Copy the modulemap to where gRPC-Core expects it (with the name it expects)
+      # Copy the modulemap to where gRPC-Core expects it
       modulemap_dest_private = private_headers.join('BoringSSL-GRPC.modulemap')
       modulemap_dest_public = public_headers.join('BoringSSL-GRPC.modulemap')
       
       FileUtils.cp(modulemap_source, modulemap_dest_private)
       FileUtils.cp(modulemap_source, modulemap_dest_public)
       
-      puts "✅ BoringSSL-GRPC modulemap copied to expected locations:"
+      puts "✅ BoringSSL-GRPC modulemap copied to:"
       puts "   #{modulemap_dest_private}"
       puts "   #{modulemap_dest_public}"
+      
+      # CRITICAL: Patch gRPC-Core xcconfig files to add the openssl_grpc header path
+      grpc_core_xcconfig_dir = pods_root.join('Target Support Files', 'gRPC-Core')
+      if grpc_core_xcconfig_dir.exist?
+        Dir.glob(grpc_core_xcconfig_dir.join('*.xcconfig')).each do |xcconfig_path|
+          xcconfig_content = File.read(xcconfig_path)
+          
+          # Check if we need to add the openssl_grpc paths
+          unless xcconfig_content.include?('openssl_grpc')
+            # Find HEADER_SEARCH_PATHS line and append our paths
+            if xcconfig_content =~ /^HEADER_SEARCH_PATHS = (.*)$/
+              original_line = $&
+              new_line = "#{original_line} \"${PODS_ROOT}/Headers/Private/openssl_grpc\" \"${PODS_ROOT}/Headers/Public/openssl_grpc\""
+              xcconfig_content.sub!(original_line, new_line)
+              File.write(xcconfig_path, xcconfig_content)
+              puts "✅ Patched #{File.basename(xcconfig_path)}"
+            end
+          end
+        end
+      end
     else
       puts "⚠️  BoringSSL modulemap not found at #{modulemap_source}"
     end
