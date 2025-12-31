@@ -60,8 +60,19 @@ target 'MyToDoo' do
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
 
-    # Fix for gRPC-Core module map issue with Firebase
+    # Fix for gRPC-Core and BoringSSL module map issues
     installer.pods_project.targets.each do |target|
+      if target.name == 'gRPC-Core'
+        target.build_configurations.each do |config|
+          # Add openssl_grpc to header search paths
+          config.build_settings['HEADER_SEARCH_PATHS'] ||= ['$(inherited)']
+          config.build_settings['HEADER_SEARCH_PATHS'] << '"${PODS_ROOT}/Headers/Private/openssl_grpc"'
+          config.build_settings['HEADER_SEARCH_PATHS'] << '"${PODS_ROOT}/Headers/Public/openssl_grpc"'
+          config.build_settings['HEADER_SEARCH_PATHS'] << '"${PODS_ROOT}/BoringSSL-GRPC"'
+          config.build_settings['USE_HEADERMAP'] = 'NO'
+        end
+      end
+      
       target.build_configurations.each do |config|
         # Fix deployment target warnings
         if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 12.0
@@ -77,6 +88,36 @@ target 'MyToDoo' do
           config.build_settings['OTHER_CPLUSPLUSFLAGS'] << '-Wno-error=missing-template-arg-list-after-template-kw'
         end
       end
+    end
+    
+    # Ensure BoringSSL-GRPC modulemap is in the expected location
+    puts "🔧 Ensuring BoringSSL-GRPC modulemap is accessible..."
+    
+    pods_root = Pod::Config.instance.installation_root.join('Pods')
+    
+    # The actual modulemap location
+    modulemap_source = pods_root.join('BoringSSL-GRPC', 'src', 'include', 'openssl', 'BoringSSL.modulemap')
+    
+    if modulemap_source.exist?
+      # Create the directories that gRPC-Core expects
+      private_headers = pods_root.join('Headers', 'Private', 'openssl_grpc')
+      public_headers = pods_root.join('Headers', 'Public', 'openssl_grpc')
+      
+      FileUtils.mkdir_p(private_headers) unless private_headers.exist?
+      FileUtils.mkdir_p(public_headers) unless public_headers.exist?
+      
+      # Copy the modulemap to where gRPC-Core expects it (with the name it expects)
+      modulemap_dest_private = private_headers.join('BoringSSL-GRPC.modulemap')
+      modulemap_dest_public = public_headers.join('BoringSSL-GRPC.modulemap')
+      
+      FileUtils.cp(modulemap_source, modulemap_dest_private)
+      FileUtils.cp(modulemap_source, modulemap_dest_public)
+      
+      puts "✅ BoringSSL-GRPC modulemap copied to expected locations:"
+      puts "   #{modulemap_dest_private}"
+      puts "   #{modulemap_dest_public}"
+    else
+      puts "⚠️  BoringSSL modulemap not found at #{modulemap_source}"
     end
   end
 end
