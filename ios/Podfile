@@ -63,6 +63,33 @@ target 'MyToDoo' do
     # Fix for gRPC-Core and BoringSSL module map issues
     installer.pods_project.targets.each do |target|
       if target.name == 'gRPC-Core'
+        # Add a script phase to ensure modulemap exists before compilation
+        script_phase = target.new_shell_script_build_phase('[gRPC-Core] Fix BoringSSL modulemap')
+        script_phase.shell_script = <<-SCRIPT
+          set -e
+          MODULEMAP_SOURCE="${PODS_ROOT}/BoringSSL-GRPC/src/include/openssl/BoringSSL.modulemap"
+          PRIVATE_HEADERS="${PODS_ROOT}/Headers/Private/openssl_grpc"
+          PUBLIC_HEADERS="${PODS_ROOT}/Headers/Public/openssl_grpc"
+          
+          mkdir -p "${PRIVATE_HEADERS}" "${PUBLIC_HEADERS}"
+          
+          if [ -f "${MODULEMAP_SOURCE}" ]; then
+            cp -f "${MODULEMAP_SOURCE}" "${PRIVATE_HEADERS}/BoringSSL-GRPC.modulemap"
+            cp -f "${MODULEMAP_SOURCE}" "${PUBLIC_HEADERS}/BoringSSL-GRPC.modulemap"
+            echo "✅ BoringSSL-GRPC modulemap copied"
+          else
+            FOUND=$(find "${PODS_ROOT}/BoringSSL-GRPC" -name "*.modulemap" -type f 2>/dev/null | head -1)
+            if [ -n "${FOUND}" ]; then
+              cp -f "${FOUND}" "${PRIVATE_HEADERS}/BoringSSL-GRPC.modulemap"
+              cp -f "${FOUND}" "${PUBLIC_HEADERS}/BoringSSL-GRPC.modulemap"
+              echo "✅ BoringSSL-GRPC modulemap copied from ${FOUND}"
+            fi
+          fi
+        SCRIPT
+        
+        # Move the script phase to the beginning
+        target.build_phases.move(script_phase, 0)
+        
         target.build_configurations.each do |config|
           # Add openssl_grpc to header search paths
           config.build_settings['HEADER_SEARCH_PATHS'] ||= ['$(inherited)']
