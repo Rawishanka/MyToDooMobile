@@ -179,5 +179,32 @@ target 'MyToDoo' do
     else
       puts "⚠️  BoringSSL modulemap not found at #{modulemap_source}"
     end
+    
+    # CRITICAL FIX: Remove invalid -G flag from BoringSSL-GRPC xcconfig files
+    puts "🔧 Patching BoringSSL-GRPC xcconfig files to remove -G flag..."
+    boringssl_xcconfig_dir = pods_root.join('Target Support Files', 'BoringSSL-GRPC')
+    if boringssl_xcconfig_dir.exist?
+      Dir.glob(boringssl_xcconfig_dir.join('*.xcconfig')).each do |xcconfig_path|
+        xcconfig_content = File.read(xcconfig_path)
+        original_content = xcconfig_content.dup
+        
+        # Remove -G flag from OTHER_CFLAGS and OTHER_CPLUSPLUSFLAGS
+        xcconfig_content.gsub!(/-G\s+/, '')
+        xcconfig_content.gsub!(/\s+-G(\s+|$)/, '\1')
+        
+        # Add compiler flags to suppress errors and set proper standard
+        unless xcconfig_content.include?('CLANG_CXX_LANGUAGE_STANDARD')
+          xcconfig_content += "\nCLANG_CXX_LANGUAGE_STANDARD = gnu++17"
+        end
+        unless xcconfig_content.include?('GCC_WARN_INHIBIT_ALL_WARNINGS')
+          xcconfig_content += "\nGCC_WARN_INHIBIT_ALL_WARNINGS = YES"
+        end
+        
+        if xcconfig_content != original_content
+          File.write(xcconfig_path, xcconfig_content)
+          puts "✅ Patched #{File.basename(xcconfig_path)} (removed -G flag)"
+        end
+      end
+    end
   end
 end
