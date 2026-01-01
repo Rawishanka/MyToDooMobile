@@ -21,7 +21,8 @@
       "ios": {
         "simulator": false,
         "buildConfiguration": "Release",
-        "scheme": "MyToDoo"
+        "scheme": "MyToDoo",
+        "credentialsSource": "local"
       },
       "distribution": "internal",
       "env": {
@@ -36,6 +37,7 @@
       },
       "ios": {
         "simulator": false,
+        "credentialsSource": "local",
         "buildConfiguration": "Release"
       },
       "env": {
