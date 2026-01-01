@@ -19,13 +19,14 @@
         "gradleCommand": ":app:assembleRelease"
       },
       "ios": {
-        "simulator": false,
+        "simulator": true,
         "buildConfiguration": "Release",
         "scheme": "MyToDoo"
       },
-      "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.mytodoo.com/api"
+        "EXPO_PUBLIC_API_URL": "https://api.mytodoo.com/api",
+        "GCC_GENERATE_DEBUGGING_SYMBOLS": "NO",
+        "DEBUG_INFORMATION_FORMAT": "dwarf"
       },
       "channel": "preview"
     },
