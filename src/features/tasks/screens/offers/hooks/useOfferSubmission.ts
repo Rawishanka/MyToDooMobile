@@ -112,14 +112,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
       return false;
     }
 
-    // Validate maximum amount against task budget (offer should be <= budget)
-    if (taskBudget && numericAmount > taskBudget) {
-      setValidationError(
-        `Your offer amount cannot exceed the task budget of ${currencyInfo.symbol}${taskBudget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`
-      );
-      return false;
-    }
-
+    // Allow offers above budget for competitive bidding
     setValidationError('');
     return true;
   };
@@ -318,10 +311,8 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
     if (cleanedText) {
       const numericAmount = parseFloat(cleanedText);
       
-      // Check if amount exceeds budget
-      if (taskBudget && !isNaN(numericAmount) && numericAmount > taskBudget) {
-        setValidationError(`Amount cannot exceed budget of ${currencyInfo.symbol}${taskBudget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
-      } else if (!isNaN(numericAmount) && numericAmount > 0) {
+      // Allow offers above budget for competitive bidding
+      if (!isNaN(numericAmount) && numericAmount > 0) {
         // Valid positive amount entered - clear any validation error
         setValidationError('');
       } else if (numericAmount === 0) {

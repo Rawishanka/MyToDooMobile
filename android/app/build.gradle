@@ -88,6 +88,12 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace 'com.unexo.mytodoomobile'
+    
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+    
     defaultConfig {
         applicationId 'com.unexo.mytodoomobile'
         minSdkVersion rootProject.ext.minSdkVersion

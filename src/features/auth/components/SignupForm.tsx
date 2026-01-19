@@ -617,22 +617,21 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         <Text style={styles.errorText}>{errors.email}</Text>
       )}
 
-      {/* Country Picker */}
+      {/* Country Display - Australia Only (No dropdown) */}
       <Text style={styles.label}>Country</Text>
-      <CountryPicker
-        selectedCountry={selectedCountry}
-        showPicker={showCountryPicker}
-        onTogglePicker={() => setShowCountryPicker(!showCountryPicker)}
-        onSelectCountry={handleCountrySelect}
-      />
+      <View style={styles.countryDisplayContainer}>
+        <Text style={styles.countryDisplayText}>
+          {selectedCountry.flag} {selectedCountry.name}
+        </Text>
+      </View>
 
-      {/* Location Input */}
+      {/* Location Input - Australian Suburbs */}
       <Text style={styles.label}>
-        Location <Text style={styles.required}>*</Text>
+        Suburb/Location <Text style={styles.required}>*</Text>
       </Text>
       <LocationInput
         selectedLocation={selectedLocation}
-        countryCode={selectedCountry.code}
+        countryCode="AU"
         onLocationSelect={(loc) => {
           setSelectedLocation(loc);
           // Clear 'Required' error when location is selected
@@ -1057,5 +1056,22 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '600',
     fontSize: 15,
+  },
+  // Australia-only country display (non-editable)
+  countryDisplayContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: '#F5F5F5',
+    marginBottom: 16,
+  },
+  countryDisplayText: {
+    fontSize: 15,
+    color: '#333',
+    fontWeight: '500',
   },
 });

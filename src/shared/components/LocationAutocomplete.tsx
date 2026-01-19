@@ -39,7 +39,7 @@ interface LocationAutocompleteProps {
   initialValue?: string;
   placeholder?: string;
   style?: any;
-  country?: string; // ISO country code (e.g., 'AU', 'LK', 'US')
+  country?: string; // ISO country code - AUSTRALIA-ONLY APP: Always 'AU'
   onDropdownStateChange?: (isOpen: boolean) => void;
 }
 
@@ -50,14 +50,15 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   onSelect,
   onFocus,
   initialValue = "",
-  placeholder = "Enter suburb, city or address",
+  placeholder = "Search for suburb or city...",
   style,
-  country, // Optional override - if not provided, will auto-detect
+  country, // AUSTRALIA-ONLY: Always defaults to 'AU'
   onDropdownStateChange,
 }) => {
-  // Auto-detect country if not provided
+  // AUSTRALIA-ONLY APP: Always use Australia regardless of detection
   const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
-  const effectiveCountry = country || countryInfo?.countryCode || 'AU';
+  // Always use 'AU' for Australia-only app
+  const effectiveCountry = 'AU';
 
   const [query, setQuery] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<LocationResult[]>([]);
@@ -279,16 +280,13 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     onDropdownStateChange?.(true);
 
     try {
-      // 🎯 CRITICAL FIX: For Australia and NZ, exclude street addresses - show only suburbs
-      const isAustraliaOrNZ = effectiveCountry === 'AU' || effectiveCountry === 'NZ';
-      
-      // Use Mapbox Geocoding API exactly like your web implementation
+      // �🇺 AUSTRALIA-ONLY: Always show Australian suburbs only (no street addresses)
+      // Use Mapbox Geocoding API - suburbs/places only for Australia
       const params: any = {
         access_token: MAPBOX_ACCESS_TOKEN,
-        country: effectiveCountry, // Use detected country code
-        // For AU/NZ: Only show place, postcode, region (NO addresses/streets)
-        // For other countries: Show all types including address
-        types: isAustraliaOrNZ ? 'place,postcode,region' : 'address,place,postcode,region',
+        country: 'AU', // AUSTRALIA-ONLY: Always search in Australia
+        // Show only suburbs, postcodes, and regions (NO street addresses)
+        types: 'place,locality,postcode,region',
         autocomplete: true,
         limit: 10, // Request more so we can filter out street addresses
         language: 'en',
@@ -315,32 +313,30 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       let features = response.data.features || [];
       console.log(`   Found ${features.length} raw suggestions`);
       
-      // 🎯 FILTER: For AU/NZ, remove any street address results to show only suburbs
-      if (isAustraliaOrNZ) {
-        const beforeFilter = features.length;
-        features = features.filter((f: LocationResult) => {
-          // Keep only: place, postcode, region, locality
-          // Remove: address (street names)
-          const placeTypes = f.place_type || [];
-          const isStreetAddress = placeTypes.includes('address');
-          
-          // Also check if the name looks like a street (contains "Road", "Street", "Avenue", etc.)
-          const hasStreetKeyword = /\b(road|rd|street|st|avenue|ave|place|pl|drive|dr|lane|ln|court|ct|way|terrace|tce)\b/i.test(f.text || '');
-          
-          return !isStreetAddress && !hasStreetKeyword;
-        });
-        console.log(`   Filtered ${beforeFilter} → ${features.length} suggestions (removed street addresses)`);
-      }
+      // �🇺 AUSTRALIA-ONLY: Always filter to show only Australian suburbs (no street addresses)
+      const beforeFilter = features.length;
+      features = features.filter((f: LocationResult) => {
+        // Keep only: place, postcode, region, locality (suburbs)
+        // Remove: address (street names)
+        const placeTypes = f.place_type || [];
+        const isStreetAddress = placeTypes.includes('address');
+        
+        // Also check if the name looks like a street (contains "Road", "Street", "Avenue", etc.)
+        const hasStreetKeyword = /\b(road|rd|street|st|avenue|ave|place|pl|drive|dr|lane|ln|court|ct|way|terrace|tce|crescent|cres|close|cl|circuit|cct|boulevard|blvd)\b/i.test(f.text || '');
+        
+        return !isStreetAddress && !hasStreetKeyword;
+      });
+      console.log(`🇦🇺 Filtered ${beforeFilter} → ${features.length} Australian suburbs (removed street addresses)`);
       
       // Limit to top 5 results after filtering
       features = features.slice(0, 5);
       setSuggestions(features);
       
       if (features.length === 0) {
-        console.log('   No locations found after filtering');
-        setError("No locations found. Try a different search term.");
+        console.log('   No Australian suburbs found after filtering');
+        setError("No suburbs found. Try a different search term.");
       } else {
-        console.log('   Final suggestions (suburbs only):', features.map((f: LocationResult) => {
+        console.log('   Final Australian suburb suggestions:', features.map((f: LocationResult) => {
           const parts = f.place_name.split(',');
           return `${parts[0]} (${f.place_type?.join(',') || 'unknown'})`;
         }));

@@ -33,31 +33,20 @@ interface StripePaymentModalProps {
   };
 }
 
+// AUSTRALIA-ONLY: Only Australia supported for billing
 const COUNTRIES = [
-  { label: 'Sri Lanka', value: 'LK' },
-  { label: 'United States', value: 'US' },
-  { label: 'United Kingdom', value: 'GB' },
   { label: 'Australia', value: 'AU' },
-  { label: 'Canada', value: 'CA' },
-  { label: 'India', value: 'IN' },
-  { label: 'Singapore', value: 'SG' },
-  { label: 'Malaysia', value: 'MY' },
 ];
 
 // Helper function to map currency to country code for billing
+// AUSTRALIA-ONLY: Default to Australia (AUD)
 const getCurrencyCountryCode = (currencyCode: string): string => {
   const currencyCountryMap: Record<string, string> = {
-    'LKR': 'LK', // Sri Lanka
-    'AUD': 'AU', // Australia
-    'NZD': 'NZ', // New Zealand
-    'USD': 'US', // United States
-    'GBP': 'GB', // United Kingdom
-    'CAD': 'CA', // Canada
-    'INR': 'IN', // India
-    'SGD': 'SG', // Singapore
-    'MYR': 'MY', // Malaysia
+    'AUD': 'AU', // Australia - Primary currency
+    'USD': 'AU', // Map USD to Australia (will be converted)
+    'NZD': 'AU', // Map NZD to Australia (will be converted)
   };
-  return currencyCountryMap[currencyCode] || 'LK'; // Default to Sri Lanka if unknown
+  return currencyCountryMap[currencyCode] || 'AU'; // Default to Australia
 };
 
 const PaymentForm: React.FC<StripePaymentModalProps> = ({

@@ -1,6 +1,7 @@
 /**
  * Hook to detect current location and determine country code
- * This will auto-detect the user's country for location filtering and currency
+ * AUSTRALIA-ONLY APP - Always returns Australia (AUD)
+ * This ensures all users see Australian suburbs and AUD currency
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,36 +9,27 @@ import * as Location from 'expo-location';
 import { useEffect, useState } from 'react';
 
 interface CountryInfo {
-  countryCode: string; // ISO 2-letter code (AU, LK, US, etc.)
+  countryCode: string; // ISO 2-letter code (AU for Australia)
   countryName: string; // Full country name
-  currency: string;    // Currency code (AUD, LKR, USD, etc.)
+  currency: string;    // Currency code (AUD - Australian Dollars)
 }
 
-// Map country names to ISO codes and currency
-const COUNTRY_MAP: Record<string, CountryInfo> = {
-  // Primary supported countries
-  'Australia': { countryCode: 'AU', countryName: 'Australia', currency: 'AUD' },
-  'Sri Lanka': { countryCode: 'LK', countryName: 'Sri Lanka', currency: 'LKR' },
-  'New Zealand': { countryCode: 'NZ', countryName: 'New Zealand', currency: 'NZD' },
-  
-  // Additional countries
-  'United States': { countryCode: 'US', countryName: 'United States', currency: 'USD' },
-  'Canada': { countryCode: 'CA', countryName: 'Canada', currency: 'CAD' },
-  'United Kingdom': { countryCode: 'GB', countryName: 'United Kingdom', currency: 'GBP' },
-  'Singapore': { countryCode: 'SG', countryName: 'Singapore', currency: 'SGD' },
-  'Malaysia': { countryCode: 'MY', countryName: 'Malaysia', currency: 'MYR' },
-  'India': { countryCode: 'IN', countryName: 'India', currency: 'INR' },
-  'Philippines': { countryCode: 'PH', countryName: 'Philippines', currency: 'PHP' },
-  'Thailand': { countryCode: 'TH', countryName: 'Thailand', currency: 'THB' },
-  'Indonesia': { countryCode: 'ID', countryName: 'Indonesia', currency: 'IDR' },
-};
-
-// Default fallback - Australia (primary target country for this app)
-const DEFAULT_COUNTRY: CountryInfo = {
+// AUSTRALIA-ONLY: This app is exclusively for Australian users
+// Always use Australia regardless of detected location
+const AUSTRALIA: CountryInfo = {
   countryCode: 'AU',
-  countryName: 'Australia', 
+  countryName: 'Australia',
   currency: 'AUD'
 };
+
+// Map country names to ISO codes and currency (kept for potential future expansion)
+const COUNTRY_MAP: Record<string, CountryInfo> = {
+  // Australia is the only supported country for this app
+  'Australia': AUSTRALIA,
+};
+
+// Default fallback - Always Australia (this app is Australia-only)
+const DEFAULT_COUNTRY: CountryInfo = AUSTRALIA;
 
 // AsyncStorage key for caching detected country
 const COUNTRY_CACHE_KEY = '@user_country_info';

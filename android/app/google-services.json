@@ -7,20 +7,53 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:697863453994:android:648f36d94e17641e853253",
+        "mobilesdk_app_id": "1:697863453994:android:2fd95de8525d74ef853253",
         "android_client_info": {
           "package_name": "com.unexo.mytodoomobile"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "697863453994-g4qpsorcv5sp3s9jlq1ld25pjf40b9e5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.unexo.mytodoomobile",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "697863453994-molm0p0jfumlq1tequelecjkrh74ab71.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.unexo.mytodoomobile",
+            "certificate_hash": "32ed6bd380bf18c52a2b136d793f1682697b2c2c"
+          }
+        },
+        {
+          "client_id": "697863453994-r06h8627i1m4v66vv84113scanvpg1pv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyACCrN_zK5NKUUM7GtZulp4Sy53ewb495M"
+          "current_key": "AIzaSyAnBkhj8hEx7paalRvbzGaszj6gCxGECso"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "697863453994-r06h8627i1m4v66vv84113scanvpg1pv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "697863453994-srkq3nhgvknoqgj4mo058pn7oqs8n04u.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.unexo.mytodoomobile"
+              }
+            }
+          ]
         }
       }
     }

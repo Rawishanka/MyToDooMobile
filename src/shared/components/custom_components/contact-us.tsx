@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as Linking from 'expo-linking';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
     Keyboard,
     KeyboardAvoidingView,
+    Modal,
     Platform,
     SafeAreaView,
     ScrollView,
@@ -17,6 +17,12 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
+import {
+    getSupportCategories,
+    getSupportStatus,
+    submitSupportRequest,
+    SupportStatusData
+} from '@/src/api/help-support-api';
 
 type ContactUsProps = { 
   onBack: () => void;
@@ -30,28 +36,85 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   
-  const categories = [
-    { id: 'task', label: 'Task Related Issues', icon: 'briefcase-outline' },
-    { id: 'payment', label: 'Payment & Billing', icon: 'card-outline' },
-    { id: 'account', label: 'Account Settings', icon: 'person-outline' },
-    { id: 'technical', label: 'Technical Support', icon: 'bug-outline' },
-    { id: 'report', label: 'Report a Problem', icon: 'flag-outline' },
-    { id: 'other', label: 'Other Inquiries', icon: 'help-circle-outline' },
-  ];
+  // Success modal state
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [supportToken, setSupportToken] = useState('');
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  
+  // Token lookup state
+  const [tokenInput, setTokenInput] = useState('');
+  const [isCheckingToken, setIsCheckingToken] = useState(false);
+  
+  // Status modal state
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [statusData, setStatusData] = useState<SupportStatusData | null>(null);
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  // Category icons mapping
+  const categoryIcons: Record<string, string> = {
+    'General Inquiry': 'help-circle-outline',
+    'Task Related Issues': 'briefcase-outline',
+    'Payment & Billing': 'card-outline',
+    'Account Issues': 'person-outline',
+    'Account Settings': 'settings-outline',
+    'Technical Support': 'bug-outline',
+    'Report a Problem': 'flag-outline',
+    'Other': 'ellipsis-horizontal-outline',
   };
 
-  const handleCategorySelect = (category: typeof categories[0]) => {
-    setSelectedCategory(category.label);
-    setSubject(category.label);
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const response = await getSupportCategories();
+      if (response.success && response.categories.length > 0) {
+        setCategories(response.categories);
+      } else {
+        // Use default categories
+        setCategories([
+          'General Inquiry',
+          'Task Related Issues',
+          'Payment & Billing',
+          'Account Issues',
+          'Technical Support',
+          'Report a Problem',
+          'Other'
+        ]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+      // Use default categories
+      setCategories([
+        'General Inquiry',
+        'Task Related Issues',
+        'Payment & Billing',
+        'Account Issues',
+        'Technical Support',
+        'Report a Problem',
+        'Other'
+      ]);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  const validateEmail = (emailToValidate: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(emailToValidate);
+  };
+
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
     setShowCategoryDropdown(false);
   };
 
-  const handleSendEmail = async () => {
+  const handleSendMessage = async () => {
     // Validate inputs
     if (!name.trim()) {
       Alert.alert('Required Field', 'Please enter your name');
@@ -65,8 +128,12 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
       Alert.alert('Invalid Email', 'Please enter a valid email address');
       return;
     }
+    if (!selectedCategory) {
+      Alert.alert('Required Field', 'Please select a category');
+      return;
+    }
     if (!subject.trim()) {
-      Alert.alert('Required Field', 'Please select a category or enter a subject');
+      Alert.alert('Required Field', 'Please enter a subject');
       return;
     }
     if (!message.trim()) {
@@ -77,76 +144,130 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
     try {
       setIsSubmitting(true);
       
-      // Compose email
-      const emailSubject = encodeURIComponent(`[MyToDo Support] ${subject}`);
-      const emailBody = encodeURIComponent(
-        `Name: ${name}\nEmail: ${email}\n\nCategory: ${selectedCategory || 'General Inquiry'}\n\nMessage:\n${message}`
-      );
-      
-      const mailtoUrl = `mailto:support@mytodo.com?subject=${emailSubject}&body=${emailBody}`;
-      
-      const canOpen = await Linking.canOpenURL(mailtoUrl);
-      
-      if (canOpen) {
-        await Linking.openURL(mailtoUrl);
+      const response = await submitSupportRequest({
+        fullName: name.trim(),
+        email: email.trim(),
+        category: selectedCategory,
+        subject: subject.trim(),
+        message: message.trim()
+      });
+
+      if (response.success) {
+        setSupportToken(response.supportToken);
+        setSubmittedEmail(email.trim());
+        setShowSuccessModal(true);
         
-        // Show success message
-        Alert.alert(
-          'Email Client Opened',
-          'Your email client has been opened. Please review and send the message.',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                // Clear form
-                setName('');
-                setEmail('');
-                setSubject('');
-                setMessage('');
-                setSelectedCategory('');
-              }
-            }
-          ]
-        );
-      } else {
-        // Fallback: Show email address
-        Alert.alert(
-          'Email Not Configured',
-          'Please send an email to support@mytodo.com with your inquiry.',
-          [
-            {
-              text: 'Copy Email',
-              onPress: () => {
-                // In a real app, you'd use Clipboard API
-                Alert.alert('Email Address', 'support@mytodo.com');
-              }
-            },
-            { text: 'OK' }
-          ]
-        );
+        // Clear form
+        setName('');
+        setEmail('');
+        setSubject('');
+        setMessage('');
+        setSelectedCategory('');
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Failed to submit support request:', error);
       Alert.alert(
-        'Error',
-        'Unable to open email client. Please email us at support@mytodo.com'
+        'Submission Failed',
+        error?.response?.data?.message || 'Unable to submit your request. Please try again.',
+        [{ text: 'OK' }]
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleCheckStatus = async () => {
+    const token = tokenInput.trim().toUpperCase();
+    
+    if (!token) {
+      Alert.alert('Required', 'Please enter a support token');
+      return;
+    }
+
+    // Basic validation for token format (SUP-XXXXX-XXXXXXXX)
+    if (!token.startsWith('SUP-') || token.length < 10) {
+      Alert.alert('Invalid Token', 'Please enter a valid support token (e.g., SUP-MKC96L84-1DB89E2D)');
+      return;
+    }
+
+    try {
+      setIsCheckingToken(true);
+      
+      const response = await getSupportStatus(token);
+      
+      if (response.success && response.data) {
+        setStatusData(response.data);
+        setShowStatusModal(true);
+        setTokenInput('');
+      }
+    } catch (error: any) {
+      console.error('Failed to check status:', error);
+      
+      if (error?.response?.status === 404) {
+        Alert.alert(
+          'Not Found',
+          'No support request found with this token. Please check the token and try again.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'Error',
+          'Unable to check the status. Please try again later.',
+          [{ text: 'OK' }]
+        );
+      }
+    } finally {
+      setIsCheckingToken(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return '#FFA500';
+      case 'in-progress':
+        return '#0052A2';
+      case 'resolved':
+        return '#28a745';
+      case 'closed':
+        return '#6c757d';
+      default:
+        return '#666';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Pending Review';
+      case 'in-progress':
+        return 'In Progress';
+      case 'resolved':
+        return 'Resolved';
+      case 'closed':
+        return 'Closed';
+      default:
+        return status;
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-AU', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   const contactMethods = [
-    {
-      icon: 'mail-outline',
-      title: 'Email Support',
-      value: 'support@mytodo.com',
-      action: () => Linking.openURL('mailto:support@mytodo.com'),
-    },
     {
       icon: 'call-outline',
       title: 'Phone Support',
       value: '+1 (800) 123-4567',
-      action: () => Linking.openURL('tel:+18001234567'),
+      action: null,
     },
     {
       icon: 'time-outline',
@@ -155,6 +276,201 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
       action: null,
     },
   ];
+
+  // Success Modal Component
+  const SuccessModal = () => (
+    <Modal
+      visible={showSuccessModal}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowSuccessModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.successModalContent}>
+          {/* Success Icon */}
+          <View style={styles.successIconContainer}>
+            <Ionicons name="checkmark" size={40} color="#fff" />
+          </View>
+          
+          <Text style={styles.successTitle}>Message Sent Successfully!</Text>
+          <Text style={styles.successSubtitle}>
+            Your support request has been submitted to support@mytodoo.com
+          </Text>
+
+          {/* Support Token Card */}
+          <View style={styles.tokenCard}>
+            <View style={styles.tokenHeader}>
+              <Ionicons name="ticket-outline" size={20} color="#0052A2" />
+              <Text style={styles.tokenLabel}>Support Token</Text>
+            </View>
+            <Text style={styles.tokenValue}>{supportToken}</Text>
+            <Text style={styles.tokenHint}>Save this token to track your request</Text>
+          </View>
+
+          {/* Email Confirmation */}
+          <View style={styles.emailConfirmation}>
+            <Ionicons name="checkmark-circle" size={20} color="#28a745" />
+            <Text style={styles.emailConfirmationText}>
+              We'll respond to <Text style={styles.emailBold}>{submittedEmail}</Text> as soon as possible
+            </Text>
+          </View>
+
+          {/* Response Time */}
+          <View style={styles.responseTimeContainer}>
+            <Ionicons name="time-outline" size={18} color="#666" />
+            <Text style={styles.responseTimeText}>
+              We typically respond within 24 hours during business days
+            </Text>
+          </View>
+
+          {/* Done Button */}
+          <TouchableOpacity
+            style={styles.doneButton}
+            onPress={() => {
+              setShowSuccessModal(false);
+              // Auto-fill the token in the search box
+              setTokenInput(supportToken);
+            }}
+          >
+            <Text style={styles.doneButtonText}>Done</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  // Status Modal Component
+  const StatusModal = () => (
+    <Modal
+      visible={showStatusModal}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setShowStatusModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.statusModalContent}>
+          {/* Header */}
+          <View style={styles.statusModalHeader}>
+            <Text style={styles.statusModalTitle}>Support Request Details</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowStatusModal(false)}
+            >
+              <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView 
+            style={styles.statusModalScroll}
+            showsVerticalScrollIndicator={false}
+          >
+            {statusData && (
+              <>
+                {/* Token */}
+                <View style={styles.statusSection}>
+                  <View style={styles.statusSectionHeader}>
+                    <Ionicons name="ticket-outline" size={18} color="#0052A2" />
+                    <Text style={styles.statusSectionLabel}>Support Token</Text>
+                  </View>
+                  <Text style={styles.statusTokenValue}>{statusData.supportToken}</Text>
+                </View>
+
+                {/* Status Badge */}
+                <View style={styles.statusSection}>
+                  <View style={styles.statusSectionHeader}>
+                    <Ionicons name="flag-outline" size={18} color="#0052A2" />
+                    <Text style={styles.statusSectionLabel}>Status</Text>
+                  </View>
+                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(statusData.status) + '20' }]}>
+                    <View style={[styles.statusDot, { backgroundColor: getStatusColor(statusData.status) }]} />
+                    <Text style={[styles.statusBadgeText, { color: getStatusColor(statusData.status) }]}>
+                      {getStatusLabel(statusData.status)}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Category */}
+                <View style={styles.statusSection}>
+                  <View style={styles.statusSectionHeader}>
+                    <Ionicons name="folder-outline" size={18} color="#0052A2" />
+                    <Text style={styles.statusSectionLabel}>Category</Text>
+                  </View>
+                  <Text style={styles.statusValue}>{statusData.category}</Text>
+                </View>
+
+                {/* Subject */}
+                <View style={styles.statusSection}>
+                  <View style={styles.statusSectionHeader}>
+                    <Ionicons name="text-outline" size={18} color="#0052A2" />
+                    <Text style={styles.statusSectionLabel}>Subject</Text>
+                  </View>
+                  <Text style={styles.statusValue}>{statusData.subject}</Text>
+                </View>
+
+                {/* Your Message */}
+                {statusData.message && (
+                  <View style={styles.statusSection}>
+                    <View style={styles.statusSectionHeader}>
+                      <Ionicons name="chatbubble-outline" size={18} color="#0052A2" />
+                      <Text style={styles.statusSectionLabel}>Your Message</Text>
+                    </View>
+                    <View style={styles.messageBox}>
+                      <Text style={styles.messageText}>{statusData.message}</Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* Admin Response */}
+                {statusData.adminResponse && (
+                  <View style={styles.statusSection}>
+                    <View style={styles.statusSectionHeader}>
+                      <Ionicons name="chatbubbles" size={18} color="#28a745" />
+                      <Text style={[styles.statusSectionLabel, { color: '#28a745' }]}>Support Response</Text>
+                    </View>
+                    <View style={styles.responseBox}>
+                      <Text style={styles.responseText}>{statusData.adminResponse}</Text>
+                      {statusData.responseAt && (
+                        <Text style={styles.responseTime}>
+                          Responded on {formatDate(statusData.responseAt)}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                )}
+
+                {/* Dates */}
+                <View style={styles.statusSection}>
+                  <View style={styles.statusSectionHeader}>
+                    <Ionicons name="calendar-outline" size={18} color="#0052A2" />
+                    <Text style={styles.statusSectionLabel}>Submitted</Text>
+                  </View>
+                  <Text style={styles.statusValue}>{formatDate(statusData.createdAt)}</Text>
+                </View>
+
+                {statusData.resolvedAt && (
+                  <View style={styles.statusSection}>
+                    <View style={styles.statusSectionHeader}>
+                      <Ionicons name="checkmark-circle-outline" size={18} color="#28a745" />
+                      <Text style={styles.statusSectionLabel}>Resolved</Text>
+                    </View>
+                    <Text style={styles.statusValue}>{formatDate(statusData.resolvedAt)}</Text>
+                  </View>
+                )}
+              </>
+            )}
+          </ScrollView>
+
+          {/* Close Button */}
+          <TouchableOpacity
+            style={styles.statusCloseButton}
+            onPress={() => setShowStatusModal(false)}
+          >
+            <Text style={styles.statusCloseButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -180,17 +496,6 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Hero Section */}
-            <View style={styles.heroSection}>
-              <View style={styles.iconCircle}>
-                <Ionicons name="chatbubbles" size={32} color="#0052A2" />
-              </View>
-              <Text style={styles.heroTitle}>We're Here to Help</Text>
-              <Text style={styles.heroSubtitle}>
-                Get in touch with our support team and we'll respond as soon as possible
-              </Text>
-            </View>
-
             {/* Quick Contact Methods */}
             <View style={styles.quickContactSection}>
               {contactMethods.map((method, index) => (
@@ -270,10 +575,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 >
                   <View style={styles.dropdownContent}>
                     <Ionicons 
-                      name={selectedCategory ? 
-                        categories.find(c => c.label === selectedCategory)?.icon as any || 'list-outline' 
-                        : 'list-outline'
-                      } 
+                      name={(selectedCategory ? categoryIcons[selectedCategory] : 'help-circle-outline') as any} 
                       size={20} 
                       color={selectedCategory ? '#333' : '#999'} 
                       style={styles.inputIcon} 
@@ -291,19 +593,30 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 
                 {showCategoryDropdown && (
                   <View style={styles.dropdownMenu}>
-                    {categories.map((category) => (
-                      <TouchableOpacity
-                        key={category.id}
-                        style={styles.dropdownItem}
-                        onPress={() => handleCategorySelect(category)}
-                      >
-                        <Ionicons name={category.icon as any} size={20} color="#0052A2" />
-                        <Text style={styles.dropdownItemText}>{category.label}</Text>
-                        {selectedCategory === category.label && (
-                          <Ionicons name="checkmark" size={20} color="#0052A2" />
-                        )}
-                      </TouchableOpacity>
-                    ))}
+                    {loadingCategories ? (
+                      <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="small" color="#0052A2" />
+                        <Text style={styles.loadingText}>Loading categories...</Text>
+                      </View>
+                    ) : (
+                      categories.map((category, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={styles.dropdownItem}
+                          onPress={() => handleCategorySelect(category)}
+                        >
+                          <Ionicons 
+                            name={(categoryIcons[category] || 'help-circle-outline') as any} 
+                            size={20} 
+                            color="#0052A2" 
+                          />
+                          <Text style={styles.dropdownItemText}>{category}</Text>
+                          {selectedCategory === category && (
+                            <Ionicons name="checkmark" size={20} color="#0052A2" />
+                          )}
+                        </TouchableOpacity>
+                      ))
+                    )}
                   </View>
                 )}
               </View>
@@ -330,7 +643,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                   <TextInput
                     style={[styles.input, styles.messageInput]}
                     value={message}
-                    onChangeText={setMessage}
+                    onChangeText={(text) => setMessage(text.slice(0, 1000))}
                     placeholder="Please provide detailed information about your inquiry..."
                     placeholderTextColor="#999"
                     multiline
@@ -344,7 +657,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
               {/* Submit Button */}
               <TouchableOpacity 
                 style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
-                onPress={handleSendEmail}
+                onPress={handleSendMessage}
                 disabled={isSubmitting}
                 activeOpacity={0.8}
               >
@@ -367,6 +680,40 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
               </View>
             </View>
 
+            {/* Token Lookup Section */}
+            <View style={styles.tokenLookupSection}>
+              <Text style={styles.tokenLookupTitle}>Track Your Request</Text>
+              <Text style={styles.tokenLookupSubtitle}>
+                Enter your support token to check the status of your request
+              </Text>
+              
+              <View style={styles.tokenInputRow}>
+                <View style={styles.tokenInputContainer}>
+                  <Ionicons name="ticket-outline" size={20} color="#999" style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.tokenInput}
+                    value={tokenInput}
+                    onChangeText={setTokenInput}
+                    placeholder="SUP-XXXXXX-XXXXXXXX"
+                    placeholderTextColor="#999"
+                    autoCapitalize="characters"
+                    autoCorrect={false}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={[styles.checkButton, isCheckingToken && styles.checkButtonDisabled]}
+                  onPress={handleCheckStatus}
+                  disabled={isCheckingToken}
+                >
+                  {isCheckingToken ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Ionicons name="search" size={20} color="#fff" />
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+
             {/* FAQ Link */}
             <View style={styles.faqSection}>
               <Text style={styles.faqTitle}>Looking for quick answers?</Text>
@@ -385,6 +732,10 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {/* Modals */}
+      <SuccessModal />
+      <StatusModal />
     </SafeAreaView>
   );
 };
@@ -425,38 +776,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  heroSection: {
-    backgroundColor: '#fff',
-    paddingVertical: 28,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e1e4e8',
-  },
-  iconCircle: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: '#E8F2FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  heroTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#1a1a1a',
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  heroSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 20,
-    maxWidth: '95%',
-    paddingHorizontal: 8,
   },
   quickContactSection: {
     backgroundColor: '#fff',
@@ -620,6 +939,17 @@ const styles = StyleSheet.create({
     color: '#333',
     marginLeft: 12,
   },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#666',
+  },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -660,6 +990,59 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     lineHeight: 18,
   },
+  // Token Lookup Section
+  tokenLookupSection: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    marginBottom: 10,
+  },
+  tokenLookupTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 6,
+  },
+  tokenLookupSubtitle: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 14,
+  },
+  tokenInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  tokenInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e1e4e8',
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    marginRight: 10,
+  },
+  tokenInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1a1a1a',
+    padding: 0,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  checkButton: {
+    backgroundColor: '#0052A2',
+    width: 50,
+    height: 50,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkButtonDisabled: {
+    backgroundColor: '#B0C4DE',
+  },
+  // FAQ Section
   faqSection: {
     backgroundColor: '#fff',
     paddingVertical: 20,
@@ -697,6 +1080,238 @@ const styles = StyleSheet.create({
     color: '#0052A2',
     marginLeft: 8,
     marginRight: 8,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  // Success Modal
+  successModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 360,
+    alignItems: 'center',
+  },
+  successIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#28a745',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  successTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  successSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  tokenCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    padding: 16,
+    width: '100%',
+    borderLeftWidth: 4,
+    borderLeftColor: '#0052A2',
+    marginBottom: 16,
+  },
+  tokenHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  tokenLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0052A2',
+    marginLeft: 8,
+  },
+  tokenValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    marginBottom: 4,
+  },
+  tokenHint: {
+    fontSize: 12,
+    color: '#999',
+    fontStyle: 'italic',
+  },
+  emailConfirmation: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#d4edda',
+    padding: 12,
+    borderRadius: 10,
+    width: '100%',
+    marginBottom: 12,
+  },
+  emailConfirmationText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#155724',
+    marginLeft: 8,
+    lineHeight: 18,
+  },
+  emailBold: {
+    fontWeight: '700',
+  },
+  responseTimeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  responseTimeText: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 8,
+  },
+  doneButton: {
+    backgroundColor: '#0052A2',
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+    width: '100%',
+  },
+  doneButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+    textAlign: 'center',
+  },
+  // Status Modal
+  statusModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    width: '100%',
+    maxWidth: 400,
+    maxHeight: '85%',
+    overflow: 'hidden',
+  },
+  statusModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e1e4e8',
+  },
+  statusModalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1a1a1a',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  statusModalScroll: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  statusSection: {
+    marginBottom: 20,
+  },
+  statusSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statusSectionLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0052A2',
+    marginLeft: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  statusTokenValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  statusBadgeText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  statusValue: {
+    fontSize: 15,
+    color: '#333',
+    lineHeight: 22,
+  },
+  messageBox: {
+    backgroundColor: '#f8f9fa',
+    padding: 14,
+    borderRadius: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: '#e1e4e8',
+  },
+  messageText: {
+    fontSize: 14,
+    color: '#333',
+    lineHeight: 20,
+  },
+  responseBox: {
+    backgroundColor: '#d4edda',
+    padding: 14,
+    borderRadius: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: '#28a745',
+  },
+  responseText: {
+    fontSize: 14,
+    color: '#155724',
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  responseTime: {
+    fontSize: 12,
+    color: '#155724',
+    fontStyle: 'italic',
+  },
+  statusCloseButton: {
+    backgroundColor: '#0052A2',
+    marginHorizontal: 20,
+    marginVertical: 16,
+    paddingVertical: 14,
+    borderRadius: 10,
+  },
+  statusCloseButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+    textAlign: 'center',
   },
 });
 

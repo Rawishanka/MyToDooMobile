@@ -39,6 +39,7 @@ export interface OTPState {
   smsTimer: number;
 }
 
+// Australia-only app - Single country configuration
 export const COUNTRIES: CountryData[] = [
   {
     name: 'Australia',
@@ -46,47 +47,17 @@ export const COUNTRIES: CountryData[] = [
     flag: '🇦🇺',
     phoneCode: '+61',
     states: {
-      'New South Wales': ['Sydney', 'Newcastle', 'Wollongong', 'Central Coast', 'Maitland'],
-      'Victoria': ['Melbourne', 'Geelong', 'Ballarat', 'Bendigo', 'Shepparton'],
-      'Queensland': ['Brisbane', 'Gold Coast', 'Sunshine Coast', 'Townsville', 'Cairns'],
-      'Western Australia': ['Perth', 'Mandurah', 'Bunbury', 'Kalgoorlie', 'Geraldton'],
-      'South Australia': ['Adelaide', 'Mount Gambier', 'Whyalla', 'Murray Bridge', 'Port Augusta'],
-      'Tasmania': ['Hobart', 'Launceston', 'Devonport', 'Burnie', 'Ulverstone'],
-      'Australian Capital Territory': ['Canberra'],
-      'Northern Territory': ['Darwin', 'Alice Springs', 'Palmerston', 'Katherine'],
-    },
-  },
-  {
-    name: 'New Zealand',
-    code: 'NZ',
-    flag: '🇳🇿',
-    phoneCode: '+64',
-    states: {
-      'Auckland': ['Auckland City', 'Manukau', 'Waitakere', 'North Shore', 'Papakura'],
-      'Wellington': ['Wellington City', 'Lower Hutt', 'Upper Hutt', 'Porirua', 'Kapiti Coast'],
-      'Canterbury': ['Christchurch', 'Timaru', 'Ashburton', 'Rangiora', 'Kaiapoi'],
-      'Waikato': ['Hamilton', 'Tauranga', 'Rotorua', 'Tokoroa', 'Cambridge'],
-      'Bay of Plenty': ['Tauranga', 'Rotorua', 'Whakatane', 'Opotiki'],
-      'Otago': ['Dunedin', 'Queenstown', 'Wanaka', 'Oamaru', 'Alexandra'],
-      'Northland': ['Whangarei', 'Kerikeri', 'Kaitaia', 'Dargaville'],
-      'Manawatu-Wanganui': ['Palmerston North', 'Whanganui', 'Feilding', 'Levin'],
-    },
-  },
-  {
-    name: 'Sri Lanka',
-    code: 'LK',
-    flag: '🇱🇰',
-    phoneCode: '+94',
-    states: {
-      'Western Province': ['Colombo', 'Gampaha', 'Kalutara', 'Negombo', 'Moratuwa'],
-      'Central Province': ['Kandy', 'Matale', 'Nuwara Eliya', 'Dambulla'],
-      'Southern Province': ['Galle', 'Matara', 'Hambantota', 'Tangalle'],
-      'Northern Province': ['Jaffna', 'Kilinochchi', 'Mannar', 'Vavuniya', 'Mullaitivu'],
-      'Eastern Province': ['Trincomalee', 'Batticaloa', 'Ampara'],
-      'North Western Province': ['Kurunegala', 'Puttalam', 'Chilaw'],
-      'North Central Province': ['Anuradhapura', 'Polonnaruwa'],
-      'Uva Province': ['Badulla', 'Monaragala', 'Bandarawela'],
-      'Sabaragamuwa Province': ['Ratnapura', 'Kegalle', 'Avissawella'],
+      'New South Wales': ['Sydney', 'Newcastle', 'Wollongong', 'Central Coast', 'Maitland', 'Gosford', 'Parramatta', 'Penrith', 'Liverpool', 'Campbelltown', 'Blacktown', 'Hurstville', 'Bankstown', 'Fairfield', 'Sutherland', 'Hornsby', 'Chatswood', 'Bondi', 'Manly', 'Cronulla'],
+      'Victoria': ['Melbourne', 'Geelong', 'Ballarat', 'Bendigo', 'Shepparton', 'Mildura', 'Warrnambool', 'Traralgon', 'Wodonga', 'Dandenong', 'Frankston', 'Ringwood', 'Box Hill', 'Glen Waverley', 'St Kilda', 'South Yarra', 'Richmond', 'Brunswick', 'Footscray', 'Werribee'],
+      'Queensland': ['Brisbane', 'Gold Coast', 'Sunshine Coast', 'Townsville', 'Cairns', 'Toowoomba', 'Mackay', 'Rockhampton', 'Bundaberg', 'Hervey Bay', 'Gladstone', 'Ipswich', 'Logan', 'Redcliffe', 'Caboolture', 'Caloundra', 'Noosa', 'Surfers Paradise', 'Broadbeach', 'Southport'],
+      'Western Australia': ['Perth', 'Mandurah', 'Bunbury', 'Kalgoorlie', 'Geraldton', 'Albany', 'Rockingham', 'Fremantle', 'Joondalup', 'Midland', 'Armadale', 'Kalamunda', 'Scarborough', 'Cottesloe', 'Subiaco', 'Claremont', 'Nedlands', 'Victoria Park', 'South Perth', 'Cannington'],
+      'South Australia': ['Adelaide', 'Mount Gambier', 'Whyalla', 'Murray Bridge', 'Port Augusta', 'Port Lincoln', 'Victor Harbor', 'Port Pirie', 'Gawler', 'Salisbury', 'Elizabeth', 'Tea Tree Gully', 'Modbury', 'Marion', 'Brighton', 'Glenelg', 'Norwood', 'Unley', 'Prospect', 'Mitcham'],
+      'Tasmania': ['Hobart', 'Launceston', 'Devonport', 'Burnie', 'Ulverstone', 'Kingston', 'Sandy Bay', 'Glenorchy', 'Clarence', 'New Town', 'Moonah', 'Bellerive', 'Lindisfarne', 'Howrah', 'Sorell', 'Brighton', 'Bridgewater', 'Claremont', 'Rosny', 'Mornington'],
+      'Australian Capital Territory': ['Canberra', 'Belconnen', 'Woden', 'Tuggeranong', 'Gungahlin', 'Civic', 'Braddon', 'Kingston', 'Manuka', 'Dickson', 'Fyshwick', 'Mitchell', 'Queanbeyan'],
+      'Northern Territory': ['Darwin', 'Alice Springs', 'Palmerston', 'Katherine', 'Casuarina', 'Nightcliff', 'Fannie Bay', 'Stuart Park', 'The Gardens', 'Parap', 'Winnellie', 'Berrimah'],
     },
   },
 ];
+
+// Helper: Get Australia as the default and only country
+export const AUSTRALIA = COUNTRIES[0];

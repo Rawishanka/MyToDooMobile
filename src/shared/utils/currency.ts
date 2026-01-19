@@ -102,9 +102,10 @@ const COUNTRY_CURRENCY_MAP: Record<string, CurrencyInfo> = {
 };
 
 /**
- * Default currency to use when country cannot be determined
+ * Default currency to use - AUSTRALIA-ONLY APP
+ * Always use AUD (Australian Dollars) as the default currency
  */
-const DEFAULT_CURRENCY: CurrencyInfo = { code: 'USD', symbol: '$' };
+const DEFAULT_CURRENCY: CurrencyInfo = { code: 'AUD', symbol: '$' };
 
 /**
  * Extract country name from location address string

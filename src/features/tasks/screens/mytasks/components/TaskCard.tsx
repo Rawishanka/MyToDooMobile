@@ -75,6 +75,39 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const lastClickTime = useRef<number>(0);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Helper to check if current user is the tasker (assigned to the task)
+  const isCurrentUserTasker = useMemo(() => {
+    const currentUserId = currentUser?._id || currentUser?.id;
+    if (!currentUserId) return false;
+    
+    const assignedTo = (task as any).assignedTo;
+    
+    // Check if assignedTo is an object with _id
+    if (typeof assignedTo === 'object' && assignedTo?._id) {
+      return assignedTo._id === currentUserId;
+    }
+    
+    // Check if assignedTo is a string ID
+    if (typeof assignedTo === 'string') {
+      return assignedTo === currentUserId;
+    }
+    
+    // Check if task has an accepted offer where user is the tasker
+    if (task.offers && Array.isArray(task.offers)) {
+      const acceptedOffer = task.offers.find((o: any) => o.status === 'accepted');
+      if (acceptedOffer) {
+        const taskTaker: any = acceptedOffer.taskTaker || acceptedOffer.taskTakerId;
+        if (typeof taskTaker === 'object') {
+          return taskTaker?._id === currentUserId;
+        } else if (typeof taskTaker === 'string') {
+          return taskTaker === currentUserId;
+        }
+      }
+    }
+    
+    return false;
+  }, [task, currentUser]);
+
   // API hooks
   const deleteTaskMutation = useDeleteTask();
   const cancelTaskMutation = useCancelTask(); // Legacy: Pre-payment cancellation
@@ -306,6 +339,18 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       return;
     }
 
+    // IMPORTANT: Only TASKERS (assigned users) can mark tasks as complete
+    // Posters CANNOT mark tasks as complete - this button should not even show for them
+    if (!isCurrentUserTasker) {
+      console.error('❌ User is not the tasker - cannot mark task as complete');
+      Alert.alert(
+        'Permission Denied',
+        'Only the assigned tasker can mark this task as complete.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     try {
       setIsProcessing(true);
       console.log('✅ Marking task as completed:', task._id);
@@ -314,102 +359,15 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         status: task.status,
         userRole,
         tabStatus: status,
-        hasOffers: !!task.offers,
-        offersCount: task.offers?.length || 0,
-        offers: task.offers,
-        hasAcceptedOffer: !!(task as any).acceptedOffer,
+        isCurrentUserTasker,
+        currentUserId: currentUser?._id || currentUser?.id,
         assignedTo: (task as any).assignedTo,
-        paymentIntentId: (task as any).paymentIntentId
       });
       
-      // Check if this is an accepted offer that requires payment completion
-      // This should be true when we're in the "Accepted" tab (Poster side)
-      const isAcceptedOfferTask = status === 'accepted' && userRole === 'Poster';
-      
-      if (isAcceptedOfferTask) {
-        console.log('💳 Attempting payment completion for accepted offer...');
-        
-        // Try to find payment intent ID and offer ID from task data
-        let paymentIntentId = (task as any).paymentIntentId;
-        let acceptedOfferId = null;
-        
-        // Try multiple ways to find the accepted offer information
-        if (task.offers && Array.isArray(task.offers)) {
-          const acceptedOffer = task.offers.find(offer => offer.status === 'accepted');
-          if (acceptedOffer) {
-            acceptedOfferId = acceptedOffer._id;
-            console.log('✅ Found accepted offer in task.offers:', acceptedOfferId);
-          }
-        }
-        
-        if (!acceptedOfferId && (task as any).acceptedOffer) {
-          const acceptedOffer = (task as any).acceptedOffer;
-          acceptedOfferId = acceptedOffer._id || acceptedOffer;
-          console.log('✅ Found accepted offer in task.acceptedOffer:', acceptedOfferId);
-        }
-        
-        if (paymentIntentId && acceptedOfferId) {
-          try {
-            // Use the payment completion API with proper data
-            await completeTaskPaymentMutation.mutateAsync({ 
-              taskId: task._id,
-              completionData: {
-                paymentIntentId: paymentIntentId,
-                taskId: task._id,
-                offerId: acceptedOfferId,
-              }
-            });
-            
-            console.log('✅ Task payment completed successfully');
-          } catch (paymentError: any) {
-            if (!isNetworkError(paymentError) && __DEV__) {
-              console.warn('⚠️ Payment completion failed:', paymentError?.message);
-            }
-            
-            // If payment completion fails, try regular completion as fallback
-            // This handles cases where payment API is unavailable or task is already paid
-            if (paymentError?.response?.status === 500 || 
-                paymentError?.response?.status === 400 ||
-                paymentError?.response?.status === 404 ||
-                paymentError?.message?.includes('Failed to complete task payment') ||
-                paymentError?.response?.data?.message?.includes('No accepted offer found') ||
-                paymentError?.response?.data?.message?.includes('Payment has not been completed yet')) {
-              console.log('⚠️ Payment completion failed, falling back to regular task completion');
-              await completeTaskMutation.mutateAsync(task._id);
-            } else {
-              throw paymentError; // Re-throw if it's a different error
-            }
-          }
-        } else {
-          // Try payment completion without paymentIntentId first (maybe it's not required)
-          console.log('⚠️ Missing payment intent ID, trying payment completion without it');
-          
-          try {
-            await completeTaskPaymentMutation.mutateAsync({ 
-              taskId: task._id,
-              completionData: {
-                taskId: task._id,
-                offerId: acceptedOfferId,
-              }
-            });
-            console.log('✅ Task payment completed successfully without paymentIntentId');
-          } catch (paymentError: any) {
-            if (!isNetworkError(paymentError) && __DEV__) {
-              console.warn('⚠️ Payment completion failed:', paymentError?.message);
-            }
-            
-            // Fall back to regular task completion
-            console.log('⚠️ Payment completion failed, using regular task completion');
-            console.log('   PaymentIntentId:', paymentIntentId);
-            console.log('   AcceptedOfferId:', acceptedOfferId);
-            await completeTaskMutation.mutateAsync(task._id);
-          }
-        }
-      } else {
-        // Regular task completion for non-payment tasks
-        console.log('✅ Using regular task completion...');
-        await completeTaskMutation.mutateAsync(task._id);
-      }
+      // Call the complete task API endpoint: PATCH /tasks/{id}/complete
+      // Backend will handle marking task as complete and moving to completed state
+      console.log('✅ Using task completion API (PATCH /tasks/{id}/complete)...');
+      await completeTaskMutation.mutateAsync(task._id);
       
       console.log('✅ Task marked as completed successfully');
       
@@ -418,32 +376,11 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         onTaskCompleted(task._id);
       }
       
-      // Show success message
+      // Show success message to Tasker
       Alert.alert(
         'Task Completed',
-        isAcceptedOfferTask ? 
-          'Payment has been released and the task has been marked as completed. Would you like to rate and review the tasker now?' : 
-          'The task has been marked as completed and moved to the Completed tab.',
-        isAcceptedOfferTask ? [
-          {
-            text: 'Later',
-            style: 'cancel',
-            onPress: () => {
-              console.log('⏭️ Poster chose to skip review for now');
-            }
-          },
-          { 
-            text: 'Rate Now',
-            onPress: () => {
-              // POSTER: Show rating modal after task completion
-              console.log('⭐ Task completed - now showing rating modal for poster');
-              // Give time for backend to update task status and UI to refresh
-              setTimeout(() => {
-                setShowRatingModal(true);
-              }, 1500);
-            }
-          }
-        ] : [{ text: 'OK' }]
+        'The task has been marked as completed. The poster will now release the payment.',
+        [{ text: 'OK' }]
       );
       
     } catch (error: any) {
@@ -471,7 +408,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         errorMessage = 'This task was not found. It may have been deleted.';
         errorTitle = 'Task Not Found';
       } else if (error?.response?.status === 403) {
-        errorMessage = 'You don\'t have permission to complete this task.';
+        errorMessage = 'You don\'t have permission to complete this task. Only the assigned tasker can mark it as complete.';
         errorTitle = 'Permission Denied';
       } else if (error?.message) {
         errorMessage = error.message;
@@ -481,7 +418,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     } finally {
       setIsProcessing(false);
     }
-  }, [task, status, userRole, completeTaskMutation, completeTaskPaymentMutation, onTaskCompleted, isProcessing, isValidMongoId]);
+  }, [task, status, userRole, currentUser, isCurrentUserTasker, completeTaskMutation, onTaskCompleted, isProcessing, isValidMongoId]);
 
   const handleCancelTask = useCallback(() => {
     console.log('🔥 Cancel button touched!'); // Debug log
@@ -1558,7 +1495,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             </TouchableOpacity>
           )
         ) : status === 'assigned' && userRole === 'Tasker' ? (
-          // Tasker Todoo Tasks: Chat + Cancel button (cancel hidden if poster already requested cancellation)
+          // Tasker Todoo Tasks: Chat + Mark as Completed + Cancel
+          // Only taskers (assigned users) can mark tasks as complete
           (() => {
             // Hide cancel button if poster has requested cancellation
             const shouldHideCancelButton = posterHasRequestedCancellation;
@@ -1577,21 +1515,59 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                     color="#007bff" 
                   />
                 </TouchableOpacity>
+                
+                {/* Mark as Completed Button - Only for Tasker in assigned tasks */}
+                {isCurrentUserTasker && (
+                  <TouchableOpacity 
+                    style={[
+                      styles.completedButton,
+                      (isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) && styles.disabledButton
+                    ]}
+                    onPress={() => {
+                      console.log('🔥 Mark as Completed button touched!');
+                      if (!isProcessing && !completeTaskMutation.isPending && !completeTaskPaymentMutation.isPending) {
+                        handleMarkAsCompleted();
+                      }
+                    }}
+                    activeOpacity={0.7}
+                    delayPressIn={0}
+                    disabled={isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending}
+                  >
+                    {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                        <Text style={styles.completedButtonText}>
+                          Completing...
+                        </Text>
+                      </View>
+                    ) : (
+                      <Text style={styles.completedButtonText}>
+                        Mark as Completed
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                )}
+                
                 {!shouldHideCancelButton && (
                   <TouchableOpacity 
                     style={[
-                      styles.actionButton,
+                      styles.cancelButton,
                       isProcessing && styles.disabledButton
-                    ]} 
-                    activeOpacity={0.6}
-                    hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-                    onPress={handleCancelTask}
+                    ]}
+                    activeOpacity={0.7}
+                    delayPressIn={0}
+                    onPress={() => {
+                      console.log('🔥 Cancel button (Todoo) touched!');
+                      if (!isProcessing) {
+                        handleCancelTask();
+                      }
+                    }}
                     disabled={isProcessing}
                   >
                     <MaterialIcons 
-                      name="cancel" 
+                      name="close" 
                       size={20} 
-                      color={isProcessing ? "#999" : "#dc3545"} 
+                      color={isProcessing ? "#999" : "#fff"} 
                     />
                   </TouchableOpacity>
                 )}
@@ -1599,7 +1575,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             );
           })()
         ) : status === 'accepted' ? (
-          // Accepted Offers tab: Chat + Mark as Completed + Cancel (cancel hidden if poster already requested cancellation)
+          // Accepted Offers tab: 
+          // - For TASKER (assigned to task): Show Chat + Mark as Completed + Cancel
+          // - For POSTER (task creator): Show Chat + Cancel only (NO Mark as Completed)
+          // Only the TASKER can mark task as complete (not the poster)
           <>
             <TouchableOpacity 
               style={[styles.chatButton]}
@@ -1613,34 +1592,39 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 color="#007bff" 
               />
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[
-                styles.completedButton,
-                (isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) && styles.disabledButton
-              ]}
-              onPress={() => {
-                console.log('🔥 Mark as Completed button touched!');
-                if (!isProcessing && !completeTaskMutation.isPending && !completeTaskPaymentMutation.isPending) {
-                  handleMarkAsCompleted();
-                }
-              }}
-              activeOpacity={0.7}
-              delayPressIn={0}
-              disabled={isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending}
-            >
-              {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+            
+            {/* Mark as Completed Button - ONLY show for TASKER, NOT for Poster */}
+            {isCurrentUserTasker && userRole === 'Tasker' && (
+              <TouchableOpacity 
+                style={[
+                  styles.completedButton,
+                  (isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) && styles.disabledButton
+                ]}
+                onPress={() => {
+                  console.log('🔥 Mark as Completed button touched!');
+                  if (!isProcessing && !completeTaskMutation.isPending && !completeTaskPaymentMutation.isPending) {
+                    handleMarkAsCompleted();
+                  }
+                }}
+                activeOpacity={0.7}
+                delayPressIn={0}
+                disabled={isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending}
+              >
+                {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.completedButtonText}>
+                      Completing...
+                    </Text>
+                  </View>
+                ) : (
                   <Text style={styles.completedButtonText}>
-                    Completing...
+                    Mark as Completed
                   </Text>
-                </View>
-              ) : (
-                <Text style={styles.completedButtonText}>
-                  Mark as Completed
-                </Text>
-              )}
-            </TouchableOpacity>
+                )}
+              </TouchableOpacity>
+            )}
+            
             {!posterHasRequestedCancellation && (
               <TouchableOpacity 
                 style={[

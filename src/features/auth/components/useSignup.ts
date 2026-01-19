@@ -40,13 +40,13 @@ export const useSignup = () => {
   const { myTask, resetTask } = useCreateTaskStore();
   const postTaskMutation = usePostTaskDirect(); // ✅ Use postTaskDirect for proper image handling
   
-  // 🌍 Auto-detect user's country
+  // �🇺 AUSTRALIA-ONLY APP - Always use Australia
   const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
   
-  // Helper function to find country in COUNTRIES array by country code
+  // AUSTRALIA-ONLY: Always return Australia (first and only country in array)
   const findCountryByCode = (countryCode: string): CountryData => {
-    const country = COUNTRIES.find(c => c.code === countryCode);
-    return country || COUNTRIES[2]; // Fallback to Sri Lanka if not found
+    // Always return Australia regardless of country code
+    return COUNTRIES[0]; // Australia is the only country
   };
   
   // Form state
@@ -61,16 +61,11 @@ export const useSignup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
-  // Location state - Auto-detect country based on GPS location
+  // Location state - AUSTRALIA-ONLY: Always use Australia
   const [selectedCountry, setSelectedCountry] = useState<CountryData>(() => {
-    // Initialize with detected country if available, otherwise use Sri Lanka as fallback
-    if (countryInfo?.countryCode) {
-      const detectedCountry = findCountryByCode(countryInfo.countryCode);
-      console.log('🌍 Signup: Initializing with detected country:', detectedCountry.name);
-      return detectedCountry;
-    }
-    console.log('🌍 Signup: No country detected yet, using Sri Lanka as fallback');
-    return COUNTRIES[2]; // Sri Lanka as fallback
+    // AUSTRALIA-ONLY: Always initialize with Australia
+    console.log('🇦🇺 Signup: Initializing with Australia (Australia-only app)');
+    return COUNTRIES[0]; // Australia is the only country
   });
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const [showCountryPicker, setShowCountryPicker] = useState(false);

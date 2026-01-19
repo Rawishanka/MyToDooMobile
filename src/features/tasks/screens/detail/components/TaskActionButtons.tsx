@@ -50,11 +50,37 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
   // Check if current user is the task creator (poster)
   const isTaskCreator = task?.createdBy?._id === currentUserId || task?.createdBy === currentUserId;
   
+  // Check if current user is the tasker (assigned to the task)
+  const isTasker = (() => {
+    const assignedTo = (task as any)?.assignedTo;
+    if (typeof assignedTo === 'object' && assignedTo?._id) {
+      return assignedTo._id === currentUserId;
+    }
+    if (typeof assignedTo === 'string') {
+      return assignedTo === currentUserId;
+    }
+    // Check if user has an accepted offer
+    if (task?.offers && Array.isArray(task.offers)) {
+      const acceptedOffer = task.offers.find((o: any) => o.status === 'accepted');
+      if (acceptedOffer) {
+        const taskTaker: any = acceptedOffer.taskTaker || acceptedOffer.taskTakerId;
+        if (typeof taskTaker === 'object') {
+          return taskTaker?._id === currentUserId;
+        } else if (typeof taskTaker === 'string') {
+          return taskTaker === currentUserId;
+        }
+      }
+    }
+    return false;
+  })();
+  
   // Check if task is in accepted/assigned state (post-payment)
   const isAcceptedTask = ['accepted', 'assigned', 'in_progress', 'todo'].includes(task?.status);
   
-  // Only show buttons if user is poster and task is accepted
-  const shouldShowButtons = isTaskCreator && isAcceptedTask;
+  // Show buttons based on user role:
+  // - POSTER (task creator): Can see Chat and Cancel buttons only
+  // - TASKER (assigned user): Can see Chat, Mark as Completed, and Cancel buttons
+  const shouldShowButtons = (isTaskCreator || isTasker) && isAcceptedTask;
 
   const handleOpenChat = useCallback(() => {
     console.log('💬 Chat button touched for task:', task._id, task.title);
@@ -149,62 +175,33 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
       return;
     }
 
+    // IMPORTANT: Only TASKERS (assigned users) can mark tasks as complete
+    // Posters CANNOT mark tasks as complete
+    if (!isTasker) {
+      console.error('❌ User is not the tasker - cannot mark task as complete');
+      Alert.alert(
+        'Permission Denied',
+        'Only the assigned tasker can mark this task as complete.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     try {
       setIsProcessing(true);
       console.log('✅ Marking task as completed:', task._id);
+      console.log('🔍 Task data:', {
+        id: task._id,
+        status: task.status,
+        isTasker,
+        currentUserId,
+        assignedTo: (task as any).assignedTo,
+      });
       
-      // Check if this is an accepted offer that requires payment completion
-      const isAcceptedOfferTask = isAcceptedTask && isTaskCreator;
-      
-      if (isAcceptedOfferTask) {
-        console.log('💳 Attempting payment completion for accepted offer...');
-        
-        let paymentIntentId = (task as any).paymentIntentId;
-        let acceptedOfferId = null;
-        
-        if (task.offers && Array.isArray(task.offers)) {
-          const acceptedOffer = task.offers.find((offer: any) => offer.status === 'accepted');
-          if (acceptedOffer) {
-            acceptedOfferId = acceptedOffer._id;
-          }
-        }
-        
-        if (!acceptedOfferId && (task as any).acceptedOffer) {
-          const acceptedOffer = (task as any).acceptedOffer;
-          acceptedOfferId = acceptedOffer._id || acceptedOffer;
-        }
-        
-        if (paymentIntentId && acceptedOfferId) {
-          try {
-            await completeTaskPaymentMutation.mutateAsync({ 
-              taskId: task._id,
-              completionData: {
-                paymentIntentId: paymentIntentId,
-                taskId: task._id,
-                offerId: acceptedOfferId,
-              }
-            });
-            console.log('✅ Task payment completed successfully');
-          } catch {
-            console.log('⚠️ Payment completion failed, falling back to regular task completion');
-            await completeTaskMutation.mutateAsync(task._id);
-          }
-        } else {
-          try {
-            await completeTaskPaymentMutation.mutateAsync({ 
-              taskId: task._id,
-              completionData: {
-                taskId: task._id,
-                offerId: acceptedOfferId,
-              }
-            });
-          } catch {
-            await completeTaskMutation.mutateAsync(task._id);
-          }
-        }
-      } else {
-        await completeTaskMutation.mutateAsync(task._id);
-      }
+      // Call the complete task API endpoint: PATCH /tasks/{id}/complete
+      // Backend will handle marking task as complete
+      console.log('✅ Using task completion API (PATCH /tasks/{id}/complete)...');
+      await completeTaskMutation.mutateAsync(task._id);
       
       console.log('✅ Task marked as completed successfully');
       
@@ -214,37 +211,38 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
       
       Alert.alert(
         'Task Completed',
-        isAcceptedOfferTask ? 
-          'Payment has been released and the task has been marked as completed. Would you like to rate and review the tasker now?' : 
-          'The task has been marked as completed.',
-        [
-          { 
-            text: 'Later', 
-            style: 'cancel',
-            onPress: () => router.back()
-          },
-          {
-            text: 'Rate Now',
-            onPress: () => {
-              router.push({
-                pathname: '/task-review',
-                params: { taskId: task._id }
-              } as any);
-            }
-          }
-        ]
+        'The task has been marked as completed. The poster will now release the payment.',
+        [{ text: 'OK', onPress: () => router.back() }]
       );
+      
     } catch (error: any) {
-      console.error('❌ Failed to complete task:', error);
-      Alert.alert(
-        'Error',
-        error?.message || 'Failed to complete the task. Please try again.',
-        [{ text: 'OK' }]
-      );
+      console.error('❌ Error marking task as completed:', error);
+      console.error('❌ Error response:', error?.response?.data);
+      
+      let errorMessage = 'Failed to mark task as completed. Please try again.';
+      let errorTitle = 'Completion Failed';
+      
+      if (error?.response?.data?.message || error?.response?.data?.error) {
+        errorMessage = error.response.data.message || error.response.data.error;
+        errorTitle = 'Cannot Complete Task';
+      } else if (error?.response?.status === 403) {
+        errorMessage = 'You don\'t have permission to complete this task. Only the assigned tasker can mark it as complete.';
+        errorTitle = 'Permission Denied';
+      } else if (error?.response?.status === 400) {
+        errorMessage = 'This task cannot be completed in its current state.';
+        errorTitle = 'Invalid Task Status';
+      } else if (error?.response?.status === 404) {
+        errorMessage = 'This task was not found. It may have been deleted.';
+        errorTitle = 'Task Not Found';
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
     } finally {
       setIsProcessing(false);
     }
-  }, [task, completeTaskMutation, completeTaskPaymentMutation, isProcessing, isTaskCreator, isAcceptedTask, onTaskCompleted, router]);
+  }, [task, isTasker, currentUserId, completeTaskMutation, onTaskCompleted, isProcessing, router]);
 
   const handleCancelTask = useCallback(() => {
     if (isProcessing || createCancellationRequestMutation.isPending) {
@@ -320,25 +318,27 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
           <MaterialIcons name="chat" size={20} color="#007bff" />
         </TouchableOpacity>
 
-        {/* Mark as Completed Button */}
-        <TouchableOpacity 
-          style={[
-            styles.completedButton,
-            (isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) && styles.disabledButton
-          ]}
-          onPress={handleMarkAsCompleted}
-          activeOpacity={0.7}
-          disabled={isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending}
-        >
-          {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-              <Text style={styles.completedButtonText}>Completing...</Text>
-            </View>
-          ) : (
-            <Text style={styles.completedButtonText}>Mark as Completed</Text>
-          )}
-        </TouchableOpacity>
+        {/* Mark as Completed Button - ONLY show for TASKER, NOT for Poster */}
+        {isTasker && (
+          <TouchableOpacity 
+            style={[
+              styles.completedButton,
+              (isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) && styles.disabledButton
+            ]}
+            onPress={handleMarkAsCompleted}
+            activeOpacity={0.7}
+            disabled={isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending}
+          >
+            {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                <Text style={styles.completedButtonText}>Completing...</Text>
+              </View>
+            ) : (
+              <Text style={styles.completedButtonText}>Mark as Completed</Text>
+            )}
+          </TouchableOpacity>
+        )}
 
         {/* Cancel Button */}
         <TouchableOpacity 

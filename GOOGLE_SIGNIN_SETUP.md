@@ -79,10 +79,29 @@ The `android/app/google-services.json` file has an empty `oauth_client` array. T
 - Re-download from Firebase Console
 - Rebuild APK
 
-### "Developer Error" in Google Sign-In
-- Web Client ID is incorrect
-- Check google-services.json for correct Web Client ID
-- Update in login-screen.tsx
+### "Developer Error" (DEVELOPER_ERROR / Error Code 10) in Google Sign-In
+This is the most common error. Causes and fixes:
+
+1. **Wrong Web Client ID** (FIXED ✅)
+   - The webClientId must be the OAuth 2.0 Web Client ID (client_type: 3) from google-services.json
+   - Current correct value: `697863453994-r06h8627i1m4v66vv84113scanvpg1pv.apps.googleusercontent.com`
+   - File: `src/services/firebase-auth-service.ts`
+
+2. **Missing SHA-1 Fingerprint in Firebase Console**
+   - Go to Firebase Console → Project Settings → Your Apps → Android app
+   - Add SHA-1 fingerprint for your keystore
+   - For EAS Build: Run `eas credentials` to get the SHA-1
+   - Current fingerprints in google-services.json:
+     - Debug: `5e8f16062ea3cd2c4a0d547876baa6f38cabf625`
+     - Release/EAS: `32ed6bd380bf18c52a2b136d793f1682697b2c2c`
+
+3. **Google Sign-In not enabled in Firebase Console**
+   - Go to Firebase Console → Authentication → Sign-in providers
+   - Enable Google sign-in method
+
+4. **Re-download google-services.json after adding SHA-1**
+   - After adding any SHA-1 fingerprint, download a fresh google-services.json
+   - Replace `android/app/google-services.json`
 
 ### "Sign-in Failed"
 - Google Sign-In not enabled in Firebase Console

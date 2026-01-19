@@ -15,11 +15,13 @@ export function createApi(baseURL: string) {
     });
 
     axiosInstance.interceptors.request.use(async (config) => {
-        // Skip token for authentication endpoints (login, signup, google auth)
+        // Skip token for authentication endpoints (login, signup, google auth, firebase auth)
         const isAuthEndpoint = config.url?.includes('/auth/login') || 
                                config.url?.includes('/auth/signup') || 
                                config.url?.includes('/auth/google') ||
-                               config.url?.includes('/auth/register');
+                               config.url?.includes('/auth/register') ||
+                               config.url?.includes('/users/firebase-auth') || // Firebase Google Sign-In
+                               config.url?.includes('/users/firebase-token'); // Firebase custom token
         
         // First try to get token from auth store
         const authState = useAuthStore.getState();
@@ -125,7 +127,9 @@ export function createApi(baseURL: string) {
                 const isAuthEndpoint = requestUrl.includes('/auth/login') || 
                                       requestUrl.includes('/auth/signup') || 
                                       requestUrl.includes('/auth/google') ||
-                                      requestUrl.includes('/auth/register');
+                                      requestUrl.includes('/auth/register') ||
+                                      requestUrl.includes('/users/firebase-auth') || // Firebase Google Sign-In
+                                      requestUrl.includes('/users/firebase-token'); // Firebase custom token
                 
                 // Attempt automatic token refresh if token is expired and not already retried
                 if (isTokenExpired && !originalRequest._retry && !isAuthEndpoint && !isNonCriticalEndpoint) {

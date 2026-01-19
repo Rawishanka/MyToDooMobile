@@ -40,14 +40,18 @@ export const signInWithGoogle = async (): Promise<string> => {
     
     console.log('🔐 Configuring Google Sign-In with Firebase...');
     
-    // Configure Google Sign-In with Web Client ID for APK build
-    // This is required for Google Sign-In to work in production builds
+    // Configure Google Sign-In with Web Client ID from google-services.json
+    // IMPORTANT: Use the Web Client ID (client_type: 3) from Firebase Console
+    // This is the OAuth 2.0 Web Client ID, NOT the Android Client ID
+    const WEB_CLIENT_ID = '697863453994-r06h8627i1m4v66vv84113scanvpg1pv.apps.googleusercontent.com';
+    
     try {
       await GoogleSignin.configure({
-        webClientId: 'BO7gNAaYv5CF2jCkBkPW2I6JpO1rBMYSQE0pkhesIBGJ7mVadKq6oTwkVxjivYVnCmr-lWnAEP6rWGOFUO12CFs',
+        webClientId: WEB_CLIENT_ID,
         scopes: ['email', 'profile'],
-        offlineAccess: false,
+        offlineAccess: true, // Needed to get server auth code for backend
       });
+      console.log('✅ Google Sign-In configured with Web Client ID');
     } catch (configError) {
       console.log('ℹ️ Google Sign-In config warning (will proceed):', configError);
     }
@@ -57,13 +61,31 @@ export const signInWithGoogle = async (): Promise<string> => {
     // Check if device supports Google Play services
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
 
-    // Sign in with Google
-    const userInfo = await GoogleSignin.signIn();
-    console.log('✅ Got Google user info:', userInfo.user?.email);
+    // Sign in with Google (v13+ returns { type, data } structure)
+    const signInResult = await GoogleSignin.signIn();
+    console.log('✅ Google Sign-In result:', { 
+      type: signInResult.type,
+      hasData: !!signInResult.data,
+      hasUser: !!signInResult.data?.user,
+      userEmail: signInResult.data?.user?.email 
+    });
 
-    // Get Google ID Token
-    const idToken = userInfo.idToken;
+    // Handle the new API structure in v13+
+    if (signInResult.type === 'cancelled') {
+      throw new Error('Google Sign-In was cancelled');
+    }
+
+    if (signInResult.type !== 'success' || !signInResult.data) {
+      throw new Error('Google Sign-In failed. Please try again.');
+    }
+
+    const { data } = signInResult;
+    console.log('✅ Got Google user info:', data.user?.email);
+
+    // Get Google ID Token from the data object
+    const idToken = data.idToken;
     if (!idToken) {
+      console.error('❌ No idToken in response. Full data:', data);
       throw new Error('Failed to get Google ID Token from Google Sign-In');
     }
     console.log('✅ Got Google ID Token from Google');
