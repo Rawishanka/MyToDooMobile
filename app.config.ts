@@ -15,7 +15,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   assetBundlePatterns: ['**/*'],
   runtimeVersion: '1.0.0',
   android: {
-    package: 'com.unexo.mytodoomobile',
+    package: 'com.mytodoo.mytodoolive',
     adaptiveIcon: {
       foregroundImage: './assets/images/mytodoo-adaptive-icon.png',
       backgroundColor: '#004aad',
@@ -87,7 +87,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       projectId: '5ad77f0f-ad33-4a24-8c41-f2115921cb55',
     },
     apiUrl: process.env.API_URL,
-    easApiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://api.mytodoo.com/api',
+    easApiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://au-live-api.mytodoo.com/api',
     environment: process.env.ENVIRONMENT,
     mapboxAccessToken: process.env.EXPO_PUBLIC_MAPBOX_TOKEN,
     googleClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,

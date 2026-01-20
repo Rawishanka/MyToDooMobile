@@ -1,7 +1,7 @@
 /**
  * Firebase Configuration - Hybrid Mode
  * 
- * Project: mytodoo-40c87
+ * Project: mytodoo-e4cdb
  * 
  * SMART DETECTION:
  * - Expo Go: Uses Expo Notifications (no native modules needed)
@@ -12,15 +12,14 @@
 
 import Constants from 'expo-constants';
 
-// Firebase config from mytodoo-40c87 project
+// Firebase config from mytodoo-e4cdb project (LIVE)
 export const firebaseConfig = {
-  apiKey: "AIzaSyACCrN_zK5NKUUM7GtZulp4Sy53ewb495M",
-  authDomain: "mytodoo-40c87.firebaseapp.com",
-  projectId: "mytodoo-40c87",
-  storageBucket: "mytodoo-40c87.firebasestorage.app",
-  messagingSenderId: "697863453994",
-  appId: "1:697863453994:web:648f36d94e17641e853253",
-  measurementId: "G-WF88CSQVXY",
+  apiKey: "AIzaSyAT-WR-wfJ1VkDyoYj3wmucrQdHfnVsdtQ",
+  authDomain: "mytodoo-e4cdb.firebaseapp.com",
+  projectId: "mytodoo-e4cdb",
+  storageBucket: "mytodoo-e4cdb.firebasestorage.app",
+  messagingSenderId: "685356682007",
+  appId: "1:685356682007:android:43492ad2af1792850f8552",
 };
 
 // Detect if we're in Expo Go or native build

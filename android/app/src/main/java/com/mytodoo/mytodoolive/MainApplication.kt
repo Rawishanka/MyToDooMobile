@@ -1,4 +1,4 @@
-package com.unexo.mytodoomobile
+package com.mytodoo.mytodoolive
 
 import android.app.Application
 import android.app.NotificationChannel

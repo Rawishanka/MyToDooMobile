@@ -87,7 +87,7 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.unexo.mytodoomobile'
+    namespace 'com.mytodoo.mytodoolive'
     
     lintOptions {
         checkReleaseBuilds false
@@ -95,7 +95,7 @@ android {
     }
     
     defaultConfig {
-        applicationId 'com.unexo.mytodoomobile'
+        applicationId 'com.mytodoo.mytodoolive'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -132,6 +132,8 @@ android {
             def enableLegacyPackaging = findProperty('expo.useLegacyPackaging') ?: 'false'
             useLegacyPackaging enableLegacyPackaging.toBoolean()
         }
+        // Fix for duplicate libworklets.so from react-native-reanimated and react-native-worklets
+        pickFirst '**/libworklets.so'
     }
     androidResources {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'

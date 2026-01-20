@@ -15,7 +15,7 @@ const getApiUrl = () => {
     }
     
     // 🔧 Fallback: Using production domain
-    const fallbackUrl = "https://api.mytodoo.com/api";
+    const fallbackUrl = "https://au-live-api.mytodoo.com/api";
     console.log('⚠️ Using fallback API URL:', fallbackUrl);
     return fallbackUrl;
 };

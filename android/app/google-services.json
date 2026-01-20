@@ -1,57 +1,50 @@
 {
   "project_info": {
-    "project_number": "697863453994",
-    "project_id": "mytodoo-40c87",
-    "storage_bucket": "mytodoo-40c87.firebasestorage.app"
+    "project_number": "685356682007",
+    "project_id": "mytodoo-e4cdb",
+    "storage_bucket": "mytodoo-e4cdb.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:697863453994:android:2fd95de8525d74ef853253",
+        "mobilesdk_app_id": "1:685356682007:android:43492ad2af1792850f8552",
         "android_client_info": {
-          "package_name": "com.unexo.mytodoomobile"
+          "package_name": "com.mytodoo.mytodoolive"
         }
       },
       "oauth_client": [
         {
-          "client_id": "697863453994-g4qpsorcv5sp3s9jlq1ld25pjf40b9e5.apps.googleusercontent.com",
+          "client_id": "685356682007-1c32te3ilcp7uir81cfv4e7s02kqkhgo.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.unexo.mytodoomobile",
+            "package_name": "com.mytodoo.mytodoolive",
+            "certificate_hash": "92fefe29d56c5f50d0c2c718a71aab3481372bc6"
+          }
+        },
+        {
+          "client_id": "685356682007-m2e0iba8eu1usf5s404789is5tjig5ie.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mytodoo.mytodoolive",
             "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
           }
         },
         {
-          "client_id": "697863453994-molm0p0jfumlq1tequelecjkrh74ab71.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.unexo.mytodoomobile",
-            "certificate_hash": "32ed6bd380bf18c52a2b136d793f1682697b2c2c"
-          }
-        },
-        {
-          "client_id": "697863453994-r06h8627i1m4v66vv84113scanvpg1pv.apps.googleusercontent.com",
+          "client_id": "685356682007-rj5r1ie1nrknfdiifl8akq5ata5ib4fi.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAnBkhj8hEx7paalRvbzGaszj6gCxGECso"
+          "current_key": "AIzaSyAT-WR-wfJ1VkDyoYj3wmucrQdHfnVsdtQ"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "697863453994-r06h8627i1m4v66vv84113scanvpg1pv.apps.googleusercontent.com",
+              "client_id": "685356682007-rj5r1ie1nrknfdiifl8akq5ata5ib4fi.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "697863453994-srkq3nhgvknoqgj4mo058pn7oqs8n04u.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.unexo.mytodoomobile"
-              }
             }
           ]
         }

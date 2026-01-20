@@ -43,7 +43,7 @@ export const signInWithGoogle = async (): Promise<string> => {
     // Configure Google Sign-In with Web Client ID from google-services.json
     // IMPORTANT: Use the Web Client ID (client_type: 3) from Firebase Console
     // This is the OAuth 2.0 Web Client ID, NOT the Android Client ID
-    const WEB_CLIENT_ID = '697863453994-r06h8627i1m4v66vv84113scanvpg1pv.apps.googleusercontent.com';
+    const WEB_CLIENT_ID = '685356682007-rj5r1ie1nrknfdiifl8akq5ata5ib4fi.apps.googleusercontent.com';
     
     try {
       await GoogleSignin.configure({

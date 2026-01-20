@@ -1,4 +1,4 @@
-package com.unexo.mytodoomobile
+package com.mytodoo.mytodoolive
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
