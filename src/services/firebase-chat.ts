@@ -40,10 +40,10 @@ class FirebaseChatServiceClass {
       .orderBy('timestamp', 'desc')
       .limit(messageLimit)
       .onSnapshot(
-        (snapshot) => {
+        (snapshot: FirebaseFirestoreTypes.QuerySnapshot) => {
           const messages: GroupChatMessage[] = [];
           
-          snapshot.forEach((doc) => {
+          snapshot.forEach((doc: FirebaseFirestoreTypes.QueryDocumentSnapshot) => {
             const data = doc.data() as FirebaseMessage;
             
             // Convert Firestore timestamp to ISO string
@@ -72,7 +72,7 @@ class FirebaseChatServiceClass {
           console.log(`🔥 Firebase messages updated: ${sortedMessages.length} messages`);
           onUpdate(sortedMessages);
         },
-        (error) => {
+        (error: Error) => {
           console.error('❌ Firebase subscription error:', error);
           if (onError) {
             onError(error);
