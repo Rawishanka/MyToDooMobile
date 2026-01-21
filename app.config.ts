@@ -100,6 +100,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     'expo-apple-authentication',
+    './plugins/withFirebaseFix',
   ],
   experiments: {
     typedRoutes: true,
