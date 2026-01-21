@@ -4,7 +4,7 @@ import 'dotenv/config';
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'MyToDoo',
-  slug: 'MyToDooMobile',
+  slug: 'mytodoomobile-app',
   owner: 'sithila345',
   version: '1.0.0',
   orientation: 'portrait',
@@ -107,7 +107,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     eas: {
-      projectId: '7eddf329-f5b1-47df-a3d0-dcdd136f4a06',
+      projectId: 'ddff99e4-dea8-470b-8f81-c9d384ef2d0f',
     },
     apiUrl: process.env.API_URL,
     easApiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://api.mytodoo.com/api',
