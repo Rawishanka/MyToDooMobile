@@ -4,11 +4,19 @@ android/app/.cxx/
 android/build/
 .expo/
 ios/build/
+ios/Pods/
+ios/DerivedData/
 *.apk
 *.aab
+*.ipa
 
 # Ignore large dependency folders that will be reinstalled on EAS
 node_modules/.cache/
+
+# Ignore documentation and scripts
+docs/
+*.md
+*.ps1
 
 # Ignore local environment files
 .env.local
@@ -16,3 +24,4 @@ node_modules/.cache/
 # Ignore temp files
 *.log
 *.tmp
+.DS_Store

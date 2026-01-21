@@ -442,6 +442,89 @@ export function useApiFunctions() {
     }
   }
 
+  async function handleAppleSignIn(appleAuthData: { id_token: string; code: string; user?: { name?: { firstName?: string; lastName?: string } }; mode: string }) {
+    const api = createApi(API_CONFIG.BASE_URL);
+    console.log("🍎 Calling Apple Sign-In API:", API_CONFIG.BASE_URL + "/apple");
+    console.log("📤 Sending Apple authentication data to backend");
+    console.log("🎫 ID Token length:", appleAuthData.id_token?.length);
+    console.log("🎫 Code length:", appleAuthData.code?.length);
+
+    try {
+      const requestBody = {
+        id_token: appleAuthData.id_token,
+        code: appleAuthData.code,
+        user: appleAuthData.user,
+        mode: appleAuthData.mode || 'signin'
+      };
+      
+      console.log("📤 Sending Apple Sign-In request");
+      
+      const response = await api.post('/apple', requestBody);
+      
+      console.log("✅ Apple Sign-In Success Response:", response.data);
+      const { token, user } = response.data;
+      
+      // Enhanced validation with detailed logging
+      console.log("🔍 Backend response details:", {
+        hasToken: !!token,
+        hasUser: !!user,
+        tokenPreview: token?.substring(0, 20) + "...",
+        userDetails: user ? {
+          id: user.id || user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          isNewUser: response.data.isNewUser
+        } : "NO USER DATA"
+      });
+      
+      // Validate that we received a valid token and user from backend
+      if (!token) {
+        console.error("❌ No token in backend response");
+        throw new Error('No authentication token received from server');
+      }
+      
+      if (!user) {
+        console.error("❌ No user data in backend response");
+        throw new Error('No user data received from server');
+      }
+      
+      console.log("✅ Calling setAuthData with validated data...");
+      await setAuthData(token, user);
+      setStoredToken(token);
+      
+      console.log("✅ Returning data to React Query...");
+      return { token, user, isNewUser: response.data.isNewUser };
+    } catch (error: any) {
+      // 🔍 ENHANCED ERROR LOGGING for debugging
+      console.error("❌ Apple Sign-In API call failed:");
+      console.error("📍 Endpoint:", API_CONFIG.BASE_URL + "/apple");
+      console.error("📊 Status Code:", error?.response?.status);
+      console.error("📊 Status Text:", error?.response?.statusText);
+      console.error("📦 Response Data:", JSON.stringify(error?.response?.data, null, 2));
+      console.error("💬 Error Message:", error?.message);
+      
+      // Provide user-friendly error message based on status code
+      let userMessage = 'Unable to complete Apple Sign-In. Please try again.';
+      
+      if (error?.response?.status === 400) {
+        userMessage = error?.response?.data?.message || 'Invalid authentication data. Please try again.';
+      } else if (error?.response?.status === 401) {
+        userMessage = 'Apple token validation failed. Please try signing in again.';
+      } else if (error?.response?.status === 500) {
+        userMessage = 'Server error during authentication. Please try again later.';
+      } else if (error?.message?.includes('Network Error') || error?.code === 'ERR_NETWORK') {
+        userMessage = 'Network error. Please check your internet connection and try again.';
+      }
+      
+      // Re-throw with enhanced message
+      const enhancedError = new Error(userMessage);
+      (enhancedError as any).response = error?.response;
+      (enhancedError as any).originalError = error;
+      throw enhancedError;
+    }
+  }
+
   async function handleSignUpUser(signUpData: SignUpRequest) {
     // Check if we should use mock API only
     if (API_CONFIG.USE_MOCK_ONLY) {
@@ -824,6 +907,7 @@ export function useApiFunctions() {
     createTask,
     handleLoginUser,
     handleGoogleSignIn,
+    handleAppleSignIn,
     handleSignUpUser,
     handleVerifyOTP,
     checkAvailableEndpoints,

@@ -338,6 +338,9 @@ export const useBrowseFiltersAPI = () => {
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   
+  // Add timeout safeguard to prevent infinite loading states
+  const [forceShowResults, setForceShowResults] = useState(false);
+  
   // Track the last processed page to prevent duplicate processing
   const lastProcessedPageRef = React.useRef<number>(0);
   const lastProcessedDataHashRef = React.useRef<string>('');
@@ -620,6 +623,32 @@ export const useBrowseFiltersAPI = () => {
     }
   }, [shouldUseFilterAPI, filterLoading, searchLoading, filterResponse, searchResponse]);
 
+  // Safety timeout: If loading takes more than 5 seconds with no data, force show results
+  useEffect(() => {
+    const apiLoading = shouldUseFilterAPI ? filterLoading : searchLoading;
+    const hasData = tasksWithOfferCounts.length > 0;
+    const hasError = shouldUseFilterAPI ? !!filterError : !!searchError;
+    
+    // Reset force flag when starting new load or when we have data/error
+    if (apiLoading || hasData || hasError) {
+      setForceShowResults(false);
+      return;
+    }
+    
+    // Set timeout only when API is not loading but we have no data yet
+    if (!apiLoading && !hasData && !hasError && !forceShowResults) {
+      console.log('⏰ Starting 5-second safety timeout for loading state');
+      const timeout = setTimeout(() => {
+        console.warn('⚠️ Loading timeout reached (5s) - forcing results display');
+        setForceShowResults(true);
+        setIsProcessingData(false);
+      }, 5000);
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [shouldUseFilterAPI, filterLoading, searchLoading, tasksWithOfferCounts.length, filterError, searchError, forceShowResults]);
+
+
   // Apply client-side search filter to results with TITLE PRIORITIZATION
   // During debounce period OR when using Search API, apply client-side filtering
   const filteredAndSortedTasks = useMemo(() => {
@@ -701,16 +730,25 @@ export const useBrowseFiltersAPI = () => {
   const hasApiError = shouldUseFilterAPI ? !!filterError : !!searchError;
   const isInitialLoading = hasApiData && tasksWithOfferCounts.length === 0 && !hasApiError && currentPage === 1;
   
-  const isLoading = isSearching || activeApiLoading || isProcessingData || isDetectingCountry || isInitialLoading;
+  // CRITICAL FIX: Don't wait for country detection indefinitely
+  // If API data has loaded successfully, show results even if country is still detecting
+  const shouldWaitForCountry = isDetectingCountry && !hasApiData && !hasApiError;
+  
+  // Apply force flag - if timeout reached, don't show loading anymore
+  const isLoading = !forceShowResults && (isSearching || activeApiLoading || isProcessingData || shouldWaitForCountry || isInitialLoading);
   
   console.log('🎯 Final loading state:', { 
     isSearching, 
     activeApiLoading,
     isProcessingData,
     isDetectingCountry,
+    shouldWaitForCountry,
     isInitialLoading,
+    forceShowResults,
     hasApiData,
+    hasApiError,
     tasksCount: tasksWithOfferCounts.length,
+    filteredTasksCount: filteredAndSortedTasks.length,
     isLoading,
     searchText: searchText.trim(),
     debouncedSearchText: debouncedSearchText.trim(),

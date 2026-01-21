@@ -388,7 +388,7 @@ export default function BrowseTasksScreen() {
         })()
       ) : (
         <>
-          {isLoading ? (
+          {isLoading && filteredAndSortedTasks.length === 0 ? (
             <View style={styles.emptyState}>
               <ActivityIndicator size="large" color="#007bff" style={{ marginBottom: 16 }} />
               <Text style={styles.loadingText}>
@@ -397,7 +397,11 @@ export default function BrowseTasksScreen() {
             </View>
           ) : error ? (
             <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle-outline" size={64} color="#ff6b6b" style={{ marginBottom: 16 }} />
               <Text style={styles.errorText}>Failed to load tasks</Text>
+              <Text style={styles.errorSubtext}>
+                {error.message || 'Please check your internet connection and try again'}
+              </Text>
               <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
                 <Text style={styles.retryButtonText}>Retry</Text>
               </TouchableOpacity>
@@ -408,17 +412,31 @@ export default function BrowseTasksScreen() {
               <Text style={styles.emptyText}>
                 {searchText.trim() 
                   ? `No tasks found matching "${searchText.replace(/"/g, '\\"')}"`
-                  : 'No tasks found matching your criteria'}
+                  : activeFiltersCount > 0
+                    ? 'No tasks match your current filters'
+                    : 'No tasks available at the moment'}
               </Text>
-              {searchText.trim() && (
+              <Text style={styles.emptySubtext}>
+                {searchText.trim()
+                  ? 'Try a different search term'
+                  : activeFiltersCount > 0
+                    ? 'Try adjusting your filters to see more tasks'
+                    : 'Check back later for new opportunities'}
+              </Text>
+              {(searchText.trim() || activeFiltersCount > 0) && (
                 <TouchableOpacity 
                   style={styles.clearSearchButton}
                   onPress={() => {
                     setSearchText('');
                     setSearchVisible(false);
+                    if (activeFiltersCount > 0) {
+                      resetFilters();
+                    }
                   }}
                 >
-                  <Text style={styles.clearSearchText}>Clear search</Text>
+                  <Text style={styles.clearSearchText}>
+                    {searchText.trim() ? 'Clear search' : 'Clear all filters'}
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -599,6 +617,13 @@ const styles = StyleSheet.create({
     fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
+    fontWeight: '600',
+  },
+  emptySubtext: {
+    fontSize: RFValue(12),
+    color: '#999',
+    textAlign: 'center',
+    marginTop: hp('1%'),
   },
   loadingText: {
     fontSize: RFValue(14),
@@ -625,10 +650,17 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   errorText: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 16,
+    fontSize: RFValue(16),
+    color: '#ff6b6b',
+    fontWeight: '600',
     textAlign: 'center',
+  },
+  errorSubtext: {
+    fontSize: RFValue(13),
+    color: '#999',
+    textAlign: 'center',
+    marginTop: hp('1%'),
+    marginBottom: hp('2%'),
   },
   retryButton: {
     backgroundColor: '#007bff',

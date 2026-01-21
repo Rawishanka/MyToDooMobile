@@ -8,6 +8,8 @@ import {
     ActivityIndicator,
     Alert,
     Modal,
+    Platform,
+    SafeAreaView,
     StatusBar,
     StyleSheet,
     Text,
@@ -172,7 +174,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
         {/* Header */}
@@ -197,25 +199,6 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
           {notificationStats.unread === 0 && (
             <View style={styles.markAllButton} />
           )}
-        </View>
-
-        {/* Expo Go Warning */}
-        {__DEV__ && !process.env.EAS_BUILD && (
-          <View style={styles.expoGoWarning}>
-            <Ionicons name="warning" size={20} color="#856404" />
-            <Text style={styles.expoGoWarningText}>
-              Push notifications require a native build. Use: npx eas build
-            </Text>
-          </View>
-        )}
-
-        {/* Info Message */}
-        <View style={styles.infoCard}>
-          <Ionicons name="information-circle" size={20} color="#0c5460" />
-          <Text style={styles.infoText}>
-            Push notifications are sent when you receive messages, offers, or task updates. 
-            {isFCMConfigured ? ' Notification history is stored locally on your device.' : ' They appear in your device\'s notification tray.'}
-          </Text>
         </View>
 
         {/* Tabs */}
@@ -278,7 +261,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
             </View>
           </View>
         )}
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 };

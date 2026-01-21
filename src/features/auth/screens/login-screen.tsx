@@ -1,6 +1,6 @@
 import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
 import { auth } from '@/src/config/firebase';
-import { useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
+import { useAppleSignIn, useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
 import { usePostTaskDirect } from '@/src/shared/hooks/useTaskApi';
 import { USER_PROFILE_QUERY_KEYS } from '@/src/shared/hooks/useUserProfileApi';
 import { useClearCachesOnLogin } from '@/src/shared/utils/cache-utils';
@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -29,6 +29,7 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
+import * as AppleAuthentication from 'expo-apple-authentication';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -36,10 +37,13 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [appleAuthAvailable, setAppleAuthAvailable] = useState(false);
   const { mutateAsync } = useCreateAuthToken();
   const { mutateAsync: googleSignIn } = useGoogleSignIn();
+  const { mutateAsync: appleSignIn } = useAppleSignIn();
   const clearCachesOnLogin = useClearCachesOnLogin();
   const queryClient = useQueryClient();
   
@@ -56,7 +60,16 @@ export default function LoginScreen() {
   // Load saved credentials on mount
   useEffect(() => {
     loadSavedCredentials();
+    checkAppleAuthAvailability();
   }, []);
+
+  const checkAppleAuthAvailability = async () => {
+    if (Platform.OS === 'ios') {
+      const isAvailable = await AppleAuthentication.isAvailableAsync();
+      setAppleAuthAvailable(isAvailable);
+      console.log('🍎 Apple Authentication available:', isAvailable);
+    }
+  };
 
   const loadSavedCredentials = async () => {
     try {
@@ -554,6 +567,117 @@ export default function LoginScreen() {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    try {
+      setAppleLoading(true);
+      
+      console.log('🍎 Starting Apple Sign-In...');
+      
+      // Trigger Apple authentication
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      
+      console.log('✅ Got Apple credential:', {
+        user: credential.user,
+        email: credential.email,
+        hasIdToken: !!credential.identityToken,
+        hasAuthCode: !!credential.authorizationCode,
+        hasFullName: !!credential.fullName
+      });
+      
+      // Clear all caches BEFORE Apple Sign-In to ensure no stale data
+      console.log('🧹 Pre-Apple login: Clearing all cached data...');
+      clearCachesOnLogin();
+      await queryClient.clear();
+      
+      // Prepare Apple auth data for backend
+      const appleAuthData: any = {
+        id_token: credential.identityToken!,
+        code: credential.authorizationCode!,
+        mode: 'signin'
+      };
+      
+      // Apple only provides name and email on first sign-in
+      if (credential.fullName && (credential.fullName.givenName || credential.fullName.familyName)) {
+        appleAuthData.user = {
+          name: {
+            firstName: credential.fullName.givenName || undefined,
+            lastName: credential.fullName.familyName || undefined
+          }
+        };
+        console.log('📝 Apple provided user name:', appleAuthData.user.name);
+      }
+      
+      // Send to backend
+      const result = await appleSignIn(appleAuthData);
+      
+      console.log('✅ Backend authentication successful:', result);
+      console.log('🔍 Auth result details:', { 
+        hasToken: !!result.token, 
+        hasUser: !!result.user,
+        userEmail: result.user?.email,
+        userId: result.user?.id,
+        isNewUser: result.isNewUser 
+      });
+      
+      // Wait a moment for auth store to be updated
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Check current auth state
+      const authState = useAuthStore.getState();
+      console.log('🔍 Auth state after Apple Sign-In:', {
+        hasToken: !!authState.token,
+        hasUser: !!authState.user,
+        isAuthenticated: authState.isAuthenticated,
+        userEmail: authState.user?.email
+      });
+      
+      // Force invalidate profile queries to ensure fresh profile data with user context
+      if (authState.user?.id) {
+        await queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+        await queryClient.invalidateQueries({ queryKey: ['chats'] });
+        console.log('🔄 Profile and chat queries invalidated for user:', authState.user.id);
+      }
+      
+      // Check for pending actions after successful login
+      const pendingActionType = checkPendingAction();
+      if (pendingActionType) {
+        console.log('📋 Found pending action after Apple login, executing:', pendingActionType);
+        await executePendingAction();
+      } else {
+        console.log('🚀 No pending action, navigating to tabs...');
+        router.replace('/(tabs)' as any);
+      }
+      
+    } catch (error: any) {
+      console.log('❌ Apple Sign-In Error:', error?.message || 'Unknown error');
+      console.log('Error code:', error?.code);
+      
+      // Don't show alert if user cancelled
+      if (error.code === 'ERR_CANCELED' || error.code === 'ERR_REQUEST_CANCELED') {
+        console.log('User cancelled Apple Sign-In');
+        setAppleLoading(false);
+        return;
+      }
+      
+      let errorMessage = 'Unable to complete Apple Sign-In. Please try again.';
+      
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Sign-In Error', errorMessage, [{ text: 'OK' }]);
+    } finally {
+      setAppleLoading(false);
+    }
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -699,7 +823,7 @@ export default function LoginScreen() {
           <TouchableOpacity 
             style={styles.googleButton} 
             onPress={handleGoogleSignIn} 
-            disabled={googleLoading || loading}
+            disabled={googleLoading || loading || appleLoading}
           >
             {googleLoading ? (
               <ActivityIndicator color="#666" />
@@ -713,6 +837,24 @@ export default function LoginScreen() {
               </>
             )}
           </TouchableOpacity>
+
+          {/* Apple Sign-In Button - Only show on iOS if available */}
+          {Platform.OS === 'ios' && appleAuthAvailable && (
+            <TouchableOpacity 
+              style={styles.appleButton} 
+              onPress={handleAppleSignIn} 
+              disabled={appleLoading || loading || googleLoading}
+            >
+              {appleLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Ionicons name="logo-apple" size={20} color="#fff" style={styles.appleIcon} />
+                  <Text style={styles.appleButtonText}>Continue with Apple</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.footer}>
@@ -892,6 +1034,23 @@ const styles = StyleSheet.create({
   },
   googleButtonText: {
     color: '#333',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  appleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000',
+    paddingVertical: 14,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  appleIcon: {
+    marginRight: 10,
+  },
+  appleButtonText: {
+    color: '#fff',
     fontWeight: '600',
     fontSize: 15,
   },
