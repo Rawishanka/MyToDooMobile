@@ -11,7 +11,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: './assets/images/mytodoo-icon.png',
   scheme: 'mytodoo',
   userInterfaceStyle: 'light',
-  newArchEnabled: true,
+  newArchEnabled: false,
   assetBundlePatterns: ['**/*'],
   runtimeVersion: '1.0.0',
   ios: {
@@ -76,7 +76,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         ios: {
           deploymentTarget: '15.1',
-          useFrameworks: 'static',
         },
         android: {
           compileSdkVersion: 35,
