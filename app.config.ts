@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'MyToDoo',
   slug: 'MyToDooMobile',
-  owner: 'novadya',
+  owner: 'sasika123',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/mytodoo-icon.png',
@@ -14,6 +14,24 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   newArchEnabled: true,
   assetBundlePatterns: ['**/*'],
   runtimeVersion: '1.0.0',
+  ios: {
+    bundleIdentifier: 'com.unexo.mytodoomobile',
+    supportsTablet: true,
+    buildNumber: '1.0.0',
+    googleServicesFile: './GoogleService-Info.plist',
+    infoPlist: {
+      NSCameraUsageDescription: 'Allow MyToDoo to use your camera to capture and upload task photos.',
+      NSPhotoLibraryUsageDescription: 'Allow MyToDoo to access your photo library to upload task images.',
+      NSPhotoLibraryAddUsageDescription: 'Allow MyToDoo to save photos to your library.',
+      NSLocationWhenInUseUsageDescription: 'Allow MyToDoo to use your location to show nearby tasks and provide location-based services.',
+      NSLocationAlwaysUsageDescription: 'Allow MyToDoo to access your location to show nearby tasks.',
+      NSMicrophoneUsageDescription: 'Required for video recording features.',
+      NSUserTrackingUsageDescription: 'This identifier will be used to deliver personalized ads to you.',
+      UIBackgroundModes: ['remote-notification', 'fetch'],
+      ITSAppUsesNonExemptEncryption: false,
+    },
+    associatedDomains: ['applinks:mytodoo.com', 'applinks:mytodoomobile'],
+  },
   android: {
     package: 'com.unexo.mytodoomobile',
     adaptiveIcon: {
@@ -56,6 +74,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-build-properties',
       {
+        ios: {
+          deploymentTarget: '15.1',
+          useFrameworks: 'static',
+        },
         android: {
           compileSdkVersion: 35,
           targetSdkVersion: 35,
@@ -78,13 +100,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         locationAlwaysAndWhenInUsePermission: 'Allow MyToDoo to use your location to show nearby tasks and provide location-based services.',
       },
     ],
+    'expo-apple-authentication',
   ],
   experiments: {
     typedRoutes: true,
   },
   extra: {
     eas: {
-      projectId: '5ad77f0f-ad33-4a24-8c41-f2115921cb55',
+      projectId: '7eddf329-f5b1-47df-a3d0-dcdd136f4a06',
     },
     apiUrl: process.env.API_URL,
     easApiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://api.mytodoo.com/api',
