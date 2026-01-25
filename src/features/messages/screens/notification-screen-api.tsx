@@ -1,30 +1,28 @@
 // FCM Notification Screen - With Local History Storage
 // Notifications are stored locally in AsyncStorage (similar to web's localStorage)
 import { sendQuickTestNotification } from '@/src/api/notification-api';
+import { NotificationHistoryList } from '@/src/features/messages/components/NotificationHistoryList';
+import {
+    deleteNotification,
+    getNotifications,
+    getNotificationStats,
+    markAllNotificationsAsRead,
+    markNotificationAsRead,
+    type StoredNotification,
+} from '@/src/services/notification-storage';
 import { useGetFCMTokens } from '@/src/shared/hooks/useFCM';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Modal,
-    Platform,
     SafeAreaView,
     StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
-import {
-  getNotifications,
-  markNotificationAsRead,
-  markAllNotificationsAsRead,
-  deleteNotification,
-  getNotificationStats,
-  type StoredNotification,
-} from '@/src/services/notification-storage';
-import { NotificationHistoryList } from '@/src/features/messages/components/NotificationHistoryList';
 
 interface NotificationModalProps {
   visible: boolean;

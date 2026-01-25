@@ -53,7 +53,7 @@ export const LocationInputSection: React.FC<LocationInputSectionProps> = ({
   };
 
   return (
-    <View ref={locationFieldRef} collapsable={false}>
+    <View ref={locationFieldRef} collapsable={false} style={styles.wrapper}>
       <Text style={styles.label}>Location</Text>
       <LocationAutocomplete
         onSelect={onLocationSelect}
@@ -75,6 +75,11 @@ export const LocationInputSection: React.FC<LocationInputSectionProps> = ({
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    zIndex: 99999, // Extremely high to establish dominant stacking context
+    elevation: 99999, // For Android support
+    overflow: 'visible', // Allow dropdown to escape container bounds
+  },
   label: {
     fontSize: 14,
     color: '#555',

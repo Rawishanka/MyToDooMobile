@@ -198,6 +198,7 @@ const LocationScreen = () => {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled={true}
             >
                 {/* Title */}
                 <Text style={styles.title}>Tell me more!</Text>
@@ -271,11 +272,13 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
+        overflow: 'visible', // Allow dropdown to escape bounds
     },
     scrollContent: {
         padding: 20,
         paddingTop: 90,
         paddingBottom: 100,
+        overflow: 'visible', // Allow dropdown to escape bounds
     },
     title: {
         fontSize: 22,

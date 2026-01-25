@@ -587,7 +587,7 @@ export default function TaskChatScreen() {
 
   if (chatLoading || createChatMutation.isPending) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
+      <View style={[styles.container, styles.centerContent, { paddingTop: insets.top }]}>
         <ActivityIndicator size="large" color="#007bff" />
         <Text style={styles.loadingText}>Loading chat...</Text>
       </View>
@@ -595,17 +595,18 @@ export default function TaskChatScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
-      <View style={{ flex: 1 }}>
-        {/* Header */}
-        <View style={[styles.header, { paddingTop: insets.top }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color="#000" />
-          </TouchableOpacity>
+    <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
+        <View style={{ flex: 1 }}>
+          {/* Header */}
+          <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <MaterialIcons name="arrow-back" size={24} color="#000" />
+            </TouchableOpacity>
           
           {otherPerson ? (
             <View style={styles.headerInfo}>
@@ -758,6 +759,7 @@ export default function TaskChatScreen() {
         </Modal>
       </View>
     </KeyboardAvoidingView>
+    </View>
   );
 }
 

@@ -596,7 +596,8 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    zIndex: 1000,
+    zIndex: 9999, // Extremely high to ensure dropdown appears above all content
+    elevation: 9999, // For Android support
   },
   currentLocationButton: {
     flexDirection: 'row',
@@ -656,18 +657,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     marginTop: 4,
-    maxHeight: 400,
-    elevation: 8,
+    maxHeight: 250, // Reduced from 400 to prevent excessive overlap
+    elevation: 99999, // Extremely high for Android layering
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
-    zIndex: 10000,
+    zIndex: 99999, // Must be higher than parent container
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
   dropdownList: {
-    maxHeight: 400,
+    maxHeight: 250, // Reduced from 400 to prevent excessive overlap
   },
   dropdownContent: {
     paddingVertical: 4,

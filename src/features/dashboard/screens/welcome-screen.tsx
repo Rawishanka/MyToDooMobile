@@ -10,21 +10,21 @@ import { useRouter } from 'expo-router';
 import { Bell, ChevronRight } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Animated,
-    Dimensions,
-    FlatList,
-    Image,
-    Keyboard,
-    Linking,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+  FlatList,
+  Image,
+  Keyboard,
+  Linking,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from 'react-native';
 
 // Get screen dimensions
@@ -61,18 +61,53 @@ const categoryImages: { id: string; title: string; image: string }[] = [
 ];
 
 // � **Image Category Component for Carousel**
-const ImageCategory = ({ item }: { item: typeof categoryImages[0] }) => {
+const ImageCategory = ({ item, onPress }: { item: typeof categoryImages[0]; onPress: (categoryName: string) => void }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  
   return (
-    <View style={styles.carouselItem}>
+    <TouchableOpacity 
+      style={styles.carouselItem}
+      activeOpacity={0.7}
+      onPress={() => onPress(item.title)}
+    >
       <View style={styles.imageContainer}>
+        {/* Loading indicator while image loads */}
+        {!imageLoaded && !imageError && (
+          <ActivityIndicator 
+            size="small" 
+            color="#003399" 
+            style={styles.imageLoader}
+          />
+        )}
+        
+        {/* Error placeholder if image fails to load */}
+        {imageError && (
+          <View style={styles.imageErrorContainer}>
+            <MaterialCommunityIcons name="image-broken-variant" size={32} color="#ccc" />
+          </View>
+        )}
+        
+        {/* Actual image with proper caching and error handling */}
         <Image
-          source={{ uri: item.image }}
-          style={styles.categoryImage}
+          source={{ 
+            uri: item.image,
+            cache: 'force-cache', // Enable caching for better performance
+          }}
+          style={[
+            styles.categoryImage,
+            { opacity: imageLoaded ? 1 : 0 } // Fade in when loaded
+          ]}
           resizeMode="contain"
+          onLoad={() => setImageLoaded(true)}
+          onError={() => {
+            console.log('❌ Failed to load category image:', item.title);
+            setImageError(true);
+          }}
         />
       </View>
       <Text style={styles.carouselLabel} numberOfLines={2}>{item.title}</Text>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -93,21 +128,30 @@ export default function WelcomeScreen() {
   const scrollX = useRef(new Animated.Value(0)).current;
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Auto-scroll every 3 seconds
+  // Auto-scroll every 3 seconds with safety checks
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => {
         const nextIndex = (prevIndex + 1) % categoryImages.length;
-        flatListRef.current?.scrollToIndex({
-          index: nextIndex,
-          animated: true,
-        });
+        
+        // Safety check: Only scroll if FlatList ref exists and is mounted
+        try {
+          flatListRef.current?.scrollToIndex({
+            index: nextIndex,
+            animated: true,
+            viewPosition: 0.5, // Center the item
+          });
+        } catch (error) {
+          // Silently handle scroll errors (can happen if list isn't fully rendered)
+          console.log('Auto-scroll skipped (list not ready)');
+        }
+        
         return nextIndex;
       });
-    }, 3000);
+    }, 3000); // 3 second interval
 
     return () => clearInterval(interval);
-  }, []);
+  }, []); // Only run once on mount
 
   // Reset task input and form when user returns to dashboard
   // This clears abandoned task creation forms
@@ -303,7 +347,7 @@ export default function WelcomeScreen() {
           <FlatList
             ref={flatListRef}
             data={categoryImages}
-            renderItem={({ item }) => <ImageCategory item={item} />}
+            renderItem={({ item }) => <ImageCategory item={item} onPress={handleTagPress} />}
             keyExtractor={(item) => item.id}
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -311,19 +355,33 @@ export default function WelcomeScreen() {
             decelerationRate="fast"
             contentContainerStyle={styles.carouselContent}
             keyboardShouldPersistTaps="handled"
+            removeClippedSubviews={true} // Optimize for performance
+            maxToRenderPerBatch={10} // Render 10 items at a time
+            initialNumToRender={5} // Start with 5 visible items
+            windowSize={5} // Keep 5 items in memory
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: false }
+              { useNativeDriver: false } // Required for scroll tracking
             )}
+            scrollEventThrottle={16} // Smooth 60fps scrolling
             getItemLayout={(data, index) => ({
               length: screenWidth * 0.35 + 12,
               offset: (screenWidth * 0.35 + 12) * index,
               index,
             })}
             onScrollToIndexFailed={(info) => {
+              // Retry scrolling after a delay if failed
               const wait = new Promise(resolve => setTimeout(resolve, 500));
               wait.then(() => {
-                flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+                try {
+                  flatListRef.current?.scrollToIndex({ 
+                    index: info.index, 
+                    animated: true,
+                    viewPosition: 0.5,
+                  });
+                } catch (error) {
+                  console.log('Retry scroll failed, skipping');
+                }
               });
             }}
           />
@@ -604,6 +662,18 @@ const styles = StyleSheet.create({
     width: '90%',
     height: '90%',
     backgroundColor: '#E3F2FD',
+  },
+  imageLoader: {
+    position: 'absolute',
+    zIndex: 1,
+  },
+  imageErrorContainer: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#F5F5F5',
   },
   carouselLabel: {
     fontSize: RFValue(isTablet ? 9 : 10),

@@ -7,16 +7,13 @@
  * CRITICAL: Background handler MUST be registered at top level!
  */
 
-import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 // ==================== FIREBASE BACKGROUND HANDLER ====================
 
-const isExpoGo = Constants.appOwnership === 'expo';
-const isNativeBuild = !isExpoGo;
-
-// Only register FCM background handler in native builds
-if (isNativeBuild && Platform.OS === 'android') {
+// Only register FCM background handler in native Android builds
+// iOS handles background notifications differently via APNs
+if (Platform.OS === 'android') {
   try {
     const messaging = require('@react-native-firebase/messaging').default;
     
