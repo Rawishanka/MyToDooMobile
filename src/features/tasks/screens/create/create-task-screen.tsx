@@ -113,6 +113,7 @@ export default function CreateTaskScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isOCRProcessing, setIsOCRProcessing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
 
   const imagesRef = useRef<string[]>([]);
 
@@ -1079,6 +1080,10 @@ Please remove phone numbers and addresses from the image.`,
               onFocus={handleLocationFocus}
               placeholder="Enter address or suburb"
               initialValue={selectedLocation?.address}
+              onDropdownStateChange={(isOpen) => {
+                console.log('📍 Dropdown state changed:', isOpen);
+                setIsLocationDropdownOpen(isOpen);
+              }}
             />
 
             {!selectedLocation && touched.location && (
@@ -1101,6 +1106,11 @@ Please remove phone numbers and addresses from the image.`,
               </Text>
             )}
           </View>
+
+          {/* Spacer to prevent dropdown overlap when dropdown is open */}
+          {isLocationDropdownOpen && (
+            <View style={{ height: 260 }} />
+          )}
         </View>
 
         {/* Divider */}

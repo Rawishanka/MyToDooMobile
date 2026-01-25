@@ -36,6 +36,11 @@ yarn-error.*
 .env.production
 .env.development
 
+# iOS bundles - contain API keys, should never be committed
+ios/MyToDoo/main.jsbundle
+ios/main*.jsbundle
+ios-bundle/
+
 # typescript
 *.tsbuildinfo
 

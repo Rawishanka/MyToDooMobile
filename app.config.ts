@@ -15,7 +15,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   assetBundlePatterns: ['**/*'],
   runtimeVersion: '1.0.0',
   ios: {
-    bundleIdentifier: 'com.unexo.mytodoomobile',
+    bundleIdentifier: 'com.mytodoo.mytodoolive',
     supportsTablet: true,
     buildNumber: '1.0.0',
     googleServicesFile: './GoogleService-Info.plist',
@@ -33,7 +33,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     associatedDomains: ['applinks:mytodoo.com', 'applinks:mytodoomobile'],
   },
   android: {
-    package: 'com.unexo.mytodoomobile',
+    package: 'com.mytodoo.mytodoolive',
     adaptiveIcon: {
       foregroundImage: './assets/images/mytodoo-adaptive-icon.png',
       backgroundColor: '#004aad',
@@ -76,6 +76,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         ios: {
           deploymentTarget: '15.1',
+          useFrameworks: 'static',
         },
         android: {
           compileSdkVersion: 35,
@@ -100,7 +101,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     'expo-apple-authentication',
-    './plugins/withFirebaseFix',
   ],
   experiments: {
     typedRoutes: true,
