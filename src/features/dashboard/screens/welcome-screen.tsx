@@ -17,6 +17,7 @@ import {
     Image,
     Keyboard,
     Linking,
+    Modal,
     SafeAreaView,
     ScrollView,
     StyleSheet,
@@ -61,9 +62,18 @@ const categoryImages: { id: string; title: string; image: string }[] = [
 ];
 
 // � **Image Category Component for Carousel**
-const ImageCategory = ({ item }: { item: typeof categoryImages[0] }) => {
+interface ImageCategoryProps {
+  item: typeof categoryImages[0];
+  onPress: (imageUrl: string) => void;
+}
+
+const ImageCategory = ({ item, onPress }: ImageCategoryProps) => {
   return (
-    <View style={styles.carouselItem}>
+    <TouchableOpacity 
+      style={styles.carouselItem}
+      onPress={() => onPress(item.image)}
+      activeOpacity={0.8}
+    >
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: item.image }}
@@ -72,7 +82,7 @@ const ImageCategory = ({ item }: { item: typeof categoryImages[0] }) => {
         />
       </View>
       <Text style={styles.carouselLabel} numberOfLines={2}>{item.title}</Text>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -82,6 +92,7 @@ export default function WelcomeScreen() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [socialMenuOpen, setSocialMenuOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { data: categories, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
   const { data: unreadCountData } = useUnreadCount();
   const { updateMyTask, myTask } = useCreateTaskStore();
@@ -303,7 +314,12 @@ export default function WelcomeScreen() {
           <FlatList
             ref={flatListRef}
             data={categoryImages}
-            renderItem={({ item }) => <ImageCategory item={item} />}
+            renderItem={({ item }) => (
+              <ImageCategory 
+                item={item} 
+                onPress={(imageUrl) => setPreviewImage(imageUrl)} 
+              />
+            )}
             keyExtractor={(item) => item.id}
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -406,6 +422,34 @@ export default function WelcomeScreen() {
 
         </View>
       </TouchableWithoutFeedback>
+
+      {/* Image Preview Modal */}
+      <Modal
+        visible={!!previewImage}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPreviewImage(null)}
+      >
+        <TouchableWithoutFeedback onPress={() => setPreviewImage(null)}>
+          <View style={styles.previewModalContainer}>
+            <View style={styles.previewModalContent}>
+              <TouchableOpacity 
+                style={styles.previewCloseButton}
+                onPress={() => setPreviewImage(null)}
+              >
+                <Ionicons name="close" size={28} color="#fff" />
+              </TouchableOpacity>
+              {previewImage && (
+                <Image
+                  source={{ uri: previewImage }}
+                  style={styles.previewImage}
+                  resizeMode="contain"
+                />
+              )}
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
       {/* Notification Modal */}
       <NotificationModal
@@ -693,5 +737,33 @@ const styles = StyleSheet.create({
   },
   tiktokBg: {
     backgroundColor: '#000000',
+  },
+  previewModalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewModalContent: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewCloseButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 1,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewImage: {
+    width: '90%',
+    height: '80%',
   },
 });

@@ -595,14 +595,14 @@ export default function TaskChatScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
-      <View style={{ flex: 1 }}>
-        {/* Header */}
-        <View style={[styles.header, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
+      >
+        {/* Header with safe area */}
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <MaterialIcons name="arrow-back" size={24} color="#000" />
           </TouchableOpacity>
@@ -666,15 +666,8 @@ export default function TaskChatScreen() {
           keyboardShouldPersistTaps="handled"
         />
 
-        {/* Input Area - Fixed for APK edge-to-edge mode with Android nav buttons */}
-        <View style={[
-          styles.inputContainer, 
-          { 
-            paddingBottom: Platform.OS === 'android' 
-              ? (insets.bottom > 0 ? insets.bottom + 10 : 50) // Add extra space for Android nav buttons in APK
-              : Math.max(insets.bottom, 16)
-          }
-        ]}>
+        {/* Input Area */}
+        <View style={[styles.inputContainer, { paddingBottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 8) : 8 }]}>
           <TouchableOpacity
             style={styles.attachButton}
             onPress={() => {
@@ -756,8 +749,8 @@ export default function TaskChatScreen() {
             </TouchableOpacity>
           </View>
         </Modal>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -780,7 +773,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
@@ -920,7 +913,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingTop: 10,
-    // paddingBottom handled dynamically in component for safe area
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
   },
