@@ -30,6 +30,7 @@ import {
     Linking,
     Modal,
     Platform,
+    SafeAreaView,
     StyleSheet,
     Text,
     TextInput,
@@ -595,15 +596,14 @@ export default function TaskChatScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        keyboardVerticalOffset={0}
       >
-        <View style={{ flex: 1 }}>
-          {/* Header */}
-          <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        {/* Header */}
+        <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
               <MaterialIcons name="arrow-back" size={24} color="#000" />
             </TouchableOpacity>
@@ -757,9 +757,8 @@ export default function TaskChatScreen() {
             </TouchableOpacity>
           </View>
         </Modal>
-      </View>
     </KeyboardAvoidingView>
-    </View>
+    </SafeAreaView>
   );
 }
 

@@ -482,10 +482,14 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           styles.suggestionItem,
           index === suggestions.length - 1 && styles.suggestionItemLast
         ]}
-        onPress={() => handleSelect(item)}
-        activeOpacity={0.7}
+        onPress={() => {
+          console.log('🔵 Suggestion tapped:', item.place_name);
+          handleSelect(item);
+        }}
+        activeOpacity={0.6}
+        delayPressIn={0}
       >
-        <View style={styles.suggestionContent}>
+        <View style={styles.suggestionContent} pointerEvents="none">
           <Ionicons 
             name={isManual ? "create-outline" : "location-outline"} 
             size={20} 
@@ -570,9 +574,9 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
       {/* Dropdown Suggestions List */}
       {showSuggestions && suggestions.length > 0 && (
-        <View style={styles.dropdownContainer}>
+        <View style={styles.dropdownContainer} pointerEvents="box-none">
           <ScrollView
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps="always"
             showsVerticalScrollIndicator={true}
             nestedScrollEnabled={true}
             style={styles.dropdownList}
