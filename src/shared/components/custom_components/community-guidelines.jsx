@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Image,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 const CommunityGuidelines = ({ visible, onClose }) => {
@@ -132,7 +133,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
   const renderCustomersContent = () => (
     <>
-      <Text style={styles.bodyText}>
+      <Text style={styles.descriptionText}>
         You're a Customer if you're looking to get tasks completed. You do this by posting tasks and assigning Taskers to do the job, or booking Taskers through their listings.
       </Text>
 
@@ -151,12 +152,18 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
       {expandedSections.connectionFee && (
         <View style={styles.expandedContent}>
-          <Text style={styles.bodyText}>
-            If you are responsible for a task cancellation, a Connection fee will be deducted from your next payment payout.
+          <Text style={styles.expandedText}>
+            If you are responsible for a task cancellation, a Connection fee will be deducted from your account or next payment.
           </Text>
-          <Text style={styles.bodyText}>
-            This fee helps to cover the costs related to connecting a Customer and Tasker.
+          <Text style={styles.expandedText}>
+            This fee helps to cover the administrative costs and compensate taskers for their time spent preparing for your task.
           </Text>
+          <View style={styles.feeInfoBox}>
+            <Ionicons name="information-circle" size={20} color="#007AFF" />
+            <Text style={styles.feeInfoText}>
+              Connection fee: AUD $5.00 per cancellation
+            </Text>
+          </View>
         </View>
       )}
 
@@ -175,12 +182,28 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
       {expandedSections.repeatedCancellations && (
         <View style={styles.expandedContent}>
-          <Text style={styles.bodyText}>
-            We may suspend your account if you repeatedly cancel tasks. This applies to both Customers and Taskers.
+          <Text style={styles.expandedText}>
+            We may suspend your account if you repeatedly cancel tasks. This protects our community of dedicated taskers.
           </Text>
-          <Text style={styles.bodyText}>
-            Account suspensions can range from temporary suspensions (i.e. 1 week suspension) to permanent suspensions.
+          <Text style={styles.expandedText}>
+            Account suspensions can range from:
           </Text>
+          <View style={styles.suspensionList}>
+            <View style={styles.suspensionItem}>
+              <View style={styles.suspensionDot} />
+              <Text style={styles.suspensionText}>Temporary suspensions (1-4 weeks)</Text>
+            </View>
+            <View style={styles.suspensionItem}>
+              <View style={styles.suspensionDot} />
+              <Text style={styles.suspensionText}>Permanent account termination</Text>
+            </View>
+          </View>
+          <View style={styles.warningBox}>
+            <Ionicons name="warning" size={20} color="#FF9500" />
+            <Text style={styles.warningText}>
+              3 or more cancellations in 30 days may result in account review
+            </Text>
+          </View>
         </View>
       )}
     </>
@@ -188,8 +211,8 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
   const renderTaskersContent = () => (
     <>
-      <Text style={styles.bodyText}>
-        You're a Tasker if you complete tasks for other people on Airtasker. You do this by making offers and getting assigned tasks.
+      <Text style={styles.descriptionText}>
+        You're a Tasker if you complete tasks for customers on MyToDoo. You do this by making offers and getting assigned tasks, earning money while helping your community.
       </Text>
 
       {/* Cancellation fee expandable section */}
@@ -207,11 +230,20 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
       {expandedSections.connectionFee && (
         <View style={styles.expandedContent}>
-          <Text style={styles.bodyText}>
-            If you are responsible for a task cancellation, a Cancellation fee, will be deducted from your next payment payout.
+          <Text style={styles.expandedText}>
+            If you are responsible for a task cancellation after accepting the job, a Cancellation fee will be deducted from your next payment payout.
           </Text>
-          <Text style={styles.bodyText}>
-            This fee helps to cover the costs related to connecting a Customer and Tasker.
+          <Text style={styles.expandedText}>
+            This fee compensates customers for the inconvenience and helps maintain trust in our platform.
+          </Text>
+          <View style={styles.feeInfoBox}>
+            <Ionicons name="information-circle" size={20} color="#007AFF" />
+            <Text style={styles.feeInfoText}>
+              Cancellation fee: AUD $10.00 per task
+            </Text>
+          </View>
+          <Text style={styles.noticeText}>
+            Note: No fee applies if you cancel before accepting the task or if the customer cancels first.
           </Text>
         </View>
       )}
@@ -231,12 +263,32 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
       {expandedSections.repeatedCancellations && (
         <View style={styles.expandedContent}>
-          <Text style={styles.bodyText}>
-            We may suspend your account if you repeatedly cancel tasks. This applies to both Customers and Taskers.
+          <Text style={styles.expandedText}>
+            We take repeated cancellations seriously as they impact customers and the MyToDoo community.
           </Text>
-          <Text style={styles.bodyText}>
-            Account suspensions can range from temporary suspensions (i.e. 1 week suspension) to permanent suspensions.
+          <Text style={styles.expandedText}>
+            Consequences may include:
           </Text>
+          <View style={styles.suspensionList}>
+            <View style={styles.suspensionItem}>
+              <View style={styles.suspensionDot} />
+              <Text style={styles.suspensionText}>Reduced visibility in task searches</Text>
+            </View>
+            <View style={styles.suspensionItem}>
+              <View style={styles.suspensionDot} />
+              <Text style={styles.suspensionText}>Temporary account suspension (1-4 weeks)</Text>
+            </View>
+            <View style={styles.suspensionItem}>
+              <View style={styles.suspensionDot} />
+              <Text style={styles.suspensionText}>Permanent account termination</Text>
+            </View>
+          </View>
+          <View style={styles.warningBox}>
+            <Ionicons name="warning" size={20} color="#FF9500" />
+            <Text style={styles.warningText}>
+              2 or more cancellations in 30 days will trigger an account review
+            </Text>
+          </View>
         </View>
       )}
 
@@ -257,66 +309,44 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <View style={styles.expandedContent}>
           {/* Understanding the task */}
           <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#007AFF" style={styles.checkIcon} />
+            <Ionicons name="checkmark-circle" size={24} color="#34C759" style={styles.checkIcon} />
             <View style={styles.responsibilityTextContainer}>
               <Text style={styles.responsibilityTitle}>Understanding the task</Text>
               <Text style={styles.responsibilityDescription}>
-                Accurately scope out the work at the time of making an offer
+                Carefully review task details and ask questions before accepting. Ensure you can complete the work as described.
               </Text>
             </View>
           </View>
 
-          {/* Task start date & time */}
+          {/* Commitment */}
           <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#007AFF" style={styles.checkIcon} />
+            <Ionicons name="checkmark-circle" size={24} color="#34C759" style={styles.checkIcon} />
             <View style={styles.responsibilityTextContainer}>
-              <Text style={styles.responsibilityTitle}>Task start date & time</Text>
+              <Text style={styles.responsibilityTitle}>Honor your commitment</Text>
               <Text style={styles.responsibilityDescription}>
-                Confirming and agree on a task date & time at the time of making an offer
-              </Text>
-            </View>
-          </View>
-
-          {/* Availability */}
-          <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#007AFF" style={styles.checkIcon} />
-            <View style={styles.responsibilityTextContainer}>
-              <Text style={styles.responsibilityTitle}>Availability</Text>
-              <Text style={styles.responsibilityDescription}>
-                Managing your availability and arriving on time at the agreed location
+                Once you accept a task, commit to completing it. Cancellations disappoint customers and damage your reputation.
               </Text>
             </View>
           </View>
 
           {/* Communication */}
           <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#007AFF" style={styles.checkIcon} />
+            <Ionicons name="checkmark-circle" size={24} color="#34C759" style={styles.checkIcon} />
             <View style={styles.responsibilityTextContainer}>
-              <Text style={styles.responsibilityTitle}>Communication</Text>
+              <Text style={styles.responsibilityTitle}>Clear communication</Text>
               <Text style={styles.responsibilityDescription}>
-                Being responsive to messages, within 12 hours of message receipt
+                If issues arise, communicate promptly with the customer. Most problems can be resolved through discussion.
               </Text>
             </View>
           </View>
 
-          {/* Skills & Qualifications */}
+          {/* Professional conduct */}
           <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#007AFF" style={styles.checkIcon} />
+            <Ionicons name="checkmark-circle" size={24} color="#34C759" style={styles.checkIcon} />
             <View style={styles.responsibilityTextContainer}>
-              <Text style={styles.responsibilityTitle}>Skills & Qualifications</Text>
+              <Text style={styles.responsibilityTitle}>Professional conduct</Text>
               <Text style={styles.responsibilityDescription}>
-                Ensuring you have the required skills and qualifications necessary
-              </Text>
-            </View>
-          </View>
-
-          {/* Equipment */}
-          <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#007AFF" style={styles.checkIcon} />
-            <View style={styles.responsibilityTextContainer}>
-              <Text style={styles.responsibilityTitle}>Equipment</Text>
-              <Text style={styles.responsibilityDescription}>
-                Having access to the required equipment to complete the task
+                Arrive on time, bring necessary equipment, and complete work to a high standard.
               </Text>
             </View>
           </View>
@@ -330,6 +360,17 @@ const CommunityGuidelines = ({ visible, onClose }) => {
       {renderHeader('Cancellation Policy')}
       
       <ScrollView style={styles.content} contentContainerStyle={styles.contentPadding}>
+        {/* MyToDoo Logo */}
+        <View style={styles.logoContainer}>
+          <View style={styles.logoBackground}>
+            <Image 
+              source={require('../../../../assets/images/mytodoo-icon.png')} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+        </View>
+
         {/* Icon illustration */}
         <View style={styles.iconContainer}>
           <View style={styles.documentIcon}>
@@ -345,8 +386,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
         <Text style={styles.noteTitle}>A note on cancellations</Text>
         <Text style={styles.bodyText}>
-          Cancelling tasks will incur fees. Learn more about our{' '}
-          <Text style={styles.linkText}>Cancellation Policy</Text>.
+          At MyToDoo, we understand that circumstances change. However, cancelling tasks affects our community of taskers and customers. Please review our cancellation policy below.
         </Text>
 
         {/* Tab selector */}
@@ -400,16 +440,21 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8f9fa',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e1e4e8',
     backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 3,
   },
   backButton: {
     padding: 4,
@@ -418,7 +463,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: '#1a1a1a',
     textAlign: 'center',
     marginHorizontal: 16,
   },
@@ -429,20 +474,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentPadding: {
-    padding: 16,
+    padding: 20,
+    paddingBottom: 40,
   },
   guidelineItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#e8e8e8',
+    backgroundColor: '#fff',
   },
   guidelineTitle: {
     fontSize: 16,
-    color: '#333',
+    fontWeight: '500',
+    color: '#1a1a1a',
     flex: 1,
   },
   bodyText: {
@@ -451,14 +499,25 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 16,
   },
+  descriptionText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#4a4a4a',
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: '#007AFF',
+  },
   linkText: {
     color: '#007AFF',
-    textDecorationLine: 'underline',
+    fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: '#1a1a1a',
     marginTop: 24,
     marginBottom: 16,
   },
@@ -469,127 +528,243 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
   },
+  logoContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 16,
+  },
+  logoBackground: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#007AFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  logo: {
+    width: 70,
+    height: 70,
+  },
   iconContainer: {
     alignItems: 'center',
-    marginVertical: 32,
+    marginVertical: 24,
   },
   documentIcon: {
     position: 'relative',
   },
   documentPage: {
-    width: 60,
-    height: 80,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
+    width: 70,
+    height: 90,
+    backgroundColor: '#fff',
+    borderRadius: 12,
     borderWidth: 2,
     borderColor: '#e1e4e8',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   documentShadow: {
     position: 'absolute',
-    top: 6,
-    left: 6,
-    width: 60,
-    height: 80,
+    top: 8,
+    left: 8,
+    width: 70,
+    height: 90,
     backgroundColor: '#007AFF',
-    borderRadius: 8,
+    borderRadius: 12,
     zIndex: -1,
+    opacity: 0.8,
   },
   xIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#007AFF',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FF3B30',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+    shadowColor: '#FF3B30',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   signatureLine: {
-    width: 30,
+    width: 36,
     height: 2,
-    backgroundColor: '#666',
+    backgroundColor: '#8e8e93',
     borderRadius: 1,
   },
   noteTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#1a1a1a',
     textAlign: 'center',
     marginBottom: 16,
+    marginTop: 8,
   },
   tabContainer: {
     flexDirection: 'row',
     marginVertical: 24,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
+    backgroundColor: '#fff',
+    borderRadius: 12,
     padding: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   tab: {
     flex: 1,
     paddingVertical: 12,
     alignItems: 'center',
-    borderRadius: 6,
+    borderRadius: 10,
   },
   activeTab: {
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    backgroundColor: '#007AFF',
   },
   tabText: {
     fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+    color: '#8e8e93',
+    fontWeight: '600',
   },
   activeTabText: {
-    color: '#333',
-    fontWeight: '600',
+    color: '#fff',
   },
   expandableSection: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    marginTop: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginTop: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   expandableTitle: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '600',
+    color: '#1a1a1a',
+    flex: 1,
   },
   expandedContent: {
-    paddingTop: 16,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  expandedText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#4a4a4a',
+    marginBottom: 12,
+  },
+  feeInfoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F4FF',
+    padding: 14,
+    borderRadius: 10,
+    marginTop: 8,
+    marginBottom: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: '#007AFF',
+  },
+  feeInfoText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#007AFF',
+    marginLeft: 10,
+    flex: 1,
+  },
+  noticeText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#8e8e93',
+    fontStyle: 'italic',
+    marginTop: 8,
+  },
+  suspensionList: {
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  suspensionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    paddingLeft: 8,
+  },
+  suspensionDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#007AFF',
+    marginRight: 12,
+  },
+  suspensionText: {
+    fontSize: 15,
+    color: '#4a4a4a',
+    flex: 1,
+    lineHeight: 20,
+  },
+  warningBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF8E1',
+    padding: 14,
+    borderRadius: 10,
+    marginTop: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#FF9500',
+  },
+  warningText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FF9500',
+    marginLeft: 10,
+    flex: 1,
+    lineHeight: 20,
   },
   understandButton: {
     backgroundColor: '#007AFF',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 32,
-    marginBottom: 16,
+    marginBottom: 20,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   understandButtonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   responsibilityItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 20,
-    paddingHorizontal: 8,
+    paddingVertical: 8,
   },
   checkIcon: {
     marginRight: 12,
@@ -601,8 +776,8 @@ const styles = StyleSheet.create({
   responsibilityTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    color: '#1a1a1a',
+    marginBottom: 6,
   },
   responsibilityDescription: {
     fontSize: 14,

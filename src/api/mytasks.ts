@@ -362,15 +362,14 @@ export function useApiFunctions() {
     console.log("🎫 Token preview (first 50 chars):", firebaseIdToken?.substring(0, 50) + "...");
 
     try {
-      // Send Firebase ID Token to backend for verification
-      // Backend expects: { firebaseToken: "..." }
-      const requestBody = { 
-        firebaseToken: firebaseIdToken
-      };
-      
-      console.log("📤 Sending request with body:", { firebaseToken: firebaseIdToken.substring(0, 30) + "..." });
-      
-      const response = await api.post('/users/firebase-auth', requestBody);
+      // ✅ FIX: Backend expects "idToken" not "firebaseToken"
+      // The Firebase Auth API expects the token in the Authorization header as "Bearer <token>"
+      const response = await api.post('/users/firebase-auth', {}, {
+        headers: {
+          'Authorization': `Bearer ${firebaseIdToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
       console.log("✅ Firebase Auth Success Response:", response.data);
       const { token, user } = response.data;

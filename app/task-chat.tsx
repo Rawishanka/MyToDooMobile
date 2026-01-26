@@ -9,11 +9,11 @@ import { uploadChatFile, uploadChatImage } from '@/src/api/cdn-api';
 import API_CONFIG from '@/src/api/config';
 import { Message } from '@/src/api/task-chat-api';
 import {
-    useCreateOrGetTaskChat,
-    useGetChatById,
-    useGetChatMessages,
-    useMarkMessagesAsRead,
-    useSendMessage,
+  useCreateOrGetTaskChat,
+  useGetChatById,
+  useGetChatMessages,
+  useMarkMessagesAsRead,
+  useSendMessage,
 } from '@/src/shared/hooks/useTaskChat';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -22,20 +22,20 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Image,
-    KeyboardAvoidingView,
-    Linking,
-    Modal,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Linking,
+  Modal,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
