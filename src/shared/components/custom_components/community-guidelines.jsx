@@ -359,66 +359,72 @@ const CommunityGuidelines = ({ visible, onClose }) => {
     <View style={styles.container}>
       {renderHeader('Cancellation Policy')}
       
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentPadding}>
-        {/* MyToDoo Logo */}
-        <View style={styles.logoContainer}>
-          <View style={styles.logoBackground}>
-            <Image 
-              source={require('../../../../assets/images/mytodoo-icon.png')} 
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          </View>
-        </View>
-
-        {/* Icon illustration */}
-        <View style={styles.iconContainer}>
-          <View style={styles.documentIcon}>
-            <View style={styles.documentPage}>
-              <View style={styles.xIcon}>
-                <Ionicons name="close" size={16} color="#fff" />
-              </View>
-              <View style={styles.signatureLine} />
+      <ScrollView style={styles.content} contentContainerStyle={styles.cancellationScrollContent}>
+        {/* Blue header section with logo */}
+        <View style={styles.blueHeaderSection}>
+          <View style={styles.logoContainerCancellation}>
+            <View style={styles.logoBackgroundCancellation}>
+              <Image 
+                source={require('../../../../assets/images/mytodoo-icon.png')} 
+                style={styles.logoCancellation}
+                resizeMode="contain"
+              />
             </View>
-            <View style={styles.documentShadow} />
           </View>
+
+          {/* Icon illustration */}
+          <View style={styles.iconContainerCancellation}>
+            <View style={styles.documentIcon}>
+              <View style={styles.documentPage}>
+                <View style={styles.xIcon}>
+                  <Ionicons name="close" size={16} color="#fff" />
+                </View>
+                <View style={styles.signatureLine} />
+              </View>
+              <View style={styles.documentShadow} />
+            </View>
+          </View>
+
+          <Text style={styles.noteTitleWhite}>A note on cancellations</Text>
+          <Text style={styles.subtitleWhite}>
+            At MyToDoo, we understand that circumstances change. However, cancelling tasks affects our community of taskers and customers. Please review our cancellation policy below.
+          </Text>
         </View>
 
-        <Text style={styles.noteTitle}>A note on cancellations</Text>
-        <Text style={styles.bodyText}>
-          At MyToDoo, we understand that circumstances change. However, cancelling tasks affects our community of taskers and customers. Please review our cancellation policy below.
-        </Text>
+        {/* White content section */}
+        {/* White content section */}
+        <View style={styles.whiteContentSection}>
+          {/* Tab selector */}
+          <View style={styles.tabContainer}>
+            <TouchableOpacity 
+              style={[styles.tab, selectedTab === 'customers' && styles.activeTab]}
+              onPress={() => setSelectedTab('customers')}
+            >
+              <Text style={[styles.tabText, selectedTab === 'customers' && styles.activeTabText]}>
+                For Customers
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.tab, selectedTab === 'taskers' && styles.activeTab]}
+              onPress={() => setSelectedTab('taskers')}
+            >
+              <Text style={[styles.tabText, selectedTab === 'taskers' && styles.activeTabText]}>
+                For Taskers
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* Tab selector */}
-        <View style={styles.tabContainer}>
+          {/* Dynamic content based on selected tab */}
+          {selectedTab === 'customers' ? renderCustomersContent() : renderTaskersContent()}
+
+          {/* Bottom button */}
           <TouchableOpacity 
-            style={[styles.tab, selectedTab === 'customers' && styles.activeTab]}
-            onPress={() => setSelectedTab('customers')}
+            style={styles.understandButton}
+            onPress={() => setCurrentView('main')}
           >
-            <Text style={[styles.tabText, selectedTab === 'customers' && styles.activeTabText]}>
-              For Customers
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.tab, selectedTab === 'taskers' && styles.activeTab]}
-            onPress={() => setSelectedTab('taskers')}
-          >
-            <Text style={[styles.tabText, selectedTab === 'taskers' && styles.activeTabText]}>
-              For Taskers
-            </Text>
+            <Text style={styles.understandButtonText}>I understand</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Dynamic content based on selected tab */}
-        {selectedTab === 'customers' ? renderCustomersContent() : renderTaskersContent()}
-
-        {/* Bottom button */}
-        <TouchableOpacity 
-          style={styles.understandButton}
-          onPress={() => setCurrentView('main')}
-        >
-          <Text style={styles.understandButtonText}>I understand</Text>
-        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -476,6 +482,65 @@ const styles = StyleSheet.create({
   contentPadding: {
     padding: 20,
     paddingBottom: 40,
+  },
+  cancellationScrollContent: {
+    paddingBottom: 40,
+  },
+  blueHeaderSection: {
+    backgroundColor: '#0a2d5c',
+    paddingTop: 40,
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+    alignItems: 'center',
+  },
+  logoContainerCancellation: {
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  logoBackgroundCancellation: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  logoCancellation: {
+    width: 80,
+    height: 80,
+  },
+  iconContainerCancellation: {
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  noteTitleWhite: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  subtitleWhite: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#fff',
+    textAlign: 'center',
+    opacity: 0.9,
+    paddingHorizontal: 8,
+  },
+  whiteContentSection: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginTop: -20,
+    paddingTop: 30,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   guidelineItem: {
     flexDirection: 'row',
@@ -563,15 +628,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e1e4e8',
+    borderColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   documentShadow: {
     position: 'absolute',
@@ -579,10 +644,10 @@ const styles = StyleSheet.create({
     left: 8,
     width: 70,
     height: 90,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1a4d8f',
     borderRadius: 12,
     zIndex: -1,
-    opacity: 0.8,
+    opacity: 0.9,
   },
   xIcon: {
     width: 28,

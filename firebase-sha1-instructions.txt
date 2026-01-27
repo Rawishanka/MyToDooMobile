@@ -1,0 +1,52 @@
+==================================================
+ADD THIS SHA-1 TO FIREBASE CONSOLE
+==================================================
+
+1. Go to: https://console.firebase.google.com
+2. Select project: mytodoo-e4cdb
+3. Click: Settings (gear icon) → Project settings
+4. Scroll to: "Your apps" section
+5. Find: Android app (com.mytodoo.mytodoolive)
+6. Click to expand the Android app
+7. Scroll to: "SHA certificate fingerprints"
+8. Click: "Add fingerprint" button
+9. Paste this SHA-1:
+
+   16:F2:C3:35:8D:7B:34:16:BD:F3:F5:D8:0C:1C:06:9C:A0:F0:07:CB
+
+10. Click: "Save"
+11. Wait: 1-2 minutes for Firebase to update
+12. Download: NEW google-services.json file
+13. Replace: android/app/google-services.json with the new file
+14. Rebuild: ./gradlew clean assembleRelease
+
+==================================================
+WHAT WILL CHANGE
+==================================================
+
+After adding SHA-1, your google-services.json will have:
+- OLD certificate hash #1: 92fefe29d56c5f50d0c2c718a71aab3481372bc6
+- OLD certificate hash #2: 5e8f16062ea3cd2c4a0d547876baa6f38cabf625
+- NEW certificate hash #3: 16f2c3358d7b3416bdf3f5d80c1c069ca0f007cb (YOUR RELEASE KEYSTORE!)
+
+Then Google Sign-In will work because Firebase recognizes your APK signature!
+
+==================================================
+WHY IT FAILED
+==================================================
+
+Your APK is signed with: 16:F2:C3:35:8D:7B:34:16:BD:F3:F5:D8:0C:1C:06:9C:A0:F0:07:CB
+But Firebase only knows:   92fefe29... and 5e8f1606...
+
+When you tap "Continue with Google":
+1. Google OAuth checks the APK signature
+2. Compares it to Firebase registered SHA-1s
+3. Doesn't find a match → REJECTS the request
+4. Shows: "Sign-In Failed"
+
+After adding the correct SHA-1:
+1. Google OAuth checks the APK signature
+2. Finds match with 16:F2:C3:35... → ACCEPTS
+3. Sign-in succeeds! ✅
+
+==================================================
