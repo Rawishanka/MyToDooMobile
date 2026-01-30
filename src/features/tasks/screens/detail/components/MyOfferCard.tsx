@@ -1,9 +1,9 @@
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 interface MyOfferCardProps {
   offer: any;
@@ -13,6 +13,9 @@ interface MyOfferCardProps {
 }
 
 export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, onAcceptOffer, taskLocation }) => {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
+
   // Use user's current location for currency display (auto geo-location)
   const { countryInfo } = useLocationCountry();
   const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
@@ -32,7 +35,7 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
   const isViewingOthersOffer = isTaskPoster;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isTablet && { padding: wp('3%') }]}>
       <View style={styles.header}>
         <Ionicons name="document-text" size={20} color="#004aad" />
         <Text style={styles.headerText}>
@@ -60,11 +63,11 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
 
       <View style={styles.content}>
         {/* Offer Amount */}
-        <View style={styles.amountContainer}>
+        <View style={[styles.amountContainer, isTablet && { padding: wp('2%') }]}>
           <Text style={styles.amountLabel}>
             {isViewingOthersOffer ? 'Offer Amount:' : 'Your Offer Amount:'}
           </Text>
-          <Text style={styles.amount}>
+          <Text style={[styles.amount, isTablet && { fontSize: RFValue(26) }]}>
             {formatCurrency(offerAmount, currencyInfo)}
           </Text>
         </View>
@@ -117,7 +120,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#004aad',
     borderRadius: 12,
-    padding: isTablet ? wp('3%') : wp('4%'),
+    padding: wp('4%'),
     marginBottom: hp('2%'),
   },
   header: {
@@ -182,7 +185,7 @@ const styles = StyleSheet.create({
   },
   amountContainer: {
     backgroundColor: '#fff',
-    padding: isTablet ? wp('2%') : wp('3%'),
+    padding: wp('3%'),
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#004aad',
@@ -193,7 +196,7 @@ const styles = StyleSheet.create({
     marginBottom: hp('0.5%'),
   },
   amount: {
-    fontSize: RFValue(isTablet ? 26 : 22),
+    fontSize: RFValue(22),
     fontWeight: '700',
     color: '#004aad',
   },

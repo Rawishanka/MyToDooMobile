@@ -1,12 +1,13 @@
 import { cardStyles, colors } from '@/src/shared/theme';
 import { formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     Image,
     StyleSheet,
     Text,
     TouchableOpacity,
+    useWindowDimensions,
     View
 } from 'react-native';
 
@@ -15,9 +16,9 @@ import { Task } from '@/src/api/types/tasks';
 
 // Import responsive utilities
 import {
+    getIsTablet,
     getResponsiveValue,
     hp,
-    isTablet,
     RFValue,
     wp
 } from '@/src/shared/utils/responsive';
@@ -37,6 +38,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   showMapButton = true,
   variant = 'default',
 }) => {
+  // Dynamic tablet detection
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
+
   // Helper function to parse location if it's a string
   const parseLocation = (location: any) => {
     if (!location) return null;
@@ -177,16 +182,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   if (variant === 'compact') {
     return (
       <TouchableOpacity
-        style={[cardStyles.card, styles.compactCard]}
+        style={[cardStyles.card, styles.compactCard, isTablet && { marginHorizontal: wp('8%') }]}
         activeOpacity={0.7}
         onPress={() => onPress(task._id)}
       >
         <View style={styles.compactContent}>
           <View style={styles.compactLeft}>
-            <Text style={styles.compactTitle} numberOfLines={1}>
+            <Text style={[styles.compactTitle, isTablet && { fontSize: RFValue(13) }]} numberOfLines={1}>
               {task.title}
             </Text>
-            <Text style={styles.compactLocation} numberOfLines={1}>
+            <Text style={[styles.compactLocation, isTablet && { fontSize: RFValue(10) }]} numberOfLines={1}>
               {(() => {
                 const address = parsedLocation?.address || 'Location not specified';
                 if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
@@ -198,8 +203,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </Text>
           </View>
           <View style={styles.compactRight}>
-            <Text style={styles.compactPrice}>{formattedBudget}</Text>
-            <Text style={[styles.compactStatus, { color: getStatusColor(task.status) }]}>
+            <Text style={[styles.compactPrice, isTablet && { fontSize: RFValue(13) }]}>{formattedBudget}</Text>
+            <Text style={[styles.compactStatus, { color: getStatusColor(task.status) }, isTablet && { fontSize: RFValue(9) }]}>
               {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
             </Text>
           </View>
@@ -212,16 +217,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   if (variant === 'detailed') {
     return (
       <TouchableOpacity
-        style={[cardStyles.taskCard, styles.detailedCard]}
+        style={[cardStyles.taskCard, styles.detailedCard, isTablet && { marginHorizontal: wp('8%') }]}
         activeOpacity={0.7}
         onPress={() => onPress(task._id)}
       >
         <View style={styles.taskHeader}>
           <View style={styles.taskInfo}>
-            <Text style={styles.taskTitle} numberOfLines={2}>
+            <Text style={[styles.taskTitle, isTablet && { fontSize: RFValue(13), lineHeight: RFValue(16) }]} numberOfLines={2}>
               {task.title}
             </Text>
-            <Text style={styles.taskLocation} numberOfLines={1}>
+            <Text style={[styles.taskLocation, isTablet && { fontSize: RFValue(10) }]} numberOfLines={1}>
               {(() => {
                 const address = parsedLocation?.address || 'Location not specified';
                 if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
@@ -246,7 +251,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </View>
           </View>
           <View style={styles.taskPriceContainer}>
-            <Text style={styles.taskPrice}>{formattedBudget}</Text>
+            <Text style={[styles.taskPrice, isTablet && { fontSize: RFValue(15) }]}>{formattedBudget}</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -256,19 +261,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   // Default variant (for browse/explore screens)
   return (
     <TouchableOpacity
-      style={[cardStyles.taskCard, styles.defaultCard]}
+      style={[cardStyles.taskCard, styles.defaultCard, isTablet && { marginHorizontal: wp('-2%'), paddingRight: wp('10%') }]}
       activeOpacity={0.6}
       onPress={() => onPress(task._id)}
     >
       {/* Task Title */}
-      <Text style={styles.taskTitle} numberOfLines={2}>
+      <Text style={[styles.taskTitle, isTablet && { fontSize: RFValue(13), lineHeight: RFValue(16) }]} numberOfLines={2}>
         {task.title}
       </Text>
 
       {/* Location */}
       <View style={styles.taskRow}>
         <Ionicons name={locationInfo.icon as any} size={RFValue(14)} color={colors.textSecondary} />
-        <Text style={styles.taskRowText} numberOfLines={1}>
+        <Text style={[styles.taskRowText, isTablet && { fontSize: RFValue(10) }]} numberOfLines={1}>
           {(() => {
             const address = parsedLocation?.address || 'Location not specified';
             if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
@@ -283,14 +288,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       {/* Time Preference */}
       <View style={styles.taskRow}>
         <Ionicons name="time-outline" size={RFValue(14)} color={colors.textSecondary} />
-        <Text style={styles.taskRowText}>{getTimePreference()}</Text>
+        <Text style={[styles.taskRowText, isTablet && { fontSize: RFValue(10) }]}>{getTimePreference()}</Text>
       </View>
 
       {/* Date Display - Show when specific date is set */}
       {dateDisplay && (
         <View style={styles.taskRow}>
           <Ionicons name="calendar-outline" size={RFValue(14)} color={colors.textSecondary} />
-          <Text style={styles.taskRowText}>{dateDisplay}</Text>
+          <Text style={[styles.taskRowText, isTablet && { fontSize: RFValue(10) }]}>{dateDisplay}</Text>
         </View>
       )}
 
@@ -318,14 +323,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             {task.status ? task.status.charAt(0).toUpperCase() + task.status.slice(1) : 'Open'}
           </Text>
           {/* Posted Date */}
-          <Text style={styles.statusText}>
+          <Text style={[styles.statusText, isTablet && { fontSize: RFValue(8) }]}>
             Posted {task.createdAt ? new Date(task.createdAt).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
             }) : ''}
           </Text>
           {/* Offer Count */}
-          <Text style={styles.offerText}>
+          <Text style={[styles.offerText, isTablet && { fontSize: RFValue(10) }]}>
             {task.status === 'accepted' || task.status === 'completed' || 
              task.status === 'assigned' || task.status === 'in_progress' || task.status === 'in-progress'
               ? task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')
@@ -352,7 +357,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         </View>
 
         {/* Price */}
-        <Text style={styles.priceText}>{formattedBudget}</Text>
+        <Text style={[styles.priceText, isTablet && { fontSize: RFValue(15) }]}>{formattedBudget}</Text>
       </View>
 
       {/* View Map Button */}
@@ -371,17 +376,17 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       )}
 
       {/* User Avatar */}
-      <View style={styles.userAvatarContainer}>
+      <View style={[styles.userAvatarContainer, isTablet && { width: 80 }]}>
         <Image
           source={{
             uri: task.createdBy?.avatar || 
                  task.createdBy?.profilePicture ||
                  `https://ui-avatars.com/api/?name=${task.createdBy?.firstName}+${task.createdBy?.lastName}&background=0052A2&color=fff&size=80`,
           }}
-          style={styles.userAvatar}
+          style={[styles.userAvatar, isTablet && { width: 50, height: 50, borderRadius: 25 }]}
         />
         {/* Poster Name */}
-        <Text style={styles.posterName} numberOfLines={2}>
+        <Text style={[styles.posterName, isTablet && { fontSize: RFValue(9), maxWidth: 75, lineHeight: RFValue(11) }]} numberOfLines={2}>
           Posted by: {task.createdBy?.firstName || 'User'} {task.createdBy?.lastName || ''}
         </Text>
       </View>
@@ -397,15 +402,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 const styles = StyleSheet.create({
   // Default Card Styles - RESPONSIVE
   defaultCard: {
-    marginHorizontal: isTablet ? wp('-2%') : wp('4%'), // Wider cards on tablets
+    marginHorizontal: wp('4%'),
     marginBottom: hp('1%'),
     position: 'relative',
-    paddingRight: isTablet ? wp('10%') : wp('20%'), // More space on phones for avatar
+    paddingRight: wp('20%'),
   },
 
   // Compact Card Styles - RESPONSIVE
   compactCard: {
-    marginHorizontal: isTablet ? wp('8%') : wp('4%'),
+    marginHorizontal: wp('4%'),
     marginBottom: hp('0.5%'),
     paddingVertical: hp('1%'),
   },
@@ -419,32 +424,32 @@ const styles = StyleSheet.create({
     marginRight: wp('2%'),
   },
   compactTitle: {
-    fontSize: RFValue(isTablet ? 13 : 14),
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: colors.textPrimary,
     marginBottom: hp('0.5%'),
   },
   compactLocation: {
-    fontSize: RFValue(isTablet ? 10 : 11),
+    fontSize: RFValue(11),
     color: colors.textSecondary,
   },
   compactRight: {
     alignItems: 'flex-end',
   },
   compactPrice: {
-    fontSize: RFValue(isTablet ? 13 : 14),
+    fontSize: RFValue(14),
     fontWeight: '700',
     color: colors.primary,
     marginBottom: hp('0.5%'),
   },
   compactStatus: {
-    fontSize: RFValue(isTablet ? 9 : 10),
+    fontSize: RFValue(10),
     fontWeight: '600',
   },
 
   // Detailed Card Styles - RESPONSIVE
   detailedCard: {
-    marginHorizontal: isTablet ? wp('8%') : wp('4%'),
+    marginHorizontal: wp('4%'),
     marginBottom: hp('1%'),
   },
   taskHeader: {
@@ -457,15 +462,15 @@ const styles = StyleSheet.create({
     marginRight: wp('2%'),
   },
   taskTitle: {
-    fontSize: RFValue(isTablet ? 13 : 14),
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: colors.textPrimary,
     marginBottom: hp('0.5%'),
-    lineHeight: RFValue(isTablet ? 16 : 18),
+    lineHeight: RFValue(18),
     paddingRight: wp('1%'),
   },
   taskLocation: {
-    fontSize: RFValue(isTablet ? 10 : 11),
+    fontSize: RFValue(11),
     color: colors.textSecondary,
     marginBottom: hp('0.5%'),
   },
@@ -486,7 +491,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   taskPrice: {
-    fontSize: RFValue(isTablet ? 15 : 16),
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: colors.primary,
   },
@@ -500,7 +505,7 @@ const styles = StyleSheet.create({
     paddingRight: wp('2%'),
   },
   taskRowText: {
-    fontSize: RFValue(isTablet ? 10 : 11),
+    fontSize: RFValue(11),
     color: colors.textSecondary,
     flex: 1,
     flexShrink: 1,
@@ -542,17 +547,17 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   statusText: {
-    fontSize: RFValue(isTablet ? 8 : 9),
+    fontSize: RFValue(9),
     color: colors.textTertiary,
     marginBottom: hp('0.2%'),
   },
   offerText: {
-    fontSize: RFValue(isTablet ? 10 : 11),
+    fontSize: RFValue(11),
     color: colors.textSecondary,
     fontWeight: '500',
   },
   priceText: {
-    fontSize: RFValue(isTablet ? 15 : 16),
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: colors.primary,
   },
@@ -581,22 +586,22 @@ const styles = StyleSheet.create({
     top: hp('1%'),
     right: wp('2%'),
     alignItems: 'center',
-    width: isTablet ? 80 : wp('20%'),
+    width: wp('20%'),
     zIndex: 2,
   },
   userAvatar: {
-    width: isTablet ? 50 : wp('10%'),
-    height: isTablet ? 50 : wp('10%'),
-    borderRadius: isTablet ? 25 : wp('5%'),
+    width: wp('10%'),
+    height: wp('10%'),
+    borderRadius: wp('5%'),
     backgroundColor: colors.backgroundDark,
   },
   posterName: {
-    fontSize: RFValue(isTablet ? 9 : 7),
+    fontSize: RFValue(7),
     color: colors.textPrimary,
     textAlign: 'center',
     marginTop: hp('0.3%'),
-    maxWidth: isTablet ? 75 : wp('18%'),
-    lineHeight: RFValue(isTablet ? 11 : 9),
+    maxWidth: wp('18%'),
+    lineHeight: RFValue(9),
     fontWeight: '500',
     backgroundColor: 'rgba(255,255,255,0.95)',
     paddingHorizontal: wp('0.5%'),

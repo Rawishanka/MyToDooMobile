@@ -12,11 +12,11 @@
 import { getUserRatingStats } from '@/src/api/user-profile-api';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import React from 'react';
-import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface OffersListProps {
@@ -59,6 +59,8 @@ export const OffersList: React.FC<OffersListProps> = ({
   excludeOfferId,
   taskLocation
 }) => {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
   const insets = useSafeAreaInsets();
   
   // Check if any offer has been accepted
@@ -173,6 +175,8 @@ interface OfferCardProps {
 }
 
 const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUserId, onAcceptOffer, hasAcceptedOffer, isTaskPoster }) => {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
   const taskTitle = offer.taskId?.title || 'Task';
   
   // Extract user information
@@ -276,7 +280,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
         }
         
         return (
-          <View style={styles.offerCard}>
+          <View style={[styles.offerCard, isTablet && { padding: wp('3%') }]}>
             {/* Task Title - Show which task this offer is for */}
             <View style={styles.taskTitleContainer}>
               <Ionicons name="briefcase-outline" size={14} color="#666" />
@@ -290,7 +294,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                 <View style={styles.offerAvatarContainer}>
                   <Image 
                     source={{ uri: avatarUrl }} 
-                    style={styles.offerAvatar}
+                    style={[styles.offerAvatar, isTablet && { width: 60, height: 60, borderRadius: 30 }]}
                     resizeMode="cover"
                   />
                 </View>
@@ -428,7 +432,7 @@ const styles = StyleSheet.create({
   },
   offerCard: {
     backgroundColor: '#fff',
-    padding: isTablet ? wp('3%') : wp('4%'),
+    padding: wp('4%'),
     marginBottom: hp('1.5%'),
     borderRadius: 12,
     borderWidth: 1,
@@ -459,9 +463,9 @@ const styles = StyleSheet.create({
     marginRight: wp('3%'),
   },
   offerAvatar: {
-    width: isTablet ? 60 : 48,
-    height: isTablet ? 60 : 48,
-    borderRadius: isTablet ? 30 : 24,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#f0f0f0',
   },
   offerUserInfo: {
@@ -473,7 +477,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   offerUserName: {
-    fontSize: RFValue(isTablet ? 14 : 14),
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#000',
   },

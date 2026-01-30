@@ -3,13 +3,13 @@ import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { useLocalSearchParams } from 'expo-router';
-import { useRef, useState } from 'react';
-import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { Platform, ScrollView, StatusBar, StyleSheet, useWindowDimensions, View } from 'react-native';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
 import { PayoutAccountRequiredModal } from '../offers/components';
 
 // Responsive utilities
-import { isTablet, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, wp } from '@/src/shared/utils/responsive';
 import {
   AskQuestionModal,
   DetailHeader,
@@ -26,6 +26,9 @@ import { TaskActionButtons } from './components/TaskActionButtons';
 import { useTaskDetail } from './hooks/useTaskDetail';
 
 export default function TaskDetailScreen() {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
+
   const { taskId, fromUserRole, fromStatus } = useLocalSearchParams<{ 
     taskId: string; 
     fromUserRole?: string; 
@@ -146,7 +149,15 @@ export default function TaskDetailScreen() {
 
         <ScrollView 
           ref={scrollViewRef}
-          style={styles.content} 
+          style={[
+            styles.content,
+            isTablet && {
+              paddingHorizontal: wp('12.5%'),
+              maxWidth: 900,
+              alignSelf: 'center',
+              width: '100%',
+            },
+          ]} 
           showsVerticalScrollIndicator={false}
         >
         {/* Only show Make Offer section to taskers (not the task creator) */}
@@ -269,10 +280,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    maxWidth: isTablet ? 900 : undefined,
-    alignSelf: isTablet ? 'center' : 'auto',
-    width: isTablet ? '100%' : 'auto',
+    paddingHorizontal: wp('4%'),
   },
   tabContent: {
     flex: 1,

@@ -23,10 +23,10 @@ import { useAuthStore } from '@/src/store/auth-task-store';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Image, Modal, Platform, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 // Responsive utilities
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
 
 interface TaskCardProps {
   task: Task;
@@ -40,6 +40,10 @@ interface TaskCardProps {
 
 export default function TaskCard({ task, onPress, status, userRole, onTaskCancelled, onTaskDeleted, onTaskCompleted }: TaskCardProps) {
   const router = useRouter();
+  
+  // Dynamic tablet detection
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
   
   // Get current user from auth store
   const { user: currentUser } = useAuthStore();
@@ -1223,7 +1227,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   return (
     <View style={[
       styles.card,
-      hasPendingCancelRequestFromOther && styles.cardWithCancelRequest
+      hasPendingCancelRequestFromOther && styles.cardWithCancelRequest,
+      isTablet && { marginHorizontal: 0, padding: wp('2%'), borderRadius: 12, marginBottom: hp('1.5%') }
     ]} pointerEvents="auto">
       {/* Pending Cancellation Request Banner */}
       {hasPendingCancelRequestFromOther && (
@@ -1258,41 +1263,41 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         }}
         disabled={status === 'completed'}
       >
-        <View style={styles.header}>
-          <View style={styles.info}>
-            <Text style={styles.title}>{task.title}</Text>
+        <View style={[styles.header, isTablet && { marginBottom: hp('1%'), paddingRight: wp('1%') }]}>
+          <View style={[styles.info, isTablet && { marginRight: wp('2%') }]}>
+            <Text style={[styles.title, isTablet && { marginBottom: hp('0.8%'), lineHeight: RFValue(20) }]}>{task.title}</Text>
 
             {/* Time and Date Information */}
-            <View style={styles.metaRow}>
+            <View style={[styles.metaRow, isTablet && { marginBottom: hp('0.6%'), gap: wp('1.5%') }]}>
               <Text style={styles.timePreference}>{getTimePreference()}</Text>
             </View>
 
             {/* Location Information */}
-            <View style={styles.metaRow}>
+            <View style={[styles.metaRow, isTablet && { marginBottom: hp('0.6%'), gap: wp('1.5%') }]}>
               <Text style={styles.locationType}>{getLocationType()}</Text>
-              <Text style={styles.locationText} numberOfLines={1}>
+              <Text style={[styles.locationText, isTablet && { marginHorizontal: wp('1.5%') }]} numberOfLines={1}>
                 {formatLocation()}
               </Text>
             </View>
 
             {/* Task Status and Date */}
-            <View style={styles.meta}>
-              <Text style={[styles.status, { color: getStatusColor() }]}>
+            <View style={[styles.meta, isTablet && { marginTop: hp('0.6%') }]}>
+              <Text style={[styles.status, { color: getStatusColor() }, isTablet && { fontSize: RFValue(11) }]}>
                 {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
               </Text>
-              <Text style={styles.date}>
+              <Text style={[styles.date, isTablet && { fontSize: RFValue(11) }]}>
                 {getTaskDate()}
               </Text>
             </View>
 
             {/* Category */}
             {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
-              <View style={styles.categoryContainer}>
-                <Text style={styles.categoryLabel}>
+              <View style={[styles.categoryContainer, isTablet && { gap: wp('1.5%'), marginTop: hp('1%'), paddingTop: hp('0.8%') }]}>
+                <Text style={[styles.categoryLabel, isTablet && { fontSize: RFValue(12), lineHeight: RFValue(16) }]}>
                   Category - {task.categories[0]}
                 </Text>
                 {task.categories.length > 1 && (
-                  <Text style={styles.moreCategoriesText}>
+                  <Text style={[styles.moreCategoriesText, isTablet && { fontSize: RFValue(10), marginLeft: wp('0.5%') }]}>
                     +{task.categories.length - 1} more
                   </Text>
                 )}
@@ -1300,7 +1305,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             )}
 
             {/* Offer Count Display - Same as Browse screen */}
-            <Text style={styles.offerCountText}>
+            <Text style={[styles.offerCountText, isTablet && { marginTop: hp('0.5%') }]}>
               {task.status === 'accepted' || task.status === 'completed' || 
                task.status === 'assigned' || task.status === 'in_progress' || task.status === 'in-progress'
                 ? task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')
@@ -1317,7 +1322,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
           {/* Price and User Info */}
           <View style={styles.price}>
-            <Text style={styles.priceText}>
+            <Text style={[styles.priceText, isTablet && { fontSize: RFValue(14), marginBottom: hp('0.8%') }]}>
               {formattedBudgetDisplay}
             </Text>
             {(() => {
@@ -1356,7 +1361,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 return (
                   <Image
                     source={{ uri: profileUri }}
-                    style={styles.userAvatar}
+                    style={[styles.userAvatar, isTablet && { width: 44, height: 44, borderRadius: 22 }]}
                   />
                 );
               }
@@ -1367,7 +1372,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
         {/* Task Details */}
         {task.details && (
-          <Text style={styles.description} numberOfLines={2}>
+          <Text style={[styles.description, isTablet && { fontSize: RFValue(13), lineHeight: RFValue(18), marginTop: hp('0.8%') }]} numberOfLines={2}>
             {task.details}
           </Text>
         )}
@@ -2196,11 +2201,11 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: isTablet ? 0 : wp('4%'),
+    marginHorizontal: wp('4%'),
     backgroundColor: '#F9F9F9',
-    padding: isTablet ? wp('2%') : wp('4%'),
-    borderRadius: isTablet ? 12 : 10,
-    marginBottom: isTablet ? hp('1.5%') : hp('2%'),
+    padding: wp('4%'),
+    borderRadius: 10,
+    marginBottom: hp('2%'),
     position: 'relative',
   },
   cardWithCancelRequest: {
@@ -2230,15 +2235,15 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: isTablet ? hp('1.2%') : hp('1.5%'),
-    gap: isTablet ? wp('1.5%') : wp('2%'),
+    marginTop: hp('1.5%'),
+    gap: wp('2%'),
     zIndex: 10,
     elevation: 10,
   },
   actionButton: {
-    width: isTablet ? 44 : wp('9%'),
-    height: isTablet ? 44 : wp('9%'),
-    borderRadius: isTablet ? 22 : wp('4.5%'),
+    width: wp('9%'),
+    height: wp('9%'),
+    borderRadius: wp('4.5%'),
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
@@ -2268,22 +2273,22 @@ const styles = StyleSheet.create({
   completedButton: {
     flex: 1,
     backgroundColor: '#FFA500',
-    paddingVertical: isTablet ? hp('1.3%') : hp('1.2%'),
-    paddingHorizontal: isTablet ? wp('3%') : wp('4%'),
-    borderRadius: isTablet ? 8 : 8,
-    marginRight: isTablet ? wp('1.5%') : wp('2%'),
+    paddingVertical: hp('1.2%'),
+    paddingHorizontal: wp('4%'),
+    borderRadius: 8,
+    marginRight: wp('2%'),
     justifyContent: 'center',
     alignItems: 'center',
   },
   completedButtonText: {
     color: '#fff',
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(12),
     fontWeight: '600',
   },
   cancelButton: {
-    width: isTablet ? 44 : wp('9%'),
-    height: isTablet ? 44 : wp('9%'),
-    borderRadius: isTablet ? 22 : wp('4.5%'),
+    width: wp('9%'),
+    height: wp('9%'),
+    borderRadius: wp('4.5%'),
     backgroundColor: '#dc3545',
     justifyContent: 'center',
     alignItems: 'center',
@@ -2301,9 +2306,9 @@ const styles = StyleSheet.create({
     borderColor: '#ffcccc',
   },
   cancellationText: {
-    fontSize: RFValue(isTablet ? 11 : 11),
+    fontSize: RFValue(11),
     color: '#dc3545',
-    marginLeft: isTablet ? wp('1%') : wp('1.5%'),
+    marginLeft: wp('1.5%'),
     fontWeight: '500',
   },
   modalOverlay: {
@@ -2316,9 +2321,9 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: wp(isTablet ? '4%' : '6%'),
-    width: isTablet ? wp('70%') : wp('85%'),
-    maxWidth: isTablet ? 600 : 400,
+    padding: wp('6%'),
+    width: wp('85%'),
+    maxWidth: 400,
     alignItems: 'center',
   },
   modalIcon: {
@@ -2385,44 +2390,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: isTablet ? hp('1%') : 8,
-    paddingRight: isTablet ? wp('1%') : 0,
+    marginBottom: 8,
+    paddingRight: 0,
   },
   info: {
     flex: 1,
-    marginRight: isTablet ? wp('2%') : 12,
+    marginRight: 12,
   },
   title: {
-    fontSize: RFValue(isTablet ? 14 : 14),
+    fontSize: RFValue(14),
     fontWeight: '600',
-    marginBottom: isTablet ? hp('0.8%') : 8,
+    marginBottom: 8,
     color: '#1a1a1a',
-    lineHeight: isTablet ? RFValue(20) : undefined,
+    lineHeight: undefined,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: isTablet ? hp('0.6%') : 4,
+    marginBottom: 4,
     flexWrap: 'wrap',
-    gap: isTablet ? wp('1.5%') : 0,
+    gap: 0,
   },
   timePreference: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(12),
     color: '#007bff',
     fontWeight: '500',
   },
   locationType: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(12),
     color: '#28a745',
     fontWeight: '500',
   },
   locationDivider: {
-    marginHorizontal: isTablet ? wp('1.5%') : 6,
+    marginHorizontal: 6,
     color: '#ccc',
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(12),
   },
   locationText: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(12),
     color: '#666',
     flex: 1,
   },
@@ -2430,77 +2435,77 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: isTablet ? hp('0.6%') : 4,
+    marginTop: 4,
   },
   status: {
-    fontSize: RFValue(isTablet ? 11 : 12),
+    fontSize: RFValue(12),
     fontWeight: '600',
     textTransform: 'capitalize',
   },
   date: {
-    fontSize: RFValue(isTablet ? 11 : 12),
+    fontSize: RFValue(12),
     color: '#999',
   },
   offerCountText: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(12),
     color: '#007bff',
     fontWeight: '600',
-    marginTop: isTablet ? hp('0.5%') : 4,
+    marginTop: 4,
   },
   price: {
     alignItems: 'flex-end',
   },
   priceText: {
-    fontSize: RFValue(isTablet ? 14 : 16),
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: '#007bff',
-    marginBottom: isTablet ? hp('0.8%') : 8,
+    marginBottom: 8,
   },
   userAvatar: {
-    width: isTablet ? 44 : 32,
-    height: isTablet ? 44 : 32,
-    borderRadius: isTablet ? 22 : 16,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#f0f0f0',
   },
   description: {
-    fontSize: RFValue(isTablet ? 13 : 14),
+    fontSize: RFValue(14),
     color: '#555',
-    lineHeight: isTablet ? RFValue(18) : 20,
-    marginTop: isTablet ? hp('0.8%') : 8,
+    lineHeight: 20,
+    marginTop: 8,
   },
   categoryContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: isTablet ? wp('1.5%') : 8,
-    marginTop: isTablet ? hp('1%') : 10,
-    paddingTop: isTablet ? hp('0.8%') : 8,
+    gap: 8,
+    marginTop: 10,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
   },
   categoryLabel: {
-    fontSize: RFValue(isTablet ? 12 : 13),
+    fontSize: RFValue(13),
     color: '#4a5568',
     fontWeight: '600',
-    lineHeight: isTablet ? RFValue(16) : 18,
+    lineHeight: 18,
   },
   categoryTag: {
     backgroundColor: '#e3f2fd',
-    paddingHorizontal: isTablet ? wp('2%') : 8,
-    paddingVertical: isTablet ? hp('0.4%') : 4,
-    borderRadius: isTablet ? 10 : 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   categoryText: {
-    fontSize: RFValue(isTablet ? 10 : 11),
+    fontSize: RFValue(11),
     color: '#1976d2',
     fontWeight: '500',
   },
   moreCategoriesText: {
-    fontSize: RFValue(isTablet ? 10 : 12),
+    fontSize: RFValue(12),
     color: '#718096',
     fontWeight: '500',
     fontStyle: 'italic',
-    marginLeft: isTablet ? wp('0.5%') : 4,
+    marginLeft: 4,
   },
   posterCancelOverlay: {
     flex: 1,

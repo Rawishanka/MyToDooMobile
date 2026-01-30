@@ -1,8 +1,8 @@
 // Message List Item Component - Optimized for Performance
 
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
-import React, { useCallback } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
+import React, { useCallback, useMemo } from 'react';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import type { Message } from './message-types';
 
 interface MessageListItemProps {
@@ -11,13 +11,16 @@ interface MessageListItemProps {
 }
 
 const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onPress }) => {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
+  
   // Memoize the onPress handler to prevent unnecessary re-renders
   const handlePress = useCallback(() => {
     onPress(message);
   }, [message, onPress]);
 
   // Memoize avatar URL to ensure it's always valid
-  const avatarUri = React.useMemo(() => {
+  const avatarUri = useMemo(() => {
     return message.avatar || 'https://ui-avatars.com/api/?name=User&background=007AFF&color=fff&size=100';
   }, [message.avatar]);
 
@@ -25,15 +28,22 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
     <TouchableOpacity 
       style={[
         styles.messageItem,
+        isTablet && { paddingVertical: hp('1.8%'), paddingHorizontal: wp('12.5%') },
         (message.unreadCount && message.unreadCount > 0) ? styles.unreadItem : undefined
       ]} 
       onPress={handlePress}
       activeOpacity={0.7}
     >
-      <View style={styles.avatarContainer}>
+      <View style={[
+        styles.avatarContainer,
+        isTablet && { marginRight: wp('2%') }
+      ]}>
         <Image 
           source={{ uri: avatarUri }} 
-          style={styles.avatar}
+          style={[
+            styles.avatar,
+            isTablet && { width: 56, height: 56, borderRadius: 28 }
+          ]}
           resizeMode="cover"
           onError={(e) => {
             // Silently handle image load errors - fallback URL will be used
@@ -52,18 +62,23 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
           <Text 
             style={[
               styles.messageTitle,
+              isTablet && { fontSize: RFValue(14) },
               (message.unreadCount && message.unreadCount > 0) ? styles.unreadTitle : undefined
             ]} 
             numberOfLines={1}
           >
             {message.title}
           </Text>
-          <Text style={styles.messageDate}>{message.date}</Text>
+          <Text style={[
+            styles.messageDate,
+            isTablet && { fontSize: RFValue(10) }
+          ]}>{message.date}</Text>
         </View>
         
         <Text 
           style={[
             styles.messagePreview,
+            isTablet && { fontSize: RFValue(10), lineHeight: RFValue(20) },
             (message.unreadCount && message.unreadCount > 0) ? styles.unreadPreview : undefined
           ]} 
           numberOfLines={1}
@@ -73,8 +88,20 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
       </View>
       
       {message.unreadCount && message.unreadCount > 0 && (
-        <View style={styles.unreadBadge}>
-          <Text style={styles.unreadText}>{message.unreadCount}</Text>
+        <View style={[
+          styles.unreadBadge,
+          isTablet && { 
+            borderRadius: 18, 
+            minWidth: 36, 
+            height: 36, 
+            marginLeft: wp('2%'),
+            paddingHorizontal: 8 
+          }
+        ]}>
+          <Text style={[
+            styles.unreadText,
+            isTablet && { fontSize: RFValue(10) }
+          ]}>{message.unreadCount}</Text>
         </View>
       )}
     </TouchableOpacity>
@@ -97,8 +124,8 @@ export const MessageListItem = React.memo(MessageListItemComponent, (prevProps, 
 const styles = StyleSheet.create({
   messageItem: {
     flexDirection: 'row',
-    paddingVertical: isTablet ? hp('1.8%') : hp('1.7%'),
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingVertical: hp('1.7%'),
+    paddingHorizontal: wp('4%'),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
@@ -106,12 +133,12 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     position: 'relative',
-    marginRight: isTablet ? wp('2%') : wp('3%'),
+    marginRight: wp('3%'),
   },
   avatar: {
-    width: isTablet ? 56 : 50,
-    height: isTablet ? 56 : 50,
-    borderRadius: isTablet ? 28 : 25,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: '#F0F0F0',
   },
   unreadDot: {
@@ -135,21 +162,21 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   messageTitle: {
-    fontSize: RFValue(isTablet ? 14 : 15),
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#000',
     flex: 1,
-    marginRight: isTablet ? wp('2%') : wp('2%'),
+    marginRight: wp('2%'),
   },
   messageDate: {
-    fontSize: RFValue(isTablet ? 10 : 13),
+    fontSize: RFValue(13),
     color: '#8E8E93',
     flexShrink: 0,
   },
   messagePreview: {
-    fontSize: RFValue(isTablet ? 10 : 14),
+    fontSize: RFValue(14),
     color: '#8E8E93',
-    lineHeight: isTablet ? RFValue(20) : 18,
+    lineHeight: 18,
   },
   unreadItem: {
     backgroundColor: '#F0F7FF',
@@ -164,16 +191,16 @@ const styles = StyleSheet.create({
   },
   unreadBadge: {
     backgroundColor: '#007AFF',
-    borderRadius: isTablet ? 18 : 12,
-    minWidth: isTablet ? 36 : 24,
-    height: isTablet ? 36 : 24,
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: isTablet ? wp('2%') : wp('2%'),
-    paddingHorizontal: isTablet ? 8 : 6,
+    marginLeft: wp('2%'),
+    paddingHorizontal: 6,
   },
   unreadText: {
-    fontSize: RFValue(isTablet ? 10 : 12),
+    fontSize: RFValue(12),
     color: '#fff',
     fontWeight: '700',
   },

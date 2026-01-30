@@ -7,18 +7,20 @@
 // ✅ Local storage integration for message previews
 // ✅ Pull-to-refresh functionality
 
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
+    Platform,
     RefreshControl,
     StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
+    useWindowDimensions,
     View,
 } from 'react-native';
 
@@ -37,6 +39,10 @@ import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
 import NotificationModal from './notification-screen-api';
 
 const MessageScreen: React.FC = () => {
+  // Use dynamic dimensions for responsive layout
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(screenWidth, screenHeight), [screenWidth, screenHeight]);
+  
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showChat, setShowChat] = useState(false);
@@ -316,16 +322,31 @@ const MessageScreen: React.FC = () => {
       <OfflineBanner />
       
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Messages</Text>
+      <View style={[
+        styles.header,
+        isTablet && {
+          paddingHorizontal: wp('12.5%'),
+          paddingTop: hp('6%'),
+        }
+      ]}>
+        <Text style={[
+          styles.headerTitle,
+          isTablet && { fontSize: RFValue(18) }
+        ]}>Messages</Text>
         <TouchableOpacity
           onPress={() => setShowNotifications(true)}
-          style={styles.notificationButton}
+          style={[
+            styles.notificationButton,
+            isTablet && { padding: 10 }
+          ]}
         >
           <Ionicons name="notifications-outline" size={24} color="#000" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
-              <Text style={styles.badgeText}>
+              <Text style={[
+                styles.badgeText,
+                isTablet && { fontSize: RFValue(9) }
+              ]}>
                 {notificationCount > 99 ? '99+' : notificationCount}
               </Text>
             </View>
@@ -342,9 +363,15 @@ const MessageScreen: React.FC = () => {
 
       {/* Messages List */}
       {isLoadingChats ? (
-        <View style={styles.loadingContainer}>
+        <View style={[
+          styles.loadingContainer,
+          isTablet && { paddingVertical: hp('8%') }
+        ]}>
           <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Loading chats...</Text>
+          <Text style={[
+            styles.loadingText,
+            isTablet && { fontSize: RFValue(18), marginTop: hp('1.5%') }
+          ]}>Loading chats...</Text>
         </View>
       ) : (
         <FlatList
@@ -367,13 +394,28 @@ const MessageScreen: React.FC = () => {
             />
           }
           ListEmptyComponent={() => (
-            <View style={styles.emptyContainer}>
+            <View style={[
+              styles.emptyContainer,
+              isTablet && { paddingVertical: hp('8%') }
+            ]}>
               <Ionicons name="chatbubbles-outline" size={64} color="#ccc" />
-              <Text style={styles.emptyText}>
+              <Text style={[
+                styles.emptyText,
+                isTablet && { fontSize: RFValue(18) }
+              ]}>
                 {chatError ? 'Failed to load chats' : 'No messages yet'}
               </Text>
               {chatError && (
-                <TouchableOpacity onPress={handleRefresh} style={styles.retryButton}>
+                <TouchableOpacity 
+                  onPress={handleRefresh} 
+                  style={[
+                    styles.retryButton,
+                    isTablet && { 
+                      paddingVertical: hp('1.5%'),
+                      borderRadius: 10 
+                    }
+                  ]}
+                >
                   <Text style={styles.retryButtonText}>Try Again</Text>
                 </TouchableOpacity>
               )}
@@ -419,38 +461,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingTop: isTablet ? hp('6%') : hp('6.5%'),
-    paddingBottom: isTablet ? hp('2%') : hp('2%'),
+    paddingHorizontal: wp('4%'),
+    paddingTop: hp('6.5%'),
+    paddingBottom: hp('2%'),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   headerTitle: {
-    fontSize: RFValue(isTablet ? 18 : 24),
+    fontSize: RFValue(24),
     fontWeight: '700',
     color: '#000',
   },
   notificationButton: {
-    padding: isTablet ? 10 : 8,
+    padding: 8,
     position: 'relative',
   },
   notificationBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: 4,
+    right: 4,
     backgroundColor: '#FF0000',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
+    borderRadius: 12,
+    minWidth: 22,
+    height: 22,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   badgeText: {
     color: '#FFFFFF',
-    fontSize: RFValue(isTablet ? 10 : 12),
+    fontSize: RFValue(10),
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   listContent: {
     flexGrow: 1,
@@ -459,35 +509,35 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: isTablet ? hp('8%') : hp('7.5%'),
+    paddingVertical: hp('7.5%'),
   },
   loadingText: {
-    fontSize: RFValue(isTablet ? 18 : 16),
+    fontSize: RFValue(16),
     color: '#8E8E93',
-    marginTop: isTablet ? hp('1.5%') : hp('1.2%'),
+    marginTop: hp('1.2%'),
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: isTablet ? hp('8%') : hp('7.5%'),
+    paddingVertical: hp('7.5%'),
   },
   emptyText: {
-    fontSize: RFValue(isTablet ? 18 : 16),
+    fontSize: RFValue(16),
     color: '#8E8E93',
-    marginTop: isTablet ? hp('2%') : hp('2%'),
+    marginTop: hp('2%'),
     textAlign: 'center',
   },
   retryButton: {
-    marginTop: isTablet ? hp('2%') : hp('2%'),
-    paddingHorizontal: isTablet ? wp('5%') : wp('5%'),
-    paddingVertical: isTablet ? hp('1.5%') : hp('1.2%'),
+    marginTop: hp('2%'),
+    paddingHorizontal: wp('5%'),
+    paddingVertical: hp('1.2%'),
     backgroundColor: '#007AFF',
-    borderRadius: isTablet ? 10 : 8,
+    borderRadius: 8,
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: RFValue(isTablet ? 16 : 16),
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

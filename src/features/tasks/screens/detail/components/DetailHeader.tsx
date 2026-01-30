@@ -1,14 +1,16 @@
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 export const DetailHeader: React.FC = () => {
   const router = useRouter();
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
 
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, isTablet && { paddingHorizontal: wp('12.5%') }]}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButtonHeader}>
         <Ionicons name="arrow-back" size={24} color="#000" />
         <Text style={styles.backText}>Back</Text>
@@ -22,7 +24,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingHorizontal: wp('4%'),
     paddingTop: 50,
     paddingBottom: hp('1.5%'),
     backgroundColor: '#fff',

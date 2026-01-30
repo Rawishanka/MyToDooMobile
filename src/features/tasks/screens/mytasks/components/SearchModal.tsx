@@ -1,6 +1,7 @@
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useMemo } from 'react';
+import { Platform, StyleSheet, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 interface SearchBarProps {
   visible: boolean;
@@ -10,6 +11,9 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ visible, searchText, onChangeText, onClose }: SearchBarProps) {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
+
   if (!visible) return null;
 
   const handleClear = () => {
@@ -17,15 +21,34 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose }
   };
 
   return (
-    <View style={styles.searchContainer}>
-      <TouchableOpacity onPress={onClose} style={styles.backButton}>
+    <View style={[
+      styles.searchContainer,
+      isTablet && { 
+        paddingHorizontal: wp('12.5%'),
+        paddingTop: hp('1.5%'),
+        paddingBottom: hp('1.5%')
+      }
+    ]}>
+      <TouchableOpacity 
+        onPress={onClose} 
+        style={[
+          styles.backButton,
+          isTablet && { marginBottom: hp('1.2%'), width: 40, height: 40 }
+        ]}
+      >
         <Ionicons name="arrow-back" size={isTablet ? 34 : 24} color="#000" />
       </TouchableOpacity>
       
-      <View style={styles.searchInputContainer}>
+      <View style={[
+        styles.searchInputContainer,
+        isTablet && { paddingHorizontal: wp('2%'), height: hp('4%') }
+      ]}>
         <Ionicons name="search" size={isTablet ? 26 : 20} color="#666" style={styles.searchIcon} />
         <TextInput
-          style={styles.searchBar}
+          style={[
+            styles.searchBar,
+            isTablet && { fontSize: RFValue(13) }
+          ]}
           placeholder="Search by title, location, category..."
           placeholderTextColor="#999"
           value={searchText}
@@ -56,9 +79,9 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose }
 const styles = StyleSheet.create({
   searchContainer: {
     backgroundColor: '#fff',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingTop: isTablet ? hp('1.5%') : hp('1.2%'),
-    paddingBottom: isTablet ? hp('1.5%') : hp('1.2%'),
+    paddingHorizontal: wp('4%'),
+    paddingTop: hp('1.2%'),
+    paddingBottom: hp('1.2%'),
     borderBottomWidth: 1,
     borderBottomColor: '#e5e5e5',
     shadowColor: '#000',
@@ -68,11 +91,11 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   backButton: {
-    marginBottom: isTablet ? hp('1.2%') : hp('1%'),
+    marginBottom: hp('1%'),
     padding: 4,
     borderRadius: 20,
-    width: isTablet ? 40 : 32,
-    height: isTablet ? 40 : 32,
+    width: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -81,8 +104,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
     borderRadius: 12,
-    paddingHorizontal: isTablet ? wp('2%') : wp('3%'),
-    height: isTablet ? hp('4%') : hp('5.5%'),
+    paddingHorizontal: wp('3%'),
+    height: hp('5.5%'),
     borderWidth: 1,
     borderColor: '#e8e8e8',
   },
@@ -92,7 +115,7 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     flex: 1,
-    fontSize: RFValue(isTablet ? 13 : 16),
+    fontSize: RFValue(16),
     color: '#000',
     paddingVertical: 0,
     height: '100%',
@@ -103,7 +126,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   searchInfo: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(12),
     color: '#666',
     marginTop: 8,
     marginLeft: 6,

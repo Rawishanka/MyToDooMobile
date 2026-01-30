@@ -486,7 +486,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           console.log('🔵 Suggestion tapped:', item.place_name);
           handleSelect(item);
         }}
-        activeOpacity={0.6}
+        activeOpacity={0.7}
         delayPressIn={0}
       >
         <View style={styles.suggestionContent} pointerEvents="none">
@@ -579,8 +579,11 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
             keyboardShouldPersistTaps="always"
             showsVerticalScrollIndicator={true}
             nestedScrollEnabled={true}
+            scrollEnabled={true}
+            bounces={false}
             style={styles.dropdownList}
             contentContainerStyle={styles.dropdownContent}
+            removeClippedSubviews={false}
           >
             {suggestions.map((item, index) => renderSuggestion(item, index))}
           </ScrollView>

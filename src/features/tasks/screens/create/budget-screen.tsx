@@ -2,23 +2,28 @@
 
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatNumber, getCurrencySymbol, getDefaultBudget, getMinimumBudget } from '@/src/shared/utils/currency';
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BudgetScreen() {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
+  
   const navigation = useNavigation();
   const { myTask, updateMyTask } = useCreateTaskStore();
   const insets = useSafeAreaInsets();
@@ -114,13 +119,24 @@ export default function BudgetScreen() {
   const renderKey = (value: string | number) => (
     <TouchableOpacity
       key={value}
-      style={styles.key}
+      style={[
+        styles.key,
+        isTablet && { 
+          width: wp('10%'), 
+          height: wp('10%'), 
+          borderRadius: wp('5%'),
+          marginHorizontal: wp('2%')
+        }
+      ]}
       onPress={() => handleKeyPress(value.toString())}
     >
       {value === 'delete' ? (
         <Ionicons name="backspace-outline" size={24} color="#002366" />
       ) : (
-        <Text style={styles.keyText}>{value}</Text>
+        <Text style={[
+          styles.keyText,
+          isTablet && { fontSize: RFValue(24) }
+        ]}>{value}</Text>
       )}
     </TouchableOpacity>
   );
@@ -153,7 +169,15 @@ export default function BudgetScreen() {
   // Show loading state while location is being detected to prevent currency flicker
   if (!isInitialized || isDetecting) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
+      <View style={[
+        styles.container, 
+        styles.centerContent,
+        isTablet && {
+          paddingHorizontal: wp('12.5%'),
+          maxWidth: 900,
+          alignSelf: 'center',
+        }
+      ]}>
         <ActivityIndicator size="large" color="#007AFF" />
         <Text style={styles.loadingText}>Detecting your location...</Text>
       </View>
@@ -161,23 +185,53 @@ export default function BudgetScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[
+      styles.container,
+      isTablet && {
+        paddingHorizontal: wp('12.5%'),
+        maxWidth: 900,
+        alignSelf: 'center',
+      }
+    ]}>
       {/* Back Arrow */}
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
+      <TouchableOpacity 
+        onPress={() => navigation.goBack()} 
+        style={[
+          styles.back,
+          isTablet && { left: wp('12.5%') }
+        ]}
+      >
         <ChevronLeft size={24} color="black" />
       </TouchableOpacity>
 
       {/* Title */}
-      <Text style={styles.title}>Enter Your budget</Text>
-      <Text style={styles.subtitle}>
+      <Text style={[
+        styles.title,
+        isTablet && { fontSize: RFValue(24) }
+      ]}>Enter Your budget</Text>
+      <Text style={[
+        styles.subtitle,
+        isTablet && { fontSize: RFValue(14) }
+      ]}>
         Minimum budget is {currencyInfo.symbol}{formatNumber(minimumBudget, { forceDecimals: true })}. Don&apos;t worry, you can always negotiate the final price later
       </Text>
 
       {/* Budget Display */}
-      <TouchableOpacity style={styles.inputBox} onPress={handleBudgetFieldTap} activeOpacity={0.7}>
-        <Text style={styles.currencySymbol}>{currencyInfo.symbol}</Text>
+      <TouchableOpacity 
+        style={[
+          styles.inputBox,
+          isTablet && { height: hp('8%') }
+        ]} 
+        onPress={handleBudgetFieldTap} 
+        activeOpacity={0.7}
+      >
         <Text style={[
-          styles.budgetText, 
+          styles.currencySymbol,
+          isTablet && { fontSize: RFValue(24) }
+        ]}>{currencyInfo.symbol}</Text>
+        <Text style={[
+          styles.budgetText,
+          isTablet && { fontSize: RFValue(24) },
           budget && Number(budget) < minimumBudget && Number(budget) > 0 && styles.invalidBudgetText,
           !hasUserInteracted && !budget && styles.placeholderText
         ]}>
@@ -200,7 +254,16 @@ export default function BudgetScreen() {
       <View style={styles.keypad}>
         {numberPad.map((row, rowIndex) => (
           <View key={rowIndex} style={styles.row}>
-            {row.map((value) => value !== null ? renderKey(value) : <View key="empty" style={{ width: isTablet ? wp('10%') : wp('18%'), height: isTablet ? wp('10%') : wp('18%'), marginHorizontal: isTablet ? wp('2%') : wp('2.5%') }} />)}
+            {row.map((value) => value !== null ? renderKey(value) : (
+              <View 
+                key="empty" 
+                style={{ 
+                  width: isTablet ? wp('10%') : wp('18%'), 
+                  height: isTablet ? wp('10%') : wp('18%'), 
+                  marginHorizontal: isTablet ? wp('2%') : wp('2.5%') 
+                }} 
+              />
+            ))}
           </View>
         ))}
       </View>
@@ -226,22 +289,20 @@ export default function BudgetScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('6%'),
+    paddingHorizontal: wp('6%'),
     paddingTop: 60,
     backgroundColor: '#fff',
     justifyContent: 'space-between',
-    maxWidth: isTablet ? 900 : undefined,
-    alignSelf: isTablet ? 'center' : 'auto',
     width: '100%',
   },
   back: {
     position: 'absolute',
     top: 50,
-    left: isTablet ? wp('12.5%') : wp('6%'),
+    left: wp('6%'),
     zIndex: 1,
   },
   title: {
-    fontSize: RFValue(isTablet ? 24 : 20),
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     color: '#002366',
     marginTop: hp('5%'),
@@ -251,11 +312,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#6e6e6e',
     marginTop: hp('1%'),
-    fontSize: RFValue(isTablet ? 14 : 13),
+    fontSize: RFValue(13),
   },
   inputBox: {
     marginTop: hp('3%'),
-    height: isTablet ? hp('8%') : hp('6%'),
+    height: hp('6%'),
     borderRadius: 8,
     backgroundColor: '#f5f5f5',
     justifyContent: 'center',
@@ -263,13 +324,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   currencySymbol: {
-    fontSize: RFValue(isTablet ? 24 : 18),
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#002366',
     marginRight: wp('1.5%'),
   },
   budgetText: {
-    fontSize: RFValue(isTablet ? 24 : 18),
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#002366',
   },
@@ -304,18 +365,18 @@ const styles = StyleSheet.create({
     marginBottom: hp('2%'),
   },
   key: {
-    width: isTablet ? wp('10%') : wp('18%'),
-    height: isTablet ? wp('10%') : wp('18%'),
+    width: wp('18%'),
+    height: wp('18%'),
     backgroundColor: '#fff',
-    borderRadius: isTablet ? wp('5%') : wp('9%'),
+    borderRadius: wp('9%'),
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: isTablet ? wp('2%') : wp('2.5%'),
+    marginHorizontal: wp('2.5%'),
     borderWidth: 1,
     borderColor: '#eee',
   },
   keyText: {
-    fontSize: RFValue(isTablet ? 24 : 20),
+    fontSize: RFValue(20),
     color: '#002366',
   },
   centerContent: {

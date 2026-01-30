@@ -1,7 +1,8 @@
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useMemo } from 'react';
+import { Platform, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 interface MyTasksHeaderProps {
   notificationCount?: number;
@@ -14,32 +15,49 @@ export default function MyTasksHeader({
   onSearchPress,
   onNotificationPress,
 }: Omit<MyTasksHeaderProps, 'selectedFilter' | 'onFilterPress'>) {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
   const router = useRouter();
 
   return (
-    <View style={styles.header}>
+    <View style={[
+      styles.header,
+      isTablet && { paddingHorizontal: wp('12.5%'), height: hp('8%') }
+    ]}>
       <View style={styles.headerLeft}>
-        <Text style={styles.headerTitle}>My Tasks</Text>
+        <Text style={[
+          styles.headerTitle,
+          isTablet && { fontSize: RFValue(15) }
+        ]}>My Tasks</Text>
       </View>
       <View style={styles.headerIcons}>
-        <TouchableOpacity onPress={onSearchPress} style={styles.iconButton}>
+        <TouchableOpacity 
+          onPress={onSearchPress} 
+          style={[styles.iconButton, isTablet && { marginLeft: wp('3%') }]}
+        >
           <Ionicons name="search-outline" size={isTablet ? 26 : 20} color="#000" />
         </TouchableOpacity>
         
         {/* Payment Summary Button */}
         <TouchableOpacity
           onPress={() => router.push('/payment-summary' as any)}
-          style={styles.iconButton}
+          style={[styles.iconButton, isTablet && { marginLeft: wp('3%') }]}
         >
           <Ionicons name="card-outline" size={isTablet ? 26 : 20} color="#007bff" />
         </TouchableOpacity>
         
         {/* Notification Button */}
-        <TouchableOpacity onPress={onNotificationPress} style={styles.iconButton}>
+        <TouchableOpacity 
+          onPress={onNotificationPress} 
+          style={[styles.iconButton, isTablet && { marginLeft: wp('3%') }]}
+        >
           <Ionicons name="notifications-outline" size={isTablet ? 26 : 20} color="#000" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
-              <Text style={styles.badgeText}>
+              <Text style={[
+                styles.badgeText,
+                isTablet && { fontSize: RFValue(13) }
+              ]}>
                 {notificationCount > 99 ? '99+' : notificationCount}
               </Text>
             </View>
@@ -53,10 +71,10 @@ export default function MyTasksHeader({
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingHorizontal: wp('4%'),
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: isTablet ? hp('8%') : hp('7%'),
+    height: hp('7%'),
   },
   headerLeft: {
     flex: 1,
@@ -67,14 +85,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: RFValue(isTablet ? 15 : 14),
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#000',
     textAlign: 'center',
     paddingLeft: wp('5%'),
   },
   iconButton: {
-    marginLeft: isTablet ? wp('3%') : wp('4%'),
+    marginLeft: wp('4%'),
     position: 'relative',
   },
   notificationBadge: {
@@ -91,7 +109,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#FFFFFF',
-    fontSize: RFValue(isTablet ? 13 : 12),
+    fontSize: RFValue(12),
     fontWeight: 'bold',
   },
 });

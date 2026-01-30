@@ -3,7 +3,7 @@ import { useGetAllOffers, useGetAllTasks, useGetMyOffers, useGetMyTasks } from '
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 // Components
 import { Ionicons } from '@expo/vector-icons';
@@ -27,7 +27,7 @@ import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { useAuthStore } from '@/src/store/auth-task-store';
 
 // Responsive utilities
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -134,6 +134,10 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
 TabScreen.displayName = 'TabScreen';
 
 export default function MyTasksScreen() {
+  // Use dynamic dimensions for responsive layout
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(screenWidth, screenHeight), [screenWidth, screenHeight]);
+  
   const [searchVisible, setSearchVisible] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [userRole, setUserRole] = useState('Tasker'); // 'Tasker' or 'Poster'
@@ -1172,7 +1176,7 @@ const styles = StyleSheet.create({
   flatListContent: {
     paddingVertical: hp('2%'),
     paddingBottom: hp('12%'),
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('0%'),
+    paddingHorizontal: wp('0%'),
   },
   emptyListContent: {
     flex: 1,
@@ -1182,7 +1186,7 @@ const styles = StyleSheet.create({
     paddingVertical: hp('8%'),
   },
   emptyText: {
-    fontSize: RFValue(isTablet ? 16 : 14),
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
     marginBottom: hp('2%'),
@@ -1195,21 +1199,21 @@ const styles = StyleSheet.create({
   },
   refreshButtonText: {
     color: '#fff',
-    fontSize: RFValue(isTablet ? 14 : 12),
+    fontSize: RFValue(12),
     fontWeight: '600',
   },
   roleSelectorContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingHorizontal: wp('4%'),
     paddingVertical: hp('1.2%'),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   roleButton: {
-    paddingHorizontal: wp(isTablet ? '3%' : '5%'),
-    paddingVertical: hp(isTablet ? '1%' : '1%'),
+    paddingHorizontal: wp('5%'),
+    paddingVertical: hp('1%'),
     marginHorizontal: wp('1%'),
     borderRadius: 20,
     backgroundColor: '#f5f5f5',
@@ -1218,7 +1222,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
   },
   roleText: {
-    fontSize: RFValue(isTablet ? 13 : 12),
+    fontSize: RFValue(12),
     fontWeight: '600',
     color: '#666',
   },
@@ -1229,7 +1233,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingHorizontal: wp('4%'),
     paddingVertical: hp('1.5%'),
     backgroundColor: '#f0f8ff',
     borderBottomWidth: 1,
@@ -1241,7 +1245,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   searchResultsText: {
-    fontSize: RFValue(isTablet ? 14 : 12),
+    fontSize: RFValue(12),
     color: '#007AFF',
     fontWeight: '600',
     flex: 1,
@@ -1250,7 +1254,7 @@ const styles = StyleSheet.create({
   tabsContainer: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingHorizontal: wp('4%'),
     paddingVertical: hp('1.2%'),
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
@@ -1265,7 +1269,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#007AFF',
   },
   tabText: {
-    fontSize: RFValue(isTablet ? 16 : 12),
+    fontSize: RFValue(12),
     fontWeight: '500',
     color: '#666',
   },

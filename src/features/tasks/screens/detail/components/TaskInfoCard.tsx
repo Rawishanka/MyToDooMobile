@@ -3,11 +3,11 @@ import { Task } from '@/src/api/types/tasks';
 import { CurrencyInfo, formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
 import { TaskImageDebug } from '@/src/shared/utils/task-image-debug';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { ActivityIndicator, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 // Responsive utilities
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
 
 interface TaskInfoCardProps {
   task: Task;
@@ -22,6 +22,8 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   getTimeDisplay,
   refetch, // Added refetch prop
 }) => {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
   
   // Helper: Format date for display
   const formatTaskDate = (date: string | undefined) => {
@@ -318,7 +320,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       return (
         <View style={styles.imageGallery}>
           <Text style={styles.imageGalleryTitle}>Photos (0)</Text>
-          <Text style={styles.noImagesText}>No photos were found with this task</Text>
+          <Text style={[styles.noImagesText, isTablet && { padding: wp('3%') }]}>No photos were found with this task</Text>
         </View>
       );
     }
@@ -343,7 +345,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       return (
         <View style={styles.imageGallery}>
           <Text style={styles.imageGalleryTitle}>Photos (0)</Text>
-          <Text style={styles.noImagesText}>No displayable photos found</Text>
+          <Text style={[styles.noImagesText, isTablet && { padding: wp('3%') }]}>No displayable photos found</Text>
         </View>
       );
     }
@@ -492,11 +494,11 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       return (
         <View style={styles.imageGallery}>
           <Text style={styles.imageGalleryTitle}>Photos ({imageDataToProcess.length} found, 0 displayable)</Text>
-          <Text style={styles.noImagesText}>
+          <Text style={[styles.noImagesText, isTablet && { padding: wp('3%') }]}>
             Images found but could not be displayed. Check console for details.
           </Text>
           {__DEV__ && (
-            <Text style={[styles.noImagesText, { fontSize: 10, color: '#999' }]}>
+            <Text style={[styles.noImagesText, { fontSize: 10, color: '#999' }, isTablet && { padding: wp('3%') }]}>
               DEV: {JSON.stringify(imageDataToProcess[0], null, 2).substring(0, 200)}...
             </Text>
           )}
@@ -536,7 +538,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       return (
         <View style={styles.imageGallery}>
           <Text style={styles.imageGalleryTitle}>Photos ({imageDataToProcess?.length || 0})</Text>
-          <Text style={styles.noImagesText}>
+          <Text style={[styles.noImagesText, isTablet && { padding: wp('3%') }]}>
             {imageDataToProcess?.length > 0 
               ? `Found ${imageDataToProcess.length} images but couldn't display them. Format may be unsupported.`
               : 'No photos were saved with this task'}
@@ -591,7 +593,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                   onPress={() => !hasError && openImageModal(globalIndex)}
                   activeOpacity={hasError ? 1 : 0.8}
                 >
-                  <View style={styles.imageContainer}>
+                  <View style={[styles.imageContainer, isTablet && { width: 120, height: 120 }]}>
                     {!hasError && (
                       <Image 
                         source={{ 
@@ -602,7 +604,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                             'Cache-Control': 'no-cache'
                           }
                         }} 
-                        style={styles.thumbnailImage}
+                        style={[styles.thumbnailImage, isTablet && { width: 120, height: 120 }]}
                         resizeMode="cover"
                         onLoadStart={() => {
                           console.log(`🔄 Loading started for image ${globalIndex}`);
@@ -623,7 +625,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                     )}
                     
                     {hasError && (
-                      <View style={styles.thumbnailImageError}>
+                      <View style={[styles.thumbnailImageError, isTablet && { width: 120, height: 120 }]}>
                         <Ionicons name="image-outline" size={24} color="#999" />
                         <Text style={{ fontSize: 10, color: '#999', marginTop: 4 }}>
                           Load Error
@@ -642,7 +644,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
             })}
             {/* Fill empty spaces in incomplete rows */}
             {Array.from({ length: 3 - row.length }).map((_, emptyIndex) => (
-              <View key={`empty-${rowIndex}-${emptyIndex}`} style={styles.emptyImageSlot} />
+              <View key={`empty-${rowIndex}-${emptyIndex}`} style={[styles.emptyImageSlot, isTablet && { width: 120 }]} />
             ))}
           </View>
         ))}
@@ -711,7 +713,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                 contentOffset={{ x: selectedImageIndex * screenWidth, y: 0 }}
               >
                 {validImages.map((imageUri, index) => (
-                  <View key={index} style={[styles.fullImageContainer, { width: screenWidth }]}>
+                  <View key={index} style={[styles.fullImageContainer, { width: screenWidth }, isTablet && { paddingHorizontal: wp('10%') }]}>
                     <Image 
                       source={{ uri: imageUri }} 
                       style={styles.fullImage}
@@ -735,10 +737,10 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   };
 
   return (
-    <View style={styles.taskCard}>
+    <View style={[styles.taskCard, isTablet && { padding: wp('3%') }]}>
       {/* User Avatar */}
       <View style={styles.avatarContainer}>
-        <View style={styles.avatar}>
+        <View style={[styles.avatar, isTablet && { width: 80, height: 80, borderRadius: 40 }]}>
           <Image 
             source={{ 
               uri: (() => {
@@ -762,7 +764,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                 }
               })()
             }}
-            style={styles.avatarImage}
+            style={[styles.avatarImage, isTablet && { width: 80, height: 80, borderRadius: 40 }]}
             onError={(error) => {
               console.log('❌ Avatar image failed to load:', error);
               console.log('Task creator data:', task.createdBy);
@@ -836,7 +838,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       </View>
 
       {/* Budget */}
-      <View style={styles.budgetRow}>
+      <View style={[styles.budgetRow, isTablet && { padding: wp('2%') }]}>
         
         <Ionicons name="cash-outline" size={20} color="#000" />
         <View style={styles.budgetInfo}>
@@ -879,7 +881,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 const styles = StyleSheet.create({
   taskCard: {
     backgroundColor: '#fff',
-    padding: isTablet ? wp('3%') : wp('4%'),
+    padding: wp('4%'),
     marginBottom: hp('2%'),
     borderRadius: 12,
     borderWidth: 1,
@@ -890,21 +892,21 @@ const styles = StyleSheet.create({
     marginBottom: hp('1.5%'),
   },
   avatar: {
-    width: isTablet ? 80 : 60,
-    height: isTablet ? 80 : 60,
-    borderRadius: isTablet ? 40 : 30,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
   },
   avatarImage: {
-    width: isTablet ? 80 : 60,
-    height: isTablet ? 80 : 60,
-    borderRadius: isTablet ? 40 : 30,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   taskTitle: {
-    fontSize: RFValue(isTablet ? 18 : 18),
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#000',
     marginBottom: hp('1.5%'),
@@ -917,7 +919,7 @@ const styles = StyleSheet.create({
     marginBottom: hp('2%'),
   },
   posterName: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(12),
     color: '#666',
     marginLeft: wp('1.5%'),
     marginRight: wp('2%'),
@@ -950,7 +952,7 @@ const styles = StyleSheet.create({
     marginBottom: hp('1.5%'),
   },
   detailText: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(12),
     color: '#666',
     marginLeft: wp('2%'),
     flex: 1,
@@ -959,7 +961,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f8f9fa',
-    padding: isTablet ? wp('2%') : wp('3%'),
+    padding: wp('3%'),
     borderRadius: 8,
     marginBottom: hp('1.5%'),
   },
@@ -967,7 +969,7 @@ const styles = StyleSheet.create({
     marginLeft: wp('2%'),
   },
   budgetAmount: {
-    fontSize: RFValue(isTablet ? 18 : 18),
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#000',
   },
@@ -986,9 +988,9 @@ const styles = StyleSheet.create({
     marginBottom: hp('1.5%'),
   },
   description: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(12),
     color: '#333',
-    lineHeight: RFValue(isTablet ? 18 : 18),
+    lineHeight: RFValue(18),
     marginBottom: hp('1.5%'),
   },
   note: {
@@ -1014,7 +1016,7 @@ const styles = StyleSheet.create({
     color: '#999',
     fontStyle: 'italic',
     textAlign: 'center',
-    padding: isTablet ? wp('3%') : wp('4%'),
+    padding: wp('4%'),
     backgroundColor: '#f9f9f9',
     borderRadius: 8,
   },
@@ -1038,18 +1040,18 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-    width: isTablet ? 120 : 80,
-    height: isTablet ? 120 : 80,
+    width: 80,
+    height: 80,
   },
   thumbnailImage: {
-    width: isTablet ? 120 : 80,
-    height: isTablet ? 120 : 80,
+    width: 80,
+    height: 80,
     borderRadius: 8,
     backgroundColor: '#f5f5f5', // Background color while loading
   },
   thumbnailImageError: {
-    width: isTablet ? 120 : 80,
-    height: isTablet ? 120 : 80,
+    width: 80,
+    height: 80,
     borderRadius: 8,
     backgroundColor: '#f0f0f0',
     justifyContent: 'center',
@@ -1069,7 +1071,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   emptyImageSlot: {
-    width: isTablet ? 120 : 80,
+    width: 80,
     marginRight: wp('2%'),
   },
   // Image Modal Styles
@@ -1101,7 +1103,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: isTablet ? wp('10%') : wp('5%'),
+    paddingHorizontal: wp('5%'),
   },
   fullImage: {
     width: '100%',

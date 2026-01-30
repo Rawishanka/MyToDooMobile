@@ -81,7 +81,10 @@ export default function TabNavigator() {
         tabBarStyle: { 
           height: 60 + insets.bottom, 
           paddingBottom: Math.max(insets.bottom, 8), 
-          paddingTop: 6 
+          paddingTop: 6,
+          backgroundColor: '#fff',
+          borderTopWidth: 1,
+          borderTopColor: '#e0e0e0',
         },
         tabBarItemStyle: { 
           flexDirection: 'column', 
@@ -102,31 +105,34 @@ export default function TabNavigator() {
         tabBarIcon: ({ color, focused }) => {
           const iconSize = ICON_SIZE;
           const iconColor = focused ? '#007bff' : '#666';
+          
+          let iconName: keyof typeof Ionicons.glyphMap = 'help-circle';
+          
+          if (route.name === 'index') {
+            iconName = 'rocket';
+          } else if (route.name === 'browse') {
+            iconName = 'compass';
+          } else if (route.name === 'my-tasks') {
+            iconName = 'list';
+          } else if (route.name === 'message') {
+            iconName = 'chatbubbles';
+          } else if (route.name === 'account') {
+            iconName = 'person-circle';
+          }
+          
           return (
             <View style={{ justifyContent: 'center', alignItems: 'center', marginBottom: 2 }}>
-              {route.name === 'index' && (
-                <Ionicons name="rocket" size={iconSize} color={iconColor} />
-              )}
-              {route.name === 'browse' && (
-                <Ionicons name="compass" size={iconSize} color={iconColor} />
-              )}
-              {route.name === 'my-tasks' && (
-                <Ionicons name="list" size={iconSize} color={iconColor} />
-              )}
-              {route.name === 'message' && (
+              {route.name === 'message' && totalUnreadCount > 0 ? (
                 <View style={{ position: 'relative' }}>
-                  <Ionicons name="chatbubbles" size={iconSize} color={iconColor} />
-                  {totalUnreadCount > 0 && (
-                    <View style={styles.messageBadge}>
-                      <Text style={styles.messageBadgeText}>
-                        {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
-                      </Text>
-                    </View>
-                  )}
+                  <Ionicons name={iconName} size={iconSize} color={iconColor} />
+                  <View style={styles.messageBadge}>
+                    <Text style={styles.messageBadgeText}>
+                      {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                    </Text>
+                  </View>
                 </View>
-              )}
-              {route.name === 'account' && (
-                <Ionicons name="person-circle" size={iconSize} color={iconColor} />
+              ) : (
+                <Ionicons name={iconName} size={iconSize} color={iconColor} />
               )}
             </View>
           );

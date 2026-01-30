@@ -2,13 +2,13 @@
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
 import { useUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { hp, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { Bell, ChevronRight } from 'lucide-react-native';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -17,6 +17,7 @@ import {
   Image,
   Keyboard,
   Linking,
+  Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -24,11 +25,18 @@ import {
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  useWindowDimensions,
   View
 } from 'react-native';
 
-// Get screen dimensions
-const { width: screenWidth } = Dimensions.get('window');
+// Helper function to detect tablet dynamically
+const getIsTablet = (width: number, height: number) => {
+  const aspectRatio = height / width;
+  if (Platform.OS === 'ios') {
+    return width >= 768 || (width >= 600 && aspectRatio < 1.6);
+  }
+  return width >= 600;
+};
 
 // � **ALL Category Images with proper sources**
 const categoryImages: { id: string; title: string; image: string }[] = [
@@ -61,17 +69,30 @@ const categoryImages: { id: string; title: string; image: string }[] = [
 ];
 
 // � **Image Category Component for Carousel**
-const ImageCategory = ({ item, onPress }: { item: typeof categoryImages[0]; onPress: (categoryName: string) => void }) => {
+const ImageCategory = ({ 
+  item, 
+  onPress,
+  isTabletDevice,
+  screenWidth 
+}: { 
+  item: typeof categoryImages[0]; 
+  onPress: (categoryName: string) => void;
+  isTabletDevice: boolean;
+  screenWidth: number;
+}) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   
+  // Dynamic item size based on screen
+  const itemWidth = isTabletDevice ? screenWidth * 0.18 : screenWidth * 0.35;
+  
   return (
     <TouchableOpacity 
-      style={styles.carouselItem}
+      style={[styles.carouselItem, { width: itemWidth }]}
       activeOpacity={0.7}
       onPress={() => onPress(item.title)}
     >
-      <View style={styles.imageContainer}>
+      <View style={[styles.imageContainer, { width: itemWidth, height: itemWidth }]}>
         {/* Loading indicator while image loads */}
         {!imageLoaded && !imageError && (
           <ActivityIndicator 
@@ -121,12 +142,21 @@ export default function WelcomeScreen() {
   const { data: unreadCountData } = useUnreadCount();
   const { updateMyTask, myTask } = useCreateTaskStore();
 
+  // Use dynamic dimensions for responsive layout
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(screenWidth, screenHeight), [screenWidth, screenHeight]);
+  const isLandscape = screenWidth > screenHeight;
+
   const unreadCount = (unreadCountData as any)?.unreadCount || 0;
 
   // Auto-scroll carousel refs and state
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Calculate responsive values
+  const carouselItemWidth = isTablet ? screenWidth * 0.18 : screenWidth * 0.35;
+  const snapInterval = carouselItemWidth + (isTablet ? 24 : 12);
 
   // Auto-scroll every 3 seconds with safety checks
   useEffect(() => {
@@ -242,21 +272,28 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#003399' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
       {/* Header */}
-      <View style={styles.headerWhite}>
-        <View style={styles.logoPlaceholder} />
+      <View style={[
+        styles.headerWhite,
+        { 
+          paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'), 
+          minHeight: isTablet ? 110 : 90,
+          width: '100%'
+        }
+      ]}>
+        <View style={[styles.logoPlaceholder, { width: isTablet ? 28 : 24 }]} />
         
         <Image
           source={require('@/assets/MyToDoo_logo.gif')}
-          style={styles.logoCenter} 
+          style={[styles.logoCenter, { height: isTablet ? 80 : 60, width: isTablet ? 240 : 180 }]} 
           resizeMode="contain"
         />
         
         <TouchableOpacity 
-          style={styles.notificationButton} 
+          style={[styles.notificationButton, { width: isTablet ? 28 : 24 }]} 
           onPress={() => setShowNotifications(true)}
         >
           <Bell size={24} color="#fff" />
@@ -268,16 +305,32 @@ export default function WelcomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
+      <ScrollView 
+        style={{ flex: 1, backgroundColor: '#f8f9fa' }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Blue Section with Input */}
-        <View style={styles.blueSection}>
-          <Text style={styles.title}>Get it Done Now🔥</Text>
-          <Text style={styles.subtitle}>
+        <View style={[
+          styles.blueSection,
+          { 
+            width: '100%',
+            paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+          }
+        ]}>
+          <Text style={[styles.title, { fontSize: RFValue(isTablet ? 24 : 22) }]}>Get it Done Now🔥</Text>
+          <Text style={[styles.subtitle, { fontSize: RFValue(isTablet ? 15 : 14), lineHeight: RFValue(isTablet ? 20 : 20) }]}>
             Describe your job and get offers from mytoodoo
           </Text>
           
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              { 
+                fontSize: RFValue(isTablet ? 16 : 13),
+                minHeight: isTablet ? hp('7%') : hp('6.5%'),
+              }
+            ]}
             placeholder="In a few words what do you need"
             placeholderTextColor="#999"
             value={taskInput}
@@ -303,9 +356,9 @@ export default function WelcomeScreen() {
             style={styles.postButton} 
             onPress={handlePostTask}
           >
-            <MaterialCommunityIcons name="plus" size={18} color="#fff" />
-            <Text style={styles.postButtonText}>Post a Task</Text>
-            <ChevronRight size={18} color="#fff" />
+            <MaterialCommunityIcons name="plus" size={isTablet ? 22 : 18} color="#fff" />
+            <Text style={[styles.postButtonText, { fontSize: RFValue(isTablet ? 16 : 14) }]}>Post a Task</Text>
+            <ChevronRight size={isTablet ? 22 : 18} color="#fff" />
           </TouchableOpacity>
           
           
@@ -340,33 +393,40 @@ export default function WelcomeScreen() {
         </View>
 
         {/* Auto-Scrolling Video Categories Carousel */}
-        <Text style={styles.sectionTitle}>Need something done</Text>
-        <Text style={styles.subTitle}>Cut through the competition and earn more with customers you know</Text>
+        <Text style={[styles.sectionTitle, { fontSize: RFValue(isTablet ? 20 : 18) }]}>Need something done</Text>
+        <Text style={[styles.subTitle, { fontSize: RFValue(isTablet ? 14 : 13), paddingHorizontal: isTablet ? wp('10%') : wp('5%') }]}>Cut through the competition and earn more with customers you know</Text>
 
         <View style={styles.carouselContainer}>
           <FlatList
             ref={flatListRef}
             data={categoryImages}
-            renderItem={({ item }) => <ImageCategory item={item} onPress={handleTagPress} />}
+            renderItem={({ item }) => (
+              <ImageCategory 
+                item={item} 
+                onPress={handleTagPress} 
+                isTabletDevice={isTablet}
+                screenWidth={screenWidth}
+              />
+            )}
             keyExtractor={(item) => item.id}
             horizontal
             showsHorizontalScrollIndicator={false}
-            snapToInterval={screenWidth * 0.35 + 12}
+            snapToInterval={snapInterval}
             decelerationRate="fast"
-            contentContainerStyle={styles.carouselContent}
+            contentContainerStyle={[styles.carouselContent, { paddingHorizontal: isTablet ? wp('6%') : wp('3%') }]}
             keyboardShouldPersistTaps="handled"
             removeClippedSubviews={true} // Optimize for performance
-            maxToRenderPerBatch={10} // Render 10 items at a time
-            initialNumToRender={5} // Start with 5 visible items
-            windowSize={5} // Keep 5 items in memory
+            maxToRenderPerBatch={isTablet ? 15 : 10} // Render more items on tablet
+            initialNumToRender={isTablet ? 8 : 5} // Start with more visible items on tablet
+            windowSize={isTablet ? 7 : 5} // Keep more items in memory on tablet
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
               { useNativeDriver: false } // Required for scroll tracking
             )}
             scrollEventThrottle={16} // Smooth 60fps scrolling
             getItemLayout={(data, index) => ({
-              length: screenWidth * 0.35 + 12,
-              offset: (screenWidth * 0.35 + 12) * index,
+              length: snapInterval,
+              offset: snapInterval * index,
               index,
             })}
             onScrollToIndexFailed={(info) => {
@@ -387,76 +447,90 @@ export default function WelcomeScreen() {
           />
           
           {/* Pagination Dots */}
-          <View style={styles.paginationContainer}>
+          <View style={[styles.paginationContainer, { marginTop: isTablet ? wp('2%') : wp('2.3%') }]}>
             {Array.from({ length: Math.min(10, categoryImages.length) }).map((_, index) => (
               <View
                 key={index}
                 style={[
                   styles.paginationDot,
-                  Math.floor(currentIndex / 3) === index && styles.paginationDotActive,
+                  { width: isTablet ? 8 : 6, height: isTablet ? 8 : 6, borderRadius: isTablet ? 4 : 3 },
+                  Math.floor(currentIndex / 3) === index && [styles.paginationDotActive, { width: isTablet ? 24 : 18 }],
                 ]}
               />
             ))}
           </View>
         </View>
-      </View>
+      </ScrollView>
 
       {/* Social Media Section - Fixed at Bottom */}
-      <View style={styles.socialMediaSection}>
+      <View style={[
+        styles.socialMediaSection,
+        { 
+          right: isTablet ? wp('3%') : 14, 
+          bottom: isTablet ? (isLandscape ? 80 : 160) : 207 
+        }
+      ]}>
         {/* Social Media Icons - Only show when menu is open */}
         {socialMenuOpen && (
-          <View style={styles.socialIconsContainer}>
+          <View style={[styles.socialIconsContainer, { gap: isTablet ? 16 : 12, marginBottom: isTablet ? 16 : 12 }]}>
             <TouchableOpacity 
-              style={[styles.socialIconWrapper, styles.whatsappBg]} 
+              style={[styles.socialIconWrapper, styles.whatsappBg, { width: isTablet ? 54 : 44, height: isTablet ? 54 : 44, borderRadius: isTablet ? 27 : 22 }]} 
               activeOpacity={0.8}
               onPress={() => Linking.openURL('https://wa.me/your-number')}
             >
-              <Ionicons name="logo-whatsapp" size={22} color="#fff" />
+              <Ionicons name="logo-whatsapp" size={isTablet ? 26 : 22} color="#fff" />
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={[styles.socialIconWrapper, styles.facebookBg]} 
+              style={[styles.socialIconWrapper, styles.facebookBg, { width: isTablet ? 54 : 44, height: isTablet ? 54 : 44, borderRadius: isTablet ? 27 : 22 }]} 
               activeOpacity={0.8}
               onPress={() => Linking.openURL('https://facebook.com/mytodoo')}
             >
-              <Ionicons name="logo-facebook" size={22} color="#fff" />
+              <Ionicons name="logo-facebook" size={isTablet ? 26 : 22} color="#fff" />
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={[styles.socialIconWrapper, styles.instagramBg]} 
+              style={[styles.socialIconWrapper, styles.instagramBg, { width: isTablet ? 54 : 44, height: isTablet ? 54 : 44, borderRadius: isTablet ? 27 : 22 }]} 
               activeOpacity={0.8}
               onPress={() => Linking.openURL('https://instagram.com/mytodoo')}
             >
-              <Ionicons name="logo-instagram" size={22} color="#fff" />
+              <Ionicons name="logo-instagram" size={isTablet ? 26 : 22} color="#fff" />
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={[styles.socialIconWrapper, styles.linkedinBg]} 
+              style={[styles.socialIconWrapper, styles.linkedinBg, { width: isTablet ? 54 : 44, height: isTablet ? 54 : 44, borderRadius: isTablet ? 27 : 22 }]} 
               activeOpacity={0.8}
               onPress={() => Linking.openURL('https://linkedin.com/company/mytodoo')}
             >
-              <Ionicons name="logo-linkedin" size={22} color="#fff" />
+              <Ionicons name="logo-linkedin" size={isTablet ? 26 : 22} color="#fff" />
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={[styles.socialIconWrapper, styles.tiktokBg]} 
+              style={[styles.socialIconWrapper, styles.tiktokBg, { width: isTablet ? 54 : 44, height: isTablet ? 54 : 44, borderRadius: isTablet ? 27 : 22 }]} 
               activeOpacity={0.8}
               onPress={() => Linking.openURL('https://tiktok.com/@mytodoo')}
             >
-              <Ionicons name="logo-tiktok" size={22} color="#fff" />
+              <Ionicons name="logo-tiktok" size={isTablet ? 26 : 22} color="#fff" />
             </TouchableOpacity>
           </View>
         )}
         
         {/* Main FAB Button */}
         <TouchableOpacity 
-          style={styles.fabButton}
+          style={[
+            styles.fabButton,
+            { 
+              width: isTablet ? 56 : 40, 
+              height: isTablet ? 56 : 40, 
+              borderRadius: isTablet ? 28 : 20 
+            }
+          ]}
           activeOpacity={0.8}
           onPress={() => setSocialMenuOpen(!socialMenuOpen)}
         >
           <Ionicons 
             name={socialMenuOpen ? "close" : "share-social"} 
-            size={24} 
+            size={isTablet ? 28 : 24} 
             color="#fff" 
           />
         </TouchableOpacity>
@@ -477,55 +551,61 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   headerWhite: {
     backgroundColor: '#003399',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingTop: hp('1%'),
-    paddingBottom: 0,
+    paddingHorizontal: wp('4%'),
+    paddingTop: hp('2%'),
+    paddingBottom: hp('1%'),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: isTablet ? 100 : 80,
+    minHeight: 90,
   },
   logoPlaceholder: {
-    width: isTablet ? 28 : 24,
+    width: 24,
     flexShrink: 0,
   },
   logoCenter: {
-    height: isTablet ? 300 : 150,
-    width: isTablet ? 300 : 240,
+    height: 60,
+    width: 180,
     flexShrink: 0,
   },
   notificationButton: {
     position: 'relative',
-    width: isTablet ? 28 : 24,
+    width: 24,
     flexShrink: 0,
   },
   notificationBadge: {
     position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: '#ff4444',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
+    top: -8,
+    right: -8,
+    backgroundColor: '#FF0000',
+    borderRadius: 12,
+    minWidth: 22,
+    height: 22,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   notificationCount: {
-    color: '#fff',
-    fontSize: 12,
+    color: '#FFFFFF',
+    fontSize: 11,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   blueSection: {
     backgroundColor: '#003399',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingHorizontal: wp('4%'),
     paddingTop: hp('1%'),
     paddingBottom: hp('2%'),
-    maxWidth: isTablet ? 900 : undefined,
-    alignSelf: isTablet ? 'center' : 'auto',
     width: '100%',
   },
   title: {
-    fontSize: RFValue(isTablet ? 20 : 22),
+    fontSize: RFValue(22),
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
@@ -534,21 +614,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp('2%'),
   },
   subtitle: {
-    fontSize: RFValue(isTablet ? 13 : 14),
+    fontSize: RFValue(14),
     color: '#fff',
     textAlign: 'center',
     marginBottom: hp('2%'),
     paddingHorizontal: wp('2%'),
-    lineHeight: RFValue(isTablet ? 18 : 20),
+    lineHeight: RFValue(20),
   },
   input: {
     backgroundColor: '#fff',
     borderRadius: 12,
     paddingHorizontal: wp('4%'),
     paddingVertical: hp('1.8%'),
-    fontSize: RFValue(isTablet ? 14 : 13),
+    fontSize: RFValue(13),
     marginBottom: hp('2%'),
-    minHeight: isTablet ? hp('6%') : hp('6.5%'),
+    minHeight: hp('6.5%'),
     width: '100%',
     textAlignVertical: 'center',
     shadowColor: '#000',
@@ -611,7 +691,7 @@ const styles = StyleSheet.create({
     color: '#ff6b35',
   },
   sectionTitle: {
-    fontSize: RFValue(isTablet ? 17 : 18),
+    fontSize: RFValue(18),
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
@@ -619,30 +699,28 @@ const styles = StyleSheet.create({
     marginBottom: hp('0.8%'),
   },
   subTitle: {
-    fontSize: RFValue(isTablet ? 12 : 13),
+    fontSize: RFValue(13),
     color: '#666',
     textAlign: 'center',
     marginBottom: hp('1.5%'),
-    paddingHorizontal: isTablet ? wp('15%') : wp('5%'),
+    paddingHorizontal: wp('5%'),
   },
   // NEW: Auto-scrolling Carousel Styles (show 5 at a time)
   carouselContainer: {
     paddingVertical: hp('1%'),
     paddingBottom: hp('2.5%'),
     marginBottom: 0,
+    flex: 1,
   },
   carouselContent: {
-    paddingHorizontal: isTablet ? wp('8%') : wp('3%'),
+    paddingHorizontal: wp('3%'),
     gap: wp('2%'),
   },
   carouselItem: {
-    width: isTablet ? wp('18%') : screenWidth * 0.35,
     marginHorizontal: wp('1.5%'),
     alignItems: 'center',
   },
   imageContainer: {
-    width: isTablet ? wp('18%') : screenWidth * 0.35,
-    height: isTablet ? wp('18%') : screenWidth * 0.35,
     borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: '#E3F2FD',
@@ -676,12 +754,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   carouselLabel: {
-    fontSize: RFValue(isTablet ? 9 : 10),
+    fontSize: RFValue(10),
     fontWeight: '700',
     color: '#1A237E',
     textAlign: 'center',
     marginTop: hp('0.8%'),
-    lineHeight: RFValue(isTablet ? 11 : 13),
+    lineHeight: RFValue(13),
     paddingHorizontal: wp('0.5%'),
   },
   // Pagination Dots
@@ -689,8 +767,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-  //  marginTop: 8,
-    marginTop: isTablet ? wp('2.5%') : wp('2.3%'),
+    marginTop: wp('2.3%'),
     gap: 5,
   },
   paginationDot: {
@@ -706,16 +783,16 @@ const styles = StyleSheet.create({
   // Social Media Section - Fixed at Bottom
   socialMediaSection: {
     position: 'absolute',
-    right: isTablet ? wp('4%') : 14,
-    bottom: isTablet ? 220 : 207,
+    right: 14,
+    bottom: 207,
     backgroundColor: 'transparent',
     zIndex: 12,
     alignItems: 'center',
   },
   fabButton: {
-    width: isTablet ? 48 : 40,
-    height: isTablet ? 48 : 40,
-    borderRadius: isTablet ? 24 : 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#00993bf2',
     justifyContent: 'center',
     alignItems: 'center',
@@ -731,13 +808,13 @@ const styles = StyleSheet.create({
   socialIconsContainer: {
     flexDirection: 'column',
     alignItems: 'center',
-    gap: isTablet ? 14 : 12,
-    marginBottom: isTablet ? 14 : 12,
+    gap: 12,
+    marginBottom: 12,
   },
   socialIconWrapper: {
-    width: isTablet ? 50 : 44,
-    height: isTablet ? 50 : 44,
-    borderRadius: isTablet ? 25 : 22,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

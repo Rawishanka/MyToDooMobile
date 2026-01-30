@@ -11,6 +11,7 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
+    useWindowDimensions,
     View
 } from 'react-native';
 
@@ -40,9 +41,22 @@ import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
 import { useBrowseFiltersAPI } from './hooks/useBrowseFiltersAPI';
 
 // Responsive utilities
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { hp, RFValue, wp } from '@/src/shared/utils/responsive';
+
+// Helper function to detect tablet dynamically
+const getIsTablet = (width: number, height: number) => {
+  const aspectRatio = height / width;
+  if (Platform.OS === 'ios') {
+    return width >= 768 || (width >= 600 && aspectRatio < 1.6);
+  }
+  return width >= 600;
+};
 
 export default function BrowseTasksScreen() {
+  // Use dynamic dimensions for responsive layout
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(screenWidth, screenHeight), [screenWidth, screenHeight]);
+  
   // FlatList ref for scroll position management
   const flatListRef = useRef<FlatList>(null);
   
@@ -260,7 +274,7 @@ export default function BrowseTasksScreen() {
       <OfflineBanner />
       
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingHorizontal: isTablet ? wp('12.5%') : wp('3%') }]}>
         <ViewModeToggle 
           viewMode={viewMode} 
           onToggle={() => setViewMode(viewMode === 'list' ? 'map' : 'list')} 
@@ -301,7 +315,7 @@ export default function BrowseTasksScreen() {
 
       {/* Search Results Info */}
       {searchText.trim().length > 0 && !searchVisible && (
-        <View style={styles.searchResultsInfo}>
+        <View style={[styles.searchResultsInfo, { paddingHorizontal: isTablet ? wp('12.5%') : wp('4%') }]}>
           <Text style={styles.searchResultsText}>
             {filteredAndSortedTasks.length} result{filteredAndSortedTasks.length !== 1 ? 's' : ''} for &quot;{searchText}&quot;
           </Text>
@@ -315,7 +329,7 @@ export default function BrowseTasksScreen() {
       )}
 
       {/* Filter & Sort Row */}
-      <View style={styles.filterSortRow}>
+      <View style={[styles.filterSortRow, { paddingHorizontal: isTablet ? wp('12.5%') : wp('4%') }]}>
         <FilterButton 
           filteredTasksCount={filteredAndSortedTasks.length}
           onPress={() => setFilterVisible(true)}
@@ -333,7 +347,7 @@ export default function BrowseTasksScreen() {
             taskTitles: filteredAndSortedTasks.slice(0, 3).map(t => ({ id: t._id, title: t.title }))
           });
           return (
-            <View style={styles.mapContainer}>
+            <View style={[styles.mapContainer, { marginHorizontal: isTablet ? wp('12.5%') : wp('4%') }]}>
               <MapView 
                 tasks={filteredAndSortedTasks}
                 iconUrl={markerIconUri}
@@ -536,7 +550,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('3%'),
+    paddingHorizontal: wp('3%'),
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: hp('1.2%'),
@@ -561,25 +575,33 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: 'absolute',
-    top: -2,
-    right: -2,
-    backgroundColor: '#ff4444',
-    borderRadius: 10,
-    minWidth: isTablet ? 20 : 18,
-    height: isTablet ? 20 : 18,
+    top: -4,
+    right: -4,
+    backgroundColor: '#FF0000',
+    borderRadius: 12,
+    minWidth: 20,
+    height: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   badgeText: {
-    color: '#fff',
-    fontSize: RFValue(8),
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: RFValue(9),
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   searchResultsInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingHorizontal: wp('4%'),
     paddingVertical: hp('1.2%'),
     backgroundColor: '#f0f8ff',
     borderBottomWidth: 1,
@@ -594,12 +616,12 @@ const styles = StyleSheet.create({
   filterSortRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingHorizontal: wp('4%'),
     marginBottom: hp('1.2%'),
   },
   mapContainer: {
     flex: 1,
-    marginHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    marginHorizontal: wp('4%'),
     marginBottom: hp('1.2%'),
     borderRadius: 12,
     overflow: 'hidden',
@@ -610,7 +632,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   emptyState: {
-    padding: isTablet ? hp('6%') : hp('5%'),
+    padding: hp('5%'),
     alignItems: 'center',
   },
   emptyText: {
@@ -676,7 +698,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: hp('0.8%'),
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingHorizontal: wp('4%'),
     backgroundColor: '#e6f2ff',
     gap: wp('1%'),
   },

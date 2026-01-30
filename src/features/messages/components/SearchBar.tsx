@@ -1,9 +1,9 @@
 // Search Bar Component
 
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { Platform, StyleSheet, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -16,15 +16,32 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   setSearchQuery, 
   placeholder = 'Search messages...' 
 }) => {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
+  
   const clearSearch = () => setSearchQuery('');
   
   return (
-    <View style={styles.searchContainer}>
-      <View style={styles.searchBox}>
-        <Ionicons name="search" size={20} color="#8E8E93" style={styles.searchIcon} />
+    <View style={[
+      styles.searchContainer,
+      isTablet && { paddingHorizontal: wp('12.5%'), paddingVertical: hp('1.5%') }
+    ]}>
+      <View style={[
+        styles.searchBox,
+        isTablet && { borderRadius: 12, paddingHorizontal: wp('2%'), height: hp('5.5%') }
+      ]}>
+        <Ionicons 
+          name="search" 
+          size={20} 
+          color="#8E8E93" 
+          style={[styles.searchIcon, isTablet && { marginRight: wp('1.5%') }]} 
+        />
         
         <TextInput
-          style={styles.searchInput}
+          style={[
+            styles.searchInput,
+            isTablet && { fontSize: RFValue(17) }
+          ]}
           placeholder={placeholder}
           placeholderTextColor="#8E8E93"
           value={searchQuery}
@@ -34,7 +51,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         />
         
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+          <TouchableOpacity 
+            onPress={clearSearch} 
+            style={[styles.clearButton, isTablet && { padding: 6, marginLeft: wp('1%') }]}
+          >
             <Ionicons name="close-circle" size={20} color="#8E8E93" />
           </TouchableOpacity>
         )}
@@ -45,8 +65,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
 const styles = StyleSheet.create({
   searchContainer: {
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingVertical: isTablet ? hp('1.5%') : hp('1.2%'),
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.2%'),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
@@ -55,21 +75,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F2F2F7',
-    borderRadius: isTablet ? 12 : 10,
-    paddingHorizontal: isTablet ? wp('2%') : wp('2.5%'),
-    height: isTablet ? hp('5.5%') : hp('4.5%'),
+    borderRadius: 10,
+    paddingHorizontal: wp('2.5%'),
+    height: hp('4.5%'),
   },
   searchIcon: {
-    marginRight: isTablet ? wp('1.5%') : wp('2%'),
+    marginRight: wp('2%'),
   },
   searchInput: {
     flex: 1,
-    fontSize: RFValue(isTablet ? 17 : 15),
+    fontSize: RFValue(15),
     color: '#000',
     paddingVertical: 0,
   },
   clearButton: {
-    padding: isTablet ? 6 : 4,
-    marginLeft: isTablet ? wp('1%') : wp('1%'),
+    padding: 4,
+    marginLeft: wp('1%'),
   },
 });

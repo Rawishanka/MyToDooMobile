@@ -18,6 +18,7 @@ export { hp, RFValue, wp };
 const { width, height } = Dimensions.get('window');
 const aspectRatio = height / width;
 
+// Static isTablet for backward compatibility (use getIsTablet for dynamic detection)
 export const isTablet = (() => {
   // iPad mini has width 768, most tablets > 600
   // Also check aspect ratio as tablets are typically less tall
@@ -27,6 +28,16 @@ export const isTablet = (() => {
   // Android tablets
   return width >= 600;
 })();
+
+// Dynamic tablet detection function - use this with useWindowDimensions hook
+export const getIsTablet = (screenWidth: number, screenHeight: number): boolean => {
+  const ratio = screenHeight / screenWidth;
+  if (Platform.OS === 'ios') {
+    return screenWidth >= 768 || (screenWidth >= 600 && ratio < 1.6);
+  }
+  return screenWidth >= 600;
+};
+
 export const isSmallDevice = () => {
   const { width, height } = Dimensions.get('window');
   return width < 375 || height < 667;
@@ -120,6 +131,7 @@ export default {
   hp,
   RFValue,
   isTablet,
+  getIsTablet,
   isSmallDevice,
   isLargeDevice,
   getResponsiveValue,

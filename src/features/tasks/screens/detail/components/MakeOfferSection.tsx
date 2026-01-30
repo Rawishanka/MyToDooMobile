@@ -1,6 +1,6 @@
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
+import React, { useMemo } from 'react';
+import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 interface MakeOfferSectionProps {
   onMakeOffer: () => void;
@@ -8,6 +8,9 @@ interface MakeOfferSectionProps {
 }
 
 export const MakeOfferSection: React.FC<MakeOfferSectionProps> = ({ onMakeOffer, offerCount = 0 }) => {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
+
   // Generate appropriate text based on offer count
   const getOfferText = () => {
     if (offerCount === 0) {
@@ -20,7 +23,7 @@ export const MakeOfferSection: React.FC<MakeOfferSectionProps> = ({ onMakeOffer,
   };
 
   return (
-    <View style={styles.makeOfferSection}>
+    <View style={[styles.makeOfferSection, isTablet && { padding: wp('3%') }]}>
       <Text style={styles.makeOfferTitle}>Make an offer now</Text>
       <Text style={styles.viewersText}>{getOfferText()}</Text>
 
@@ -34,7 +37,7 @@ export const MakeOfferSection: React.FC<MakeOfferSectionProps> = ({ onMakeOffer,
 const styles = StyleSheet.create({
   makeOfferSection: {
     backgroundColor: '#f8f9fa',
-    padding: isTablet ? wp('3%') : wp('4%'),
+    padding: wp('4%'),
     marginBottom: hp('2%'),
     borderRadius: 8,
   },

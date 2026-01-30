@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import { ActivityIndicator, Dimensions, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { ActivityIndicator, Dimensions, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 
 import { normalizeCDNUrl } from '@/src/api/cdn-api';
-import { isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AnswerQuestionModal } from './AnswerQuestionModal';
@@ -33,6 +33,8 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   taskOffers = [],
   hideAskButton = false, // Default to empty array
 }) => {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
   const insets = useSafeAreaInsets();
   const currentUser = useAuthStore((state) => state.user);
   const [imageModalVisible, setImageModalVisible] = useState(false);
@@ -369,10 +371,10 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                 <View style={styles.questionUserSection}>
                   <Image 
                     source={{ uri: getUserAvatar(question) }}
-                    style={styles.questionAvatar}
+                    style={[styles.questionAvatar, isTablet && { width: 50, height: 50, borderRadius: 25 }]}
                   />
                   <View style={styles.questionUserInfo}>
-                    <Text style={styles.questionUserName}>
+                    <Text style={[styles.questionUserName, isTablet && { fontSize: RFValue(12) }]}>
                       {question.isAnonymous
                         ? 'Anonymous User'
                         : (() => {
@@ -728,9 +730,9 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   questionAvatar: {
-    width: isTablet ? 50 : 40,
-    height: isTablet ? 50 : 40,
-    borderRadius: isTablet ? 25 : 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     marginRight: wp('3%'),
     backgroundColor: '#f0f0f0',
   },
@@ -738,7 +740,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   questionUserName: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(12),
     fontWeight: '600',
     color: '#000',
     marginBottom: 2,

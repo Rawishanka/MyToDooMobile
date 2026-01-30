@@ -12,6 +12,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: 'mytodoo',
   userInterfaceStyle: 'light',
   newArchEnabled: false,
+  jsEngine: 'jsc', // Use JavaScriptCore instead of Hermes to avoid inspector errors
   assetBundlePatterns: ['**/*'],
   runtimeVersion: '1.0.0',
   ios: {

@@ -5,20 +5,22 @@ import { usePostTaskWithImages } from '@/src/shared/hooks/useTaskApi';
 import { debugAuthState, forceFreshLogin } from '@/src/shared/utils/auth-utils';
 import { getCurrencyFromLocation, getCurrencySymbol } from '@/src/shared/utils/currency';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { getIsTablet, hp, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
     TouchableOpacity,
+    useWindowDimensions,
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,17 +30,34 @@ type ListItemProps = {
   text: string;
   value: string;
   onPress: () => void;
+  isTablet?: boolean;
 };
 
-const ListItem = React.memo(({ icon, text, value, onPress }: ListItemProps) => (
-  <TouchableOpacity style={styles.item} onPress={onPress} activeOpacity={0.7}>
+const ListItem = React.memo(({ icon, text, value, onPress, isTablet = false }: ListItemProps) => (
+  <TouchableOpacity 
+    style={[
+      styles.item,
+      isTablet && { paddingVertical: hp('2%') }
+    ]} 
+    onPress={onPress} 
+    activeOpacity={0.7}
+  >
     <View style={styles.itemLeft}>
-      <View style={styles.iconContainer}>
+      <View style={[
+        styles.iconContainer,
+        isTablet && { width: 28, height: 28 }
+      ]}>
         {icon}
       </View>
       <View style={styles.textContainer}>
-        <Text style={styles.itemText}>{text}</Text>
-        {value && <Text style={styles.valueText}>{value}</Text>}
+        <Text style={[
+          styles.itemText,
+          isTablet && { fontSize: RFValue(16) }
+        ]}>{text}</Text>
+        {value && <Text style={[
+          styles.valueText,
+          isTablet && { fontSize: RFValue(14) }
+        ]}>{value}</Text>}
       </View>
     </View>
     <ChevronRight size={20} color="#003366" strokeWidth={2} />
@@ -47,6 +66,9 @@ const ListItem = React.memo(({ icon, text, value, onPress }: ListItemProps) => (
 ListItem.displayName = 'ListItem';
 
 export default function DetailScreen() {
+  const { width, height } = useWindowDimensions();
+  const isTablet = useMemo(() => getIsTablet(width, height), [width, height]);
+  
   const { myTask, resetTask } = useCreateTaskStore();
   const [[isLoading, storedToken], setStoredToken] = useStorageState('token');
   const { setPendingAction } = usePendingActionStore();
@@ -325,17 +347,36 @@ export default function DetailScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[
+      styles.container,
+      isTablet && {
+        paddingHorizontal: wp('12.5%'),
+        maxWidth: 900,
+        alignSelf: 'center',
+      }
+    ]}>
       {/* API Debug Panel */}
       {/* <ApiDebugPanel /> */}
       
       {/* Back Arrow Button */}
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+      <TouchableOpacity 
+        style={[
+          styles.backBtn,
+          isTablet && { left: wp('12.5%') }
+        ]} 
+        onPress={() => router.back()}
+      >
         <ChevronLeft size={24} color="#000" />
       </TouchableOpacity>
 
-      <Text style={styles.title}>Ready to get offers?</Text>
-      <Text style={styles.subtitle}>Post the task when you&apos;re ready</Text>
+      <Text style={[
+        styles.title,
+        isTablet && { fontSize: RFValue(24) }
+      ]}>Ready to get offers?</Text>
+      <Text style={[
+        styles.subtitle,
+        isTablet && { fontSize: RFValue(14) }
+      ]}>Post the task when you&apos;re ready</Text>
 
       <ScrollView contentContainerStyle={styles.list} removeClippedSubviews={false}>
         <ListItem
@@ -343,6 +384,7 @@ export default function DetailScreen() {
           text="Task Title"
           value={myTask.title || 'Move the car'}
           onPress={() => router.push('/(welcome-screen)/title-screen?section=title' as any)}
+          isTablet={isTablet}
         />
         
         <ListItem
@@ -350,6 +392,7 @@ export default function DetailScreen() {
           text="When"
           value={getDateTimeText()}
           onPress={() => router.push('/(welcome-screen)/title-screen?section=when' as any)}
+          isTablet={isTablet}
         />
         
         <ListItem
@@ -357,6 +400,7 @@ export default function DetailScreen() {
           text="Location"
           value={getLocationText()}
           onPress={() => router.push('/(welcome-screen)/title-screen?section=location' as any)}
+          isTablet={isTablet}
         />
         
         <ListItem
@@ -364,6 +408,7 @@ export default function DetailScreen() {
           text="Description"
           value={myTask.description || 'Add task description'}
           onPress={() => router.push('/(welcome-screen)/title-screen?section=description' as any)}
+          isTablet={isTablet}
         />
         
         <ListItem
@@ -371,6 +416,7 @@ export default function DetailScreen() {
           text="Budget"
           value={myTask.budget > 0 ? `${currencyInfo.symbol}${myTask.budget}` : 'Set budget'}
           onPress={() => router.push('/(welcome-screen)/budget-screen' as any)}
+          isTablet={isTablet}
         />
       </ScrollView>
 
@@ -408,20 +454,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('5%'),
+    paddingHorizontal: wp('5%'),
     paddingTop: 60,
-    maxWidth: isTablet ? 900 : undefined,
-    alignSelf: isTablet ? 'center' : 'auto',
     width: '100%',
   },
   backBtn: {
     position: 'absolute',
     top: 50,
-    left: isTablet ? wp('12.5%') : wp('5%'),
+    left: wp('5%'),
     zIndex: 1,
   },
   title: {
-    fontSize: RFValue(isTablet ? 24 : 20),
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     color: '#0B1A33',
     marginBottom: hp('0.6%'),
@@ -432,13 +476,13 @@ const styles = StyleSheet.create({
     color: '#667085',
     marginBottom: hp('2.5%'),
     textAlign: 'center',
-    fontSize: RFValue(isTablet ? 14 : 13),
+    fontSize: RFValue(13),
   },
   list: {
     paddingBottom: hp('2.5%'),
   },
   item: {
-    paddingVertical: isTablet ? hp('2%') : hp('1.8%'),
+    paddingVertical: hp('1.8%'),
     borderBottomWidth: 0.5,
     borderBottomColor: '#ccc',
     flexDirection: 'row',
@@ -452,8 +496,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   iconContainer: {
-    width: isTablet ? 28 : 24,
-    height: isTablet ? 28 : 24,
+    width: 24,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -462,12 +506,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemText: {
-    fontSize: RFValue(isTablet ? 16 : 14),
+    fontSize: RFValue(14),
     color: '#003366',
     fontWeight: '600',
   },
   valueText: {
-    fontSize: RFValue(isTablet ? 14 : 12),
+    fontSize: RFValue(12),
     color: '#667085',
     marginTop: hp('0.3%'),
   },
