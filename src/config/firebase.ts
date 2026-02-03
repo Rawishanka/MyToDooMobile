@@ -36,6 +36,7 @@ if (!isExpoGo) {
     const firebaseApp = require('@react-native-firebase/app').default;
     const firebaseFirestore = require('@react-native-firebase/firestore').default;
     const firebaseMessaging = require('@react-native-firebase/messaging').default;
+    const firebaseAuth = require('@react-native-firebase/auth').default;
 
     // Initialize Firebase (if not already initialized)
     if (!firebaseApp.apps.length) {
@@ -49,19 +50,14 @@ if (!isExpoGo) {
     firebase = firebaseApp;
     db = firebaseFirestore();
     fcm = firebaseMessaging();
+    auth = firebaseAuth; // Store the auth module
     
-    // Try to load Firebase Auth module (but don't initialize yet to avoid crashes)
-    try {
-      const firebaseAuth = require('@react-native-firebase/auth').default;
-      auth = firebaseAuth; // Store the module, not the instance
-      console.log('🔥 Firebase Auth module loaded (will initialize on demand)');
-    } catch (authError) {
-      console.log('ℹ️ Firebase Auth module not available - Google Sign-In will be disabled');
-      auth = null;
-    }
+    console.log('🔥 Firebase Auth module loaded successfully');
+    console.log('🔥 Firebase initialization complete - Google Sign-In ready!');
   } catch (error) {
     console.log('⚠️ React Native Firebase not available - using Expo mode');
     console.error('Firebase initialization error:', error);
+    auth = null;
   }
 } else {
   console.log('📱 Running in Expo Go - Firebase native modules not available');

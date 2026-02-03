@@ -616,50 +616,23 @@ export const useSignup = () => {
         hasToken: !!result.token, 
         hasUser: !!result.user,
         userEmail: result.user?.email,
-        isVerified: result.user?.isVerified 
+        isNewUser: result.isNewUser 
       });
       
-      if (result.user?.isVerified) {
-        // User is already verified - complete signup and go to welcome
-        console.log('✅ User already verified - completing signup');
-        Alert.alert(
-          'Welcome Back!',
-          'Your Google account is already verified. Welcome to MyToDoo!',
-          [
-            {
-              text: 'Continue',
-              onPress: () => {
-                router.replace('/(tabs)' as any);
-              }
-            }
-          ]
-        );
-      } else {
-        // User is not verified - show verification needed and go to 2FA
-        console.log('⚠️ User not verified - redirecting to verification');
-        
-        // Set form data from Google response
-        if (result.user?.email) setEmail(result.user.email);
-        if (result.user?.firstName) setFirstName(result.user.firstName);
-        if (result.user?.lastName) setLastName(result.user.lastName);
-        if (result.user?.phone) setPhone(result.user.phone.replace(/^\+\d+/, '')); // Remove country code
-        
-        Alert.alert(
-          'Account Not Verified',
-          'Your Google account needs verification. Please verify your email and phone number.',
-          [
-            {
-              text: 'Verify Account',
-              onPress: () => {
-                setVerificationStep('email');
-                setEmailTimer(57);
-                // Send email verification
-                handleResendEmail();
-              }
-            }
-          ]
-        );
-      }
+      // ✅ FIX: Google Sign-In users do NOT need OTP verification
+      // Google has already verified their email - skip 2FA and go directly to app
+      console.log('✅ Google authentication complete - skipping OTP verification');
+      
+      // Clear all caches to ensure fresh data
+      console.log('🧹 Clearing all cached data before navigation...');
+      await queryClient.clear();
+      
+      // Wait for auth store to be updated
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Navigate directly to app
+      console.log('🚀 Navigating to app after Google Sign-In');
+      router.replace('/(tabs)' as any);
       
     } catch (error: any) {
       if (__DEV__) {

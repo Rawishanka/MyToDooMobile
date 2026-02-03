@@ -7,7 +7,6 @@ import EditProfileScreen from '@/src/shared/components/custom_components/editpro
 import FAQScreen from '@/src/shared/components/custom_components/faq-screen';
 import LegalScreen from '@/src/shared/components/custom_components/legal-screen';
 import Logout from '@/src/shared/components/custom_components/Logout';
-import ProfileUpdateForm from '@/src/shared/components/custom_components/profile-update-form';
 import { useGetUserProfile, useGetUserRatingStats, useGetUserReviews, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
 import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
@@ -513,10 +512,11 @@ export default function AccountScreen() {
     }
   };
 
-  // If profile update screen is selected, show profile update form
+  // If profile update screen is selected, show edit profile (use EditProfileScreen with all location fields)
   if (currentScreen === 'profile-update') {
-    return <ProfileUpdateForm 
+    return <EditProfileScreen 
       onBack={navigateToAccount} 
+      onSave={undefined}
       userData={userData}
     />;
   }
@@ -526,6 +526,7 @@ export default function AccountScreen() {
     return <EditProfileScreen 
       onBack={navigateToAccount} 
       onSave={undefined}
+      userData={userData}
     />;
   }
 

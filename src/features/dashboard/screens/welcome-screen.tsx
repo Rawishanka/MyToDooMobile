@@ -7,24 +7,24 @@ import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { Bell, ChevronRight } from 'lucide-react-native';
+// Using @expo/vector-icons for better iOS production build compatibility
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Animated,
-  Dimensions,
-  FlatList,
-  Image,
-  Keyboard,
-  Linking,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+    ActivityIndicator,
+    Animated,
+    Dimensions,
+    FlatList,
+    Image,
+    Keyboard,
+    Linking,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
 
 // Get screen dimensions
@@ -259,7 +259,7 @@ export default function WelcomeScreen() {
           style={styles.notificationButton} 
           onPress={() => setShowNotifications(true)}
         >
-          <Bell size={24} color="#fff" />
+          <Ionicons name="notifications-outline" size={24} color="#fff" />
           {unreadCount > 0 && (
             <View style={styles.notificationBadge}>
               <Text style={styles.notificationCount}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
@@ -305,7 +305,7 @@ export default function WelcomeScreen() {
           >
             <MaterialCommunityIcons name="plus" size={18} color="#fff" />
             <Text style={styles.postButtonText}>Post a Task</Text>
-            <ChevronRight size={18} color="#fff" />
+            <Ionicons name="chevron-forward" size={18} color="#fff" />
           </TouchableOpacity>
           
           

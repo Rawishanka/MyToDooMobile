@@ -222,11 +222,13 @@ export const getUserChats = async (): Promise<GetChatsResponse> => {
       total: validChats.length
     };
   } catch (error: any) {
-    console.error('❌ Failed to fetch user chats:', error);
-    
+    // Don't log authentication errors as errors - they're expected when user is not logged in
     if (error?.response?.status === 401) {
+      console.log('ℹ️ User not authenticated - skipping chat fetch');
       throw new Error('Authentication required');
     }
+    
+    console.error('❌ Failed to fetch user chats:', error);
     
     throw new Error(
       error?.response?.data?.message || 'Failed to fetch chats. Please try again.'

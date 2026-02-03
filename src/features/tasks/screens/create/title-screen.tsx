@@ -2,7 +2,6 @@ import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -180,7 +179,7 @@ export default function TitleInputScreen() {
           router.back();
         }
       }}>
-        <ChevronLeft size={24} color="#333" />
+        <Ionicons name="chevron-back" size={24} color="#333" />
       </TouchableOpacity>
 
       <ScrollView 
@@ -203,7 +202,7 @@ export default function TitleInputScreen() {
             <Text style={[styles.categorySelectorText, !selectedCategory && styles.placeholder]}>
               {selectedCategory || 'Select a category'}
             </Text>
-            <ChevronDown size={20} color="#666" />
+            <Ionicons name="chevron-down" size={20} color="#666" />
           </TouchableOpacity>
 
           {/* Category Dropdown */}

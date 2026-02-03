@@ -10,7 +10,6 @@ import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { usePendingActionStore } from '@/src/store/pending-action-store';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React from 'react';
 import {
     ActivityIndicator,
@@ -41,7 +40,7 @@ const ListItem = React.memo(({ icon, text, value, onPress }: ListItemProps) => (
         {value && <Text style={styles.valueText}>{value}</Text>}
       </View>
     </View>
-    <ChevronRight size={20} color="#003366" strokeWidth={2} />
+    <Ionicons name="chevron-forward" size={20} color="#003366" strokeWidth={2} />
   </TouchableOpacity>
 ));
 ListItem.displayName = 'ListItem';
@@ -145,17 +144,19 @@ export default function DetailScreen() {
     // Use the actual date from the task or generate a future date
     const taskDate = myTask.date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     
-    // Get the category from the task
-    const category = !myTask.isRemoval && myTask.category ? myTask.category : "General";
+    // Get the category from the task - IMPORTANT: Must be a STRING for backend!
+    const categoryValue = !myTask.isRemoval && myTask.category ? myTask.category : "General";
+    // Convert to string if it's an array, ensure it's always a string
+    const categoryString = Array.isArray(categoryValue) ? (categoryValue[0] || "General") : String(categoryValue);
     
     const taskRequest: CreateTaskRequest = {
       title: myTask.title || "Untitled Task",
-      category: category,
+      category: categoryString, // ✅ FIXED: Category must be a STRING, not an array
       details: myTask.description || "",
       dateType: "DoneBy",
       date: taskDate,
       time: myTask.time || "Anytime",
-      location: getLocationFromTask(),
+      location: String(getLocationFromTask()).trim() || "Location not specified", // ✅ Ensure location is always a valid string
       locationType: !myTask.isRemoval ? (myTask.locationType || 'In-person') : 'In-person',
       budget: myTask.budget || 0,
       currency: myTask.currency || currencyInfo.code, // Include currency in task creation
@@ -331,7 +332,7 @@ export default function DetailScreen() {
       
       {/* Back Arrow Button */}
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <ChevronLeft size={24} color="#000" />
+        <Ionicons name="chevron-back" size={24} color="#000" />
       </TouchableOpacity>
 
       <Text style={styles.title}>Ready to get offers?</Text>

@@ -83,17 +83,25 @@ export const requestNotificationPermissions = async (): Promise<NotificationPerm
       }
 
       // iOS or older Android: Use Firebase permission request
-      const authStatus = await messaging().requestPermission();
-      const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      try {
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+          authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-      console.log('✅ Firebase permission status:', { authStatus, enabled });
+        console.log('✅ Firebase permission status:', { authStatus, enabled });
 
-      return {
-        granted: enabled,
-        canAskAgain: authStatus !== messaging.AuthorizationStatus.DENIED,
-      };
+        return {
+          granted: enabled,
+          canAskAgain: authStatus !== messaging.AuthorizationStatus.DENIED,
+        };
+      } catch (firebaseError) {
+        console.warn('⚠️ Firebase not initialized yet:', firebaseError);
+        return {
+          granted: false,
+          canAskAgain: true,
+        };
+      }
     }
 
     // Expo Go: Permissions not available (SDK 53+)

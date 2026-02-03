@@ -1,7 +1,7 @@
 import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
+import { Ionicons } from '@expo/vector-icons';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { router } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import {
     KeyboardAvoidingView,
@@ -189,7 +189,7 @@ const LocationScreen = () => {
         >
             {/* Back Arrow */}
             <TouchableOpacity style={styles.backArrow} onPress={() => router.back()}>
-                <ChevronLeft size={24} color="#1C1C1E" />
+                <Ionicons name="chevron-back" size={24} color="#1C1C1E" />
             </TouchableOpacity>
 
             <ScrollView 

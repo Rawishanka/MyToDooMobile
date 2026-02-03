@@ -7,7 +7,6 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -873,7 +872,7 @@ Please remove phone numbers and addresses from the image.`,
             router.back();
           }
         }}>
-          <ChevronLeft size={24} color="#333" />
+          <Ionicons name="chevron-back" size={24} color="#333" />
         </TouchableOpacity>
         
         <View style={styles.headerContent}>
@@ -922,7 +921,7 @@ Please remove phone numbers and addresses from the image.`,
               <Text style={[styles.categorySelectorText, !selectedCategory && styles.placeholder]}>
                 {selectedCategory || 'Select a category'}
               </Text>
-              <ChevronDown size={20} color="#666" />
+              <Ionicons name="chevron-down" size={20} color="#666" />
             </TouchableOpacity>
             {touched.category && !selectedCategory && (
               <Text style={styles.validationText}>Category is required</Text>

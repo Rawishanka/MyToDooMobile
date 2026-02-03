@@ -1,7 +1,7 @@
 import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { Dimensions, Platform, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,7 +16,7 @@ import MyTasksScreen from '@/src/features/tasks/screens/mytasks/mytasks-screen';
 import MakeOfferScreen from '@/src/features/tasks/screens/offers/make-offer-screen';
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 // Get screen width for responsive sizing
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -58,11 +58,13 @@ export default function TabNavigator() {
   const insets = useSafeAreaInsets();
   
   // Get chat data to calculate total unread count
+  // Only fetches when user is authenticated
   const { data: chatData } = useGetUserChats();
   
   // Calculate total unread messages count from all chats
+  // Safely handle when chatData is undefined (user not logged in)
   const totalUnreadCount = React.useMemo(() => {
-    if (!chatData?.chats) return 0;
+    if (!chatData?.chats || !Array.isArray(chatData.chats)) return 0;
     
     return chatData.chats.reduce((total: number, chat: any) => {
       const unreadCount = chat.unreadCount || 0;

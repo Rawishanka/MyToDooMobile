@@ -6,7 +6,6 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronDown, ChevronLeft } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -813,7 +812,7 @@ Please remove phone numbers and addresses from the image.`,
         {/* Fixed Header */}
         <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ChevronLeft size={24} color="#333" />
+          <Ionicons name="chevron-back" size={24} color="#333" />
         </TouchableOpacity>
         
         <View style={styles.headerContent}>
@@ -857,7 +856,7 @@ Please remove phone numbers and addresses from the image.`,
               <Text style={[styles.categorySelectorText, !selectedCategory && styles.placeholder]}>
                 {selectedCategory || 'Select a category'}
               </Text>
-              <ChevronDown size={20} color="#666" />
+              <Ionicons name="chevron-down" size={20} color="#666" />
             </TouchableOpacity>
             {touched.category && !selectedCategory && (
               <Text style={styles.validationText}>Category is required</Text>

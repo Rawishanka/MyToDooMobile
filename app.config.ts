@@ -8,10 +8,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   owner: 'sithila345',
   version: '1.0.0',
   orientation: 'portrait',
-  icon: './assets/images/mytodoo-icon.png',
+  icon: './assets/images/mytodoo-adaptive-icon.png',
   scheme: 'mytodoo',
   userInterfaceStyle: 'light',
-  newArchEnabled: false,
   assetBundlePatterns: ['**/*'],
   runtimeVersion: '1.0.0',
   ios: {
@@ -34,6 +33,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: 'com.mytodoo.mytodoolive',
+    googleServicesFile: './android/app/google-services.json',
     adaptiveIcon: {
       foregroundImage: './assets/images/mytodoo-adaptive-icon.png',
       backgroundColor: '#004aad',
@@ -87,6 +87,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     'expo-web-browser',
     '@react-native-firebase/app',
+    '@react-native-firebase/auth',
     '@react-native-firebase/messaging',
     [
       'expo-notifications',

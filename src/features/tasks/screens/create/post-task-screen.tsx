@@ -7,15 +7,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 export default function PostTaskScreen() {
@@ -31,7 +31,9 @@ export default function PostTaskScreen() {
   // Helper functions to extract data from myTask
   const getTaskCategory = (task: any): string => {
     if (!task.isRemoval && task.category) {
-      return task.category; // ✅ Return as string, not array
+      // Ensure category is always a string, handle both array and string inputs
+      const category = Array.isArray(task.category) ? (task.category[0] || 'General') : task.category;
+      return String(category).trim() || 'General'; // Always return a valid string
     }
     return task.isRemoval ? 'Removalist' : 'General';
   };
@@ -96,7 +98,7 @@ export default function PostTaskScreen() {
           : undefined,
         time: myTask.time || 'Anytime',
         locationType: myTask.locationType || 'In-person',
-        location: formatLocationForBackend(myTask),
+        location: String(formatLocationForBackend(myTask)).trim() || 'Location not specified', // ✅ Ensure location is always a valid string
         budget: myTask.budget,
         currency: 'LKR',
         // Only include images if we have them - backend requires images if field is present

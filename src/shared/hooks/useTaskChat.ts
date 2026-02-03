@@ -35,14 +35,19 @@ export const CHAT_KEYS = {
  */
 export const useGetUserChats = () => {
   const isAuthenticated = useAuthStore((state) => !!state.user);
+  const hasToken = useAuthStore((state) => !!state.token);
 
   return useQuery({
     queryKey: CHAT_KEYS.list(),
     queryFn: getUserChats,
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && hasToken, // Only fetch when both user and token exist
     staleTime: 2 * 1000, // 2 seconds - optimized for real-time updates
-    refetchInterval: 3000, // Auto-refresh every 3 seconds for immediate chat list updates
+    refetchInterval: isAuthenticated && hasToken ? 3000 : false, // Only auto-refresh when authenticated
     retry: 1,
+    // Don't show errors for authentication failures - this is expected when not logged in
+    meta: {
+      errorMessage: 'Failed to load chats'
+    }
   });
 };
 

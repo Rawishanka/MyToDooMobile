@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import * as SplashScreen from 'expo-splash-screen';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -170,7 +170,7 @@ export default function OnboardingCarousel() {
     <View style={styles.container}>
       {/* Back arrow */}
       <TouchableOpacity style={styles.backIcon} onPress={goToPrevious}>
-        <ChevronLeft size={24} color="white" />
+        <Ionicons name="chevron-back" size={24} color="white" />
       </TouchableOpacity>
 
       {/* Progress dots */}
@@ -205,7 +205,7 @@ export default function OnboardingCarousel() {
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.arrowButton} onPress={goToNext}>
-          <ChevronRight size={24} color="#fff" />
+          <Ionicons name="chevron-forward" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
     </View>

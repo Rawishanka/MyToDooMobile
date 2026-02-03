@@ -7,7 +7,6 @@ import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -164,7 +163,7 @@ export default function BudgetScreen() {
     <View style={styles.container}>
       {/* Back Arrow */}
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-        <ChevronLeft size={24} color="black" />
+        <Ionicons name="chevron-back" size={24} color="black" />
       </TouchableOpacity>
 
       {/* Title */}

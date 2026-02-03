@@ -442,6 +442,7 @@ export function useApiFunctions() {
   }
 
   async function handleAppleSignIn(appleAuthData: { id_token: string; code: string; user?: { name?: { firstName?: string; lastName?: string } }; mode: string }) {
+    // Apple endpoint is under /api like other endpoints
     const api = createApi(API_CONFIG.BASE_URL);
     console.log("🍎 Calling Apple Sign-In API:", API_CONFIG.BASE_URL + "/apple");
     console.log("📤 Sending Apple authentication data to backend");
@@ -456,8 +457,9 @@ export function useApiFunctions() {
         mode: appleAuthData.mode || 'signin'
       };
       
-      console.log("📤 Sending Apple Sign-In request");
+      console.log("📤 Sending Apple Sign-In request to /api/apple");
       
+      // Call /api/apple (same path structure as /api/google, /api/forgot-password, etc.)
       const response = await api.post('/apple', requestBody);
       
       console.log("✅ Apple Sign-In Success Response:", response.data);

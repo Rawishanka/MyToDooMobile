@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ChevronDown } from 'lucide-react-native';
 import React from 'react';
 import {
     ActivityIndicator,
@@ -72,7 +71,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
           <Text style={[styles.dropdownText, !selectedCategory && styles.placeholderText]}>
             {selectedCategory || 'Select a category'}
           </Text>
-          <ChevronDown 
+          <Ionicons name="chevron-down" 
             size={20} 
             color="#666" 
             style={{

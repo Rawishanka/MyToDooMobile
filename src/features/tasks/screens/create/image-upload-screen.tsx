@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
@@ -377,7 +376,7 @@ export default function SnapPhotoScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <ChevronLeft size={24} color="#000" />
+        <Ionicons name="chevron-back" size={24} color="#000" />
       </TouchableOpacity>
 
       <ScrollView 

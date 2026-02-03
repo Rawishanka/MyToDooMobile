@@ -5,18 +5,18 @@ import { useUpdateUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
 
 interface ProfileUpdateFormProps {
@@ -29,15 +29,32 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
   const [lastName, setLastName] = useState(userData?.lastName || '');
   const [phone, setPhone] = useState(userData?.phone || '');
   
-  // Extract existing location data - display as single string like web version
+  // Extract existing location data - handle BOTH string (with duplicates) and object formats
   const getLocationString = () => {
     if (!userData?.location) return '';
     
+    // If location is a STRING (from backend), deduplicate it
     if (typeof userData.location === 'string') {
-      return userData.location;
+      const locationStr = userData.location.trim();
+      if (!locationStr) return '';
+      
+      // Split by comma, trim each part, remove duplicates (case-insensitive)
+      const parts = locationStr.split(',').map(p => p.trim()).filter(Boolean);
+      const seen = new Set<string>();
+      const deduplicated: string[] = [];
+      
+      for (const part of parts) {
+        const normalized = part.toLowerCase();
+        if (!seen.has(normalized)) {
+          seen.add(normalized);
+          deduplicated.push(part); // Keep original capitalization
+        }
+      }
+      
+      return deduplicated.join(', ');
     }
     
-    // Build location string from object - filter out "Not specified" values
+    // If location is an OBJECT, build string while avoiding duplicates
     const loc = userData.location as any;
     const parts = [];
     
@@ -49,11 +66,32 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
              value.trim().length > 0;
     };
     
-    if (isValidValue(loc.suburb)) parts.push(loc.suburb);
-    else if (isValidValue(loc.city)) parts.push(loc.city);
-    if (isValidValue(loc.region)) parts.push(loc.region);
-    else if (isValidValue(loc.state)) parts.push(loc.state);
-    if (isValidValue(loc.country)) parts.push(loc.country);
+    // Normalize values to avoid duplicates
+    const normalizeValue = (value: string) => value.trim().toLowerCase();
+    const addedValues = new Set<string>();
+    
+    // Priority: suburb > city > region/state > country
+    if (isValidValue(loc.suburb)) {
+      const normalized = normalizeValue(loc.suburb);
+      parts.push(loc.suburb);
+      addedValues.add(normalized);
+    }
+    
+    if (isValidValue(loc.city) && !addedValues.has(normalizeValue(loc.city))) {
+      const normalized = normalizeValue(loc.city);
+      parts.push(loc.city);
+      addedValues.add(normalized);
+    }
+    
+    if (isValidValue(loc.region) && !addedValues.has(normalizeValue(loc.region))) {
+      parts.push(loc.region);
+    } else if (isValidValue(loc.state) && !addedValues.has(normalizeValue(loc.state))) {
+      parts.push(loc.state);
+    }
+    
+    if (isValidValue(loc.country) && !addedValues.has(normalizeValue(loc.country))) {
+      parts.push(loc.country);
+    }
     
     return parts.join(', ');
   };
@@ -198,7 +236,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
               style={styles.input}
               value={location}
               onChangeText={setLocation}
-              placeholder="Colombo, Western Province"
+              placeholder="Sydney, NSW, Australia"
               autoCapitalize="words"
               placeholderTextColor="#999"
             />

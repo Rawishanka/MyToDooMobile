@@ -1,4 +1,5 @@
 // EditProfileScreen.tsx
+import { LocationAutocomplete } from '@/src/shared/components/LocationAutocomplete';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
@@ -13,18 +14,37 @@ import {
   View,
 } from 'react-native';
 
-const EditProfileScreen = ({ onBack, onSave }) => {
-  const [firstName, setFirstName] = useState('Prasanna');
-  const [lastName, setLastName] = useState('Hewapathirana');
-  const [bio, setBio] = useState('Hi I\'m Janidu');
-  const [phone, setPhone] = useState('+94771628274');
-  const [country, setCountry] = useState('Sri Lanka');
-  const [countryCode, setCountryCode] = useState('LK');
-  const [suburb, setSuburb] = useState('Meerigama');
-  const [region, setRegion] = useState('Western Province');
-  const [city, setCity] = useState('Meerigama');
-  const [profileImage, setProfileImage] = useState('https://randomuser.me/api/portraits/men/1.jpg');
-  const [skills, setSkills] = useState([]);
+const EditProfileScreen = ({ onBack, onSave, userData }) => {
+  // Initialize from userData if available, otherwise use defaults
+  const [firstName, setFirstName] = useState(userData?.firstName || '');
+  const [lastName, setLastName] = useState(userData?.lastName || '');
+  const [bio, setBio] = useState(userData?.bio || '');
+  const [phone, setPhone] = useState(userData?.phone || '');
+  
+  // Extract location fields from userData
+  const getLocationField = (field) => {
+    if (!userData?.location) return '';
+    if (typeof userData.location === 'object') {
+      return userData.location[field] || '';
+    }
+    return '';
+  };
+  
+  const [country, setCountry] = useState(getLocationField('country') || 'Australia');
+  const [countryCode, setCountryCode] = useState(getLocationField('countryCode') || 'AU');
+  const [suburb, setSuburb] = useState(getLocationField('suburb') || '');
+  const [region, setRegion] = useState(getLocationField('region') || '');
+  const [city, setCity] = useState(getLocationField('city') || '');
+  const [profileImage, setProfileImage] = useState(userData?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg');
+  
+  // Extract skills from userData
+  const getSkillsArray = () => {
+    if (!userData?.skills) return [];
+    if (Array.isArray(userData.skills)) return userData.skills;
+    return [];
+  };
+  
+  const [skills, setSkills] = useState(getSkillsArray());
   const [newSkill, setNewSkill] = useState('');
   
   // Modal states
@@ -42,13 +62,30 @@ const EditProfileScreen = ({ onBack, onSave }) => {
   ];
 
   const handleSaveChanges = async () => {
-    // Validate required fields
-    if (!firstName.trim() || !lastName.trim()) {
-      Alert.alert('Missing Information', 'Please enter both first name and last name.');
+    console.log('💾 [Profile Edit] Save Changes button pressed');
+    
+    // Validate required fields - firstName, lastName, and suburb are required
+    if (!firstName.trim()) {
+      Alert.alert('Required Field', 'Please enter your first name.');
       return;
     }
-
-    console.log('💾 [Profile Edit] Save Changes button pressed');
+    
+    if (!lastName.trim()) {
+      Alert.alert('Required Field', 'Please enter your last name.');
+      return;
+    }
+    
+    // Suburb is now mandatory
+    if (!suburb.trim()) {
+      Alert.alert('Required Field', 'Please select your suburb using the search field.');
+      return;
+    }
+    
+    // Validate countryCode if provided (must be 2 characters)
+    if (countryCode.trim() && countryCode.trim().length !== 2) {
+      Alert.alert('Invalid Country Code', 'Country code must be exactly 2 characters (e.g., AU, US, UK).');
+      return;
+    }
     
     try {
       // Flatten skills array for API
@@ -56,14 +93,20 @@ const EditProfileScreen = ({ onBack, onSave }) => {
         ...skills
       ];
 
-      // Prepare the profile update data
+      // Prepare the profile update data with smart defaults
       const profileUpdateData = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        phone: phone.trim(),
-        location: `${city.trim()}, ${region.trim()}`, // Format as "City, Region"
-        bio: bio.trim(),
-        skills: flattenedSkills
+        phone: phone.trim() || undefined, // Don't send empty string
+        location: {
+          country: country.trim() || 'Australia', // Default to Australia
+          countryCode: (countryCode.trim() || 'AU').toUpperCase(), // Default to AU
+          suburb: suburb.trim(), // Required - validated above
+          region: region.trim() || undefined, // Optional
+          city: city.trim() || undefined, // Optional
+        },
+        bio: bio.trim() || undefined, // Don't send empty string
+        skills: flattenedSkills.length > 0 ? flattenedSkills : undefined // Don't send empty array
       };
 
       console.log('📤 [Profile Edit] Updating profile with data:', JSON.stringify(profileUpdateData, null, 2));
@@ -85,13 +128,20 @@ const EditProfileScreen = ({ onBack, onSave }) => {
             { 
               text: 'OK', 
               onPress: () => {
-                // Call onSave callback with updated data
+                // Call onSave callback with updated data including proper location object
                 if (onSave) {
                   onSave({
                     firstName: firstName.trim(),
                     lastName: lastName.trim(),
                     phone: phone.trim(),
-                    location: `${city.trim()}, ${region.trim()}`,
+                    // Send location as object to match the API structure
+                    location: {
+                      country: country.trim() || 'Australia',
+                      countryCode: (countryCode.trim() || 'AU').toUpperCase(),
+                      suburb: suburb.trim(), // Required field
+                      region: region.trim() || undefined,
+                      city: city.trim() || undefined,
+                    },
                     bio: bio.trim(),
                     skills: flattenedSkills,
                     fullName: `${firstName.trim()} ${lastName.trim()}`
@@ -351,23 +401,23 @@ const EditProfileScreen = ({ onBack, onSave }) => {
 
         {/* Personal Information Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>First name</Text>
+          <Text style={styles.sectionTitle}>First name <Text style={styles.requiredAsterisk}>*</Text></Text>
           <TextInput
             style={styles.textInput}
             value={firstName}
             onChangeText={setFirstName}
-            placeholder="First name"
+            placeholder="Enter your first name"
             placeholderTextColor="#999"
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Last name</Text>
+          <Text style={styles.sectionTitle}>Last name <Text style={styles.requiredAsterisk}>*</Text></Text>
           <TextInput
             style={styles.textInput}
             value={lastName}
             onChangeText={setLastName}
-            placeholder="Last name"
+            placeholder="Enter your last name"
             placeholderTextColor="#999"
           />
         </View>
@@ -386,23 +436,25 @@ const EditProfileScreen = ({ onBack, onSave }) => {
 
         {/* Location Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Country</Text>
+          <Text style={styles.sectionTitle}>Country (Optional)</Text>
+          <Text style={styles.sectionSubtext}>Defaults to Australia if left blank</Text>
           <TextInput
             style={styles.textInput}
             value={country}
             onChangeText={setCountry}
-            placeholder="Enter your country"
+            placeholder="Australia"
             placeholderTextColor="#999"
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Country Code</Text>
+          <Text style={styles.sectionTitle}>Country Code (Optional)</Text>
+          <Text style={styles.sectionSubtext}>Defaults to AU if left blank (must be 2 characters)</Text>
           <TextInput
             style={styles.textInput}
             value={countryCode}
-            onChangeText={setCountryCode}
-            placeholder="e.g., AU, US, UK"
+            onChangeText={(text) => setCountryCode(text.toUpperCase())}
+            placeholder="AU"
             placeholderTextColor="#999"
             autoCapitalize="characters"
             maxLength={2}
@@ -410,34 +462,74 @@ const EditProfileScreen = ({ onBack, onSave }) => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Suburb</Text>
-          <TextInput
-            style={styles.textInput}
-            value={suburb}
-            onChangeText={setSuburb}
-            placeholder="Enter your suburb"
-            placeholderTextColor="#999"
+          <Text style={styles.sectionTitle}>Suburb *</Text>
+          <Text style={styles.helperText}>Search for your Australian suburb</Text>
+          <LocationAutocomplete
+            initialValue={suburb}
+            placeholder="Start typing suburb name..."
+            country="AU"
+            onSelect={(locationData) => {
+              console.log('📍 [Edit Profile] Location selected:', locationData);
+              
+              // Parse the address: "Suburb, State" or "Suburb, State, Country"
+              const parts = locationData.address.split(',').map(p => p.trim());
+              
+              if (parts.length >= 2) {
+                // Format: "Suburb, State" or "Suburb, State, Country"
+                const suburbName = parts[0]; // e.g., "Narre Warren"
+                const stateName = parts[1]; // e.g., "VIC"
+                
+                setSuburb(suburbName);
+                setRegion(stateName);
+                
+                // Set city based on state (major cities)
+                const cityMap = {
+                  'VIC': 'Melbourne',
+                  'NSW': 'Sydney',
+                  'QLD': 'Brisbane',
+                  'WA': 'Perth',
+                  'SA': 'Adelaide',
+                  'TAS': 'Hobart',
+                  'ACT': 'Canberra',
+                  'NT': 'Darwin'
+                };
+                
+                if (cityMap[stateName]) {
+                  setCity(cityMap[stateName]);
+                }
+                
+                console.log('✅ [Edit Profile] Location fields updated:', {
+                  suburb: suburbName,
+                  region: stateName,
+                  city: cityMap[stateName] || city
+                });
+              } else {
+                // Fallback: just set the whole address as suburb
+                setSuburb(locationData.address);
+              }
+            }}
+            style={styles.locationAutocomplete}
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>State/Region</Text>
+          <Text style={styles.sectionTitle}>State/Region (Optional)</Text>
           <TextInput
             style={styles.textInput}
             value={region}
             onChangeText={setRegion}
-            placeholder="Enter your state or region"
+            placeholder="e.g., VIC, NSW, QLD"
             placeholderTextColor="#999"
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>City</Text>
+          <Text style={styles.sectionTitle}>City (Optional)</Text>
           <TextInput
             style={styles.textInput}
             value={city}
             onChangeText={setCity}
-            placeholder="Enter your city"
+            placeholder="e.g., Melbourne, Sydney"
             placeholderTextColor="#999"
           />
         </View>
@@ -683,6 +775,17 @@ const styles = StyleSheet.create({
     color: '#000',
     marginBottom: 8,
   },
+  helperText: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  requiredAsterisk: {
+    color: '#dc3545',
+    fontSize: 18,
+    fontWeight: '600',
+  },
   sectionSubtext: {
     fontSize: 14,
     color: '#666',
@@ -759,6 +862,10 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     backgroundColor: '#f9f9f9',
+  },
+  locationAutocomplete: {
+    // LocationAutocomplete has its own internal styling
+    // This is just a container style if needed
   },
   locationButton: {
     flexDirection: 'row',

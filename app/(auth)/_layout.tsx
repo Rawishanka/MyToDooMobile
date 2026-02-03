@@ -1,17 +1,21 @@
 import { Stack } from 'expo-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 export default function AuthLayout() {
   return (
-    <Stack 
-      screenOptions={{ 
-        headerShown: false,
-        presentation: 'modal',
-        animation: 'slide_from_bottom',
-        contentStyle: {
-          backgroundColor: '#ffffff',
-        },
-      }}
-    >
+    <QueryClientProvider client={queryClient}>
+      <Stack 
+        screenOptions={{ 
+          headerShown: false,
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+          contentStyle: {
+            backgroundColor: '#ffffff',
+          },
+        }}
+      >
       <Stack.Screen 
         name="login" 
         options={{
@@ -27,5 +31,6 @@ export default function AuthLayout() {
         }}
       />
     </Stack>
+    </QueryClientProvider>
   );
 }

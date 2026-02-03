@@ -1,13 +1,7 @@
 package com.mytodoo.mytodoolive
 
 import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
 import android.content.res.Configuration
-import android.media.AudioAttributes
-import android.media.RingtoneManager
-import android.os.Build
 
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
@@ -46,10 +40,6 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
-    
-    // Create high-priority notification channel for immediate delivery
-    createNotificationChannels()
-    
     DefaultNewArchitectureEntryPoint.releaseLevel = try {
       ReleaseLevel.valueOf(BuildConfig.REACT_NATIVE_RELEASE_LEVEL.uppercase())
     } catch (e: IllegalArgumentException) {
@@ -57,50 +47,6 @@ class MainApplication : Application(), ReactApplication {
     }
     loadReactNative(this)
     ApplicationLifecycleDispatcher.onApplicationCreate(this)
-  }
-
-  private fun createNotificationChannels() {
-    // Notification channels are required for Android 8.0 (API 26) and above
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-      
-      // High priority channel for messages, offers, and real-time updates
-      val highPriorityChannel = NotificationChannel(
-        "high_priority_channel",
-        "Messages & Updates",
-        NotificationManager.IMPORTANCE_HIGH
-      ).apply {
-        description = "Notifications for messages, offers, and important updates"
-        enableLights(true)
-        enableVibration(true)
-        setShowBadge(true)
-        lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
-        
-        // Set custom sound for immediate attention
-        val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-        val audioAttributes = AudioAttributes.Builder()
-          .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-          .setUsage(AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_INSTANT)
-          .build()
-        setSound(soundUri, audioAttributes)
-      }
-      
-      // Default channel for general notifications
-      val defaultChannel = NotificationChannel(
-        "default",
-        "General Notifications",
-        NotificationManager.IMPORTANCE_DEFAULT
-      ).apply {
-        description = "General app notifications"
-        enableLights(true)
-        enableVibration(true)
-        setShowBadge(true)
-      }
-      
-      // Register channels
-      notificationManager.createNotificationChannel(highPriorityChannel)
-      notificationManager.createNotificationChannel(defaultChannel)
-    }
   }
 
   override fun onConfigurationChanged(newConfig: Configuration) {

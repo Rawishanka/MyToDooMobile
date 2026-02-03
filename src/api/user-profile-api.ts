@@ -50,7 +50,7 @@ export interface UpdateProfileRequest {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  location?: {
+  location?: string | {
     country?: string;
     countryCode?: string;
     region?: string;

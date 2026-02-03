@@ -1,7 +1,7 @@
 import { useCreateTaskStore } from '@/src/store/create-task-store';
+import { Ionicons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -13,7 +13,7 @@ export default function GoalSelectionScreen() {
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <ChevronLeft size={24} color="#333" />
+        <Ionicons name="chevron-back" size={24} color="#333" />
       </TouchableOpacity>
 
       {/* Title and Subtitle */}
