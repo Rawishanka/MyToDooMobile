@@ -9,11 +9,11 @@ import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -49,6 +49,7 @@ export default function BudgetScreen() {
   };
 
   const minimumBudget = getMinimumBudget(currencyInfo.code);
+  const maximumBudget = 10000; // Maximum budget limit of $10,000
   const defaultBudgetAmount = getDefaultBudget(currencyInfo.code);
 
   console.log('💰 Budget screen currency info:', {
@@ -58,6 +59,7 @@ export default function BudgetScreen() {
     finalCurrency: currencyInfo.code,
     symbol: currencyInfo.symbol,
     minimumBudget,
+    maximumBudget,
     defaultBudgetAmount,
     isDetecting
   });
@@ -81,7 +83,7 @@ export default function BudgetScreen() {
       setHasUserInteracted(true);
       // If this is the first interaction and we're not deleting, start fresh
       if (value !== 'delete') {
-        setBudget(value);
+        setBudget(value === '.' ? '0.' : value);
         setErrorMessage('');
         return;
       }
@@ -90,16 +92,55 @@ export default function BudgetScreen() {
     if (value === 'delete') {
       setBudget(budget.slice(0, -1));
       setErrorMessage(''); // Clear error when deleting
+    } else if (value === '.') {
+      // Handle decimal point
+      if (budget.includes('.')) {
+        // Already has a decimal point, ignore
+        return;
+      }
+      if (budget === '' || budget === '0') {
+        // If empty or just zero, make it "0."
+        setBudget('0.');
+      } else {
+        // Add decimal point
+        setBudget(budget + '.');
+      }
+      setErrorMessage('');
     } else {
-      // Prevent leading zero (e.g., 0250)
-      if (budget === '0' || (budget === '' && value === '0')) {
-        setErrorMessage('Budget cannot start with zero');
+      // Handle digit input
+      // Prevent leading zero (e.g., 0250) but allow 0.50
+      if ((budget === '0' || budget === '') && value === '0') {
+        return; // Just ignore, don't show error
+      }
+      
+      if (budget === '0' && value !== '.') {
+        // Replace leading zero with the digit
+        setBudget(value);
+        setErrorMessage('');
+        return;
+      }
+      
+      // Check decimal places (maximum 2 decimal places for cents)
+      if (budget.includes('.')) {
+        const decimalPart = budget.split('.')[1];
+        if (decimalPart && decimalPart.length >= 2) {
+          // Already has 2 decimal places, ignore further input
+          return;
+        }
+      }
+      
+      // Check if adding this digit would exceed maximum budget
+      const newBudget = budget + value;
+      const newBudgetNumber = parseFloat(newBudget);
+      
+      if (newBudgetNumber > maximumBudget) {
+        setErrorMessage(`Maximum budget is ${currencyInfo.symbol}${formatNumber(maximumBudget, { forceDecimals: true })}`);
         return;
       }
       
       // Clear error and add digit
       setErrorMessage('');
-      setBudget(budget + value);
+      setBudget(newBudget);
     }
   };
 
@@ -118,6 +159,8 @@ export default function BudgetScreen() {
     >
       {value === 'delete' ? (
         <Ionicons name="backspace-outline" size={24} color="#002366" />
+      ) : value === '.' ? (
+        <Text style={styles.keyText}>.</Text>
       ) : (
         <Text style={styles.keyText}>{value}</Text>
       )}
@@ -128,26 +171,38 @@ export default function BudgetScreen() {
     [1, 2, 3],
     [4, 5, 6],
     [7, 8, 9],
-    [null, 0, 'delete'],
+    ['.', 0, 'delete'],
   ];
 
   // Helper to update zustand store with budget
   const handleCreateTask = () => {
     const finalBudget = budget || (!hasUserInteracted ? defaultBudgetAmount.toString() : '0');
-    const budgetNumber = Number(finalBudget);
-    // Only update if valid and meets minimum for currency
-    if (budgetNumber >= minimumBudget) {
-      updateMyTask({
-        budget: budgetNumber,
-        currency: currencyInfo.code, // Save the detected currency
-      });
-      router.push('/detail-screen');
+    const budgetNumber = parseFloat(finalBudget);
+    
+    // Validate budget is within allowed range
+    if (budgetNumber < minimumBudget) {
+      setErrorMessage(`Minimum budget is ${currencyInfo.symbol}${formatNumber(minimumBudget, { forceDecimals: true })}`);
+      return;
     }
+    
+    if (budgetNumber > maximumBudget) {
+      setErrorMessage(`Maximum budget is ${currencyInfo.symbol}${formatNumber(maximumBudget, { forceDecimals: true })}`);
+      return;
+    }
+    
+    // Budget is valid - update store and proceed
+    updateMyTask({
+      budget: budgetNumber,
+      currency: currencyInfo.code, // Save the detected currency
+    });
+    router.push('/detail-screen');
   };
 
-  // Check if budget is valid (user has entered a value and it meets minimum)
+  // Check if budget is valid (user has entered a value and it meets minimum and maximum)
   const currentBudgetValue = budget || (!hasUserInteracted ? defaultBudgetAmount : 0);
-  const isBudgetValid = hasUserInteracted ? (budget && Number(budget) >= minimumBudget) : (Number(currentBudgetValue) >= minimumBudget);
+  const isBudgetValid = hasUserInteracted 
+    ? (budget && budget !== '.' && parseFloat(budget) >= minimumBudget && parseFloat(budget) <= maximumBudget) 
+    : (parseFloat(String(currentBudgetValue)) >= minimumBudget && parseFloat(String(currentBudgetValue)) <= maximumBudget);
 
   // Show loading state while location is being detected to prevent currency flicker
   if (!isInitialized || isDetecting) {
@@ -177,10 +232,10 @@ export default function BudgetScreen() {
         <Text style={styles.currencySymbol}>{currencyInfo.symbol}</Text>
         <Text style={[
           styles.budgetText, 
-          budget && Number(budget) < minimumBudget && Number(budget) > 0 && styles.invalidBudgetText,
+          budget && budget !== '.' && (parseFloat(budget) < minimumBudget || parseFloat(budget) > maximumBudget) && parseFloat(budget) > 0 && styles.invalidBudgetText,
           !hasUserInteracted && !budget && styles.placeholderText
         ]}>
-          {budget ? formatNumber(Number(budget)) : (!hasUserInteracted ? formatNumber(defaultBudgetAmount) : '0')}
+          {budget ? (budget.endsWith('.') || budget.includes('.') ? budget : formatNumber(parseFloat(budget))) : (!hasUserInteracted ? formatNumber(defaultBudgetAmount) : '0')}
         </Text>
       </TouchableOpacity>
       
@@ -189,9 +244,13 @@ export default function BudgetScreen() {
         <Text style={styles.errorText}>
           {errorMessage}
         </Text>
-      ) : budget && Number(budget) < minimumBudget && Number(budget) > 0 ? (
+      ) : budget && budget !== '.' && parseFloat(budget) < minimumBudget && parseFloat(budget) > 0 ? (
         <Text style={styles.validationText}>
           Minimum budget is {currencyInfo.symbol}{formatNumber(minimumBudget, { forceDecimals: true })}
+        </Text>
+      ) : budget && budget !== '.' && parseFloat(budget) > maximumBudget ? (
+        <Text style={styles.validationText}>
+          Maximum budget is {currencyInfo.symbol}{formatNumber(maximumBudget, { forceDecimals: true })}
         </Text>
       ) : null}
 
@@ -199,7 +258,7 @@ export default function BudgetScreen() {
       <View style={styles.keypad}>
         {numberPad.map((row, rowIndex) => (
           <View key={rowIndex} style={styles.row}>
-            {row.map((value) => value !== null ? renderKey(value) : <View key="empty" style={{ width: isTablet ? wp('10%') : wp('18%'), height: isTablet ? wp('10%') : wp('18%'), marginHorizontal: isTablet ? wp('2%') : wp('2.5%') }} />)}
+            {row.map((value, index) => renderKey(value))}
           </View>
         ))}
       </View>

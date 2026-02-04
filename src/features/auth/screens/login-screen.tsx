@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 import { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -567,13 +568,17 @@ export default function LoginScreen() {
     }
   };
 
+  // ========================================
+  // APPLE SIGN-IN WITH BACKEND AUTHENTICATION
+  // Calls backend /apple endpoint to get real auth token
+  // ========================================
   const handleAppleSignIn = async () => {
     try {
       setAppleLoading(true);
       
-      console.log('🍎 Starting Apple Sign-In...');
+      console.log('🍎 Starting Apple Sign-In with backend authentication...');
       
-      // Trigger Apple authentication
+      // 1. Perform Apple authentication request
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
@@ -589,95 +594,92 @@ export default function LoginScreen() {
         hasFullName: !!credential.fullName
       });
       
-      // Clear all caches BEFORE Apple Sign-In to ensure no stale data
-      console.log('🧹 Pre-Apple login: Clearing all cached data...');
+      if (!credential.identityToken || !credential.authorizationCode) {
+        throw new Error('Missing Apple authentication tokens');
+      }
+      
+      // 2. Call backend /apple endpoint to validate with Apple and get backend token
+      console.log('🔄 Calling backend /apple endpoint to get auth token...');
+      
+      const appleUserId = credential.user;
+      
+      // Prepare user data for backend (only available on first sign-in)
+      let userData = undefined;
+      if (credential.email || credential.fullName) {
+        userData = {
+          name: {
+            firstName: credential.fullName?.givenName || '',
+            lastName: credential.fullName?.familyName || ''
+          }
+        };
+      }
+      
+      // Call the backend Apple Sign-In mutation
+      const result = await appleSignIn({
+        id_token: credential.identityToken,
+        code: credential.authorizationCode,
+        user: userData,
+        mode: 'signin'
+      });
+      
+      console.log('✅ Backend authentication successful:', {
+        hasToken: !!result.token,
+        hasUser: !!result.user,
+        isNewUser: result.isNewUser,
+        userEmail: result.user?.email
+      });
+      
+      // 3. Store Apple user ID in Keychain for credential verification
+      // This allows us to verify the credential state on app launch
+      await SecureStore.setItemAsync(
+        `apple_user_id`,
+        appleUserId,
+        {
+          keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+        }
+      );
+      
+      console.log('🔐 Stored Apple user ID in Keychain:', appleUserId);
+      
+      // 4. Backend has already set auth data via setAuthData in the mutation
+      // No need to manually call setAuthData here
+      
+      // 5. Clear caches after successful auth
+      console.log('🧹 Clearing cached data after Apple Sign-In...');
       clearCachesOnLogin();
       await queryClient.clear();
       
-      // Prepare Apple auth data for backend
-      const appleAuthData: any = {
-        id_token: credential.identityToken!,
-        code: credential.authorizationCode!,
-        mode: 'signin'
-      };
-      
-      // Apple only provides name and email on first sign-in
-      if (credential.fullName && (credential.fullName.givenName || credential.fullName.familyName)) {
-        appleAuthData.user = {
-          name: {
-            firstName: credential.fullName.givenName || undefined,
-            lastName: credential.fullName.familyName || undefined
-          }
-        };
-        console.log('📝 Apple provided user name:', appleAuthData.user.name);
-      }
-      
-      // Send to backend
-      const result = await appleSignIn(appleAuthData);
-      
-      console.log('✅ Backend authentication successful:', result);
-      console.log('🔍 Auth result details:', { 
-        hasToken: !!result.token, 
-        hasUser: !!result.user,
-        userEmail: result.user?.email,
-        userId: result.user?.id,
-        isNewUser: result.isNewUser 
-      });
-      
-      // Wait a moment for auth store to be updated
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Check current auth state
-      const authState = useAuthStore.getState();
-      console.log('🔍 Auth state after Apple Sign-In:', {
-        hasToken: !!authState.token,
-        hasUser: !!authState.user,
-        isAuthenticated: authState.isAuthenticated,
-        userEmail: authState.user?.email
-      });
-      
-      // Force invalidate profile queries to ensure fresh profile data with user context
-      if (authState.user?.id) {
-        await queryClient.invalidateQueries({ queryKey: ['user-profile'] });
-        await queryClient.invalidateQueries({ queryKey: ['chats'] });
-        console.log('🔄 Profile and chat queries invalidated for user:', authState.user.id);
-      }
-      
-      // Check for pending actions after successful login
-      const pendingActionType = checkPendingAction();
-      if (pendingActionType) {
-        console.log('📋 Found pending action after Apple login, executing:', pendingActionType);
+      // 6. Check for pending actions after successful login
+      const hasPendingAction = await checkPendingAction();
+      if (hasPendingAction) {
+        console.log('📋 Found pending action after Apple login');
         await executePendingAction();
       } else {
-        console.log('🚀 No pending action, navigating to tabs...');
-        router.replace('/(tabs)' as any);
+        // No pending action - navigate to home
+        console.log('🏠 Navigating to home screen');
+        router.replace('/(tabs)');
       }
       
     } catch (error: any) {
-      console.log('❌ Apple Sign-In Error:', error?.message || 'Unknown error');
-      console.log('Error code:', error?.code);
-      
-      // Don't show alert if user cancelled
-      if (error.code === 'ERR_CANCELED' || error.code === 'ERR_REQUEST_CANCELED') {
-        console.log('User cancelled Apple Sign-In');
-        setAppleLoading(false);
-        return;
+      if (error.code === 'ERR_CANCELED') {
+        // User canceled - don't show error, just stop
+        console.log('❌ User canceled Apple Sign-In');
+      } else {
+        console.error('❌ Apple Sign-In error:', error);
+        Alert.alert(
+          'Sign In Failed',
+          error.message || 'Could not sign in with Apple. Please try again.',
+          [{ text: 'OK' }]
+        );
       }
-      
-      let errorMessage = 'Unable to complete Apple Sign-In. Please try again.';
-      
-      if (error?.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      Alert.alert('Sign-In Error', errorMessage, [{ text: 'OK' }]);
     } finally {
       setAppleLoading(false);
     }
   };
 
+  // ========================================
+  // GOOGLE SIGN-IN
+  // ========================================
 
   return (
     <SafeAreaView style={styles.container}>

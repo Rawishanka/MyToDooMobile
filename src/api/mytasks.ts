@@ -442,9 +442,11 @@ export function useApiFunctions() {
   }
 
   async function handleAppleSignIn(appleAuthData: { id_token: string; code: string; user?: { name?: { firstName?: string; lastName?: string } }; mode: string }) {
-    // Apple endpoint is under /api like other endpoints
+    // ✅ CORRECT: Apple endpoint is at /api/auth/apple
+    // Backend endpoint: https://au-live-api.mytodoo.com/api/auth/apple
     const api = createApi(API_CONFIG.BASE_URL);
-    console.log("🍎 Calling Apple Sign-In API:", API_CONFIG.BASE_URL + "/apple");
+    
+    console.log("🍎 Calling Apple Sign-In API:", API_CONFIG.BASE_URL + "/auth/apple");
     console.log("📤 Sending Apple authentication data to backend");
     console.log("🎫 ID Token length:", appleAuthData.id_token?.length);
     console.log("🎫 Code length:", appleAuthData.code?.length);
@@ -457,10 +459,11 @@ export function useApiFunctions() {
         mode: appleAuthData.mode || 'signin'
       };
       
-      console.log("📤 Sending Apple Sign-In request to /api/apple");
+      console.log("📤 Sending Apple Sign-In request to /api/auth/apple endpoint");
       
-      // Call /api/apple (same path structure as /api/google, /api/forgot-password, etc.)
-      const response = await api.post('/apple', requestBody);
+      // Call /auth/apple under /api
+      // Full URL: https://au-live-api.mytodoo.com/api/auth/apple
+      const response = await api.post('/auth/apple', requestBody);
       
       console.log("✅ Apple Sign-In Success Response:", response.data);
       const { token, user } = response.data;
@@ -499,7 +502,7 @@ export function useApiFunctions() {
     } catch (error: any) {
       // 🔍 ENHANCED ERROR LOGGING for debugging
       console.error("❌ Apple Sign-In API call failed:");
-      console.error("📍 Endpoint:", API_CONFIG.BASE_URL + "/apple");
+      console.error("📍 Endpoint:", API_CONFIG.BASE_URL + "/auth/apple");
       console.error("📊 Status Code:", error?.response?.status);
       console.error("📊 Status Text:", error?.response?.statusText);
       console.error("📦 Response Data:", JSON.stringify(error?.response?.data, null, 2));

@@ -143,6 +143,74 @@ export const signInWithGoogle = async (): Promise<string> => {
 };
 
 /**
+ * Sign in with Apple using Firebase Auth
+ * Returns Firebase ID Token to send to backend
+ */
+export const signInWithApple = async (appleCredential: { identityToken: string; authorizationCode: string; fullName?: { givenName?: string; familyName?: string } | null }): Promise<string> => {
+  if (!auth) {
+    console.log('⚠️ Firebase Auth not available - using Apple token directly');
+    // Fallback: Return the Apple ID token directly for backend verification
+    return appleCredential.identityToken;
+  }
+
+  try {
+    console.log('🍎 Processing Apple Sign-In with Firebase...');
+    console.log('📤 Apple credential received:', {
+      hasIdToken: !!appleCredential.identityToken,
+      hasAuthCode: !!appleCredential.authorizationCode,
+      hasFullName: !!appleCredential.fullName
+    });
+
+    // Try to sign in to Firebase with Apple credential
+    try {
+      // Initialize Firebase Auth instance
+      const authInstance = auth();
+      
+      // Create a Firebase credential with the Apple ID token
+      const appleAuthCredential = auth.AppleAuthProvider.credential(
+        appleCredential.identityToken,
+        appleCredential.authorizationCode
+      );
+      console.log('✅ Created Firebase Apple credential');
+
+      // Sign in to Firebase with the credential
+      const userCredential = await authInstance.signInWithCredential(appleAuthCredential);
+      console.log('✅ Signed in to Firebase with Apple:', userCredential.user.email || userCredential.user.uid);
+
+      // Get Firebase ID Token to send to backend
+      const firebaseIdToken = await userCredential.user.getIdToken();
+      console.log('✅ Got Firebase ID Token from Apple sign-in');
+
+      return firebaseIdToken;
+    } catch (firebaseError: any) {
+      console.log('⚠️ Firebase Auth Apple sign-in failed, using Apple ID Token directly:', firebaseError?.message);
+      // Fallback: If Firebase Auth fails, send the Apple ID Token directly to backend
+      // The backend can verify this token with Apple's servers
+      return appleCredential.identityToken;
+    }
+  } catch (error: any) {
+    console.error('❌ Apple Sign-In Error:', error);
+    console.error('Error details:', {
+      code: error?.code,
+      message: error?.message,
+      name: error?.name
+    });
+    
+    // Handle Apple Sign-In specific errors
+    if (error.code === '1001') {
+      // User cancelled
+      throw new Error('Apple Sign-In was cancelled');
+    } else if (error.code === '1000') {
+      // Unknown error
+      throw new Error('Apple Sign-In failed. Please try again.');
+    }
+    
+    // Re-throw with a user-friendly message
+    throw new Error(error.message || 'Unable to complete Apple Sign-In. Please try again.');
+  }
+};
+
+/**
  * Sign out from Firebase Auth
  */
 export const signOutFromFirebase = async (): Promise<void> => {
@@ -173,5 +241,6 @@ export const signOutFromFirebase = async (): Promise<void> => {
 
 export default {
   signInWithGoogle,
+  signInWithApple,
   signOutFromFirebase,
 };

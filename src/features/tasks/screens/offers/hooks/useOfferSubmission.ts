@@ -112,7 +112,13 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
       return false;
     }
 
-    // Allow offers above budget for competitive bidding
+    // Validate that offer is not below task budget
+    if (taskBudget && numericAmount < taskBudget) {
+      setValidationError(`Offer amount must be at least ${currencyInfo.symbol}${taskBudget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (task budget).`);
+      return false;
+    }
+
+    // Offers at or above budget are valid
     setValidationError('');
     return true;
   };
@@ -307,14 +313,18 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
     // Set the formatted text as the display value
     setOfferAmount(formattedValue);
     
-    // Real-time validation - clear errors when user types valid input
+    // Real-time validation - show error if below budget
     if (cleanedText) {
       const numericAmount = parseFloat(cleanedText);
       
-      // Allow offers above budget for competitive bidding
       if (!isNaN(numericAmount) && numericAmount > 0) {
-        // Valid positive amount entered - clear any validation error
-        setValidationError('');
+        // Check if amount is below task budget
+        if (taskBudget && numericAmount < taskBudget) {
+          setValidationError(`Offer amount must be at least ${currencyInfo.symbol}${taskBudget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (task budget).`);
+        } else {
+          // Valid amount at or above budget - clear any validation error
+          setValidationError('');
+        }
       } else if (numericAmount === 0) {
         // Zero is not valid
         setValidationError('Please enter a valid positive amount.');

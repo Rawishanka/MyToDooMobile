@@ -5,16 +5,16 @@ import { RatingReviewModal } from '@/src/features/tasks/components/RatingReviewM
 import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
 
 import {
-  useAcceptOffer,
-  useCancelTask,
-  useCompleteTask,
-  useCompleteTaskPayment,
-  useCreateCancellationRequest,
-  useDeleteTask,
-  useGetCancellationReasons,
-  useGetCancellationRequest,
-  useRespondToCancellationRequest,
-  useSubmitReview
+    useAcceptOffer,
+    useCancelTask,
+    useCompleteTask,
+    useCompleteTaskPayment,
+    useCreateCancellationRequest,
+    useDeleteTask,
+    useGetCancellationReasons,
+    useGetCancellationRequest,
+    useRespondToCancellationRequest,
+    useSubmitReview
 } from '@/src/shared/hooks/useTaskApi';
 import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
 import { formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
@@ -1475,7 +1475,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           // Cancelled tab (Both Tasker and Poster): No buttons at all
           null
         ) : status === 'open' && userRole === 'Tasker' ? (
-          // Tasker Open Tasks: Only Cancel button (hidden if poster already requested cancellation)
+          // Tasker Open Tasks: Only Delete button (since task hasn't been accepted yet)
+          // Note: Tasks in Open tab cannot be "cancelled" since there's no acceptance yet - they can only be deleted
           posterHasRequestedCancellation ? null : (
             <TouchableOpacity 
               style={[
@@ -1484,11 +1485,11 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               ]} 
               activeOpacity={0.6}
               hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-              onPress={handleCancelTask}
+              onPress={handleDeleteTask}
               disabled={isProcessing}
             >
               <MaterialIcons 
-                name="cancel" 
+                name="delete" 
                 size={20} 
                 color={isProcessing ? "#999" : "#dc3545"} 
               />

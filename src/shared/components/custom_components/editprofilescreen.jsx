@@ -1,18 +1,18 @@
 // EditProfileScreen.tsx
-import { LocationAutocomplete } from '@/src/shared/components/LocationAutocomplete';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
-  Alert,
-  Image,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Image,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
+import { LocationAutocomplete } from '@/src/shared/components/LocationAutocomplete';
 
 const EditProfileScreen = ({ onBack, onSave, userData }) => {
   // Initialize from userData if available, otherwise use defaults

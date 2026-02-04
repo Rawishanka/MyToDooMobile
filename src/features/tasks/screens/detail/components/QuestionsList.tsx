@@ -583,8 +583,9 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
         />
       )}
 
-      {/* Ask Question Button - Hidden when viewing assigned/completed tasks */}
-      {!hideAskButton && (
+      {/* Ask Question Button - Hidden when viewing assigned/completed tasks OR when user is the task creator */}
+      {/* Task creator should NOT be able to post questions on their own task - only answer them */}
+      {!hideAskButton && currentUserId !== taskCreatorId && (
         <View style={[styles.askQuestionButtonContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <TouchableOpacity 
             style={styles.askQuestionButton}

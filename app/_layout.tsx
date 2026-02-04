@@ -12,6 +12,7 @@ import { NotificationPermissionPrompt } from '@/src/shared/components/Notificati
 import ProfessionalSplashScreen from '@/src/shared/components/ProfessionalSplashScreen';
 import { useColorScheme } from '@/src/shared/hooks/useColorScheme';
 import { useInitializeFCM } from '@/src/shared/hooks/useInitializeFCM';
+import { setupAppleCredentialListener, verifyAppleCredentialState } from '@/src/shared/utils/apple-auth-manager';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
@@ -95,6 +96,16 @@ export default function RootLayout() {
       try {
         // Hide native splash immediately - our custom splash will show
         await SplashScreen.hideAsync();
+        
+        // ========================================
+        // PROFESSIONAL APPLE AUTHENTICATION CHECK
+        // Verify stored credentials on app launch
+        // ========================================
+        console.log('🍎 Verifying Apple credentials on app launch...');
+        const hasValidAppleSession = await verifyAppleCredentialState();
+        if (hasValidAppleSession) {
+          console.log('✅ Valid Apple session restored');
+        }
       } catch (e) {
         console.warn('Error hiding splash:', e);
         SplashScreen.hideAsync().catch(() => {});
@@ -102,6 +113,17 @@ export default function RootLayout() {
     };
 
     prepareApp();
+    
+    // ========================================
+    // APPLE CREDENTIAL REVOCATION LISTENER
+    // Handles when user removes app from Settings
+    // ========================================
+    const cleanupListener = setupAppleCredentialListener();
+    
+    return () => {
+      // Cleanup listener on unmount
+      cleanupListener();
+    };
   }, []);
 
   const handleSplashFinish = () => {
