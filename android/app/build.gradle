@@ -122,6 +122,15 @@ android {
             crunchPngs enablePngCrunchInRelease.toBoolean()
         }
     }
+    
+    // Configure APK output name
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (variant.buildType.name == 'release') {
+                outputFileName = "UAT_App_release.apk"
+            }
+        }
+    }
     packagingOptions {
         jniLibs {
             def enableLegacyPackaging = findProperty('expo.useLegacyPackaging') ?: 'false'
