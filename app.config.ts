@@ -14,7 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   assetBundlePatterns: ['**/*'],
   runtimeVersion: '1.0.0',
   ios: {
-    bundleIdentifier: 'com.mytodoo.mytodoolive',
+    bundleIdentifier: 'com.mytodoo.mytodoolive.uat',
     supportsTablet: true,
     buildNumber: '1.0.0',
     googleServicesFile: './GoogleService-Info.plist',

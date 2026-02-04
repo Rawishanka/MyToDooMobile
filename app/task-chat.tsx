@@ -603,7 +603,7 @@ export default function TaskChatScreen() {
         keyboardVerticalOffset={0}
       >
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 12 : 12 }]}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
               <MaterialIcons name="arrow-back" size={24} color="#000" />
             </TouchableOpacity>
@@ -781,7 +781,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingBottom: 12,
+    // paddingTop is handled dynamically in the component for iOS safe area
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
