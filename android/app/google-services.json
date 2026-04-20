@@ -1,0 +1,70 @@
+{
+  "project_info": {
+    "project_number": "685356682007",
+    "project_id": "mytodoo-e4cdb",
+    "storage_bucket": "mytodoo-e4cdb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:685356682007:android:43492ad2af1792850f8552",
+        "android_client_info": {
+          "package_name": "com.mytodoo.mytodoolive"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "685356682007-1c32te3ilcp7uir81cfv4e7s02kqkhgo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mytodoo.mytodoolive",
+            "certificate_hash": "92fefe29d56c5f50d0c2c718a71aab3481372bc6"
+          }
+        },
+        {
+          "client_id": "685356682007-7krabf4ruuquunafa4n36k410iui9q50.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mytodoo.mytodoolive",
+            "certificate_hash": "16f2c3358d7b3416bdf3f5d80c1c069ca0f007cb"
+          }
+        },
+        {
+          "client_id": "685356682007-m2e0iba8eu1usf5s404789is5tjig5ie.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mytodoo.mytodoolive",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "685356682007-rj5r1ie1nrknfdiifl8akq5ata5ib4fi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAT-WR-wfJ1VkDyoYj3wmucrQdHfnVsdtQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "685356682007-rj5r1ie1nrknfdiifl8akq5ata5ib4fi.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "685356682007-brs7387p5gthok4o0nfdcvclvb6eghtj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mytodoo.mytodoolive"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

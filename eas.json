@@ -1,0 +1,100 @@
+{
+  "cli": {
+    "version": ">= 16.17.4",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "ios": {
+        "simulator": false,
+        "distribution": "internal"
+      },
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.mytodoo.com/api"
+      },
+      "channel": "preview"
+    },
+    "uat": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "distribution": "internal",
+      "channel": "uat",
+      "env": {
+        "ENVIRONMENT": "uat",
+        "EXPO_PUBLIC_WEBVIEW_BASE_URL": "https://uat-webview.mytodoo.com",
+        "EXPO_PUBLIC_API_URL": "https://api.mytodoo.com/api",
+        "API_URL": "https://api.mytodoo.com/api",
+        "API_BASE_URL": "https://api.mytodoo.com/api",
+        "EXPO_PUBLIC_USE_MOCK_ONLY": "false",
+        "EXPO_PUBLIC_MAPBOX_TOKEN": "YOUR_MAPBOX_TOKEN_HERE",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "430846501483-losl6kogpq7q5tl26p2bk9nevjp2tbif.apps.googleusercontent.com",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "YOUR_STRIPE_TEST_PUBLISHABLE_KEY_HERE",
+        "EXPO_PUBLIC_STRIPE_SECRET_KEY": "YOUR_STRIPE_SECRET_KEY_HERE",
+        "EXPO_PUBLIC_GEMINI_API_KEY": "YOUR_GEMINI_API_KEY_HERE",
+        "EXPO_PUBLIC_OPENAI_API_KEY": "YOUR_OPENAI_API_KEY_HERE"
+      }
+    },
+    "live": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "distribution": "internal",
+      "channel": "live",
+      "env": {
+        "ENVIRONMENT": "live",
+        "EXPO_PUBLIC_API_URL": "https://au-live-api.mytodoo.com/api",
+        "API_URL": "https://au-live-api.mytodoo.com/api",
+        "API_BASE_URL": "https://au-live-api.mytodoo.com/api",
+        "EXPO_PUBLIC_USE_MOCK_ONLY": "false",
+        "EXPO_PUBLIC_MAPBOX_TOKEN": "YOUR_MAPBOX_TOKEN_HERE",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "685356682007-1c32te3ilcp7uir81cfv4e7s02kqkhgo.apps.googleusercontent.com",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "YOUR_STRIPE_LIVE_PUBLISHABLE_KEY_HERE",
+        "EXPO_PUBLIC_STRIPE_SECRET_KEY": "YOUR_STRIPE_SECRET_KEY_HERE",
+        "EXPO_PUBLIC_GEMINI_API_KEY": "YOUR_GEMINI_API_KEY_HERE",
+        "EXPO_PUBLIC_OPENAI_API_KEY": "YOUR_OPENAI_API_KEY_HERE"
+      }
+    },
+    "production": {
+      "ios": {
+        "autoIncrement": true,
+        "buildConfiguration": "Release",
+        "image": "macos-ventura-13.6-xcode-15.2"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "ENVIRONMENT": "live",
+        "EXPO_PUBLIC_API_URL": "https://au-live-api.mytodoo.com/api",
+        "API_URL": "https://au-live-api.mytodoo.com/api",
+        "API_BASE_URL": "https://au-live-api.mytodoo.com/api",
+        "EXPO_PUBLIC_USE_MOCK_ONLY": "false",
+        "EXPO_PUBLIC_MAPBOX_TOKEN": "YOUR_MAPBOX_TOKEN_HERE",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "685356682007-1c32te3ilcp7uir81cfv4e7s02kqkhgo.apps.googleusercontent.com",
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "YOUR_STRIPE_LIVE_PUBLISHABLE_KEY_HERE",
+        "EXPO_PUBLIC_STRIPE_SECRET_KEY": "YOUR_STRIPE_SECRET_KEY_HERE",
+        "EXPO_PUBLIC_GEMINI_API_KEY": "YOUR_GEMINI_API_KEY_HERE",
+        "EXPO_PUBLIC_OPENAI_API_KEY": "YOUR_OPENAI_API_KEY_HERE"
+      },
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

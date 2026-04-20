@@ -1,0 +1,118 @@
+// Stripe Connect API Hooks
+
+import StripeConnectAPI, {
+    StripeAccountCreateResponse,
+    StripeAccountStatus,
+    StripePayoutHistoryResponse,
+} from '@/src/api/stripe-connect-api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+// Query Keys
+export const STRIPE_CONNECT_QUERY_KEYS = {
+  status: ['stripe-connect', 'status'] as const,
+  payouts: (limit?: number) => ['stripe-connect', 'payouts', limit] as const,
+};
+
+/**
+ * Get Stripe Connect account status
+ * Returns error with status 404 if no account exists (expected behavior)
+ */
+export function useGetStripeAccountStatus(enabled: boolean = true) {
+  return useQuery<StripeAccountStatus, any>({
+    queryKey: STRIPE_CONNECT_QUERY_KEYS.status,
+    queryFn: () => StripeConnectAPI.getAccountStatus(),
+    enabled,
+    retry: (failureCount, error) => {
+      // Don't retry on 404 (no account exists - this is expected)
+      if (error?.status === 404 || error?.isExpected) {
+        return false;
+      }
+      // Don't retry on network errors
+      if (error?.message === 'Network request failed') {
+        return false;
+      }
+      return failureCount < 2;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    // Suppress error logging for expected cases
+    throwOnError: false,
+    meta: {
+      errorMessage: 'Failed to check payout account status'
+    }
+  });
+}
+
+/**
+ * Create Stripe Connect account
+ */
+export function useCreateStripeAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation<StripeAccountCreateResponse, Error>({
+    mutationFn: () => StripeConnectAPI.createAccount(),
+    onSuccess: () => {
+      // Invalidate status query to refetch
+      queryClient.invalidateQueries({ queryKey: STRIPE_CONNECT_QUERY_KEYS.status });
+    },
+  });
+}
+
+/**
+ * Get Stripe onboarding link
+ */
+export function useGetStripeAccountLink() {
+  return useMutation<string, Error, { returnUrl: string; refreshUrl: string }>({
+    mutationFn: ({ returnUrl, refreshUrl }) => 
+      StripeConnectAPI.getAccountLink(returnUrl, refreshUrl),
+  });
+}
+
+/**
+ * Get payout history
+ */
+export function useGetPayoutHistory(limit: number = 10, enabled: boolean = true) {
+  return useQuery<StripePayoutHistoryResponse, any>({
+    queryKey: STRIPE_CONNECT_QUERY_KEYS.payouts(limit),
+    queryFn: () => StripeConnectAPI.getPayoutHistory(limit),
+    enabled,
+    retry: (failureCount, error) => {
+      // Don't retry on 404
+      if (error?.status === 404) {
+        return false;
+      }
+      return failureCount < 2;
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
+}
+
+/**
+ * Get Stripe-hosted URL to update bank account details
+ */
+export function useUpdateStripeAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ url: string; accountId: string }, Error, { returnUrl: string; refreshUrl: string }>({
+    mutationFn: ({ returnUrl, refreshUrl }) =>
+      StripeConnectAPI.updateAccount(returnUrl, refreshUrl),
+    onSuccess: () => {
+      // Refetch status after update
+      queryClient.invalidateQueries({ queryKey: STRIPE_CONNECT_QUERY_KEYS.status });
+    },
+  });
+}
+
+/**
+ * Delete Stripe Connect account
+ */
+export function useDeleteStripeAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error>({
+    mutationFn: () => StripeConnectAPI.deleteAccount(),
+    onSuccess: () => {
+      // Clear all Stripe Connect queries
+      queryClient.invalidateQueries({ queryKey: ['stripe-connect'] });
+    },
+  });
+}
