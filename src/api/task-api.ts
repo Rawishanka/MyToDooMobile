@@ -1337,19 +1337,18 @@ export async function getMyOffers(params?: MyTasksParams): Promise<{ success: bo
       const response = await api.get(`/tasks/my-offers?${searchParams.toString()}`);
       console.log("✅ Get my offers response:", response.data);
       
-      // Check if we got actual data, if not fall back to general endpoint
-      if (response.data && response.data.data && response.data.data.length > 0) {
+      // Return whatever data we got (including empty array)
+      if (response.data && response.data.data !== undefined) {
+        console.log(`✅ my-offers returned ${response.data.data.length} offers`);
         return response.data;
       } else {
-        console.log("📝 my-offers endpoint returned empty data, using general tasks endpoint");
-        throw new Error("Empty data from my-offers endpoint");
+        console.log("📝 my-offers endpoint returned no data field");
+        return { success: true, data: [] };
       }
     } catch {
-      console.log("📝 my-offers endpoint not available or empty, using general tasks endpoint");
-      // Fallback to general tasks endpoint - use getAllTasks function
-      const tasksResponse = await getAllTasks();
-      console.log("✅ Get my offers fallback success:", { success: true, data: tasksResponse.data });
-      return { success: true, data: tasksResponse.data };
+      console.log("📝 my-offers endpoint not available, returning empty offers");
+      // Return empty - don't fallback to getAllTasks() as it returns wrong data structure
+      return { success: true, data: [] };
     }
   } catch (error) {
     // Only log non-network errors in development

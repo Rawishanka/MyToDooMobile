@@ -90,7 +90,6 @@ export default function SignUpScreen() {
             showConfirmPassword={signup.showConfirmPassword}
             selectedCountry={signup.selectedCountry}
             selectedLocation={signup.selectedLocation}
-            showCountryPicker={signup.showCountryPicker}
             showDatePicker={signup.showDatePicker}
             loading={signup.loading}
             googleLoading={signup.googleLoading}
@@ -104,7 +103,6 @@ export default function SignUpScreen() {
             setShowConfirmPassword={signup.setShowConfirmPassword}
             setSelectedCountry={signup.setSelectedCountry}
             setSelectedLocation={signup.setSelectedLocation}
-            setShowCountryPicker={signup.setShowCountryPicker}
             setShowDatePicker={signup.setShowDatePicker}
             setDateOfBirth={signup.setDateOfBirth}
             handleSignUp={signup.handleSignUp}

@@ -54,3 +54,4 @@ builds/
 .env.live
 .env.uat
 .env.backup*
+.env.current.backup

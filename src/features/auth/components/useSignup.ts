@@ -70,7 +70,6 @@ export const useSignup = () => {
     return COUNTRIES[0]; // Australia is the only country
   });
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
-  const [showCountryPicker, setShowCountryPicker] = useState(false);
   
   // Verification state
   const [verificationStep, setVerificationStep] = useState<VerificationStep>(null);
@@ -891,10 +890,8 @@ export const useSignup = () => {
     // Location state
     selectedCountry,
     selectedLocation,
-    showCountryPicker,
     setSelectedCountry,
     setSelectedLocation,
-    setShowCountryPicker,
     
     // Verification state
     verificationStep,

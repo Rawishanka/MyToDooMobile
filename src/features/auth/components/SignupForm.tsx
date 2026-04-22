@@ -20,7 +20,6 @@ import {
 } from 'react-native';
 import TermsConditionsScreen from '@/src/features/legal/screens/TermsConditionsScreen';
 import PrivacyPolicyScreen from '@/src/features/legal/screens/PrivacyPolicyScreen';
-import { CountryPicker } from './CountryPicker';
 import { DatePickerInput } from './DatePickerInput';
 import { LocationInput } from './LocationInput';
 import type { CountryData, LocationData } from './signup-types';
@@ -51,7 +50,6 @@ interface SignupFormProps {
   // Location state
   selectedCountry: CountryData;
   selectedLocation: LocationData | null;
-  showCountryPicker: boolean;
   showDatePicker: boolean;
   
   // Loading
@@ -71,7 +69,6 @@ interface SignupFormProps {
   setShowConfirmPassword: (value: boolean) => void;
   setSelectedCountry: (country: CountryData) => void;
   setSelectedLocation: (location: LocationData | null) => void;
-  setShowCountryPicker: (show: boolean) => void;
   setShowDatePicker: (show: boolean) => void;
   setDateOfBirth: (date: Date | null) => void;
   
@@ -97,7 +94,6 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   showConfirmPassword,
   selectedCountry,
   selectedLocation,
-  showCountryPicker,
   showDatePicker,
   loading,
   googleLoading,
@@ -113,7 +109,6 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   setShowConfirmPassword,
   setSelectedCountry,
   setSelectedLocation,
-  setShowCountryPicker,
   setShowDatePicker,
   setDateOfBirth,
   handleSignUp,
@@ -318,7 +313,6 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   const handleCountrySelect = (country: CountryData) => {
     setSelectedCountry(country);
     setSelectedLocation(null);
-    setShowCountryPicker(false);
   };
 
   // Wrapper for handleDateChange to clear Required error
