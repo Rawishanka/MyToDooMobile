@@ -275,7 +275,7 @@ export default function WelcomeScreen() {
       <View style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
         {/* Blue Section with Input */}
         <View style={styles.blueSection}>
-          <Text style={styles.title}>Get it Done Now🔥</Text>
+          <Text style={styles.title}>Get it Done Now! 🔥</Text>
           <Text style={styles.subtitle}>
             Describe your job and get offers from MyToDoo
           </Text>
@@ -344,7 +344,7 @@ export default function WelcomeScreen() {
         </View>
 
         {/* Auto-Scrolling Video Categories Carousel */}
-        <Text style={styles.sectionTitle}>Need something done</Text>
+        <Text style={styles.sectionTitle}>Need something done?</Text>
         <Text style={styles.subTitle}>Cut through the competition and earn more with customers you know</Text>
 
         <View style={styles.carouselContainer}>
@@ -617,7 +617,7 @@ const styles = StyleSheet.create({
   // NEW: Auto-scrolling Carousel Styles (show 5 at a time)
   carouselContainer: {
     paddingVertical: hp('1%'),
-    paddingBottom: hp('2.5%'),
+    paddingBottom: hp('12%'),
     marginBottom: 0,
   },
   carouselContent: {
