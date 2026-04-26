@@ -13,6 +13,7 @@ import {
 } from '@/src/api/notification-api';
 import { handleAuthenticationError, isAuthError } from '@/src/shared/utils/auth-utils';
 import { getUnreadCount as getLocalUnreadCount } from '@/src/services/notification-storage';
+import { onNotificationsChanged } from '@/src/services/notification-events';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React from 'react';
@@ -79,6 +80,7 @@ export const useUnreadCount = () => {
  */
 export const useMergedUnreadCount = (): number => {
   const [localCount, setLocalCount] = React.useState(0);
+  const queryClient = useQueryClient();
 
   const isEnabled = React.useMemo(() => {
     const { isAuthenticated, token } = useAuthStore.getState();
@@ -112,11 +114,19 @@ export const useMergedUnreadCount = (): number => {
       if (state === 'active') fetchLocal();
     });
 
+    // Immediately refresh badge when notifications are deleted/read
+    // (instead of waiting up to 30-60s for the next poll)
+    const unsubscribe = onNotificationsChanged(() => {
+      fetchLocal();
+      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.unreadCount() });
+    });
+
     return () => {
       clearInterval(interval);
       subscription.remove();
+      unsubscribe();
     };
-  }, [isEnabled]);
+  }, [isEnabled, queryClient]);
 
   const apiCount = (apiData as any)?.unreadCount || 0;
   return Math.max(apiCount, localCount);

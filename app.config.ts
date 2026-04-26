@@ -25,7 +25,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: IS_UAT ? 'com.unexo.mytodoomobile' : 'com.mytodoo.mytodoolive',
     supportsTablet: true,
-    buildNumber: "36",
+    buildNumber: "37",
     googleServicesFile: './GoogleService-Info.plist',
     entitlements: {
       'com.apple.developer.in-app-payments': ['merchant.com.mytodoo.mytodoolive'],

@@ -18,6 +18,7 @@ import {
     markNotificationAsRead as localMarkNotificationAsRead,
     type StoredNotification,
 } from '@/src/services/notification-storage';
+import { emitNotificationsChanged } from '@/src/services/notification-events';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -102,6 +103,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
             markAllNotificationsAsRead(),
             localMarkAllNotificationsAsRead(),
           ]);
+          emitNotificationsChanged();
           setNotifications(merged.map(n => ({ ...n, isRead: true, readAt: n.readAt ?? new Date().toISOString() })));
           setUnreadCount(0);
         } catch {
@@ -159,6 +161,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
         markAllNotificationsAsRead(),
         localMarkAllNotificationsAsRead(),
       ]);
+      emitNotificationsChanged();
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true, readAt: new Date().toISOString() })));
       setUnreadCount(0);
     } catch (error) {
@@ -178,6 +181,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
       setTotalCount(prev => Math.max(0, prev - 1));
       if (deleted && !deleted.isRead) {
         setUnreadCount(prev => Math.max(0, prev - 1));
+        emitNotificationsChanged();
       }
     } catch (error) {
       console.error('❌ Error deleting notification:', error);
@@ -200,6 +204,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
                 deleteAllNotifications(),
                 localClearAllNotifications(),
               ]);
+              emitNotificationsChanged();
               setNotifications([]);
               setUnreadCount(0);
               setTotalCount(0);
