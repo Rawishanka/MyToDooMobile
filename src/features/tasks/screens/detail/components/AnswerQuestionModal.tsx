@@ -1,5 +1,6 @@
 import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { useAnswerTaskQuestion } from '@/src/shared/hooks/useTaskApi';
+import { moderateContent } from '@/src/shared/utils/contentModeration';
 import { formatUserName } from '@/src/utils/formatUserName';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
