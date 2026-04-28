@@ -51,8 +51,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     permissions: [
       'CAMERA',
-      'READ_EXTERNAL_STORAGE',
-      'WRITE_EXTERNAL_STORAGE',
       'ACCESS_FINE_LOCATION',
       'ACCESS_COARSE_LOCATION',
       'NOTIFICATIONS',
