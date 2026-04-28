@@ -3,8 +3,22 @@ import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { ScrollView, Text, TextInput } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+// ─── Global zoom prevention ───────────────────────────────────────────────────
+// Prevents pinch-to-zoom on all ScrollViews across every screen (iOS + Android)
+(ScrollView as any).defaultProps = {
+  ...((ScrollView as any).defaultProps || {}),
+  maximumZoomScale: 1,
+  minimumZoomScale: 1,
+  bouncesZoom: false,
+};
+// Prevent OS font-size setting from breaking layout scaling
+(Text as any).defaultProps = { ...((Text as any).defaultProps || {}), allowFontScaling: false };
+(TextInput as any).defaultProps = { ...((TextInput as any).defaultProps || {}), allowFontScaling: false };
+// ─────────────────────────────────────────────────────────────────────────────
 
 import { AuthProvider } from '@/src/shared/AuthProvider';
 import { DeepLinkHandler } from '@/src/shared/components/DeepLinkHandler';
