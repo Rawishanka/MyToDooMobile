@@ -23,10 +23,10 @@ const ICON_SIZE = isSmallDevice ? 20 : 22;
 const BRAND_BLUE = '#003399';
 
 const TAB_META = [
-  { name: 'index', label: 'Get Done', icon: 'rocket-outline' as const, iconActive: 'rocket' as const },
-  { name: 'browse', label: 'Browse', icon: 'compass-outline' as const, iconActive: 'compass' as const },
+  { name: 'index', label: 'Post Task', icon: 'rocket-outline' as const, iconActive: 'rocket' as const },
+  { name: 'browse', label: 'Find', icon: 'compass-outline' as const, iconActive: 'compass' as const },
   { name: 'my-tasks', label: 'My Tasks', icon: 'list-outline' as const, iconActive: 'list' as const },
-  { name: 'message', label: 'Messages', icon: 'chatbubbles-outline' as const, iconActive: 'chatbubbles' as const },
+  { name: 'message', label: 'Comms', icon: 'chatbubbles-outline' as const, iconActive: 'chatbubbles' as const },
   { name: 'account', label: 'Account', icon: 'person-circle-outline' as const, iconActive: 'person-circle' as const },
 ];
 

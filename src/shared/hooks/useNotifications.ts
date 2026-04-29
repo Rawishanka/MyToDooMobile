@@ -12,8 +12,11 @@ import {
     updateNotificationPreferences,
 } from '@/src/api/notification-api';
 import { handleAuthenticationError, isAuthError } from '@/src/shared/utils/auth-utils';
-import { getUnreadCount as getLocalUnreadCount } from '@/src/services/notification-storage';
-import { onNotificationsChanged } from '@/src/services/notification-events';
+import {
+    getUnreadCount as getLocalUnreadCount,
+    markAllNotificationsAsRead as localMarkAllRead,
+} from '@/src/services/notification-storage';
+import { emitNotificationsChanged, onNotificationsChanged } from '@/src/services/notification-events';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React from 'react';
@@ -110,8 +113,17 @@ export const useMergedUnreadCount = (): number => {
     const interval = setInterval(fetchLocal, 30000);
 
     // Also refresh when app comes back to foreground
-    const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') fetchLocal();
+    // Auto-mark all as read when app becomes active (professional behavior:
+    // badge clears when user opens the app, same as WhatsApp/Slack etc.)
+    const subscription = AppState.addEventListener('change', async (state) => {
+      if (state === 'active') {
+        try {
+          // Reset local unread count → badge clears when app opened
+          await localMarkAllRead();
+          emitNotificationsChanged();
+        } catch {}
+        fetchLocal();
+      }
     });
 
     // Immediately refresh badge when notifications are deleted/read
