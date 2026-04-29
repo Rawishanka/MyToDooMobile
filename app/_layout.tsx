@@ -8,8 +8,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // ─── Prevent device Accessibility font-size from breaking layouts ─────────────
-// Note: React Native screens cannot be pinch-zoomed natively.
-// Map WebView (Leaflet) zoom is intentional — handled by Leaflet internally.
+// Primary fix is in index.js (runs before this module).
+// This is a safety net in case any lazy-loaded module re-registers Text defaults.
 (Text as any).defaultProps = { ...((Text as any).defaultProps || {}), allowFontScaling: false };
 (TextInput as any).defaultProps = { ...((TextInput as any).defaultProps || {}), allowFontScaling: false };
 // ─────────────────────────────────────────────────────────────────────────────

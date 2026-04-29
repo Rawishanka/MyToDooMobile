@@ -7,7 +7,19 @@
  * CRITICAL: Background handler MUST be registered at top level!
  */
 
-import { Platform } from 'react-native';
+import { Animated, Platform, Text, TextInput } from 'react-native';
+
+// ==================== GLOBAL FONT SCALE LOCK ====================
+// Prevent iOS/Android Accessibility "Text Size" setting from breaking layouts.
+// This mirrors how Facebook, Instagram, etc. lock their font sizes.
+// Must run HERE (entry point) — before any component renders.
+Text.defaultProps = Object.assign({}, Text.defaultProps, { allowFontScaling: false });
+TextInput.defaultProps = Object.assign({}, TextInput.defaultProps, { allowFontScaling: false });
+// Animated.Text is a separate component — must be patched independently
+if (Animated.Text) {
+  Animated.Text.defaultProps = Object.assign({}, Animated.Text.defaultProps, { allowFontScaling: false });
+}
+// ================================================================
 
 // ==================== FIREBASE BACKGROUND HANDLER ====================
 

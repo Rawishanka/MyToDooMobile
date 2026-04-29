@@ -117,7 +117,7 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
                     />
                     {totalUnreadCount > 0 && (
                       <View style={tabStyles.badge}>
-                        <Text style={tabStyles.badgeText}>
+                        <Text style={tabStyles.badgeText} allowFontScaling={false}>
                           {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
                         </Text>
                       </View>
@@ -131,7 +131,13 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
                   />
                 )}
               </View>
-              <Text style={[tabStyles.label, isFocused && tabStyles.labelActive]} numberOfLines={1}>
+              <Text
+                style={[tabStyles.label, isFocused && tabStyles.labelActive]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.6}
+                allowFontScaling={false}
+              >
                 {meta.label}
               </Text>
             </TouchableOpacity>
@@ -151,10 +157,10 @@ export default function TabsLayout() {
       tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
-      <Tabs.Screen name="index" options={{ tabBarLabel: 'Get Done' }} />
-      <Tabs.Screen name="browse" options={{ tabBarLabel: 'Browse' }} />
+      <Tabs.Screen name="index" options={{ tabBarLabel: 'Post Task' }} />
+      <Tabs.Screen name="browse" options={{ tabBarLabel: 'Find' }} />
       <Tabs.Screen name="my-tasks" options={{ tabBarLabel: 'My Tasks' }} />
-      <Tabs.Screen name="message" options={{ tabBarLabel: 'Messages' }} />
+      <Tabs.Screen name="message" options={{ tabBarLabel: 'Comms' }} />
       <Tabs.Screen name="account" options={{ tabBarLabel: 'Account' }} />
     </Tabs>
   );
@@ -188,6 +194,7 @@ const tabStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 2,
+    paddingHorizontal: 2,
   },
   iconWrapper: {
     width: CIRCLE_SIZE,
@@ -208,6 +215,7 @@ const tabStyles = StyleSheet.create({
     color: '#888',
     marginTop: 3,
     textAlign: 'center',
+    width: '100%',
   },
   labelActive: {
     color: BRAND_BLUE,

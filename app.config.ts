@@ -15,7 +15,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: IS_UAT ? 'MyToDoo UAT' : 'MyToDoo',
   slug: 'mytodoomobile-app',
   owner: 'sithila345',
-  version: '1.0.5',
+  version: '1.0.8',
   orientation: 'portrait',
   icon: './assets/images/mytodoo-adaptive-icon.png',
   scheme: 'mytodoo',
@@ -25,7 +25,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: IS_UAT ? 'com.unexo.mytodoomobile' : 'com.mytodoo.mytodoolive',
     supportsTablet: true,
-    buildNumber: "40",
+    buildNumber: "43",
     googleServicesFile: './GoogleService-Info.plist',
     entitlements: {
       'com.apple.developer.in-app-payments': ['merchant.com.mytodoo.mytodoolive'],
@@ -50,10 +50,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#004aad',
     },
     permissions: [
-      'CAMERA',
-      'ACCESS_FINE_LOCATION',
-      'ACCESS_COARSE_LOCATION',
-      'NOTIFICATIONS',
+      'android.permission.INTERNET',
+      'android.permission.CAMERA',
+      'android.permission.ACCESS_FINE_LOCATION',
+      'android.permission.ACCESS_COARSE_LOCATION',
+      'android.permission.POST_NOTIFICATIONS',
+      'android.permission.VIBRATE',
+      'android.permission.RECEIVE_BOOT_COMPLETED',
+      'android.permission.RECORD_AUDIO',
     ],
     intentFilters: [
       {

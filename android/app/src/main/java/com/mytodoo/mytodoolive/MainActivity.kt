@@ -1,5 +1,7 @@
 package com.mytodoo.mytodoolive
 
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 
@@ -11,6 +13,18 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate
 import expo.modules.ReactActivityDelegateWrapper
 
 class MainActivity : ReactActivity() {
+
+  /**
+   * Lock the app font scale to 1.0 regardless of the device accessibility
+   * "Text Size" setting. This matches how Instagram / Facebook behave.
+   */
+  override fun attachBaseContext(newBase: Context) {
+    val config = Configuration(newBase.resources.configuration)
+    config.fontScale = 1.0f
+    val context = newBase.createConfigurationContext(config)
+    super.attachBaseContext(context)
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     // Set the theme to AppTheme BEFORE onCreate to support
     // coloring the background, status bar, and navigation bar.

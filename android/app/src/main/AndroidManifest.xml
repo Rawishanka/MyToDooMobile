@@ -8,10 +8,11 @@
   <!-- Google Play policy fix: only apps needing persistent media access can use READ_MEDIA_IMAGES -->
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" tools:replace="android:maxSdkVersion"/>
-  <!-- Explicitly remove READ_MEDIA_IMAGES/VIDEO injected by expo-image-picker plugin -->
-  <!-- Google Play rejects apps that use these without a core media use case -->
+  <!-- Explicitly remove ALL media permissions injected by expo-image-picker plugin -->
+  <!-- Google Play Photo & Video Permissions policy: only remove, never declare these -->
   <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>
   <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove"/>
+  <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" tools:node="remove"/>
   <queries>
     <intent>
       <action android:name="android.intent.action.VIEW"/>
