@@ -922,22 +922,59 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     let currency = task.currency || 'USD';
     let acceptedDate = task.createdAt;
     
-    // Try to get accepted offer details and actual service fee from payment data
-    let actualServiceFee = null;
+    let posterServiceFee: number | null = null;
+    let taskerCommission: number | null = null;
+    let taskerNetReceives: number | null = null;
+    let posterTotalPaid: number | null = null;
+    let posterConnectionFee: number | null = null;
+    let posterConnectionFeeTax: number | null = null;
+    let taskerConnectionFee: number | null = null;
+    let connectionFeeDisplayName: string | null = null;
+
     if (task.offers && Array.isArray(task.offers)) {
       const acceptedOffer = task.offers.find(o => o.status === 'accepted');
       if (acceptedOffer) {
         offerAmount = acceptedOffer.amount || acceptedOffer.offer?.amount || offerAmount;
         currency = acceptedOffer.currency || acceptedOffer.offer?.currency || currency;
         acceptedDate = acceptedOffer.createdAt || acceptedDate;
-        // Get actual service fee from payment details if available
-        actualServiceFee = (acceptedOffer as any).serviceFee || (acceptedOffer as any).paymentDetails?.serviceFee || null;
+        const paymentDetails = (acceptedOffer as any).paymentDetails;
+        posterServiceFee =
+          paymentDetails?.posterServiceFee ??
+          paymentDetails?.serviceFee ??
+          (acceptedOffer as any).posterServiceFee ??
+          (acceptedOffer as any).serviceFee ??
+          null;
+        taskerCommission =
+          paymentDetails?.taskerCommission ?? (acceptedOffer as any).taskerCommission ?? null;
+        taskerNetReceives =
+          paymentDetails?.taskerNetReceives ?? (acceptedOffer as any).taskerNetReceives ?? null;
+        posterTotalPaid =
+          paymentDetails?.posterTotalPays ??
+          paymentDetails?.totalAmount ??
+          paymentDetails?.totalAmountWithConnectionFee ??
+          (acceptedOffer as any).posterTotalPaid ??
+          null;
+        posterConnectionFee = paymentDetails?.posterConnectionFee ?? null;
+        posterConnectionFeeTax = paymentDetails?.posterConnectionFeeTax ?? null;
+        taskerConnectionFee = paymentDetails?.taskerConnectionFee ?? null;
+        connectionFeeDisplayName = paymentDetails?.connectionFeeDisplayName ?? null;
       }
     }
-    
-    // Also check task-level payment details for service fee
-    if (!actualServiceFee && (task as any).paymentDetails?.serviceFee) {
-      actualServiceFee = (task as any).paymentDetails.serviceFee;
+
+    const taskPayment = (task as any).paymentDetails;
+    if (taskPayment) {
+      posterServiceFee =
+        posterServiceFee ??
+        taskPayment.posterServiceFee ??
+        taskPayment.serviceFee ??
+        null;
+      taskerCommission = taskerCommission ?? taskPayment.taskerCommission ?? null;
+      taskerNetReceives = taskerNetReceives ?? taskPayment.taskerNetReceives ?? taskPayment.netAmountAfterFees ?? null;
+      posterTotalPaid = posterTotalPaid ?? taskPayment.posterTotalPays ?? taskPayment.totalAmount ?? taskPayment.totalAmountWithConnectionFee ?? null;
+      posterConnectionFee = posterConnectionFee ?? taskPayment.posterConnectionFee ?? null;
+      posterConnectionFeeTax = posterConnectionFeeTax ?? taskPayment.posterConnectionFeeTax ?? null;
+      taskerConnectionFee = taskerConnectionFee ?? taskPayment.taskerConnectionFee ?? null;
+      connectionFeeDisplayName = connectionFeeDisplayName ?? taskPayment.connectionFeeDisplayName ?? null;
     }
     
     // Parse location
@@ -959,10 +996,30 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       userRole: userRole,
     };
     
-    // Add service fee if available from payment data
-    if (actualServiceFee !== null) {
-      receiptParams.serviceFee = actualServiceFee.toString();
-      console.log('📊 Passing actual service fee to receipt:', actualServiceFee);
+    if (posterServiceFee !== null) {
+      receiptParams.posterServiceFee = posterServiceFee.toString();
+      receiptParams.serviceFee = posterServiceFee.toString();
+    }
+    if (taskerCommission !== null) {
+      receiptParams.taskerCommission = taskerCommission.toString();
+    }
+    if (taskerNetReceives !== null) {
+      receiptParams.taskerNetReceives = taskerNetReceives.toString();
+    }
+    if (posterTotalPaid !== null) {
+      receiptParams.posterTotalPaid = posterTotalPaid.toString();
+    }
+    if (posterConnectionFee !== null) {
+      receiptParams.posterConnectionFee = posterConnectionFee.toString();
+    }
+    if (posterConnectionFeeTax !== null) {
+      receiptParams.posterConnectionFeeTax = posterConnectionFeeTax.toString();
+    }
+    if (taskerConnectionFee !== null) {
+      receiptParams.taskerConnectionFee = taskerConnectionFee.toString();
+    }
+    if (connectionFeeDisplayName) {
+      receiptParams.connectionFeeDisplayName = connectionFeeDisplayName;
     }
     
     router.push({
@@ -1303,9 +1360,13 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   // Get task's original currency - DO NOT convert to user's location currency
   // Tasks should display in their original posted currency (LKR, AUD, etc.)
-  const formattedBudgetDisplay = task.formattedBudget || 
-    (task.budget && task.currency ? formatCurrency(task.budget, { code: task.currency, symbol: getCurrencySymbol(task.currency) }) : 
-    'Budget not specified');
+  const resolvedBudget = task.budget || task.taskBudget || (task as any).price || 0;
+  const resolvedCurrency = task.currency || task.taskCurrency || (task as any).currencyCode || 'AUD';
+  const formattedBudgetDisplay = task.formattedBudget ||
+    task.formattedTaskBudget ||
+    (resolvedBudget > 0
+      ? formatCurrency(resolvedBudget, { code: resolvedCurrency, symbol: getCurrencySymbol(resolvedCurrency) })
+      : 'Budget not specified');
 
   return (
     <View style={[
@@ -2204,7 +2265,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             
             <Text style={styles.deleteModalTitle}>Cancellation Request</Text>
             <Text style={styles.deleteModalMessage}>
-              {pendingCancellationRequest?.requestedBy === task.createdBy._id 
+              {pendingCancellationRequest?.requestedBy === task.createdBy?._id 
                 ? 'The Poster has requested to cancel this task.' 
                 : 'The Tasker has requested to cancel this task.'}
             </Text>
@@ -2436,7 +2497,7 @@ const styles = StyleSheet.create({
   cancelRequestBannerText: {
     flex: 1,
     color: '#fff',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
   },
   ownCancelPendingBanner: {
@@ -2585,21 +2646,21 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 12,
     textAlign: 'center',
   },
   modalMessage: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#666',
     textAlign: 'center',
     marginBottom: 8,
     lineHeight: 22,
   },
   modalQuestion: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#333',
     textAlign: 'center',
     marginBottom: 24,
@@ -2620,7 +2681,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
   modalNoText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     fontWeight: '600',
   },
@@ -2632,7 +2693,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalYesText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#fff',
     fontWeight: '600',
   },
@@ -2787,7 +2848,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e0e0e0',
   },
   posterCancelTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     color: '#333',
   },
@@ -2807,7 +2868,7 @@ const styles = StyleSheet.create({
   },
   warningText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#333',
     marginLeft: 12,
     lineHeight: 20,
@@ -2828,7 +2889,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   emptyReasonsContainer: {
@@ -2837,7 +2898,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyReasonsText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
     textAlign: 'center',
   },
@@ -2857,7 +2918,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   reasonNumber: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: 'bold',
     color: '#333',
     marginRight: 8,
@@ -2865,7 +2926,7 @@ const styles = StyleSheet.create({
   },
   reasonText: {
     flex: 1,
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#333',
     lineHeight: 22,
   },
@@ -2883,7 +2944,7 @@ const styles = StyleSheet.create({
   },
   confirmCancelButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   deleteButton: {
@@ -2913,14 +2974,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   deleteModalTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 12,
     textAlign: 'center',
   },
   deleteModalMessage: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#666',
     textAlign: 'center',
     lineHeight: 22,
@@ -2939,7 +3000,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteCancelButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
   },
@@ -2955,7 +3016,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   deleteConfirmButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#fff',
   },
@@ -2977,13 +3038,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   offersLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#333',
     marginLeft: 8,
   },
   offersCount: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginLeft: 4,
   },
@@ -3010,7 +3071,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f0f0f0',
   },
   offersModalTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
     flex: 1,
@@ -3053,7 +3114,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   offerUserName: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 2,
@@ -3063,7 +3124,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   offerRatingText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginLeft: 4,
   },
@@ -3071,12 +3132,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   offerPrice: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#007AFF',
   },
   offerMessage: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     fontStyle: 'italic',
     marginBottom: 12,
@@ -3088,7 +3149,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   offerDate: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
   acceptOfferButton: {
@@ -3104,7 +3165,7 @@ const styles = StyleSheet.create({
   },
   acceptOfferText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
   },
 });

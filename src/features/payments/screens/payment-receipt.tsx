@@ -20,6 +20,7 @@ import {
 import { calculateServiceFee, getServiceFeeConfig } from '@/src/api/payment-api';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function PaymentReceiptScreen() {
   const params = useLocalSearchParams();
@@ -40,11 +41,43 @@ export default function PaymentReceiptScreen() {
   const paymentId = params.paymentId as string || taskId;
   const userRole = params.userRole as string || 'Tasker';
   const serviceFeeParam = params.serviceFee ? parseFloat(params.serviceFee as string) : null;
+  const posterServiceFeeParam = params.posterServiceFee
+    ? parseFloat(params.posterServiceFee as string)
+    : null;
+  const taskerCommissionParam = params.taskerCommission
+    ? parseFloat(params.taskerCommission as string)
+    : null;
+  const taskerNetParam = params.taskerNetReceives
+    ? parseFloat(params.taskerNetReceives as string)
+    : null;
+  const posterTotalParam = params.posterTotalPaid
+    ? parseFloat(params.posterTotalPaid as string)
+    : null;
+  const posterConnectionFeeParam = params.posterConnectionFee
+    ? parseFloat(params.posterConnectionFee as string)
+    : null;
+  const posterConnectionFeeTaxParam = params.posterConnectionFeeTax
+    ? parseFloat(params.posterConnectionFeeTax as string)
+    : null;
+  const taskerConnectionFeeParam = params.taskerConnectionFee
+    ? parseFloat(params.taskerConnectionFee as string)
+    : null;
+  const connectionFeeDisplayNameParam =
+    (params.connectionFeeDisplayName as string) || 'Connection Fee';
   
   const receiptRef = useRef<View>(null);
   const [isDownloading, setIsDownloading] = React.useState(false);
-  const [backendServiceFee, setBackendServiceFee] = React.useState<number | null>(serviceFeeParam);
-  const [isLoadingFee, setIsLoadingFee] = React.useState<boolean>(!serviceFeeParam);
+  const [backendPosterFee, setBackendPosterFee] = React.useState<number | null>(
+    posterServiceFeeParam ?? (userRole !== 'Tasker' ? serviceFeeParam : null)
+  );
+  const [backendTaskerCommission, setBackendTaskerCommission] = React.useState<number | null>(
+    taskerCommissionParam
+  );
+  const [isLoadingFee, setIsLoadingFee] = React.useState<boolean>(
+    userRole === 'Tasker'
+      ? taskerCommissionParam === null
+      : (posterServiceFeeParam ?? serviceFeeParam) === null
+  );
   
   // Parse location properly (handles nested JSON stringification)
   const parseTaskLocation = (locationParam: string): string => {
@@ -81,85 +114,83 @@ export default function PaymentReceiptScreen() {
   
   const parsedTaskLocation = parseTaskLocation(taskLocation);
   
-  // Fetch actual service fee from backend if not provided
   React.useEffect(() => {
-    const fetchServiceFee = async () => {
-      // If service fee already provided from params, use it
-      if (serviceFeeParam !== null) {
-        console.log('📊 Using service fee from params:', serviceFeeParam);
+    const fetchFees = async () => {
+      const isTasker = userRole === 'Tasker';
+
+      if (isTasker) {
+        if (taskerCommissionParam !== null) {
+          setIsLoadingFee(false);
+          return;
+        }
+        if (!offerAmount || offerAmount <= 0) {
+          setBackendTaskerCommission(0);
+          setIsLoadingFee(false);
+          return;
+        }
+        // Tasker receipt: commission defaults to 20% if payment record not passed
+        setBackendTaskerCommission(Math.round(offerAmount * 0.2 * 100) / 100);
         setIsLoadingFee(false);
         return;
       }
-      
-      // Validate offerAmount before making API call
+
+      if (posterServiceFeeParam !== null || serviceFeeParam !== null) {
+        setIsLoadingFee(false);
+        return;
+      }
+
       if (!offerAmount || offerAmount <= 0) {
-        console.warn('⚠️ Invalid offer amount:', offerAmount);
-        setBackendServiceFee(0);
+        setBackendPosterFee(0);
         setIsLoadingFee(false);
         return;
       }
-      
+
       try {
-        console.log('📊 Fetching actual service fee from backend for amount:', offerAmount, 'currency:', currency);
         const response = await calculateServiceFee({
           amount: offerAmount,
-          currency: currency || 'AUD'
+          currency: currency || 'AUD',
         });
-        
-        console.log('📊 Backend response:', JSON.stringify(response, null, 2));
-        
-        if (response && response.success && response.calculation) {
-          const actualServiceFee = response.calculation.serviceFee;
-          
-          // Validate that serviceFee is a valid number
-          if (typeof actualServiceFee === 'number' && !isNaN(actualServiceFee)) {
-            console.log('✅ Backend service fee fetched:', actualServiceFee);
-            setBackendServiceFee(actualServiceFee);
+
+        if (response?.success && response.calculation) {
+          const posterFee = response.calculation.serviceFee;
+          if (typeof posterFee === 'number' && !isNaN(posterFee)) {
+            setBackendPosterFee(posterFee);
           } else {
-            console.warn('⚠️ Invalid serviceFee value from backend:', actualServiceFee);
-            // Get admin config as fallback
             await fetchAdminConfigFallback();
           }
         } else {
-          // Backend returned success but no valid service fee
-          console.warn('⚠️ Backend response missing calculation or serviceFee:', response);
-          // Get admin config as fallback
           await fetchAdminConfigFallback();
         }
-      } catch (error: any) {
-        console.error('❌ Failed to fetch service fee from backend:', error);
-        console.error('❌ Error message:', error?.message);
-        console.error('❌ Error status:', error?.response?.status);
-        // Get admin config as fallback instead of hardcoded 15%
+      } catch {
         await fetchAdminConfigFallback();
       } finally {
         setIsLoadingFee(false);
       }
     };
-    
-    // Fallback: Fetch admin config to get actual BASE_PERCENTAGE
+
     const fetchAdminConfigFallback = async () => {
       try {
-        console.log('🔧 Fetching service fee config from admin panel...');
         const configResponse = await getServiceFeeConfig();
-        if (configResponse && configResponse.success && configResponse.config) {
+        if (configResponse?.success && configResponse.config) {
           const basePercentage = configResponse.config.BASE_PERCENTAGE;
-          const calculatedFee = offerAmount * (basePercentage / 100);
-          console.log(`✅ Using admin config: ${basePercentage}% service fee = ${calculatedFee}`);
-          setBackendServiceFee(calculatedFee);
+          setBackendPosterFee(Math.round(offerAmount * (basePercentage / 100) * 100) / 100);
         } else {
-          console.warn('⚠️ Admin config missing, using 15% as last resort');
-          setBackendServiceFee(offerAmount * 0.15);
+          setBackendPosterFee(Math.round(offerAmount * 0.05 * 100) / 100);
         }
-      } catch (configError) {
-        console.error('❌ Failed to fetch admin config:', configError);
-        console.warn('⚠️ Using 15% as absolute last resort');
-        setBackendServiceFee(offerAmount * 0.15);
+      } catch {
+        setBackendPosterFee(Math.round(offerAmount * 0.05 * 100) / 100);
       }
     };
-    
-    fetchServiceFee();
-  }, [offerAmount, currency, serviceFeeParam]);
+
+    fetchFees();
+  }, [
+    offerAmount,
+    currency,
+    serviceFeeParam,
+    posterServiceFeeParam,
+    taskerCommissionParam,
+    userRole,
+  ]);
   
   console.log('📄 Payment Receipt Screen Params:', {
     taskId,
@@ -169,60 +200,76 @@ export default function PaymentReceiptScreen() {
     taskerName,
     posterName,
     userRole,
-    backendServiceFee
+    backendPosterFee,
+    backendTaskerCommission,
   });
 
-  // Format dates
+  const isTaskerView = userRole === 'Tasker';
+  const posterServiceFee = backendPosterFee || 0;
+  const taskerCommission = backendTaskerCommission || 0;
+  const posterFeePercent =
+    offerAmount > 0 ? Math.round((posterServiceFee / offerAmount) * 100) : 0;
+  const commissionPercent =
+    offerAmount > 0 ? Math.round((taskerCommission / offerAmount) * 100) : 0;
+
+  const formattedPosterFee = formatCurrency(posterServiceFee, {
+    code: currency,
+    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency,
+  });
+
+  const formattedCommission = formatCurrency(taskerCommission, {
+    code: currency,
+    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency,
+  });
+
+  const posterConnectionFee = posterConnectionFeeParam ?? 0;
+  const posterConnectionFeeTax = posterConnectionFeeTaxParam ?? 0;
+  const taskerConnectionFee = taskerConnectionFeeParam ?? 0;
+  const connectionFeeDisplayName = connectionFeeDisplayNameParam;
+
+  const formattedPosterConnectionFee = formatCurrency(posterConnectionFee, {
+    code: currency,
+    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency,
+  });
+  const formattedPosterConnectionFeeTax = formatCurrency(posterConnectionFeeTax, {
+    code: currency,
+    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency,
+  });
+  const formattedTaskerConnectionFee = formatCurrency(taskerConnectionFee, {
+    code: currency,
+    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency,
+  });
+
+  const posterTotalPaid =
+    posterTotalParam ??
+    Math.round(
+      (offerAmount + posterServiceFee + posterConnectionFee + posterConnectionFeeTax) * 100
+    ) / 100;
+  const formattedPosterTotal = formatCurrency(posterTotalPaid, {
+    code: currency,
+    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency,
+  });
+
+  const taskerNetAmount =
+    taskerNetParam ??
+    Math.round((offerAmount - taskerCommission - taskerConnectionFee) * 100) / 100;
+  const formattedTaskerNet = formatCurrency(taskerNetAmount, {
+    code: currency,
+    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency,
+  });
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
-  // Format currency
   const formattedAmount = formatCurrency(offerAmount, {
     code: currency,
-    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency
-  });
-
-  // Use actual service fee from backend (dynamically calculated based on admin settings)
-  // The backend calculates the fee based on the admin panel configuration
-  // Connection fee and service fee are the same rate (configurable by admin)
-  
-  // Calculate connection fee and service fee using actual backend value
-  const serviceFee = backendServiceFee || 0;
-  const connectionFee = serviceFee; // Connection fee = Service fee (same rate)
-  
-  // Calculate the actual percentage from the backend service fee
-  const serviceFeePercentage = offerAmount > 0 
-    ? Math.round((serviceFee / offerAmount) * 100) 
-    : 0;
-  
-  const formattedConnectionFee = formatCurrency(connectionFee, {
-    code: currency,
-    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency
-  });
-  
-  const formattedServiceFee = formatCurrency(serviceFee, {
-    code: currency,
-    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency
-  });
-
-  // Total amount poster pays (offer amount + connection fee)
-  const posterTotalPaid = offerAmount + connectionFee;
-  const formattedPosterTotal = formatCurrency(posterTotalPaid, {
-    code: currency,
-    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency
-  });
-
-  // Net amount tasker receives (offer amount - service fee)
-  const taskerNetAmount = offerAmount - serviceFee;
-  const formattedTaskerNet = formatCurrency(taskerNetAmount, {
-    code: currency,
-    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency
+    symbol: currency === 'USD' ? '$' : currency === 'LKR' ? 'Rs.' : currency,
   });
 
   // Download receipt as PDF
@@ -231,7 +278,20 @@ export default function PaymentReceiptScreen() {
       setIsDownloading(true);
       console.log('📥 Generating PDF receipt...');
 
-      const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4;margin:0}*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fff;padding:0;margin:0}.page{width:210mm;min-height:297mm;padding:15mm;background:#fff}.receipt-container{border:2px solid #e0e0e0;border-radius:8px;overflow:hidden}.receipt-header{background:linear-gradient(135deg,#007AFF,#0051D5);color:#fff;padding:25px;text-align:center}.logo-text{font-size:32px;font-weight:700;letter-spacing:1.5px;margin-bottom:10px}.receipt-title{font-size:20px;font-weight:700;margin-bottom:4px}.receipt-subtitle{font-size:13px;opacity:.95}.receipt-body{padding:25px}.section{margin-bottom:18px;page-break-inside:avoid}.section-label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-weight:600}.section-value{font-size:15px;font-weight:600;color:#333}.section-title{font-size:16px;font-weight:700;color:#333;margin-bottom:12px;border-bottom:2px solid #007AFF;padding-bottom:6px}.info-row{display:flex;justify-content:space-between;margin-bottom:8px;padding:6px 0}.info-label{font-size:13px;color:#555;font-weight:500}.info-value{font-size:13px;color:#222;font-weight:600;text-align:right;max-width:60%;word-wrap:break-word}.party-card{background:#f8f9fa;padding:14px;border-radius:6px;margin-bottom:10px;border-left:4px solid #007AFF}.party-header{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600}.party-name{font-size:16px;font-weight:700;color:#222}.payment-row{display:flex;justify-content:space-between;margin-bottom:10px;padding:6px 0}.payment-label{font-size:13px;color:#555;font-weight:500}.payment-value{font-size:13px;color:#222;font-weight:600}.divider-light{height:1px;background:#e0e0e0;margin:10px 0}.total-row{display:flex;justify-content:space-between;padding:14px 0;border-top:2px solid #007AFF;margin-top:10px}.total-label{font-size:17px;font-weight:700;color:#222}.total-value{font-size:20px;font-weight:700;color:#007AFF}.status-section{text-align:center;margin:20px 0;page-break-inside:avoid}.status-badge{display:inline-block;background:#d4edda;border:2px solid #28a745;padding:10px 24px;border-radius:25px;margin-bottom:8px}.status-text{font-size:15px;font-weight:700;color:#155724}.status-date{font-size:12px;color:#666;margin-top:4px}.footer{text-align:center;padding-top:18px;border-top:2px solid #e0e0e0;margin-top:20px}.footer-text{font-size:15px;font-weight:700;color:#333;margin-bottom:6px}.footer-subtext{font-size:12px;color:#666}.divider{height:1px;background:#d0d0d0;margin:16px 0}</style></head><body><div class="page"><div class="receipt-container"><div class="receipt-header"><div class="logo-text">MyTodoo</div><div class="receipt-title">PAYMENT RECEIPT</div><div class="receipt-subtitle">Official Transaction Record</div></div><div class="receipt-body"><div class="section"><div class="section-label">Receipt ID</div><div class="section-value">${paymentId.substring(0, 12).toUpperCase()}</div></div><div class="divider"></div><div class="section"><div class="section-title">Task Details</div><div class="info-row"><span class="info-label">Task:</span><span class="info-value">${taskTitle}</span></div><div class="info-row"><span class="info-label">Location:</span><span class="info-value">${parsedTaskLocation}</span></div><div class="info-row"><span class="info-label">Accepted:</span><span class="info-value">${formatDate(acceptedDate)}</span></div><div class="info-row"><span class="info-label">Completed:</span><span class="info-value">${formatDate(completedDate)}</span></div></div><div class="divider"></div><div class="section"><div class="section-title">Parties Involved</div><div class="party-card"><div class="party-header">👤 TASK POSTER</div><div class="party-name">${posterName}</div></div><div class="party-card"><div class="party-header">💼 TASKER</div><div class="party-name">${taskerName}</div></div></div><div class="divider"></div><div class="section"><div class="section-title">Payment Breakdown</div><div class="payment-row"><span class="payment-label">Task Amount</span><span class="payment-value">${formattedAmount}</span></div><div class="payment-row"><span class="payment-label">${userRole === 'Tasker' ? `Platform Fee (${serviceFeePercentage}%)` : 'Connection Fee (15%)'}</span><span class="payment-value">${userRole === 'Tasker' ? `- ${formattedServiceFee}` : `+ ${formattedConnectionFee}`}</span></div><div class="divider-light"></div><div class="total-row"><span class="total-label">${userRole === 'Tasker' ? 'Amount Received' : 'Total Paid'}</span><span class="total-value">${userRole === 'Tasker' ? formattedTaskerNet : formattedPosterTotal}</span></div></div><div class="divider"></div><div class="status-section"><div class="status-badge"><span class="status-text">✓ Payment Completed</span></div><div class="status-date">Processed on ${formatDate(completedDate)}</div></div><div class="footer"><div class="footer-text">Thank you for using MyTodoo!</div><div class="footer-subtext">For support, contact us at support@mytodoo.com</div></div></div></div></div></body></html>`;
+      const feeLabel = isTaskerView
+        ? `Commission (${commissionPercent}%)`
+        : `Service Fee (${posterFeePercent}%)`;
+      const feeValue = isTaskerView
+        ? `- ${formattedCommission}`
+        : `+ ${formattedPosterFee}`;
+      const totalLabel = isTaskerView ? 'Amount Received' : 'Total Paid';
+      const totalValue = isTaskerView ? formattedTaskerNet : formattedPosterTotal;
+
+      const connectionFeeRows = !isTaskerView
+        ? `${posterConnectionFee > 0 ? `<div class="payment-row"><span class="payment-label">${connectionFeeDisplayName}</span><span class="payment-value">+ ${formattedPosterConnectionFee}</span></div>` : ''}${posterConnectionFeeTax > 0 ? `<div class="payment-row"><span class="payment-label">${connectionFeeDisplayName} tax</span><span class="payment-value">+ ${formattedPosterConnectionFeeTax}</span></div>` : ''}`
+        : `${taskerConnectionFee > 0 ? `<div class="payment-row"><span class="payment-label">${connectionFeeDisplayName}</span><span class="payment-value">- ${formattedTaskerConnectionFee}</span></div>` : ''}`;
+
+      const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>@page{size:A4;margin:0}*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fff;padding:0;margin:0}.page{width:210mm;min-height:297mm;padding:15mm;background:#fff}.receipt-container{border:2px solid #e0e0e0;border-radius:8px;overflow:hidden}.receipt-header{background:linear-gradient(135deg,#007AFF,#0051D5);color:#fff;padding:25px;text-align:center}.logo-text{font-size:32px;font-weight:700;letter-spacing:1.5px;margin-bottom:10px}.receipt-title{font-size:20px;font-weight:700;margin-bottom:4px}.receipt-subtitle{font-size:13px;opacity:.95}.receipt-body{padding:25px}.section{margin-bottom:18px;page-break-inside:avoid}.section-label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;font-weight:600}.section-value{font-size:15px;font-weight:600;color:#333}.section-title{font-size:16px;font-weight:700;color:#333;margin-bottom:12px;border-bottom:2px solid #007AFF;padding-bottom:6px}.info-row{display:flex;justify-content:space-between;margin-bottom:8px;padding:6px 0}.info-label{font-size:13px;color:#555;font-weight:500}.info-value{font-size:13px;color:#222;font-weight:600;text-align:right;max-width:60%;word-wrap:break-word}.party-card{background:#f8f9fa;padding:14px;border-radius:6px;margin-bottom:10px;border-left:4px solid #007AFF}.party-header{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600}.party-name{font-size:16px;font-weight:700;color:#222}.payment-row{display:flex;justify-content:space-between;margin-bottom:10px;padding:6px 0}.payment-label{font-size:13px;color:#555;font-weight:500}.payment-value{font-size:13px;color:#222;font-weight:600}.divider-light{height:1px;background:#e0e0e0;margin:10px 0}.total-row{display:flex;justify-content:space-between;padding:14px 0;border-top:2px solid #007AFF;margin-top:10px}.total-label{font-size:17px;font-weight:700;color:#222}.total-value{font-size:20px;font-weight:700;color:#007AFF}.status-section{text-align:center;margin:20px 0;page-break-inside:avoid}.status-badge{display:inline-block;background:#d4edda;border:2px solid #28a745;padding:10px 24px;border-radius:25px;margin-bottom:8px}.status-text{font-size:15px;font-weight:700;color:#155724}.status-date{font-size:12px;color:#666;margin-top:4px}.footer{text-align:center;padding-top:18px;border-top:2px solid #e0e0e0;margin-top:20px}.footer-text{font-size:15px;font-weight:700;color:#333;margin-bottom:6px}.footer-subtext{font-size:12px;color:#666}.divider{height:1px;background:#d0d0d0;margin:16px 0}</style></head><body><div class="page"><div class="receipt-container"><div class="receipt-header"><div class="logo-text">MyTodoo</div><div class="receipt-title">PAYMENT RECEIPT</div><div class="receipt-subtitle">Official Transaction Record</div></div><div class="receipt-body"><div class="section"><div class="section-label">Receipt ID</div><div class="section-value">${paymentId.substring(0, 12).toUpperCase()}</div></div><div class="divider"></div><div class="section"><div class="section-title">Task Details</div><div class="info-row"><span class="info-label">Task:</span><span class="info-value">${taskTitle}</span></div><div class="info-row"><span class="info-label">Location:</span><span class="info-value">${parsedTaskLocation}</span></div><div class="info-row"><span class="info-label">Accepted:</span><span class="info-value">${formatDate(acceptedDate)}</span></div><div class="info-row"><span class="info-label">Completed:</span><span class="info-value">${formatDate(completedDate)}</span></div></div><div class="divider"></div><div class="section"><div class="section-title">Parties Involved</div><div class="party-card"><div class="party-header">👤 TASK POSTER</div><div class="party-name">${posterName}</div></div><div class="party-card"><div class="party-header">💼 TASKER</div><div class="party-name">${taskerName}</div></div></div><div class="divider"></div><div class="section"><div class="section-title">Payment Breakdown</div><div class="payment-row"><span class="payment-label">Task Amount</span><span class="payment-value">${formattedAmount}</span></div><div class="payment-row"><span class="payment-label">${feeLabel}</span><span class="payment-value">${feeValue}</span></div>${connectionFeeRows}<div class="divider-light"></div><div class="total-row"><span class="total-label">${totalLabel}</span><span class="total-value">${totalValue}</span></div></div><div class="divider"></div><div class="status-section"><div class="status-badge"><span class="status-text">✓ Payment Completed</span></div><div class="status-date">Processed on ${formatDate(completedDate)}</div></div><div class="footer"><div class="footer-text">Thank you for using MyTodoo!</div><div class="footer-subtext">For support, contact us at support@mytodoo.com</div></div></div></div></div></body></html>`;
 
       const { uri } = await Print.printToFileAsync({ html: htmlContent });
       console.log('✅ PDF generated:', uri);
@@ -389,12 +449,21 @@ export default function PaymentReceiptScreen() {
                 <Text style={styles.paymentValue}>{formattedAmount}</Text>
               </View>
               
-              {userRole === 'Tasker' ? (
+              {isTaskerView ? (
                 <>
                   <View style={styles.paymentRow}>
-                    <Text style={styles.paymentLabel}>Platform Fee ({serviceFeePercentage}%)</Text>
-                    <Text style={styles.paymentValue}>- {formattedServiceFee}</Text>
+                    <Text style={styles.paymentLabel}>
+                      Commission ({commissionPercent}%)
+                    </Text>
+                    <Text style={styles.paymentValue}>- {formattedCommission}</Text>
                   </View>
+
+                  {taskerConnectionFee > 0 && (
+                    <View style={styles.paymentRow}>
+                      <Text style={styles.paymentLabel}>{connectionFeeDisplayName}</Text>
+                      <Text style={styles.paymentValue}>- {formattedTaskerConnectionFee}</Text>
+                    </View>
+                  )}
                   
                   <View style={styles.dividerLight} />
                   
@@ -406,9 +475,25 @@ export default function PaymentReceiptScreen() {
               ) : (
                 <>
                   <View style={styles.paymentRow}>
-                    <Text style={styles.paymentLabel}>Connection Fee ({serviceFeePercentage}%)</Text>
-                    <Text style={styles.paymentValue}>+ {formattedConnectionFee}</Text>
+                    <Text style={styles.paymentLabel}>
+                      Service Fee ({posterFeePercent}%)
+                    </Text>
+                    <Text style={styles.paymentValue}>+ {formattedPosterFee}</Text>
                   </View>
+
+                  {posterConnectionFee > 0 && (
+                    <View style={styles.paymentRow}>
+                      <Text style={styles.paymentLabel}>{connectionFeeDisplayName}</Text>
+                      <Text style={styles.paymentValue}>+ {formattedPosterConnectionFee}</Text>
+                    </View>
+                  )}
+
+                  {posterConnectionFeeTax > 0 && (
+                    <View style={styles.paymentRow}>
+                      <Text style={styles.paymentLabel}>{connectionFeeDisplayName} tax</Text>
+                      <Text style={styles.paymentValue}>+ {formattedPosterConnectionFeeTax}</Text>
+                    </View>
+                  )}
                   
                   <View style={styles.dividerLight} />
                   
@@ -480,7 +565,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   scrollView: {
@@ -512,19 +597,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   logoText: {
-    fontSize: 32,
+    fontSize: RFValue(32),
     fontWeight: 'bold',
     color: '#fff',
     letterSpacing: 1,
   },
   receiptTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 4,
   },
   receiptSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: 'rgba(255, 255, 255, 0.9)',
   },
   receiptBody: {
@@ -534,19 +619,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   sectionValue: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 12,
@@ -557,12 +642,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   infoLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     flex: 1,
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     fontWeight: '500',
     flex: 2,
@@ -580,14 +665,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   partyRole: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginLeft: 6,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   partyName: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginLeft: 26,
@@ -598,21 +683,21 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   paymentLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   paymentValue: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     fontWeight: '500',
   },
   totalLabel: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: '#333',
   },
   totalValue: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#007AFF',
   },
@@ -630,13 +715,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   statusText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#28a745',
     marginLeft: 6,
   },
   statusDate: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
   },
   footer: {
@@ -646,13 +731,13 @@ const styles = StyleSheet.create({
     borderTopColor: '#f0f0f0',
   },
   footerText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#333',
     marginBottom: 4,
   },
   footerSubtext: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
   },
   divider: {
@@ -679,7 +764,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   downloadButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#fff',
   },

@@ -11,16 +11,80 @@ export interface CreatePaymentIntentRequest {
   currency?: string;
 }
 
+export interface PaymentBreakdown {
+  budgetAmount?: number;
+  offerAmount?: number;
+  serviceFee?: number;
+  posterServiceFee?: number;
+  posterServiceFeeRate?: number;
+  totalCharge?: number;
+  posterTotalCharge?: number;
+  posterConnectionFee?: number;
+  posterConnectionFeeTax?: number;
+  connectionFeeDisplayName?: string;
+  totalAmountWithConnectionFee?: number;
+  netAmountAfterFees?: number;
+  taskerConnectionFee?: number;
+  taskerCommission?: number;
+  taskerCommissionRate?: number;
+  taskerWillReceive?: number;
+  currency: string;
+}
+
+export interface NormalizedPaymentBreakdown {
+  budgetAmount: number;
+  serviceFee: number;
+  posterConnectionFee: number;
+  posterConnectionFeeTax: number;
+  connectionFeeDisplayName: string;
+  taskerConnectionFee: number;
+  taskerCommission: number;
+  taskerWillReceive: number;
+  totalAmount: number;
+  currency: string;
+}
+
+export function normalizePaymentBreakdown(
+  breakdown?: PaymentBreakdown | null
+): NormalizedPaymentBreakdown | null {
+  if (!breakdown) return null;
+
+  const budgetAmount = breakdown.budgetAmount ?? breakdown.offerAmount ?? 0;
+  const serviceFee = breakdown.posterServiceFee ?? breakdown.serviceFee ?? 0;
+  const posterConnectionFee = breakdown.posterConnectionFee ?? 0;
+  const posterConnectionFeeTax = breakdown.posterConnectionFeeTax ?? 0;
+  const taskerConnectionFee = breakdown.taskerConnectionFee ?? 0;
+  const taskerCommission = breakdown.taskerCommission ?? 0;
+  const taskerWillReceive =
+    breakdown.taskerWillReceive ??
+    breakdown.netAmountAfterFees ??
+    Math.max(0, budgetAmount - taskerCommission - taskerConnectionFee);
+  const totalAmount =
+    breakdown.totalAmountWithConnectionFee ??
+    breakdown.totalCharge ??
+    breakdown.posterTotalCharge ??
+    Math.round(
+      (budgetAmount + serviceFee + posterConnectionFee + posterConnectionFeeTax) * 100
+    ) / 100;
+
+  return {
+    budgetAmount,
+    serviceFee,
+    posterConnectionFee,
+    posterConnectionFeeTax,
+    connectionFeeDisplayName: breakdown.connectionFeeDisplayName || 'Connection Fee',
+    taskerConnectionFee,
+    taskerCommission,
+    taskerWillReceive,
+    totalAmount,
+    currency: breakdown.currency || 'AUD',
+  };
+}
+
 export interface CreatePaymentIntentResponse {
   success: boolean;
   clientSecret: string;
-  breakdown: {
-    budgetAmount: number;
-    serviceFee: number;
-    totalCharge: number;
-    taskerWillReceive: number;
-    currency: string;
-  };
+  breakdown: PaymentBreakdown;
   serviceFeeDetails: {
     reason: string;
     percentage: number;

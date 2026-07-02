@@ -15,6 +15,7 @@ import * as PaymentAPI from '../../api/payment-api';
 import { useAuthStore } from '../../store/auth-task-store';
 import { useCreatePaymentIntent } from '../hooks/usePaymentApi';
 import { useAcceptOffer } from '../hooks/useTaskApi';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface StripePaymentModalProps {
   visible: boolean;
@@ -78,24 +79,23 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
   
   // ALWAYS use backend payment intent data for consistency between display and actual charge
   const getServiceFeeData = () => {
-    if (paymentIntentData?.breakdown) {
-      // Use breakdown data from the actual backend response - THIS IS WHAT STRIPE CHARGES
-      console.log('✅ Using backend breakdown data (this is what Stripe will charge):', paymentIntentData.breakdown);
-      return {
-        budgetAmount: paymentIntentData.breakdown.budgetAmount,
-        serviceFee: paymentIntentData.breakdown.serviceFee,
-        totalAmount: paymentIntentData.breakdown.totalCharge,
-        currency: paymentIntentData.breakdown.currency,
-      };
+    const normalized = PaymentAPI.normalizePaymentBreakdown(paymentIntentData?.breakdown);
+    if (normalized) {
+      console.log('✅ Using backend breakdown data (this is what Stripe will charge):', normalized);
+      return normalized;
     }
-    
-    // Minimal fallback - show offer amount while waiting for backend calculation
-    // The actual service fee will be calculated by the backend based on admin configuration
+
     console.log('⏳ Waiting for backend service fee calculation...');
     return {
       budgetAmount: offerAmount,
-      serviceFee: 0, // Will be calculated by backend
-      totalAmount: offerAmount, // Will be updated once backend responds
+      serviceFee: 0,
+      posterConnectionFee: 0,
+      posterConnectionFeeTax: 0,
+      connectionFeeDisplayName: 'Connection Fee',
+      taskerConnectionFee: 0,
+      taskerCommission: 0,
+      taskerWillReceive: offerAmount,
+      totalAmount: offerAmount,
       currency: currency,
     };
   };
@@ -164,12 +164,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
         throw new Error('Failed to create payment intent');
       }
 
-      console.log('✅ Payment intent created:', {
-        budgetAmount: paymentResult.breakdown?.budgetAmount,
-        serviceFee: paymentResult.breakdown?.serviceFee,
-        totalCharge: paymentResult.breakdown?.totalCharge,
-        currency: paymentResult.breakdown?.currency
-      });
+      console.log('✅ Payment intent created:', PaymentAPI.normalizePaymentBreakdown(paymentResult.breakdown));
       
       setPaymentIntentData(paymentResult);
 
@@ -378,7 +373,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 16,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     fontWeight: '500',
   },
@@ -397,7 +392,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
@@ -412,18 +407,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   taskTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#1a1a1a',
     marginBottom: 8,
   },
   taskerName: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginBottom: 4,
   },
   offerDescription: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#374151',
     lineHeight: 20,
   },
@@ -435,7 +430,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#1a1a1a',
     marginBottom: 16,
@@ -449,11 +444,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   summaryLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   summaryValue: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '500',
     color: '#000',
   },
@@ -464,12 +459,12 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   totalLabel: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
   },
   totalValue: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: '#4285f4',
   },
@@ -482,13 +477,13 @@ const styles = StyleSheet.create({
     borderLeftColor: '#4285f4',
   },
   backendDataLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
     color: '#4285f4',
     marginBottom: 4,
   },
   backendDataText: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#666',
   },
   termsSection: {
@@ -498,13 +493,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   termsTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#1a1a1a',
     marginBottom: 8,
   },
   termsBullet: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     lineHeight: 18,
     marginBottom: 4,
@@ -531,7 +526,7 @@ const styles = StyleSheet.create({
   },
   checkboxText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     lineHeight: 18,
   },
@@ -548,7 +543,7 @@ const styles = StyleSheet.create({
   },
   securityText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     lineHeight: 18,
     marginLeft: 8,
@@ -575,7 +570,7 @@ const styles = StyleSheet.create({
   },
   payButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   retryButton: {
@@ -594,7 +589,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: '#4285f4',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
   },
 });
