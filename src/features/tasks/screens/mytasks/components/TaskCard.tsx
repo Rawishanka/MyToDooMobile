@@ -906,127 +906,15 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   };
 
   const handleViewReceipt = useCallback(() => {
-    console.log('📄 Viewing payment receipt for task:', task._id);
-    
-    // Get tasker and poster names
-    const taskerName = (task as any).assignedTo?.firstName 
-      ? formatUserName((task as any).assignedTo.firstName, (task as any).assignedTo.lastName)
-      : 'Tasker';
-    
-    const posterName = task.createdBy?.firstName
-      ? formatUserName(task.createdBy.firstName, task.createdBy.lastName)
-      : 'Poster';
-    
-    // Get offer details - try multiple sources
-    let offerAmount = task.budget || 0;
-    let currency = task.currency || 'USD';
-    let acceptedDate = task.createdAt;
-    
-    let posterServiceFee: number | null = null;
-    let taskerCommission: number | null = null;
-    let taskerNetReceives: number | null = null;
-    let posterTotalPaid: number | null = null;
-    let posterConnectionFee: number | null = null;
-    let posterConnectionFeeTax: number | null = null;
-    let taskerConnectionFee: number | null = null;
-    let connectionFeeDisplayName: string | null = null;
-
-    if (task.offers && Array.isArray(task.offers)) {
-      const acceptedOffer = task.offers.find(o => o.status === 'accepted');
-      if (acceptedOffer) {
-        offerAmount = acceptedOffer.amount || acceptedOffer.offer?.amount || offerAmount;
-        currency = acceptedOffer.currency || acceptedOffer.offer?.currency || currency;
-        acceptedDate = acceptedOffer.createdAt || acceptedDate;
-        const paymentDetails = (acceptedOffer as any).paymentDetails;
-        posterServiceFee =
-          paymentDetails?.posterServiceFee ??
-          paymentDetails?.serviceFee ??
-          (acceptedOffer as any).posterServiceFee ??
-          (acceptedOffer as any).serviceFee ??
-          null;
-        taskerCommission =
-          paymentDetails?.taskerCommission ?? (acceptedOffer as any).taskerCommission ?? null;
-        taskerNetReceives =
-          paymentDetails?.taskerNetReceives ?? (acceptedOffer as any).taskerNetReceives ?? null;
-        posterTotalPaid =
-          paymentDetails?.posterTotalPays ??
-          paymentDetails?.totalAmount ??
-          paymentDetails?.totalAmountWithConnectionFee ??
-          (acceptedOffer as any).posterTotalPaid ??
-          null;
-        posterConnectionFee = paymentDetails?.posterConnectionFee ?? null;
-        posterConnectionFeeTax = paymentDetails?.posterConnectionFeeTax ?? null;
-        taskerConnectionFee = paymentDetails?.taskerConnectionFee ?? null;
-        connectionFeeDisplayName = paymentDetails?.connectionFeeDisplayName ?? null;
-      }
-    }
-
-    const taskPayment = (task as any).paymentDetails;
-    if (taskPayment) {
-      posterServiceFee =
-        posterServiceFee ??
-        taskPayment.posterServiceFee ??
-        taskPayment.serviceFee ??
-        null;
-      taskerCommission = taskerCommission ?? taskPayment.taskerCommission ?? null;
-      taskerNetReceives = taskerNetReceives ?? taskPayment.taskerNetReceives ?? taskPayment.netAmountAfterFees ?? null;
-      posterTotalPaid = posterTotalPaid ?? taskPayment.posterTotalPays ?? taskPayment.totalAmount ?? taskPayment.totalAmountWithConnectionFee ?? null;
-      posterConnectionFee = posterConnectionFee ?? taskPayment.posterConnectionFee ?? null;
-      posterConnectionFeeTax = posterConnectionFeeTax ?? taskPayment.posterConnectionFeeTax ?? null;
-      taskerConnectionFee = taskerConnectionFee ?? taskPayment.taskerConnectionFee ?? null;
-      connectionFeeDisplayName = connectionFeeDisplayName ?? taskPayment.connectionFeeDisplayName ?? null;
-    }
-    
-    // Parse location
-    const parsedLocation = parseLocation(task.location);
-    const taskLocation = parsedLocation?.address || 'Location not specified';
-    
-    // Navigate to receipt screen with actual service fee if available
-    const receiptParams: any = {
-      taskId: task._id,
-      taskTitle: task.title,
-      taskLocation: taskLocation,
-      offerAmount: offerAmount.toString(),
-      currency: currency,
-      taskerName: taskerName,
-      posterName: posterName,
-      acceptedDate: acceptedDate,
-      completedDate: task.updatedAt || task.createdAt,
-      paymentId: (task as any).paymentIntentId || task._id,
-      userRole: userRole,
-    };
-    
-    if (posterServiceFee !== null) {
-      receiptParams.posterServiceFee = posterServiceFee.toString();
-      receiptParams.serviceFee = posterServiceFee.toString();
-    }
-    if (taskerCommission !== null) {
-      receiptParams.taskerCommission = taskerCommission.toString();
-    }
-    if (taskerNetReceives !== null) {
-      receiptParams.taskerNetReceives = taskerNetReceives.toString();
-    }
-    if (posterTotalPaid !== null) {
-      receiptParams.posterTotalPaid = posterTotalPaid.toString();
-    }
-    if (posterConnectionFee !== null) {
-      receiptParams.posterConnectionFee = posterConnectionFee.toString();
-    }
-    if (posterConnectionFeeTax !== null) {
-      receiptParams.posterConnectionFeeTax = posterConnectionFeeTax.toString();
-    }
-    if (taskerConnectionFee !== null) {
-      receiptParams.taskerConnectionFee = taskerConnectionFee.toString();
-    }
-    if (connectionFeeDisplayName) {
-      receiptParams.connectionFeeDisplayName = connectionFeeDisplayName;
-    }
-    
+    console.log('📄 Viewing backend receipt PDF for task:', task._id);
     router.push({
       pathname: '/payment-receipt',
-      params: receiptParams
+      params: {
+        taskId: task._id,
+        userRole,
+      },
     } as any);
-  }, [task, userRole, router]);
+  }, [task._id, userRole, router]);
 
   // ⭐ Handler for submitting review
   const handleSubmitReview = async (reviewData: {
