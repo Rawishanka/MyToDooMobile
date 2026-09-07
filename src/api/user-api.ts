@@ -196,6 +196,10 @@ interface SignUpRequest {
   password: string;
   phone: string;
   dateOfBirth?: string;
+  notifyNewTask?: boolean;
+  notifySkillMatch?: boolean;
+  /** Optional invite/referral code from deep link or AsyncStorage */
+  referralCode?: string;
   location: {
     country: string;
     countryCode: string;
@@ -251,7 +255,7 @@ export function useCreateSignUpToken() {
       console.log('📝 Creating signup with data:', signUpData);
       
       try {
-        const response = await api.post('/auth/signup', signUpData);
+        const response = await api.post('/users/signup', signUpData);
         console.log('✅ Signup API response:', response.data);
         return response.data;
       } catch (error: any) {
@@ -645,7 +649,7 @@ export async function getUserProfile(): Promise<User> {
     }
     
     // If no user in store, try API call
-    const response = await api.get('/auth/profile');
+    const response = await api.get('/users/profile');
     console.log('✅ User profile fetched from API:', response.data);
     return response.data.user;
     

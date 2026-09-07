@@ -1,4 +1,5 @@
-import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
+import { flushPendingSignupAbn } from '@/src/api/abn-api';
+import { flushPendingReferralCode } from '@/src/api/referral-api';
 import { auth } from '@/src/config/firebase';
 import { useAppleSignIn, useCreateAuthToken, useGoogleSignIn } from '@/src/shared/hooks/useApi';
 import { registerFCMToken } from '@/src/services/notification-service';
@@ -23,7 +24,6 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
@@ -32,9 +32,13 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
+import { FORM_MAX_WIDTH, RFValue, isTablet } from '@/src/shared/utils/responsive';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -187,6 +191,13 @@ export default function LoginScreen() {
           hasToken: !!authState.token,
           isAuthenticated: authState.isAuthenticated,
         });
+      }
+
+      try {
+        await flushPendingSignupAbn();
+        await flushPendingReferralCode();
+      } catch (abnError) {
+        console.warn('Pending signup ABN save failed (non-blocking)', abnError);
       }
       
       // Force invalidate profile queries to ensure fresh profile data with user context
@@ -405,6 +416,13 @@ export default function LoginScreen() {
         console.warn('⚠️ FCM re-registration failed after email login (non-critical):', fcmError);
       }
 
+      try {
+        await flushPendingSignupAbn();
+        await flushPendingReferralCode();
+      } catch (abnError) {
+        console.warn('Pending signup ABN save failed (non-blocking)', abnError);
+      }
+
       // Check if there's a pending task to post
       if (hasPendingTask()) {
         console.log('📋 Pending task detected after login');
@@ -533,19 +551,29 @@ export default function LoginScreen() {
           'Our servers are experiencing issues. Please try again in a few moments.',
           [{ text: 'OK' }]
         );
-      } else if (error?.message?.includes('Network Error') || 
-                 error?.code === 'ECONNREFUSED' || 
-                 error?.code === 'ETIMEDOUT' ||
-                 error?.message?.includes('timeout')) {
+      } else if (
+          error?.message?.includes('Network Error') ||
+          error?.code === 'ECONNREFUSED' ||
+          error?.code === 'ETIMEDOUT' ||
+          error?.code === 'EPROTO' ||
+          error?.code === 'ECONNRESET' ||
+          error?.code === 'ERR_NETWORK' ||
+          error?.message?.includes('timeout') ||
+          error?.message?.includes('certificate') ||
+          error?.message?.includes('SSL') ||
+          error?.message?.includes('ssl') ||
+          error?.message?.includes('handshake') ||
+          (!error?.response && !error?.response?.status)
+        ) {
+        const isSSLError = error?.code === 'EPROTO' ||
+          error?.message?.includes('certificate') ||
+          error?.message?.includes('SSL') ||
+          error?.message?.includes('handshake');
         Alert.alert(
-          'Connection Problem', 
-          'Unable to connect to the server.\n\n✓ Check your internet connection\n✓ Make sure you have WiFi or mobile data\n✓ Try again in a moment',
-          [{ text: 'OK' }]
-        );
-      } else if (error?.code === 'ERR_NETWORK') {
-        Alert.alert(
-          'Network Error', 
-          'A network error occurred. Please check your connection and try again.',
+          'Connection Problem',
+          isSSLError
+            ? 'A secure connection could not be established.\n\n✓ Try switching from WiFi to mobile data\n✓ If on a school or office network, try mobile data\n✓ Make sure your device date & time is correct\n✓ Try again in a moment'
+            : 'Unable to connect to the server.\n\n✓ Check your internet connection\n✓ Make sure you have WiFi or mobile data\n✓ Try again in a moment',
           [{ text: 'OK' }]
         );
       } else {
@@ -704,6 +732,13 @@ export default function LoginScreen() {
         console.warn('⚠️ FCM re-registration failed after Apple Sign-In (non-critical):', fcmError);
       }
 
+      try {
+        await flushPendingSignupAbn();
+        await flushPendingReferralCode();
+      } catch (abnError) {
+        console.warn('Pending signup ABN save failed (non-blocking)', abnError);
+      }
+
       // 6. Check for pending actions after successful login
       const hasPendingAction = await checkPendingAction();
       if (hasPendingAction) {
@@ -740,7 +775,7 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.container}>
       {/* Cross icon in top right */}
       <TouchableOpacity
-        style={styles.closeIcon}
+        style={[styles.closeIcon, { top: insets.top + 8 }]}
         onPress={() => {
           // Clear pending action if user cancels login
           if (pendingAction) {
@@ -759,20 +794,20 @@ export default function LoginScreen() {
         style={styles.innerContainer}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: Math.max(insets.bottom, 20) },
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.contentWrapper}>
+            <View style={[styles.contentWrapper, isTablet && styles.contentWrapperTablet]}>
         <View style={styles.header}>
           {/* MyToDoo SVG Logo in Blue Container */}
           <View style={styles.logoContainer}>
             <View style={styles.logoBackground}>
-              <MyToDooLogo 
-                width={50}
-                height={50}
-              />
+              <MyToDooLogo width={50} height={50} />
             </View>
           </View>
           <Text style={styles.title}>Welcome Back</Text>
@@ -945,6 +980,10 @@ const styles = StyleSheet.create({
   contentWrapper: {
     width: '100%',
   },
+  contentWrapperTablet: {
+    maxWidth: FORM_MAX_WIDTH,
+    alignSelf: 'center',
+  },
   header: {
     alignItems: 'center',
     marginBottom: 24,
@@ -966,20 +1005,20 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   title: {
-    fontSize: 24,
+    fontSize: RFValue(24),
     fontWeight: 'bold',
     marginBottom: 6,
     color: '#333',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   form: {
     marginBottom: 16,
   },
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     marginBottom: 6,
   },
@@ -992,7 +1031,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: '#333',
     backgroundColor: '#fff',
-    fontSize: 15,
+    fontSize: RFValue(15),
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -1008,7 +1047,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
     color: '#333',
-    fontSize: 15,
+    fontSize: RFValue(15),
   },
   passwordToggle: {
     padding: 8,
@@ -1037,14 +1076,14 @@ const styles = StyleSheet.create({
     borderColor: '#007BFF',
   },
   rememberMeText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
   },
   forgotPassword: {
     color: '#007BFF',
     textAlign: 'right',
     marginBottom: 16,
-    fontSize: 14,
+    fontSize: RFValue(14),
   },
   loginButton: {
     backgroundColor: '#007BFF',
@@ -1055,7 +1094,7 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   dividerContainer: {
     flexDirection: 'row',
@@ -1070,7 +1109,7 @@ const styles = StyleSheet.create({
   dividerText: {
     marginHorizontal: 10,
     color: '#666',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '500',
   },
   googleButton: {
@@ -1092,7 +1131,7 @@ const styles = StyleSheet.create({
   googleButtonText: {
     color: '#333',
     fontWeight: '600',
-    fontSize: 15,
+    fontSize: RFValue(15),
   },
   appleButton: {
     flexDirection: 'row',
@@ -1109,7 +1148,7 @@ const styles = StyleSheet.create({
   appleButtonText: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 15,
+    fontSize: RFValue(15),
   },
   footer: {
     flexDirection: 'row',
@@ -1124,7 +1163,6 @@ const styles = StyleSheet.create({
   },
   closeIcon: {
     position: 'absolute',
-    top: 40,
     right: 18,
     zIndex: 10,
     backgroundColor: 'rgba(255,255,255,0.7)',
@@ -1144,7 +1182,7 @@ const styles = StyleSheet.create({
   pendingActionText: {
     flex: 1,
     color: '#1976D2',
-    fontSize: 13,
+    fontSize: RFValue(13),
     fontWeight: '500',
   },
 });

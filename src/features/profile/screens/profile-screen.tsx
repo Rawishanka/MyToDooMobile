@@ -16,8 +16,10 @@ import { OCRAPI } from '@/src/api/ocr-api';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { Entypo, Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
+import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ActivityIndicator, Alert, Image, Linking, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -28,14 +30,28 @@ import { ReviewsList } from './user-profile/components/ReviewsList';
 
 
 import AccountInformation from './accountinformation';
+import CreditsScreen from './credits-screen';
+import CreateServiceScreen from './create-service-screen';
 import IDVerificationScreen from './id-verification-screen';
+import InviteFriendsScreen from './invite-friends-screen';
 import InsuranceProtection from './isuranceprotection';
+import MyServicesScreen from './my-services-screen';
 import NotificationPreferences from './notificationpreferences';
 import PaymentScreensApp from './paymentscreens';
 import TaskAlerts from './taskalerts';
+import { RFValue, TAB_BAR_CLEARANCE } from '@/src/shared/utils/responsive';
+import { consumePendingAccountNavigation } from '@/src/shared/utils/pending-account-navigation';
 
 export default function AccountScreen() {
+  const { screen: screenParam, focus: focusParam } = useLocalSearchParams<{
+    screen?: string;
+    focus?: string;
+    reviewId?: string;
+    taskId?: string;
+  }>();
   const [currentScreen, setCurrentScreen] = useState('account');
+  const scrollViewRef = useRef<ScrollView>(null);
+  const ratingSectionOffsetRef = useRef(0);
   const [editAccessStatus, setEditAccessStatus] = useState<'locked' | 'pending' | 'approved'>('locked');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showPendingModal, setShowPendingModal] = useState(false);
@@ -57,16 +73,110 @@ export default function AccountScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
+  const openScreenFromParam = useCallback((screen?: string) => {
+    if (!screen) return;
+    const allowed = new Set([
+      'payment',
+      'credits',
+      'invite-friends',
+      'create-service',
+      'my-services',
+      'account-info',
+      'notifications',
+    ]);
+    if (allowed.has(screen)) {
+      setCurrentScreen(screen);
+    }
+  }, []);
+
+  // Deep-link from notifications → open payment/ABN screen directly
+  const openPaymentFromNotification = useCallback(() => {
+    setCurrentScreen('payment');
+  }, []);
+
+  const scrollToRatingsSection = useCallback(() => {
+    setCurrentScreen('account');
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({
+        y: Math.max(ratingSectionOffsetRef.current - 24, 0),
+        animated: true,
+      });
+    }, 350);
+  }, []);
+
+  useEffect(() => {
+    if (screenParam === 'payment') {
+      openPaymentFromNotification();
+    } else {
+      openScreenFromParam(screenParam);
+    }
+  }, [screenParam, focusParam, openPaymentFromNotification, openScreenFromParam]);
+
+  useEffect(() => {
+    if (focusParam === 'ratings' && currentScreen === 'account') {
+      scrollToRatingsSection();
+    }
+  }, [focusParam, currentScreen, scrollToRatingsSection]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const pending = consumePendingAccountNavigation();
+      if (pending?.screen === 'payment') {
+        openPaymentFromNotification();
+        return;
+      }
+      if (
+        pending?.screen === 'credits' ||
+        pending?.screen === 'invite-friends' ||
+        pending?.screen === 'create-service' ||
+        pending?.screen === 'my-services' ||
+        pending?.screen === 'account-info' ||
+        pending?.screen === 'notifications'
+      ) {
+        setCurrentScreen(pending.screen);
+        return;
+      }
+      if (pending?.focus === 'ratings' || pending?.screen === 'account') {
+        scrollToRatingsSection();
+        return;
+      }
+      if (screenParam === 'payment') {
+        openPaymentFromNotification();
+      } else if (screenParam) {
+        openScreenFromParam(screenParam);
+      } else if (focusParam === 'ratings') {
+        scrollToRatingsSection();
+      }
+    }, [screenParam, focusParam, openPaymentFromNotification, openScreenFromParam, scrollToRatingsSection])
+  );
+
   // � **AUTO-LOGIN for development**
   React.useEffect(() => {
     autoLoginForDevelopment();
   }, []);
 
   //  **NEW: Get real user data from API**
-  const { data: userProfileData, isLoading: isLoadingProfile, error: profileError, refetch } = useGetUserProfile();
+  const [showNetworkAlert, setShowNetworkAlert] = useState(false);
+  const { isConnected } = useNetworkStatus();
+  const prevConnectedRef = useRef(true);
+  useEffect(() => {
+    if (prevConnectedRef.current && !isConnected) {
+      setShowNetworkAlert(true);
+    }
+    prevConnectedRef.current = isConnected;
+  }, [isConnected]);
+
   const { mutate: uploadAvatar, isPending: isUploadingAvatar } = useUploadUserAvatar();
   const { user: authUser, isAuthenticated, token, clearAuth } = useAuthStore();
-  
+
+  // **Get real user profile data from API**
+  const {
+    data: userProfileData,
+    isLoading: isLoadingProfile,
+    error: profileError,
+    refetch,
+  } = useGetUserProfile();
+
   // **Get Stripe Connect account status**
   const { data: stripeAccountStatus, isLoading: isLoadingStripe, refetch: refetchStripeStatus } = useGetStripeAccountStatus(true);
   const updateStripeAccountMutation = useUpdateStripeAccount();
@@ -323,7 +433,7 @@ export default function AccountScreen() {
               setTimeout(() => {
                 setSelectedImageUri(null);
               }, 1500); // 1.5 second delay to allow new S3 image to be accessible
-            }).catch((error) => {
+            }).catch((error: unknown) => {
               console.warn("⚠️ Profile refetch failed after upload, keeping preview:", error);
               // Don't clear selectedImageUri so the uploaded image stays visible
               // The preview will serve as the current avatar until next successful fetch
@@ -403,6 +513,22 @@ export default function AccountScreen() {
     setCurrentScreen('account');
     // Refresh user profile when returning to account screen
     refetch();
+  };
+
+  const navigateToCredits = () => {
+    setCurrentScreen('credits');
+  };
+
+  const navigateToInviteFriends = () => {
+    setCurrentScreen('invite-friends');
+  };
+
+  const navigateToCreateService = () => {
+    setCurrentScreen('create-service');
+  };
+
+  const navigateToMyServices = () => {
+    setCurrentScreen('my-services');
   };
 
   const navigateToAccountInfo = () => {
@@ -571,7 +697,34 @@ export default function AccountScreen() {
 
   // If payment screen is selected, show payment screens
   if (currentScreen === 'payment') {
-    return <PaymentScreensApp onBackToAccount={navigateToAccount} />;
+    return <PaymentScreensApp onBackToAccount={navigateToAccount} focusAbn={focusParam === 'abn'} />;
+  }
+
+  if (currentScreen === 'credits') {
+    return <CreditsScreen onBack={navigateToAccount} />;
+  }
+
+  if (currentScreen === 'invite-friends') {
+    return <InviteFriendsScreen onBack={navigateToAccount} />;
+  }
+
+  if (currentScreen === 'create-service') {
+    return (
+      <CreateServiceScreen
+        onBack={navigateToAccount}
+        onCreated={() => setCurrentScreen('my-services')}
+        onNeedAbn={() => setCurrentScreen('payment')}
+      />
+    );
+  }
+
+  if (currentScreen === 'my-services') {
+    return (
+      <MyServicesScreen
+        onBack={navigateToAccount}
+        onCreate={navigateToCreateService}
+      />
+    );
   }
 
   // If account info screen is selected, show account information
@@ -580,10 +733,9 @@ export default function AccountScreen() {
   }
 
   // If notifications screen is selected, show notification preferences
-  // Notification preferences hidden - no backend endpoints
-  // if (currentScreen === 'notifications') {
-  //   return <NotificationPreferences onBack={navigateToAccount} />;
-  // }
+  if (currentScreen === 'notifications') {
+    return <NotificationPreferences onBack={navigateToAccount} userData={userData} />;
+  }
 
   // If task alerts screen is selected, show task alerts
   if (currentScreen === 'task-alerts') {
@@ -634,10 +786,19 @@ export default function AccountScreen() {
   // Otherwise show account screen
   return (
     <ScrollView 
+      ref={scrollViewRef}
       style={styles.container}
-      contentContainerStyle={{ paddingBottom: 100 }}
+      contentContainerStyle={{ paddingBottom: TAB_BAR_CLEARANCE }}
       showsVerticalScrollIndicator={false}
     >
+      {/* Network Alert */}
+      <NetworkAlert
+        visible={showNetworkAlert}
+        onClose={() => setShowNetworkAlert(false)}
+        title="No Internet Connection"
+        message="Please check your Wi-Fi or mobile data. Your profile data may not load correctly."
+        actionText="OK"
+      />
       {/* Header Section */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={handleChangeAvatar} disabled={isUploadingAvatar}>
@@ -747,6 +908,31 @@ export default function AccountScreen() {
             return 'Location not set';
           })()}
         </Text>
+
+        {userData?.badges && (
+          <View style={styles.badgeRow}>
+            {[
+              { key: 'mobile', label: 'Mobile', on: !!userData.badges.mobile },
+              { key: 'email', label: 'Email', on: !!userData.badges.email },
+              { key: 'abn', label: 'ABN', on: !!userData.badges.abn },
+              { key: 'stripe', label: 'Stripe', on: !!userData.badges.stripe },
+            ].map((badge) => (
+              <View
+                key={badge.key}
+                style={[styles.profileBadge, badge.on ? styles.profileBadgeOn : styles.profileBadgeOff]}
+              >
+                <Ionicons
+                  name={badge.on ? 'checkmark-circle' : 'ellipse-outline'}
+                  size={12}
+                  color={badge.on ? '#fff' : 'rgba(255,255,255,0.7)'}
+                />
+                <Text style={[styles.profileBadgeText, !badge.on && styles.profileBadgeTextOff]}>
+                  {badge.label}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         {/* Bio / Description */}
         {userData?.bio ? (
@@ -881,7 +1067,12 @@ export default function AccountScreen() {
 
       {/* Rating and Reviews Section */}
       {userId && (
-        <View style={styles.ratingSection}>
+        <View
+          style={styles.ratingSection}
+          onLayout={(event) => {
+            ratingSectionOffsetRef.current = event.nativeEvent.layout.y;
+          }}
+        >
           {ratingLoading && !ratingData ? (
             <View style={styles.ratingLoadingContainer}>
               <ActivityIndicator size="small" color="#0052A2" />
@@ -1068,6 +1259,38 @@ export default function AccountScreen() {
             ? 'Setup bank account to receive payments' 
             : 'Connect your bank account'}        
         />
+        <MenuItem
+          icon={<Ionicons name="wallet-outline" size={20} color="#0052A2" />}
+          text="Credits"
+          onPress={navigateToCredits}
+          subtext={
+            userData?.creditsBalance != null
+              ? `Balance: ${Number(userData.creditsBalance).toFixed(0)} promo credits`
+              : 'View promo credits balance and activity'
+          }
+        />
+        <MenuItem
+          icon={<Ionicons name="people-outline" size={20} color="#0052A2" />}
+          text="Invite friends"
+          onPress={navigateToInviteFriends}
+          subtext={
+            userData?.referralCode
+              ? `Your code: ${userData.referralCode}`
+              : 'Share your invite code and earn credits'
+          }
+        />
+        <MenuItem
+          icon={<Ionicons name="construct-outline" size={20} color="#0052A2" />}
+          text="My services"
+          onPress={navigateToMyServices}
+          subtext="Manage service offerings you list"
+        />
+        <MenuItem
+          icon={<Ionicons name="add-circle-outline" size={20} color="#0052A2" />}
+          text="Create service"
+          onPress={navigateToCreateService}
+          subtext="Offer a service near you (ABN required)"
+        />
         <MenuItem 
           icon={<Feather name="lock" size={20} color="#0052A2" />}
           text="Account Information"
@@ -1075,21 +1298,13 @@ export default function AccountScreen() {
           subtext={undefined}        
         />
 
-        {/* NOTIFICATION SETTINGS - hidden (no backend endpoints)
         <Text style={styles.sectionTitle}>NOTIFICATION SETTINGS</Text>
         <MenuItem 
           icon={<Ionicons name="notifications-outline" size={20} color="#0052A2" />}
-          text="Notification preferences" 
-          subtext={undefined} 
+          text="Tasker Preferences" 
+          subtext="Manage task notification settings" 
           onPress={navigateToNotifications}        
         />
-        <MenuItem
-          icon={<Entypo name="slideshare" size={20} color="#0052A2" />}
-          text="Task alerts for Taskers"
-          subtext="Be the first to know relevant tasks" 
-          onPress={navigateToTaskAlerts}        
-        />
-        */}
 
         <Text style={styles.sectionTitle}>HELP AND SUPPORT</Text>
         <MenuItem 
@@ -1469,7 +1684,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   errorContainer: {
@@ -1480,7 +1695,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   errorTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
     marginTop: 16,
@@ -1488,7 +1703,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   errorSubtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     textAlign: 'center',
     lineHeight: 22,
@@ -1502,7 +1717,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   header: {
@@ -1546,17 +1761,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   name: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     color: '#fff',
     fontWeight: 'bold',
   },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 10,
+    paddingHorizontal: 16,
+  },
+  profileBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    gap: 4,
+  },
+  profileBadgeOn: {
+    backgroundColor: 'rgba(255,255,255,0.22)',
+  },
+  profileBadgeOff: {
+    backgroundColor: 'rgba(0,0,0,0.18)',
+  },
+  profileBadgeText: {
+    fontSize: RFValue(11),
+    color: '#fff',
+    fontWeight: '600',
+  },
+  profileBadgeTextOff: {
+    color: 'rgba(255,255,255,0.7)',
+  },
   location: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#fff',
     marginBottom: 6,
   },
   bioHeaderText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: 'rgba(255, 255, 255, 0.85)',
     textAlign: 'center',
     marginHorizontal: 30,
@@ -1568,7 +1813,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   linkText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#fff',
     textDecorationLine: 'underline',
   },
@@ -1586,7 +1831,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   statText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#fff',
     marginLeft: 4,
   },
@@ -1600,13 +1845,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   verifiedText: {
-    fontSize: 10,
+    fontSize: RFValue(10),
     color: '#fff',
     marginLeft: 4,
     fontWeight: '600',
   },
   editText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#fff',
   },
   editIconButton: {
@@ -1627,7 +1872,7 @@ const styles = StyleSheet.create({
   },
   ratingLoadingText: {
     marginLeft: 12,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   noRatingContainer: {
@@ -1636,14 +1881,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   noRatingText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
     color: '#666',
     marginTop: 16,
     marginBottom: 8,
   },
   noRatingSubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
     textAlign: 'center',
     lineHeight: 20,
@@ -1670,7 +1915,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   stripeAccountTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
   },
@@ -1689,7 +1934,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8d7da',
   },
   statusBadgeText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
   },
   statusBadgeTextActive: {
@@ -1710,11 +1955,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stripeAccountLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   stripeAccountValue: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '500',
     color: '#000',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
@@ -1745,13 +1990,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bankAccountLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#000',
     marginBottom: 4,
   },
   bankAccountNumber: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
@@ -1772,7 +2017,7 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   capabilityText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
   },
   // Bank Account Details Modal
@@ -1807,13 +2052,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bankDetailsTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#000',
     marginBottom: 4,
   },
   bankDetailsSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   bankDetailsCloseButton: {
@@ -1829,19 +2074,19 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   bankDetailsLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     flex: 1,
   },
   bankDetailsValue: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#000',
     flex: 1,
     textAlign: 'right',
   },
   bankDetailsValueMono: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#000',
     flex: 1,
@@ -1864,7 +2109,7 @@ const styles = StyleSheet.create({
   },
   bankDetailsInfoText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#0052A2',
     lineHeight: 18,
   },
@@ -1882,7 +2127,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bankDetailsButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#fff',
   },
@@ -1892,7 +2137,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
     marginTop: 25,
     marginBottom: 10,
@@ -1911,12 +2156,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   menuText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '500',
     color: '#003366',
   },
   subtext: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
     marginTop: 2,
   },
@@ -1945,21 +2190,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 12,
     textAlign: 'center',
   },
   modalMessage: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#666',
     textAlign: 'center',
     marginBottom: 8,
     lineHeight: 22,
   },
   modalSubMessage: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#3498db',
     textAlign: 'center',
     marginBottom: 24,
@@ -1977,7 +2222,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalCancelText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     fontWeight: '600',
   },
@@ -1989,7 +2234,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalSendText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#fff',
     fontWeight: '600',
   },
@@ -2003,7 +2248,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   skillsSectionTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#000',
     marginBottom: 16,
@@ -2012,7 +2257,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   skillCategoryTitle: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#333',
     marginBottom: 10,
@@ -2029,7 +2274,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   skillTagDisplayText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#0052A2',
     fontWeight: '500',
   },
@@ -2052,7 +2297,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   pendingText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     fontWeight: '500',
   },
@@ -2066,12 +2311,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   backToProfileText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#3498db',
     fontWeight: '600',
   },
   modalFooterText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#999',
     textAlign: 'center',
   },
@@ -2088,7 +2333,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   modalErrorText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#dc3545',
     marginLeft: 8,
     flex: 1,
@@ -2108,7 +2353,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   navText: {
-    fontSize: 10,
+    fontSize: RFValue(10),
     color: '#0052A2',
     marginTop: 2,
   },

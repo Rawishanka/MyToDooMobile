@@ -9,6 +9,9 @@ export interface CreatePaymentIntentRequest {
   offerId: string;
   amount: number;
   currency?: string;
+  /** When true, backend may offset eligible poster fees with promo credits */
+  useCredits?: boolean;
+  creditsAmount?: number;
 }
 
 export interface PaymentBreakdown {
@@ -28,6 +31,11 @@ export interface PaymentBreakdown {
   taskerCommission?: number;
   taskerCommissionRate?: number;
   taskerWillReceive?: number;
+  // Platform GST (Airtasker model) — 0 unless admin enabled the tax.
+  posterTaxAmount?: number;
+  taskerTaxAmount?: number;
+  taxRate?: number;
+  taxLabel?: string;
   currency: string;
 }
 
@@ -40,6 +48,11 @@ export interface NormalizedPaymentBreakdown {
   taskerConnectionFee: number;
   taskerCommission: number;
   taskerWillReceive: number;
+  // Platform GST (Airtasker model) — 0 unless admin enabled the tax.
+  posterTaxAmount: number;
+  taskerTaxAmount: number;
+  taxRate: number;
+  taxLabel: string;
   totalAmount: number;
   currency: string;
 }
@@ -55,16 +68,23 @@ export function normalizePaymentBreakdown(
   const posterConnectionFeeTax = breakdown.posterConnectionFeeTax ?? 0;
   const taskerConnectionFee = breakdown.taskerConnectionFee ?? 0;
   const taskerCommission = breakdown.taskerCommission ?? 0;
+  // Platform GST — backend is the single source of truth; 0 when tax disabled.
+  const posterTaxAmount = breakdown.posterTaxAmount ?? 0;
+  const taskerTaxAmount = breakdown.taskerTaxAmount ?? 0;
+  const taxRate = breakdown.taxRate ?? 0;
+  const taxLabel = breakdown.taxLabel || 'GST';
+  // Prefer backend payout value (already GST-deducted); fall back only if absent.
   const taskerWillReceive =
     breakdown.taskerWillReceive ??
     breakdown.netAmountAfterFees ??
-    Math.max(0, budgetAmount - taskerCommission - taskerConnectionFee);
+    Math.max(0, budgetAmount - taskerCommission - taskerConnectionFee - taskerTaxAmount);
+  // Prefer backend total charge (already includes poster GST); fall back only if absent.
   const totalAmount =
+    breakdown.posterTotalCharge ??
     breakdown.totalAmountWithConnectionFee ??
     breakdown.totalCharge ??
-    breakdown.posterTotalCharge ??
     Math.round(
-      (budgetAmount + serviceFee + posterConnectionFee + posterConnectionFeeTax) * 100
+      (budgetAmount + serviceFee + posterConnectionFee + posterConnectionFeeTax + posterTaxAmount) * 100
     ) / 100;
 
   return {
@@ -76,6 +96,10 @@ export function normalizePaymentBreakdown(
     taskerConnectionFee,
     taskerCommission,
     taskerWillReceive,
+    posterTaxAmount,
+    taskerTaxAmount,
+    taxRate,
+    taxLabel,
     totalAmount,
     currency: breakdown.currency || 'AUD',
   };
@@ -158,14 +182,20 @@ export async function createPaymentIntent(
   try {
     console.log("💳 Creating Stripe payment intent:", paymentData);
     
-    // Request body format: { taskId, offerId, amount, currency }
-    const requestBody = {
+    // Request body format: { taskId, offerId, amount, currency, useCredits? }
+    const requestBody: Record<string, unknown> = {
       taskId: paymentData.taskId,
       offerId: paymentData.offerId,
       // Include amount and currency to ensure backend uses correct values
       amount: paymentData.amount,
       currency: paymentData.currency || 'AUD'
     };
+    if (paymentData.useCredits) {
+      requestBody.useCredits = true;
+      if (paymentData.creditsAmount != null) {
+        requestBody.creditsAmount = paymentData.creditsAmount;
+      }
+    }
     
     const response = await api.post('/payments/create-intent', requestBody);
     console.log("✅ Payment intent created successfully:", response.data);

@@ -1,6 +1,11 @@
 // Custom hook for signup form state and logic
 
 import API_CONFIG from '@/src/api/config';
+import { clearPendingSignupAbn, setPendingSignupAbn } from '@/src/api/abn-api';
+import {
+  clearPendingReferralCode,
+  getPendingReferralCode,
+} from '@/src/api/referral-api';
 import { useCreateSignUpToken, useVerifyOTP } from '@/src/api/user-api';
 import { useAppleSignIn, useGoogleSignIn } from '@/src/shared/hooks/useApi';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
@@ -15,6 +20,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, BackHandler, Platform, TextInput } from 'react-native';
+import { validateAbn } from '@/src/shared/utils/abnValidation';
 import { extractCityFromAddress, extractRegionFromAddress, formatDateForAPI, validateForm } from './signup-helpers';
 import type { CountryData, LocationData, VerificationStep } from './signup-types';
 import { COUNTRIES } from './signup-types';
@@ -62,6 +68,18 @@ export const useSignup = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [notifyNewTask, setNotifyNewTaskState] = useState(true);
+  const [notifySkillMatch, setNotifySkillMatch] = useState(false);
+  const [abnInput, setAbnInput] = useState('');
+
+  const setNotifyNewTask = (value: boolean) => {
+    setNotifyNewTaskState(value);
+    if (!value) {
+      setNotifySkillMatch(false);
+      setAbnInput('');
+      clearPendingSignupAbn().catch(() => {});
+    }
+  };
   
   // Location state - AUSTRALIA-ONLY: Always use Australia
   const [selectedCountry, setSelectedCountry] = useState<CountryData>(() => {
@@ -307,8 +325,21 @@ export const useSignup = () => {
 
     if (!validateForm(formData)) return;
 
+    if (notifyNewTask && abnInput.trim()) {
+      const check = validateAbn(abnInput);
+      if (!check.valid) {
+        Alert.alert('Invalid ABN', check.error || 'Please enter a valid ABN');
+        return;
+      }
+      await setPendingSignupAbn(abnInput);
+    } else {
+      await clearPendingSignupAbn();
+    }
+
     try {
       setLoading(true);
+
+      const pendingReferralCode = await getPendingReferralCode();
       
       const response = await signUp({
         firstName,
@@ -324,7 +355,14 @@ export const useSignup = () => {
           region: selectedLocation ? extractRegionFromAddress(selectedLocation.address) : '',
           city: selectedLocation ? extractCityFromAddress(selectedLocation.address) : '',
         },
+        notifyNewTask,
+        notifySkillMatch,
+        ...(pendingReferralCode ? { referralCode: pendingReferralCode } : {}),
       });
+
+      if (pendingReferralCode) {
+        await clearPendingReferralCode();
+      }
       
       console.log('Signup response:', response);
       
@@ -631,7 +669,7 @@ export const useSignup = () => {
         hasToken: !!result.token, 
         hasUser: !!result.user,
         userEmail: result.user?.email,
-        isNewUser: result.isNewUser 
+        isNewUser: (result as any).isNewUser 
       });
       
       // ✅ FIX: Google Sign-In users do NOT need OTP verification
@@ -876,6 +914,12 @@ export const useSignup = () => {
     showDatePicker,
     showPassword,
     showConfirmPassword,
+    notifyNewTask,
+    notifySkillMatch,
+    setNotifyNewTask,
+    setNotifySkillMatch,
+    abnInput,
+    setAbnInput,
     setFirstName,
     setLastName,
     setEmail,

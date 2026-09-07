@@ -27,6 +27,8 @@ interface StripePaymentModalProps {
   currency?: string;
   taskTitle: string;
   taskCategory?: string; // Added taskCategory prop
+  /** Optional: ask backend to offset eligible poster fees with promo credits */
+  useCredits?: boolean;
   offerDetails?: {
     description?: string;
     taskerName?: string;
@@ -61,6 +63,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
   taskTitle,
   taskCategory,
   offerDetails,
+  useCredits = false,
 }) => {
   const { initPaymentSheet, presentPaymentSheet } = usePaymentSheet();
   
@@ -158,6 +161,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
         offerId,
         amount: offerAmount,
         currency: currency || 'AUD',
+        ...(useCredits ? { useCredits: true } : {}),
       });
 
       if (!paymentResult.success || !paymentResult.clientSecret) {

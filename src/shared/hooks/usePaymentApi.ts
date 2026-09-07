@@ -11,6 +11,8 @@ export function useCreatePaymentIntent() {
       offerId: string;
       amount: number;
       currency?: string;
+      useCredits?: boolean;
+      creditsAmount?: number;
     }) => paymentAPI.createPaymentIntent(data),
     onSuccess: (data, variables) => {
       console.log('✅ Payment intent created successfully:', data);

@@ -15,7 +15,10 @@ import {
 
 // API and Hooks
 import { Task } from '@/src/api/types/tasks';
+import type { ServiceListing } from '@/src/api/service-listing-api';
 import { useGetCategoriesWithAll } from '@/src/shared/hooks/useCategoriesApi';
+import { useSearchServiceListings } from '@/src/shared/hooks/useServiceListingApi';
+import ServiceListingDetailScreen from './service-listing-detail-screen';
 
 // Components
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
@@ -34,12 +37,13 @@ import {
 // Network components
 import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
+import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 
 // Custom Hooks
 import { useBrowseFiltersAPI } from './hooks/useBrowseFiltersAPI';
 
 // Responsive utilities
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { hp, isTablet, RFValue, TAB_BAR_CLEARANCE, wp } from '@/src/shared/utils/responsive';
 
 export default function BrowseTasksScreen() {
   // FlatList ref for scroll position management
@@ -50,9 +54,23 @@ export default function BrowseTasksScreen() {
   const [filterVisible, setFilterVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [browseMode, setBrowseMode] = useState<'tasks' | 'services'>('tasks');
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
+  const [selectedServiceListing, setSelectedServiceListing] = useState<ServiceListing | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showNetworkAlert, setShowNetworkAlert] = useState(false);
+
+  // Auto-detect network changes and show alert
+  const { isConnected } = useNetworkStatus();
+  const prevConnected = useRef(true);
+  useEffect(() => {
+    if (prevConnected.current && !isConnected) {
+      // Just lost connection
+      setShowNetworkAlert(true);
+    }
+    prevConnected.current = isConnected;
+  }, [isConnected]);
   
   // Track selectedTaskId changes
   useEffect(() => {
@@ -143,6 +161,11 @@ export default function BrowseTasksScreen() {
     setShowTasksWithNoOffers,
     setSelectedSort,
     setSearchText,
+    radiusKm,
+    searchSuburb,
+    setRadiusKm,
+    setSearchLocation,
+    useCurrentSearchLocation,
     filteredAndSortedTasks,
     activeFiltersCount,
     resetFilters,
@@ -156,7 +179,32 @@ export default function BrowseTasksScreen() {
     activeAPI,
     userCountry,
     isDetectingCountry,
+    searchCoords,
+    gpsCoords,
   } = useBrowseFiltersAPI();
+
+  const serviceSearchParams = useMemo(
+    () => ({
+      lat: searchCoords?.lat ?? gpsCoords?.lat,
+      lng: searchCoords?.lng ?? gpsCoords?.lng,
+      radiusKm: radiusKm || 30,
+      q: searchText.trim() || undefined,
+      category:
+        selectedCategory && selectedCategory !== 'All Categories'
+          ? selectedCategory
+          : undefined,
+      page: 1,
+      limit: 40,
+    }),
+    [searchCoords, gpsCoords, radiusKm, searchText, selectedCategory]
+  );
+
+  const {
+    data: serviceListings = [],
+    isLoading: servicesLoading,
+    error: servicesError,
+    refetch: refetchServices,
+  } = useSearchServiceListings(serviceSearchParams, browseMode === 'services');
 
   // Custom map marker icon - bigger Airtasker marker
   // Use the actual airtasker-marker.svg as a data URI
@@ -253,6 +301,42 @@ export default function BrowseTasksScreen() {
     />
   );
 
+  const renderServiceCard = ({ item }: { item: ServiceListing }) => (
+    <TouchableOpacity
+      style={styles.serviceCard}
+      activeOpacity={0.8}
+      onPress={() => {
+        setSelectedServiceListing(item);
+        setSelectedServiceId(item._id);
+      }}
+    >
+      <Text style={styles.serviceTitle}>{item.title}</Text>
+      <Text style={styles.servicePrice}>
+        ${Number(item.price).toFixed(0)} {item.currency || 'AUD'}
+      </Text>
+      <Text style={styles.serviceMeta} numberOfLines={2}>
+        {item.suburb}
+        {item.radiusKm ? ` · ${item.radiusKm} km` : ''}
+      </Text>
+      <Text style={styles.serviceDescription} numberOfLines={2}>
+        {item.description}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  if (selectedServiceId) {
+    return (
+      <ServiceListingDetailScreen
+        listingId={selectedServiceId}
+        initialListing={selectedServiceListing}
+        onBack={() => {
+          setSelectedServiceId(null);
+          setSelectedServiceListing(null);
+        }}
+      />
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* Offline Banner */}
@@ -260,11 +344,17 @@ export default function BrowseTasksScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <ViewModeToggle 
-          viewMode={viewMode} 
-          onToggle={() => setViewMode(viewMode === 'list' ? 'map' : 'list')} 
-        />
-        <Text style={styles.headerTitle}>Browse Tasks</Text>
+        {browseMode === 'tasks' ? (
+          <ViewModeToggle 
+            viewMode={viewMode} 
+            onToggle={() => setViewMode(viewMode === 'list' ? 'map' : 'list')} 
+          />
+        ) : (
+          <View style={{ width: 36 }} />
+        )}
+        <Text style={styles.headerTitle}>
+          {browseMode === 'tasks' ? 'Browse Tasks' : 'Browse Services'}
+        </Text>
         <View style={styles.headerIcons}>
           <TouchableOpacity onPress={() => setSearchVisible(true)}>
             <Ionicons name="search-outline" size={20} color="#000" />
@@ -286,6 +376,28 @@ export default function BrowseTasksScreen() {
         </View>
       </View>
 
+      <View style={styles.modeToggleRow}>
+        <TouchableOpacity
+          style={[styles.modeToggleButton, browseMode === 'tasks' && styles.modeToggleActive]}
+          onPress={() => setBrowseMode('tasks')}
+        >
+          <Text style={[styles.modeToggleText, browseMode === 'tasks' && styles.modeToggleTextActive]}>
+            Tasks
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.modeToggleButton, browseMode === 'services' && styles.modeToggleActive]}
+          onPress={() => {
+            setBrowseMode('services');
+            setViewMode('list');
+          }}
+        >
+          <Text style={[styles.modeToggleText, browseMode === 'services' && styles.modeToggleTextActive]}>
+            Services
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Search Bar */}
       <SearchBar 
         visible={searchVisible}
@@ -294,7 +406,11 @@ export default function BrowseTasksScreen() {
         onClose={() => setSearchVisible(false)}
         onSubmit={() => {
           console.log('🔍 Search submitted, triggering API call for:', searchText);
-          refetch();
+          if (browseMode === 'services') {
+            refetchServices();
+          } else {
+            refetch();
+          }
         }}
       />
 
@@ -302,7 +418,9 @@ export default function BrowseTasksScreen() {
       {searchText.trim().length > 0 && !searchVisible && (
         <View style={styles.searchResultsInfo}>
           <Text style={styles.searchResultsText}>
-            {filteredAndSortedTasks.length} result{filteredAndSortedTasks.length !== 1 ? 's' : ''} for &quot;{searchText}&quot;
+            {browseMode === 'services'
+              ? `${serviceListings.length} service${serviceListings.length !== 1 ? 's' : ''} for "${searchText}"`
+              : `${filteredAndSortedTasks.length} result${filteredAndSortedTasks.length !== 1 ? 's' : ''} for "${searchText}"`}
           </Text>
           <TouchableOpacity onPress={() => {
             setSearchText('');
@@ -316,14 +434,65 @@ export default function BrowseTasksScreen() {
       {/* Filter & Sort Row */}
       <View style={styles.filterSortRow}>
         <FilterButton 
-          filteredTasksCount={filteredAndSortedTasks.length}
+          filteredTasksCount={
+            browseMode === 'services' ? serviceListings.length : filteredAndSortedTasks.length
+          }
           onPress={() => setFilterVisible(true)}
         />
-        {viewMode === 'list' && <SortButton onPress={() => setSortVisible(true)} />}
+        {browseMode === 'tasks' && viewMode === 'list' && (
+          <SortButton onPress={() => setSortVisible(true)} />
+        )}
       </View>
 
-      {/* Content - Map or List */}
-      {viewMode === 'map' ? (
+      {browseMode === 'services' ? (
+        !isConnected ? (
+          <View style={styles.errorContainer}>
+            <Ionicons name="cloud-offline-outline" size={64} color="#ff6b6b" style={{ marginBottom: 16 }} />
+            <Text style={styles.errorText}>No Internet Connection</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={() => refetchServices()}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : servicesLoading && serviceListings.length === 0 ? (
+          <View style={styles.emptyState}>
+            <ActivityIndicator size="large" color="#007bff" style={{ marginBottom: 16 }} />
+            <Text style={styles.loadingText}>Loading services...</Text>
+          </View>
+        ) : servicesError ? (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle-outline" size={64} color="#ff6b6b" style={{ marginBottom: 16 }} />
+            <Text style={styles.errorText}>Failed to load services</Text>
+            <Text style={styles.errorSubtext}>
+              {(servicesError as Error)?.message || 'Please try again'}
+            </Text>
+            <TouchableOpacity style={styles.retryButton} onPress={() => refetchServices()}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : serviceListings.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="construct-outline" size={64} color="#ccc" style={{ marginBottom: 16 }} />
+            <Text style={styles.emptyText}>No services found nearby</Text>
+            <Text style={styles.emptySubtext}>
+              Try widening your radius or searching a different suburb.
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={serviceListings}
+            keyExtractor={(item) => item._id}
+            renderItem={renderServiceCard}
+            contentContainerStyle={{
+              paddingBottom: TAB_BAR_CLEARANCE,
+              paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+            }}
+            refreshing={false}
+            onRefresh={() => refetchServices()}
+          />
+        )
+      ) : (
+      /* Content - Map or List */
+      viewMode === 'map' ? (
         (() => {
           console.log('🗺️ Rendering MapView with:', {
             tasksCount: filteredAndSortedTasks.length,
@@ -387,7 +556,18 @@ export default function BrowseTasksScreen() {
         })()
       ) : (
         <>
-          {isLoading && filteredAndSortedTasks.length === 0 ? (
+          {!isConnected ? (
+            <View style={styles.errorContainer}>
+              <Ionicons name="cloud-offline-outline" size={64} color="#ff6b6b" style={{ marginBottom: 16 }} />
+              <Text style={styles.errorText}>No Internet Connection</Text>
+              <Text style={styles.errorSubtext}>
+                Please check your Wi-Fi or mobile data and try again.
+              </Text>
+              <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
+                <Text style={styles.retryButtonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : isLoading && filteredAndSortedTasks.length === 0 ? (
             <View style={styles.emptyState}>
               <ActivityIndicator size="large" color="#007bff" style={{ marginBottom: 16 }} />
               <Text style={styles.loadingText}>
@@ -445,7 +625,7 @@ export default function BrowseTasksScreen() {
               data={filteredAndSortedTasks}
               keyExtractor={(item) => item._id}
               contentContainerStyle={{ 
-                paddingBottom: hp('12%'),
+                paddingBottom: TAB_BAR_CLEARANCE,
                 paddingHorizontal: isTablet ? wp('12.5%') : 0,
               }}
               renderItem={renderTaskCard}
@@ -479,6 +659,7 @@ export default function BrowseTasksScreen() {
             />
           )}
         </>
+      )
       )}
 
       {/* Filter Modal */}
@@ -499,6 +680,11 @@ export default function BrowseTasksScreen() {
         showTasksWithNoOffers={showTasksWithNoOffers}
         onShowTasksWithNoOffersChange={setShowTasksWithNoOffers}
         onResetFilters={resetFilters}
+        radiusKm={radiusKm}
+        suburb={searchSuburb}
+        onRadiusChange={setRadiusKm}
+        onSuburbSelect={setSearchLocation}
+        onUseCurrentLocation={useCurrentSearchLocation}
       />
 
       {/* Sort Modal */}
@@ -552,6 +738,62 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: wp('2%'),
+  },
+  modeToggleRow: {
+    flexDirection: 'row',
+    marginHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    marginBottom: hp('1%'),
+    backgroundColor: '#eef2f7',
+    borderRadius: 10,
+    padding: 4,
+  },
+  modeToggleButton: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modeToggleActive: {
+    backgroundColor: '#fff',
+  },
+  modeToggleText: {
+    fontSize: RFValue(13),
+    color: '#666',
+    fontWeight: '500',
+  },
+  modeToggleTextActive: {
+    color: '#0052A2',
+    fontWeight: '700',
+  },
+  serviceCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  serviceTitle: {
+    fontSize: RFValue(15),
+    fontWeight: '700',
+    color: '#222',
+  },
+  servicePrice: {
+    marginTop: 4,
+    fontSize: RFValue(14),
+    fontWeight: '700',
+    color: '#0052A2',
+  },
+  serviceMeta: {
+    marginTop: 4,
+    fontSize: RFValue(12),
+    color: '#666',
+  },
+  serviceDescription: {
+    marginTop: 8,
+    fontSize: RFValue(13),
+    color: '#444',
+    lineHeight: 18,
   },
   notificationButton: {
     position: 'relative',

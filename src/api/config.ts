@@ -37,6 +37,9 @@ const API_CONFIG = {
         CHAT: '/ChatApp', // Add chat endpoint
         PAYMENTS: '/payments', // Stripe payment endpoints
         SERVICE_FEE: '/service-fee', // Service fee calculation
+        CREDITS: '/credits',
+        REFERRALS: '/referrals',
+        SERVICE_LISTINGS: '/service-listings',
     },
     // Stripe Configuration
     STRIPE: {

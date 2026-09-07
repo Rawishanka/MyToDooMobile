@@ -1,110 +1,126 @@
-// app/(tabs)/welcome-screen.tsx - Updated with category images
+// app/(tabs)/welcome-screen.tsx - Welcome dashboard with API category carousel
 import { getSocialMediaAccounts, SocialMediaAccount } from '@/src/api/user-profile-api';
+import MyToDooBrandLogo from '@/src/shared/components/MyToDooBrandLogo';
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
+import { useGetCategoriesWithCarouselImages } from '@/src/shared/hooks/useCategoriesApi';
 import { useMergedUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
+import { setPendingAccountNavigation } from '@/src/shared/utils/pending-account-navigation';
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 // Using @expo/vector-icons for better iOS production build compatibility
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Animated,
-    Dimensions,
     FlatList,
     Image,
     Keyboard,
     Linking,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    View
+    View,
+    useWindowDimensions
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Get screen dimensions
-const { width: screenWidth } = Dimensions.get('window');
+interface CarouselCategoryItem {
+  id: string;
+  title: string;
+  image: string;
+}
 
-// � **ALL Category Images with proper sources**
-const categoryImages: { id: string; title: string; image: string }[] = [
-  { id: '1', title: 'Appliance Installation & Repair', image: 'https://i.ibb.co/W49F1KXP/Appliance-Instolation.png' },
-  { id: '2', title: 'Auto Mechanic & Electrician', image: 'https://i.ibb.co/RGGCd2BP/Auto-mechanicle-and-Electrician.png' },
-  { id: '3', title: 'Building Maintenance', image: 'https://i.ibb.co/k2yvpj3x/Building-Maintences-and-Renovations.png' },
-  { id: '4', title: 'Business & Accounting', image: 'https://i.ibb.co/xtRGxgSy/Business-and-accounting.png' },
-  { id: '5', title: 'Carpentry', image: 'https://i.ibb.co/W40cZb10/carpentry.png' },
-  { id: '6', title: 'Delivery', image: 'https://i.ibb.co/6Rfyg45C/Delivery.png' },
-  { id: '7', title: 'Education & Tutoring', image: 'https://i.ibb.co/7N2KYVg8/Education-and-Tutoring.png' },
-  { id: '8', title: 'Electrical', image: 'https://i.ibb.co/tpB3FBRZ/Electrical.png' },
-  { id: '9', title: 'Event Planning', image: 'https://i.ibb.co/3YPP7TRg/Event-Planning.png' },
-  { id: '10', title: 'Furniture Repair', image: 'https://i.ibb.co/TMDZLQnw/furniture-repair-and-fl.png' },
-  { id: '11', title: 'Graphic Design', image: 'https://i.ibb.co/s9zXGDBM/Graphic-Design.png' },
-  { id: '12', title: 'Handyman & Handywomen', image: 'https://i.ibb.co/qMJDNCSy/Handyman-and-handywomen.png' },
-  { id: '13', title: 'Health & Fitness', image: 'https://i.ibb.co/1J2Z4Vg5/health-and-fitness.png' },
-  { id: '14', title: 'IT & Tech', image: 'https://i.ibb.co/WpHmsKRR/IT-and-Tech.png' },
-  { id: '15', title: 'Legal Services', image: 'https://i.ibb.co/DfC74zpp/Legal-services.png' },
-  { id: '16', title: 'Marketing', image: 'https://i.ibb.co/S4HF67H9/Marketing.png' },
-  { id: '17', title: 'Music', image: 'https://i.ibb.co/YBwCYf8S/Music.png' },
-  { id: '18', title: 'Painting', image: 'https://i.ibb.co/B58CyKLF/Painting-Services.png' },
-  { id: '19', title: 'Personal Assistance', image: 'https://i.ibb.co/cScgX7jF/Personal-Assist.png' },
-  { id: '20', title: 'Pet Care', image: 'https://i.ibb.co/TDSZJTq0/pet-care.png' },
-  { id: '21', title: 'Photography', image: 'https://i.ibb.co/mrjdhnYG/Photography.png' },
-  { id: '22', title: 'Plumbing', image: 'https://i.ibb.co/1G5rz4Yb/Plumbing.png' },
-  { id: '23', title: 'Real Estate', image: 'https://i.ibb.co/dsrjsRJQ/Realestate.png' },
-  { id: '24', title: 'Something Else', image: 'https://i.ibb.co/8LH3kKMD/somthing-else.png' },
-  { id: '25', title: 'Tours & Transport', image: 'https://i.ibb.co/XrX1FRwV/Tours-and.png' },
-  { id: '26', title: 'Web & App Development', image: 'https://i.ibb.co/9kPKTPzy/web-App-development.png' },
-];
+const TABLET_PORTRAIT_GRID_COLUMNS = 4;
+const TABLET_PORTRAIT_GRID_ROWS = 2;
 
-// � **Image Category Component for Carousel**
-const ImageCategory = ({ item, onPress }: { item: typeof categoryImages[0]; onPress: (categoryName: string) => void }) => {
+const CarouselSkeletonCard = ({ itemSize }: { itemSize?: number }) => {
+  const shimmer = useRef(new Animated.Value(0.35)).current;
+  const squareSize = itemSize ?? (isTablet ? wp('18%') : wp('35%'));
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmer, { toValue: 0.75, duration: 900, useNativeDriver: true }),
+        Animated.timing(shimmer, { toValue: 0.35, duration: 900, useNativeDriver: true }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [shimmer]);
+
+  return (
+    <View style={[styles.carouselItem, itemSize ? { width: itemSize, marginHorizontal: 0 } : null]}>
+      <Animated.View style={[styles.skeletonSquare, { width: squareSize, height: squareSize, opacity: shimmer }]} />
+      <Animated.View style={[styles.skeletonLabelLine, { opacity: shimmer }]} />
+    </View>
+  );
+};
+
+const ImageCategory = ({
+  item,
+  onPress,
+  itemSize,
+}: {
+  item: CarouselCategoryItem;
+  onPress: (categoryName: string) => void;
+  itemSize?: number;
+}) => {
+  const squareSize = itemSize ?? (isTablet ? wp('18%') : wp('35%'));
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  
+  const shimmer = useRef(new Animated.Value(0.35)).current;
+
+  useEffect(() => {
+    if (imageLoaded || imageError) return;
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmer, { toValue: 0.75, duration: 900, useNativeDriver: true }),
+        Animated.timing(shimmer, { toValue: 0.35, duration: 900, useNativeDriver: true }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [imageLoaded, imageError, shimmer]);
+
   return (
-    <TouchableOpacity 
-      style={styles.carouselItem}
+    <TouchableOpacity
+      style={[styles.carouselItem, itemSize ? { width: itemSize, marginHorizontal: 0 } : null]}
       activeOpacity={0.7}
       onPress={() => onPress(item.title)}
     >
-      <View style={styles.imageContainer}>
-        {/* Loading indicator while image loads */}
+      <View style={[styles.imageContainer, { width: squareSize, height: squareSize }]}>
         {!imageLoaded && !imageError && (
-          <ActivityIndicator 
-            size="small" 
-            color="#003399" 
-            style={styles.imageLoader}
-          />
+          <Animated.View style={[styles.imageSkeleton, { opacity: shimmer }]} />
         )}
-        
-        {/* Error placeholder if image fails to load */}
-        {imageError && (
+
+        {imageError ? (
           <View style={styles.imageErrorContainer}>
             <MaterialCommunityIcons name="image-broken-variant" size={32} color="#ccc" />
           </View>
+        ) : (
+          <Image
+            source={{
+              uri: item.image,
+              cache: 'force-cache',
+            }}
+            style={[
+              styles.categoryImage,
+              { opacity: imageLoaded ? 1 : 0 },
+            ]}
+            resizeMode="cover"
+            onLoad={() => setImageLoaded(true)}
+            onError={() => {
+              console.log('❌ Failed to load category image:', item.title);
+              setImageError(true);
+            }}
+          />
         )}
-        
-        {/* Actual image with proper caching and error handling */}
-        <Image
-          source={{ 
-            uri: item.image,
-            cache: 'force-cache', // Enable caching for better performance
-          }}
-          style={[
-            styles.categoryImage,
-            { opacity: imageLoaded ? 1 : 0 } // Fade in when loaded
-          ]}
-          resizeMode="contain"
-          onLoad={() => setImageLoaded(true)}
-          onError={() => {
-            console.log('❌ Failed to load category image:', item.title);
-            setImageError(true);
-          }}
-        />
       </View>
       <Text style={styles.carouselLabel} numberOfLines={2}>{item.title}</Text>
     </TouchableOpacity>
@@ -113,14 +129,40 @@ const ImageCategory = ({ item, onPress }: { item: typeof categoryImages[0]; onPr
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const isLandscape = screenWidth > screenHeight;
+  const isTabletPortrait = isTablet && !isLandscape;
+
+  const tabletPortraitGrid = useMemo(() => {
+    if (!isTabletPortrait) return null;
+    const horizontalPadding = wp('8%') * 2;
+    const columnGap = 12;
+    const itemSize =
+      (screenWidth - horizontalPadding - columnGap * (TABLET_PORTRAIT_GRID_COLUMNS - 1)) /
+      TABLET_PORTRAIT_GRID_COLUMNS;
+    const visibleCount = TABLET_PORTRAIT_GRID_COLUMNS * TABLET_PORTRAIT_GRID_ROWS;
+    return { itemSize, visibleCount, columnGap };
+  }, [isTabletPortrait, screenWidth]);
   const [taskInput, setTaskInput] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [socialMenuOpen, setSocialMenuOpen] = useState(false);
   const [socialMediaAccounts, setSocialMediaAccounts] = useState<SocialMediaAccount[]>([]);
   const { data: categories, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
+  const { data: carouselCategories, isLoading: loadingCarousel } = useGetCategoriesWithCarouselImages();
   const unreadCount = useMergedUnreadCount();
   const { updateMyTask, myTask } = useCreateTaskStore();
+
+  const fabBottomOffset = isTablet
+    ? Math.max(insets.bottom, 12) + 16
+    : 78;
+
+  const carouselItems: CarouselCategoryItem[] = (carouselCategories || []).map((cat) => ({
+    id: cat._id,
+    title: cat.name,
+    image: cat.carouselImageUrl,
+  }));
 
   // Load social media accounts from backend on mount
   useEffect(() => {
@@ -134,28 +176,28 @@ export default function WelcomeScreen() {
 
   // Auto-scroll every 3 seconds with safety checks
   useEffect(() => {
+    if (carouselItems.length === 0 || isTabletPortrait) return;
+
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % categoryImages.length;
-        
-        // Safety check: Only scroll if FlatList ref exists and is mounted
+        const nextIndex = (prevIndex + 1) % carouselItems.length;
+
         try {
           flatListRef.current?.scrollToIndex({
             index: nextIndex,
             animated: true,
-            viewPosition: 0.5, // Center the item
+            viewPosition: 0.5,
           });
         } catch (error) {
-          // Silently handle scroll errors (can happen if list isn't fully rendered)
           console.log('Auto-scroll skipped (list not ready)');
         }
-        
+
         return nextIndex;
       });
-    }, 3000); // 3 second interval
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, []); // Only run once on mount
+  }, [carouselItems.length, isTabletPortrait]);
 
   // Reset task input and form when user returns to dashboard
   // This clears abandoned task creation forms
@@ -220,8 +262,10 @@ export default function WelcomeScreen() {
       return;
     }
     
-    // Clear error and proceed
+    // Clear error and proceed — reset stale task data first so category auto-suggest works fresh
     setErrorMessage('');
+    const { resetTask } = useCreateTaskStore.getState();
+    resetTask();
     updateMyTask({
       mainGoal: trimmedInput,
       title: trimmedInput
@@ -246,24 +290,22 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#003399' }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: '#003399' }}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flex: 1 }}>
       {/* Header */}
       <View style={styles.headerWhite}>
         <View style={styles.logoPlaceholder} />
         
-        <Image
-          source={require('@/assets/MyToDoo_logo.gif')}
-          style={styles.logoCenter} 
-          resizeMode="contain"
-        />
+        <View style={styles.logoCenter}>
+          <MyToDooBrandLogo size="lg" style={styles.logoBrandWrap} />
+        </View>
         
         <TouchableOpacity 
           style={styles.notificationButton} 
           onPress={() => setShowNotifications(true)}
         >
-          <Ionicons name="notifications-outline" size={24} color="#fff" />
+          <Ionicons name="notifications-outline" size={isTablet ? 30 : 24} color="#fff" />
           {unreadCount > 0 && (
             <View style={styles.notificationBadge}>
               <Text style={styles.notificationCount}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
@@ -273,11 +315,21 @@ export default function WelcomeScreen() {
       </View>
 
       <View style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            flexGrow: isTabletPortrait ? 0 : 1,
+            paddingBottom: isTabletPortrait ? 96 : 110,
+          }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+        >
         {/* Blue Section with Input */}
         <View style={styles.blueSection}>
-          <Text style={styles.title}>Get it Done Now! 🔥</Text>
+          <Text style={styles.title}>Let&apos;s knock those tasks off your list! 🔥</Text>
           <Text style={styles.subtitle}>
-            Describe your job and get offers from MyToDoo
+            Tell us what you need help with—taskers are waiting!
           </Text>
           
           <TextInput
@@ -311,6 +363,17 @@ export default function WelcomeScreen() {
             <Text style={styles.postButtonText}>Post a Task</Text>
             <Ionicons name="chevron-forward" size={18} color="#fff" />
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.offerServiceButton}
+            onPress={() => {
+              setPendingAccountNavigation({ screen: 'create-service' });
+              router.push('/(tabs)/account' as any);
+            }}
+          >
+            <Ionicons name="construct-outline" size={18} color="#fff" />
+            <Text style={styles.offerServiceText}>Offer a service</Text>
+          </TouchableOpacity>
           
           
           {/* Database Categories Tags */}
@@ -343,43 +406,69 @@ export default function WelcomeScreen() {
           )}
         </View>
 
-        {/* Auto-Scrolling Video Categories Carousel */}
+        {(loadingCarousel || carouselItems.length > 0) && (
+          <>
         <Text style={styles.sectionTitle}>Need something done?</Text>
-        <Text style={styles.subTitle}>Cut through the competition and earn more with customers you know</Text>
 
-        <View style={styles.carouselContainer}>
+        <View style={[styles.carouselContainer, isTabletPortrait && styles.carouselContainerTabletPortrait]}>
+          {loadingCarousel ? (
+            isTabletPortrait && tabletPortraitGrid ? (
+              <View style={[styles.tabletPortraitGrid, { gap: tabletPortraitGrid.columnGap }]}>
+                {Array.from({ length: tabletPortraitGrid.visibleCount }).map((_, i) => (
+                  <CarouselSkeletonCard key={i} itemSize={tabletPortraitGrid.itemSize} />
+                ))}
+              </View>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carouselContent}>
+                {[1, 2, 3].map((i) => (
+                  <CarouselSkeletonCard key={i} />
+                ))}
+              </ScrollView>
+            )
+          ) : isTabletPortrait && tabletPortraitGrid ? (
+            <View style={[styles.tabletPortraitGrid, { gap: tabletPortraitGrid.columnGap }]}>
+              {carouselItems.slice(0, tabletPortraitGrid.visibleCount).map((item) => (
+                <ImageCategory
+                  key={item.id}
+                  item={item}
+                  onPress={handleTagPress}
+                  itemSize={tabletPortraitGrid.itemSize}
+                />
+              ))}
+            </View>
+          ) : (
+          <>
           <FlatList
             ref={flatListRef}
-            data={categoryImages}
+            data={carouselItems}
             renderItem={({ item }) => <ImageCategory item={item} onPress={handleTagPress} />}
             keyExtractor={(item) => item.id}
             horizontal
             showsHorizontalScrollIndicator={false}
-            snapToInterval={screenWidth * 0.35 + 12}
+            snapToInterval={isTablet ? screenWidth * 0.2 + 12 : screenWidth * 0.37 + 12}
             decelerationRate="fast"
             contentContainerStyle={styles.carouselContent}
             keyboardShouldPersistTaps="handled"
-            removeClippedSubviews={true} // Optimize for performance
-            maxToRenderPerBatch={10} // Render 10 items at a time
-            initialNumToRender={5} // Start with 5 visible items
-            windowSize={5} // Keep 5 items in memory
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={8}
+            initialNumToRender={4}
+            windowSize={5}
             onScroll={Animated.event(
               [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-              { useNativeDriver: false } // Required for scroll tracking
+              { useNativeDriver: false }
             )}
-            scrollEventThrottle={16} // Smooth 60fps scrolling
+            scrollEventThrottle={16}
             getItemLayout={(data, index) => ({
-              length: screenWidth * 0.35 + 12,
-              offset: (screenWidth * 0.35 + 12) * index,
+              length: isTablet ? screenWidth * 0.2 + 12 : screenWidth * 0.37 + 12,
+              offset: (isTablet ? screenWidth * 0.2 + 12 : screenWidth * 0.37 + 12) * index,
               index,
             })}
             onScrollToIndexFailed={(info) => {
-              // Retry scrolling after a delay if failed
               const wait = new Promise(resolve => setTimeout(resolve, 500));
               wait.then(() => {
                 try {
-                  flatListRef.current?.scrollToIndex({ 
-                    index: info.index, 
+                  flatListRef.current?.scrollToIndex({
+                    index: info.index,
                     animated: true,
                     viewPosition: 0.5,
                   });
@@ -389,10 +478,9 @@ export default function WelcomeScreen() {
               });
             }}
           />
-          
-          {/* Pagination Dots */}
+
           <View style={styles.paginationContainer}>
-            {Array.from({ length: Math.min(10, categoryImages.length) }).map((_, index) => (
+            {Array.from({ length: Math.min(10, carouselItems.length) }).map((_, index) => (
               <View
                 key={index}
                 style={[
@@ -402,11 +490,16 @@ export default function WelcomeScreen() {
               />
             ))}
           </View>
+          </>
+          )}
         </View>
+          </>
+        )}
+        </ScrollView>
       </View>
 
       {/* Social Media Section - Fixed at Bottom */}
-      <View style={styles.socialMediaSection}>
+      <View style={[styles.socialMediaSection, { bottom: fabBottomOffset }]}>
         {/* Social Media Icons - Only show when menu is open */}
         {socialMenuOpen && (
           <View style={styles.socialIconsContainer}>
@@ -451,7 +544,7 @@ export default function WelcomeScreen() {
         </TouchableOpacity>
       </View>
 
-        </View>
+      </View>
       </TouchableWithoutFeedback>
 
       {/* Notification Modal */}
@@ -472,20 +565,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: isTablet ? 100 : 80,
+    minHeight: isTablet ? 96 : 76,
   },
   logoPlaceholder: {
     width: isTablet ? 28 : 24,
     flexShrink: 0,
   },
   logoCenter: {
-    height: isTablet ? 300 : 150,
-    width: isTablet ? 300 : 240,
-    flexShrink: 0,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  logoBrandWrap: {
+    maxWidth: isTablet ? 300 : 240,
   },
   notificationButton: {
     position: 'relative',
-    width: isTablet ? 28 : 24,
+    width: isTablet ? 44 : 36,
+    height: isTablet ? 44 : 36,
+    alignItems: 'center',
+    justifyContent: 'center',
     flexShrink: 0,
   },
   notificationBadge: {
@@ -501,16 +603,14 @@ const styles = StyleSheet.create({
   },
   notificationCount: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: 'bold',
   },
   blueSection: {
     backgroundColor: '#003399',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingTop: hp('1%'),
+    paddingHorizontal: isTablet ? wp('8%') : wp('4%'),
+    paddingTop: 0,
     paddingBottom: hp('2%'),
-    maxWidth: isTablet ? 900 : undefined,
-    alignSelf: isTablet ? 'center' : 'auto',
     width: '100%',
   },
   title: {
@@ -518,7 +618,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
-    marginTop: hp('-5%'),
+    marginTop: 0,
     marginBottom: hp('0.8%'),
     paddingHorizontal: wp('2%'),
   },
@@ -574,6 +674,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginHorizontal: wp('2%'),
   },
+  offerServiceButton: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.55)',
+    borderRadius: 8,
+    paddingVertical: hp('1.3%'),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: hp('1%'),
+  },
+  offerServiceText: {
+    color: '#fff',
+    fontSize: RFValue(13),
+    fontWeight: '600',
+  },
   tagRow: {
     flexDirection: 'row',
   },
@@ -617,24 +733,35 @@ const styles = StyleSheet.create({
   // NEW: Auto-scrolling Carousel Styles (show 5 at a time)
   carouselContainer: {
     paddingVertical: hp('1%'),
-    paddingBottom: hp('12%'),
+    paddingBottom: hp('2%'),
     marginBottom: 0,
+  },
+  carouselContainerTabletPortrait: {
+    paddingTop: hp('0.5%'),
+    paddingBottom: hp('1%'),
+  },
+  tabletPortraitGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    paddingHorizontal: wp('8%'),
+    rowGap: 16,
   },
   carouselContent: {
     paddingHorizontal: isTablet ? wp('8%') : wp('3%'),
     gap: wp('2%'),
   },
   carouselItem: {
-    width: isTablet ? wp('18%') : screenWidth * 0.35,
+    width: isTablet ? wp('18%') : wp('35%'),
     marginHorizontal: wp('1.5%'),
     alignItems: 'center',
   },
   imageContainer: {
-    width: isTablet ? wp('18%') : screenWidth * 0.35,
-    height: isTablet ? wp('18%') : screenWidth * 0.35,
+    width: isTablet ? wp('18%') : wp('35%'),
+    height: isTablet ? wp('18%') : wp('35%'),
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#ffffff',
     position: 'relative',
     shadowColor: '#000',
     shadowOffset: {
@@ -648,9 +775,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   categoryImage: {
-    width: '90%',
-    height: '90%',
-    backgroundColor: '#E3F2FD',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#ffffff',
+  },
+  imageSkeleton: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#e8e8e8',
+    zIndex: 1,
+  },
+  skeletonSquare: {
+    width: isTablet ? wp('18%') : wp('35%'),
+    height: isTablet ? wp('18%') : wp('35%'),
+    borderRadius: 12,
+    backgroundColor: '#e0e0e0',
+  },
+  skeletonLabelLine: {
+    width: '60%',
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#e0e0e0',
+    marginTop: hp('0.8%'),
   },
   imageLoader: {
     position: 'absolute',
@@ -678,8 +823,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-  //  marginTop: 8,
     marginTop: isTablet ? wp('2.5%') : wp('2.3%'),
+    marginBottom: hp('0.5%'),
     gap: 5,
   },
   paginationDot: {
@@ -696,7 +841,6 @@ const styles = StyleSheet.create({
   socialMediaSection: {
     position: 'absolute',
     right: isTablet ? wp('4%') : 14,
-    bottom: isTablet ? 220 : 207,
     backgroundColor: 'transparent',
     zIndex: 12,
     alignItems: 'center',

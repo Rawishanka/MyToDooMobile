@@ -34,11 +34,18 @@ export interface UserProfile {
   profilePicture?: string; // URL to profile picture
   rating?: number;
   completedTasks?: number;
+  completionRate?: number;
+  completion_rate?: number;
   createdAt: string;
   isVerified: boolean;
   role?: string; // Added for compatibility with User type
   age?: number;
   ageRange?: string;
+  notifyNewTask?: boolean;
+  notifySkillMatch?: boolean;
+  badges?: { mobile: boolean; email: boolean; abn: boolean; stripe: boolean };
+  creditsBalance?: number;
+  referralCode?: string | null;
 }
 
 export interface UserProfileResponse {
@@ -58,6 +65,8 @@ export interface UpdateProfileRequest {
     suburb?: string;
   };
   bio?: string;
+  notifyNewTask?: boolean;
+  notifySkillMatch?: boolean;
   skills?: {
     goodAt?: string[];
     transport?: string[];
@@ -66,8 +75,6 @@ export interface UpdateProfileRequest {
     experience?: string[];
   };
 }
-
-// Raw API response structure
 export interface RatingStatsApiResponse {
   asPoster: {
     average: number;
@@ -171,12 +178,12 @@ export interface RequestReviewRequest {
 
 /**
  * Get user profile
- * GET /api/auth/profile
+ * GET /api/users/profile
  */
 export async function getUserProfile(): Promise<UserProfileResponse> {
   try {
-    console.log("👤 Fetching user profile...");
-    const response = await api.get('/auth/profile');
+    console.log("📝 Getting user profile...");
+    const response = await api.get('/users/profile');
     console.log("✅ User profile fetched successfully:", response.data);
     return response.data;
   } catch (error: any) {
@@ -214,12 +221,12 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
 
 /**
  * Update user profile
- * PUT /api/auth/profile
+ * PUT /api/users/profile
  */
 export async function updateUserProfile(profileData: UpdateProfileRequest): Promise<UserProfileResponse> {
   try {
     console.log("📝 Updating user profile with data:", JSON.stringify(profileData, null, 2));
-    const response = await api.put('/auth/profile', profileData);
+    const response = await api.put('/users/profile', profileData);
     console.log("✅ User profile updated successfully:", response.data);
     return response.data;
   } catch (error: any) {
@@ -236,36 +243,6 @@ export async function updateUserProfile(profileData: UpdateProfileRequest): Prom
     if (error?.isAuthError || error?.status === 401) {
       console.log("ℹ️ Authentication required to update profile");
       throw new Error("Please login to update your profile");
-    }
-    
-    // Network error fallback
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.log("ℹ️ Network unavailable - Using mock update response");
-      return {
-        success: true,
-        data: {
-          _id: "mock-user-123",
-          firstName: profileData.firstName || "John",
-          lastName: profileData.lastName || "Doe",
-          email: "john@example.com",
-          phone: profileData.phone || "+1234567890",
-          location: typeof profileData.location === 'string' 
-            ? profileData.location 
-            : profileData.location?.city || "Sydney, NSW",
-          bio: profileData.bio || "Hi I'm John",
-          skills: {
-            goodAt: profileData.skills?.goodAt || [],
-            transport: profileData.skills?.transport || [],
-            languages: profileData.skills?.languages || [],
-            qualifications: profileData.skills?.qualifications || [],
-            experience: profileData.skills?.experience || []
-          },
-          rating: 4.5,
-          completedTasks: 25,
-          createdAt: new Date().toISOString(),
-          isVerified: false
-        }
-      };
     }
     
     // For other errors, log and throw
@@ -329,42 +306,11 @@ export async function uploadUserAvatar(imageUri: string): Promise<UserProfileRes
     console.log("⚠️ Avatar upload error:", error?.response?.status || error?.code || error?.message);
     console.log("⚠️ Error details:", error?.response?.data);
     
-    // Handle auth errors (401) or network errors - use mock data for development
+    // Handle auth errors (401)
     if (error?.isAuthError || 
         error?.response?.status === 401 || 
-        error?.status === 401 ||
-        error.code === 'ERR_NETWORK' || 
-        error.message === 'Network Error') {
-      
-      console.log("ℹ️ Using mock avatar upload for development (auth or network issue)");
-      
-      // Use the provided image URI for preview
-      const mockAvatar = imageUri || "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg...";
-      
-      return {
-        success: true,
-        data: {
-          _id: "mock-user-123",
-          firstName: "John",
-          lastName: "Doe",
-          email: "john@example.com",
-          phone: "+1234567890",
-          location: "Sydney, NSW",
-          bio: "Hi I'm John",
-          skills: {
-            goodAt: [],
-            transport: [],
-            languages: [],
-            qualifications: [],
-            experience: []
-          },
-          avatar: mockAvatar,
-          rating: 4.5,
-          completedTasks: 25,
-          createdAt: new Date().toISOString(),
-          isVerified: false
-        }
-      };
+        error?.status === 401) {
+      console.warn("⚠️ Avatar upload failed - Authentication required");
     }
     
     // For other errors, log and throw
