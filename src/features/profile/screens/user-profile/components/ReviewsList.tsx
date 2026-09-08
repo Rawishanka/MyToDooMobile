@@ -4,6 +4,7 @@ import { formatUserName } from '@/src/utils/formatUserName';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface Review {
   _id: string;
@@ -31,12 +32,18 @@ interface Review {
   taskId?: string | {
     _id: string;
     title: string;
+    categories?: string[];
   };
   task?: {
     _id: string;
     title: string;
     status?: string;
+    categories?: string[];
   };
+  category?: string | null;
+  categories?: string[];
+  locked?: boolean;
+  message?: string;
   role?: "poster" | "tasker";
   reviewerRole?: "poster" | "tasker";
   response?: {
@@ -118,6 +125,42 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
     taskTitle = review.taskId.title;
   }
 
+  const categoryLabel =
+    review.category ||
+    review.categories?.[0] ||
+    (review.task?.categories && review.task.categories[0]) ||
+    (typeof review.taskId === 'object' && review.taskId?.categories?.[0]) ||
+    null;
+
+  if (review.locked) {
+    return (
+      <View style={styles.reviewItem}>
+        <View style={styles.reviewHeader}>
+          <View style={styles.reviewerInfo}>
+            <View style={styles.avatarPlaceholder}>
+              <Text style={styles.avatarText}>{getAvatarInitial()}</Text>
+            </View>
+            <View style={styles.reviewerDetails}>
+              <View style={styles.nameContainer}>
+                <Text style={styles.reviewerName}>{reviewerName}</Text>
+                {categoryLabel ? (
+                  <Text style={styles.categoryBadge}>{categoryLabel}</Text>
+                ) : null}
+              </View>
+              <Text style={styles.reviewDate}>{formatDate(review.createdAt)}</Text>
+            </View>
+          </View>
+          <Ionicons name="lock-closed-outline" size={18} color="#856404" />
+        </View>
+        <View style={styles.lockedBanner}>
+          <Text style={styles.lockedBannerText}>
+            {review.message || 'Submit your review to see theirs'}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.reviewItem}>
       {/* Header */}
@@ -131,6 +174,9 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
           <View style={styles.reviewerDetails}>
             <View style={styles.nameContainer}>
               <Text style={styles.reviewerName}>{reviewerName}</Text>
+              {categoryLabel ? (
+                <Text style={styles.categoryBadge}>{categoryLabel}</Text>
+              ) : null}
             </View>
             <Text style={styles.reviewDate}>{formatDate(review.createdAt)}</Text>
           </View>
@@ -376,7 +422,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
       {/* Debug Info - Remove after testing */}
       {__DEV__ && (
         <View style={{ padding: 10, backgroundColor: '#f0f0f0', marginHorizontal: 16, marginVertical: 8, borderRadius: 4 }}>
-          <Text style={{ fontSize: 10, fontFamily: 'monospace' }}>
+          <Text style={{ fontSize: RFValue(10), fontFamily: 'monospace' }}>
             DEBUG: UserId: {userId} | Role: {activeRole} | Page: {currentPage} | Loading: {isLoading.toString()} | Reviews: {reviews.length} | Has More: {hasMore.toString()}
           </Text>
         </View>
@@ -426,12 +472,12 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F0F0F0',
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     color: '#333',
   },
   reviewCount: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   listContainer: {
@@ -467,7 +513,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   avatarText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
     color: '#ffffff',
   },
@@ -480,16 +526,40 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   reviewerName: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginRight: 6,
+  },
+  categoryBadge: {
+    fontSize: RFValue(11),
+    fontWeight: '600',
+    color: '#1d4ed8',
+    backgroundColor: '#dbeafe',
+    overflow: 'hidden',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    maxWidth: 120,
+  },
+  lockedBanner: {
+    backgroundColor: '#fff3cd',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#ffeeba',
+  },
+  lockedBannerText: {
+    fontSize: RFValue(13),
+    color: '#856404',
+    fontWeight: '500',
   },
   verifiedIcon: {
     marginLeft: 2,
   },
   reviewDate: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   starsContainer: {
@@ -501,14 +571,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   taskTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     fontStyle: 'italic',
     marginLeft: 6,
     flex: 1,
   },
   reviewComment: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#333',
     lineHeight: 22,
   },
@@ -521,13 +591,13 @@ const styles = StyleSheet.create({
     borderLeftColor: '#007AFF',
   },
   responseLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#007AFF',
     marginBottom: 4,
   },
   responseText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#555',
     lineHeight: 20,
   },
@@ -537,14 +607,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   emptyStateTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     color: '#666',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyStateSubtext: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#999',
     textAlign: 'center',
     lineHeight: 22,
@@ -554,11 +624,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   loadMoreText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#007AFF',
   },
   roleToggleContainer: {
@@ -586,7 +656,7 @@ const styles = StyleSheet.create({
     borderColor: '#007AFF',
   },
   roleToggleText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#666',
   },
@@ -604,7 +674,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   averageRatingNumber: {
-    fontSize: 32,
+    fontSize: RFValue(32),
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 8,
@@ -615,14 +685,14 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   totalReviewsText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   attachmentsContainer: {
     marginTop: 12,
   },
   attachmentsLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
@@ -652,7 +722,7 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   attachmentFileName: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginTop: 4,
     textAlign: 'center',

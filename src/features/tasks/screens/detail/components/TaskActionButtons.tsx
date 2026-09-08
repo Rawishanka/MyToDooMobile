@@ -388,7 +388,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
                 pathname: '/(tabs)/my-tasks',
                 params: {
                   role: 'Poster',
-                  tab: 'completed',
+                  tab: 'review_required',
                   promptReviewTaskId: task._id,
                 },
               } as any);

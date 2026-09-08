@@ -18,6 +18,7 @@ import {
     useDeleteTask,
     useGetCancellationReasons,
     useGetCancellationRequest,
+    useGetTaskReviews,
     useRespondToCancellationRequest,
     useSubmitReview
 } from '@/src/shared/hooks/useTaskApi';
@@ -148,11 +149,16 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const confirmTaskCompletionMutation = useConfirmTaskCompletion(); // Poster confirms completion
   const submitReviewMutation = useSubmitReview(); // NEW: Submit review
   
-  // Check if current user has already reviewed this task (for completed tasks only)
-  const isCompletedTask = status === 'completed';
+  // Check if current user has already reviewed this task (for completed / review-required tabs)
+  const isCompletedTask = status === 'completed' || status === 'review_required';
   const { data: canReviewData } = useCheckCanReview(task._id, isCompletedTask);
   const hasAlreadyReviewed = isCompletedTask && canReviewData?.data?.canReview === false;
   const reviewPromptHandledRef = useRef(false);
+  const { data: taskReviewsData, refetch: refetchTaskReviews } = useGetTaskReviews(
+    isCompletedTask ? task._id : ''
+  );
+  const taskReviews = taskReviewsData?.data || [];
+  const lockedPeerReview = taskReviews.find((r: any) => r?.locked === true);
 
   const markReviewPromptShown = useCallback(async () => {
     const userId = currentUser?._id || currentUser?.id;
@@ -593,7 +599,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 pathname: '/(tabs)/my-tasks',
                 params: {
                   role: 'Poster',
-                  tab: 'completed',
+                  tab: 'review_required',
                   promptReviewTaskId: task._id,
                 },
               } as any);
@@ -1054,6 +1060,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         });
         
         console.log('✅ Review submitted successfully');
+        refetchTaskReviews();
         // Close modal after successful review submission
         setShowRatingModal(false);
       }
@@ -1577,10 +1584,20 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         </View>
       )}
 
+      {/* Peer review lock notice */}
+      {isCompletedTask && lockedPeerReview && (
+        <View style={styles.peerReviewLockBanner}>
+          <MaterialIcons name="lock-outline" size={18} color="#856404" />
+          <Text style={styles.peerReviewLockText}>
+            {lockedPeerReview.message || 'Submit your review to see theirs'}
+          </Text>
+        </View>
+      )}
+
       {/* Action Buttons - Separate from Card Content */}
       <View style={styles.actionButtons} pointerEvents="box-none">
-        {status === 'completed' && userRole === 'Tasker' ? (
-          // Completed tab (Tasker): Rating & Review button (hidden if already reviewed) + View Receipt button
+        {isCompletedTask && userRole === 'Tasker' ? (
+          // Completed / Review Required (Tasker): Rating & Review button (hidden if already reviewed) + View Receipt button
           <>
             {!hasAlreadyReviewed && (
               <TouchableOpacity 
@@ -1615,8 +1632,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               />
             </TouchableOpacity>
           </>
-        ) : status === 'completed' && userRole === 'Poster' ? (
-          // Completed tab (Poster): Review button (hidden if already reviewed) + View Receipt button
+        ) : isCompletedTask && userRole === 'Poster' ? (
+          // Completed / Review Required (Poster): Review button (hidden if already reviewed) + View Receipt button
           <>
             {!hasAlreadyReviewed && (
               <TouchableOpacity
@@ -2547,6 +2564,24 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: RFValue(14),
     fontWeight: '600',
+  },
+  peerReviewLockBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff3cd',
+    borderWidth: 1,
+    borderColor: '#ffeeba',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    gap: 8,
+  },
+  peerReviewLockText: {
+    flex: 1,
+    color: '#856404',
+    fontSize: RFValue(13),
+    fontWeight: '500',
   },
   ownCancelPendingBanner: {
     flexDirection: 'row',

@@ -54,6 +54,8 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
           : 'No pending payments';
       case 'completed':
         return 'No completed tasks yet';
+      case 'review_required':
+        return 'No tasks waiting for your review';
       case 'overdue':
         return 'No overdue tasks';
       case 'cancelled':
@@ -109,7 +111,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             userRole={userRole}
             myOffer={offersMap?.get(item._id)}
             autoPromptReview={promptReviewTaskId === item._id}
-            onPress={status === 'completed' ? undefined : (taskId: string) => {
+            onPress={status === 'completed' || status === 'review_required' ? undefined : (taskId: string) => {
               console.log('👁️ Navigating to task-detail with taskId:', taskId);
               console.log('   Task data:', item);
               console.log('   From tab:', status, 'Role:', userRole);
@@ -185,6 +187,7 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
         { key: 'open', label: 'Open Offers', status: 'open', tasks: categorizedData.openTasks, offersMap: myOffersMap },
         { key: 'todoo', label: 'Todoo Tasks', status: 'assigned', tasks: categorizedData.todoTasks },
         { key: 'pending_payment', label: 'Pending Payments', status: 'pending_payment', tasks: categorizedData.pendingPaymentTasks },
+        { key: 'review_required', label: 'Review Required', status: 'review_required', tasks: categorizedData.reviewRequiredTasks },
         { key: 'completed', label: 'Completed', status: 'completed', tasks: categorizedData.completedTasks },
         { key: 'overdue', label: 'Overdue', status: 'overdue', tasks: categorizedData.overdueTasks },
         { key: 'cancelled', label: 'Cancelled', status: 'cancelled', tasks: categorizedData.cancelledTasks },
@@ -194,6 +197,7 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
       { key: 'posted', label: 'Posted', tasks: categorizedData.postedTasks },
       { key: 'accepted', label: 'Accepted', status: 'accepted', tasks: categorizedData.acceptedTasks },
       { key: 'pending_payment', label: 'Release Payment', status: 'pending_payment', tasks: categorizedData.pendingPaymentTasks },
+      { key: 'review_required', label: 'Review Required', status: 'review_required', tasks: categorizedData.reviewRequiredTasks },
       { key: 'completed', label: 'Completed', status: 'completed', tasks: categorizedData.completedTasks },
       { key: 'overdue', label: 'Overdue', status: 'overdue', tasks: categorizedData.overdueTasks },
       { key: 'cancelled', label: 'Cancelled', status: 'cancelled', tasks: categorizedData.cancelledTasks },
@@ -204,9 +208,11 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
 
   useEffect(() => {
     if (!promptReviewTaskId) return;
-    const completedIndex = tabs.findIndex((tab) => tab.key === 'completed');
-    if (completedIndex >= 0) {
-      setActiveIndex(completedIndex);
+    const reviewTabIndex = tabs.findIndex((tab) => tab.key === 'review_required');
+    const fallbackIndex = tabs.findIndex((tab) => tab.key === 'completed');
+    const targetIndex = reviewTabIndex >= 0 ? reviewTabIndex : fallbackIndex;
+    if (targetIndex >= 0) {
+      setActiveIndex(targetIndex);
     }
   }, [promptReviewTaskId, tabs]);
 
@@ -542,8 +548,12 @@ export default function MyTasksScreen() {
       });
     };
 
-    // Helper function to check if a task is overdue
-    const isTaskOverdue = (task: Task): boolean => {
+    // Helper: completed tasks still awaiting one or both reviews
+    const isReviewRequired = (task: Task): boolean => {
+      if (task.status !== 'completed') return false;
+      const rs = task.reviewStatus;
+      return rs === 'review_required' || rs === 'none' || !rs;
+    };
       // CRITICAL: Only tasks with status='overdue' should appear in Overdue tab
       // Tasks with 'todo', 'assigned', 'in_progress' should stay in their respective tabs
       // regardless of whether they're past due date or not
@@ -738,6 +748,10 @@ export default function MyTasksScreen() {
       const completedTasks = sortByCreatedDate(filterBySearch(
         taskerAssignedTasks.filter((task: Task) => task.status === 'completed')
       ));
+
+      const reviewRequiredTasks = sortByCreatedDate(filterBySearch(
+        taskerAssignedTasks.filter((task: Task) => isReviewRequired(task))
+      ));
       
       // Overdue Tasks: Include tasks assigned to tasker that are past their due date
       // Check both backend status and client-side date comparison
@@ -840,6 +854,7 @@ export default function MyTasksScreen() {
         openTasks,
         todoTasks,
         pendingPaymentTasks,
+        reviewRequiredTasks,
         completedTasks,
         overdueTasks,
         cancelledTasks: finalCancelledTasks,
@@ -883,6 +898,15 @@ export default function MyTasksScreen() {
         allTasks.filter((task: Task) => {
           const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
           return isUsersTask && task.status === 'completed';
+        })
+      )
+    );
+
+    const reviewRequiredTasks = sortByCreatedDate(
+      filterBySearch(
+        allTasks.filter((task: Task) => {
+          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+          return isUsersTask && isReviewRequired(task);
         })
       )
     );
@@ -999,6 +1023,7 @@ export default function MyTasksScreen() {
       openTasks,
       todoTasks,
       pendingPaymentTasks,
+      reviewRequiredTasks,
       completedTasks,
       overdueTasks,
       cancelledTasks: finalCancelledTasks,
@@ -1012,6 +1037,7 @@ export default function MyTasksScreen() {
     openTasks: categorizedData.openTasks.length,
     todoTasks: categorizedData.todoTasks.length,
     pendingPaymentTasks: categorizedData.pendingPaymentTasks.length,
+    reviewRequiredTasks: categorizedData.reviewRequiredTasks.length,
     completedTasks: categorizedData.completedTasks.length,
     postedTasks: categorizedData.postedTasks.length,
     acceptedTasks: categorizedData.acceptedTasks.length,

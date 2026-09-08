@@ -310,6 +310,24 @@ export async function completeTaskPayment(
 }
 
 /**
+ * 📊 Calculate fee preview (poster + tasker)
+ * Endpoint: POST /api/payments/calculate-fee
+ * Auth: Required
+ */
+export async function calculateFeePreview(feeData: {
+  amount: number;
+  currency?: string;
+}): Promise<any> {
+  try {
+    const response = await api.post('/payments/calculate-fee', feeData);
+    return response.data;
+  } catch (error: any) {
+    console.log('ℹ️ payments/calculate-fee unavailable, falling back if needed');
+    throw error;
+  }
+}
+
+/**
  * 📊 Calculate Service Fee
  * Endpoint: POST /api/service-fee/calculate
  * Auth: Required

@@ -245,9 +245,12 @@ export interface Task {
   };
   details: string;
   budget: number;
+  finalAmount?: number;
   currency: string;
   images: string[];
   status: string;
+  /** Set after payment release / completion; cleared when both parties reviewed */
+  reviewStatus?: 'none' | 'review_required' | 'reviews_complete';
   createdBy: {
     _id: string;
     firstName: string;
@@ -496,6 +499,8 @@ export interface TaskOffersResponse {
 export interface CreateTaskResponse {
   success: boolean;
   data: Task;
+  isOfflineQueued?: boolean;
+  message?: string;
 }
 
 export interface CreateOfferResponse {
