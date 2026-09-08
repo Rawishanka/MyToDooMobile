@@ -16,7 +16,9 @@ import {
   useMarkMessagesAsRead,
   useSendMessage,
 } from '@/src/shared/hooks/useTaskChat';
-import { moderateContent } from '@/src/shared/utils/contentModeration';
+import { getTaskById } from '@/src/api/task-api';
+import { resolveTaskChatParticipants } from '@/src/shared/utils/resolve-task-participants';
+import { allowsContactInChat, moderateContent } from '@/src/shared/utils/contentModeration';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
@@ -40,6 +42,7 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 // URL normalization helper for APK builds
 const normalizeMediaUrl = (url: string | null | undefined): string | null => {
@@ -59,37 +62,69 @@ const normalizeMediaUrl = (url: string | null | undefined): string | null => {
   return url;
 };
 
+function normalizeRouteParam(value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) {
+    const first = value[0];
+    return typeof first === 'string' && first.trim() ? first.trim() : undefined;
+  }
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function getMessageSenderId(senderId: Message['senderId']): string | undefined {
+  if (typeof senderId === 'string') return senderId;
+  if (senderId && typeof senderId === 'object' && '_id' in senderId) {
+    return String(senderId._id);
+  }
+  return undefined;
+}
+
+function getMessageContent(content: Message['content']): string {
+  if (typeof content === 'string') return content;
+  if (content === null || content === undefined) return '';
+  return String(content);
+}
+
 export default function TaskChatScreen() {
-  const { 
-    taskId, 
-    taskTitle, 
-    posterId, 
-    taskerId, 
-    chatId: chatIdParam,
-    posterName,
-    posterAvatar,
-    taskerName,
-    taskerAvatar
-  } = useLocalSearchParams<{ 
-    taskId: string; 
-    taskTitle: string;
-    posterId?: string;
-    taskerId?: string;
-    chatId?: string;
-    posterName?: string;
-    posterAvatar?: string;
-    taskerName?: string;
-    taskerAvatar?: string;
+  const params = useLocalSearchParams<{ 
+    taskId?: string | string[]; 
+    taskTitle?: string | string[];
+    posterId?: string | string[];
+    taskerId?: string | string[];
+    chatId?: string | string[];
+    posterName?: string | string[];
+    posterAvatar?: string | string[];
+    taskerName?: string | string[];
+    taskerAvatar?: string | string[];
   }>();
+
+  const normalizedTaskId = normalizeRouteParam(params.taskId);
+  const normalizedTaskTitle = normalizeRouteParam(params.taskTitle);
+  const normalizedPosterId = normalizeRouteParam(params.posterId);
+  const normalizedTaskerId = normalizeRouteParam(params.taskerId);
+  const normalizedChatIdParam = normalizeRouteParam(params.chatId);
+  const normalizedPosterName = normalizeRouteParam(params.posterName);
+  const normalizedPosterAvatar = normalizeRouteParam(params.posterAvatar);
+  const normalizedTaskerName = normalizeRouteParam(params.taskerName);
+  const normalizedTaskerAvatar = normalizeRouteParam(params.taskerAvatar);
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const headerTopPadding = insets.top + 10;
   const { user } = useAuthStore();
   const flatListRef = useRef<FlatList>(null);
+  const chatInitStartedRef = useRef(false);
 
-  const [chatId, setChatId] = useState<string | null>(chatIdParam || null);
+  const [chatId, setChatId] = useState<string | null>(normalizedChatIdParam || null);
   const [messageText, setMessageText] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [resolvedPosterId, setResolvedPosterId] = useState<string | undefined>(normalizedPosterId);
+  const [resolvedTaskerId, setResolvedTaskerId] = useState<string | undefined>(normalizedTaskerId);
+  const [resolvedTaskId, setResolvedTaskId] = useState<string | undefined>(normalizedTaskId);
+  const [isResolvingParticipants, setIsResolvingParticipants] = useState(false);
+  const [taskStatus, setTaskStatus] = useState<string | undefined>(undefined);
+
+  const effectiveTaskId = resolvedTaskId || normalizedTaskId;
 
   // Swipe back gesture handler
   const onSwipeGesture = (event: any) => {
@@ -151,12 +186,12 @@ export default function TaskChatScreen() {
     console.log('🔍 Calculating otherPerson:', {
       userId: user._id,
       hasChat: !!chat,
-      posterId,
-      taskerId,
-      posterName,
-      taskerName,
-      posterAvatar,
-      taskerAvatar
+      posterId: normalizedPosterId,
+      taskerId: normalizedTaskerId,
+      posterName: normalizedPosterName,
+      taskerName: normalizedTaskerName,
+      posterAvatar: normalizedPosterAvatar,
+      taskerAvatar: normalizedTaskerAvatar
     });
 
     // First, try to get from chat API data
@@ -189,34 +224,35 @@ export default function TaskChatScreen() {
       }
     }
 
-    // Fallback: Use params passed from navigation
-    // If current user is poster, show tasker info; if current user is tasker, show poster info
-    if (posterId === user._id && taskerId) {
+    const effectivePosterId = resolvedPosterId || normalizedPosterId;
+    const effectiveTaskerId = resolvedTaskerId || normalizedTaskerId;
+
+    if (effectivePosterId === user._id && effectiveTaskerId) {
       const taskerInfo = {
-        _id: taskerId,
-        firstName: taskerName ? taskerName.split(' ')[0] : '',
-        lastName: taskerName ? taskerName.split(' ').slice(1).join(' ') : '',
-        avatar: taskerAvatar || null,
-        displayName: taskerName || 'Tasker'
+        _id: effectiveTaskerId,
+        firstName: normalizedTaskerName ? normalizedTaskerName.split(' ')[0] : '',
+        lastName: normalizedTaskerName ? normalizedTaskerName.split(' ').slice(1).join(' ') : '',
+        avatar: normalizedTaskerAvatar || null,
+        displayName: normalizedTaskerName || 'Tasker'
       };
       console.log('✅ From params: current user is poster, showing tasker', taskerInfo);
       return taskerInfo;
-    } else if (taskerId === user._id && posterId) {
+    } else if (effectiveTaskerId === user._id && effectivePosterId) {
       const posterInfo = {
-        _id: posterId,
-        firstName: posterName ? posterName.split(' ')[0] : '',
-        lastName: posterName ? posterName.split(' ').slice(1).join(' ') : '',
-        avatar: posterAvatar || null,
-        displayName: posterName || 'Poster'
+        _id: effectivePosterId,
+        firstName: normalizedPosterName ? normalizedPosterName.split(' ')[0] : '',
+        lastName: normalizedPosterName ? normalizedPosterName.split(' ').slice(1).join(' ') : '',
+        avatar: normalizedPosterAvatar || null,
+        displayName: normalizedPosterName || 'Poster'
       };
       console.log('✅ From params: current user is tasker, showing poster', posterInfo);
       return posterInfo;
     }
 
     console.log('❌ Could not determine other person - no ID match');
-    console.log('   Debug: posterId:', posterId, 'taskerId:', taskerId, 'user._id:', user._id);
+    console.log('   Debug: posterId:', effectivePosterId, 'taskerId:', effectiveTaskerId, 'user._id:', user._id);
     return null;
-  }, [chat, user, posterId, taskerId, posterName, posterAvatar, taskerName, taskerAvatar]);
+  }, [chat, user, normalizedPosterId, normalizedTaskerId, normalizedPosterName, normalizedPosterAvatar, normalizedTaskerName, normalizedTaskerAvatar, resolvedPosterId, resolvedTaskerId]);
   
   // Debug: Verify chat and task alignment
   useEffect(() => {
@@ -225,21 +261,21 @@ export default function TaskChatScreen() {
       const chatTaskTitle = typeof chat.taskId === 'object' ? chat.taskId?.title : 'Unknown';
       console.log('🔍 CHAT VERIFICATION:', {
         chatId,
-        paramTaskId: taskId,
+        paramTaskId: normalizedTaskId,
         chatTaskId,
-        paramTaskTitle: taskTitle,
+        paramTaskTitle: normalizedTaskTitle,
         chatTaskTitle,
-        MATCH: chatTaskId === taskId
+        MATCH: chatTaskId === normalizedTaskId
       });
       
-      if (chatTaskId && taskId && chatTaskId !== taskId) {
+      if (chatTaskId && normalizedTaskId && chatTaskId !== normalizedTaskId) {
         console.error('❌ MISMATCH: Chat belongs to different task!', {
-          expected: taskId,
+          expected: normalizedTaskId,
           actual: chatTaskId
         });
       }
     }
-  }, [chat, chatId, taskId, taskTitle]);
+  }, [chat, chatId, normalizedTaskId, normalizedTaskTitle]);
   
   // Debug log messages
   useEffect(() => {
@@ -256,27 +292,96 @@ export default function TaskChatScreen() {
     }
   }, [chatError]);
 
-  // Initialize chat on mount
+  // Resolve poster/tasker + status from task (needed for contact moderation rules)
   useEffect(() => {
-    if (!taskId || !user) return;
+    if (!effectiveTaskId) return;
 
-    // If chatId was provided in params, use it directly (existing chat)
-    if (chatIdParam) {
-      console.log('💬 Using existing chat:', chatIdParam);
-      setChatId(chatIdParam);
-      return;
+    let cancelled = false;
+
+    // Always fetch status when we have a task id; also resolve participants if missing
+    const needsParticipants =
+      !normalizedChatIdParam && !(resolvedPosterId && resolvedTaskerId);
+
+    if (needsParticipants) {
+      setIsResolvingParticipants(true);
     }
 
-    // Otherwise, create or get chat for this task
-    console.log('🚀 Initializing task chat:', { 
-      taskId, 
-      userId: user._id,
-      posterId,
-      taskerId 
-    });
+    getTaskById(effectiveTaskId)
+      .then((response) => {
+        if (cancelled) return;
+        const task = response?.data;
+        if (task?.status) {
+          setTaskStatus(String(task.status));
+        }
+        if (needsParticipants) {
+          const participants = resolveTaskChatParticipants(task);
+          if (participants.posterId) setResolvedPosterId(participants.posterId);
+          if (participants.taskerId) setResolvedTaskerId(participants.taskerId);
+        }
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.warn('⚠️ Failed to resolve task for chat:', error);
+      })
+      .finally(() => {
+        if (!cancelled && needsParticipants) setIsResolvingParticipants(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveTaskId, normalizedChatIdParam, resolvedPosterId, resolvedTaskerId]);
+
+  // Resolve task + participants from chat when opened via chatId-only notification
+  useEffect(() => {
+    if (!chat || !chatId) return;
+
+    const chatTaskId =
+      typeof chat.taskId === 'string' ? chat.taskId : chat.taskId?._id;
+    if (chatTaskId) {
+      setResolvedTaskId(chatTaskId);
+    }
+
+    const chatData = chat as any;
+    const posterFromChat =
+      chatData.poster?._id ||
+      (typeof chat.posterId === 'object' ? chat.posterId?._id : chat.posterId);
+    const taskerFromChat =
+      chatData.tasker?._id ||
+      (typeof chat.taskerId === 'object' ? chat.taskerId?._id : chat.taskerId);
+
+    if (posterFromChat) setResolvedPosterId(String(posterFromChat));
+    if (taskerFromChat) setResolvedTaskerId(String(taskerFromChat));
+
+    const statusFromChat =
+      (typeof chat.taskId === 'object' && chat.taskId?.status) ||
+      chatData.task?.status ||
+      chatData.taskStatus;
+    if (statusFromChat && !taskStatus) {
+      setTaskStatus(String(statusFromChat));
+    }
+  }, [chat, chatId, taskStatus]);
+
+  // Use chatId from notification params immediately
+  useEffect(() => {
+    if (!user || !normalizedChatIdParam) return;
+    setChatId(normalizedChatIdParam);
+  }, [user, normalizedChatIdParam]);
+
+  // Initialize chat on mount (task-based flow)
+  useEffect(() => {
+    if (!user) return;
+    if (normalizedChatIdParam) return;
+    if (!effectiveTaskId) return;
+    if (chatInitStartedRef.current) return;
+
+    if (isResolvingParticipants) return;
+
+    const effectivePosterId = resolvedPosterId || normalizedPosterId;
+    const effectiveTaskerId = resolvedTaskerId || normalizedTaskerId;
 
     // If we don't have both IDs, show error
-    if (!posterId || !taskerId) {
+    if (!effectivePosterId || !effectiveTaskerId) {
       console.error('❌ Missing poster or tasker ID');
       Alert.alert(
         'Error', 
@@ -284,20 +389,22 @@ export default function TaskChatScreen() {
         [
           {
             text: 'OK',
-            onPress: () => router.back()
+            onPress: () => router.replace('/(tabs)/message')
           }
         ]
       );
       return;
     }
 
+    chatInitStartedRef.current = true;
+
     // Create or get chat for this task with actual participant IDs
     createChatMutation.mutate(
       {
-        taskId,
+        taskId: effectiveTaskId,
         data: {
-          posterId: posterId,
-          taskerId: taskerId,
+          posterId: effectivePosterId,
+          taskerId: effectiveTaskerId,
         },
       },
       {
@@ -320,7 +427,7 @@ export default function TaskChatScreen() {
         },
       }
     );
-  }, [taskId, user, posterId, taskerId, chatIdParam]);
+  }, [effectiveTaskId, user, normalizedPosterId, normalizedTaskerId, normalizedChatIdParam, resolvedPosterId, resolvedTaskerId, isResolvingParticipants]);
 
   // Mark messages as read when chat opens
   useEffect(() => {
@@ -343,15 +450,17 @@ export default function TaskChatScreen() {
 
     const text = messageText.trim();
     
-    // Moderate content before sending
-    const moderationResult = moderateContent(text);
-    if (!moderationResult.isClean) {
-      Alert.alert(
-        'Message Blocked',
-        moderationResult.reason || 'Your message contains inappropriate content.',
-        [{ text: 'OK' }]
-      );
-      return;
+    // Moderate contact details only before assign; allow phone/email/website once assigned
+    if (!allowsContactInChat(taskStatus)) {
+      const moderationResult = moderateContent(text);
+      if (!moderationResult.isClean) {
+        Alert.alert(
+          'Message Blocked',
+          moderationResult.reason || 'Do not include personal contact details (phone, email, or websites). Please amend and resubmit.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
     }
     
     setMessageText('');
@@ -401,13 +510,13 @@ export default function TaskChatScreen() {
   };
 
   const handleImageUpload = async (imageUri: string) => {
-    if (!chatId || !taskId) return;
+    if (!chatId || !effectiveTaskId) return;
 
     try {
       setIsUploading(true);
       console.log('📤 Uploading image:', imageUri);
 
-      const imageUrl = await uploadChatImage(imageUri, taskId);
+      const imageUrl = await uploadChatImage(imageUri, effectiveTaskId);
       
       console.log('✅ Image uploaded, CDN URL:', imageUrl);
 
@@ -498,13 +607,13 @@ export default function TaskChatScreen() {
   };
 
   const handleFileUpload = async (fileUri: string, fileName: string, fileType: string) => {
-    if (!chatId || !taskId) return;
+    if (!chatId || !effectiveTaskId) return;
 
     try {
       setIsUploading(true);
       console.log('📤 Uploading file:', fileName);
 
-      const fileUrl = await uploadChatFile(fileUri, fileName, fileType, taskId);
+      const fileUrl = await uploadChatFile(fileUri, fileName, fileType, effectiveTaskId);
 
       sendMessageMutation.mutate(
         {
@@ -535,7 +644,9 @@ export default function TaskChatScreen() {
   };
 
   const renderMessage = ({ item }: { item: Message }) => {
-    const isMine = item.senderId === user?._id;
+    const senderId = getMessageSenderId(item.senderId);
+    const isMine = senderId === user?._id;
+    const messageContent = getMessageContent(item.content);
     
     // Normalize mediaUrl for APK compatibility
     const normalizedMediaUrl = normalizeMediaUrl(item.mediaUrl);
@@ -582,23 +693,23 @@ export default function TaskChatScreen() {
                 }}
               />
             </TouchableOpacity>
-            {item.content && item.content !== 'Photo' && (
+            {messageContent && messageContent !== 'Photo' && (
               <Text style={[styles.messageText, isMine && styles.myMessageText, { marginTop: 8 }]}>
-                {item.content}
+                {messageContent}
               </Text>
             )}
           </View>
         ) : item.messageType === 'file' && item.mediaUrl ? (
           <TouchableOpacity
             style={styles.fileMessage}
-            onPress={() => handleFileDownload(normalizedMediaUrl, item.content || 'File')}
+            onPress={() => handleFileDownload(normalizedMediaUrl, messageContent || 'File')}
           >
             <MaterialIcons name="insert-drive-file" size={24} color="#007bff" />
-            <Text style={styles.fileName}>{item.content || 'File'}</Text>
+            <Text style={styles.fileName}>{messageContent || 'File'}</Text>
           </TouchableOpacity>
         ) : (
           <Text style={[styles.messageText, isMine && styles.myMessageText]}>
-            {item.content || '[Empty message]'}
+            {messageContent || '[Empty message]'}
           </Text>
         )}
         <Text style={[styles.messageTime, isMine && styles.myMessageTime]}>
@@ -611,10 +722,10 @@ export default function TaskChatScreen() {
     );
   };
 
-  if (chatLoading || createChatMutation.isPending) {
+  if ((chatLoading && normalizedChatIdParam && !chat) || (createChatMutation.isPending && !normalizedChatIdParam)) {
     return (
       <GestureHandlerRootView style={styles.container}>
-        <View style={[styles.headerSafeArea, { paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 20) : 0 }]}>
+        <View style={[styles.headerSafeArea, { paddingTop: headerTopPadding }]}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
               <MaterialIcons name="arrow-back" size={24} color="#000" />
@@ -644,7 +755,7 @@ export default function TaskChatScreen() {
             keyboardVerticalOffset={0}
           >
             {/* Header with safe area */}
-            <View style={[styles.headerSafeArea, { paddingTop: Platform.OS === 'ios' ? Math.max(insets.top, 20) : 0 }]}>
+            <View style={[styles.headerSafeArea, { paddingTop: headerTopPadding }]}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
               <MaterialIcons name="arrow-back" size={24} color="#000" />
@@ -675,7 +786,7 @@ export default function TaskChatScreen() {
             </View>
           ) : (
             <Text style={styles.headerTitle} numberOfLines={1}>
-              {taskTitle || 'Chat'}
+              {normalizedTaskTitle || 'Chat'}
             </Text>
           )}
           </View>
@@ -818,7 +929,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   headerSafeArea: {
@@ -837,6 +948,10 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
     marginRight: 4,
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerInfo: {
     flex: 1,
@@ -860,20 +975,20 @@ const styles = StyleSheet.create({
   },
   headerAvatarInitials: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   headerTextContainer: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
     flexShrink: 1,
   },
   headerStatus: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#34C759',
     marginTop: 2,
   },
@@ -889,7 +1004,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   loadingHeaderText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   messagesLoadingContainer: {
@@ -900,7 +1015,7 @@ const styles = StyleSheet.create({
   },
   messagesLoadingText: {
     marginTop: 16,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   messageContainer: {
@@ -920,14 +1035,14 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
   },
   messageText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#333',
   },
   myMessageText: {
     color: '#fff',
   },
   messageTime: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#666',
     marginTop: 4,
   },
@@ -946,7 +1061,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   fileName: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#007bff',
     textDecorationLine: 'underline',
   },
@@ -956,13 +1071,13 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#999',
     marginTop: 12,
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#ccc',
     marginTop: 4,
   },
@@ -988,7 +1103,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: RFValue(16),
     marginRight: 8,
   },
   sendButton: {
@@ -1022,7 +1137,7 @@ const styles = StyleSheet.create({
   },
   uploadOverlayText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
   },

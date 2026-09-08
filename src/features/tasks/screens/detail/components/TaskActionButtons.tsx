@@ -1,3 +1,4 @@
+import TaskAPI from '@/src/api/task-api';
 import { ChatWindow } from '@/src/features/messages/components/ChatWindow';
 import type { Message } from '@/src/features/messages/components/message-types';
 import { formatUserName } from '@/src/utils/formatUserName';
@@ -16,6 +17,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TaskActionButtonsProps {
   task: any;
@@ -35,6 +37,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedCancelReason, setSelectedCancelReason] = useState<number | null>(null);
+  const [successToast, setSuccessToast] = useState<string | null>(null);
   
   // Chat modal state
   const [showChatModal, setShowChatModal] = useState(false);
@@ -221,11 +224,13 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
         onTaskCompleted();
       }
       
-      Alert.alert(
-        'Task Completed',
-        'The task has been marked as completed. The poster will now release the payment.',
-        [{ text: 'OK', onPress: () => router.back() }]
+      setSuccessToast(
+        'The poster has been informed the task has been completed and to release payment.'
       );
+      setTimeout(() => {
+        setSuccessToast(null);
+        router.back();
+      }, 3000);
       
     } catch (error: any) {
       console.error('❌ Error marking task as completed:', error);
@@ -344,12 +349,12 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
     }
 
     Alert.alert(
-      'Confirm Task Completion',
-      'Are you sure you want to confirm the task is complete? This will release the payment to the tasker.',
+      'Release Payment',
+      'Are you sure you want to release payment? This confirms the task is complete and pays the tasker.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Confirm',
+          text: 'Release Payment',
           style: 'default',
           onPress: async () => {
             try {
@@ -378,12 +383,16 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
               if (onTaskCompleted) {
                 onTaskCompleted();
               }
-              
-              Alert.alert(
-                'Task Completion Confirmed! 🎉',
-                result?.message || 'Task completion confirmed. Payment has been released to the tasker.',
-                [{ text: 'OK', onPress: () => router.back() }]
-              );
+
+              router.replace({
+                pathname: '/(tabs)/my-tasks',
+                params: {
+                  role: 'Poster',
+                  tab: 'completed',
+                  promptReviewTaskId: task._id,
+                },
+              } as any);
+              return;
               
             } catch (error: any) {
               console.error('❌ Error confirming task completion:', error);
@@ -424,6 +433,11 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
 
   return (
     <View style={styles.container}>
+      {successToast ? (
+        <View style={styles.successToast} pointerEvents="none">
+          <Text style={styles.successToastText}>{successToast}</Text>
+        </View>
+      ) : null}
       <View style={styles.buttonRow}>
         {/* Chat Button */}
         <TouchableOpacity 
@@ -434,7 +448,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
           <MaterialIcons name="chat" size={20} color="#007bff" />
         </TouchableOpacity>
 
-        {/* Confirm Completion Button - ONLY show for POSTER when task is pending_completion */}
+        {/* Release Payment Button - ONLY show for POSTER when task is pending_completion */}
         {isTaskCreator && task?.status === 'pending_completion' && (
           <TouchableOpacity 
             style={[
@@ -448,10 +462,10 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
             {(isProcessing || confirmTaskCompletionMutation.isPending) ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-                <Text style={styles.confirmCompletionButtonText}>Confirming...</Text>
+                <Text style={styles.confirmCompletionButtonText}>Releasing...</Text>
               </View>
             ) : (
-              <Text style={styles.confirmCompletionButtonText}>Confirm Completion</Text>
+              <Text style={styles.confirmCompletionButtonText}>Release Payment</Text>
             )}
           </TouchableOpacity>
         )}
@@ -595,6 +609,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
+  successToast: {
+    marginBottom: 10,
+    backgroundColor: 'rgba(33, 33, 33, 0.92)',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  successToastText: {
+    color: '#fff',
+    fontSize: RFValue(13),
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: RFValue(18),
+  },
   buttonRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -632,7 +660,7 @@ const styles = StyleSheet.create({
   },
   completedButtonText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
   },
   confirmCompletionButton: {
@@ -650,7 +678,7 @@ const styles = StyleSheet.create({
   },
   confirmCompletionButtonText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
   },
   cancelButton: {
@@ -687,14 +715,14 @@ const styles = StyleSheet.create({
     maxHeight: '80%',
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
     textAlign: 'center',
   },
   modalSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginBottom: 20,
     textAlign: 'center',
@@ -738,7 +766,7 @@ const styles = StyleSheet.create({
   },
   reasonText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
   },
   reasonTextSelected: {
@@ -767,12 +795,12 @@ const styles = StyleSheet.create({
   },
   modalButtonTextCancel: {
     color: '#333',
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
   },
   modalButtonTextConfirm: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
   },
 });

@@ -1,4 +1,5 @@
 import { Task } from '@/src/api/types/tasks';
+import TaskAPI from '@/src/api/task-api';
 import { ChatWindow } from '@/src/features/messages/components/ChatWindow';
 import { formatUserName, formatAvatarName } from '@/src/utils/formatUserName';
 import type { Message } from '@/src/features/messages/components/message-types';
@@ -22,15 +23,34 @@ import {
 } from '@/src/shared/hooks/useTaskApi';
 import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
 import { formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
+import { resolveTaskBudget } from '@/src/shared/utils/resolveTaskBudget';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // Responsive utilities
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+
+const REVIEW_PROMPT_STORAGE_PREFIX = '@mytodoo/review_prompt_shown_';
+const RECENT_COMPLETION_WINDOW_MS = 15 * 60 * 1000;
+
+const getReviewPromptStorageKey = (taskId: string, userId: string) =>
+  `${REVIEW_PROMPT_STORAGE_PREFIX}${taskId}_${userId}`;
+
+const isRecentlyCompletedTask = (task: Task): boolean => {
+  const timestamp =
+    (task as any).completedAt ||
+    (task as any).doneAt ||
+    (task as any).updatedAt;
+  if (!timestamp) return false;
+  const completedTime = new Date(timestamp).getTime();
+  if (Number.isNaN(completedTime)) return false;
+  return Date.now() - completedTime <= RECENT_COMPLETION_WINDOW_MS;
+};
 
 interface TaskCardProps {
   task: Task;
@@ -42,9 +62,10 @@ interface TaskCardProps {
   onTaskCompleted?: (taskId: string) => void;
   myOffer?: any; // The current user's offer on this task (for Tasker Open Tasks)
   onOfferDeleted?: (offerId: string) => void;
+  autoPromptReview?: boolean;
 }
 
-export default function TaskCard({ task, onPress, status, userRole, onTaskCancelled, onTaskDeleted, onTaskCompleted, myOffer, onOfferDeleted }: TaskCardProps) {
+export default function TaskCard({ task, onPress, status, userRole, onTaskCancelled, onTaskDeleted, onTaskCompleted, myOffer, onOfferDeleted, autoPromptReview = false }: TaskCardProps) {
   const router = useRouter();
   
   // Get current user from auth store
@@ -131,6 +152,101 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const isCompletedTask = status === 'completed';
   const { data: canReviewData } = useCheckCanReview(task._id, isCompletedTask);
   const hasAlreadyReviewed = isCompletedTask && canReviewData?.data?.canReview === false;
+  const reviewPromptHandledRef = useRef(false);
+
+  const markReviewPromptShown = useCallback(async () => {
+    const userId = currentUser?._id || currentUser?.id;
+    if (!userId) return;
+    await AsyncStorage.setItem(getReviewPromptStorageKey(task._id, userId), '1');
+  }, [currentUser, task._id]);
+
+  const openReviewModalIfEligible = useCallback(async () => {
+    try {
+      const result = await TaskAPI.checkCanReview(task._id);
+      if (result?.data?.canReview) {
+        await markReviewPromptShown();
+        setShowRatingModal(true);
+        return true;
+      }
+    } catch (error) {
+      console.log('⚠️ Could not verify review eligibility:', error);
+    }
+    return false;
+  }, [markReviewPromptShown, task._id]);
+
+  // Tasker: auto-prompt once when payment was recently released (task just completed)
+  useEffect(() => {
+    if (reviewPromptHandledRef.current) return;
+    if (!isCompletedTask || userRole !== 'Tasker' || hasAlreadyReviewed || showRatingModal) return;
+    if (canReviewData?.data?.canReview !== true) return;
+    if (!isRecentlyCompletedTask(task)) return;
+
+    let cancelled = false;
+    (async () => {
+      const userId = currentUser?._id || currentUser?.id;
+      if (!userId) return;
+      const storageKey = getReviewPromptStorageKey(task._id, userId);
+      const alreadyPrompted = await AsyncStorage.getItem(storageKey);
+      if (cancelled || alreadyPrompted === '1' || reviewPromptHandledRef.current) return;
+
+      reviewPromptHandledRef.current = true;
+      await markReviewPromptShown();
+      setShowRatingModal(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    isCompletedTask,
+    userRole,
+    hasAlreadyReviewed,
+    showRatingModal,
+    canReviewData?.data?.canReview,
+    task,
+    currentUser,
+    markReviewPromptShown,
+  ]);
+
+  // Poster navigated from task detail after payment release
+  useEffect(() => {
+    if (!autoPromptReview || reviewPromptHandledRef.current) return;
+    if (!isCompletedTask || userRole !== 'Poster' || hasAlreadyReviewed || showRatingModal) return;
+
+    let cancelled = false;
+
+    const attemptPrompt = async () => {
+      for (let attempt = 0; attempt < 6; attempt += 1) {
+        if (cancelled || reviewPromptHandledRef.current) return;
+
+        const opened = await openReviewModalIfEligible();
+        if (opened) {
+          reviewPromptHandledRef.current = true;
+          return;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 700));
+      }
+    };
+
+    const timer = setTimeout(() => {
+      attemptPrompt();
+    }, 1200);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [
+    autoPromptReview,
+    isCompletedTask,
+    userRole,
+    hasAlreadyReviewed,
+    showRatingModal,
+    canReviewData?.data?.canReview,
+    markReviewPromptShown,
+    openReviewModalIfEligible,
+  ]);
   
   // Check if there's a pending cancellation request for this task (only for assigned/accepted/completed/cancelled tasks)
   const isPostPaymentTask = status === 'accepted' || status === 'assigned' || status === 'completed' || status === 'todo';
@@ -400,17 +516,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       
       console.log('✅ Task marked as completed successfully');
       
-      // Notify parent component to refresh and move to Completed tab
+      // Notify parent: show auto-dismiss toast + refresh list
       if (onTaskCompleted) {
         onTaskCompleted(task._id);
       }
-      
-      // Show success message to Tasker
-      Alert.alert(
-        'Task Completed',
-        'The task has been marked as completed. The poster will now release the payment.',
-        [{ text: 'OK' }]
-      );
       
     } catch (error: any) {
       console.error('❌ Error marking task as completed:', error);
@@ -462,12 +571,12 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     }
 
     Alert.alert(
-      'Accept Task Completion',
-      'Are you sure you want to accept the completion of this task? This will release the payment to the tasker.',
+      'Release Payment',
+      'Are you sure you want to release payment? This confirms the task is complete and pays the tasker.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Accept',
+          text: 'Release Payment',
           style: 'default',
           onPress: async () => {
             try {
@@ -480,24 +589,28 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 onTaskCompleted(task._id);
               }
 
-              Alert.alert(
-                'Task Completed! 🎉',
-                'You have accepted the task completion. Payment has been released to the tasker.',
-                [{ text: 'OK' }]
-              );
+              router.replace({
+                pathname: '/(tabs)/my-tasks',
+                params: {
+                  role: 'Poster',
+                  tab: 'completed',
+                  promptReviewTaskId: task._id,
+                },
+              } as any);
+              return;
             } catch (error: any) {
               console.error('❌ Error confirming task completion:', error);
-              let errorMessage = 'Failed to confirm task completion. Please try again.';
+              let errorMessage = 'Failed to release payment. Please try again.';
               if (error?.response?.data?.message || error?.response?.data?.error) {
                 errorMessage = error.response.data.message || error.response.data.error;
               } else if (error?.response?.status === 403) {
-                errorMessage = 'Only the task poster can confirm completion.';
+                errorMessage = 'Only the task poster can release payment.';
               } else if (error?.response?.status === 404) {
                 errorMessage = 'Task not found or not pending completion.';
               } else if (error?.message) {
                 errorMessage = error.message;
               }
-              Alert.alert('Confirmation Failed', errorMessage, [{ text: 'OK' }]);
+              Alert.alert('Release Failed', errorMessage, [{ text: 'OK' }]);
             } finally {
               setIsProcessing(false);
             }
@@ -505,7 +618,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         },
       ]
     );
-  }, [task, confirmTaskCompletionMutation, onTaskCompleted, isProcessing, isValidMongoId]);
+  }, [task, confirmTaskCompletionMutation, onTaskCompleted, isProcessing, isValidMongoId, router]);
 
   const handleCancelTask = useCallback(() => {
     console.log('🔥 Cancel button touched!'); // Debug log
@@ -1248,7 +1361,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   // Get task's original currency - DO NOT convert to user's location currency
   // Tasks should display in their original posted currency (LKR, AUD, etc.)
-  const resolvedBudget = task.budget || task.taskBudget || (task as any).price || 0;
+  const resolvedBudget = resolveTaskBudget(task) || (task as any).price || 0;
   const resolvedCurrency = task.currency || task.taskCurrency || (task as any).currencyCode || 'AUD';
   const formattedBudgetDisplay = task.formattedBudget ||
     task.formattedTaskBudget ||
@@ -1664,8 +1777,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         ) : status === 'accepted' ? (
           // Accepted Offers tab: 
           // - For TASKER (assigned to task): Show Chat + Mark as Completed + Cancel
-          // - For POSTER (task creator): Show Chat + (Accept Completion if pending_completion) + Cancel
-          // Only the TASKER can mark task as complete; only the POSTER can confirm/accept completion
+          // - For POSTER (task creator): Show Chat + (Release Payment if pending_completion) + Cancel
+          // Only the TASKER can mark task as complete; only the POSTER can release payment
           <>
             {/* Chat only available when task is in assigned (Todo) status */}
             {task.status === 'assigned' && (
@@ -1720,7 +1833,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               )
             )}
 
-            {/* Poster: Accept Completion button - only when tasker has marked task as pending_completion */}
+            {/* Poster: Release Payment button - only when tasker has marked task as pending_completion */}
             {userRole === 'Poster' && task.status === 'pending_completion' && (
               <TouchableOpacity
                 style={[
@@ -1728,7 +1841,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                   (isProcessing || confirmTaskCompletionMutation.isPending) && styles.disabledButton
                 ]}
                 onPress={() => {
-                  console.log('🔥 Accept Completion button touched!');
+                  console.log('🔥 Release Payment button touched!');
                   if (!isProcessing && !confirmTaskCompletionMutation.isPending) {
                     handleConfirmCompletion();
                   }
@@ -1740,10 +1853,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 {(isProcessing || confirmTaskCompletionMutation.isPending) ? (
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-                    <Text style={styles.acceptCompletionButtonText}>Accepting...</Text>
+                    <Text style={styles.acceptCompletionButtonText}>Releasing...</Text>
                   </View>
                 ) : (
-                  <Text style={styles.acceptCompletionButtonText}>Accept Completion</Text>
+                  <Text style={styles.acceptCompletionButtonText}>Release Payment</Text>
                 )}
               </TouchableOpacity>
             )}
@@ -1770,6 +1883,53 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                   size={20} 
                   color={isProcessing ? "#999" : "#fff"} 
                 />
+              </TouchableOpacity>
+            )}
+          </>
+        ) : status === 'pending_payment' ? (
+          // Pending Payments (Tasker) / Release Payment (Poster)
+          <>
+            {(task.status === 'assigned' || task.status === 'todo' || task.status === 'pending_completion') && (
+              <TouchableOpacity
+                style={[styles.chatButton]}
+                onPress={handleOpenChat}
+                activeOpacity={0.7}
+                delayPressIn={0}
+              >
+                <MaterialIcons name="chat" size={20} color="#007bff" />
+              </TouchableOpacity>
+            )}
+
+            {userRole === 'Tasker' && (
+              <View style={styles.pendingCompletionBadge}>
+                <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#f39c12" />
+                <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to release payment</Text>
+              </View>
+            )}
+
+            {userRole === 'Poster' && task.status === 'pending_completion' && (
+              <TouchableOpacity
+                style={[
+                  styles.acceptCompletionButton,
+                  (isProcessing || confirmTaskCompletionMutation.isPending) && styles.disabledButton
+                ]}
+                onPress={() => {
+                  if (!isProcessing && !confirmTaskCompletionMutation.isPending) {
+                    handleConfirmCompletion();
+                  }
+                }}
+                activeOpacity={0.7}
+                delayPressIn={0}
+                disabled={isProcessing || confirmTaskCompletionMutation.isPending}
+              >
+                {(isProcessing || confirmTaskCompletionMutation.isPending) ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={styles.acceptCompletionButtonText}>Releasing...</Text>
+                  </View>
+                ) : (
+                  <Text style={styles.acceptCompletionButtonText}>Release Payment</Text>
+                )}
               </TouchableOpacity>
             )}
           </>

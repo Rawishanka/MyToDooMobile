@@ -26,17 +26,19 @@ import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { useAuthStore } from '@/src/store/auth-task-store';
 
 // Responsive utilities
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { hp, isTablet, RFValue, TAB_BAR_CLEARANCE, wp } from '@/src/shared/utils/responsive';
 
 interface TabScreenProps {
   tasks: Task[];
   isLoading: boolean;
   onRefresh: () => void;
   offersMap?: Map<string, any>;
+  promptReviewTaskId?: string;
+  onTaskMarkedComplete?: (taskId: string) => void;
 }
 
 // Tab screen components
-const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string }> = React.memo(({ tasks, isLoading, onRefresh, status, userRole, offersMap }) => {
+const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string }> = React.memo(({ tasks, isLoading, onRefresh, status, userRole, offersMap, promptReviewTaskId, onTaskMarkedComplete }) => {
   
   const getEmptyMessage = () => {
     switch (status) {
@@ -46,6 +48,10 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
         return 'No tasks assigned to you';
       case 'accepted':
         return 'No accepted offers yet';
+      case 'pending_payment':
+        return userRole === 'Poster'
+          ? 'No payments waiting to be released'
+          : 'No pending payments';
       case 'completed':
         return 'No completed tasks yet';
       case 'overdue':
@@ -76,6 +82,12 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
     onRefresh();
   }, [onRefresh]);
 
+  const handleTaskCompleted = useCallback((taskId: string) => {
+    console.log('✅ Task marked complete:', taskId);
+    onTaskMarkedComplete?.(taskId);
+    onRefresh();
+  }, [onRefresh, onTaskMarkedComplete]);
+
   // FIX: Don't show empty state while loading - prevents layout shifts
   if (isLoading && tasks.length === 0) {
     return (
@@ -96,6 +108,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             status={status}
             userRole={userRole}
             myOffer={offersMap?.get(item._id)}
+            autoPromptReview={promptReviewTaskId === item._id}
             onPress={status === 'completed' ? undefined : (taskId: string) => {
               console.log('👁️ Navigating to task-detail with taskId:', taskId);
               console.log('   Task data:', item);
@@ -112,6 +125,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             }}
             onTaskCancelled={handleTaskCancelled}
             onTaskDeleted={handleTaskDeleted}
+            onTaskCompleted={handleTaskCompleted}
             onOfferDeleted={handleOfferDeleted}
           />
         )}
@@ -149,12 +163,15 @@ interface TopTabDef {
   offersMap?: Map<string, any>;
 }
 
-function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffersMap }: {
+function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffersMap, promptReviewTaskId, initialTabKey, onTaskMarkedComplete }: {
   userRole: string;
   categorizedData: any;
   isLoading: boolean;
   onRefresh: () => void;
   myOffersMap?: Map<string, any>;
+  promptReviewTaskId?: string;
+  initialTabKey?: string;
+  onTaskMarkedComplete?: (taskId: string) => void;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
@@ -167,6 +184,7 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
       return [
         { key: 'open', label: 'Open Offers', status: 'open', tasks: categorizedData.openTasks, offersMap: myOffersMap },
         { key: 'todoo', label: 'Todoo Tasks', status: 'assigned', tasks: categorizedData.todoTasks },
+        { key: 'pending_payment', label: 'Pending Payments', status: 'pending_payment', tasks: categorizedData.pendingPaymentTasks },
         { key: 'completed', label: 'Completed', status: 'completed', tasks: categorizedData.completedTasks },
         { key: 'overdue', label: 'Overdue', status: 'overdue', tasks: categorizedData.overdueTasks },
         { key: 'cancelled', label: 'Cancelled', status: 'cancelled', tasks: categorizedData.cancelledTasks },
@@ -175,6 +193,7 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
     return [
       { key: 'posted', label: 'Posted', tasks: categorizedData.postedTasks },
       { key: 'accepted', label: 'Accepted', status: 'accepted', tasks: categorizedData.acceptedTasks },
+      { key: 'pending_payment', label: 'Release Payment', status: 'pending_payment', tasks: categorizedData.pendingPaymentTasks },
       { key: 'completed', label: 'Completed', status: 'completed', tasks: categorizedData.completedTasks },
       { key: 'overdue', label: 'Overdue', status: 'overdue', tasks: categorizedData.overdueTasks },
       { key: 'cancelled', label: 'Cancelled', status: 'cancelled', tasks: categorizedData.cancelledTasks },
@@ -182,6 +201,22 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
   }, [userRole, categorizedData, myOffersMap]);
 
   const activeTab = tabs[activeIndex] || tabs[0];
+
+  useEffect(() => {
+    if (!promptReviewTaskId) return;
+    const completedIndex = tabs.findIndex((tab) => tab.key === 'completed');
+    if (completedIndex >= 0) {
+      setActiveIndex(completedIndex);
+    }
+  }, [promptReviewTaskId, tabs]);
+
+  useEffect(() => {
+    if (!initialTabKey) return;
+    const tabIndex = tabs.findIndex((tab) => tab.key === initialTabKey);
+    if (tabIndex >= 0) {
+      setActiveIndex(tabIndex);
+    }
+  }, [initialTabKey, tabs]);
 
   return (
     <>
@@ -215,6 +250,8 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
         status={activeTab.status}
         userRole={userRole}
         offersMap={activeTab.offersMap}
+        promptReviewTaskId={promptReviewTaskId}
+        onTaskMarkedComplete={onTaskMarkedComplete}
       />
     </>
   );
@@ -228,13 +265,17 @@ const topTabStyles = StyleSheet.create({
   },
   tabBarContent: {
     flexDirection: 'row',
-    paddingHorizontal: 4,
+    paddingHorizontal: isTablet ? 0 : 4,
+    flexGrow: 1,
+    justifyContent: isTablet ? 'space-around' : 'flex-start',
   },
   tabItem: {
-    paddingHorizontal: isTablet ? wp('3%') : 14,
+    paddingHorizontal: isTablet ? wp('2%') : 14,
     paddingVertical: isTablet ? 14 : 10,
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
+    flex: isTablet ? 1 : undefined,
+    alignItems: isTablet ? 'center' : undefined,
   },
   tabItemActive: {
     borderBottomColor: '#007AFF',
@@ -257,26 +298,39 @@ export default function MyTasksScreen() {
   const [isRoleSwitching, setIsRoleSwitching] = useState(false); // FIX: Track role switching
   const [showNetworkAlert, setShowNetworkAlert] = useState(false);
   const [networkAlertMessage, setNetworkAlertMessage] = useState('');
+  const [completionToast, setCompletionToast] = useState<string | null>(null);
+  const completionToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Network status monitoring
   const { isConnected } = useNetworkStatus();
+  const prevConnectedRef = useRef(true);
+  useEffect(() => {
+    if (prevConnectedRef.current && !isConnected) {
+      setNetworkAlertMessage('No internet connection. Please check your Wi-Fi or mobile data.');
+      setShowNetworkAlert(true);
+    }
+    prevConnectedRef.current = isConnected;
+  }, [isConnected]);
   
   // Get current user from auth store
   const currentUser = useAuthStore((state) => state.user);
   const currentUserId = currentUser?.id || currentUser?._id;
   
   // Get navigation params
-  const params = useLocalSearchParams<{ role?: string; tab?: string }>();
+  const params = useLocalSearchParams<{ role?: string; tab?: string; promptReviewTaskId?: string }>();
+  const promptReviewTaskId = typeof params.promptReviewTaskId === 'string'
+    ? params.promptReviewTaskId
+    : undefined;
+  const initialTabKey = typeof params.tab === 'string' ? params.tab : undefined;
 
   // Set initial role and tab based on navigation params
   useEffect(() => {
     if (params.role === 'Poster') {
       console.log('🎯 Setting userRole to Poster from navigation params');
       setUserRole('Poster');
-    }
-    if (params.tab) {
-      console.log('🎯 Navigation requested tab:', params.tab);
-      // The tab will be handled by the Tab.Navigator's initialRouteName if needed
+    } else if (params.role === 'Tasker') {
+      console.log('🎯 Setting userRole to Tasker from navigation params');
+      setUserRole('Tasker');
     }
   }, [params.role, params.tab]);
 
@@ -291,6 +345,27 @@ export default function MyTasksScreen() {
   // FIX: Log when screen mounts to verify layout is ready
   useEffect(() => {
     console.log('✅ My Tasks screen mounted and ready for interaction');
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (completionToastTimerRef.current) {
+        clearTimeout(completionToastTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleTaskMarkedComplete = useCallback((_taskId: string) => {
+    if (completionToastTimerRef.current) {
+      clearTimeout(completionToastTimerRef.current);
+    }
+    setCompletionToast(
+      'The poster has been informed the task has been completed and to release payment.'
+    );
+    completionToastTimerRef.current = setTimeout(() => {
+      setCompletionToast(null);
+      completionToastTimerRef.current = null;
+    }, 3000);
   }, []);
 
   // Get merged notification count (local AsyncStorage + backend API)
@@ -486,88 +561,74 @@ export default function MyTasksScreen() {
     // For Tasker role - show available tasks and their offer status
     if (userRole === 'Tasker') {
 
-const openTasksFiltered = allTasks.filter((task: Task) => {
-  // Must be open/active - tasks available for bidding
-  const isOpenStatus = task.status === 'open' || task.status === 'active';
-  
-  // Must NOT be created by current user (can't bid on own tasks)
-  const isNotMyTask = currentUserId ? task.createdBy?._id !== currentUserId : true;
-  
-  // Check if user has made an offer on this task
-  const myOffer = myOffersMap.get(task._id);
-  const hasMyOffer = !!myOffer;
-  
-  // For Open Tasks: Only show tasks where user has made an offer AND offer is still pending
-  const isOfferPending = myOffer?.status === 'pending';
-  
-  // Debug logging for filtering
-  const shouldInclude = isOpenStatus && isNotMyTask && hasMyOffer && isOfferPending;
-  if (allTasks.length <= 10) { // Only log for small datasets to avoid spam
-    console.log('🔍 Tasker Open Tasks Filter:', {
-      taskId: task._id,
-      title: task.title,
-      status: task.status,
-      createdBy: task.createdBy?._id,
-      currentUserId,
-      isOpenStatus,
-      isNotMyTask,
-      hasMyOffer,
-      offerStatus: myOffer?.status,
-      isOfferPending,
-      shouldInclude,
-      reason: shouldInclude ? 'INCLUDED: Open task with pending offer' :
-             !isOpenStatus ? 'EXCLUDED: Task not open' :
-             !isNotMyTask ? 'EXCLUDED: User created this task' :
-             !hasMyOffer ? 'EXCLUDED: No offer made on this task' :
-             !isOfferPending ? `EXCLUDED: Offer status is ${myOffer?.status}` :
-             'EXCLUDED: Unknown reason'
-    });
-  }
-  
-  // For Tasker Open Tasks: Show ONLY open tasks where user has made a PENDING offer
-  return shouldInclude;
-});
+      // ─── BUILD OPEN OFFERS FROM myOffers DIRECTLY ───────────────────────
+      // Primary source: myOffers from /api/tasks/my-offers
+      // Each offer has the task data populated in offer.taskId (object) or as an ID
+      // We build the open offers list from myOffers, NOT from allTasks filter.
+      // This ensures tasks show up even if allTasks pagination missed them.
+      const pendingOfferStatuses = ['pending', 'payment_pending', 'payment_failed'];
 
-      // Sort Open Tasks by offer creation date (newest offers first)
-      // This ensures newly made offers appear at the top
-      const sortedOpenTasks = [...openTasksFiltered].sort((a: Task, b: Task) => {
+      const openTasksFromOffers: Task[] = myOffers
+        .filter((offer: any) => pendingOfferStatuses.includes(offer.status))
+        .map((offer: any) => {
+          // Try to get task data from populated taskId first
+          let taskData: Task | undefined;
+          if (offer.taskId && typeof offer.taskId === 'object' && offer.taskId._id) {
+            // taskId is populated as object - but may be sparse
+            // Prefer allTasks version (more complete) if available
+            const tId = offer.taskId._id;
+            const fullTask = allTasks.find((t: Task) => t._id === tId);
+            taskData = fullTask || (offer.taskId as Task);
+          } else {
+            // taskId is a plain string - look it up in allTasks
+            const tId = typeof offer.taskId === 'string' ? offer.taskId : String(offer.taskId);
+            taskData = allTasks.find((t: Task) => t._id === tId);
+          }
+          return taskData || null;
+        })
+        .filter((t: Task | null): t is Task => {
+          if (!t) return false;
+          // Exclude tasks created by current user
+          const isNotMyTask = currentUserId ? t.createdBy?._id !== currentUserId : true;
+          return isNotMyTask;
+        });
+
+      // Deduplicate by task ID (in case same task appears in multiple offers)
+      const seenIds = new Set<string>();
+      const deduped: Task[] = [];
+      for (const t of openTasksFromOffers) {
+        if (!seenIds.has(t._id)) {
+          seenIds.add(t._id);
+          deduped.push(t);
+        }
+      }
+
+      // Sort by offer creation date (newest first)
+      const sortedOpenTasks = deduped.sort((a: Task, b: Task) => {
         const offerA = myOffersMap.get(a._id);
         const offerB = myOffersMap.get(b._id);
-        
-        // Get offer creation dates
         const dateA = offerA?.createdAt ? new Date(offerA.createdAt).getTime() : 0;
         const dateB = offerB?.createdAt ? new Date(offerB.createdAt).getTime() : 0;
-        
-        // Sort descending (newest offers first)
         return dateB - dateA;
       });
-      
-      // Apply search filter after sorting
+
+      // Apply search filter
       const openTasks = filterBySearch(sortedOpenTasks);
 
-      // Debug log the final result for Tasker Open Tasks
-      console.log('🎯 Tasker Open Tasks Final Result:', {
-        totalSystemTasks: allTasks.length,
-        myOffersCount: myOffers.length,
-        pendingOffersCount: myOffers.filter((o: any) => o.status === 'pending').length,
-        filteredOpenTasks: openTasksFiltered.length,
-        sortedOpenTasks: sortedOpenTasks.length,
+      console.log('🎯 Tasker Open Tasks (from myOffers):', {
+        totalMyOffers: myOffers.length,
+        pendingOffers: myOffers.filter((o: any) => pendingOfferStatuses.includes(o.status)).length,
+        resolvedTasks: openTasksFromOffers.length,
+        deduped: deduped.length,
         finalOpenTasks: openTasks.length,
-        currentUserId,
-        sortOrder: 'By offer createdAt (newest first)',
-        taskSample: openTasks.slice(0, 3).map(t => {
-          const offer = myOffersMap.get(t._id);
-          return {
-            id: t._id,
-            title: t.title,
-            status: t.status,
-            createdBy: t.createdBy?._id,
-            offerStatus: offer?.status,
-            offerAmount: offer?.offer?.amount,
-            offerCreatedAt: offer?.createdAt,
-            taskCreatedAt: t.createdAt
-          };
-        })
+        isLoadingMyOffers,
+        sampleOffers: myOffers.slice(0, 3).map((o: any) => ({
+          offerId: o._id,
+          offerStatus: o.status,
+          taskIdType: typeof o.taskId,
+          taskId: typeof o.taskId === 'object' ? o.taskId?._id : o.taskId,
+          taskTitle: typeof o.taskId === 'object' ? o.taskId?.title : 'not populated'
+        }))
       });
 
       
@@ -608,12 +669,13 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
           return false; // Overdue tasks should go to Overdue tab, not Todoo tab
         }
         
-        // Exclude completed, cancelled, and open tasks
+        // Exclude completed, cancelled, open, and pending_completion (Pending Payments tab)
         // BUT INCLUDE tasks with pending cancellation requests (cancel_request_by_poster)
         // so tasker can see and respond to the cancellation request
         const isExcluded = task.status === 'completed' || 
                           task.status === 'cancelled' || 
-                          task.status === 'open';
+                          task.status === 'open' ||
+                          task.status === 'pending_completion';
         
         // IMPORTANT: Tasks with status 'cancel_request_by_poster' should show in Todoo
         // so tasker can accept/reject the poster's cancellation request
@@ -637,6 +699,7 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
                    'INCLUDED: Task assigned and active' : 
                    taskIsOverdue ? 'EXCLUDED: Task is overdue (moved to Overdue tab)' :
                    !isAssignedToMe ? 'EXCLUDED: Not assigned to current user' :
+                   task.status === 'pending_completion' ? 'EXCLUDED: Pending payment (Pending Payments tab)' :
                    'EXCLUDED: Task completed/cancelled/open'
           });
         }
@@ -645,6 +708,14 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       });
       
       const todoTasks = sortByCreatedDate(filterBySearch(todoTasksFiltered));
+
+      // Pending Payments: tasks marked complete by tasker awaiting poster release
+      const pendingPaymentTasks = sortByCreatedDate(filterBySearch(
+        taskerAssignedTasks.filter((task: Task) => {
+          const isAssignedToMe = (task as any).userRole === 'assignee';
+          return isAssignedToMe && task.status === 'pending_completion';
+        })
+      ));
       
       console.log('✅ Tasker Todoo Tasks Result:', {
         totalAssignedTasks: taskerAssignedTasks.length,
@@ -652,6 +723,7 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
           t.status === 'todo' || t.status === 'assigned' || t.status === 'in_progress'
         ).length,
         completedTasks: taskerAssignedTasks.filter((t: Task) => t.status === 'completed').length,
+        pendingPaymentTasks: pendingPaymentTasks.length,
         filteredTodoTasks: todoTasksFiltered.length,
         finalTodoTasks: todoTasks.length,
         taskSample: todoTasks.slice(0, 2).map(t => ({
@@ -767,6 +839,7 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
       return {
         openTasks,
         todoTasks,
+        pendingPaymentTasks,
         completedTasks,
         overdueTasks,
         cancelledTasks: finalCancelledTasks,
@@ -881,37 +954,40 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
     // For Poster's Accepted tab - tasks they created that have been accepted/assigned
     // After payment, task status changes to 'assigned', 'in_progress', 'todo', or 'accepted'
     // These tasks should show in the Accepted tab until work is completed
+    // pending_completion moves to Release Payment tab
     // NOTE: Tasks with pending cancellation requests keep their original status until approved
     // Only when cancellation is ACCEPTED does status change to 'cancelled' (moves to Cancelled tab)
     const acceptedTasks = sortByCreatedDate(
       filterBySearch(
         allTasks.filter((task: Task) => {
-          // Check if task is in a post-acceptance state
-          // Include ALL post-payment statuses to ensure tasks don't disappear
-          const isAcceptedStatus = task.status === 'assigned' || 
-                                  task.status === 'in_progress' || 
-                                  task.status === 'todo' ||
-                                  task.status === 'accepted' ||
-                                  task.status === 'pending_cancellation' || // Backend might add this
-                                  task.status === 'awaiting_cancellation'; // Backend might add this
-          
           // Must be created by current user (Poster)
           const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
           
-          // CRITICAL: Exclude only completed, cancelled, and overdue tasks
-          // Everything else should stay in Accepted tab
+          // CRITICAL: Exclude completed, cancelled, overdue, open, and pending_completion
           const isExcluded = task.status === 'completed' || 
                             task.status === 'cancelled' || 
                             task.status === 'overdue' ||
-                            task.status === 'open'; // Open = pre-payment, goes in Posted tab
+                            task.status === 'open' ||
+                            task.status === 'pending_completion';
           
           return isUsersTask && !isExcluded;
+        })
+      )
+    );
+
+    // Release Payment tab: poster tasks awaiting payment release
+    const pendingPaymentTasks = sortByCreatedDate(
+      filterBySearch(
+        allTasks.filter((task: Task) => {
+          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+          return isUsersTask && task.status === 'pending_completion';
         })
       )
     );
     
     console.log('✅ Poster Accepted Tasks (from myTasks API):', {
       count: acceptedTasks.length,
+      pendingPaymentCount: pendingPaymentTasks.length,
       tasks: acceptedTasks.map(task => ({
         id: task._id,
         title: task.title,
@@ -922,18 +998,20 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
     return {
       openTasks,
       todoTasks,
+      pendingPaymentTasks,
       completedTasks,
       overdueTasks,
       cancelledTasks: finalCancelledTasks,
       postedTasks,
       acceptedTasks: acceptedTasks,
     };
-  }, [allTasks, taskerAssignedTasks, myOffers, myOffersMap, userRole, searchText, currentUserId]);
+  }, [allTasks, taskerAssignedTasks, myOffers, myOffersMap, isLoadingMyOffers, userRole, searchText, currentUserId]);
 
   // Debug log categorized data counts
   console.log(`📋 Categorized Data for ${userRole}:`, {
     openTasks: categorizedData.openTasks.length,
     todoTasks: categorizedData.todoTasks.length,
+    pendingPaymentTasks: categorizedData.pendingPaymentTasks.length,
     completedTasks: categorizedData.completedTasks.length,
     postedTasks: categorizedData.postedTasks.length,
     acceptedTasks: categorizedData.acceptedTasks.length,
@@ -1039,8 +1117,17 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
           isLoading={isLoading}
           onRefresh={handleRefresh}
           myOffersMap={myOffersMap}
+          promptReviewTaskId={promptReviewTaskId}
+          initialTabKey={initialTabKey}
+          onTaskMarkedComplete={handleTaskMarkedComplete}
         />
       </View>
+
+      {completionToast ? (
+        <View style={styles.completionToast} pointerEvents="none">
+          <Text style={styles.completionToastText}>{completionToast}</Text>
+        </View>
+      ) : null}
 
       {/* Offline Banner */}
       <OfflineBanner />
@@ -1067,7 +1154,7 @@ const openTasksFiltered = allTasks.filter((task: Task) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight || hp('5%'),
+    paddingTop: hp('6%'),
     backgroundColor: '#fff',
   },
   tabContent: {
@@ -1078,7 +1165,7 @@ const styles = StyleSheet.create({
   },
   flatListContent: {
     paddingVertical: hp('2%'),
-    paddingBottom: hp('12%'),
+    paddingBottom: TAB_BAR_CLEARANCE,
     paddingHorizontal: isTablet ? wp('12.5%') : wp('0%'),
   },
   emptyListContent: {
@@ -1108,24 +1195,25 @@ const styles = StyleSheet.create({
   roleSelectorContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingVertical: hp('1.2%'),
+    paddingVertical: hp('0.8%'),
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   roleButton: {
-    paddingHorizontal: wp(isTablet ? '3%' : '5%'),
-    paddingVertical: hp(isTablet ? '1%' : '1%'),
-    marginHorizontal: wp('1%'),
-    borderRadius: 20,
+    paddingHorizontal: isTablet ? wp('2.5%') : wp('4%'),
+    paddingVertical: isTablet ? hp('0.5%') : hp('0.8%'),
+    marginHorizontal: wp('0.5%'),
+    borderRadius: 16,
     backgroundColor: '#f5f5f5',
   },
   activeRole: {
     backgroundColor: '#007AFF',
   },
   roleText: {
-    fontSize: RFValue(isTablet ? 13 : 12),
+    fontSize: RFValue(12),
     fontWeight: '600',
     color: '#666',
   },
@@ -1179,5 +1267,23 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: '#007AFF',
     fontWeight: '600',
+  },
+  completionToast: {
+    position: 'absolute',
+    left: wp('4%'),
+    right: wp('4%'),
+    bottom: TAB_BAR_CLEARANCE + hp('2%'),
+    backgroundColor: 'rgba(33, 33, 33, 0.92)',
+    borderRadius: 10,
+    paddingVertical: hp('1.4%'),
+    paddingHorizontal: wp('4%'),
+    zIndex: 100,
+  },
+  completionToastText: {
+    color: '#fff',
+    fontSize: RFValue(13),
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: RFValue(18),
   },
 });
