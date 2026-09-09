@@ -20,6 +20,7 @@ import {
     useGetCancellationRequest,
     useGetTaskReviews,
     useRespondToCancellationRequest,
+    useReopenUnservicedTask,
     useSubmitReview
 } from '@/src/shared/hooks/useTaskApi';
 import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
@@ -147,6 +148,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const completeTaskMutation = useCompleteTask();
   const completeTaskPaymentMutation = useCompleteTaskPayment();
   const confirmTaskCompletionMutation = useConfirmTaskCompletion(); // Poster confirms completion
+  const reopenUnservicedTaskMutation = useReopenUnservicedTask();
   const submitReviewMutation = useSubmitReview(); // NEW: Submit review
   
   // Check if current user has already reviewed this task (for completed / review-required tabs)
@@ -159,6 +161,33 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   );
   const taskReviews = taskReviewsData?.data || [];
   const lockedPeerReview = taskReviews.find((r: any) => r?.locked === true);
+
+
+  const handleReopenUnserviced = useCallback(async () => {
+    if (isProcessing || reopenUnservicedTaskMutation.isPending) return;
+    Alert.alert(
+      'Reopen Task',
+      'Reopen this unserviced task so it appears in Find Tasks again?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reopen',
+          onPress: async () => {
+            try {
+              setIsProcessing(true);
+              await reopenUnservicedTaskMutation.mutateAsync(task._id);
+              Alert.alert('Reopened', 'Your task is open again and visible to taskers.');
+              onTaskCancelled?.(task._id); // refresh list
+            } catch (error: any) {
+              Alert.alert('Error', error?.message || 'Failed to reopen task');
+            } finally {
+              setIsProcessing(false);
+            }
+          },
+        },
+      ]
+    );
+  }, [isProcessing, reopenUnservicedTaskMutation, task._id, onTaskCancelled]);
 
   const markReviewPromptShown = useCallback(async () => {
     const userId = currentUser?._id || currentUser?.id;
@@ -1584,6 +1613,15 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         </View>
       )}
 
+      {status === 'unserviced' && userRole === 'Poster' && (
+        <View style={styles.peerReviewLockBanner}>
+          <MaterialIcons name="hourglass-empty" size={18} color="#856404" />
+          <Text style={styles.peerReviewLockText}>
+            Unserviced after 30 days open — reopen to list it on Find Tasks again
+          </Text>
+        </View>
+      )}
+
       {/* Peer review lock notice */}
       {isCompletedTask && lockedPeerReview && (
         <View style={styles.peerReviewLockBanner}>
@@ -2028,6 +2066,31 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           </>
         )} 
       </View>
+
+      {/* Unserviced — poster can reopen */}
+      {status === 'unserviced' && userRole === 'Poster' && (
+        <View style={styles.actionButtons} pointerEvents="box-none">
+          <TouchableOpacity
+            style={[
+              styles.acceptCompletionButton,
+              (isProcessing || reopenUnservicedTaskMutation.isPending) && styles.disabledButton,
+              { backgroundColor: '#00A651' },
+            ]}
+            onPress={handleReopenUnserviced}
+            activeOpacity={0.7}
+            disabled={isProcessing || reopenUnservicedTaskMutation.isPending}
+          >
+            {(isProcessing || reopenUnservicedTaskMutation.isPending) ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                <Text style={styles.acceptCompletionButtonText}>Reopening...</Text>
+              </View>
+            ) : (
+              <Text style={styles.acceptCompletionButtonText}>Reopen Task</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Cancellation Notice for Cancelled Tab */}
       {status === 'cancelled' && pendingCancellationRequest && (

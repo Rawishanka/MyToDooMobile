@@ -1,3 +1,4 @@
+import { BRAND_BLUE, BRAND_ORANGE, BRAND_GREEN } from '@/src/shared/theme/brandColors';
 import { LocationAutocomplete } from '@/src/shared/components/LocationAutocomplete';
 import { useGetCategories } from '@/src/shared/hooks/useTaskApi';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
@@ -33,6 +34,7 @@ import {
     TimeOfDayGrid,
     TimeToggle,
 } from './components';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 // Helper function to copy image to persistent storage
 const copyImageToPersistentStorage = async (sourceUri: string): Promise<string> => {
@@ -73,6 +75,8 @@ interface LocationData {
   };
 }
 
+const MAX_TASK_PHOTOS = 5;
+
 export default function CreateTaskScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -95,6 +99,8 @@ export default function CreateTaskScreen() {
   );
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
+  // Track if category was auto-suggested (can be overridden) vs manually selected (cannot be overridden)
+  const categoryWasAutoSuggested = useRef(false);
   
   // Validation errors
   const [titleError, setTitleError] = useState('');
@@ -159,6 +165,29 @@ export default function CreateTaskScreen() {
   useEffect(() => {
     console.log('🔄 selectedCategory state changed to:', selectedCategory);
   }, [selectedCategory]);
+
+  // Auto-suggest category when title is pre-populated (from welcome screen)
+  // Runs when title or categories list changes — waits for categories to load
+  useEffect(() => {
+    const cats: string[] = (categoriesResponse?.data || []).map((cat: any) =>
+      typeof cat === 'string' ? cat : cat.name
+    );
+    if (
+      title.trim().length >= 10 &&
+      !selectedCategory &&
+      cats.length > 0
+    ) {
+      const suggested = suggestCategoryFromTitle(title);
+      if (suggested) {
+        console.log('🏷️ Auto-suggested category from pre-filled title:', suggested);
+        setSelectedCategory(suggested);
+        categoryWasAutoSuggested.current = true;
+        setTouched(prev => ({ ...prev, category: true }));
+        updateMyTask({ category: suggested });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, categoriesResponse]);
 
   // Keyboard listeners
   useEffect(() => {
@@ -302,6 +331,23 @@ export default function CreateTaskScreen() {
         setTitleError('');
       }
     }
+
+    // Auto-suggest category from title
+    // Fires when:
+    //   1. Title is at least 10 chars (meaningful sentence)
+    //   2. No category selected yet, OR the current category was auto-suggested (can be overridden)
+    const trimmedForSuggest = cleanedText.trim();
+    if (trimmedForSuggest.length >= 10 && (!selectedCategory || categoryWasAutoSuggested.current)) {
+      const suggested = suggestCategoryFromTitle(cleanedText);
+      if (suggested && suggested !== selectedCategory) {
+        console.log('🏷️ Auto-suggested category:', suggested);
+        setSelectedCategory(suggested);
+        categoryWasAutoSuggested.current = true;
+        setTouched(prev => ({ ...prev, category: true }));
+        // Persist to store so it survives navigation/re-renders
+        updateMyTask({ category: suggested });
+      }
+    }
   };
 
   const handleDescriptionChange = (text: string) => {
@@ -435,6 +481,114 @@ export default function CreateTaskScreen() {
       )
     : allCategories;
 
+  // Auto-suggest category based on task title
+  // Prioritises specific domain words (garden, pool, plumb…) over generic ones (maintenance, repair)
+  const suggestCategoryFromTitle = (titleText: string): string | null => {
+    if (!titleText || titleText.trim().length < 10 || allCategories.length === 0) return null;
+
+    const titleLower = titleText.toLowerCase();
+    const titleWords = titleLower.split(/\s+/).filter(w => w.length > 2);
+
+    const GENERIC_WORDS = new Set([
+      'maintenance', 'repair', 'service', 'fix', 'install', 'help', 'work', 'job', 'task', 'need', 'done',
+    ]);
+
+    const keywordGroups: Record<string, string[]> = {
+      'plumbing':    ['plumb', 'pipe', 'tap', 'drain', 'toilet', 'leak', 'water', 'flush', 'shower', 'cistern', 'sewage', 'faucet', 'basin'],
+      'electrical':  ['electric', 'wiring', 'power point', 'light switch', 'fuse', 'circuit', 'outlet', 'switchboard', 'powerpoint', 'voltage'],
+      'cleaning':    ['clean', 'wash', 'organis', 'tidy', 'mop', 'vacuum', 'dust', 'scrub', 'laundry', 'housekeep', 'sweep', 'wipe'],
+      'painting':    ['paint', 'colour', 'primer', 'coat', 'repaint', 'undercoat', 'brush', 'roller'],
+      'carpentry':   ['carpent', 'timber', 'wood', 'cabinet', 'shelf', 'shelving', 'wardrobe', 'door frame', 'floorboard', 'joiner'],
+      'removalist':  ['remov', 'moving', 'move house', 'move furniture', 'shift', 'relocat', 'couch', 'sofa', 'piano'],
+      'gardening':   ['garden', 'gardening', 'lawn', 'mow', 'trim', 'hedge', 'weed', 'plant', 'tree', 'grass', 'mulch', 'landscap', 'yard'],
+      'pool':        ['pool', 'swim', 'spa', 'chlorine', 'filtration', 'jacuzzi'],
+      'building':    ['renovat', 'build', 'construct', 'tile', 'brick', 'cement', 'roof', 'render', 'extension', 'demolish'],
+      'handyman':    ['handyman', 'mount', 'assemble', 'hardware'],
+      'it':          ['computer', 'laptop', 'software', 'app', 'website', 'tech', 'internet', 'wifi', 'network', 'program', 'code', 'develop'],
+      'furniture':   ['ikea', 'flatpack', 'flat pack', 'furniture', 'bed frame', 'desk', 'bookshelf'],
+      'delivery':    ['deliver', 'courier', 'pickup', 'drop off', 'send package', 'collect'],
+      'photography': ['photo', 'photograph', 'camera', 'shoot', 'portrait', 'headshot', 'video'],
+      'event':       ['event', 'party', 'wedding', 'birthday', 'function', 'celebration', 'catering'],
+      'health':      ['fitness', 'gym', 'workout', 'personal train', 'yoga', 'pilates', 'nutrition', 'weight'],
+      'pet':         ['pet', 'dog', 'cat', 'animal', 'groom', 'walk dog', 'vet', 'puppy', 'kitten'],
+      'accounting':  ['accounting', 'bookkeep', 'tax', 'financial', 'invoice', 'payroll', 'bas', 'gst'],
+      'legal':       ['legal', 'lawyer', 'contract', 'solicitor', 'law', 'document', 'will', 'court'],
+      'tutoring':    ['tutor', 'lesson', 'teach', 'learn', 'study', 'math', 'english', 'science', 'homework'],
+      'graphic':     ['graphic', 'design', 'logo', 'banner', 'branding', 'illustrat', 'flyer', 'poster'],
+      'appliance':   ['appliance', 'washing machine', 'fridge', 'dishwasher', 'oven', 'dryer', 'air condition', 'heater'],
+      'automotive':  ['car', 'vehicle', 'mechanic', 'engine', 'brake', 'tyre', 'service car', 'auto'],
+      'transport':   ['tour', 'transport', 'driver', 'airport', 'ride', 'charter', 'bus', 'van'],
+    };
+
+    const hasWord = (text: string, word: string): boolean => {
+      if (word.length <= 3) {
+        return new RegExp(`\\b${word}\\b`, 'i').test(text);
+      }
+      return text.includes(word);
+    };
+
+    const scoreCategory = (cat: string) => {
+      const catLower = cat.toLowerCase();
+      let specificScore = 0;
+      let genericScore = 0;
+
+      for (const tw of titleWords) {
+        if (GENERIC_WORDS.has(tw)) continue;
+        if (tw.length >= 4 && catLower.includes(tw)) {
+          specificScore += 10;
+        } else if (tw.length >= 5) {
+          const catParts = catLower.split(/[\s&\/,\-]+/).filter(p => p.length > 3);
+          for (const part of catParts) {
+            if (part.startsWith(tw) || tw.startsWith(part)) {
+              specificScore += 8;
+            }
+          }
+        }
+      }
+
+      for (const [groupKey, keywords] of Object.entries(keywordGroups)) {
+        const catBelongsToGroup =
+          hasWord(catLower, groupKey) ||
+          keywords.some(k => k.length > 4 && catLower.includes(k));
+
+        if (!catBelongsToGroup) continue;
+
+        for (const kw of keywords) {
+          if (!hasWord(titleLower, kw)) continue;
+          if (GENERIC_WORDS.has(kw)) {
+            genericScore += 1;
+          } else {
+            specificScore += 4;
+          }
+        }
+        if (hasWord(titleLower, groupKey)) specificScore += 5;
+      }
+
+      for (const tw of titleWords) {
+        if (GENERIC_WORDS.has(tw) && hasWord(catLower, tw)) {
+          genericScore += 1;
+        }
+      }
+
+      return { cat, specificScore, genericScore, total: specificScore + genericScore };
+    };
+
+    const ranked = allCategories
+      .map(scoreCategory)
+      .filter(r => r.specificScore > 0 || r.genericScore > 0)
+      .sort((a, b) => {
+        if (b.specificScore !== a.specificScore) return b.specificScore - a.specificScore;
+        if (b.genericScore !== a.genericScore) return b.genericScore - a.genericScore;
+        return b.total - a.total;
+      });
+
+    const best = ranked[0];
+    if (!best) return null;
+    if (best.specificScore === 0) return null;
+
+    return best.cat;
+  };
+
   // Helper function to build task context for validation
   // ✅ NEW: Validate image using OCR API for sensitive data
   const validateAndAddImage = async (imageUri: string): Promise<boolean> => {
@@ -459,7 +613,11 @@ Please remove phone numbers and addresses from the image.`,
       }
       
       console.log('✅ Image passed OCR validation - adding to list');
-      setImages(prevImages => [...prevImages, imageUri]);
+      setImages(prevImages =>
+        prevImages.length >= MAX_TASK_PHOTOS
+          ? prevImages
+          : [...prevImages, imageUri],
+      );
       setIsOCRProcessing(false);
       return true;
     } catch (error) {
@@ -468,7 +626,11 @@ Please remove phone numbers and addresses from the image.`,
         console.warn('⚠️ OCR validation error:', error);
       }
       // Allow upload if OCR service fails
-      setImages(prevImages => [...prevImages, imageUri]);
+      setImages(prevImages =>
+        prevImages.length >= MAX_TASK_PHOTOS
+          ? prevImages
+          : [...prevImages, imageUri],
+      );
       setIsOCRProcessing(false);
       return true;
     }
@@ -476,9 +638,12 @@ Please remove phone numbers and addresses from the image.`,
 
   // Image handlers
   const showImagePickerOptions = () => {
-    if (images.length >= 10) return;
+    if (images.length >= MAX_TASK_PHOTOS) {
+      Alert.alert('Limit reached', `You can add up to ${MAX_TASK_PHOTOS} photos.`);
+      return;
+    }
 
-    Alert.alert('Add Photo', 'Choose how you want to add a photo', [
+    Alert.alert('Add Photo', 'Choose how you want to add photos', [
       { text: 'Take Photo', onPress: () => openCamera() },
       { text: 'Choose from Gallery', onPress: () => openImageLibrary() },
       { text: 'Cancel', style: 'cancel' },
@@ -537,16 +702,20 @@ Please remove phone numbers and addresses from the image.`,
 
     setIsProcessing(true);
     try {
+      const remainingSlots = MAX_TASK_PHOTOS - images.length;
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsMultipleSelection: false,
+        allowsMultipleSelection: true,
+        selectionLimit: remainingSlots,
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets?.[0]) {
-        // Copy image to persistent storage to prevent cache deletion
-        const persistentUri = await copyImageToPersistentStorage(result.assets[0].uri);
-        await validateAndAddImage(persistentUri);
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const assetsToAdd = result.assets.slice(0, remainingSlots);
+        for (const asset of assetsToAdd) {
+          const persistentUri = await copyImageToPersistentStorage(asset.uri);
+          await validateAndAddImage(persistentUri);
+        }
       }
     } catch (error) {
       // Only log non-network errors in development
@@ -585,23 +754,40 @@ Please remove phone numbers and addresses from the image.`,
 
   const handleLocationFocus = () => {
     console.log('📍 Location field focused - scrolling into view');
-    // Scroll to location section when focused
     if (section2Ref.current && scrollViewRef.current) {
       setTimeout(() => {
         section2Ref.current?.measureLayout(
           scrollViewRef.current as any,
-          (x, y) => {
+          (_x, y) => {
             console.log('   Scrolling to location field at y:', y);
-            // Scroll with more offset to ensure field is visible above keyboard
-            // Add extra space (200px) to account for keyboard height
+            // Scroll so the location section is visible near the top, leaving room for dropdown
             scrollViewRef.current?.scrollTo({ 
-              y: y + 100, 
+              y: Math.max(0, y - 80), 
               animated: true 
             });
           },
           () => console.log('   Failed to measure location field')
         );
       }, 150);
+    }
+  };
+
+  const handleLocationDropdownOpen = (isOpen: boolean) => {
+    setIsLocationDropdownOpen(isOpen);
+    if (isOpen && section2Ref.current && scrollViewRef.current) {
+      // After spacer renders (260px), scroll so dropdown is visible
+      setTimeout(() => {
+        section2Ref.current?.measureLayout(
+          scrollViewRef.current as any,
+          (_x, y) => {
+            scrollViewRef.current?.scrollTo({
+              y: Math.max(0, y - 60),
+              animated: true,
+            });
+          },
+          () => {}
+        );
+      }, 200);
     }
   };
 
@@ -639,7 +825,7 @@ Please remove phone numbers and addresses from the image.`,
   const renderGridItems = () => {
     const items = [...images];
 
-    if (items.length < 10) {
+    if (items.length < MAX_TASK_PHOTOS) {
       items.push('upload_button');
     }
 
@@ -872,7 +1058,7 @@ Please remove phone numbers and addresses from the image.`,
             router.back();
           }
         }}>
-          <Ionicons name="chevron-back" size={24} color="#333" />
+          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         
         <View style={styles.headerContent}>
@@ -968,6 +1154,7 @@ Please remove phone numbers and addresses from the image.`,
                         style={[styles.categoryItem, selectedCategory === category && styles.categoryItemSelected]}
                         onPress={() => {
                           setSelectedCategory(category);
+                          categoryWasAutoSuggested.current = false; // User manually selected — do not override
                           setShowCategoryDropdown(false);
                           setCategorySearchQuery('');
                           // Clear any validation error when category is selected
@@ -1053,7 +1240,7 @@ Please remove phone numbers and addresses from the image.`,
         {/* SECTION 2: PHOTOS & LOCATION */}
         <View ref={section2Ref} style={styles.section}>
           <Text style={styles.sectionTitle}>Photos & Location</Text>
-          <Text style={styles.sectionSubtitle}>Help taskers understand what needs doing ({images.length}/10 photos)</Text>
+          <Text style={styles.sectionSubtitle}>Help taskers understand what needs doing ({images.length}/{MAX_TASK_PHOTOS} photos)</Text>
 
           <View style={styles.imageSection}>
             {renderGridItems()}
@@ -1081,7 +1268,7 @@ Please remove phone numbers and addresses from the image.`,
               initialValue={selectedLocation?.address}
               onDropdownStateChange={(isOpen) => {
                 console.log('📍 Dropdown state changed:', isOpen);
-                setIsLocationDropdownOpen(isOpen);
+                handleLocationDropdownOpen(isOpen);
               }}
             />
 
@@ -1097,6 +1284,16 @@ Please remove phone numbers and addresses from the image.`,
                 <Text style={styles.selectedLocationText} numberOfLines={2}>
                   {selectedLocation.address}
                 </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedLocation(null);
+                    updateMyTask({ location: '', coordinates: undefined });
+                    setTouched(prev => ({ ...prev, location: false }));
+                  }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="close-circle" size={20} color="#999" />
+                </TouchableOpacity>
               </View>
             )}
             {touched.location && !selectedLocation && (
@@ -1216,9 +1413,9 @@ const styles = StyleSheet.create({
   header: {
     paddingBottom: 20,
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    backgroundColor: BRAND_BLUE,
+    borderBottomWidth: 0,
+    borderBottomColor: 'transparent',
   },
   backButton: {
     marginBottom: 15,
@@ -1227,15 +1424,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '700',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginBottom: 5,
     textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#8E8E93',
+    fontSize: RFValue(14),
+    color: 'rgba(255,255,255,0.85)',
     textAlign: 'center',
   },
   scrollView: {
@@ -1250,13 +1447,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '700',
     color: '#1C1C1E',
     marginBottom: 5,
   },
   sectionSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#8E8E93',
     marginBottom: 20,
   },
@@ -1269,29 +1466,29 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#1C1C1E',
     marginBottom: 8,
   },
   required: {
     color: '#FF3B30',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   charCount: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#8E8E93',
     marginTop: 4,
     textAlign: 'right',
   },
   helperText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#8E8E93',
     marginTop: 4,
     fontStyle: 'italic',
   },
   locationSubtitle: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#8E8E93',
     marginBottom: 10,
   },
@@ -1307,7 +1504,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   categorySelectorText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
   },
   placeholder: {
@@ -1347,7 +1544,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: 8,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
   },
   categoriesList: {
@@ -1379,7 +1576,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F5FF',
   },
   categoryItemText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#1C1C1E',
   },
   categoryItemTextSelected: {
@@ -1391,7 +1588,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     borderWidth: 1,
     borderColor: 'transparent',
@@ -1400,7 +1597,7 @@ const styles = StyleSheet.create({
     borderColor: '#FF3B30',
   },
   validationText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#FF3B30',
     marginTop: 4,
   },
@@ -1409,7 +1606,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     height: 120,
     borderWidth: 1,
@@ -1470,7 +1667,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   loadingText: {
-    fontSize: 10,
+    fontSize: RFValue(10),
     color: '#467FFF',
     marginTop: 4,
     textAlign: 'center',
@@ -1497,7 +1694,7 @@ const styles = StyleSheet.create({
   selectedLocationText: {
     flex: 1,
     marginLeft: 8,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#0057FF',
   },
   continueButton: {
@@ -1512,11 +1709,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   continueButtonEnabled: {
-    backgroundColor: '#0057FF',
+    backgroundColor: BRAND_ORANGE,
   },
   continueText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   // Validation text styles
@@ -1541,25 +1738,25 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   validationTextSuccess: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#22C55E',
     fontWeight: '600',
     textAlign: 'center',
   },
   validationTextWarning: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#F59E0B',
     fontWeight: '600',
     textAlign: 'center',
   },
   validationTextLoading: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#6B7280',
     fontWeight: '600',
     textAlign: 'center',
   },
   validationTextDetails: {
-    fontSize: 9,
+    fontSize: RFValue(9),
     color: '#6B7280',
     fontWeight: '400',
     textAlign: 'center',

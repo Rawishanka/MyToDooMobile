@@ -1,3 +1,4 @@
+import { BRAND_BLUE, BRAND_GREEN } from '@/src/shared/theme/brandColors';
 import { CreateTaskRequest } from '@/src/api/types/tasks';
 import { useCreateTask, usePostTaskDirect, usePostTaskWithImages } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
@@ -19,6 +20,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function PostTaskScreen() {
   const router = useRouter();
@@ -240,7 +242,7 @@ export default function PostTaskScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Review & Post Task</Text>
         <View style={styles.placeholder} />
@@ -359,12 +361,12 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   subLoadingText: {
     marginTop: 8,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
     textAlign: 'center',
     paddingHorizontal: 20,
@@ -375,17 +377,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 15,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    backgroundColor: BRAND_BLUE,
+    borderBottomWidth: 0,
+    borderBottomColor: 'transparent',
   },
   backButton: {
     padding: 5,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: '#FFFFFF',
   },
   placeholder: {
     width: 34,
@@ -406,7 +408,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#000',
     marginBottom: 16,
@@ -415,18 +417,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#666',
     marginBottom: 4,
   },
   value: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     lineHeight: 22,
   },
   budgetValue: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#007bff',
   },
@@ -450,7 +452,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#1976d2',
     marginLeft: 8,
     lineHeight: 20,
@@ -477,7 +479,7 @@ const styles = StyleSheet.create({
   },
   editButtonText: {
     color: '#007bff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   postButton: {
@@ -487,7 +489,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: '#007bff',
+    backgroundColor: BRAND_GREEN,
     gap: 6,
   },
   postButtonDisabled: {
@@ -496,7 +498,7 @@ const styles = StyleSheet.create({
   },
   postButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

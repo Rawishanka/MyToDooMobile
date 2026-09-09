@@ -1,5 +1,6 @@
 // Tab navigation layout - uses Expo Router Tabs with custom FloatingTabBar
 import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
+import { useAuthStore } from '@/src/store/auth-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Tabs } from 'expo-router';
@@ -15,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const isSmallDevice = SCREEN_WIDTH < 375;
@@ -30,11 +32,15 @@ const TAB_META = [
   { name: 'account', label: 'Account', icon: 'person-circle-outline' as const, iconActive: 'person-circle' as const },
 ];
 
+const AUTH_ONLY_TABS = new Set(['browse', 'my-tasks', 'message']);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Floating animated tab bar
 // ─────────────────────────────────────────────────────────────────────────────
 function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { isAuthenticated, token } = useAuthStore();
+  const showAuthTabs = isAuthenticated && !!token;
   const { data: chatData } = useGetUserChats();
   const [keyboardVisible, setKeyboardVisible] = React.useState(false);
 
@@ -77,8 +83,9 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
       <View style={tabStyles.pill}>
         {state.routes.map((route: any, index: number) => {
           const isFocused = state.index === index;
-          const meta = TAB_META[index];
+          const meta = TAB_META.find((tab) => tab.name === route.name);
           if (!meta) return null;
+          if (!showAuthTabs && AUTH_ONLY_TABS.has(route.name)) return null;
 
           const circleScale = scaleAnims[index];
           const circleOpacity = scaleAnims[index].interpolate({
@@ -154,7 +161,7 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
 export default function TabsLayout() {
   return (
     <Tabs
-      tabBar={(props) => <FloatingTabBar {...props} />}
+      tabBar={(props) => <FloatingTabBar {...(props as any)} />}
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" options={{ tabBarLabel: 'Post Task' }} />
@@ -237,7 +244,7 @@ const tabStyles = StyleSheet.create({
   },
   badgeText: {
     color: '#fff',
-    fontSize: 9,
+    fontSize: RFValue(9),
     fontWeight: 'bold',
   },
 });

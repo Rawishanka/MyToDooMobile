@@ -1,3 +1,4 @@
+import { BRAND_BLUE, BRAND_GREEN } from '@/src/shared/theme/brandColors';
 // BudgetScreen.tsx
 
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
@@ -9,6 +10,7 @@ import { router, useNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
+    Platform,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -206,109 +208,116 @@ export default function BudgetScreen() {
   // Show loading state while location is being detected to prevent currency flicker
   if (!isInitialized || isDetecting) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <View style={[styles.wrapper, styles.centerContent]}>
+        <ActivityIndicator size="large" color={BRAND_BLUE} />
         <Text style={styles.loadingText}>Detecting your location...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      {/* Back Arrow */}
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-        <Ionicons name="chevron-back" size={24} color="black" />
-      </TouchableOpacity>
-
-      {/* Title */}
-      <Text style={styles.title}>Enter Your budget</Text>
-      <Text style={styles.subtitle}>
-        Minimum budget is {currencyInfo.symbol}{formatNumber(minimumBudget, { forceDecimals: true })}. Don&apos;t worry, you can always negotiate the final price later
-      </Text>
-
-      {/* Budget Display */}
-      <TouchableOpacity style={styles.inputBox} onPress={handleBudgetFieldTap} activeOpacity={0.7}>
-        <Text style={styles.currencySymbol}>{currencyInfo.symbol}</Text>
-        <Text style={[
-          styles.budgetText, 
-          budget && budget !== '.' && (parseFloat(budget) < minimumBudget || parseFloat(budget) > maximumBudget) && parseFloat(budget) > 0 && styles.invalidBudgetText,
-          !hasUserInteracted && !budget && styles.placeholderText
-        ]}>
-          {budget ? (budget.endsWith('.') || budget.includes('.') ? budget : formatNumber(parseFloat(budget))) : (!hasUserInteracted ? formatNumber(defaultBudgetAmount) : '0')}
+    <View style={styles.wrapper}>
+      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} hitSlop={12}>
+          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Enter Your Budget</Text>
+        <Text style={styles.headerSubtitle}>
+          Minimum budget is {currencyInfo.symbol}{formatNumber(minimumBudget, { forceDecimals: true })}. Don&apos;t worry, you can always negotiate the final price later
         </Text>
-      </TouchableOpacity>
-      
-      {/* Validation Message */}
-      {errorMessage ? (
-        <Text style={styles.errorText}>
-          {errorMessage}
-        </Text>
-      ) : budget && budget !== '.' && parseFloat(budget) < minimumBudget && parseFloat(budget) > 0 ? (
-        <Text style={styles.validationText}>
-          Minimum budget is {currencyInfo.symbol}{formatNumber(minimumBudget, { forceDecimals: true })}
-        </Text>
-      ) : budget && budget !== '.' && parseFloat(budget) > maximumBudget ? (
-        <Text style={styles.validationText}>
-          Maximum budget is {currencyInfo.symbol}{formatNumber(maximumBudget, { forceDecimals: true })}
-        </Text>
-      ) : null}
-
-      {/* Keypad */}
-      <View style={styles.keypad}>
-        {numberPad.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.row}>
-            {row.map((value, index) => renderKey(value))}
-          </View>
-        ))}
       </View>
 
-      {/* Create Task Button */}
-      <TouchableOpacity
-        style={[
-          styles.button, 
-          !isBudgetValid && styles.buttonDisabled,
-          { marginBottom: Math.max(insets.bottom, 30) }
-        ]}
-        onPress={handleCreateTask}
-        disabled={!isBudgetValid}
-      >
-        <Text style={[styles.buttonText, !isBudgetValid && styles.buttonTextDisabled]}>
-          Create Task
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.container}>
+        {/* Budget Display */}
+        <TouchableOpacity style={styles.inputBox} onPress={handleBudgetFieldTap} activeOpacity={0.7}>
+          <Text style={styles.currencySymbol}>{currencyInfo.symbol}</Text>
+          <Text style={[
+            styles.budgetText, 
+            budget && budget !== '.' && (parseFloat(budget) < minimumBudget || parseFloat(budget) > maximumBudget) && parseFloat(budget) > 0 && styles.invalidBudgetText,
+            !hasUserInteracted && !budget && styles.placeholderText
+          ]}>
+            {budget ? (budget.endsWith('.') || budget.includes('.') ? budget : formatNumber(parseFloat(budget))) : (!hasUserInteracted ? formatNumber(defaultBudgetAmount) : '0')}
+          </Text>
+        </TouchableOpacity>
+        
+        {/* Validation Message */}
+        {errorMessage ? (
+          <Text style={styles.errorText}>
+            {errorMessage}
+          </Text>
+        ) : budget && budget !== '.' && parseFloat(budget) < minimumBudget && parseFloat(budget) > 0 ? (
+          <Text style={styles.validationText}>
+            Minimum budget is {currencyInfo.symbol}{formatNumber(minimumBudget, { forceDecimals: true })}
+          </Text>
+        ) : budget && budget !== '.' && parseFloat(budget) > maximumBudget ? (
+          <Text style={styles.validationText}>
+            Maximum budget is {currencyInfo.symbol}{formatNumber(maximumBudget, { forceDecimals: true })}
+          </Text>
+        ) : null}
+
+        {/* Keypad */}
+        <View style={styles.keypad}>
+          {numberPad.map((row, rowIndex) => (
+            <View key={rowIndex} style={styles.row}>
+              {row.map((value, index) => renderKey(value))}
+            </View>
+          ))}
+        </View>
+
+        {/* Post Task Button */}
+        <TouchableOpacity
+          style={[
+            styles.button, 
+            !isBudgetValid && styles.buttonDisabled,
+            { marginBottom: Math.max(insets.bottom, 30) }
+          ]}
+          onPress={handleCreateTask}
+          disabled={!isBudgetValid}
+        >
+          <Text style={[styles.buttonText, !isBudgetValid && styles.buttonTextDisabled]}>
+            Post Task
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  header: {
+    backgroundColor: BRAND_BLUE,
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('6%'),
+    paddingBottom: hp('2%'),
+  },
+  backButton: {
+    marginBottom: hp('1%'),
+    alignSelf: 'flex-start',
+  },
+  headerTitle: {
+    fontSize: RFValue(isTablet ? 24 : 20),
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: hp('0.5%'),
+  },
+  headerSubtitle: {
+    textAlign: 'center',
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: RFValue(isTablet ? 14 : 13),
+  },
   container: {
     flex: 1,
     paddingHorizontal: isTablet ? wp('12.5%') : wp('6%'),
-    paddingTop: 60,
+    paddingTop: hp('2%'),
     backgroundColor: '#fff',
     justifyContent: 'space-between',
     maxWidth: isTablet ? 900 : undefined,
     alignSelf: isTablet ? 'center' : 'auto',
     width: '100%',
-  },
-  back: {
-    position: 'absolute',
-    top: 50,
-    left: isTablet ? wp('12.5%') : wp('6%'),
-    zIndex: 1,
-  },
-  title: {
-    fontSize: RFValue(isTablet ? 24 : 20),
-    fontWeight: 'bold',
-    color: '#002366',
-    marginTop: hp('5%'),
-    textAlign: 'center',
-  },
-  subtitle: {
-    textAlign: 'center',
-    color: '#6e6e6e',
-    marginTop: hp('1%'),
-    fontSize: RFValue(isTablet ? 14 : 13),
   },
   inputBox: {
     marginTop: hp('3%'),
@@ -386,7 +395,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   button: {
-    backgroundColor: '#0050C8',
+    backgroundColor: BRAND_GREEN,
     paddingVertical: hp('1.8%'),
     borderRadius: 24,
     alignItems: 'center',

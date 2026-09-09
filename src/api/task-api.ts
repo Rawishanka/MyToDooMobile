@@ -336,12 +336,6 @@ export async function getAllTasks(): Promise<TasksResponse> {
       console.warn("⚠️ Get all tasks failed:", error);
     }
     
-    // Check for network connection errors - use mock service as fallback
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.warn("🎭 Network failed - Using Mock API for getAllTasks");
-      return await MockApiService.getAllTasks();
-    }
-    
     throw error;
   }
 }
@@ -536,22 +530,7 @@ export async function getFilteredTasks(params?: TaskFilterParams): Promise<TaskF
         
       } catch (fallbackError) {
         console.error("❌ Fallback getAllTasks also failed:", fallbackError);
-        
-        // Last resort: use mock data
-        console.warn("🎭 Using Mock API as final fallback");
-        const mockResponse = await MockApiService.getAllTasks();
-        return {
-          success: mockResponse.success,
-          data: mockResponse.data || [],
-          pagination: {
-            currentPage: 1,
-            totalPages: 1,
-            totalItems: mockResponse.data?.length || 0,
-            itemsPerPage: mockResponse.data?.length || 20,
-            hasNextPage: false,
-            hasPreviousPage: false
-          }
-        };
+        throw fallbackError;
       }
     }
     
@@ -711,13 +690,6 @@ export async function postTask(taskData: CreateTaskRequest): Promise<CreateTaskR
     console.error("Request Data:", taskData);
     console.error("Request Headers:", error?.config?.headers);
     console.error("Full Error:", error);
-    
-    // Check for network connection errors - use mock service as fallback
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.error("❌ Network connection failed - Using mock service as fallback");
-      console.warn("🎭 Switching to Mock API for development");
-      return await MockApiService.postTask(taskData);
-    }
     
     // Check for authentication errors with special handling
     if (error?.response?.status === 401) {
@@ -885,12 +857,6 @@ export async function searchTasks(params: TaskSearchParams): Promise<TasksRespon
       message: error.message,
       data: error.response?.data
     });
-    
-    // Check for network connection errors - use mock service as fallback
-    if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-      console.warn("🎭 Network failed - Using Mock API for searchTasks");
-      return await MockApiService.searchTasks(params);
-    }
     
     // For other errors, return empty results (faster than fallback chains)
     console.warn("⚠️ Search failed, returning empty results");
@@ -1166,35 +1132,21 @@ export async function filterTasks(params: TaskFilterParams): Promise<TaskFilterR
       }
     }
     
-    // Only fallback to mock if we actually have an error that prevents getting data
+    // Return empty successful response on error
     if (error?.response?.status || error?.message?.includes('failed')) {
-      console.warn("🎭 Using Mock API for filterTasks due to API failure");
-      try {
-        const mockResponse = await MockApiService.filterTasks(params);
-        console.log("✅ Mock API succeeded", {
-          totalItems: mockResponse.pagination?.totalItems,
-          dataLength: mockResponse.data?.length
-        });
-        return mockResponse;
-      } catch (mockError) {
-        console.error("❌ Mock API also failed for filterTasks:", mockError);
-        
-        // Final fallback: return empty successful response
-        return {
-          success: true,
-          data: [],
-          pagination: {
-            currentPage: 1,
-            totalPages: 0,
-            totalItems: 0,
-            itemsPerPage: 0,
-            hasNextPage: false,
-            hasPreviousPage: false
-          }
-        };
-      }
+      return {
+        success: true,
+        data: [],
+        pagination: {
+          currentPage: 1,
+          totalPages: 0,
+          totalItems: 0,
+          itemsPerPage: 0,
+          hasNextPage: false,
+          hasPreviousPage: false
+        }
+      };
     }
-    
     // If we get here, something unexpected happened
     throw error;
   }
@@ -1328,33 +1280,28 @@ export async function getMyOffers(params?: MyTasksParams): Promise<{ success: bo
   const api = getApi();
   try {
     console.log("🤝 Fetching my offers with params:", params);
-    
-    // Try my-offers endpoint first, fallback to general tasks endpoint
-    try {
-      const searchParams = new URLSearchParams();
-      if (params?.section) searchParams.append('section', params.section);
-      
-      const response = await api.get(`/tasks/my-offers?${searchParams.toString()}`);
-      console.log("✅ Get my offers response:", response.data);
-      
-      // Return whatever data we got (including empty array)
-      if (response.data && response.data.data !== undefined) {
-        console.log(`✅ my-offers returned ${response.data.data.length} offers`);
-        return response.data;
-      } else {
-        console.log("📝 my-offers endpoint returned no data field");
-        return { success: true, data: [] };
-      }
-    } catch {
-      console.log("📝 my-offers endpoint not available, returning empty offers");
-      // Return empty - don't fallback to getAllTasks() as it returns wrong data structure
+
+    const searchParams = new URLSearchParams();
+    if (params?.section) searchParams.append('section', params.section);
+
+    const response = await api.get(`/tasks/my-offers?${searchParams.toString()}`);
+    console.log("✅ Get my offers response:", response.data);
+
+    // Return whatever data we got (including empty array)
+    if (response.data && response.data.data !== undefined) {
+      console.log(`✅ my-offers returned ${response.data.data.length} offers`);
+      return response.data;
+    } else {
+      console.log("📝 my-offers endpoint returned no data field");
       return { success: true, data: [] };
     }
-  } catch (error) {
+  } catch (error: any) {
     // Only log non-network errors in development
     if (!isNetworkError(error) && __DEV__) {
-      console.warn("⚠️ Get my offers failed:", error);
+      console.warn("⚠️ Get my offers failed:", error?.response?.status, error?.message);
     }
+    // Re-throw the error so React Query can handle retries properly
+    // Do NOT silently return empty - that hides real auth/network errors
     throw error;
   }
 }
@@ -2651,48 +2598,19 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
   const api = getApi();
   try {
     console.log("✅ Completing task:", taskId);
-    
-    // First, try to get the task details to check if it has an accepted offer
+
+    // Idempotent: task may already be marked complete (stale UI or duplicate tap)
     try {
       const taskDetails = await getTaskById(taskId);
       const task = taskDetails.data;
-      
-      // If the task has an accepted offer, we need to complete the offer first
-      if (task && task.status === 'todo' && (task as any).acceptedOffer) {
-        console.log("🎯 Task has accepted offer, completing offer first...");
-        const acceptedOffer = (task as any).acceptedOffer;
-        
-        // Try to update the offer status to 'completed' first
-        try {
-          const offerCompleteResponse = await api.put(`/tasks/${taskId}/offers/${acceptedOffer._id}`, {
-            status: 'completed'
-          });
-          console.log("✅ Completed offer successfully:", offerCompleteResponse.data);
-        } catch {
-          console.log("⚠️ Offer completion failed, trying alternative approaches...");
-          
-          // Try with different status values that might be valid
-          const validStatuses = ['finished', 'done', 'complete'];
-          
-          for (const status of validStatuses) {
-            try {
-              const alternativeResponse = await api.put(`/tasks/${taskId}/offers/${acceptedOffer._id}`, {
-                status: status
-              });
-              console.log(`✅ Completed offer with status '${status}':`, alternativeResponse.data);
-              break;
-            } catch {
-              console.log(`❌ Failed to complete offer with status '${status}'`);
-              continue;
-            }
-          }
-        }
+      if (task?.status === 'pending_completion') {
+        console.log("✅ Task already pending_completion — no further action needed");
+        return { success: true, data: task };
       }
     } catch {
       console.log("⚠️ Could not fetch task details, proceeding with direct completion...");
     }
-    
-    // Now attempt to complete the task
+
     const response = await api.patch(`/tasks/${taskId}/complete`);
     console.log("✅ Complete task success:", response.data);
     return response.data;
@@ -2742,10 +2660,29 @@ export async function completeTask(taskId: string): Promise<{ success: boolean; 
     
     // Handle 400 Bad Request with backend message
     if (error?.response?.status === 400) {
-      const backendMessage = error?.response?.data?.message || error?.response?.data?.error;
+      const backendMessage = error?.response?.data?.message || error?.response?.data?.error || '';
       if (__DEV__) {
         console.log("❌ Complete task - Bad Request (400):", backendMessage);
       }
+
+      // Backend rejects when status is already pending_completion (todo required).
+      // Treat as success if the task did transition — avoids false error after partial update.
+      if (
+        typeof backendMessage === 'string' &&
+        backendMessage.includes('pending_completion') &&
+        backendMessage.includes('todo')
+      ) {
+        try {
+          const refreshed = await getTaskById(taskId);
+          if (refreshed.data?.status === 'pending_completion') {
+            console.log("✅ Task is pending_completion — treating mark-complete as success");
+            return { success: true, data: refreshed.data };
+          }
+        } catch {
+          // fall through to throw
+        }
+      }
+
       throw new Error(backendMessage || "Cannot complete task. Please check the task status.");
     }
     
@@ -3081,6 +3018,36 @@ export async function respondToCancellationRequest(requestId: string, action: 'a
     }
     
     throw error;
+  }
+}
+
+/**
+ * ♻️ Reopen unserviced task (poster)
+ * Endpoint: PUT/PATCH /api/tasks/:taskId/reopen
+ * Auth: Required
+ */
+export async function reopenUnservicedTask(taskId: string): Promise<{ success: boolean; data: any }> {
+  const api = getApi();
+  try {
+    console.log('♻️ Reopening unserviced task:', taskId);
+    try {
+      const response = await api.put(`/tasks/${taskId}/reopen`);
+      console.log('✅ Reopen task success (PUT):', response.data);
+      return response.data;
+    } catch (putError: any) {
+      if (putError?.response?.status === 404 || putError?.response?.status === 405) {
+        const response = await api.patch(`/tasks/${taskId}/reopen`);
+        console.log('✅ Reopen task success (PATCH):', response.data);
+        return response.data;
+      }
+      throw putError;
+    }
+  } catch (error: any) {
+    console.error('❌ Reopen unserviced task failed:', error);
+    if (error?.response?.status === 401 || error?.isAuthError) {
+      throw new Error(error.message || 'Authentication expired. Please login again to continue.');
+    }
+    throw new Error(error?.response?.data?.message || error?.message || 'Failed to reopen task');
   }
 }
 
@@ -3722,6 +3689,7 @@ export const TaskAPI = {
   createCancellationRequest, // NEW: Post-payment cancellation request
   getCancellationRequest, // NEW: Get pending cancellation request
   respondToCancellationRequest, // NEW: Accept/Reject cancellation request
+  reopenUnservicedTask,
   updateTaskStatus,
   acceptTask,
   

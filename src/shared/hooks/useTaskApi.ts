@@ -155,6 +155,13 @@ export function useGetMyOffers(params?: MyTasksParams) {
     queryKey: TASK_QUERY_KEYS.myOffers(params),
     queryFn: () => TaskAPI.getMyOffers(params),
     staleTime: 0, // Use global config for real-time updates
+    retry: (failureCount, error: any) => {
+      // Don't retry on 404 (endpoint doesn't exist)
+      if (error?.response?.status === 404) return false;
+      // Retry up to 3 times for auth/network errors (allows auth to restore)
+      return failureCount < 3;
+    },
+    retryDelay: (attemptIndex) => Math.min(500 * (attemptIndex + 1), 3000),
     // refetchOnMount, refetchOnWindowFocus, refetchInterval use global QueryClient config
   });
 }
@@ -735,7 +742,7 @@ export function useConfirmTaskCompletion() {
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.completionStatus(taskId) });
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myOffers() });
-      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.list() });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.list({}) });
     },
   });
 }
@@ -850,6 +857,21 @@ export function useUpdateTaskStatus() {
       TaskAPI.updateTaskStatus(taskId, status),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(variables.taskId) });
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
+    },
+  });
+}
+
+/**
+ * ♻️ Reopen unserviced task (poster)
+ */
+export function useReopenUnservicedTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (taskId: string) => TaskAPI.reopenUnservicedTask(taskId),
+    onSuccess: (_data, taskId) => {
+      queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.detail(taskId) });
       queryClient.invalidateQueries({ queryKey: TASK_QUERY_KEYS.myTasks() });
     },
   });
@@ -1095,6 +1117,7 @@ export const TaskHooks = {
   useCreateCancellationRequest, // NEW: Post-payment cancellation request
   useRespondToCancellationRequest, // NEW: Accept/Reject cancellation request
   useUpdateTaskStatus,
+  useReopenUnservicedTask,
   useAcceptTask,
   useCompletePayment,
   useCompleteTaskPayment,

@@ -60,6 +60,8 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
         return 'No overdue tasks';
       case 'cancelled':
         return 'No cancelled tasks';
+      case 'unserviced':
+        return 'No unserviced tasks';
       default:
         return 'No tasks found';
     }
@@ -199,6 +201,7 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
       { key: 'pending_payment', label: 'Release Payment', status: 'pending_payment', tasks: categorizedData.pendingPaymentTasks },
       { key: 'review_required', label: 'Review Required', status: 'review_required', tasks: categorizedData.reviewRequiredTasks },
       { key: 'completed', label: 'Completed', status: 'completed', tasks: categorizedData.completedTasks },
+      { key: 'unserviced', label: 'Unserviced', status: 'unserviced', tasks: categorizedData.unservicedTasks || [] },
       { key: 'overdue', label: 'Overdue', status: 'overdue', tasks: categorizedData.overdueTasks },
       { key: 'cancelled', label: 'Cancelled', status: 'cancelled', tasks: categorizedData.cancelledTasks },
     ];
@@ -299,7 +302,7 @@ const topTabStyles = StyleSheet.create({
 export default function MyTasksScreen() {
   const [searchVisible, setSearchVisible] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [userRole, setUserRole] = useState('Tasker'); // 'Tasker' or 'Poster'
+  const [userRole, setUserRole] = useState<'Tasker' | 'Poster'>('Poster'); // set from isTasker on open
   const [searchText, setSearchText] = useState('');
   const [isRoleSwitching, setIsRoleSwitching] = useState(false); // FIX: Track role switching
   const [showNetworkAlert, setShowNetworkAlert] = useState(false);
@@ -329,24 +332,26 @@ export default function MyTasksScreen() {
     : undefined;
   const initialTabKey = typeof params.tab === 'string' ? params.tab : undefined;
 
-  // Set initial role and tab based on navigation params
+  // Default role from profile isTasker / notifyNewTask once; route params override
+  const roleInitializedRef = useRef(false);
   useEffect(() => {
-    if (params.role === 'Poster') {
-      console.log('🎯 Setting userRole to Poster from navigation params');
-      setUserRole('Poster');
-    } else if (params.role === 'Tasker') {
-      console.log('🎯 Setting userRole to Tasker from navigation params');
-      setUserRole('Tasker');
+    if (params.role === 'Poster' || params.role === 'Tasker') {
+      console.log('🎯 Setting userRole from navigation params:', params.role);
+      setUserRole(params.role);
+      roleInitializedRef.current = true;
+      return;
     }
-  }, [params.role, params.tab]);
-
-  // Handle route parameters to set initial role
-  useEffect(() => {
-    if (params.role === 'Poster') {
-      console.log('📋 Setting user role to Poster from route params');
-      setUserRole('Poster');
-    }
-  }, [params.role]);
+    if (roleInitializedRef.current || !currentUser) return;
+    const profileIsTasker = !!(
+      (currentUser as any)?.isTasker ||
+      (currentUser as any)?.notifyNewTask ||
+      (currentUser as any)?.taskerProfile?.isTasker
+    );
+    const defaultRole = profileIsTasker ? 'Tasker' : 'Poster';
+    console.log('🎯 Default My Tasks role from profile:', defaultRole, { profileIsTasker });
+    setUserRole(defaultRole);
+    roleInitializedRef.current = true;
+  }, [params.role, currentUser]);
 
   // FIX: Log when screen mounts to verify layout is ready
   useEffect(() => {
@@ -860,6 +865,7 @@ export default function MyTasksScreen() {
         cancelledTasks: finalCancelledTasks,
         postedTasks: [],
         acceptedTasks: [],
+        unservicedTasks: [],
       };
     }
     
@@ -992,6 +998,7 @@ export default function MyTasksScreen() {
                             task.status === 'cancelled' || 
                             task.status === 'overdue' ||
                             task.status === 'open' ||
+                            task.status === 'unserviced' ||
                             task.status === 'pending_completion';
           
           return isUsersTask && !isExcluded;
@@ -1019,6 +1026,15 @@ export default function MyTasksScreen() {
       }))
     });
 
+    const unservicedTasks = sortByCreatedDate(
+      filterBySearch(
+        allTasks.filter((task: Task) => {
+          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+          return isUsersTask && task.status === 'unserviced';
+        })
+      )
+    );
+
     return {
       openTasks,
       todoTasks,
@@ -1029,6 +1045,7 @@ export default function MyTasksScreen() {
       cancelledTasks: finalCancelledTasks,
       postedTasks,
       acceptedTasks: acceptedTasks,
+      unservicedTasks,
     };
   }, [allTasks, taskerAssignedTasks, myOffers, myOffersMap, isLoadingMyOffers, userRole, searchText, currentUserId]);
 
