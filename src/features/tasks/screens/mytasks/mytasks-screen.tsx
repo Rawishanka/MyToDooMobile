@@ -559,17 +559,12 @@ export default function MyTasksScreen() {
       const rs = task.reviewStatus;
       return rs === 'review_required' || rs === 'none' || !rs;
     };
-      // CRITICAL: Only tasks with status='overdue' should appear in Overdue tab
-      // Tasks with 'todo', 'assigned', 'in_progress' should stay in their respective tabs
-      // regardless of whether they're past due date or not
-      
-      // Check if backend explicitly marked it as overdue
+
+    // Helper: overdue tab — only explicit overdue status
+    const isTaskOverdue = (task: Task): boolean => {
       if (task.status === 'overdue') {
         return true;
       }
-
-      // All other statuses should NOT be considered overdue
-      // This includes: 'todo', 'assigned', 'in_progress', 'completed', 'cancelled', etc.
       return false;
     };
 
