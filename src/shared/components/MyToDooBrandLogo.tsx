@@ -22,7 +22,7 @@ export default function MyToDooBrandLogo({ size = 'md', style }: Props) {
   return (
     <View style={[styles.wrap, style]}>
       <Image
-        source={require('../../../../assets/MyToDoo_logo.gif')}
+        source={require('@/assets/MyToDoo_logo.gif')}
         style={{ width: dims.width, height: dims.height }}
         resizeMode="contain"
         accessibilityLabel="MyToDoo"
