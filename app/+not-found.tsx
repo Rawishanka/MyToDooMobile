@@ -1,5 +1,6 @@
 import { Link, Stack } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function NotFoundScreen() {
   return (
@@ -23,7 +24,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
   },
   link: {
@@ -31,7 +32,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   linkText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#2e78b7',
   },
 });

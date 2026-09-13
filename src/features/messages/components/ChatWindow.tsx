@@ -4,6 +4,7 @@ import { uploadChatFile, uploadChatImage } from '@/src/api/cdn-api';
 import API_CONFIG from '@/src/api/config';
 import { formatUserName } from '@/src/utils/formatUserName';
 import type { ChatParticipant } from '@/src/api/task-chat-api';
+import { deleteMessage as deleteMessageApi } from '@/src/api/task-chat-api';
 import { useCreateOrGetTaskChat, useGetChatById, useGetChatMessages, useMarkMessagesAsRead, useSendMessage } from '@/src/shared/hooks/useTaskChat';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,8 +29,10 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ChatMessage, Message } from './message-types';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 // URL normalization helper for APK builds
 const normalizeMediaUrl = (url: string | null | undefined): string | null => {
@@ -80,11 +83,23 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
   const [lastChatId, setLastChatId] = useState<string | null>(chatIdProp || null);
   const [chatId, setChatId] = useState<string | null>(chatIdProp || null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [selectedMessageForAction, setSelectedMessageForAction] = useState<ChatMessage | null>(null);
+  const [isActionMenuVisible, setIsActionMenuVisible] = useState(false);
+  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
 
-  // Get SafeArea insets for proper bottom padding (Android nav bar fix)
+  // Safe area insets for header (iOS notch) and input bar (Android nav bar)
   const insets = useSafeAreaInsets();
-  // Use SafeArea inset directly, with fallback ONLY when it's 0 (broken Android APKs)
+  const headerTopPadding = insets.top + 10;
   const inputBottomPadding = Platform.OS === 'android' && insets.bottom === 0 ? 16 : insets.bottom;
+
+  const onSwipeBack = (event: any) => {
+    if (event.nativeEvent.state === State.END) {
+      const { translationX, velocityX } = event.nativeEvent;
+      if (translationX > 100 || velocityX > 500) {
+        onClose();
+      }
+    }
+  };
 
   // Get current user from auth store
   const user = useAuthStore((state) => state.user);
@@ -551,39 +566,88 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
       
       console.log('📬 Sample converted message:', JSON.stringify(convertedMessages[0], null, 2));
       
-      // Always update messages state - even if empty
+      // Always trust the server list (including empty) so deleted messages do not return from cache
       setChatMessages(convertedMessages);
-      
-      // Save to storage if we have messages
-      if (convertedMessages.length > 0 && taskId) {
-        saveMessagesToStorage(taskId, convertedMessages);
-        console.log(`✅ Loaded ${convertedMessages.length} messages for chat`);
-        
-        // Mark messages as read when opening chat
-        if (chatId) {
-          markAsReadMutation.mutate(chatId, {
-            onSuccess: () => {
-              console.log('✅ Messages marked as read');
-            },
-            onError: (error) => {
-              console.error('❌ Failed to mark messages as read:', error);
-            }
-          });
+
+      if (taskId) {
+        if (convertedMessages.length > 0) {
+          saveMessagesToStorage(taskId, convertedMessages);
+          console.log(`✅ Loaded ${convertedMessages.length} messages for chat`);
+        } else {
+          // Clear stale local cache when server has no messages
+          AsyncStorage.removeItem(getStorageKey(taskId)).catch(() => {});
+          console.log('📦 No messages in chat — cleared local cache');
         }
-      } else if (convertedMessages.length === 0) {
-        console.log('📦 No messages in chat yet');
-        // Still try to load from storage as backup
-        if (taskId) {
-          loadMessagesFromStorage(taskId).then(storedMessages => {
-            if (storedMessages.length > 0) {
-              console.log(`💾 Loaded ${storedMessages.length} messages from storage as fallback`);
-              setChatMessages(storedMessages);
-            }
-          });
-        }
+      }
+
+      // Mark messages as read when opening chat
+      if (convertedMessages.length > 0 && chatId) {
+        markAsReadMutation.mutate(chatId, {
+          onSuccess: () => {
+            console.log('✅ Messages marked as read');
+          },
+          onError: (error) => {
+            console.error('❌ Failed to mark messages as read:', error);
+          }
+        });
       }
     }
   }, [messagesResponse, visible, currentUserId, chatId, taskId, currentUserName, chatDetailsResponse, posterIdProp, taskerIdProp]);
+
+  
+  const handleOpenActionMenu = (msg: ChatMessage) => {
+    setSelectedMessageForAction(msg);
+    setIsActionMenuVisible(true);
+  };
+
+  const handleDeleteSelectedMessage = async () => {
+    if (!selectedMessageForAction || !chatId) return;
+    const msgToDelete = selectedMessageForAction;
+
+    if (msgToDelete.sender !== 'me') {
+      Alert.alert('Cannot Delete', 'You can only delete messages you sent.');
+      setIsActionMenuVisible(false);
+      return;
+    }
+
+    Alert.alert(
+      'Delete Message',
+      'Are you sure you want to delete this message? It will be removed from the chat.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setIsDeletingMessage(true);
+              setIsActionMenuVisible(false);
+
+              // Optimistic local removal
+              const updated = chatMessages.filter((m) => m.id !== msgToDelete.id);
+              setChatMessages(updated);
+              if (taskId) {
+                await saveMessagesToStorage(taskId, updated);
+              }
+
+              // Backend API call if real message ID
+              if (!msgToDelete.id.startsWith('temp_')) {
+                await deleteMessageApi(chatId, msgToDelete.id);
+              }
+              console.log('✅ Message deleted successfully from chat:', msgToDelete.id);
+            } catch (error: any) {
+              console.error('❌ Failed to delete message:', error);
+              Alert.alert('Error', error.message || 'Failed to delete message');
+              refetchMessages();
+            } finally {
+              setIsDeletingMessage(false);
+              setSelectedMessageForAction(null);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const sendMessage = async () => {
     if (newMessage.trim() && chatId) {
@@ -878,17 +942,29 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
       visible={visible}
       onRequestClose={onClose}
     >
+      <GestureHandlerRootView style={{ flex: 1 }}>
+      <PanGestureHandler
+        onHandlerStateChange={onSwipeBack}
+        activeOffsetX={[-10, 10000]}
+        failOffsetY={[-20, 20]}
+      >
       <KeyboardAvoidingView 
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? headerTopPadding : 0}
       >
         <View style={styles.chatContainer}>
           <StatusBar barStyle="dark-content" backgroundColor="#fff" />
           
           {/* Chat Header */}
-          <View style={styles.chatHeader}>
-            <TouchableOpacity onPress={onClose} style={styles.backButton}>
+          <View style={[styles.chatHeader, { paddingTop: headerTopPadding }]}>
+            <TouchableOpacity
+              onPress={onClose}
+              style={styles.backButton}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
               <Ionicons name="chevron-back" size={24} color="#000" />
             </TouchableOpacity>
             
@@ -978,7 +1054,10 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                   </View>
                 )
               )}
-              <View
+              <TouchableOpacity
+                activeOpacity={0.88}
+                onLongPress={() => handleOpenActionMenu(msg)}
+                delayLongPress={300}
                 style={[
                   styles.messageBubble,
                   msg.sender === 'me' ? styles.myMessage : styles.otherMessage
@@ -986,7 +1065,12 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
               >
                 {msg.messageType === 'image' && msg.mediaUrl ? (
                   <View>
-                    <TouchableOpacity onPress={() => setPreviewImage(normalizeMediaUrl(msg.mediaUrl))}>
+                    <TouchableOpacity 
+                        activeOpacity={0.9} 
+                        onPress={() => setPreviewImage(normalizeMediaUrl(msg.mediaUrl))}
+                        onLongPress={() => handleOpenActionMenu(msg)}
+                        delayLongPress={300}
+                      >
                       <Image 
                         source={{ uri: msg.mediaUrl }} 
                         style={styles.messageImage}
@@ -1054,7 +1138,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                     </View>
                   )}
                 </View>
-              </View>
+              </TouchableOpacity>
             </View>
           )}
         />
@@ -1094,6 +1178,77 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
           </View>
         )}
 
+
+        {/* WhatsApp-Style Message & Photo Action Menu Modal */}
+        <Modal
+          visible={isActionMenuVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setIsActionMenuVisible(false)}
+        >
+          <TouchableOpacity
+            style={styles.actionModalOverlay}
+            activeOpacity={1}
+            onPress={() => setIsActionMenuVisible(false)}
+          >
+            <View style={styles.actionModalContainer}>
+              {/* Floating Emoji Reactions Bar (WhatsApp Style) */}
+              <View style={styles.reactionsBar}>
+                {['👍', '❤️', '😂', '😮', '😢', '🙏'].map((emoji, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    style={styles.reactionBtn}
+                    onPress={() => setIsActionMenuVisible(false)}
+                  >
+                    <Text style={styles.reactionEmoji}>{emoji}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Action Menu Card */}
+              <View style={styles.actionMenuCard}>
+                {selectedMessageForAction?.sender === 'me' && (
+                  <TouchableOpacity
+                    style={styles.actionMenuItem}
+                    onPress={handleDeleteSelectedMessage}
+                  >
+                    <Ionicons name="trash-outline" size={22} color="#FF3B30" />
+                    <Text style={[styles.actionMenuText, { color: '#FF3B30' }]}>
+                      Delete {selectedMessageForAction?.messageType === 'image' ? 'Photo' : 'Message'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                <TouchableOpacity
+                  style={styles.actionMenuItem}
+                  onPress={() => {
+                    setIsActionMenuVisible(false);
+                    if (selectedMessageForAction) {
+                      Alert.alert(
+                        'Message Details',
+                        `Sent at: ${selectedMessageForAction.timestamp || 'Just now'}
+Type: ${selectedMessageForAction.messageType || 'text'}
+Status: ${selectedMessageForAction.isRead ? 'Read' : 'Delivered'}`
+                      );
+                    }
+                  }}
+                >
+                  <Ionicons name="information-circle-outline" size={22} color="#1E293B" />
+                  <Text style={styles.actionMenuText}>Info</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.actionMenuItem, { borderBottomWidth: 0 }]}
+                  onPress={() => setIsActionMenuVisible(false)}
+                >
+                  <Ionicons name="close-circle-outline" size={22} color="#64748B" />
+                  <Text style={[styles.actionMenuText, { color: '#64748B' }]}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </Modal>
+
         {/* Image Preview Modal */}
         <Modal
           visible={!!previewImage}
@@ -1127,6 +1282,8 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         </Modal>
       </View>
     </KeyboardAvoidingView>
+    </PanGestureHandler>
+    </GestureHandlerRootView>
     </Modal>
   );
 };
@@ -1140,15 +1297,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    paddingTop: (StatusBar.currentHeight || 0) + 10,
+    paddingBottom: 10,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#e8e8e8',
   },
   backButton: {
-    padding: 4,
-    marginRight: 8,
+    padding: 8,
+    marginRight: 4,
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   chatHeaderInfo: {
     flex: 1,
@@ -1172,20 +1332,20 @@ const styles = StyleSheet.create({
   },
   chatAvatarInitials: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
   },
   chatHeaderText: {
     flex: 1,
   },
   chatTitle: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#000',
     marginBottom: 2,
   },
   chatStatus: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#34C759',
   },
   moreButton: {
@@ -1227,7 +1387,7 @@ const styles = StyleSheet.create({
   },
   messageAvatarInitials: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: RFValue(11),
     fontWeight: '600',
   },
   messageBubble: {
@@ -1243,7 +1403,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E9ECEF',
   },
   messageText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     lineHeight: 20,
     marginBottom: 4,
   },
@@ -1260,7 +1420,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   messageTime: {
-    fontSize: 11,
+    fontSize: RFValue(11),
   },
   myMessageTime: {
     color: 'rgba(255, 255, 255, 0.7)',
@@ -1309,7 +1469,7 @@ const styles = StyleSheet.create({
   },
   messageInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: RFValue(15),
     maxHeight: 100,
     color: '#000',
     paddingVertical: 6,
@@ -1333,13 +1493,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     marginTop: 12,
     textAlign: 'center',
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#1A1A1A',
     marginTop: 16,
@@ -1347,7 +1507,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#8E8E93',
     textAlign: 'center',
     lineHeight: 20,
@@ -1372,7 +1532,7 @@ const styles = StyleSheet.create({
   },
   uploadOverlayText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
   },
@@ -1403,5 +1563,62 @@ const styles = StyleSheet.create({
   previewImage: {
     width: '100%',
     height: '100%',
+  },
+  actionModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  actionModalContainer: {
+    width: '100%',
+    maxWidth: 320,
+    alignItems: 'center',
+    gap: 12,
+  },
+  reactionsBar: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 32,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  reactionBtn: {
+    padding: 4,
+  },
+  reactionEmoji: {
+    fontSize: RFValue(22),
+  },
+  actionMenuCard: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    elevation: 10,
+  },
+  actionMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E2E8F0',
+  },
+  actionMenuText: {
+    fontSize: RFValue(15),
+    fontWeight: '600',
+    color: '#1E293B',
   },
 });

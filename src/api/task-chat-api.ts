@@ -574,3 +574,27 @@ export const markMessagesAsRead = async (chatId: string): Promise<MarkAsReadResp
     );
   }
 };
+
+
+/**
+ * DELETE /chats/{chatId}/messages/{messageId}
+ * Delete a message in a chat
+ */
+export const deleteMessage = async (
+  chatId: string,
+  messageId: string
+): Promise<{ success: boolean; message: string; data?: any }> => {
+  try {
+    console.log('🗑️ Deleting message from chat:', { chatId, messageId });
+    const response = await api.delete<any>(
+      `/chats/${chatId}/messages/${messageId}`
+    );
+    console.log('✅ Message deleted successfully:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ Failed to delete message:', error);
+    throw new Error(
+      error?.response?.data?.message || 'Failed to delete message. Please try again.'
+    );
+  }
+};

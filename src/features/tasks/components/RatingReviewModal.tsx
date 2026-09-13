@@ -1,10 +1,10 @@
+import { AppAlert } from '@/src/shared/components/AppAlert';
 import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     Image,
     KeyboardAvoidingView,
     Modal,
@@ -16,6 +16,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface RatingReviewModalProps {
   visible: boolean;
@@ -36,6 +38,8 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
   taskTitle,
   userRole,
 }) => {
+  const insets = useSafeAreaInsets();
+  const scrollRef = useRef<ScrollView>(null);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [attachments, setAttachments] = useState<any[]>([]);
@@ -64,7 +68,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      Alert.alert('Rating Required', 'Please select a rating before submitting');
+      AppAlert.alert('Rating Required', 'Please select a rating before submitting');
       return;
     }
 
@@ -82,7 +86,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
       
       // Show success message after modal closes
       setTimeout(() => {
-        Alert.alert(
+        AppAlert.alert(
           'Success',
           'Your review has been submitted successfully!'
         );
@@ -106,12 +110,12 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
         errorMessage = error.message;
       }
       
-      Alert.alert('Review Submission Failed', errorMessage);
+      AppAlert.alert('Review Submission Failed', errorMessage);
     }
   };
 
   const handleSkip = () => {
-    Alert.alert(
+    AppAlert.alert(
       'Skip Review',
       'Are you sure you want to skip adding a review? The task will be marked as completed.',
       [
@@ -138,7 +142,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
               
               // Show success message after modal closes
               setTimeout(() => {
-                Alert.alert(
+                AppAlert.alert(
                   'Task Completed',
                   'The task has been marked as completed successfully!'
                 );
@@ -146,7 +150,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
             } catch (error: any) {
               console.error('❌ Failed to complete task:', error);
               setIsSubmitting(false);
-              Alert.alert(
+              AppAlert.alert(
                 'Error',
                 error?.message || 'Failed to complete task. Please try again.'
               );
@@ -162,7 +166,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (status !== 'granted') {
-        Alert.alert(
+        AppAlert.alert(
           'Permission Required',
           'Please grant permission to access your photo library'
         );
@@ -185,7 +189,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
         }));
 
         if (attachments.length + newAttachments.length > 5) {
-          Alert.alert('Limit Reached', 'You can upload a maximum of 5 files');
+          AppAlert.alert('Limit Reached', 'You can upload a maximum of 5 files');
           return;
         }
 
@@ -193,7 +197,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert('Error', 'Failed to pick image');
+      AppAlert.alert('Error', 'Failed to pick image');
     }
   };
 
@@ -214,7 +218,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
         }));
 
         if (attachments.length + newAttachments.length > 5) {
-          Alert.alert('Limit Reached', 'You can upload a maximum of 5 files');
+          AppAlert.alert('Limit Reached', 'You can upload a maximum of 5 files');
           return;
         }
 
@@ -222,7 +226,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
       }
     } catch (error) {
       console.error('Error picking document:', error);
-      Alert.alert('Error', 'Failed to pick document');
+      AppAlert.alert('Error', 'Failed to pick document');
     }
   };
 
@@ -237,273 +241,340 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
       transparent={true}
       onRequestClose={handleClose}
     >
-      <KeyboardAvoidingView 
-        style={styles.modalContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <View style={styles.modalContent}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Rate & Review</Text>
-            <TouchableOpacity 
-              onPress={handleClose}
-              disabled={isSubmitting}
-              style={styles.closeButton}
+      <View style={styles.modalContainer}>
+        <KeyboardAvoidingView
+          style={styles.keyboardView}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+            {/* Premium Header */}
+            <View style={styles.header}>
+              <View style={styles.headerLeft}>
+                <View style={styles.headerIconBadge}>
+                  <Ionicons name="star" size={18} color="#FF7A00" />
+                </View>
+                <Text style={styles.headerTitle}>Rate &amp; Review</Text>
+              </View>
+              <TouchableOpacity
+                onPress={handleClose}
+                disabled={isSubmitting}
+                style={styles.closeButton}
+              >
+                <Ionicons name="close" size={22} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView 
+              ref={scrollRef}
+              style={styles.scrollView}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
             >
-              <Ionicons name="close" size={28} color="#333" />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView 
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* Task Info */}
-            <View style={styles.taskInfo}>
-              <Text style={styles.taskLabel}>
-                {userRole === 'tasker' ? 'Task Completed' : 'Rate Tasker'}
-              </Text>
-              <Text style={styles.taskTitle} numberOfLines={2}>{taskTitle}</Text>
-            </View>
-
-            {/* Star Rating */}
-            <View style={styles.ratingSection}>
-              <Text style={styles.sectionLabel}>Your Rating *</Text>
-              <View style={styles.starsContainer}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <TouchableOpacity
-                    key={star}
-                    onPress={() => setRating(star)}
-                    style={styles.starButton}
-                    disabled={isSubmitting}
-                  >
-                    <Ionicons
-                      name={star <= rating ? 'star' : 'star-outline'}
-                      size={40}
-                      color={star <= rating ? '#FFD700' : '#DDD'}
-                    />
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <Text style={styles.ratingText}>
-                {rating === 0 ? 'Tap to rate' : 
-                 rating === 1 ? 'Poor' :
-                 rating === 2 ? 'Fair' :
-                 rating === 3 ? 'Good' :
-                 rating === 4 ? 'Very Good' :
-                 'Excellent'}
-              </Text>
-            </View>
-
-            {/* Review Text */}
-            <View style={styles.reviewSection}>
-              <Text style={styles.sectionLabel}>Your Review (Optional)</Text>
-              <TextInput
-                style={styles.reviewInput}
-                multiline
-                numberOfLines={6}
-                placeholder="Share your experience..."
-                placeholderTextColor="#999"
-                value={reviewText}
-                onChangeText={setReviewText}
-                textAlignVertical="top"
-                editable={!isSubmitting}
-              />
-            </View>
-
-            {/* Attachments */}
-            <View style={styles.attachmentsSection}>
-              <Text style={styles.sectionLabel}>Attachments (Optional)</Text>
-              <Text style={styles.attachmentHint}>
-                Max 5 files, 10MB each. Images or documents (PDF, DOC, DOCX)
-              </Text>
-
-              {/* Attachment Buttons */}
-              <View style={styles.attachmentButtons}>
-                <TouchableOpacity
-                  style={styles.attachmentButton}
-                  onPress={pickImage}
-                  disabled={isSubmitting || attachments.length >= 5}
-                >
-                  <Ionicons name="image-outline" size={24} color="#007AFF" />
-                  <Text style={styles.attachmentButtonText}>Add Photos</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.attachmentButton}
-                  onPress={pickDocument}
-                  disabled={isSubmitting || attachments.length >= 5}
-                >
-                  <Ionicons name="document-outline" size={24} color="#007AFF" />
-                  <Text style={styles.attachmentButtonText}>Add Documents</Text>
-                </TouchableOpacity>
+              {/* Task Info */}
+              <View style={styles.taskInfo}>
+                <Text style={styles.taskLabel}>
+                  {userRole === 'tasker' ? 'Task Completed' : 'Rate Tasker'}
+                </Text>
+                <Text style={styles.taskTitle} numberOfLines={2}>{taskTitle}</Text>
               </View>
 
-              {/* Attachment Preview */}
-              {attachments.length > 0 && (
-                <View style={styles.attachmentsList}>
-                  {attachments.map((attachment, index) => (
-                    <View key={index} style={styles.attachmentItem}>
-                      {attachment.isImage ? (
-                        <Image 
-                          source={{ uri: attachment.uri }} 
-                          style={styles.attachmentImage}
-                        />
-                      ) : (
-                        <View style={styles.attachmentDoc}>
-                          <Ionicons name="document" size={40} color="#007AFF" />
-                        </View>
-                      )}
-                      <Text style={styles.attachmentName} numberOfLines={1}>
-                        {attachment.name}
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.removeButton}
-                        onPress={() => removeAttachment(index)}
-                        disabled={isSubmitting}
-                      >
-                        <Ionicons name="close-circle" size={24} color="#FF3B30" />
-                      </TouchableOpacity>
-                    </View>
+              {/* Star Rating */}
+              <View style={styles.ratingSection}>
+                <Text style={styles.sectionLabel}>Your Rating *</Text>
+                <View style={styles.starsContainer}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <TouchableOpacity
+                      key={star}
+                      onPress={() => setRating(star)}
+                      style={styles.starButton}
+                      disabled={isSubmitting}
+                    >
+                      <Ionicons
+                        name={star <= rating ? 'star' : 'star-outline'}
+                        size={40}
+                        color={star <= rating ? '#FF7A00' : '#D1D5DB'}
+                      />
+                    </TouchableOpacity>
                   ))}
                 </View>
-              )}
+                <Text style={styles.ratingText}>
+                  {rating === 0 ? 'Tap to rate' : 
+                   rating === 1 ? 'Poor' :
+                   rating === 2 ? 'Fair' :
+                   rating === 3 ? 'Good' :
+                   rating === 4 ? 'Very Good' :
+                   'Excellent'}
+                </Text>
+              </View>
+
+              {/* Review Text */}
+              <View style={styles.reviewSection}>
+                <Text style={styles.sectionLabel}>Your Review (Optional)</Text>
+                <TextInput
+                  style={styles.reviewInput}
+                  multiline
+                  numberOfLines={6}
+                  placeholder="Share your experience..."
+                  placeholderTextColor="#999"
+                  value={reviewText}
+                  onChangeText={setReviewText}
+                  onFocus={() => {
+                    setTimeout(() => {
+                      scrollRef.current?.scrollToEnd({ animated: true });
+                    }, 250);
+                  }}
+                  textAlignVertical="top"
+                  editable={!isSubmitting}
+                />
+              </View>
+
+              {/* Attachments */}
+              <View style={styles.attachmentsSection}>
+                <Text style={styles.sectionLabel}>Attachments (Optional)</Text>
+                <Text style={styles.attachmentHint}>
+                  Max 5 files, 10MB each. Images or documents (PDF, DOC, DOCX)
+                </Text>
+
+                {/* Attachment Buttons */}
+                <View style={styles.attachmentButtons}>
+                  <TouchableOpacity
+                    style={styles.attachmentButton}
+                    onPress={pickImage}
+                    disabled={isSubmitting || attachments.length >= 5}
+                  >
+                    <Ionicons name="image-outline" size={24} color="#007AFF" />
+                    <Text style={styles.attachmentButtonText}>Add Photos</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.attachmentButton}
+                    onPress={pickDocument}
+                    disabled={isSubmitting || attachments.length >= 5}
+                  >
+                    <Ionicons name="document-outline" size={24} color="#007AFF" />
+                    <Text style={styles.attachmentButtonText}>Add Documents</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Attachment Preview */}
+                {attachments.length > 0 && (
+                  <View style={styles.attachmentsList}>
+                    {attachments.map((attachment, index) => (
+                      <View key={index} style={styles.attachmentItem}>
+                        {attachment.isImage ? (
+                          <Image 
+                            source={{ uri: attachment.uri }} 
+                            style={styles.attachmentImage}
+                          />
+                        ) : (
+                          <View style={styles.attachmentDoc}>
+                            <Ionicons name="document" size={40} color="#007AFF" />
+                          </View>
+                        )}
+                        <Text style={styles.attachmentName} numberOfLines={1}>
+                          {attachment.name}
+                        </Text>
+                        <TouchableOpacity
+                          style={styles.removeButton}
+                          onPress={() => removeAttachment(index)}
+                          disabled={isSubmitting}
+                        >
+                          <Ionicons name="close-circle" size={24} color="#FF3B30" />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </ScrollView>
+
+            {/* Submit Button — fixed footer above keyboard */}
+            <View style={styles.footer}>
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  (rating === 0 || isSubmitting) && styles.submitButtonDisabled
+                ]}
+                onPress={handleSubmit}
+                disabled={rating === 0 || isSubmitting}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="#FFF" />
+                ) : (
+                  <Text style={styles.submitButtonText}>Submit Review</Text>
+                )}
+              </TouchableOpacity>
             </View>
-          </ScrollView>
-
-          {/* Submit Button */}
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                (rating === 0 || isSubmitting) && styles.submitButtonDisabled
-              ]}
-              onPress={handleSubmit}
-              disabled={rating === 0 || isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <Text style={styles.submitButtonText}>Submit Review</Text>
-              )}
-            </TouchableOpacity>
-
-
           </View>
-        </View>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  // ── Backdrop + Container ───────────────────────────────────────────
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(10, 14, 60, 0.65)',
     justifyContent: 'flex-end',
   },
-  modalContent: {
-    backgroundColor: '#FFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '90%',
-    paddingBottom: Platform.OS === 'ios' ? 20 : 0,
-    flexDirection: 'column',
+  keyboardView: {
+    width: '100%',
   },
+  modalContent: {
+    backgroundColor: '#FAFBFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    maxHeight: '92%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+  },
+
+  // ── Header ───────────────────────────────────────────────────
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-    flexShrink: 0,
+    paddingVertical: 18,
+    backgroundColor: '#1A2980',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerIconBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255, 122, 0, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#333',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
   closeButton: {
-    padding: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+
+  // ── Scroll ───────────────────────────────────────────────────
   scrollView: {
-    flexShrink: 1,
     flexGrow: 0,
+    flexShrink: 1,
   },
   scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 20,
+    paddingBottom: 12,
   },
+
+  // ── Task Info Banner ─────────────────────────────────────────
   taskInfo: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#F8F9FA',
-    marginTop: 1,
+    paddingVertical: 14,
+    backgroundColor: '#EEF2FF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E7FF',
   },
   taskLabel: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: RFValue(10),
+    color: '#6B7280',
     marginBottom: 4,
     textTransform: 'uppercase',
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 1,
   },
   taskTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: RFValue(15),
+    fontWeight: '700',
+    color: '#1A1D2E',
+    lineHeight: RFValue(21),
   },
+
+  // ── Star Rating ────────────────────────────────────────────
   ratingSection: {
     paddingHorizontal: 20,
     paddingVertical: 24,
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    marginTop: 12,
+    marginHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    shadowColor: '#1A2980',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   sectionLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
+    fontSize: RFValue(13),
+    fontWeight: '700',
+    color: '#374151',
+    marginBottom: 14,
     alignSelf: 'flex-start',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
   starsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginVertical: 12,
+    gap: 6,
+    marginBottom: 12,
   },
   starButton: {
-    padding: 8,
+    padding: 6,
   },
   ratingText: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 8,
-    fontWeight: '500',
+    fontSize: RFValue(15),
+    color: '#1A2980',
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
+
+  // ── Review Input ───────────────────────────────────────────
   reviewSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   reviewInput: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 15,
-    color: '#333',
+    borderWidth: 1.5,
+    borderColor: '#E0E7FF',
+    borderRadius: 16,
+    padding: 14,
+    fontSize: RFValue(14),
+    color: '#1A1D2E',
     minHeight: 120,
-    backgroundColor: '#FFF',
+    backgroundColor: '#FFFFFF',
+    lineHeight: RFValue(21),
   },
+
+  // ── Attachments ───────────────────────────────────────────
   attachmentsSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   attachmentHint: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 12,
+    fontSize: RFValue(11),
+    color: '#9CA3AF',
+    marginBottom: 14,
+    lineHeight: RFValue(16),
   },
   attachmentButtons: {
     flexDirection: 'row',
@@ -515,18 +586,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 13,
     paddingHorizontal: 16,
-    backgroundColor: '#F0F8FF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#007AFF',
+    backgroundColor: '#EEF2FF',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#C7D2FE',
     gap: 8,
   },
   attachmentButtonText: {
-    fontSize: 14,
+    fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#007AFF',
+    color: '#1A2980',
   },
   attachmentsList: {
     flexDirection: 'row',
@@ -534,30 +605,30 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   attachmentItem: {
-    width: 100,
+    width: 90,
     alignItems: 'center',
     position: 'relative',
   },
   attachmentImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
+    width: 90,
+    height: 90,
+    borderRadius: 12,
     backgroundColor: '#F0F0F0',
   },
   attachmentDoc: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
-    backgroundColor: '#F0F8FF',
+    width: 90,
+    height: 90,
+    borderRadius: 12,
+    backgroundColor: '#EEF2FF',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#007AFF',
+    borderWidth: 1.5,
+    borderColor: '#C7D2FE',
   },
   attachmentName: {
-    fontSize: 11,
-    color: '#666',
-    marginTop: 4,
+    fontSize: RFValue(10),
+    color: '#6B7280',
+    marginTop: 5,
     textAlign: 'center',
     width: '100%',
   },
@@ -568,39 +639,50 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderRadius: 12,
   },
+
+  // ── Footer Submit ──────────────────────────────────────────
   footer: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingTop: 14,
+    paddingBottom: Platform.OS === 'ios' ? 8 : 16,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-    flexShrink: 0,
+    borderTopColor: '#E8ECF4',
+    backgroundColor: '#FAFBFF',
   },
   submitButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1A2980',
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     alignItems: 'center',
+    shadowColor: '#1A2980',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
   },
   submitButtonDisabled: {
-    backgroundColor: '#CCC',
+    backgroundColor: '#CBD5E1',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   submitButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(15),
     fontWeight: '700',
     color: '#FFF',
+    letterSpacing: 0.5,
   },
   skipButton: {
     backgroundColor: 'transparent',
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: '#999',
+    marginTop: 10,
+    borderWidth: 1.5,
+    borderColor: '#E0E7FF',
   },
   skipButtonText: {
-    fontSize: 15,
+    fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#666',
+    color: '#6B7280',
   },
 });

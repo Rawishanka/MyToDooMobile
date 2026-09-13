@@ -2,6 +2,7 @@ import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { formatUserName } from '@/src/utils/formatUserName';
 import { StyleSheet, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PaymentDetailsProps {
   taskCreator?: {
@@ -72,7 +73,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#000',
     marginBottom: 20,
@@ -91,19 +92,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     flex: 1,
   },
   value: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#000',
     fontWeight: '500',
     flex: 1,
     textAlign: 'right',
   },
   amount: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     color: '#28a745',
     fontWeight: '700',
   },

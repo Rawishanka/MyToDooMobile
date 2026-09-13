@@ -23,6 +23,8 @@ import PrivacyPolicyScreen from '@/src/features/legal/screens/PrivacyPolicyScree
 import { DatePickerInput } from './DatePickerInput';
 import { LocationInput } from './LocationInput';
 import type { CountryData, LocationData } from './signup-types';
+import { formatAbnInput } from '@/src/shared/utils/abnValidation';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface ValidationErrors {
   firstName?: string;
@@ -78,6 +80,16 @@ interface SignupFormProps {
   handleGoogleSignIn?: () => void;
   handleAppleSignIn?: () => void;
   
+  // Tasker preferences
+  notifyNewTask: boolean;
+  notifySkillMatch: boolean;
+  setNotifyNewTask: (v: boolean) => void;
+  setNotifySkillMatch: (v: boolean) => void;
+
+  // Optional ABN for taskers
+  abnInput: string;
+  setAbnInput: (value: string) => void;
+  
   // Scroll control
   scrollViewRef?: React.RefObject<ScrollView | null>;
 }
@@ -115,6 +127,12 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   handleDateChange,
   handleGoogleSignIn,
   handleAppleSignIn,
+  notifyNewTask,
+  notifySkillMatch,
+  setNotifyNewTask,
+  setNotifySkillMatch,
+  abnInput,
+  setAbnInput,
   scrollViewRef,
 }) => {
   const router = useRouter();
@@ -627,9 +645,13 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       {/* Country Display - Australia Only (No dropdown) */}
       <Text style={styles.label}>Country</Text>
       <View style={styles.countryDisplayContainer}>
+        <View style={styles.countryFlagWrap}>
+          <Ionicons name="flag" size={15} color="#1A2980" />
+        </View>
         <Text style={styles.countryDisplayText}>
-          {selectedCountry.flag} {selectedCountry.name}
+          {selectedCountry.name}
         </Text>
+        <Ionicons name="lock-closed-outline" size={14} color="#9CA3AF" style={{ marginLeft: 'auto' }} />
       </View>
 
       {/* Location Input - Australian Suburbs */}
@@ -802,6 +824,65 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         <Text style={styles.errorText}>{errors.confirmPassword}</Text>
       )}
 
+      {/* Tasker Preferences */}
+      <View style={styles.taskerSection}>
+        <Text style={styles.taskerSectionTitle}>Tasker Preferences</Text>
+        <Text style={styles.taskerSectionSubtitle}>Register as a tasker to get notified when new tasks are posted.</Text>
+
+        {/* Register as a Tasker */}
+        <TouchableOpacity
+          style={styles.taskerCheckRow}
+          onPress={() => {
+            const next = !notifyNewTask;
+            setNotifyNewTask(next);
+            if (!next) setNotifySkillMatch(false);
+          }}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.taskerCheckbox, notifyNewTask && styles.taskerCheckboxChecked]}>
+            {notifyNewTask && <Ionicons name="checkmark" size={14} color="#fff" />}
+          </View>
+          <View style={styles.taskerCheckContent}>
+            <Text style={styles.taskerCheckLabel}>Register as a Tasker</Text>
+            <Text style={styles.taskerCheckDesc}>Get notified when new tasks are posted on the platform.</Text>
+          </View>
+        </TouchableOpacity>
+
+        {/* Only notify me of tasks in my skillset */}
+        <TouchableOpacity
+          style={[styles.taskerCheckRow, !notifyNewTask && styles.taskerCheckRowDisabled]}
+          onPress={() => { if (notifyNewTask) setNotifySkillMatch(!notifySkillMatch); }}
+          activeOpacity={notifyNewTask ? 0.7 : 1}
+        >
+          <View style={[styles.taskerCheckbox, notifySkillMatch && notifyNewTask && styles.taskerCheckboxChecked, !notifyNewTask && styles.taskerCheckboxDisabled]}>
+            {notifySkillMatch && notifyNewTask && <Ionicons name="checkmark" size={14} color="#fff" />}
+          </View>
+          <View style={styles.taskerCheckContent}>
+            <Text style={[styles.taskerCheckLabel, !notifyNewTask && styles.taskerCheckLabelDisabled]}>Only notify me of tasks in my skillset</Text>
+            <Text style={[styles.taskerCheckDesc, !notifyNewTask && styles.taskerCheckLabelDisabled]}>Filter notifications to tasks that match your skills only.</Text>
+          </View>
+        </TouchableOpacity>
+
+        {notifyNewTask && (
+          <View style={styles.abnFieldContainer}>
+            <Text style={styles.abnLabel}>Australian Business Number (ABN) (optional)</Text>
+            <TextInput
+              style={styles.abnInput}
+              value={abnInput}
+              onChangeText={(text) => setAbnInput(formatAbnInput(text))}
+              placeholder="XX XXX XXX XXX"
+              placeholderTextColor="#999"
+              keyboardType="number-pad"
+              maxLength={14}
+              autoCorrect={false}
+            />
+            <Text style={styles.abnHelper}>
+              You can skip this and add your ABN later. Required before payout setup.
+            </Text>
+          </View>
+        )}
+      </View>
+
       {/* Terms and Conditions Checkbox */}
       <View style={styles.termsContainer}>
         <TouchableOpacity
@@ -923,14 +1004,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     marginBottom: 8,
     color: '#333',
   },
   required: {
     color: '#FF3B30',
-    fontSize: 14,
+    fontSize: RFValue(14),
   },
   input: {
     borderWidth: 1.5,
@@ -938,7 +1019,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    fontSize: 15,
+    fontSize: RFValue(15),
     marginBottom: 4,
     backgroundColor: '#FAFAFA',
   },
@@ -948,7 +1029,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#FF3B30',
-    fontSize: 12,
+    fontSize: RFValue(12),
     marginTop: 4,
     marginBottom: 12,
     marginLeft: 4,
@@ -968,7 +1049,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   phonePrefixText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#333',
   },
@@ -979,7 +1060,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    fontSize: 15,
+    fontSize: RFValue(15),
     backgroundColor: '#FAFAFA',
   },
   passwordContainer: {
@@ -995,7 +1076,7 @@ const styles = StyleSheet.create({
   passwordInput: {
     flex: 1,
     paddingVertical: 12,
-    fontSize: 15,
+    fontSize: RFValue(15),
   },
   passwordToggle: {
     padding: 8,
@@ -1012,7 +1093,7 @@ const styles = StyleSheet.create({
   },
   signUpButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   signUpButtonTextDisabled: {
@@ -1049,12 +1130,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   termsText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     lineHeight: 20,
   },
   termsLink: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#007AFF',
     fontWeight: '600',
     lineHeight: 20,
@@ -1072,7 +1153,7 @@ const styles = StyleSheet.create({
   dividerText: {
     marginHorizontal: 10,
     color: '#666',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '500',
   },
   googleButton: {
@@ -1094,7 +1175,7 @@ const styles = StyleSheet.create({
   googleButtonText: {
     color: '#333',
     fontWeight: '600',
-    fontSize: 15,
+    fontSize: RFValue(15),
   },
   appleButton: {
     flexDirection: 'row',
@@ -1112,23 +1193,127 @@ const styles = StyleSheet.create({
   appleButtonText: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 15,
+    fontSize: RFValue(15),
   },
   // Australia-only country display (non-editable)
   countryDisplayContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E0E0E0',
-    borderRadius: 10,
-    paddingHorizontal: 16,
+    borderColor: '#E8ECF4',
+    borderRadius: 12,
+    paddingHorizontal: 14,
     paddingVertical: 14,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F4F6FB',
     marginBottom: 16,
+    gap: 10,
+  },
+  countryFlagWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   countryDisplayText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
+    color: '#1A1D2E',
+    fontWeight: '600',
+  },
+  // Tasker Preferences Section
+  taskerSection: {
+    backgroundColor: '#F0F6FF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#D0E4FF',
+  },
+  taskerSectionTitle: {
+    fontSize: RFValue(15),
+    fontWeight: '700',
+    color: '#0052A2',
+    marginBottom: 4,
+  },
+  taskerSectionSubtitle: {
+    fontSize: RFValue(12),
+    color: '#666',
+    marginBottom: 14,
+    lineHeight: 18,
+  },
+  taskerCheckRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 14,
+    gap: 12,
+  },
+  taskerCheckRowDisabled: {
+    opacity: 0.45,
+  },
+  taskerCheckbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: '#0052A2',
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+    flexShrink: 0,
+  },
+  taskerCheckboxChecked: {
+    backgroundColor: '#0052A2',
+    borderColor: '#0052A2',
+  },
+  taskerCheckboxDisabled: {
+    borderColor: '#bbb',
+    backgroundColor: '#f0f0f0',
+  },
+  taskerCheckContent: {
+    flex: 1,
+  },
+  taskerCheckLabel: {
+    fontSize: RFValue(14),
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 2,
+  },
+  taskerCheckLabelDisabled: {
+    color: '#999',
+  },
+  taskerCheckDesc: {
+    fontSize: RFValue(12),
+    color: '#555',
+    lineHeight: 17,
+  },
+  abnFieldContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  abnLabel: {
+    fontSize: RFValue(13),
+    fontWeight: '600',
     color: '#333',
-    fontWeight: '500',
+    marginBottom: 8,
+  },
+  abnInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: RFValue(15),
+    color: '#333',
+    backgroundColor: '#fff',
+  },
+  abnHelper: {
+    fontSize: RFValue(12),
+    color: '#666',
+    marginTop: 6,
+    lineHeight: RFValue(16),
   },
 });

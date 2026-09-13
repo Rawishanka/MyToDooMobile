@@ -17,6 +17,7 @@ import {
   View
 } from 'react-native';
 import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface Category {
   _id: string;
@@ -342,13 +343,13 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   title: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '700',
     color: '#1C1C1E',
     marginBottom: 5,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#8E8E93',
     marginBottom: 30,
   },
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   label: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#1C1C1E',
     marginBottom: 8,
@@ -373,7 +374,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   categorySelectorText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
   },
   placeholder: {
@@ -405,7 +406,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: 8,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
   },
   categoriesList: {
@@ -437,7 +438,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F5FF',
   },
   categoryItemText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#1C1C1E',
   },
   categoryItemTextSelected: {
@@ -449,7 +450,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     borderWidth: 1,
     borderColor: 'transparent',
@@ -458,7 +459,7 @@ const styles = StyleSheet.create({
     borderColor: '#FF3B30',
   },
   validationText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#FF3B30',
     marginTop: 4,
   },
@@ -467,7 +468,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     height: 120,
     borderWidth: 1,
@@ -488,11 +489,11 @@ const styles = StyleSheet.create({
   },
   continueText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   characterCount: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     textAlign: 'right',
     marginTop: 4,

@@ -2,6 +2,7 @@ import { LocationAutocomplete } from '@/src/shared/components/LocationAutocomple
 import { Ionicons } from '@expo/vector-icons';
 import React, { useRef } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface LocationData {
   address: string;
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
     overflow: 'visible', // Allow dropdown to escape container bounds
   },
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#555',
     marginBottom: 6,
     marginTop: 10,
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
   },
   selectedLocationText: {
     marginLeft: 8,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#0057FF',
     flex: 1,
   },

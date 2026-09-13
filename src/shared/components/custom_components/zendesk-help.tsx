@@ -11,6 +11,7 @@ import {
     View
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface ZendeskHelpProps {
   visible: boolean;
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#0052A2',
   },
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
 });

@@ -110,14 +110,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: '#f3f6fb',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
   },
   fallbackContainer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: '#E8EFF9',
     justifyContent: 'center',
     alignItems: 'center',
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     opacity: 0.2,
   },
   playOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 2,

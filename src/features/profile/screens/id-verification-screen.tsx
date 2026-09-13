@@ -11,6 +11,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface IDVerificationScreenProps {
   onBack: () => void;
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
   },
@@ -307,13 +308,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statusTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 4,
   },
   statusSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     lineHeight: 20,
   },
@@ -335,7 +336,7 @@ const styles = StyleSheet.create({
     borderColor: '#dee2e6',
   },
   badgeText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
     marginLeft: 4,
   },
@@ -353,7 +354,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 15,
@@ -368,13 +369,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   benefitTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#333',
     marginBottom: 2,
   },
   benefitDescription: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     lineHeight: 16,
   },
@@ -391,7 +392,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   requirementText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     marginLeft: 12,
   },
@@ -414,7 +415,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     marginLeft: 8,
   },
@@ -429,7 +430,7 @@ const styles = StyleSheet.create({
     borderColor: '#28a745',
   },
   verifiedMessage: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#28a745',
     fontWeight: '600',
     marginLeft: 8,
@@ -442,13 +443,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   infoTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#333',
     marginBottom: 10,
   },
   infoText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     lineHeight: 18,
   },

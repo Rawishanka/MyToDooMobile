@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface SearchBarProps {
   visible: boolean;
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     flex: 1,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     paddingVertical: 0,
   },
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8F4FF',
   },
   searchInfo: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginTop: 6,
     marginLeft: 4,

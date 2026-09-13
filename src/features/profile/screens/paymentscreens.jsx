@@ -1,10 +1,32 @@
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { getAbnStatus } from '@/src/api/abn-api';
+import TaskerAbnSection from '@/src/features/profile/components/TaskerAbnSection';
+import { useAuthStore } from '@/src/store/auth-task-store';
 import PayoutAccountScreen from './payout-account-screen';
 import PayoutHistoryScreen from './payout-history-screen';
 
-const PaymentOptionsScreen = ({ onNavigate, onBackToAccount }) => (
+const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false }) => {
+  const user = useAuthStore((state) => state.user);
+  const isTasker = !!user?.notifyNewTask;
+  const [abnVerified, setAbnVerified] = useState(false);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (!isTasker) return;
+    getAbnStatus()
+      .then((status) => setAbnVerified(!!status.abnVerified))
+      .catch(() => setAbnVerified(false));
+  }, [isTasker]);
+
+  useEffect(() => {
+    if (focusAbn && scrollRef.current) {
+      scrollRef.current.scrollTo({ y: 0, animated: true });
+    }
+  }, [focusAbn]);
+
+  return (
   <View style={styles.container}>
     <View style={styles.header}>
       <TouchableOpacity 
@@ -16,17 +38,34 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount }) => (
       <Text style={styles.headerTitle}>Payment options</Text>
     </View>
     
-    <View style={styles.content}>
+    <ScrollView ref={scrollRef} style={styles.content} contentContainerStyle={styles.contentContainer}>
+      {isTasker && (
+        <TaskerAbnSection
+          variant="compact"
+          onVerified={(status) => setAbnVerified(!!status.abnVerified)}
+        />
+      )}
+
+      {isTasker && !abnVerified && (
+        <Text style={styles.abnGateNote}>
+          Verify your ABN above before setting up a payment account.
+        </Text>
+      )}
+
       <TouchableOpacity 
-        style={styles.menuItem}
+        style={[styles.menuItem, isTasker && !abnVerified && styles.menuItemDisabled]}
         onPress={() => onNavigate('payoutAccount')}
+        disabled={isTasker && !abnVerified}
       >
-        <Text style={styles.menuText}>Setup Payout Account</Text>
-        <Ionicons name="chevron-forward" size={20} color="#999" />
+        <Text style={[styles.menuText, isTasker && !abnVerified && styles.menuTextDisabled]}>
+          Setup Payout Account
+        </Text>
+        <Ionicons name="chevron-forward" size={20} color={isTasker && !abnVerified ? '#ccc' : '#999'} />
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   </View>
-);
+  );
+};
 
 const PaymentHistoryScreen = ({ onNavigate }) => {
   const [activeTab, setActiveTab] = useState('earned');
@@ -229,7 +268,7 @@ const PaymentMethodsScreen = ({ onNavigate }) => {
   );
 };
 
-const PaymentScreensApp = ({ onBackToAccount }) => {
+const PaymentScreensApp = ({ onBackToAccount, focusAbn = false }) => {
   const [currentScreen, setCurrentScreen] = useState('paymentOptions');
 
   const navigateToScreen = (screen) => {
@@ -243,6 +282,7 @@ const PaymentScreensApp = ({ onBackToAccount }) => {
           <PaymentOptionsScreen 
             onNavigate={navigateToScreen} 
             onBackToAccount={onBackToAccount}
+            focusAbn={focusAbn}
           />
         );
       case 'paymentHistory':
@@ -258,6 +298,7 @@ const PaymentScreensApp = ({ onBackToAccount }) => {
           <PaymentOptionsScreen 
             onNavigate={navigateToScreen} 
             onBackToAccount={onBackToAccount}
+            focusAbn={focusAbn}
           />
         );
     }
@@ -295,6 +336,21 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 16,
+  },
+  contentContainer: {
+    paddingBottom: 24,
+  },
+  abnGateNote: {
+    fontSize: 13,
+    color: '#b45309',
+    marginBottom: 12,
+    lineHeight: 18,
+  },
+  menuItemDisabled: {
+    opacity: 0.55,
+  },
+  menuTextDisabled: {
+    color: '#999',
   },
   menuItem: {
     flexDirection: 'row',

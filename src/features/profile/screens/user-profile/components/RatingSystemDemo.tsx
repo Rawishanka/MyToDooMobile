@@ -3,6 +3,7 @@ import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { GetMoreReviewsSection } from './GetMoreReviewsSection';
 import { OverallRatingSection } from './OverallRatingSection';
 import { ReviewsList } from './ReviewsList';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 // Mock data for demonstration
 const mockRatingData = {
@@ -112,10 +113,7 @@ export const RatingSystemDemo: React.FC<RatingSystemDemoProps> = ({
         
         {/* Reviews List */}
         <ReviewsList
-          reviews={mockRatingData.reviews}
-          loading={false}
-          onLoadMore={handleLoadMore}
-          hasMore={mockRatingData.pagination.has_next}
+          userId={userId}
         />
         
         <View style={styles.footer}>
@@ -138,7 +136,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: RFValue(24),
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
@@ -150,7 +148,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
     fontStyle: 'italic',

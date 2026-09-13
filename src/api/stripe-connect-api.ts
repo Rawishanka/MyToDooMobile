@@ -130,6 +130,14 @@ class StripeConnectAPIService {
         const errorData = await response.json().catch(() => ({
           message: `HTTP ${response.status}: ${response.statusText}`,
         }));
+
+        if (response.status === 403 && errorData.code === 'ABN_REQUIRED') {
+          const err: any = new Error(errorData.message || 'ABN required');
+          err.status = 403;
+          err.code = 'ABN_REQUIRED';
+          err.details = errorData;
+          throw err;
+        }
         
         console.error('❌ Create account API error:', {
           status: response.status,
@@ -197,6 +205,14 @@ class StripeConnectAPIService {
         const errorData = await response.json().catch(() => ({
           message: `HTTP ${response.status}: ${response.statusText}`,
         }));
+
+        if (response.status === 403 && errorData.code === 'ABN_REQUIRED') {
+          const err: any = new Error(errorData.message || 'ABN required');
+          err.status = 403;
+          err.code = 'ABN_REQUIRED';
+          err.details = errorData;
+          throw err;
+        }
         
         console.error('❌ Account link API error:', {
           status: response.status,

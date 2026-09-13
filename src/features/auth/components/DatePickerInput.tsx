@@ -12,6 +12,7 @@ import {
     View,
 } from 'react-native';
 import { formatDateForDisplay } from './signup-helpers';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface DatePickerInputProps {
   dateOfBirth: Date | null;
@@ -95,13 +96,13 @@ export const DatePickerInput: React.FC<DatePickerInputProps> = ({
 
 const styles = StyleSheet.create({
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     marginBottom: 8,
     color: '#333',
   },
   subLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginBottom: 8,
     fontStyle: 'italic',
@@ -127,11 +128,11 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   dateInputTextPlaceholder: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#999',
   },
   dateInputTextSelected: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#000',
     fontWeight: '500',
   },
@@ -156,16 +157,16 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E0E0E0',
   },
   datePickerTitle: {
-    fontSize: 17,
+    fontSize: RFValue(17),
     fontWeight: '600',
     color: '#000',
   },
   datePickerCancelText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   datePickerDoneText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#007BFF',
     fontWeight: '600',
   },

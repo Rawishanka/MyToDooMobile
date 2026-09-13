@@ -11,6 +11,7 @@ import {
   ImageSourcePropType,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface NotificationItem {
   id: string;
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   notificationText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     lineHeight: 18,
     marginBottom: 4,
@@ -181,7 +182,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   timeText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
 });

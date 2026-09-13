@@ -27,6 +27,7 @@ import {
 
 // Hooks
 import { useCompletionStatus } from './completion/hooks';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function TaskCompletionStatusScreen() {
   const router = useRouter();
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
   },
   completeButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

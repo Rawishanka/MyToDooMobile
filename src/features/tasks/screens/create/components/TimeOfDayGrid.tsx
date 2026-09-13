@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image, ImageSourcePropType, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TimeBlock {
   label: string;
@@ -72,13 +73,13 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   gridTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 2,
   },
   gridDescription: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     textAlign: 'center',
   },

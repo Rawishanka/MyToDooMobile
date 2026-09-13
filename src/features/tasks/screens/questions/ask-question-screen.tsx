@@ -7,7 +7,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -21,6 +20,8 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AppAlert } from '@/src/shared/components/AppAlert';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function AskQuestionScreen() {
   const router = useRouter();
@@ -39,19 +40,19 @@ export default function AskQuestionScreen() {
     try {
       // Validate input
       if (!question.trim()) {
-        Alert.alert('Missing Question', 'Please enter your question.');
+        AppAlert.alert('Missing Question', 'Please enter your question.');
         return;
       }
 
       if (question.trim().length < 10) {
-        Alert.alert('Question Too Short', 'Please provide more details in your question.');
+        AppAlert.alert('Question Too Short', 'Please provide more details in your question.');
         return;
       }
 
       // Moderate content before submitting
       const moderationResult = moderateContent(question);
       if (!moderationResult.isClean) {
-        Alert.alert(
+        AppAlert.alert(
           'Question Blocked',
           moderationResult.reason || 'Your question contains inappropriate content.',
           [{ text: 'OK' }]
@@ -81,7 +82,7 @@ export default function AskQuestionScreen() {
 
       console.log('✅ Question posted successfully:', result);
 
-      Alert.alert(
+      AppAlert.alert(
         'Question Posted!',
         'Your question has been sent to the task creator. You\'ll be notified when they respond.',
         [
@@ -98,7 +99,7 @@ export default function AskQuestionScreen() {
 
     } catch (error: any) {
       console.error('❌ Failed to post question:', error);
-      Alert.alert(
+      AppAlert.alert(
         'Failed to Post Question',
         error?.message || 'Something went wrong. Please try again.',
         [{ text: 'OK' }]
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   errorContainer: {
@@ -280,14 +281,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   errorTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     textAlign: 'center',
     marginBottom: 24,
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: '#007bff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   header: {
@@ -315,7 +316,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
@@ -333,25 +334,25 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   taskTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
     marginBottom: 8,
   },
   taskCreator: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginBottom: 4,
   },
   taskLocation: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   formContainer: {
     marginTop: 24,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#000',
     marginBottom: 20,
@@ -365,13 +366,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     minHeight: 120,
     backgroundColor: '#fff',
   },
   characterCount: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     textAlign: 'right',
     marginTop: 4,
@@ -380,7 +381,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   suggestionsTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 12,
@@ -395,7 +396,7 @@ const styles = StyleSheet.create({
     borderColor: '#e9ecef',
   },
   suggestionText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#495057',
   },
   guidelinesContainer: {
@@ -404,13 +405,13 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   guidelinesTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#1976d2',
     marginBottom: 8,
   },
   guideline: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#1976d2',
     marginBottom: 4,
   },
@@ -435,7 +436,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

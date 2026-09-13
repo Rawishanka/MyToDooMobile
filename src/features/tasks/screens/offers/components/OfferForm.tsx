@@ -1,5 +1,6 @@
 import { formatNumber } from '@/src/shared/utils/currency';
 import * as PaymentAPI from '@/src/api/payment-api';
+import { BRAND_BLUE, BRAND_GREEN, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
@@ -125,25 +126,31 @@ export const OfferForm: React.FC<OfferFormProps> = ({
         {(feeLoading || feePreview) && (
           <View style={styles.feePreviewBox}>
             {feeLoading ? (
-              <ActivityIndicator size="small" color="#007AFF" />
+              <ActivityIndicator size="small" color={BRAND_ORANGE} />
             ) : (
               <>
-                <Text style={styles.feePreviewTitle}>Estimated platform fees</Text>
+                <Text style={styles.feePreviewTitle}>As you type</Text>
                 {feePreview?.taskerCommission != null && (
-                  <Text style={styles.feePreviewLine}>
-                    Est. tasker fee: {currencySymbol}
-                    {formatNumber(feePreview.taskerCommission, { forceDecimals: true })}
-                  </Text>
+                  <View style={styles.feeRow}>
+                    <Text style={styles.feePreviewLine}>Service fee</Text>
+                    <Text style={styles.feePreviewLine}>
+                      −{currencySymbol}
+                      {formatNumber(feePreview.taskerCommission, { forceDecimals: true })}
+                    </Text>
+                  </View>
                 )}
                 {feePreview?.taskerNetReceives != null && (
-                  <Text style={styles.feePreviewLine}>
-                    Est. you receive: {currencySymbol}
-                    {formatNumber(feePreview.taskerNetReceives, { forceDecimals: true })}
-                  </Text>
+                  <View style={styles.feeRow}>
+                    <Text style={styles.feeReceiveLabel}>You'll receive</Text>
+                    <Text style={styles.feeReceiveValue}>
+                      {currencySymbol}
+                      {formatNumber(feePreview.taskerNetReceives, { forceDecimals: true })}
+                    </Text>
+                  </View>
                 )}
                 {feePreview?.posterServiceFee != null && (
                   <Text style={styles.feePreviewHint}>
-                    Poster also pays ~{currencySymbol}
+                    The poster also pays a {currencySymbol}
                     {formatNumber(feePreview.posterServiceFee, { forceDecimals: true })} service fee
                   </Text>
                 )}
@@ -185,7 +192,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#000',
+    color: BRAND_BLUE,
     marginBottom: 20,
   },
   inputContainer: {
@@ -247,26 +254,43 @@ const styles = StyleSheet.create({
   },
   feePreviewBox: {
     marginTop: 12,
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: '#f0f7ff',
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#cfe2ff',
+    borderColor: '#E2E8F0',
   },
   feePreviewTitle: {
-    fontSize: RFValue(13),
+    fontSize: RFValue(12),
     fontWeight: '700',
-    color: '#1e40af',
-    marginBottom: 4,
+    color: BRAND_BLUE,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  feeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6,
   },
   feePreviewLine: {
-    fontSize: RFValue(12),
-    color: '#1e3a8a',
-    marginTop: 2,
+    fontSize: RFValue(13),
+    color: '#475569',
+  },
+  feeReceiveLabel: {
+    fontSize: RFValue(14),
+    fontWeight: '700',
+    color: BRAND_BLUE,
+  },
+  feeReceiveValue: {
+    fontSize: RFValue(14),
+    fontWeight: '700',
+    color: BRAND_GREEN,
   },
   feePreviewHint: {
     fontSize: RFValue(11),
     color: '#64748b',
-    marginTop: 6,
+    marginTop: 10,
   },
 });

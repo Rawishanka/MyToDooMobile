@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface OverallRatingProps {
   averageRating: number | null | undefined;
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 16,
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   ratingNumber: {
-    fontSize: 48,
+    fontSize: RFValue(48),
     fontWeight: 'bold',
     color: '#333',
     marginRight: 8,
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     marginTop: -4,
   },
   reviewCount: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   statsContainer: {
@@ -166,20 +167,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: RFValue(24),
     fontWeight: 'bold',
     color: '#333',
     marginTop: 8,
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#333',
     marginBottom: 2,
   },
   statSubtext: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     textAlign: 'center',
   },
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   breakdownTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 16,
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   countText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     fontWeight: '500',
     minWidth: 60,

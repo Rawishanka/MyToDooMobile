@@ -8,7 +8,7 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
-    SafeAreaView,
+    ScrollView,
     StyleSheet,
     Text,
     TextInput,
@@ -16,9 +16,13 @@ import {
     TouchableWithoutFeedback,
     View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { RFValue, FORM_MAX_WIDTH, isTablet } from '@/src/shared/utils/responsive';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SetNewPasswordScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const resetToken = params.token as string; // Token from email link
   const emailParam = params.email as string; // Email from URL params
@@ -191,10 +195,9 @@ export default function SetNewPasswordScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Back button */}
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <TouchableOpacity
-        style={styles.backButton}
+        style={[styles.backButton, { top: insets.top + 8 }]}
         onPress={() => router.back()}
         hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
       >
@@ -204,9 +207,18 @@ export default function SetNewPasswordScreen() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.innerContainer}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.contentWrapper}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: Math.max(insets.bottom, 24) },
+          ]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={[styles.contentWrapper, isTablet && styles.contentWrapperTablet]}>
         <View style={styles.header}>
           <Ionicons name="key-outline" size={64} color="#007BFF" style={styles.keyIcon} />
           <Text style={styles.title}>Set New Password</Text>
@@ -335,6 +347,7 @@ export default function SetNewPasswordScreen() {
         </View>
           </View>
         </TouchableWithoutFeedback>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -347,15 +360,21 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     flex: 1,
-    justifyContent: 'center',
+  },
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 24,
+    paddingTop: 56,
   },
   contentWrapper: {
-    flex: 1,
+    width: '100%',
+  },
+  contentWrapperTablet: {
+    maxWidth: FORM_MAX_WIDTH,
+    alignSelf: 'center',
   },
   backButton: {
     position: 'absolute',
-    top: 40,
     left: 18,
     zIndex: 10,
     backgroundColor: 'rgba(255,255,255,0.7)',
@@ -370,14 +389,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 28,
+    fontSize: RFValue(28),
     fontWeight: 'bold',
     marginBottom: 12,
     color: '#333',
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#666',
     textAlign: 'center',
     lineHeight: 22,
@@ -387,7 +406,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     marginBottom: 8,
     fontWeight: '500',
@@ -398,7 +417,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     marginBottom: 16,
   },
   passwordContainer: {
@@ -414,7 +433,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   passwordToggle: {
     padding: 8,
@@ -428,7 +447,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   requirementsTitle: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     fontWeight: '600',
     color: '#333',
     marginBottom: 10,
@@ -439,7 +458,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   requirementText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#999',
     marginLeft: 8,
   },
@@ -459,6 +478,6 @@ const styles = StyleSheet.create({
   resetButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
 });

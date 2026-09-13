@@ -268,9 +268,9 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
 
 const topTabStyles = StyleSheet.create({
   tabBarContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#E8ECF4',
   },
   tabBarContent: {
     flexDirection: 'row',
@@ -287,15 +287,15 @@ const topTabStyles = StyleSheet.create({
     alignItems: isTablet ? 'center' : undefined,
   },
   tabItemActive: {
-    borderBottomColor: '#007AFF',
+    borderBottomColor: '#FF7A00',
   },
   tabLabel: {
     fontSize: isTablet ? 18 : 13,
     fontWeight: '600',
-    color: '#666',
+    color: '#6B7280',
   },
   tabLabelActive: {
-    color: '#007AFF',
+    color: '#FF7A00',
   },
 });
 
@@ -1090,7 +1090,7 @@ export default function MyTasksScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+      <StatusBar barStyle="light-content" translucent backgroundColor="#1A2980" />
 
       <MyTasksHeader
         notificationCount={notificationCount}
@@ -1192,12 +1192,12 @@ export default function MyTasksScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: hp('6%'),
-    backgroundColor: '#fff',
+    paddingTop: 0,
+    backgroundColor: '#F4F6FB',
   },
   tabContent: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     width: '100%',
     alignSelf: 'center',
   },
@@ -1222,7 +1222,7 @@ const styles = StyleSheet.create({
   refreshButton: {
     paddingHorizontal: wp('5%'),
     paddingVertical: hp('1.2%'),
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1A2980',
     borderRadius: 20,
   },
   refreshButtonText: {
@@ -1236,24 +1236,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     paddingVertical: hp('0.8%'),
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#E8ECF4',
   },
   roleButton: {
     paddingHorizontal: isTablet ? wp('2.5%') : wp('4%'),
     paddingVertical: isTablet ? hp('0.5%') : hp('0.8%'),
     marginHorizontal: wp('0.5%'),
     borderRadius: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F4F6FB',
   },
   activeRole: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1A2980',
   },
   roleText: {
     fontSize: RFValue(12),
     fontWeight: '600',
-    color: '#666',
+    color: '#6B7280',
   },
   activeRoleText: {
     color: '#fff',
@@ -1264,10 +1264,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     paddingVertical: hp('1.5%'),
-    backgroundColor: '#f0f8ff',
+    backgroundColor: '#EEF2FF',
     borderBottomWidth: 1,
-    borderBottomColor: '#d0e8ff',
-    shadowColor: '#007AFF',
+    borderBottomColor: '#E8ECF4',
+    shadowColor: '#1A2980',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 2,
@@ -1275,7 +1275,7 @@ const styles = StyleSheet.create({
   },
   searchResultsText: {
     fontSize: RFValue(isTablet ? 14 : 12),
-    color: '#007AFF',
+    color: '#1A2980',
     fontWeight: '600',
     flex: 1,
     letterSpacing: 0.2,
@@ -1295,15 +1295,15 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#007AFF',
+    borderBottomColor: '#1A2980',
   },
   tabText: {
     fontSize: RFValue(isTablet ? 16 : 12),
     fontWeight: '500',
-    color: '#666',
+    color: '#6B7280',
   },
   activeTabText: {
-    color: '#007AFF',
+    color: '#1A2980',
     fontWeight: '600',
   },
   completionToast: {

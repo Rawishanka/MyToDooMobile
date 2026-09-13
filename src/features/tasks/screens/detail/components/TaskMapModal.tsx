@@ -19,6 +19,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TaskMapModalProps {
   visible: boolean;
@@ -146,12 +147,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
   },
   headerSubtitle: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginTop: 1,
   },

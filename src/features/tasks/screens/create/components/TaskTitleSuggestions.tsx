@@ -1,4 +1,20 @@
-// import { geminiService } from '@/src/services/geminiService';
+import { RFValue } from '@/src/shared/utils/responsive';
+
+// TaskTitleSuggestions — AI suggestions disabled (Gemini service not active)
+// Stub component exported to prevent import errors in title-screen.tsx
+
+interface TaskTitleSuggestionsProps {
+  selectedCategory: string | null;
+  onSuggestionSelect: (suggestion: string) => void;
+  currentTitle: string;
+}
+
+export const TaskTitleSuggestions: React.FC<TaskTitleSuggestionsProps> = () => null;
+
+import React from 'react';
+void RFValue; // keep import used
+
+
 // import React, { useEffect, useState } from 'react';
 // import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -123,11 +139,11 @@
 //     marginBottom: 8,
 //   },
 //   aiIcon: {
-//     fontSize: 14,
+//     fontSize: RFValue(14),
 //     marginRight: 6,
 //   },
 //   headerText: {
-//     fontSize: 13,
+//     fontSize: RFValue(13),
 //     fontWeight: '600',
 //     color: '#6B7280',
 //     flex: 1,
@@ -139,14 +155,14 @@
 //   },
 //   loadingText: {
 //     marginLeft: 8,
-//     fontSize: 13,
+//     fontSize: RFValue(13),
 //     color: '#6B7280',
 //   },
 //   errorContainer: {
 //     paddingVertical: 8,
 //   },
 //   errorText: {
-//     fontSize: 13,
+//     fontSize: RFValue(13),
 //     color: '#EF4444',
 //   },
 //   suggestionsContainer: {
@@ -174,14 +190,14 @@
 //   },
 //   suggestionText: {
 //     color: '#FFFFFF',
-//     fontSize: 13,
+//     fontSize: RFValue(13),
 //     fontWeight: '600',
 //   },
 //   suggestionTextSelected: {
 //     fontWeight: '700',
 //   },
 //   helperText: {
-//     fontSize: 11,
+//     fontSize: RFValue(11),
 //     color: '#6B7280',
 //     marginTop: 6,
 //     fontStyle: 'italic',

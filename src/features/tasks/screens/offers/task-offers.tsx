@@ -1,6 +1,7 @@
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useGetTaskOffers } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
+import { resolveTaskBudget } from '@/src/shared/utils/resolveTaskBudget';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
@@ -17,6 +18,7 @@ import { ErrorState, LoadingState } from '../../components/shared';
 import EmptyOffersState from './components/EmptyOffersState';
 import OfferCard from './components/OfferCard';
 import TaskSummaryHeader from './components/TaskSummaryHeader';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface Offer {
   _id: string;
@@ -59,8 +61,9 @@ export default function TaskOffersScreen() {
   const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
   
   // Format budget with location-appropriate currency
+  const taskBudget = resolveTaskBudget(task);
   const displayBudget = task?.formattedBudget || 
-    (task?.budget ? formatCurrency(task.budget, currencyInfo) : 
+    (taskBudget ? formatCurrency(taskBudget, currencyInfo) : 
     task?.budgetInfo?.amount ? `${task.budgetInfo.currency}${task.budgetInfo.amount}` : 
     'Budget not specified');
 
@@ -150,12 +153,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
   headerSubtitle: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginTop: 2,
   },

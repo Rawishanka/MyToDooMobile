@@ -20,6 +20,7 @@ import ImportantNotes from './components/ImportantNotes';
 import TaskDetails from './components/TaskDetails';
 import TaskSummaryCard from './components/TaskSummaryCard';
 import TermsCheckbox from './components/TermsCheckbox';
+import { RFValue } from '@/src/shared/utils/responsive';
 export default function AcceptTaskScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -102,7 +103,7 @@ export default function AcceptTaskScreen() {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" removeClippedSubviews={false}>
         {/* Task Summary */}
         <TaskSummaryCard
           title={task.title}
@@ -187,7 +188,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
@@ -205,13 +206,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   contactTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#2e7d32',
     marginBottom: 8,
   },
   contactText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#2e7d32',
     marginBottom: 12,
     lineHeight: 20,
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
   },
   contactButtonText: {
     color: '#007bff',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     marginLeft: 8,
   },
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
   },
   acceptButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

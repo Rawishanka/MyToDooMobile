@@ -9,6 +9,7 @@ import FAQScreen from '@/src/shared/components/custom_components/faq-screen';
 import LegalScreen from '@/src/shared/components/custom_components/legal-screen';
 import Logout from '@/src/shared/components/custom_components/Logout';
 import { useGetUserProfile, useGetUserRatingStats, useGetUserReviews, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
+import { useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
 import { useGetStripeAccountStatus, useUpdateStripeAccount } from '@/src/shared/hooks/useStripeConnectApi';
 import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
@@ -20,7 +21,8 @@ import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ActivityIndicator, Alert, Image, Linking, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AppAlert } from '@/src/shared/components/AppAlert';
+import { ActivityIndicator, Image, Linking, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import rating components
@@ -50,6 +52,7 @@ export default function AccountScreen() {
     taskId?: string;
   }>();
   const [currentScreen, setCurrentScreen] = useState('account');
+  const [isPendingReviewsExpanded, setIsPendingReviewsExpanded] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const ratingSectionOffsetRef = useRef(0);
   const [editAccessStatus, setEditAccessStatus] = useState<'locked' | 'pending' | 'approved'>('locked');
@@ -167,6 +170,29 @@ export default function AccountScreen() {
   }, [isConnected]);
 
   const { mutate: uploadAvatar, isPending: isUploadingAvatar } = useUploadUserAvatar();
+  const { data: myTasksForReviews } = useGetMyTasks({ section: 'all-tasks' });
+  const { data: taskerTasksForReviews } = useGetMyTasks({
+    role: 'tasker',
+    section: 'all-tasks',
+  });
+  const { pendingReviewCount, pendingReviewTasks } = React.useMemo(() => {
+    const posterList = (myTasksForReviews as any)?.data || (myTasksForReviews as any)?.tasks || [];
+    const taskerList =
+      (taskerTasksForReviews as any)?.data || (taskerTasksForReviews as any)?.tasks || [];
+    const seen = new Set<string>();
+    const tasks: any[] = [];
+    for (const task of [...posterList, ...taskerList]) {
+      if (task?.status !== 'completed') continue;
+      const rs = task.reviewStatus;
+      if (rs && rs !== 'review_required' && rs !== 'none') continue;
+      const id = String(task._id || task.id || '');
+      if (id && !seen.has(id)) {
+        seen.add(id);
+        tasks.push(task);
+      }
+    }
+    return { pendingReviewCount: seen.size, pendingReviewTasks: tasks };
+  }, [myTasksForReviews, taskerTasksForReviews]);
   const { user: authUser, isAuthenticated, token, clearAuth } = useAuthStore();
 
   // **Get real user profile data from API**
@@ -195,7 +221,7 @@ export default function AccountScreen() {
       setTimeout(() => { refetchStripeStatus(); }, 2000);
     } catch (error: any) {
       const msg = error?.message || 'Failed to open bank account update page. Please try again.';
-      Alert.alert('Update Failed', msg);
+      AppAlert.alert('Update Failed', msg);
     } finally {
       setIsUpdatingBank(false);
     }
@@ -367,7 +393,7 @@ export default function AccountScreen() {
     console.log("⏳ Loading profile data...");
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0052A2" />
+        <ActivityIndicator size="large" color="#1A2980" />
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
@@ -379,7 +405,7 @@ export default function AccountScreen() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
     if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'We need permission to access your photos to change your profile picture.');
+      AppAlert.alert('Permission Denied', 'We need permission to access your photos to change your profile picture.');
       return;
     }
     
@@ -402,7 +428,7 @@ export default function AccountScreen() {
         const validation = await OCRAPI.validateImageForUpload(imageUri);
         if (!validation.isValid) {
           setSelectedImageUri(null);
-          Alert.alert(
+          AppAlert.alert(
             'Sensitive Data Detected',
             `This image contains sensitive information and cannot be uploaded:\n\n${validation.reason}\n\nPlease use a photo without personal contact details.`,
             [{ text: 'OK' }]
@@ -420,7 +446,7 @@ export default function AccountScreen() {
       uploadAvatar(imageUri, {
         onSuccess: (response) => {
           console.log("✅ Avatar upload successful, response:", response);
-          Alert.alert('Success', 'Profile picture updated successfully!');
+          AppAlert.alert('Success', 'Profile picture updated successfully!');
           
           // Reset avatar load state since we have a new upload
           setAvatarLoadFailed(false); // New upload means we should try the new avatar
@@ -448,7 +474,7 @@ export default function AccountScreen() {
             console.warn('⚠️ Avatar upload error:', error?.message);
           }
           setSelectedImageUri(null); // Reset preview on error
-          Alert.alert(
+          AppAlert.alert(
             'Upload Failed', 
             error?.message || 'Failed to upload profile picture. Please try again.',
             [{ text: 'OK' }]
@@ -462,7 +488,7 @@ export default function AccountScreen() {
   if (isLoadingProfile && !userData && isAuthenticated && token) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0052A2" />
+        <ActivityIndicator size="large" color="#1A2980" />
         <Text style={styles.loadingText}>Loading profile...</Text>
       </View>
     );
@@ -481,7 +507,7 @@ export default function AccountScreen() {
       console.log("⏳ Auth error detected - waiting for auto-logout redirect...");
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0052A2" />
+          <ActivityIndicator size="large" color="#1A2980" />
           <Text style={styles.loadingText}>Signing out...</Text>
         </View>
       );
@@ -807,7 +833,7 @@ export default function AccountScreen() {
               source={{ 
                 uri: selectedImageUri || // Show selected image first (highest priority)
                      (!avatarLoadFailed && (userData?.avatar || userData?.profilePicture)) || // Only try S3 if not failed
-                     `https://ui-avatars.com/api/?name=${formatAvatarName(userData?.firstName, userData?.lastName)}&background=0052A2&color=fff&size=120`
+                     `https://ui-avatars.com/api/?name=${formatAvatarName(userData?.firstName, userData?.lastName)}&background=1A2980&color=fff&size=120`
               }}
               style={styles.profileImage}
               onError={(error) => {
@@ -919,15 +945,23 @@ export default function AccountScreen() {
             ].map((badge) => (
               <View
                 key={badge.key}
-                style={[styles.profileBadge, badge.on ? styles.profileBadgeOn : styles.profileBadgeOff]}
+                style={[
+                  styles.profileBadge,
+                  badge.on ? styles.profileBadgeVerified : styles.profileBadgeUnverified,
+                ]}
               >
                 <Ionicons
-                  name={badge.on ? 'checkmark-circle' : 'ellipse-outline'}
-                  size={12}
-                  color={badge.on ? '#fff' : 'rgba(255,255,255,0.7)'}
+                  name={badge.on ? 'shield-checkmark' : 'shield-outline'}
+                  size={13}
+                  color={badge.on ? '#34D399' : 'rgba(255,255,255,0.65)'}
                 />
-                <Text style={[styles.profileBadgeText, !badge.on && styles.profileBadgeTextOff]}>
-                  {badge.label}
+                <Text
+                  style={[
+                    styles.profileBadgeText,
+                    badge.on ? styles.profileBadgeTextVerified : styles.profileBadgeTextUnverified,
+                  ]}
+                >
+                  {badge.label}{badge.on ? ' ✓' : ''}
                 </Text>
               </View>
             ))}
@@ -1075,7 +1109,7 @@ export default function AccountScreen() {
         >
           {ratingLoading && !ratingData ? (
             <View style={styles.ratingLoadingContainer}>
-              <ActivityIndicator size="small" color="#0052A2" />
+              <ActivityIndicator size="small" color="#1A2980" />
               <Text style={styles.ratingLoadingText}>Loading ratings...</Text>
             </View>
           ) : ratingData ? (
@@ -1147,7 +1181,7 @@ export default function AccountScreen() {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>PROFILE</Text>
         <MenuItem 
-          icon={<Ionicons name="person-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="person-outline" size={20} color="#1A2980" />}
           text="Edit Profile"
           onPress={navigateToProfileUpdate} 
           subtext={editAccessStatus === 'pending' 
@@ -1163,7 +1197,7 @@ export default function AccountScreen() {
           <View style={styles.stripeAccountCard}>
             <View style={styles.stripeAccountHeader}>
               <View style={styles.stripeAccountTitleRow}>
-                <MaterialIcons name="account-balance" size={20} color="#0052A2" />
+                <MaterialIcons name="account-balance" size={20} color="#1A2980" />
                 <Text style={styles.stripeAccountTitle}>Payment Account</Text>
               </View>
               <View style={[
@@ -1194,7 +1228,7 @@ export default function AccountScreen() {
               >
                 <View style={styles.bankAccountItem}>
                   <View style={styles.bankIconContainer}>
-                    <MaterialIcons name="account-balance" size={20} color="#0052A2" />
+                    <MaterialIcons name="account-balance" size={20} color="#1A2980" />
                   </View>
                   <View style={styles.bankAccountInfo}>
                     <Text style={styles.bankAccountLabel}>
@@ -1249,8 +1283,102 @@ export default function AccountScreen() {
           </View>
         )}
         
+        {/* Modern 2026 Pending Reviews Accordion */}
+        <View style={styles.pendingReviewsContainer}>
+          <TouchableOpacity
+            style={styles.pendingReviewsHeader}
+            activeOpacity={0.8}
+            onPress={() => {
+              if (pendingReviewCount > 0) {
+                setIsPendingReviewsExpanded(!isPendingReviewsExpanded);
+              } else {
+                router.push({
+                  pathname: '/(tabs)/my-tasks' as any,
+                  params: { tab: 'review_required' },
+                });
+              }
+            }}
+          >
+            <View style={styles.pendingReviewsIconWrap}>
+              <Ionicons name="star" size={18} color="#EA580C" />
+            </View>
+            <View style={styles.pendingReviewsTextCol}>
+              <View style={styles.pendingReviewsTitleRow}>
+                <Text style={styles.pendingReviewsTitle}>Pending reviews</Text>
+                {pendingReviewCount > 0 && (
+                  <View style={styles.pendingReviewsBadge}>
+                    <Text style={styles.pendingReviewsBadgeText}>{pendingReviewCount}</Text>
+                  </View>
+                )}
+              </View>
+              <Text style={styles.pendingReviewsSubtext}>
+                {pendingReviewCount > 0
+                  ? `${pendingReviewCount} task${pendingReviewCount === 1 ? "" : "s"} waiting for your review`
+                  : "No reviews waiting"}
+              </Text>
+            </View>
+            <Ionicons
+              name={
+                pendingReviewCount === 0
+                  ? "chevron-forward"
+                  : isPendingReviewsExpanded
+                  ? "chevron-up"
+                  : "chevron-down"
+              }
+              size={18}
+              color="#64748B"
+            />
+          </TouchableOpacity>
+
+          {/* Expanded Preview Cards (Top 4) */}
+          {isPendingReviewsExpanded && pendingReviewCount > 0 && (
+            <View style={styles.expandedReviewsContent}>
+              {pendingReviewTasks.slice(0, 4).map((task: any) => (
+                <View key={task._id || task.id} style={styles.reviewTaskItem}>
+                  <View style={styles.reviewTaskInfo}>
+                    <Text style={styles.reviewTaskTitle} numberOfLines={1}>
+                      {task.title}
+                    </Text>
+                    <Text style={styles.reviewTaskMeta}>
+                      ${task.budget || task.price || 0} AUD · Completed
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.reviewNowBtn}
+                    activeOpacity={0.85}
+                    onPress={() => {
+                      router.push({
+                        pathname: '/(tabs)/my-tasks' as any,
+                        params: { tab: 'review_required', focusTaskId: task._id || task.id },
+                      });
+                    }}
+                  >
+                    <Text style={styles.reviewNowBtnText}>Review</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              {pendingReviewCount > 4 && (
+                <TouchableOpacity
+                  style={styles.seeAllReviewsBtn}
+                  activeOpacity={0.85}
+                  onPress={() => {
+                    router.push({
+                      pathname: '/(tabs)/my-tasks' as any,
+                      params: { tab: 'review_required' },
+                    });
+                  }}
+                >
+                  <Text style={styles.seeAllReviewsBtnText}>
+                    See All {pendingReviewCount} Pending Reviews →
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+        </View>
         <MenuItem 
-          icon={<MaterialIcons name="payment" size={20} color="#0052A2" />}
+          icon={<MaterialIcons name="payment" size={20} color="#1A2980" />}
           text="Payment options"
           onPress={navigateToPayment} 
           subtext={stripeAccountStatus?.status === 'active' 
@@ -1260,7 +1388,7 @@ export default function AccountScreen() {
             : 'Connect your bank account'}        
         />
         <MenuItem
-          icon={<Ionicons name="wallet-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="wallet-outline" size={20} color="#1A2980" />}
           text="Credits"
           onPress={navigateToCredits}
           subtext={
@@ -1270,7 +1398,7 @@ export default function AccountScreen() {
           }
         />
         <MenuItem
-          icon={<Ionicons name="people-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="people-outline" size={20} color="#1A2980" />}
           text="Invite friends"
           onPress={navigateToInviteFriends}
           subtext={
@@ -1280,19 +1408,19 @@ export default function AccountScreen() {
           }
         />
         <MenuItem
-          icon={<Ionicons name="construct-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="construct-outline" size={20} color="#1A2980" />}
           text="My services"
           onPress={navigateToMyServices}
           subtext="Manage service offerings you list"
         />
         <MenuItem
-          icon={<Ionicons name="add-circle-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="add-circle-outline" size={20} color="#1A2980" />}
           text="Create service"
           onPress={navigateToCreateService}
           subtext="Offer a service near you (ABN required)"
         />
         <MenuItem 
-          icon={<Feather name="lock" size={20} color="#0052A2" />}
+          icon={<Feather name="lock" size={20} color="#1A2980" />}
           text="Account Information"
           onPress={navigateToAccountInfo} 
           subtext={undefined}        
@@ -1300,7 +1428,7 @@ export default function AccountScreen() {
 
         <Text style={styles.sectionTitle}>NOTIFICATION SETTINGS</Text>
         <MenuItem 
-          icon={<Ionicons name="notifications-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="notifications-outline" size={20} color="#1A2980" />}
           text="Tasker Preferences" 
           subtext="Manage task notification settings" 
           onPress={navigateToNotifications}        
@@ -1308,14 +1436,14 @@ export default function AccountScreen() {
 
         <Text style={styles.sectionTitle}>HELP AND SUPPORT</Text>
         <MenuItem 
-          icon={<Ionicons name="help-circle-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="help-circle-outline" size={20} color="#1A2980" />}
           text="Frequently asked questions" 
           subtext={undefined} 
           onPress={navigateToFAQ}        
         />
 
         <MenuItem 
-          icon={<Ionicons name="mail-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="mail-outline" size={20} color="#1A2980" />}
           text="Contact us" 
           subtext={undefined} 
           onPress={navigateToContactUs}        
@@ -1323,19 +1451,19 @@ export default function AccountScreen() {
 
         <Text style={styles.sectionTitle}>LEGAL & SAFETY</Text>
         <MenuItem 
-          icon={<Ionicons name="shield-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="shield-outline" size={20} color="#1A2980" />}
           text="Insurance protection" 
           subtext="Learn about coverage and terms" 
           onPress={navigateToInsuranceProtection}        
         />
         <MenuItem 
-          icon={<Ionicons name="document-text-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="document-text-outline" size={20} color="#1A2980" />}
           text="Privacy policy" 
           subtext="How we handle your data" 
           onPress={navigateToPrivacyPolicy}        
         />
         <MenuItem 
-          icon={<Ionicons name="shield-checkmark-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="shield-checkmark-outline" size={20} color="#1A2980" />}
           text="Terms & conditions" 
           subtext="Platform usage agreement" 
           onPress={navigateToTermsConditions}        
@@ -1343,7 +1471,7 @@ export default function AccountScreen() {
         
         <Text style={styles.sectionTitle}>ACCOUNT</Text>
         <MenuItem 
-          icon={<Ionicons name="log-out-outline" size={20} color="#0052A2" />}
+          icon={<Ionicons name="log-out-outline" size={20} color="#1A2980" />}
           text="Logout" 
           subtext={undefined} 
           onPress={navigateToLogoutScreen}
@@ -1490,7 +1618,7 @@ export default function AccountScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.pendingIconContainer}>
-              <Ionicons name="shield-checkmark" size={48} color="#0052A2" />
+              <Ionicons name="shield-checkmark" size={48} color="#1A2980" />
             </View>
             
             <Text style={styles.modalTitle}>Verification Request Sent!</Text>
@@ -1530,7 +1658,7 @@ export default function AccountScreen() {
             <View style={styles.bankDetailsHeader}>
               <View style={styles.bankDetailsHeaderLeft}>
                 <View style={styles.bankDetailsIconLarge}>
-                  <MaterialIcons name="account-balance" size={32} color="#0052A2" />
+                  <MaterialIcons name="account-balance" size={32} color="#1A2980" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.bankDetailsTitle} numberOfLines={1}>
@@ -1606,7 +1734,7 @@ export default function AccountScreen() {
                   <View style={styles.bankDetailsDivider} />
 
                   <View style={styles.bankDetailsInfoBox}>
-                    <Ionicons name="information-circle-outline" size={20} color="#0052A2" />
+                    <Ionicons name="information-circle-outline" size={20} color="#1A2980" />
                     <Text style={styles.bankDetailsInfoText}>
                       This is your payout account. Payments will be transferred to this bank account.
                     </Text>
@@ -1618,7 +1746,7 @@ export default function AccountScreen() {
             {/* Footer Buttons — Fixed at bottom */}
             <View style={styles.bankDetailsFooter}>
               <TouchableOpacity
-                style={[styles.bankDetailsButton, { backgroundColor: '#0052A2' }, isUpdatingBank && { opacity: 0.7 }]}
+                style={[styles.bankDetailsButton, { backgroundColor: '#1A2980' }, isUpdatingBank && { opacity: 0.7 }]}
                 onPress={handleUpdateBankAccount}
                 disabled={isUpdatingBank}
               >
@@ -1649,9 +1777,10 @@ type MenuItemProps = {
   subtext?: string;
   onPress?: () => void;
   disabled?: boolean;
+  badge?: number;
 };
 
-const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disabled }) => (
+const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disabled, badge }) => (
   <TouchableOpacity 
     style={[styles.menuItem, disabled && styles.menuItemDisabled]} 
     onPress={onPress}
@@ -1662,6 +1791,11 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disab
       <Text style={[styles.menuText, disabled && styles.menuTextDisabled]}>{text}</Text>
       {subtext && <Text style={[styles.subtext, disabled && styles.subtextDisabled]}>{subtext}</Text>}
     </View>
+    {badge && badge > 0 ? (
+      <View style={styles.pendingReviewBadge}>
+        <Text style={styles.pendingReviewBadgeText}>{badge > 99 ? '99+' : badge}</Text>
+      </View>
+    ) : null}
     {disabled ? (
       <Ionicons name="lock-closed" size={18} color="#999" />
     ) : (
@@ -1674,13 +1808,13 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disab
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
   },
   loadingText: {
     marginTop: 12,
@@ -1710,7 +1844,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -1721,7 +1855,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   header: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     alignItems: 'center',
     paddingBottom: 30,
     borderBottomLeftRadius: 20,
@@ -1740,7 +1874,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 12,
     right: 0,
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -1981,7 +2115,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#EEF2FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -2047,7 +2181,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 16,
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#EEF2FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -2101,7 +2235,7 @@ const styles = StyleSheet.create({
   bankDetailsInfoBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#EEF2FF',
     padding: 12,
     borderRadius: 8,
     marginTop: 8,
@@ -2110,7 +2244,7 @@ const styles = StyleSheet.create({
   bankDetailsInfoText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: '#0052A2',
+    color: '#1A2980',
     lineHeight: 18,
   },
   bankDetailsFooter: {
@@ -2138,10 +2272,25 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: '#1A2980',
     marginTop: 25,
     marginBottom: 10,
-    fontWeight: '500',
+    fontWeight: '700',
+  },
+  pendingReviewBadge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#FF7A00',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+    marginRight: 8,
+  },
+  pendingReviewBadgeText: {
+    color: '#FFFFFF',
+    fontSize: RFValue(11),
+    fontWeight: '700',
   },
   menuItem: {
     flexDirection: 'row',
@@ -2158,7 +2307,7 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: RFValue(15),
     fontWeight: '500',
-    color: '#003366',
+    color: '#1A2980',
   },
   subtext: {
     fontSize: RFValue(13),
@@ -2205,7 +2354,7 @@ const styles = StyleSheet.create({
   },
   modalSubMessage: {
     fontSize: RFValue(14),
-    color: '#3498db',
+    color: '#1A2980',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -2230,7 +2379,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: '#3498db',
+    backgroundColor: '#1A2980',
     alignItems: 'center',
   },
   modalSendText: {
@@ -2268,26 +2417,26 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   skillTagDisplay: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#EEF2FF',
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 16,
   },
   skillTagDisplayText: {
     fontSize: RFValue(14),
-    color: '#0052A2',
+    color: '#1A2980',
     fontWeight: '500',
   },
   pendingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#EEF2FF',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
     marginVertical: 20,
     borderWidth: 1,
-    borderColor: '#3498db',
+    borderColor: '#1A2980',
   },
   pendingDot: {
     width: 8,
@@ -2307,12 +2456,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#3498db',
+    borderColor: '#1A2980',
     marginBottom: 12,
   },
   backToProfileText: {
     fontSize: RFValue(16),
-    color: '#3498db',
+    color: '#1A2980',
     fontWeight: '600',
   },
   modalFooterText: {
@@ -2354,7 +2503,140 @@ const styles = StyleSheet.create({
   },
   navText: {
     fontSize: RFValue(10),
-    color: '#0052A2',
+    color: '#1A2980',
     marginTop: 2,
+  },
+  profileBadgeVerified: {
+    backgroundColor: "rgba(16, 185, 129, 0.22)",
+    borderWidth: 1,
+    borderColor: "rgba(52, 211, 153, 0.5)",
+  },
+  profileBadgeUnverified: {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  profileBadgeTextVerified: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+  profileBadgeTextUnverified: {
+    color: "rgba(255, 255, 255, 0.7)",
+    fontWeight: "500",
+  },
+  pendingReviewsContainer: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    marginHorizontal: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  pendingReviewsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  pendingReviewsIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: "#FFF7ED",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  pendingReviewsTextCol: {
+    flex: 1,
+  },
+  pendingReviewsTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  pendingReviewsTitle: {
+    fontSize: RFValue(15),
+    fontWeight: "700",
+    color: "#0F172A",
+  },
+  pendingReviewsBadge: {
+    backgroundColor: "#EA580C",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  pendingReviewsBadgeText: {
+    color: "#FFFFFF",
+    fontSize: RFValue(11),
+    fontWeight: "800",
+  },
+  pendingReviewsSubtext: {
+    fontSize: RFValue(12.5),
+    color: "#64748B",
+    marginTop: 2,
+  },
+  expandedReviewsContent: {
+    borderTopWidth: 1,
+    borderTopColor: "#F1F5F9",
+    paddingTop: 10,
+    paddingHorizontal: 14,
+    paddingBottom: 14,
+    backgroundColor: "#F8FAFC",
+  },
+  reviewTaskItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  reviewTaskInfo: {
+    flex: 1,
+    marginRight: 10,
+  },
+  reviewTaskTitle: {
+    fontSize: RFValue(13.5),
+    fontWeight: "600",
+    color: "#1E293B",
+    marginBottom: 2,
+  },
+  reviewTaskMeta: {
+    fontSize: RFValue(11.5),
+    color: "#64748B",
+  },
+  reviewNowBtn: {
+    backgroundColor: "#003399",
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
+  },
+  reviewNowBtnText: {
+    color: "#FFFFFF",
+    fontSize: RFValue(12),
+    fontWeight: "700",
+  },
+  seeAllReviewsBtn: {
+    alignItems: "center",
+    paddingVertical: 10,
+    backgroundColor: "#EFF6FF",
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  seeAllReviewsBtnText: {
+    color: "#003399",
+    fontSize: RFValue(13),
+    fontWeight: "700",
   },
 });

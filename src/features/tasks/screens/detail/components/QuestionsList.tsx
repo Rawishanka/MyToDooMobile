@@ -11,6 +11,96 @@ import { AnswerQuestionModal } from './AnswerQuestionModal';
 
 const screenWidth = Dimensions.get('window').width;
 
+const isImageAttachment = (value: string) =>
+  /\.(jpg|jpeg|png|gif|webp|bmp|heic)(\?|$)/i.test(value) ||
+  value.includes('/images/') ||
+  value.includes('image/upload');
+
+const normalizeQuestionAttachmentList = (items: any[] | undefined): any[] => {
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return [];
+  }
+
+  return items
+    .map((item, index) => {
+      if (typeof item === 'string') {
+        const url = normalizeCDNUrl(item);
+        return {
+          _id: `attachment-${index}`,
+          url,
+          secureUrl: url,
+          resourceType: isImageAttachment(url) ? 'image' : 'document',
+          fileId: url.split('/').pop() || `attachment-${index}`,
+        };
+      }
+
+      const url = normalizeCDNUrl(item.url || item.secureUrl || item.path || item.src);
+      if (!url) {
+        return null;
+      }
+
+      return {
+        ...item,
+        url,
+        secureUrl: normalizeCDNUrl(item.secureUrl || item.url || item.path || item.src),
+        resourceType:
+          item.resourceType ||
+          item.type ||
+          (isImageAttachment(url) ? 'image' : 'document'),
+        fileId: item.fileId || item.name || url.split('/').pop() || `attachment-${index}`,
+      };
+    })
+    .filter(Boolean);
+};
+
+const collectAttachmentCandidates = (question: any, field: 'question' | 'answer'): any[] => {
+  const nested = question[field];
+  const candidates: any[] = [];
+
+  if (Array.isArray(nested?.attachments)) {
+    candidates.push(...nested.attachments);
+  }
+  if (Array.isArray(nested?.images)) {
+    candidates.push(...nested.images);
+  }
+  if (Array.isArray(nested?.image_urls)) {
+    candidates.push(...nested.image_urls);
+  }
+  if (Array.isArray(nested?.imageUrls)) {
+    candidates.push(...nested.imageUrls);
+  }
+
+  if (field === 'question') {
+    if (Array.isArray(question.questionAttachments)) {
+      candidates.push(...question.questionAttachments);
+    }
+    if (Array.isArray(question.questionImages)) {
+      candidates.push(...question.questionImages);
+    }
+    if (Array.isArray(question.question_image_urls)) {
+      candidates.push(...question.question_image_urls);
+    }
+  } else {
+    if (Array.isArray(question.answerAttachments)) {
+      candidates.push(...question.answerAttachments);
+    }
+    if (Array.isArray(question.answerImages)) {
+      candidates.push(...question.answerImages);
+    }
+    if (Array.isArray(question.answer_image_urls)) {
+      candidates.push(...question.answer_image_urls);
+    }
+    if (Array.isArray(question.answerImageUrls)) {
+      candidates.push(...question.answerImageUrls);
+    }
+    if (Array.isArray(question.image_urls) && typeof nested === 'object' && nested !== null) {
+      candidates.push(...question.image_urls);
+    }
+  }
+
+  return normalizeQuestionAttachmentList(candidates);
+};
+
 interface QuestionsListProps {
   questions: any[];
   isLoading: boolean;
@@ -78,34 +168,10 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   };
   
   // Helper function to get question attachments from API response
-  const getQuestionAttachments = (question: any) => {
-    // Check if question object has attachments array
-    if (question.question?.attachments && Array.isArray(question.question.attachments)) {
-      return question.question.attachments;
-    }
-    
-    // Fallback: check if questionAttachments exists at top level
-    if (question.questionAttachments && Array.isArray(question.questionAttachments)) {
-      return question.questionAttachments;
-    }
-    
-    return [];
-  };
+  const getQuestionAttachments = (question: any) => collectAttachmentCandidates(question, 'question');
   
   // Helper function to get answer attachments from API response
-  const getAnswerAttachments = (question: any) => {
-    // Check if answer object has attachments array
-    if (question.answer?.attachments && Array.isArray(question.answer.attachments)) {
-      return question.answer.attachments;
-    }
-    
-    // Fallback: check if answerAttachments exists at top level
-    if (question.answerAttachments && Array.isArray(question.answerAttachments)) {
-      return question.answerAttachments;
-    }
-    
-    return [];
-  };
+  const getAnswerAttachments = (question: any) => collectAttachmentCandidates(question, 'answer');
   
   // Helper function to get question text
   const getQuestionText = (question: any) => {
@@ -674,7 +740,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   questionsCountText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#666',
     marginLeft: 8,
@@ -685,7 +751,7 @@ const styles = StyleSheet.create({
   },
   loadingStateText: {
     marginTop: 8,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   emptyState: {
@@ -694,13 +760,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   emptyStateText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#666',
     marginTop: 12,
   },
   emptyStateSubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
     marginTop: 4,
   },
@@ -746,11 +812,11 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   questionTime: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
   questionText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#1a1a1a',
     lineHeight: 22,
     marginBottom: 16,
@@ -767,14 +833,14 @@ const styles = StyleSheet.create({
     borderColor: '#D4EDDA',
   },
   answerLabel: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     fontWeight: '700',
     color: '#2E7D32',
     marginBottom: 8,
     letterSpacing: 0.3,
   },
   answerText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#1a1a1a',
     lineHeight: 22,
     fontWeight: '400',
@@ -802,7 +868,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   askQuestionButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#fff',
     marginLeft: 8,
@@ -820,7 +886,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF3E0',
   },
   statusText: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     fontWeight: '700',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -832,7 +898,7 @@ const styles = StyleSheet.create({
     color: '#FF9800',
   },
   answerTime: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#2E7D32',
     marginTop: 8,
     fontStyle: 'italic',
@@ -854,7 +920,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   answerButtonText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#fff',
     marginLeft: 8,
@@ -870,7 +936,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   noAnswerText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#E65100',
     fontStyle: 'italic',
     textAlign: 'center',
@@ -886,7 +952,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   taskContextText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#007AFF',
     marginLeft: 4,
     fontWeight: '500',
@@ -902,7 +968,7 @@ const styles = StyleSheet.create({
     borderColor: '#CCE5FF',
   },
   attachmentsLabel: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     fontWeight: '700',
     color: '#0056B3',
     marginBottom: 10,
@@ -928,7 +994,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
   },
   attachmentName: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#1a1a1a',
     marginLeft: 10,
     flex: 1,
@@ -960,7 +1026,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
   },
   answerAttachmentName: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#2E7D32',
     marginLeft: 10,
     flex: 1,

@@ -1,7 +1,7 @@
 // 🏷️ **REACT QUERY HOOKS FOR CATEGORIES API**
 // This file contains React Query hooks for category operations
 
-import { CategoriesAPI } from '@/src/api/categories-api';
+import { Category, CategoriesAPI } from '@/src/api/categories-api';
 import { useQuery } from '@tanstack/react-query';
 
 // 🔑 **QUERY KEYS**
@@ -127,6 +127,74 @@ export function useGetCategoryNames() {
         'Delivery',
         'Realestate',
       ];
+    },
+    staleTime: 5 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    retry: 2,
+  });
+}
+
+export interface CategoryWithVideo {
+  _id: string;
+  name: string;
+  videoUrl: string;
+}
+
+/**
+ * Get categories that have admin-uploaded videos.
+ * Filters the full categories list to only those with a valid videoUrl.
+ */
+export function useGetCategoriesWithVideos() {
+  return useQuery({
+    queryKey: [...CATEGORIES_QUERY_KEYS.list(), 'with-videos'],
+    queryFn: async (): Promise<CategoryWithVideo[]> => {
+      const response = await CategoriesAPI.getAllCategories();
+      if (response.success && response.data) {
+        return response.data
+          .filter((cat: Category) => !!cat.videoUrl && cat.videoUrl.trim().length > 0)
+          .map((cat: Category) => ({
+            _id: cat._id || '',
+            name: cat.name,
+            videoUrl: cat.videoUrl!,
+          }));
+      }
+      return [];
+    },
+    staleTime: 5 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    retry: 2,
+  });
+}
+
+export interface CategoryWithCarouselImage {
+  _id: string;
+  name: string;
+  carouselImageUrl: string;
+}
+
+/**
+ * Get categories that have admin-uploaded carousel images for Welcome Screen.
+ */
+export function useGetCategoriesWithCarouselImages() {
+  return useQuery({
+    queryKey: [...CATEGORIES_QUERY_KEYS.list(), 'with-carousel-images'],
+    queryFn: async (): Promise<CategoryWithCarouselImage[]> => {
+      const response = await CategoriesAPI.getAllCategories();
+      if (response.success && response.data) {
+        return response.data
+          .filter((cat: Category) => !!cat.carouselImageUrl && cat.carouselImageUrl.trim().length > 0)
+          .sort((a, b) => (a.order ?? 999) - (b.order ?? 999) || a.name.localeCompare(b.name))
+          .map((cat: Category) => ({
+            _id: cat._id || '',
+            name: cat.name,
+            carouselImageUrl: cat.carouselImageUrl!,
+          }));
+      }
+      return [];
     },
     staleTime: 5 * 60 * 1000,
     refetchOnMount: false,

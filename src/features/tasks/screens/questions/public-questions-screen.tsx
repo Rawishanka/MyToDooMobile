@@ -15,6 +15,7 @@ import {
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PublicQuestion {
   _id: string;
@@ -262,7 +263,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   errorContainer: {
@@ -272,13 +273,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   errorTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
     marginTop: 16,
   },
   errorSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
     marginTop: 8,
@@ -309,7 +310,7 @@ const styles = StyleSheet.create({
     marginLeft: -8,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
@@ -317,7 +318,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   questionCount: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
   },
   searchSection: {
@@ -339,7 +340,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: 8,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#333',
   },
   categoryFilter: {
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
   },
   categoryChipText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '500',
     color: '#666',
   },
@@ -384,7 +385,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e0e0e0',
   },
   taskTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 4,
@@ -396,17 +397,17 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   taskCategory: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#007AFF',
     fontWeight: '500',
   },
   taskBudget: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     fontWeight: '600',
   },
   taskLocation: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
   },
   questionSection: {
@@ -433,13 +434,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   userName: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
     color: '#333',
     marginRight: 8,
   },
   timestamp: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#666',
   },
   statusBadge: {
@@ -454,7 +455,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF3E0',
   },
   statusText: {
-    fontSize: 10,
+    fontSize: RFValue(10),
     fontWeight: '600',
     textTransform: 'uppercase',
   },
@@ -465,7 +466,7 @@ const styles = StyleSheet.create({
     color: '#FF9800',
   },
   questionText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     lineHeight: 20,
   },
@@ -479,18 +480,18 @@ const styles = StyleSheet.create({
     borderLeftColor: '#4CAF50',
   },
   answerLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
     color: '#4CAF50',
     marginBottom: 4,
   },
   answerText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#333',
     lineHeight: 18,
   },
   answerTime: {
-    fontSize: 10,
+    fontSize: RFValue(10),
     color: '#666',
     marginTop: 4,
     fontStyle: 'italic',
@@ -502,14 +503,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyStateTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#999',
     marginTop: 16,
     textAlign: 'center',
   },
   emptyStateSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginTop: 8,
     textAlign: 'center',

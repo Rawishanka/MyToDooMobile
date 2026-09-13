@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface LoadingStateProps {}
 
@@ -41,7 +42,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   errorContainer: {
@@ -52,14 +53,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   errorTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     textAlign: 'center',
     marginBottom: 24,
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: '#007bff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

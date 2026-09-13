@@ -16,7 +16,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AppAlert } from '@/src/shared/components/AppAlert';
+import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TaskActionButtonsProps {
@@ -187,7 +188,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
     // Posters CANNOT mark tasks as complete
     if (!isTasker) {
       console.error('❌ User is not the tasker - cannot mark task as complete');
-      Alert.alert(
+      AppAlert.alert(
         'Permission Denied',
         'Only the assigned tasker can mark this task as complete.',
         [{ text: 'OK' }]
@@ -255,7 +256,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
         errorMessage = error.message;
       }
       
-      Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
+      AppAlert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
     } finally {
       setIsProcessing(false);
     }
@@ -273,13 +274,13 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
 
   const handleConfirmCancellation = useCallback(async () => {
     if (!selectedCancelReason) {
-      Alert.alert('Please select a reason', 'You must select a reason for cancellation.');
+      AppAlert.alert('Please select a reason', 'You must select a reason for cancellation.');
       return;
     }
 
     const selectedReasonData = cancellationReasons.find((r: any) => r._id === selectedCancelReason);
     if (!selectedReasonData) {
-      Alert.alert('Error', 'Invalid cancellation reason selected.');
+      AppAlert.alert('Error', 'Invalid cancellation reason selected.');
       return;
     }
 
@@ -298,7 +299,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
       setShowCancelModal(false);
       setSelectedCancelReason(null);
 
-      Alert.alert(
+      AppAlert.alert(
         'Cancellation Request Sent',
         'Your cancellation request has been sent to the tasker for approval. The task will remain in the Accepted tab until the tasker responds.',
         [{ text: 'OK' }]
@@ -309,7 +310,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
       }
     } catch (error: any) {
       console.error('❌ Failed to create cancellation request:', error);
-      Alert.alert(
+      AppAlert.alert(
         'Error',
         error?.message || 'Failed to send cancellation request. Please try again.',
         [{ text: 'OK' }]
@@ -329,7 +330,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
     // Taskers CANNOT confirm completion
     if (!isTaskCreator) {
       console.error('❌ User is not the poster - cannot confirm completion');
-      Alert.alert(
+      AppAlert.alert(
         'Permission Denied',
         'Only the task poster can confirm completion.',
         [{ text: 'OK' }]
@@ -340,7 +341,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
     // Task must be in pending_completion status
     if (task?.status !== 'pending_completion') {
       console.error('❌ Task is not in pending_completion status:', task?.status);
-      Alert.alert(
+      AppAlert.alert(
         'Invalid Task Status',
         'This task is not ready for completion confirmation.',
         [{ text: 'OK' }]
@@ -348,7 +349,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
       return;
     }
 
-    Alert.alert(
+    AppAlert.alert(
       'Release Payment',
       'Are you sure you want to release payment? This confirms the task is complete and pays the tasker.',
       [
@@ -417,7 +418,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
                 errorMessage = error.message;
               }
               
-              Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
+              AppAlert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
             } finally {
               setIsProcessing(false);
             }

@@ -1,4 +1,5 @@
-import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
+import MyToDooSvgLogoBox from '@/src/shared/components/MyToDooSvgLogoBox';
+import { MYTDOO_BRAND_BLUE } from '@/src/shared/components/MyToDooBrandLogo';
 import { useEffect, useRef } from 'react';
 import {
   Animated,
@@ -21,7 +22,6 @@ export default function SimpleSplashScreen({
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
-    // Simple animation sequence for better APK performance
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -36,7 +36,6 @@ export default function SimpleSplashScreen({
       }),
     ]).start();
 
-    // Finish animation
     const timer = setTimeout(() => {
       onFinish && onFinish();
     }, duration);
@@ -47,7 +46,7 @@ export default function SimpleSplashScreen({
   return (
     <View style={styles.container}>
       <StatusBar 
-        backgroundColor="#004aad" 
+        backgroundColor={MYTDOO_BRAND_BLUE} 
         barStyle="light-content" 
         hidden={Platform.OS === 'ios'}
       />
@@ -61,12 +60,7 @@ export default function SimpleSplashScreen({
           },
         ]}
       >
-        <View style={styles.logoBackground}>
-          <MyToDooLogo
-            width={120}
-            height={120}
-          />
-        </View>
+        <MyToDooSvgLogoBox variant="splash" />
       </Animated.View>
     </View>
   );
@@ -75,27 +69,12 @@ export default function SimpleSplashScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#004aad',
+    backgroundColor: MYTDOO_BRAND_BLUE,
     alignItems: 'center',
     justifyContent: 'center',
   },
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  logoBackground: {
-    backgroundColor: '#0a2d5c',
-    padding: 25,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
-    shadowOpacity: 0.35,
-    shadowRadius: 15,
-    elevation: 20,
-    borderWidth: 3,
-    borderColor: 'rgba(255, 255, 255, 0.6)',
   },
 });

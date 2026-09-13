@@ -11,6 +11,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface EditTaskModalProps {
   visible: boolean;
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   editHeaderTitle: {
-    fontSize: 24,
+    fontSize: RFValue(24),
     fontWeight: '700',
     color: '#1a237e',
     textAlign: 'center',
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   sectionLabel: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#2c3e50',
     marginBottom: 10,
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   textInput: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#2c3e50',
     minHeight: 20,
   },
@@ -247,7 +248,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a237e',
   },
   dateOptionText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#2c3e50',
     textAlign: 'center',
     fontWeight: '500',
@@ -276,7 +277,7 @@ const styles = StyleSheet.create({
     borderColor: '#1a237e',
   },
   checkboxLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#2c3e50',
   },
   locationContainer: {
@@ -300,7 +301,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   locationTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#2c3e50',
     marginBottom: 8,
@@ -310,7 +311,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   locationDescription: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#7f8c8d',
     textAlign: 'center',
     lineHeight: 16,
@@ -327,7 +328,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     textAlign: 'center',
   },

@@ -67,7 +67,8 @@ export default function PaymentReceiptScreen() {
       }
 
       const downloaded = await downloadReceiptPdf(selected.receiptId, selected.receiptNumber);
-      const html = await buildReceiptPdfHtml(downloaded.localUri);
+      // Android WebView cannot preview PDF via <embed>; HTML builder uses PDF.js there.
+      const html = await buildReceiptPdfHtml(downloaded.localUri, Platform.OS);
 
       setReceipt(selected);
       setLocalPdfUri(downloaded.localUri);
@@ -181,8 +182,14 @@ export default function PaymentReceiptScreen() {
           allowFileAccess
           allowFileAccessFromFileURLs
           allowUniversalAccessFromFileURLs={Platform.OS === 'android'}
-          scalesPageToFit
-          javaScriptEnabled={false}
+          // Android PDF.js already sizes canvases; scalesPageToFit can blur the preview
+          scalesPageToFit={Platform.OS !== 'android'}
+          // Android PDF.js preview needs JS + CDN worker; iOS uses native <embed> (no JS required)
+          javaScriptEnabled={Platform.OS === 'android'}
+          domStorageEnabled={Platform.OS === 'android'}
+          mixedContentMode={Platform.OS === 'android' ? 'always' : undefined}
+          setSupportMultipleWindows={false}
+          androidLayerType="hardware"
         />
       )}
     </View>

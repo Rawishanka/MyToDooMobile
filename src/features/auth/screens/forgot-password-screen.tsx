@@ -9,7 +9,6 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,9 +17,13 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { FORM_MAX_WIDTH, RFValue, isTablet } from '@/src/shared/utils/responsive';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -100,11 +103,11 @@ export default function ForgotPasswordScreen() {
     <SafeAreaView style={styles.container}>
       {/* Back button */}
       <TouchableOpacity
-        style={styles.backButton}
+        style={[styles.backButton, { top: insets.top + 8 }]}
         onPress={() => router.back()}
         hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
       >
-        <Ionicons name="arrow-back" size={28} color="#333" />
+        <Ionicons name="arrow-back" size={22} color="#333" />
       </TouchableOpacity>
 
       <KeyboardAvoidingView
@@ -114,68 +117,95 @@ export default function ForgotPasswordScreen() {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.contentWrapper}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-          scrollEnabled={false}
-        >
-          <View style={styles.innerContainer}>
-            <View style={styles.header}>
-              {/* MyToDoo SVG Logo in Blue Container */}
-              <View style={styles.logoContainer}>
-                <View style={styles.logoBackground}>
-                  <MyToDooLogo 
-                    width={80}
-                    height={80}
-                  />
-                </View>
-              </View>
-              <Text style={styles.title}>Forgot Password?</Text>
-              <Text style={styles.subtitle}>
-                Enter your email address and we&apos;ll send you instructions to reset your password.
-              </Text>
-            </View>
-
-            <View style={styles.form}>
-              <Text style={styles.label}>Email Address</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter your email"
-                placeholderTextColor="#999"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoFocus
-                editable={!emailSent}
-              />
-
-              <TouchableOpacity
-                style={[styles.resetButton, (loading || emailSent) && styles.resetButtonDisabled]}
-                onPress={handleResetPassword}
-                disabled={loading || emailSent}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.resetButtonText}>
-                    {emailSent ? 'Email Sent' : 'Send Reset Link'}
+            <ScrollView
+              contentContainerStyle={[
+                styles.scrollContent,
+                { paddingBottom: Math.max(insets.bottom, 24) },
+              ]}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
+              <View style={[styles.innerContainer, isTablet && styles.innerContainerTablet]}>
+                {/* Header */}
+                <View style={styles.header}>
+                  {/* MyToDoo SVG Logo - matches login screen exactly */}
+                  {/* MyToDoo SVG Logo in Blue Container */}
+                  <View style={styles.logoContainer}>
+                    <View style={styles.logoBackground}>
+                      <MyToDooLogo width={80} height={80} />
+                    </View>
+                  </View>
+                  <Text style={styles.title}>Forgot Password?</Text>
+                  <Text style={styles.subtitle}>
+                    Enter your email address and we'll send{'\n'}you a password reset link.
                   </Text>
-                )}
-              </TouchableOpacity>
+                </View>
 
-              <TouchableOpacity
-                style={styles.backToLoginButton}
-                onPress={() => router.back()}
-              >
-                <Ionicons name="arrow-back" size={16} color="#007BFF" style={styles.backIcon} />
-                <Text style={styles.backToLoginText}>Back to Login</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
+                {/* Form Card */}
+                <View style={styles.card}>
+                  {/* Email field */}
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Email Address</Text>
+                    <View style={styles.inputWrapper}>
+                      <Ionicons name="mail-outline" size={18} color="#888" style={styles.inputIcon} />
+                      <TextInput
+                        style={styles.input}
+                        value={email}
+                        onChangeText={setEmail}
+                        placeholder="Enter your email"
+                        placeholderTextColor="#aaa"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoFocus
+                        editable={!emailSent}
+                      />
+                    </View>
+                  </View>
+
+                  {/* Send Reset Link Button */}
+                  <TouchableOpacity
+                    style={[styles.resetButton, (loading || emailSent) && styles.resetButtonDisabled]}
+                    onPress={handleResetPassword}
+                    disabled={loading || emailSent}
+                    activeOpacity={0.85}
+                  >
+                    {loading ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : (
+                      <>
+                        <Ionicons
+                          name={emailSent ? 'checkmark-circle-outline' : 'send-outline'}
+                          size={18}
+                          color="#fff"
+                          style={styles.buttonIcon}
+                        />
+                        <Text style={styles.resetButtonText}>
+                          {emailSent ? 'Email Sent!' : 'Send Reset Link'}
+                        </Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                {/* Divider */}
+                <View style={styles.dividerRow}>
+                  <View style={styles.divider} />
+                  <Text style={styles.dividerText}>or</Text>
+                  <View style={styles.divider} />
+                </View>
+
+                {/* Back to Login */}
+                <TouchableOpacity
+                  style={styles.backToLoginButton}
+                  onPress={() => router.back()}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="arrow-back-circle-outline" size={18} color="#007BFF" style={styles.backIcon} />
+                  <Text style={styles.backToLoginText}>Back to Login</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -186,7 +216,7 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f6fa',
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -196,101 +226,162 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    justifyContent: 'center',
   },
   innerContainer: {
     paddingHorizontal: 24,
-    paddingTop: 100,
+    paddingTop: 60,
+    paddingBottom: 40,
+    width: '100%',
+  },
+  innerContainerTablet: {
+    maxWidth: FORM_MAX_WIDTH,
+    alignSelf: 'center',
   },
   backButton: {
     position: 'absolute',
-    top: 40,
     left: 18,
     zIndex: 10,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    borderRadius: 16,
-    padding: 4,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
-    marginTop: -15,
+    marginBottom: 28,
   },
   logoContainer: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   logoBackground: {
     backgroundColor: '#0a2d5c',
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: 16,
+    padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   title: {
-    fontSize: 28,
+    fontSize: RFValue(24),
     fontWeight: 'bold',
-    marginBottom: 12,
-    color: '#333',
+    marginBottom: 8,
+    color: '#1a1a2e',
     textAlign: 'center',
+    letterSpacing: 0.3,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 20,
+    lineHeight: 21,
+    paddingHorizontal: 10,
   },
-  form: {
-    marginTop: -40,
-    marginBottom: 24,
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 10,
+    elevation: 4,
+    marginBottom: 20,
+  },
+  inputGroup: {
+    marginBottom: 20,
   },
   label: {
-    fontSize: 14,
-    color: '#333',
+    fontSize: RFValue(13),
+    color: '#444',
     marginBottom: 8,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
+    borderRadius: 10,
+    backgroundColor: '#fafafa',
+    paddingHorizontal: 12,
+  },
+  inputIcon: {
+    marginRight: 8,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 24,
-    fontSize: 16,
+    flex: 1,
+    paddingVertical: 13,
+    fontSize: RFValue(15),
+    color: '#222',
   },
   resetButton: {
     backgroundColor: '#007BFF',
-    paddingVertical: 14,
-    borderRadius: 8,
+    paddingVertical: 15,
+    borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 16,
-    marginTop: -10,
+    justifyContent: 'center',
+    flexDirection: 'row',
+    shadowColor: '#007BFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   resetButtonDisabled: {
     backgroundColor: '#99c9ff',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  buttonIcon: {
+    marginRight: 8,
   },
   resetButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontWeight: '700',
+    fontSize: RFValue(15),
+    letterSpacing: 0.3,
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#ddd',
+  },
+  dividerText: {
+    marginHorizontal: 12,
+    fontSize: RFValue(13),
+    color: '#999',
   },
   backToLoginButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#007BFF',
   },
   backIcon: {
     marginRight: 6,
   },
   backToLoginText: {
     color: '#007BFF',
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
   },
 });

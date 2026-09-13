@@ -1,146 +1,91 @@
 // context/AuthProvider.tsx
 import { useStorageState } from '@/src/shared/hooks/useStorageState';
+import { getRememberMeCredentials, tryRememberMeRenew } from '@/src/shared/utils/auth-utils';
+import { getTokenExpiresIn, isTokenExpired } from '@/src/shared/utils/jwt-utils';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
 import { PropsWithChildren, useEffect, useRef } from 'react';
-import API_CONFIG from '../api/config';
-
-async function getRememberMeCredentials(): Promise<{ email: string; password: string } | null> {
-  const rememberMe = await AsyncStorage.getItem('remember_me');
-  if (rememberMe !== 'true') return null;
-
-  const savedEmail =
-    (await AsyncStorage.getItem('saved_email')) ||
-    (await AsyncStorage.getItem('userEmail'));
-  const savedPassword =
-    (await AsyncStorage.getItem('saved_password')) ||
-    (await AsyncStorage.getItem('userPassword'));
-
-  if (!savedEmail || !savedPassword) return null;
-  return { email: savedEmail, password: savedPassword };
-}
+import { AppState, type AppStateStatus } from 'react-native';
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [[isLoading, storedToken], setStoredToken] = useStorageState('token');
-  const { token, isAuthenticated, expiresIn } = useAuthStore();
-  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const autoLoginInFlight = useRef(false);
+  const { token, isAuthenticated } = useAuthStore();
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Proactive token refresh - refresh token 5 minutes before expiration
+  const scheduleRefreshFromJwt = (jwt?: string | null) => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+
+    if (!jwt) return;
+
+    const remainingSec = getTokenExpiresIn(jwt);
+    if (remainingSec == null) return;
+
+    const refreshBuffer = 5 * 60;
+    const waitSec = remainingSec - refreshBuffer;
+
+    if (waitSec > 0) {
+      console.log(`⏰ Token will be refreshed in ${Math.floor(waitSec / 60)} minutes`);
+      refreshTimerRef.current = setTimeout(() => {
+        void renewIfRememberMe();
+      }, waitSec * 1000);
+      return;
+    }
+
+    void renewIfRememberMe();
+  };
+
+  const renewIfRememberMe = async () => {
+    const ok = await tryRememberMeRenew();
+    if (ok) {
+      const next = useAuthStore.getState().token;
+      if (next) setStoredToken(next);
+      scheduleRefreshFromJwt(next);
+      return;
+    }
+
+    const creds = await getRememberMeCredentials();
+    if (creds) return;
+
+    const { clearAuth } = useAuthStore.getState();
+    await clearAuth();
+    const { router } = require('expo-router');
+    if (router) router.replace('/(auth)/login');
+  };
+
   useEffect(() => {
-    const setupTokenRefresh = () => {
-      if (refreshTimerRef.current) {
-        clearTimeout(refreshTimerRef.current);
-        refreshTimerRef.current = null;
-      }
-
-      if (!token || !isAuthenticated || !expiresIn) {
-        return;
-      }
-
-      const expiresInMs = expiresIn * 1000;
-      const refreshBuffer = 5 * 60 * 1000;
-      const timeUntilRefresh = expiresInMs - refreshBuffer;
-
-      if (timeUntilRefresh > 0) {
-        console.log(`⏰ Token will be refreshed in ${Math.floor(timeUntilRefresh / 1000 / 60)} minutes`);
-        refreshTimerRef.current = setTimeout(async () => {
-          console.log('🔄 Proactively refreshing token before expiration');
-          await refreshToken();
-        }, timeUntilRefresh);
-      } else {
-        console.log('⚠️ Token already expired or will expire soon, refreshing now');
-        refreshToken();
-      }
-    };
-
-    setupTokenRefresh();
-
+    scheduleRefreshFromJwt(token);
     return () => {
-      if (refreshTimerRef.current) {
-        clearTimeout(refreshTimerRef.current);
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    };
+  }, [token, isAuthenticated]);
+
+  useEffect(() => {
+    const onAppState = (state: AppStateStatus) => {
+      if (state !== 'active') return;
+      const current = useAuthStore.getState().token;
+      if (!current || isTokenExpired(current, 300)) {
+        void renewIfRememberMe();
       }
     };
-  }, [token, isAuthenticated, expiresIn]);
-
-  const loginWithCredentials = async (email: string, password: string) => {
-    const response = await axios.post(
-      `${API_CONFIG.BASE_URL}/auth/login`,
-      { email, password },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        timeout: 30000,
-      }
-    );
-
-    const { token: newToken, user, expiresIn: newExpiresIn } = response.data;
-    if (!newToken || !user) {
-      throw new Error('Invalid login response');
-    }
-
-    const { setAuthData } = useAuthStore.getState();
-    await setAuthData(newToken, user, newExpiresIn);
-    setStoredToken(newToken);
-
-    // Keep refresh credentials aligned with Remember Me keys
-    await AsyncStorage.setItem('userEmail', email);
-    await AsyncStorage.setItem('userPassword', password);
-    await AsyncStorage.setItem('saved_email', email);
-    await AsyncStorage.setItem('saved_password', password);
-    await AsyncStorage.setItem('remember_me', 'true');
-
-    return newToken;
-  };
-
-  const refreshToken = async () => {
-    try {
-      const creds = await getRememberMeCredentials();
-      if (!creds) {
-        console.log('⚠️ No Remember Me credentials for token refresh - logging out');
-        const { clearAuth } = useAuthStore.getState();
-        await clearAuth();
-        const { router } = require('expo-router');
-        if (router) {
-          router.replace('/(auth)/login');
-        }
-        return;
-      }
-
-      console.log('🔐 Refreshing token with Remember Me credentials');
-      await loginWithCredentials(creds.email, creds.password);
-      console.log('✅ Token refreshed successfully');
-    } catch (error: any) {
-      console.error('❌ Token refresh failed:', error?.message);
-      const { clearAuth } = useAuthStore.getState();
-      await clearAuth();
-      const { router } = require('expo-router');
-      if (router) {
-        router.replace('/(auth)/login');
-      }
-    }
-  };
+    const sub = AppState.addEventListener('change', onAppState);
+    return () => sub.remove();
+  }, []);
 
   useEffect(() => {
     const restoreAuthState = async () => {
-      if (isLoading) {
-        console.log('⏳ AsyncStorage still loading, waiting...');
-        return;
-      }
+      if (isLoading) return;
 
       const rememberMe = await AsyncStorage.getItem('remember_me');
       const userLoggedOut = await AsyncStorage.getItem('userLoggedOut');
 
-      // Explicit logout always wins — login screen prefills saved credentials when Remember Me is on
       if (userLoggedOut === 'true') {
         console.log('🚪 User explicitly logged out, skipping auth restoration');
         return;
       }
 
-      // Session-only: do not restore a cold-start session when Remember Me is off
       if (rememberMe !== 'true') {
         if (storedToken && !token) {
           console.log('ℹ️ Remember Me off — clearing persisted session');
@@ -149,65 +94,32 @@ export function AuthProvider({ children }: PropsWithChildren) {
           } catch (e) {
             console.warn('Failed to clear session-only auth keys', e);
           }
-        } else {
-          console.log('ℹ️ Remember Me off — user needs to login');
         }
         return;
       }
 
-      console.log('🔍 Remember Me restore check...', {
-        hasStoredToken: !!storedToken,
-        hasCurrentToken: !!token,
-        isAuthenticated,
-      });
+      const liveToken = token || storedToken;
+      if (!liveToken || isTokenExpired(liveToken, 300)) {
+        console.log('🔄 Remember Me: token missing/expired — silent renew');
+        const ok = await tryRememberMeRenew();
+        if (ok) {
+          const next = useAuthStore.getState().token;
+          if (next) setStoredToken(next);
+        }
+        return;
+      }
 
       if (storedToken && !token) {
-        console.log('🔄 Restoring auth state from AsyncStorage (Remember Me)...');
         try {
           const storedUser = await AsyncStorage.getItem('user');
-          const storedExpiresIn = await AsyncStorage.getItem('expiresIn');
-
-          if (storedUser) {
-            const user = JSON.parse(storedUser);
-            const restoredExpiresIn = storedExpiresIn ? parseInt(storedExpiresIn, 10) : undefined;
-            const { setAuthData } = useAuthStore.getState();
-            await setAuthData(storedToken, user, restoredExpiresIn);
-            console.log('✅ Auth state restored successfully');
-          } else {
-            const { setAuthData } = useAuthStore.getState();
-            await setAuthData(storedToken, null, undefined);
-            console.log('✅ Token restored, user data will be fetched from API');
-          }
+          const remaining = getTokenExpiresIn(storedToken) ?? undefined;
+          const user = storedUser ? JSON.parse(storedUser) : null;
+          await useAuthStore.getState().setAuthData(storedToken, user, remaining);
+          console.log('✅ Auth state restored from valid JWT');
         } catch (error) {
           console.error('❌ Error restoring auth state:', error);
         }
-        return;
       }
-
-      if (storedToken && token) {
-        console.log('✅ Auth already restored (token present in both storage and state)');
-        return;
-      }
-
-      // No token but Remember Me + credentials → auto-login on launch
-      if (!token && !autoLoginInFlight.current) {
-        const creds = await getRememberMeCredentials();
-        if (creds) {
-          autoLoginInFlight.current = true;
-          try {
-            console.log('🔄 Remember Me auto-login with saved credentials...');
-            await loginWithCredentials(creds.email, creds.password);
-            console.log('✅ Remember Me auto-login successful');
-          } catch (error: any) {
-            console.warn('⚠️ Remember Me auto-login failed:', error?.message);
-          } finally {
-            autoLoginInFlight.current = false;
-          }
-          return;
-        }
-      }
-
-      console.log('ℹ️ Remember Me on but no token/credentials — user needs to login');
     };
 
     restoreAuthState();

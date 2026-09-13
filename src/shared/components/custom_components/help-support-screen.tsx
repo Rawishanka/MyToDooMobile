@@ -13,6 +13,7 @@ import {
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface HelpSupportProps {
   visible: boolean;
@@ -288,7 +289,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#0052A2',
   },
@@ -308,14 +309,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   infoTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '700',
     color: '#333',
     marginBottom: 8,
     textAlign: 'center',
   },
   infoSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
     lineHeight: 20,
@@ -338,7 +339,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#333',
   },
   content: {
@@ -350,7 +351,7 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     marginTop: 16,
   },
@@ -361,7 +362,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   errorText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#ff3b30',
     marginTop: 16,
     marginBottom: 16,
@@ -375,7 +376,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   categoryContainer: {
@@ -398,13 +399,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   categoryTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginLeft: 12,
   },
   questionCount: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
     marginLeft: 8,
   },
@@ -425,7 +426,7 @@ const styles = StyleSheet.create({
   },
   questionText: {
     flex: 1,
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#0052A2',
     fontWeight: '500',
   },
@@ -435,7 +436,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   answerText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     lineHeight: 22,
   },
@@ -445,13 +446,13 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
   },
   noResultsText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#666',
     marginTop: 16,
   },
   noResultsSubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
     marginTop: 8,
   },
@@ -464,13 +465,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   contactTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
   },
   contactText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
     marginBottom: 16,
@@ -486,12 +487,12 @@ const styles = StyleSheet.create({
   },
   contactButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     marginLeft: 8,
   },
   contactEmail: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#0052A2',
     fontWeight: '500',
   },

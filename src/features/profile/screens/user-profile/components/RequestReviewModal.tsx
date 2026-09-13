@@ -15,6 +15,7 @@ import {
   TouchableWithoutFeedback,
   View
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 // Country codes mapping
 const COUNTRY_CODES = {
@@ -344,13 +345,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#333',
     textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginTop: 4,
     textAlign: 'center',
@@ -366,7 +367,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 12,
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E6F3FF',
   },
   methodText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     marginLeft: 8,
   },
@@ -406,14 +407,14 @@ const styles = StyleSheet.create({
     borderColor: '#E5E5E5',
     borderRadius: 8,
     padding: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     backgroundColor: '#F8F9FA',
   },
   messageInput: {
     minHeight: 120,
   },
   messageInfoText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginTop: 6,
     fontStyle: 'italic',
@@ -433,7 +434,7 @@ const styles = StyleSheet.create({
   },
   sendButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     marginLeft: 8,
   },
@@ -448,7 +449,7 @@ const styles = StyleSheet.create({
     borderLeftColor: '#007AFF',
   },
   infoText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginLeft: 10,
     flex: 1,
@@ -472,7 +473,7 @@ const styles = StyleSheet.create({
     borderRightColor: '#E0E0E0',
   },
   countryCodeText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
   },
@@ -485,7 +486,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 0,
   },
   phoneHintText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginTop: 4,
     marginLeft: 8,

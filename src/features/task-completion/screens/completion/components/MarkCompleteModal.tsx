@@ -1,6 +1,9 @@
+import { appAlert } from '@/src/shared/components/AppAlert';
+import { BRAND_BLUE, BRAND_GREEN } from '@/src/shared/theme/brandColors';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Alert, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface MarkCompleteModalProps {
   visible: boolean;
@@ -16,18 +19,13 @@ export default function MarkCompleteModal({
   const [completionNotes, setCompletionNotes] = useState('');
 
   const handleConfirm = () => {
-    Alert.alert(
-      'Task Marked Complete',
-      'The task has been marked as completed and is pending verification.',
-      [
-        {
-          text: 'OK',
-          onPress: () => {
-            setCompletionNotes('');
-            onConfirm();
-          },
-        },
-      ]
+    setCompletionNotes('');
+    onClose();
+    appAlert(
+      'Task marked complete',
+      'The poster has been informed the task has been completed and to release payment.',
+      [{ text: 'OK', onPress: onConfirm }],
+      { type: 'success', autoCloseMs: 3000 },
     );
   };
 
@@ -99,12 +97,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
   description: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginBottom: 12,
   },
@@ -113,7 +111,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     height: 80,
     textAlignVertical: 'top',
     marginBottom: 20,
@@ -132,7 +130,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: '#666',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   confirmButton: {
@@ -144,7 +142,7 @@ const styles = StyleSheet.create({
   },
   confirmButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

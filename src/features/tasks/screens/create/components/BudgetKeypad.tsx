@@ -2,6 +2,7 @@ import { formatNumber } from '@/src/shared/utils/currency';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface BudgetKeypadProps {
   budget: string;
@@ -72,13 +73,13 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#1C1C1E',
     marginBottom: 12,
   },
   sectionSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#8E8E93',
     marginBottom: 16,
   },
@@ -93,13 +94,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   currencySymbol: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#002366',
     marginRight: 5,
   },
   budgetText: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#002366',
   },
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
     color: '#FF3B30',
   },
   validationText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#FF3B30',
     textAlign: 'center',
     marginTop: 4,
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
   },
   keyText: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     color: '#002366',
   },
 });

@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CompletionRating } from '../hooks/useCompletionStatus';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface RatingCardProps {
   rating: CompletionRating;
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   title: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
     marginBottom: 16,
@@ -65,12 +66,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   score: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
   },
   feedback: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     fontStyle: 'italic',
     textAlign: 'center',
@@ -78,7 +79,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   date: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
     textAlign: 'center',
   },

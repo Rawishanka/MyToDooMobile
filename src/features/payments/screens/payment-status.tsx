@@ -24,6 +24,7 @@ import {
 
 // Hooks
 import { usePaymentStatus } from './status/hooks';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function PaymentStatusScreen() {
   const router = useRouter();
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },

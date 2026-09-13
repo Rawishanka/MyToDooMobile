@@ -25,6 +25,7 @@ import {
     SupportStatusData
 } from '@/src/api/help-support-api';
 import FAQScreen from '@/src/shared/components/custom_components/faq-screen';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 type ContactUsProps = { 
   onBack: () => void;
@@ -814,7 +815,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontSize: 17,
+    fontSize: RFValue(17),
     fontWeight: '700',
     color: '#1a1a1a',
     textAlign: 'center',
@@ -852,13 +853,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contactMethodTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#1a1a1a',
     marginBottom: 3,
   },
   contactMethodValue: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#0052A2',
     fontWeight: '500',
   },
@@ -874,7 +875,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#e1e4e8',
   },
   dividerText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
     color: '#999',
     marginHorizontal: 16,
@@ -887,7 +888,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 19,
+    fontSize: RFValue(19),
     fontWeight: '700',
     color: '#1a1a1a',
     marginBottom: 18,
@@ -896,7 +897,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
@@ -916,7 +917,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#1a1a1a',
     padding: 0,
   },
@@ -930,7 +931,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   charCount: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
     marginTop: 6,
     textAlign: 'right',
@@ -953,7 +954,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   dropdownText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#999',
     flex: 1,
   },
@@ -984,7 +985,7 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     flex: 1,
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#333',
     marginLeft: 12,
   },
@@ -999,7 +1000,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginLeft: 10,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   submitButton: {
@@ -1021,7 +1022,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0,
   },
   submitButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: '#fff',
     marginLeft: 8,
@@ -1037,7 +1038,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#0052A2',
     marginLeft: 10,
     lineHeight: 18,
@@ -1050,13 +1051,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   tokenLookupTitle: {
-    fontSize: 17,
+    fontSize: RFValue(17),
     fontWeight: '700',
     color: '#1a1a1a',
     marginBottom: 6,
   },
   tokenLookupSubtitle: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
     marginBottom: 14,
   },
@@ -1078,7 +1079,7 @@ const styles = StyleSheet.create({
   },
   tokenInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#1a1a1a',
     padding: 0,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
@@ -1102,14 +1103,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   faqTitle: {
-    fontSize: 17,
+    fontSize: RFValue(17),
     fontWeight: '700',
     color: '#1a1a1a',
     marginBottom: 6,
     textAlign: 'center',
   },
   faqSubtitle: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
     textAlign: 'center',
     marginBottom: 14,
@@ -1127,7 +1128,7 @@ const styles = StyleSheet.create({
     borderColor: '#0052A2',
   },
   faqButtonText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#0052A2',
     marginLeft: 8,
@@ -1160,14 +1161,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   successTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '700',
     color: '#1a1a1a',
     marginBottom: 8,
     textAlign: 'center',
   },
   successSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
     marginBottom: 20,
@@ -1188,20 +1189,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tokenLabel: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     fontWeight: '600',
     color: '#0052A2',
     marginLeft: 8,
   },
   tokenValue: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#1a1a1a',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     marginBottom: 4,
   },
   tokenHint: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
     fontStyle: 'italic',
   },
@@ -1216,7 +1217,7 @@ const styles = StyleSheet.create({
   },
   emailConfirmationText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#155724',
     marginLeft: 8,
     lineHeight: 18,
@@ -1230,7 +1231,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   responseTimeText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginLeft: 8,
   },
@@ -1242,7 +1243,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   doneButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: '#fff',
     textAlign: 'center',
@@ -1266,7 +1267,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e1e4e8',
   },
   statusModalTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#1a1a1a',
   },
@@ -1286,7 +1287,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   statusSectionLabel: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     fontWeight: '600',
     color: '#0052A2',
     marginLeft: 8,
@@ -1294,7 +1295,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   statusTokenValue: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: '#1a1a1a',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
@@ -1314,11 +1315,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   statusBadgeText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
   },
   statusValue: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#333',
     lineHeight: 22,
   },
@@ -1330,7 +1331,7 @@ const styles = StyleSheet.create({
     borderLeftColor: '#e1e4e8',
   },
   messageText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     lineHeight: 20,
   },
@@ -1342,13 +1343,13 @@ const styles = StyleSheet.create({
     borderLeftColor: '#28a745',
   },
   responseText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#155724',
     lineHeight: 20,
     marginBottom: 8,
   },
   responseTime: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#155724',
     fontStyle: 'italic',
   },
@@ -1360,7 +1361,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   statusCloseButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: '#fff',
     textAlign: 'center',

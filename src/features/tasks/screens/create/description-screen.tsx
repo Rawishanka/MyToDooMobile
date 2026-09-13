@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function DescribeTaskScreen() {
   const [description, setDescription] = useState('');
@@ -79,7 +80,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   title: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: 'bold',
     color: '#002366',
     marginTop: 40,
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f2f2f2',
     borderRadius: 10,
     padding: 16,
-    fontSize: 16,
+    fontSize: RFValue(16),
     textAlignVertical: 'top',
     color: '#000',
   },
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: RFValue(16),
     textTransform: 'capitalize',
   },
 });

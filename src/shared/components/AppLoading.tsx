@@ -1,5 +1,6 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import AnimatedLoading from './AnimatedLoading';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface AppLoadingProps {
   message?: string;
@@ -76,12 +77,12 @@ const styles = StyleSheet.create({
   },
   message: {
     marginTop: 16,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666666',
     textAlign: 'center',
   },
   brandedMessage: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#ffffff',
     textAlign: 'center',
     opacity: 0.9,

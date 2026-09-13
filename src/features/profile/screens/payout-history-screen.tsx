@@ -10,6 +10,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PayoutHistoryScreenProps {
   onNavigate: (screen: string) => void;
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     marginLeft: 12,
     flex: 1,
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   emptyState: {
@@ -246,13 +247,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   emptyTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '600',
     marginTop: 24,
     color: '#000',
   },
   emptyDescription: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
     marginTop: 8,
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   listContainer: {
@@ -299,13 +300,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   payoutAmount: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#000',
     marginBottom: 4,
   },
   payoutDate: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
   },
   statusBadge: {
@@ -315,11 +316,11 @@ const styles = StyleSheet.create({
   },
   statusText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
   },
   payoutDescription: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     marginBottom: 8,
     lineHeight: 20,
@@ -331,7 +332,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   arrivalText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
   },
   loadMoreContainer: {
@@ -342,7 +343,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#e0e0e0',
   },
   loadMoreText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
   },
 });

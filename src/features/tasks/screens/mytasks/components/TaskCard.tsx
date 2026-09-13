@@ -3,6 +3,7 @@ import TaskAPI from '@/src/api/task-api';
 import { ChatWindow } from '@/src/features/messages/components/ChatWindow';
 import { formatUserName, formatAvatarName } from '@/src/utils/formatUserName';
 import type { Message } from '@/src/features/messages/components/message-types';
+import { AppAlert } from '@/src/shared/components/AppAlert';
 import { RatingReviewModal } from '@/src/features/tasks/components/RatingReviewModal';
 import StripePaymentModal from '@/src/shared/components/StripePaymentModal';
 
@@ -32,7 +33,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 // Responsive utilities
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
@@ -165,7 +166,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   const handleReopenUnserviced = useCallback(async () => {
     if (isProcessing || reopenUnservicedTaskMutation.isPending) return;
-    Alert.alert(
+    AppAlert.alert(
       'Reopen Task',
       'Reopen this unserviced task so it appears in Find Tasks again?',
       [
@@ -176,10 +177,10 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             try {
               setIsProcessing(true);
               await reopenUnservicedTaskMutation.mutateAsync(task._id);
-              Alert.alert('Reopened', 'Your task is open again and visible to taskers.');
+              AppAlert.alert('Reopened', 'Your task is open again and visible to taskers.');
               onTaskCancelled?.(task._id); // refresh list
             } catch (error: any) {
-              Alert.alert('Error', error?.message || 'Failed to reopen task');
+              AppAlert.alert('Error', error?.message || 'Failed to reopen task');
             } finally {
               setIsProcessing(false);
             }
@@ -511,7 +512,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
     // Validate task ID format before making API call
     if (!isValidMongoId(task._id)) {
-      Alert.alert(
+      AppAlert.alert(
         'Invalid Task',
         'This is a demo/placeholder task and cannot be completed. Please use real tasks from the backend.',
         [{ text: 'OK' }]
@@ -523,7 +524,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     // Posters CANNOT mark tasks as complete - this button should not even show for them
     if (!isCurrentUserTasker) {
       console.error('❌ User is not the tasker - cannot mark task as complete');
-      Alert.alert(
+      AppAlert.alert(
         'Permission Denied',
         'Only the assigned tasker can mark this task as complete.',
         [{ text: 'OK' }]
@@ -587,7 +588,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         errorMessage = error.message;
       }
       
-      Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
+      AppAlert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
     } finally {
       setIsProcessing(false);
     }
@@ -601,11 +602,11 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     }
 
     if (!isValidMongoId(task._id)) {
-      Alert.alert('Invalid Task', 'This task cannot be confirmed.', [{ text: 'OK' }]);
+      AppAlert.alert('Invalid Task', 'This task cannot be confirmed.', [{ text: 'OK' }]);
       return;
     }
 
-    Alert.alert(
+    AppAlert.alert(
       'Release Payment',
       'Are you sure you want to release payment? This confirms the task is complete and pays the tasker.',
       [
@@ -645,7 +646,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               } else if (error?.message) {
                 errorMessage = error.message;
               }
-              Alert.alert('Release Failed', errorMessage, [{ text: 'OK' }]);
+              AppAlert.alert('Release Failed', errorMessage, [{ text: 'OK' }]);
             } finally {
               setIsProcessing(false);
             }
@@ -664,7 +665,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     
     // Validate task ID format before making API call
     if (!isValidMongoId(task._id)) {
-      Alert.alert(
+      AppAlert.alert(
         'Invalid Task',
         'This is a demo/placeholder task and cannot be cancelled. Please use real tasks from the backend.',
         [{ text: 'OK' }]
@@ -708,7 +709,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
     // Validate task ID format before making API call
     if (!isValidMongoId(task._id)) {
-      Alert.alert(
+      AppAlert.alert(
         'Demo Task',
         'This is a demo/placeholder task and cannot be deleted. Please use real tasks from your backend.',
         [{ text: 'OK' }]
@@ -729,7 +730,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
       // Validate task ID format before making API call
       if (!isValidMongoId(task._id)) {
-        Alert.alert(
+        AppAlert.alert(
           'Demo Task',
           'This is a demo/placeholder task and cannot be deleted. Please use real tasks from your backend.',
           [{ text: 'OK' }]
@@ -767,7 +768,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       }
       
       // Show success message
-      Alert.alert(
+      AppAlert.alert(
         "Task Deleted",
         result?.message || "Your task has been deleted successfully.",
         [{ text: "OK" }]
@@ -806,7 +807,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         errorMessage = error.response.data.message;
       }
       
-      Alert.alert(
+      AppAlert.alert(
         errorTitle,
         errorMessage,
         [{ text: "OK" }]
@@ -818,7 +819,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   const handleConfirmPosterCancel = async () => {
     if (selectedCancelReason === null || !selectedCancelReasonData) {
-      Alert.alert('Reason Required', 'Please select a reason for cancelling this task.');
+      AppAlert.alert('Reason Required', 'Please select a reason for cancelling this task.');
       return;
     }
     
@@ -860,7 +861,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         // The task will only move to Cancelled when the request is ACCEPTED by Tasker
         
         // Show success message
-        Alert.alert(
+        AppAlert.alert(
           'Cancellation Request Sent',
           'Your cancellation request has been sent to the Tasker. The task will remain in the Accepted tab until they respond.',
           [{ text: 'OK' }]
@@ -887,7 +888,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         }
         
         // Show success message
-        Alert.alert(
+        AppAlert.alert(
           'Task Cancelled',
           'Your task has been cancelled successfully and moved to the Cancelled tab.',
           [{ text: 'OK' }]
@@ -926,7 +927,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         errorMessage = error.response.data.message;
       }
       
-      Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
+      AppAlert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
     } finally {
       setIsProcessing(false);
     }
@@ -934,7 +935,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
   const handleConfirmTaskerCancel = async () => {
     if (selectedCancelReason === null || !selectedCancelReasonData) {
-      Alert.alert('Reason Required', 'Please select a reason for cancelling this task.');
+      AppAlert.alert('Reason Required', 'Please select a reason for cancelling this task.');
       return;
     }
     
@@ -977,7 +978,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         // The task will only move to Cancelled when the request is ACCEPTED by Poster
         
         // Show success message for REQUEST
-        Alert.alert(
+        AppAlert.alert(
           'Cancellation Request Sent',
           'Your cancellation request has been sent to the Poster. The task will remain in the Todoo tab until they respond.',
           [{ text: 'OK' }]
@@ -1006,7 +1007,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         }
         
         // Show success message for DIRECT CANCEL
-        Alert.alert(
+        AppAlert.alert(
           'Task Cancelled',
           'You have cancelled this task successfully. It has been moved to the Cancelled tab.',
           [{ text: 'OK' }]
@@ -1047,7 +1048,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         errorMessage = error.response.data.message;
       }
       
-      Alert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
+      AppAlert.alert(errorTitle, errorMessage, [{ text: 'OK' }]);
     } finally {
       setIsProcessing(false);
     }
@@ -1133,7 +1134,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       }
 
       // Show success message
-      Alert.alert(
+      AppAlert.alert(
         'Cancellation Accepted',
         'The task has been cancelled successfully and moved to the Cancelled tab.',
         [{ text: 'OK' }]
@@ -1149,7 +1150,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         errorMessage = error.response.data.message;
       }
 
-      Alert.alert('Error', errorMessage, [{ text: 'OK' }]);
+      AppAlert.alert('Error', errorMessage, [{ text: 'OK' }]);
     }
   };
 
@@ -1179,7 +1180,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       setShowCancelRequestModal(false);
 
       // Show success message
-      Alert.alert(
+      AppAlert.alert(
         'Cancellation Rejected',
         'The cancellation request has been rejected and sent to admin for review.',
         [{ text: 'OK' }]
@@ -1195,7 +1196,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         errorMessage = error.response.data.message;
       }
 
-      Alert.alert('Error', errorMessage, [{ text: 'OK' }]);
+      AppAlert.alert('Error', errorMessage, [{ text: 'OK' }]);
     }
   };
 
@@ -1239,7 +1240,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       if (!isNetworkError(error) && __DEV__) {
         console.warn('⚠️ Offer acceptance preparation failed:', error?.message);
       }
-      Alert.alert('Error', 'Failed to prepare payment. Please try again.');
+      AppAlert.alert('Error', 'Failed to prepare payment. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -1256,16 +1257,22 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     setShowOffersModal(true);
   };
 
-  // Helper function to get time preference display
-  const getTimePreference = () => {
-    if (task.dateType === 'before' || task.dateType === 'DoneBy') return '🕐 Before specific date';
-    if (task.dateType === 'no-rush' || task.dateType === 'Easy' || task.dateType === 'Flexible') return '⏰ No rush';
-    if (task.dateType === 'on_time' || task.dateType === 'Specific') return '📅 Specific date';
+  // Helper: plain labels + MaterialIcons (emoji renders as [?] on some iOS builds)
+  const getTimePreference = (): { icon: 'event' | 'schedule' | 'access-time'; label: string } => {
+    if (task.dateType === 'before' || task.dateType === 'DoneBy') {
+      return { icon: 'event', label: 'Before specific date' };
+    }
+    if (task.dateType === 'no-rush' || task.dateType === 'Easy' || task.dateType === 'Flexible') {
+      return { icon: 'schedule', label: 'No rush' };
+    }
+    if (task.dateType === 'on_time' || task.dateType === 'Specific') {
+      return { icon: 'event', label: 'Specific date' };
+    }
     if (task.time && task.time !== 'Anytime') {
       const formattedTime = task.time.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
-      return `🕒 ${formattedTime}`;
+      return { icon: 'access-time', label: formattedTime };
     }
-    return '⏰ Flexible timing';
+    return { icon: 'schedule', label: 'Flexible timing' };
   };
 
   // Helper function to format task date with smart display
@@ -1351,13 +1358,18 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   // Get parsed location
   const parsedLocation = parseLocation(task.location);
   
-  // Helper function to get location type
-  const getLocationType = () => {
+  // Helper: location icon (no emoji — iOS tofu/[?] issue)
+  const getLocationIcon = (): 'local-shipping' | 'location-on' => {
     const address = parsedLocation?.address || '';
     if (address.includes(' → ') || address.includes(' to ')) {
-      return '🚚 Moving/Delivery';
+      return 'local-shipping';
     }
-    return '📍'; // Just show location pin, location address will be shown separately
+    return 'location-on';
+  };
+
+  const isMovingLocation = () => {
+    const address = parsedLocation?.address || '';
+    return address.includes(' → ') || address.includes(' to ');
   };
 
   // Helper function to format location display
@@ -1404,6 +1416,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     (resolvedBudget > 0
       ? formatCurrency(resolvedBudget, { code: resolvedCurrency, symbol: getCurrencySymbol(resolvedCurrency) })
       : 'Budget not specified');
+
+  const timePreference = getTimePreference();
 
   return (
     <View style={[
@@ -1469,12 +1483,26 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
             {/* Time and Date Information */}
             <View style={styles.metaRow}>
-              <Text style={styles.timePreference}>{getTimePreference()}</Text>
+              <MaterialIcons
+                name={timePreference.icon}
+                size={14}
+                color="#007bff"
+                style={styles.metaIcon}
+              />
+              <Text style={styles.timePreference}>{timePreference.label}</Text>
             </View>
 
             {/* Location Information */}
             <View style={styles.metaRow}>
-              <Text style={styles.locationType}>{getLocationType()}</Text>
+              <MaterialIcons
+                name={getLocationIcon()}
+                size={14}
+                color={isMovingLocation() ? '#28a745' : '#666'}
+                style={styles.metaIcon}
+              />
+              {isMovingLocation() ? (
+                <Text style={styles.locationType}>Moving/Delivery</Text>
+              ) : null}
               <Text style={styles.locationText} numberOfLines={1}>
                 {formatLocation()}
               </Text>
@@ -1482,9 +1510,17 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
             {/* Task Status and Date */}
             <View style={styles.meta}>
-              <Text style={[styles.status, { color: getStatusColor() }]}>
-                {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
-              </Text>
+              <View style={styles.statusRow}>
+                <MaterialIcons
+                  name="circle"
+                  size={8}
+                  color={getStatusColor()}
+                  style={styles.statusDot}
+                />
+                <Text style={[styles.status, { color: getStatusColor() }]}>
+                  {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
+                </Text>
+              </View>
               <Text style={styles.date}>
                 {getTaskDate()}
               </Text>
@@ -1630,6 +1666,18 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             {lockedPeerReview.message || 'Submit your review to see theirs'}
           </Text>
         </View>
+      )}
+
+      {isCompletedTask && !hasAlreadyReviewed && (userRole === 'Tasker' || userRole === 'Poster') && (
+        <TouchableOpacity
+          style={styles.leaveReviewCta}
+          activeOpacity={0.85}
+          onPress={() => setShowRatingModal(true)}
+          disabled={isProcessing}
+        >
+          <MaterialIcons name="star" size={18} color="#FFFFFF" />
+          <Text style={styles.leaveReviewCtaText}>Leave a review</Text>
+        </TouchableOpacity>
       )}
 
       {/* Action Buttons - Separate from Card Content */}
@@ -2347,7 +2395,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 disabled={deleteOfferMutation.isPending}
                 onPress={async () => {
                   if (!myOffer?._id) {
-                    Alert.alert('Error', 'Offer ID not found.');
+                    AppAlert.alert('Error', 'Offer ID not found.');
                     setShowDeleteOfferModal(false);
                     return;
                   }
@@ -2359,11 +2407,11 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                     });
                     setShowDeleteOfferModal(false);
                     if (onOfferDeleted) onOfferDeleted(myOffer._id);
-                    Alert.alert('Offer Deleted', result?.message || 'Your offer has been deleted successfully.', [{ text: 'OK' }]);
+                    AppAlert.alert('Offer Deleted', result?.message || 'Your offer has been deleted successfully.', [{ text: 'OK' }]);
                   } catch (error: any) {
                     setShowDeleteOfferModal(false);
                     const msg = error?.response?.data?.message || error?.message || 'Failed to delete offer. Please try again.';
-                    Alert.alert('Delete Failed', msg, [{ text: 'OK' }]);
+                    AppAlert.alert('Delete Failed', msg, [{ text: 'OK' }]);
                   } finally {
                     setIsProcessing(false);
                   }
@@ -2871,7 +2919,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: isTablet ? hp('0.6%') : 4,
     flexWrap: 'wrap',
-    gap: isTablet ? wp('1.5%') : 0,
+    gap: isTablet ? wp('1.5%') : 4,
+  },
+  metaIcon: {
+    marginRight: 4,
   },
   timePreference: {
     fontSize: RFValue(isTablet ? 12 : 12),
@@ -2882,6 +2933,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(isTablet ? 12 : 12),
     color: '#28a745',
     fontWeight: '500',
+    marginRight: 4,
   },
   locationDivider: {
     marginHorizontal: isTablet ? wp('1.5%') : 6,
@@ -2898,6 +2950,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: isTablet ? hp('0.6%') : 4,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
+    marginRight: 6,
   },
   status: {
     fontSize: RFValue(isTablet ? 11 : 12),
@@ -3098,6 +3157,23 @@ const styles = StyleSheet.create({
   },
   receiptButton: {
     backgroundColor: '#e3f2fd',
+  },
+  leaveReviewCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 4,
+    backgroundColor: '#FF7A00',
+    borderRadius: 10,
+    paddingVertical: 12,
+  },
+  leaveReviewCtaText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 15,
   },
   reviewButton: {
     backgroundColor: '#FFF9E6',

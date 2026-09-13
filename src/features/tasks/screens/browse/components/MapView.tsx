@@ -754,9 +754,10 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>Tasks Map</title>
       <style>
-        body { 
+        html, body { 
           margin: 0; 
-          padding: 0; 
+          padding: 0;
+          background-color: #f5f5f5;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           overflow: hidden;
         }
@@ -776,23 +777,40 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           width: 100% !important;
         }
         .marker-popup {
-          max-width: 250px;
+          max-width: 260px;
           font-size: 14px;
+        }
+        .leaflet-popup-content-wrapper {
+          background: #ffffff !important;
+          border: 1px solid #e0e0e0 !important;
+          border-radius: 12px !important;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+          color: #333333 !important;
+        }
+        .leaflet-popup-tip {
+          background: #ffffff !important;
+        }
+        .leaflet-popup-close-button {
+          color: #999999 !important;
+          font-size: 18px !important;
+        }
+        .leaflet-popup-close-button:hover {
+          color: #333333 !important;
         }
         .marker-title {
           font-weight: 600;
-          color: #333;
+          color: #1a1a1a;
           margin-bottom: 4px;
-          font-size: 16px;
+          font-size: 15px;
         }
         .marker-price {
-          color: #007BFF;
+          color: #FF914D;
           font-weight: 700;
           font-size: 18px;
           margin-bottom: 4px;
         }
         .marker-location {
-          color: #666;
+          color: #777777;
           font-size: 12px;
           margin-bottom: 8px;
         }
@@ -800,46 +818,61 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           display: flex;
           justify-content: space-between;
           font-size: 11px;
-          color: #999;
-          border-top: 1px solid #eee;
+          color: #999999;
+          border-top: 1px solid #eeeeee;
           padding-top: 4px;
         }
         .marker-actions {
           margin-top: 8px;
           padding-top: 8px;
-          border-top: 1px solid #eee;
+          border-top: 1px solid #eeeeee;
         }
         .action-btn {
-          background: #007BFF;
+          background: linear-gradient(135deg, #FF914D, #e67535);
           color: white;
           border: none;
-          padding: 6px 12px;
-          border-radius: 4px;
+          padding: 7px 14px;
+          border-radius: 6px;
           font-size: 12px;
           cursor: pointer;
           margin-right: 6px;
+          font-weight: 600;
+          box-shadow: 0 2px 8px rgba(255,145,77,0.4);
         }
         .action-btn:hover {
-          background: #0056b3;
+          background: linear-gradient(135deg, #e67535, #cc5f22);
         }
         .leaflet-tile-pane {
-          filter: grayscale(20%) brightness(95%) !important;
+          filter: brightness(1.06) contrast(0.92) grayscale(70%) saturate(40%) !important;
+          background-color: #f7f5f0 !important;
         }
         .leaflet-control-zoom {
           border: none !important;
-          border-radius: 8px !important;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+          border-radius: 10px !important;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.2) !important;
+          overflow: hidden !important;
         }
         .leaflet-control-zoom a {
-          background-color: white !important;
-          border: 1px solid #ddd !important;
-          color: #666 !important;
+          background-color: #ffffff !important;
+          border: 1px solid #e0e0e0 !important;
+          color: #555555 !important;
           font-size: 16px !important;
           line-height: 26px !important;
           text-align: center !important;
         }
         .leaflet-control-zoom a:hover {
-          background-color: #f8f9fa !important;
+          background-color: #f5f5f5 !important;
+          color: #111111 !important;
+        }
+        .leaflet-attribution-flag { display: none !important; }
+        .leaflet-control-attribution {
+          background: rgba(255,255,255,0.8) !important;
+          color: #888888 !important;
+          font-size: 9px !important;
+          border-radius: 4px !important;
+        }
+        .leaflet-control-attribution a {
+          color: #FF914D !important;
         }
       </style>
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
@@ -865,12 +898,12 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         });
         console.log('🗺️ Map initialized with center:', [${centerLat}, ${centerLng}], 'zoom:', initialZoom);
         
-// Add CartoDB Light tiles - clean white/light professional map
-               L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
-          subdomains: 'abcd',
+// OpenStreetMap - free tiles, no API key required, clean look
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          subdomains: 'abc',
           minZoom: 3,
-          maxZoom: 18,
+          maxZoom: 19,
         }).addTo(map);
 
         // Prevent zoom out beyond world bounds

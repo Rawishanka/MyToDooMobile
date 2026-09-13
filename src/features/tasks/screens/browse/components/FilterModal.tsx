@@ -1,7 +1,8 @@
+import { LocationAutocomplete, type LocationData } from '@/src/shared/components/LocationAutocomplete';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { getCurrencySymbol, getMaxPriceForCurrency } from '@/src/shared/utils/currency';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     Modal,
     PanResponder,
@@ -14,6 +15,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface FilterModalProps {
   visible: boolean;
@@ -32,6 +34,11 @@ interface FilterModalProps {
   showTasksWithNoOffers: boolean;
   onShowTasksWithNoOffersChange: (value: boolean) => void;
   onResetFilters: () => void;
+  radiusKm?: number;
+  suburb?: string;
+  onRadiusChange?: (radiusKm: number) => void;
+  onSuburbSelect?: (location: { address: string; coordinates: { lat: number; lng: number } }) => void;
+  onUseCurrentLocation?: () => void;
 }
 
 export default function FilterModal({
@@ -51,6 +58,11 @@ export default function FilterModal({
   showTasksWithNoOffers,
   onShowTasksWithNoOffersChange,
   onResetFilters,
+  radiusKm = 100,
+  suburb = '',
+  onRadiusChange,
+  onSuburbSelect,
+  onUseCurrentLocation,
 }: FilterModalProps) {
   // Get geolocation-based currency
   const { countryInfo } = useLocationCountry();
@@ -60,6 +72,11 @@ export default function FilterModal({
   const [categorySearchText, setCategorySearchText] = useState('');
   const [sliderWidth, setSliderWidth] = useState(300);
   const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null);
+  const [localRadius, setLocalRadius] = useState(String(radiusKm));
+
+  useEffect(() => {
+    setLocalRadius(String(radiusKm));
+  }, [radiusKm]);
 
   const MIN_PRICE = 0;
   // Dynamic MAX_PRICE based on user's currency (e.g., 10000 for AUD, 3000000 for LKR)
@@ -156,7 +173,7 @@ export default function FilterModal({
         {/* Header */}
         <View style={styles.filterHeader}>
           <TouchableOpacity onPress={onClose}>
-            <Ionicons name="arrow-back" size={24} color="#007bff" />
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.filterTitle}>Filter</Text>
           <TouchableOpacity onPress={onResetFilters}>
@@ -216,10 +233,10 @@ export default function FilterModal({
                   {/* Debug info - visible in UI */}
                   {__DEV__ && categorySearchText.trim() && (
                     <View style={{ padding: 8, backgroundColor: '#f0f0f0', marginBottom: 4 }}>
-                      <Text style={{ fontSize: 10, color: '#666' }}>
+                      <Text style={{ fontSize: RFValue(10), color: '#666' }}>
                         DEBUG: Searching "{categorySearchText}" - Found {filteredCategories.length} results
                       </Text>
-                      <Text style={{ fontSize: 9, color: '#999' }}>
+                      <Text style={{ fontSize: RFValue(9), color: '#999' }}>
                         (Categories starting with "{categorySearchText}" appear first)
                       </Text>
                     </View>
@@ -247,7 +264,7 @@ export default function FilterModal({
                           {cat}
                         </Text>
                         {selectedCategory === cat && (
-                          <Ionicons name="checkmark" size={20} color="#007bff" />
+                          <Ionicons name="checkmark-circle" size={20} color="#1A2980" />
                         )}
                       </TouchableOpacity>
                     ))
@@ -267,6 +284,36 @@ export default function FilterModal({
                 Failed to load categories. Using defaults.
               </Text>
             )}
+          </View>
+
+          <View style={[styles.filterSection, { zIndex: 900 }]}>
+            <Text style={styles.sectionTitle}>Search area</Text>
+            <LocationAutocomplete
+              onSelect={(location: LocationData) => onSuburbSelect?.(location)}
+              initialValue={suburb}
+              placeholder="Search suburb or city..."
+              country="AU"
+            />
+            <TouchableOpacity
+              style={styles.currentLocationButton}
+              onPress={() => onUseCurrentLocation?.()}
+            >
+              <Ionicons name="navigate-outline" size={16} color="#1A2980" />
+              <Text style={styles.currentLocationText}>Use current location</Text>
+            </TouchableOpacity>
+            <Text style={styles.radiusLabel}>Radius (km)</Text>
+            <TextInput
+              style={styles.radiusInput}
+              value={localRadius}
+              onChangeText={(text) => setLocalRadius(text.replace(/[^0-9]/g, ''))}
+              onEndEditing={() => {
+                const parsed = parseInt(localRadius, 10);
+                onRadiusChange?.(Number.isNaN(parsed) ? 100 : parsed);
+              }}
+              keyboardType="number-pad"
+              placeholder="100"
+              placeholderTextColor="#999"
+            />
           </View>
 
           {/* Price Range Filter */}
@@ -350,7 +397,7 @@ export default function FilterModal({
 const styles = StyleSheet.create({
   filterModal: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
     paddingTop: Platform.OS === 'ios' ? 60 : 50,
   },
   filterHeader: {
@@ -358,66 +405,106 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
-    backgroundColor: '#fff',
+    paddingVertical: 14,
+    backgroundColor: '#1A2980',
   },
   filterTitle: {
-    fontSize: 20,
+    fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: '#FFFFFF',
   },
   resetText: {
-    color: '#007bff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#FF7A00',
+    fontSize: RFValue(14),
+    fontWeight: '700',
   },
   filterContent: {
     flex: 1,
-    padding: 20,
+    padding: 16,
   },
   filterSection: {
-    marginBottom: 24,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    padding: 20,
+    marginBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 18,
     borderWidth: 1,
-    borderColor: '#e8e8e8',
+    borderColor: '#E8ECF4',
+    shadowColor: '#1A2980',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#2c3e50',
-    marginBottom: 18,
-    letterSpacing: 0.5,
+    fontSize: RFValue(12),
+    fontWeight: '800',
+    color: '#1A2980',
+    marginBottom: 14,
+    letterSpacing: 0.8,
     textTransform: 'uppercase' as const,
   },
-  categorySelector: {
-    backgroundColor: '#fff',
-    padding: 16,
+  currentLocationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+    gap: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: '#EEF2FF',
     borderRadius: 10,
+  },
+  currentLocationText: {
+    color: '#1A2980',
+    fontSize: RFValue(14),
+    fontWeight: '600',
+  },
+  radiusLabel: {
+    fontSize: RFValue(12),
+    color: '#6B7280',
+    marginTop: 8,
+    marginBottom: 6,
+    fontWeight: '600',
+  },
+  radiusInput: {
+    backgroundColor: '#F4F6FB',
+    borderWidth: 1.5,
+    borderColor: '#E8ECF4',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: RFValue(16),
+    color: '#1A1D2E',
+    fontWeight: '600',
+  },
+  categorySelector: {
+    backgroundColor: '#F4F6FB',
+    padding: 14,
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#d0d0d0',
+    borderWidth: 1.5,
+    borderColor: '#E8ECF4',
   },
   categorySelectorText: {
-    fontSize: 16,
-    color: '#1a1a1a',
-    fontWeight: '500',
+    fontSize: RFValue(15),
+    color: '#1A1D2E',
+    fontWeight: '600',
+    flex: 1,
   },
   categoryDropdown: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    marginTop: 4,
+    borderRadius: 12,
+    marginTop: 6,
     maxHeight: 300,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    shadowColor: '#1A2980',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 8,
+    elevation: 6,
     zIndex: 1000,
     overflow: 'hidden',
   },
@@ -427,15 +514,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-    backgroundColor: '#fafafa',
+    borderBottomColor: '#F0F2F8',
+    backgroundColor: '#F4F6FB',
   },
   searchIcon: {
     marginRight: 8,
   },
   categorySearchInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: RFValue(14),
     color: '#333',
     paddingVertical: 4,
   },
@@ -449,22 +536,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: 13,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#F4F6FB',
     backgroundColor: '#fff',
   },
   categoryOptionSelected: {
-    backgroundColor: '#f0f8ff',
+    backgroundColor: '#EEF2FF',
   },
   categoryOptionText: {
-    fontSize: 16,
+    fontSize: RFValue(14),
     color: '#333',
+    flex: 1,
   },
   categoryOptionTextSelected: {
-    color: '#007bff',
-    fontWeight: '600',
+    color: '#1A2980',
+    fontWeight: '700',
   },
   noResultsContainer: {
     paddingVertical: 40,
@@ -473,75 +561,79 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   noResultsText: {
-    fontSize: 16,
+    fontSize: RFValue(15),
     color: '#666',
-    fontWeight: '500',
+    fontWeight: '600',
     marginTop: 12,
   },
   noResultsSubtext: {
-    fontSize: 14,
+    fontSize: RFValue(13),
     color: '#999',
     marginTop: 4,
   },
   categoryErrorText: {
-    fontSize: 12,
-    color: '#ff6b35',
+    fontSize: RFValue(12),
+    color: '#EF4444',
     marginTop: 8,
     fontStyle: 'italic',
   },
   taskTypeButtons: {
-    gap: 12,
+    gap: 10,
   },
   taskTypeBtn: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#F4F6FB',
+    padding: 14,
+    borderRadius: 12,
     alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#E8ECF4',
   },
   taskTypeBtnActive: {
-    backgroundColor: '#1a237e',
+    backgroundColor: '#1A2980',
+    borderColor: '#1A2980',
   },
   taskTypeBtnText: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: RFValue(14),
+    color: '#6B7280',
+    fontWeight: '500',
   },
   taskTypeBtnTextActive: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   priceRangeDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 28,
-    gap: 20,
+    gap: 16,
   },
   priceBox: {
-    backgroundColor: '#f8f9fa',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: '#d0d0d0',
+    backgroundColor: '#EEF2FF',
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#C7D2FE',
     minWidth: 100,
     alignItems: 'center',
   },
   priceBoxLabel: {
-    fontSize: 11,
-    color: '#666',
-    marginBottom: 6,
-    fontWeight: '600',
+    fontSize: RFValue(10),
+    color: '#6B7280',
+    marginBottom: 4,
+    fontWeight: '700',
     textTransform: 'uppercase' as const,
     letterSpacing: 0.5,
   },
   priceBoxValue: {
-    fontSize: 20,
-    color: '#007bff',
-    fontWeight: '700',
+    fontSize: RFValue(18),
+    color: '#1A2980',
+    fontWeight: '800',
   },
   priceSeparator: {
-    fontSize: 20,
-    color: '#999',
+    fontSize: RFValue(20),
+    color: '#9CA3AF',
     fontWeight: '300',
   },
   sliderContainer: {
@@ -550,29 +642,29 @@ const styles = StyleSheet.create({
   },
   sliderTrack: {
     height: 6,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#E8ECF4',
     borderRadius: 3,
     position: 'relative',
     marginVertical: 20,
   },
   sliderFill: {
     height: 6,
-    backgroundColor: '#007bff',
+    backgroundColor: '#1A2980',
     borderRadius: 3,
     position: 'absolute',
   },
   sliderThumb: {
-    width: 28,
-    height: 28,
+    width: 26,
+    height: 26,
     backgroundColor: '#fff',
-    borderRadius: 14,
+    borderRadius: 13,
     position: 'absolute',
-    top: -11,
-    marginLeft: -14,
+    top: -10,
+    marginLeft: -13,
     borderWidth: 3,
-    borderColor: '#007bff',
+    borderColor: '#1A2980',
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: '#1A2980',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -581,13 +673,13 @@ const styles = StyleSheet.create({
   },
   sliderThumbActive: {
     transform: [{ scale: 1.2 }],
-    elevation: 6,
-    shadowOpacity: 0.35,
+    elevation: 8,
+    borderColor: '#FF7A00',
   },
   thumbInner: {
     width: 8,
     height: 8,
-    backgroundColor: '#007bff',
+    backgroundColor: '#1A2980',
     borderRadius: 4,
   },
   sliderLabels: {
@@ -596,62 +688,68 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   sliderLabel: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
+    fontSize: RFValue(12),
+    color: '#6B7280',
+    fontWeight: '600',
   },
   toggleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 10,
   },
   toggleTextContainer: {
     flex: 1,
     marginRight: 16,
   },
   toggleLabel: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 4,
+    fontSize: RFValue(15),
+    color: '#1A1D2E',
+    fontWeight: '600',
+    marginBottom: 3,
   },
   toggleSubtitle: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: RFValue(13),
+    color: '#6B7280',
   },
   filterFooter: {
     flexDirection: 'row',
-    padding: 20,
-    paddingBottom: 24,
+    padding: 16,
+    paddingBottom: 28,
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: '#e8e8e8',
-    backgroundColor: '#fff',
+    borderTopColor: '#E8ECF4',
+    backgroundColor: '#FFFFFF',
   },
   resetButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 10,
+    paddingVertical: 15,
+    borderRadius: 14,
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 1.5,
-    borderColor: '#007bff',
+    backgroundColor: '#F4F6FB',
+    borderWidth: 2,
+    borderColor: '#1A2980',
   },
   resetButtonText: {
-    fontSize: 16,
-    color: '#007bff',
-    fontWeight: '600',
+    fontSize: RFValue(15),
+    color: '#1A2980',
+    fontWeight: '700',
   },
   applyButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 10,
+    flex: 2,
+    paddingVertical: 15,
+    borderRadius: 14,
     alignItems: 'center',
-    backgroundColor: '#007bff',
+    backgroundColor: '#FF7A00',
+    shadowColor: '#FF7A00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   applyButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(15),
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '800',
   },
 });

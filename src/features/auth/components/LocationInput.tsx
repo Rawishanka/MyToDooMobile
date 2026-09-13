@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { LocationData } from './signup-types';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface LocationInputProps {
   selectedLocation: LocationData | null;
@@ -54,7 +55,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
 
 const styles = StyleSheet.create({
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     marginBottom: 8,
     color: '#333',
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   selectedLocationText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#0057FF',
     flex: 1,
   },

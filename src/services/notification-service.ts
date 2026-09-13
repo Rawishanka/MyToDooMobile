@@ -10,10 +10,12 @@
  */
 
 import { removeFCMToken, saveFCMToken } from '@/src/api/fcm-api';
+import { navigateFromNotificationData } from '@/src/shared/utils/notification-navigation';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+import { router } from 'expo-router';
 import { PermissionsAndroid, Platform } from 'react-native';
-import { saveNotification } from './notification-storage';
+import { saveNotification, getUnreadCount } from './notification-storage';
 
 // ==================== ENVIRONMENT DETECTION ====================
 
@@ -366,6 +368,32 @@ export const setupNotificationHandlers = (queryClient?: any) => {
 };
 
 /**
+ * Navigate to the relevant in-app screen when a push notification is opened.
+ */
+const handleNotificationNavigation = (
+  data?: Record<string, any>,
+  meta?: { title?: string; body?: string },
+  delayMs = 500
+) => {
+  if (!data) return;
+
+  const navigate = () => {
+    try {
+      navigateFromNotificationData(router, data, meta);
+    } catch (error) {
+      console.error('❌ Push notification navigation failed:', error);
+    }
+  };
+
+  if (delayMs > 0) {
+    setTimeout(navigate, delayMs);
+    return;
+  }
+
+  navigate();
+};
+
+/**
  * Invalidate React Query caches based on notification type for real-time sync
  */
 const handleNotificationDataRefresh = (notificationType: string, queryClient: any) => {
@@ -416,6 +444,7 @@ const handleNotificationDataRefresh = (notificationType: string, queryClient: an
 
       case 'PAYMENT_RECEIVED':
       case 'PAYMENT_SENT':
+      case 'RECEIPT_READY':
         // Invalidate payment and task caches
         queryClient.invalidateQueries({ queryKey: ['payments'] });
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
@@ -453,6 +482,47 @@ const setupFirebaseHandlers = (queryClient?: any) => {
         shouldSetBadge: true,
       }),
     });
+
+    // Local notification tap (Android foreground FCM is shown via scheduleNotificationAsync).
+    // FCM onNotificationOpenedApp does not fire for those local notifications.
+    const handleLocalNotificationResponse = (response: any, delayMs = 0) => {
+      const content = response?.notification?.request?.content;
+      const data = content?.data || {};
+      if (!data || Object.keys(data).length === 0) return;
+
+      console.log('🔔 [Local] Notification tapped:', {
+        title: content?.title,
+        body: content?.body,
+        data,
+      });
+
+      if (data?.type) {
+        handleNotificationDataRefresh(String(data.type), queryClient);
+      }
+
+      handleNotificationNavigation(
+        data,
+        {
+          title: content?.title,
+          body: content?.body,
+        },
+        delayMs
+      );
+    };
+
+    Notifications.addNotificationResponseReceivedListener((response: any) => {
+      handleLocalNotificationResponse(response);
+    });
+
+    // App opened from a local notification while quit
+    Notifications.getLastNotificationResponseAsync?.()
+      ?.then((response: any) => {
+        if (response) {
+          handleLocalNotificationResponse(response, 500);
+        }
+      })
+      .catch(() => {});
+
     console.log(`✅ [${Platform.OS}] expo-notifications handler configured`);
   } catch (err) {
     console.warn('⚠️ Could not set expo-notifications handler:', err);
@@ -466,11 +536,18 @@ const setupFirebaseHandlers = (queryClient?: any) => {
       data: remoteMessage.data,
     });
     
-    // Save notification to local storage (AsyncStorage) - NON-BLOCKING
+    // Save notification to local storage (AsyncStorage) then update app icon badge
     saveNotification({
       title: remoteMessage.notification?.title || 'Notification',
       body: remoteMessage.notification?.body || '',
       data: remoteMessage.data,
+    }).then(async () => {
+      try {
+        const count = await getUnreadCount();
+        const Notifications = require('expo-notifications');
+        await Notifications.setBadgeCountAsync(count);
+        console.log(`🔔 App icon badge updated: ${count}`);
+      } catch {}
     }).catch(error => {
       console.error('Failed to save notification to storage:', error);
     });
@@ -518,19 +595,28 @@ const setupFirebaseHandlers = (queryClient?: any) => {
       data: remoteMessage.data,
     });
     
-    // � Save notification to local storage (AsyncStorage) if not already saved
+    // Save notification to local storage then update badge
     saveNotification({
       title: remoteMessage.notification?.title || 'Notification',
       body: remoteMessage.notification?.body || '',
       data: remoteMessage.data,
+    }).then(async () => {
+      try {
+        const count = await getUnreadCount();
+        const Notifications = require('expo-notifications');
+        await Notifications.setBadgeCountAsync(count);
+      } catch {}
     });
     
-    // �🚀 NEW: Trigger real-time data refresh when user opens notification
+    // NEW: Trigger real-time data refresh when user opens notification
     if (remoteMessage.data?.type) {
       handleNotificationDataRefresh(remoteMessage.data.type, queryClient);
     }
-    
-    // TODO: Navigate to appropriate screen based on remoteMessage.data
+
+    handleNotificationNavigation(remoteMessage.data, {
+      title: remoteMessage.notification?.title,
+      body: remoteMessage.notification?.body,
+    });
   });
 
   // Quit state notification opened - User tapped notification while app was closed
@@ -544,19 +630,32 @@ const setupFirebaseHandlers = (queryClient?: any) => {
           data: remoteMessage.data,
         });
         
-        // � Save notification to local storage (AsyncStorage)
+        // Save notification to local storage then update badge
         saveNotification({
           title: remoteMessage.notification?.title || 'Notification',
           body: remoteMessage.notification?.body || '',
           data: remoteMessage.data,
+        }).then(async () => {
+          try {
+            const count = await getUnreadCount();
+            const Notifications = require('expo-notifications');
+            await Notifications.setBadgeCountAsync(count);
+          } catch {}
         });
         
-        // �🚀 NEW: Trigger real-time data refresh when app opens from notification
+        // NEW: Trigger real-time data refresh when app opens from notification
         if (remoteMessage.data?.type) {
           handleNotificationDataRefresh(remoteMessage.data.type, queryClient);
         }
-        
-        // TODO: Navigate to appropriate screen based on remoteMessage.data
+
+        handleNotificationNavigation(
+          remoteMessage.data,
+          {
+            title: remoteMessage.notification?.title,
+            body: remoteMessage.notification?.body,
+          },
+          500
+        );
       }
     });
 

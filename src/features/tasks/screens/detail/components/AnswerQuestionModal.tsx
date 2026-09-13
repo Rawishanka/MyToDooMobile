@@ -7,7 +7,9 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface AnswerQuestionModalProps {
   visible: boolean;
@@ -58,26 +61,31 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
     }
   }, [visible]);
 
+  const canSubmitAnswer =
+    attachments.length > 0 || answer.trim().length >= 10;
+
   const handleSubmitAnswer = async () => {
-    if (!answer.trim()) {
-      Alert.alert('Missing Answer', 'Please enter your answer.');
+    if (!answer.trim() && attachments.length === 0) {
+      Alert.alert('Missing Answer', 'Please enter your answer or attach a file.');
       return;
     }
 
-    if (answer.trim().length < 10) {
+    if (attachments.length === 0 && answer.trim().length < 10) {
       Alert.alert('Answer Too Short', 'Please provide more details in your answer.');
       return;
     }
 
     // Moderate content before submitting
-    const moderationResult = moderateContent(answer);
-    if (!moderationResult.isClean) {
-      Alert.alert(
-        'Answer Blocked',
-        moderationResult.reason || 'Your answer contains inappropriate content.',
-        [{ text: 'OK' }]
-      );
-      return;
+    if (answer.trim()) {
+      const moderationResult = moderateContent(answer);
+      if (!moderationResult.isClean) {
+        Alert.alert(
+          'Answer Blocked',
+          moderationResult.reason || 'Your answer contains inappropriate content.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
     }
 
     try {
@@ -153,6 +161,10 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
@@ -162,7 +174,7 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" removeClippedSubviews={false}>
           {/* Original Question */}
           <View style={styles.questionContainer}>
             <Text style={styles.sectionTitle}>❓ Question from {getAskedByName()}</Text>
@@ -184,6 +196,7 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
               numberOfLines={6}
               maxLength={1000}
               textAlignVertical="top"
+              scrollEnabled
             />
             <Text style={styles.characterCount}>
               {answer.length}/1000 characters
@@ -216,10 +229,10 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
           <TouchableOpacity
             style={[
               styles.submitButton,
-              (!answer.trim() || answer.trim().length < 10) && styles.submitButtonDisabled,
+              !canSubmitAnswer && styles.submitButtonDisabled,
             ]}
             onPress={handleSubmitAnswer}
-            disabled={!answer.trim() || answer.trim().length < 10 || answerQuestionMutation.isPending}
+            disabled={!canSubmitAnswer || answerQuestionMutation.isPending}
           >
             {answerQuestionMutation.isPending ? (
               <ActivityIndicator size="small" color="#fff" />
@@ -232,6 +245,7 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
           </TouchableOpacity>
         </View>
       </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -252,7 +266,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e0e0e0',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
     flex: 1,
@@ -270,7 +284,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 12,
@@ -283,7 +297,7 @@ const styles = StyleSheet.create({
     borderLeftColor: '#007AFF',
   },
   questionText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#333',
     lineHeight: 22,
   },
@@ -295,13 +309,13 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
     borderRadius: 12,
     padding: 16,
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#333',
     minHeight: 120,
     maxHeight: 200,
   },
   characterCount: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     textAlign: 'right',
     marginTop: 8,
@@ -313,13 +327,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   tipsTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#007AFF',
     marginBottom: 8,
   },
   tipText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#555',
     marginBottom: 4,
     lineHeight: 18,
@@ -343,7 +357,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

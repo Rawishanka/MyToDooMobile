@@ -1,6 +1,7 @@
 import { CategoriesAPI } from '@/src/api/categories-api';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface DebugToolsProps {
   onClearAll: () => void;
@@ -68,10 +69,10 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontSize: 10,
+    fontSize: RFValue(10),
   },
   smallButtonText: {
     color: 'white',
-    fontSize: 8,
+    fontSize: RFValue(8),
   },
 });

@@ -25,6 +25,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // ✅ NEW: Use OCR API for sensitive data detection
 import { OCRAPI } from '@/src/api/ocr-api';
+import { RFValue } from '@/src/shared/utils/responsive';
+
+const MAX_TASK_PHOTOS = 5;
 
 interface EditTaskScreenProps {
   route?: {
@@ -380,7 +383,10 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
 
   // Image picker function with OCR validation
   const pickImage = async () => {
-    if (images.length >= 10) return;
+    if (images.length >= MAX_TASK_PHOTOS) {
+      Alert.alert('Limit reached', `You can add up to ${MAX_TASK_PHOTOS} photos.`);
+      return;
+    }
     if (isProcessing || isOCRProcessing) return;
 
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -391,48 +397,50 @@ export default function EditTaskScreen({ route }: EditTaskScreenProps) {
 
     try {
       setIsProcessing(true);
+      const remainingSlots = MAX_TASK_PHOTOS - images.length;
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
+        allowsMultipleSelection: true,
+        selectionLimit: remainingSlots,
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets?.[0]) {
-        const imageUri = result.assets[0].uri;
-        
-        // ✅ Validate with OCR API
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const assetsToAdd = result.assets.slice(0, remainingSlots);
         setIsProcessing(false);
-        setIsOCRProcessing(true);
-        console.log('🔍 Validating image with OCR API:', imageUri);
-        const validation = await OCRAPI.validateImageForUpload(imageUri);
-        
-        if (!validation.isValid) {
-          console.warn('❌ Image contains sensitive data:', validation.reason);
-          setIsOCRProcessing(false);
-          Alert.alert(
-            'Sensitive Data Detected',
-            `This image contains sensitive information and cannot be uploaded:
+        for (const asset of assetsToAdd) {
+          const imageUri = asset.uri;
+          setIsOCRProcessing(true);
+          const validation = await OCRAPI.validateImageForUpload(imageUri);
+          if (!validation.isValid) {
+            setIsOCRProcessing(false);
+            Alert.alert(
+              'Sensitive Data Detected',
+              `This image contains sensitive information and cannot be uploaded:
 
 ${validation.reason}
 
 Please remove phone numbers and addresses from the image.`,
-            [{ text: 'OK' }]
+              [{ text: 'OK' }]
+            );
+            continue;
+          }
+          setImages(prevImages =>
+            prevImages.length >= MAX_TASK_PHOTOS
+              ? prevImages
+              : [...prevImages, imageUri],
           );
-          return;
+          setIsOCRProcessing(false);
         }
-        
-        console.log('✅ Image passed OCR validation');
-        setImages(prevImages => [...prevImages, imageUri]);
-        setIsOCRProcessing(false);
       } else {
         setIsProcessing(false);
       }
     } catch (error) {
       console.error('Error selecting image:', error);
+      Alert.alert('Error', 'Failed to select image. Please try again.');
+    } finally {
       setIsProcessing(false);
       setIsOCRProcessing(false);
-      Alert.alert('Error', 'Failed to select image. Please try again.');
     }
   };
 
@@ -449,17 +457,32 @@ Please remove phone numbers and addresses from the image.`,
   }, []);
 
   const handleLocationFocus = useCallback(() => {
-    console.log('📍 Location field focused');
+    console.log('📍 Location field focused - scrolling into view');
     if (locationSectionRef.current && scrollViewRef.current) {
       setTimeout(() => {
         locationSectionRef.current?.measureLayout(
           scrollViewRef.current as any,
-          (x, y) => {
-            scrollViewRef.current?.scrollTo({ y: y + 100, animated: true });
+          (_x, y) => {
+            // Scroll so the location section is visible near the top
+            scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 80), animated: true });
           },
           () => {}
         );
       }, 150);
+    }
+  }, []);
+
+  const handleLocationDropdownOpen = useCallback((isOpen: boolean) => {
+    if (isOpen && locationSectionRef.current && scrollViewRef.current) {
+      setTimeout(() => {
+        locationSectionRef.current?.measureLayout(
+          scrollViewRef.current as any,
+          (_x, y) => {
+            scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 60), animated: true });
+          },
+          () => {}
+        );
+      }, 200);
     }
   }, []);
 
@@ -972,7 +995,7 @@ Please remove phone numbers and addresses from the image.`,
         {/* SECTION 2: PHOTOS & LOCATION */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Photos & Location</Text>
-          <Text style={styles.sectionSubtitle}>Help taskers understand what needs doing ({images.length}/10 photos)</Text>
+          <Text style={styles.sectionSubtitle}>Help taskers understand what needs doing ({images.length}/{MAX_TASK_PHOTOS} photos)</Text>
 
           <View style={styles.imageSection}>
             {images.map((uri, index) => (
@@ -987,7 +1010,7 @@ Please remove phone numbers and addresses from the image.`,
                 </TouchableOpacity>
               </View>
             ))}
-            {images.length < 10 && (
+            {images.length < MAX_TASK_PHOTOS && (
               <TouchableOpacity 
                 style={[styles.uploadBox, (isProcessing || isOCRProcessing) && styles.uploadBoxDisabled]} 
                 onPress={pickImage}
@@ -1024,6 +1047,7 @@ Please remove phone numbers and addresses from the image.`,
               onFocus={handleLocationFocus}
               placeholder="Enter address or suburb"
               initialValue={selectedLocation?.address}
+              onDropdownStateChange={handleLocationDropdownOpen}
             />
 
             {!selectedLocation && touched.location && (
@@ -1254,14 +1278,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '700',
     color: '#1C1C1E',
     marginBottom: 5,
     textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#8E8E93',
     textAlign: 'center',
   },
@@ -1277,13 +1301,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '700',
     color: '#1C1C1E',
     marginBottom: 5,
   },
   sectionSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#8E8E93',
     marginBottom: 20,
   },
@@ -1296,29 +1320,29 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#1C1C1E',
     marginBottom: 8,
   },
   required: {
     color: '#FF3B30',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   charCount: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#8E8E93',
     marginTop: 4,
     textAlign: 'right',
   },
   helperText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#8E8E93',
     marginTop: 4,
     fontStyle: 'italic',
   },
   locationSubtitle: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#8E8E93',
     marginBottom: 10,
   },
@@ -1334,7 +1358,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   categorySelectorText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
   },
   placeholder: {
@@ -1363,7 +1387,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: 8,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
   },
   categoriesList: {
@@ -1374,12 +1398,12 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#FF3B30',
-    fontSize: 12,
+    fontSize: RFValue(12),
     marginTop: 4,
   },
   successText: {
     color: '#34C759',
-    fontSize: 12,
+    fontSize: RFValue(12),
     marginTop: 4,
     fontWeight: '500',
   },
@@ -1401,7 +1425,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F5FF',
   },
   categoryItemText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#1C1C1E',
   },
   categoryItemTextSelected: {
@@ -1413,7 +1437,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     borderWidth: 1,
     borderColor: 'transparent',
@@ -1422,7 +1446,7 @@ const styles = StyleSheet.create({
     borderColor: '#FF3B30',
   },
   validationText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#FF3B30',
     marginTop: 4,
   },
@@ -1431,7 +1455,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     height: 120,
     borderWidth: 1,
@@ -1488,7 +1512,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingText: {
-    fontSize: 9,
+    fontSize: RFValue(9),
     color: '#467FFF',
     marginTop: 4,
     fontWeight: '500',
@@ -1511,14 +1535,14 @@ const styles = StyleSheet.create({
   selectedLocationText: {
     flex: 1,
     marginLeft: 8,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#0057FF',
   },
   dateSection: {
     marginBottom: 30,
   },
   dateSectionTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#1C1C1E',
     marginBottom: 12,
@@ -1534,7 +1558,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   optionText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#1C1C1E',
     fontWeight: '500',
   },
@@ -1563,7 +1587,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     color: '#0057FF',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '500',
   },
   toggleRow: {
@@ -1577,7 +1601,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   toggleText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#1C1C1E',
     fontWeight: '500',
   },
@@ -1646,13 +1670,13 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   gridTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 2,
   },
   gridDescription: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     textAlign: 'center',
   },
@@ -1672,18 +1696,18 @@ const styles = StyleSheet.create({
   },
   budgetDisplayText: {
     flex: 1,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     fontWeight: '500',
   },
   currencySymbol: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     marginRight: 8,
   },
   budgetTextInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
   },
   saveButton: {
@@ -1709,7 +1733,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   validationTextContainer: {
@@ -1733,19 +1757,19 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   validationTextSuccess: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#22C55E',
     fontWeight: '600',
     textAlign: 'center',
   },
   validationTextWarning: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#F59E0B',
     fontWeight: '600',
     textAlign: 'center',
   },
   validationTextDetails: {
-    fontSize: 9,
+    fontSize: RFValue(9),
     color: '#6B7280',
     fontWeight: '400',
     textAlign: 'center',

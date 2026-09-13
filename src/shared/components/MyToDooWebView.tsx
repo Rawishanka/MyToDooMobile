@@ -14,6 +14,7 @@ import {
   View
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface MyToDooWebViewProps {
   /**
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontSize: 17,
+    fontSize: RFValue(17),
     fontWeight: '700',
     color: '#1a1a1a',
     textAlign: 'center',
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   webview: {

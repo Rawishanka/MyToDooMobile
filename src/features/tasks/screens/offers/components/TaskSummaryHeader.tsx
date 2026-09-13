@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TaskSummaryHeaderProps {
   title: string;
@@ -35,13 +36,13 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   taskTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
     marginBottom: 4,
   },
   taskBudget: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#007bff',
     fontWeight: '500',
   },
@@ -49,12 +50,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   offerCount: {
-    fontSize: 24,
+    fontSize: RFValue(24),
     fontWeight: '700',
     color: '#007bff',
   },
   offerLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginTop: 2,
   },

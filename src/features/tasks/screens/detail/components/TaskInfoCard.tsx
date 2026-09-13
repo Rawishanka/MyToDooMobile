@@ -2,6 +2,7 @@ import { normalizeCDNUrl } from '@/src/api/cdn-api';
 import { Task } from '@/src/api/types/tasks';
 import { formatUserName, formatAvatarName } from '@/src/utils/formatUserName';
 import { CurrencyInfo, formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
+import { resolveTaskBudget } from '@/src/shared/utils/resolveTaskBudget';
 import { TaskImageDebug } from '@/src/shared/utils/task-image-debug';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
@@ -499,7 +500,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
             Images found but could not be displayed. Check console for details.
           </Text>
           {__DEV__ && (
-            <Text style={[styles.noImagesText, { fontSize: 10, color: '#999' }]}>
+            <Text style={[styles.noImagesText, { fontSize: RFValue(10), color: '#999' }]}>
               DEV: {JSON.stringify(imageDataToProcess[0], null, 2).substring(0, 200)}...
             </Text>
           )}
@@ -628,7 +629,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                     {hasError && (
                       <View style={styles.thumbnailImageError}>
                         <Ionicons name="image-outline" size={24} color="#999" />
-                        <Text style={{ fontSize: 10, color: '#999', marginTop: 4 }}>
+                        <Text style={{ fontSize: RFValue(10), color: '#999', marginTop: 4 }}>
                           Load Error
                         </Text>
                       </View>
@@ -856,28 +857,34 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         </Text>
       </View>
 
-      {/* Budget */}
-      <View style={styles.budgetRow}>
-        
-        <Ionicons name="cash-outline" size={20} color="#000" />
-        <View style={styles.budgetInfo}>
-          <Text style={styles.budgetAmount}>
+      {/* Modern 2026 Budget Card */}
+      <View style={styles.budgetCard}>
+        <View style={styles.budgetIconCircle}>
+          <Ionicons name="wallet-outline" size={24} color="#003399" />
+        </View>
+        <View style={styles.budgetInfoCol}>
+          <Text style={styles.budgetAmountText}>
             {(() => {
-              const budget = task.budget;
-              // Use task's own currency instantly (from backend)
-              const taskCurrency = task.currency || 'LKR';
+              const budget = resolveTaskBudget(task);
+              const taskCurrency = task.currency || 'AUD';
               const symbol = getCurrencySymbol(taskCurrency);
               const currencyInfo: CurrencyInfo = { code: taskCurrency, symbol: symbol };
               return budget ? formatCurrency(budget, currencyInfo) : `${symbol}0.00`;
             })()}
           </Text>
-          <Text style={styles.budgetLabel}>Budget</Text>
+          <Text style={styles.budgetSublabel}>TASK BUDGET</Text>
+        </View>
+        <View style={styles.budgetStatusPill}>
+          <Text style={styles.budgetStatusText}>ESTIMATED</Text>
         </View>
       </View>
 
-      {/* Category */}
+      {/* Category Badge */}
       {task.categories && task.categories.length > 0 && (
-        <Text style={styles.category}>{task.categories[0]}</Text>
+        <View style={styles.categoryBadge}>
+          <Ionicons name="pricetag-outline" size={13} color="#003399" />
+          <Text style={styles.categoryText}>{task.categories[0]}</Text>
+        </View>
       )}
 
       {/* Description */}
@@ -906,12 +913,82 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
 const styles = StyleSheet.create({
   taskCard: {
-    backgroundColor: '#fff',
-    padding: isTablet ? wp('3%') : wp('4%'),
+    backgroundColor: '#FFFFFF',
+    padding: isTablet ? wp('4%') : wp('5%'),
     marginBottom: hp('2%'),
-    borderRadius: 12,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  budgetCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    padding: isTablet ? wp('3%') : wp('4%'),
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#BFDBFE',
+    marginBottom: hp('2%'),
+  },
+  budgetIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#DBEAFE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: wp('3%'),
+  },
+  budgetInfoCol: {
+    flex: 1,
+  },
+  budgetAmountText: {
+    fontSize: RFValue(isTablet ? 22 : 22),
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: -0.5,
+  },
+  budgetSublabel: {
+    fontSize: RFValue(10.5),
+    fontWeight: '700',
+    color: '#003399',
+    letterSpacing: 0.8,
+    marginTop: 2,
+  },
+  budgetStatusPill: {
+    backgroundColor: 'rgba(0, 51, 153, 0.08)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  budgetStatusText: {
+    fontSize: RFValue(10),
+    fontWeight: '700',
+    color: '#003399',
+    letterSpacing: 0.5,
+  },
+  categoryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#EEF2FF',
+    paddingHorizontal: wp('3%'),
+    paddingVertical: hp('0.8%'),
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    marginBottom: hp('2%'),
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+  },
+  categoryText: {
+    fontSize: RFValue(12),
+    fontWeight: '700',
+    color: '#003399',
   },
   avatarContainer: {
     alignItems: 'center',

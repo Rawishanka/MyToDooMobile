@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PaymentItem } from '../hooks/usePaymentStatus';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PaymentCardProps {
   payment: PaymentItem;
@@ -85,25 +86,25 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   taskTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
     marginBottom: 6,
   },
   paymentMethod: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
     marginBottom: 4,
   },
   paymentDate: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
   right: {
     alignItems: 'flex-end',
   },
   amount: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#007bff',
     marginBottom: 8,
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: RFValue(11),
     fontWeight: '600',
   },
   transactionInfo: {
@@ -129,12 +130,12 @@ const styles = StyleSheet.create({
     borderTopColor: '#f0f0f0',
   },
   transactionLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginRight: 6,
   },
   transactionId: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#333',
     fontWeight: '500',
   },

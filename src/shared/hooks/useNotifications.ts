@@ -20,7 +20,8 @@ import { emitNotificationsChanged, onNotificationsChanged } from '@/src/services
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React from 'react';
-import { AppState, Alert } from 'react-native';
+import { AppAlert } from '@/src/shared/components/AppAlert';
+import { AppState } from 'react-native';
 
 // Query keys
 export const NOTIFICATION_KEYS = {
@@ -121,6 +122,9 @@ export const useMergedUnreadCount = (): number => {
           // Reset local unread count → badge clears when app opened
           await localMarkAllRead();
           emitNotificationsChanged();
+          // Reset iOS/Android app icon badge to 0
+          const Notifications = require('expo-notifications');
+          await Notifications.setBadgeCountAsync(0);
         } catch {}
         fetchLocal();
       }
@@ -248,7 +252,7 @@ export const useMarkAsRead = () => {
         console.log('⚠️ Notification mark-as-read endpoint not implemented yet');
         // Don't show alert for mark as read - it's not critical
       } else {
-        Alert.alert('Error', 'Failed to mark notification as read');
+        AppAlert.alert('Error', 'Failed to mark notification as read');
       }
     },
   });
@@ -265,7 +269,7 @@ export const useMarkAllAsRead = () => {
     onSuccess: () => {
       // Invalidate all notification queries
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
-      Alert.alert('Success', 'All notifications marked as read');
+      AppAlert.alert('Success', 'All notifications marked as read');
     },
     onError: (error: any) => {
       console.error('Failed to mark all as read:', error);
@@ -278,13 +282,13 @@ export const useMarkAllAsRead = () => {
       }
       
       if (error?.response?.status === 404) {
-        Alert.alert(
+        AppAlert.alert(
           'Feature Not Available',
           'The notification system is not yet implemented on the backend.',
           [{ text: 'OK' }]
         );
       } else {
-        Alert.alert('Error', 'Failed to mark all notifications as read');
+        AppAlert.alert('Error', 'Failed to mark all notifications as read');
       }
     },
   });
@@ -332,13 +336,13 @@ export const useDeleteNotification = () => {
       }
       
       if (error?.response?.status === 404) {
-        Alert.alert(
+        AppAlert.alert(
           'Feature Not Available',
           'The notification system is not yet implemented on the backend. Please contact your administrator.',
           [{ text: 'OK' }]
         );
       } else {
-        Alert.alert('Error', 'Failed to delete notification');
+        AppAlert.alert('Error', 'Failed to delete notification');
       }
     },
   });
@@ -354,7 +358,7 @@ export const useUpdateNotificationPreferences = () => {
     mutationFn: updateNotificationPreferences,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.preferences() });
-      Alert.alert('Success', 'Notification preferences updated');
+      AppAlert.alert('Success', 'Notification preferences updated');
     },
     onError: (error: any) => {
       console.error('Failed to update preferences:', error);
@@ -366,7 +370,7 @@ export const useUpdateNotificationPreferences = () => {
         return;
       }
       
-      Alert.alert('Error', 'Failed to update notification preferences');
+      AppAlert.alert('Error', 'Failed to update notification preferences');
     },
   });
 };

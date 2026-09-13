@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run on iPhone",
+			"type": "shell",
+			"command": "npx expo run:ios --device --udid 00008030-00066CCA0111402E",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

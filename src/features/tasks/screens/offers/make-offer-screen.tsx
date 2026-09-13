@@ -20,6 +20,7 @@ import {
     TipsSection,
 } from './components';
 import { useOfferSubmission } from './hooks/useOfferSubmission';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function MakeOfferScreen() {
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
   },
   warningText: {
     color: '#856404',
-    fontSize: 15,
+    fontSize: RFValue(15),
     textAlign: 'center',
     fontWeight: '600',
     lineHeight: 22,
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

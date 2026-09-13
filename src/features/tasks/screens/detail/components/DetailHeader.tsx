@@ -11,11 +11,15 @@ export const DetailHeader: React.FC = () => {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButtonHeader}>
-        <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+    <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 46 }]}>
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButtonHeader} activeOpacity={0.8}>
+        <View style={styles.backIconCircle}>
+          <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
+        </View>
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
+      <Text style={styles.headerTitle}>Task Details</Text>
+      <View style={styles.rightPlaceholder} />
     </View>
   );
 };
@@ -26,19 +30,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    // paddingTop is applied dynamically via insets.top for iOS notch support
     paddingBottom: hp('1.5%'),
     backgroundColor: BRAND_BLUE,
     borderBottomWidth: 0,
-    borderBottomColor: 'transparent',
   },
   backButtonHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+  },
+  backIconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backText: {
-    marginLeft: wp('2%'),
     fontSize: RFValue(14),
+    fontWeight: '600',
     color: '#FFFFFF',
+  },
+  headerTitle: {
+    fontSize: RFValue(16),
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  rightPlaceholder: {
+    width: 44,
   },
 });

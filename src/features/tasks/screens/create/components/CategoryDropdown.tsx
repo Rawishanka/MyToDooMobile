@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface Category {
   _id: string;
@@ -164,7 +165,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 
 const styles = StyleSheet.create({
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#555',
     marginBottom: 6,
     marginTop: 10,
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginLeft: 8,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   errorContainer: {
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   errorText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#D32F2F',
     flex: 1,
   },
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
   },
   retryText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
   },
   dropdown: {
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   dropdownText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
   },
   placeholderText: {
@@ -278,7 +279,7 @@ const styles = StyleSheet.create({
   },
   categorySearchInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#333',
     paddingVertical: 6,
   },
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   noResultsText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
     textAlign: 'center',
   },
@@ -312,7 +313,7 @@ const styles = StyleSheet.create({
     borderLeftColor: '#0057FF',
   },
   dropdownItemText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#333',
     flex: 1,
     lineHeight: 20,

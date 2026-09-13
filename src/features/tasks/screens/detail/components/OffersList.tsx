@@ -62,8 +62,10 @@ export const OffersList: React.FC<OffersListProps> = ({
 }) => {
   const insets = useSafeAreaInsets();
   
-  // Check if any offer has been accepted
-  const hasAcceptedOffer = offers.some((offer: any) => offer.status === 'accepted');
+  // Settled = accepted or completed (after pay→complete→release, status becomes completed)
+  const hasAcceptedOffer = offers.some(
+    (offer: any) => offer.status === 'accepted' || offer.status === 'completed',
+  );
   
   // Filter out:
   // 1. The current user's offer (shown separately in MyOfferCard)
@@ -121,6 +123,44 @@ export const OffersList: React.FC<OffersListProps> = ({
   );
 };
 
+function getOfferStatusMeta(statusRaw: string) {
+  const status = (statusRaw || 'pending').toLowerCase();
+  if (status === 'completed') {
+    return {
+      label: 'Completed',
+      icon: 'checkmark-done-circle' as const,
+      color: '#2E7D32',
+      badgeStyle: 'completedStatusBadge' as const,
+      textStyle: 'completedStatusText' as const,
+    };
+  }
+  if (status === 'accepted') {
+    return {
+      label: 'Accepted',
+      icon: 'checkmark-circle' as const,
+      color: '#4CAF50',
+      badgeStyle: 'acceptedStatusBadge' as const,
+      textStyle: 'acceptedStatusText' as const,
+    };
+  }
+  if (status === 'rejected' || status === 'cancelled') {
+    return {
+      label: status === 'cancelled' ? 'Cancelled' : 'Rejected',
+      icon: 'close-circle' as const,
+      color: '#c62828',
+      badgeStyle: 'rejectedStatusBadge' as const,
+      textStyle: 'rejectedStatusText' as const,
+    };
+  }
+  return {
+    label: 'Pending',
+    icon: 'time' as const,
+    color: '#FFA500',
+    badgeStyle: 'pendingStatusBadge' as const,
+    textStyle: 'pendingStatusText' as const,
+  };
+}
+
 // Component to display offer amount and status
 const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean; showStatus?: boolean }> = ({ offer, isTaskPoster, showStatus = true }) => {
   const { countryInfo } = useLocationCountry();
@@ -128,6 +168,7 @@ const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean; showStatu
   
   const offerAmount = offer.offer?.amount || offer.amount || 0;
   const status = offer.status || 'pending';
+  const meta = getOfferStatusMeta(status);
   
   return (
     <View style={styles.offerAmountStatusContainer}>
@@ -142,20 +183,10 @@ const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean; showStatu
       )}
       {/* Only show status badge if showStatus is true (hidden for other taskers' offers) */}
       {showStatus && (
-        <View style={[
-          styles.offerStatusBadge,
-          status === 'accepted' ? styles.acceptedStatusBadge : styles.pendingStatusBadge
-        ]}>
-          <Ionicons 
-            name={status === 'accepted' ? 'checkmark-circle' : 'time'} 
-            size={14} 
-            color={status === 'accepted' ? '#4CAF50' : '#FFA500'} 
-          />
-          <Text style={[
-            styles.offerStatusText,
-            status === 'accepted' ? styles.acceptedStatusText : styles.pendingStatusText
-          ]}>
-            {status === 'accepted' ? 'Accepted' : 'Pending'}
+        <View style={[styles.offerStatusBadge, styles[meta.badgeStyle]]}>
+          <Ionicons name={meta.icon} size={14} color={meta.color} />
+          <Text style={[styles.offerStatusText, styles[meta.textStyle]]}>
+            {meta.label}
           </Text>
         </View>
       )}
@@ -380,7 +411,8 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                 4. onAcceptOffer callback is provided
             */}
             {currentUserId === taskCreatorId && 
-             offer.status !== 'accepted' && 
+             offer.status !== 'accepted' &&
+             offer.status !== 'completed' &&
              !hasAcceptedOffer &&
              onAcceptOffer && (
               <TouchableOpacity 
@@ -391,7 +423,13 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
               </TouchableOpacity>
             )}
 
-            {/* Show accepted status badge if offer is accepted */}
+            {/* Settled status badges for poster list (accepted OR completed after release) */}
+            {offer.status === 'completed' && (
+              <View style={styles.completedBadge}>
+                <Ionicons name="checkmark-done-circle" size={16} color="#2E7D32" />
+                <Text style={styles.completedText}>Completed</Text>
+              </View>
+            )}
             {offer.status === 'accepted' && (
               <View style={styles.acceptedBadge}>
                 <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
@@ -409,7 +447,7 @@ const styles = StyleSheet.create({
   },
   loadingStateText: {
     marginTop: 8,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   emptyState: {
@@ -417,13 +455,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyStateText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#666',
     marginTop: 12,
   },
   emptyStateSubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
     marginTop: 4,
   },
@@ -509,13 +547,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   offerRatingText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#000',
     marginLeft: 4,
   },
   offerRatingCount: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
     marginLeft: 2,
   },
@@ -524,12 +562,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   offerCompletionRate: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#4CAF50',
     fontWeight: '500',
   },
   offerTasksText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginBottom: 8,
   },
@@ -539,12 +577,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   statDivider: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#999',
     marginHorizontal: 4,
   },
   offerTasksCount: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
   },
   completionRateRow: {
@@ -563,24 +601,30 @@ const styles = StyleSheet.create({
     borderTopColor: '#f5f5f5',
   },
   offerMessage: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#333',
     marginLeft: 8,
     flex: 1,
     lineHeight: 18,
   },
   acceptOfferButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 12,
+    backgroundColor: '#003399',
+    paddingVertical: 13,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 10,
+    shadowColor: '#003399',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.22,
+    shadowRadius: 5,
+    elevation: 3,
   },
   acceptOfferButtonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: RFValue(15),
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   acceptedBadge: {
     flexDirection: 'row',
@@ -593,7 +637,22 @@ const styles = StyleSheet.create({
   },
   acceptedText: {
     color: '#4CAF50',
-    fontSize: 14,
+    fontSize: RFValue(14),
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  completedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  completedText: {
+    color: '#2E7D32',
+    fontSize: RFValue(14),
     fontWeight: '600',
     marginLeft: 6,
   },
@@ -603,7 +662,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   offerDate: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#999',
     marginLeft: 4,
   },
@@ -618,7 +677,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   rebookedText: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#4CAF50',
     marginLeft: 4,
     fontWeight: '600',
@@ -637,7 +696,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   offerAmountText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '700',
     color: '#004aad',
   },
@@ -652,17 +711,29 @@ const styles = StyleSheet.create({
   acceptedStatusBadge: {
     backgroundColor: '#E8F5E9',
   },
+  completedStatusBadge: {
+    backgroundColor: '#E8F5E9',
+  },
   pendingStatusBadge: {
     backgroundColor: '#FFF3E0',
   },
+  rejectedStatusBadge: {
+    backgroundColor: '#FFEBEE',
+  },
   offerStatusText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
   },
   acceptedStatusText: {
     color: '#4CAF50',
   },
+  completedStatusText: {
+    color: '#2E7D32',
+  },
   pendingStatusText: {
     color: '#FFA500',
+  },
+  rejectedStatusText: {
+    color: '#c62828',
   },
 });

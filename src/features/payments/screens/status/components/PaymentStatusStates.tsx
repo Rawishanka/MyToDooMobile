@@ -1,6 +1,7 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface LoadingStateProps {
   message?: string;
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   errorContainer: {
@@ -68,14 +69,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   errorTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     textAlign: 'center',
     lineHeight: 22,
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   backButton: {
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: '#007bff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   emptyContainer: {
@@ -110,14 +111,14 @@ const styles = StyleSheet.create({
     paddingVertical: 100,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     textAlign: 'center',
     lineHeight: 22,

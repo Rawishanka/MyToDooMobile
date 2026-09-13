@@ -17,6 +17,17 @@ import {
   View,
 } from 'react-native';
 import type { StoredNotification } from '@/src/services/notification-storage';
+import { RFValue } from '@/src/shared/utils/responsive';
+
+function normalizeNotificationType(item: StoredNotification): string {
+  const raw =
+    item.data?.type ||
+    item.data?.notificationType ||
+    item.data?.eventType ||
+    item.type ||
+    'unknown';
+  return String(raw).trim().toLowerCase().replace(/-/g, '_');
+}
 
 interface NotificationHistoryListProps {
   notifications: StoredNotification[];
@@ -51,8 +62,9 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
     return date.toLocaleDateString();
   };
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
+  const getNotificationIcon = (item: StoredNotification) => {
+    const rawType = normalizeNotificationType(item);
+    switch (rawType) {
       case 'task_offer':
       case 'offer_made':
         return 'briefcase';
@@ -64,14 +76,21 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
       case 'task_assigned':
         return 'person-add';
       case 'payment':
+      case 'payment_received':
+      case 'payment_sent':
+      case 'abn_required':
+      case 'profile_incomplete':
+      case 'complete_profile':
+      case 'payout_required':
         return 'card';
       default:
         return 'notifications';
     }
   };
 
-  const getNotificationColor = (type: string) => {
-    switch (type) {
+  const getNotificationColor = (item: StoredNotification) => {
+    const rawType = normalizeNotificationType(item);
+    switch (rawType) {
       case 'task_offer':
       case 'offer_made':
         return '#007bff';
@@ -83,6 +102,12 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
       case 'task_assigned':
         return '#17a2b8';
       case 'payment':
+      case 'payment_received':
+      case 'payment_sent':
+      case 'abn_required':
+      case 'profile_incomplete':
+      case 'complete_profile':
+      case 'payout_required':
         return '#ffc107';
       default:
         return '#6c757d';
@@ -90,8 +115,8 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
   };
 
   const renderNotification = ({ item }: { item: StoredNotification }) => {
-    const iconName = getNotificationIcon(item.type || 'unknown');
-    const iconColor = getNotificationColor(item.type || 'unknown');
+    const iconName = getNotificationIcon(item);
+    const iconColor = getNotificationColor(item);
 
     return (
       <TouchableOpacity
@@ -194,7 +219,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 16,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#6c757d',
   },
   notificationItem: {
@@ -227,7 +252,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   title: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 4,
@@ -237,13 +262,13 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   body: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginBottom: 4,
     lineHeight: 20,
   },
   time: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
   actionsContainer: {
@@ -271,14 +296,14 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   emptyText: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtext: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
     lineHeight: 20,

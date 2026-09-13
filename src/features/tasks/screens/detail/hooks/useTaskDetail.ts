@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import { AppAlert } from '@/src/shared/components/AppAlert';
 import {
     useAcceptOffer,
     useGetTaskById,
@@ -216,7 +216,7 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     // Moderate content before submitting
     const moderationResult = moderateContent(questionText);
     if (!moderationResult.isClean) {
-      Alert.alert(
+      AppAlert.alert(
         'Question Blocked',
         moderationResult.reason || 'Your question contains inappropriate content.',
         [{ text: 'OK' }]
@@ -259,7 +259,7 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
       } else if (error?.message) {
         errorMessage = error.message;
       }
-      Alert.alert('Question Not Submitted', errorMessage);
+      AppAlert.alert('Question Not Submitted', errorMessage);
     }
   };
 

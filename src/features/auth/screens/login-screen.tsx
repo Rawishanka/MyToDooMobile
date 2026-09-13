@@ -814,7 +814,7 @@ export default function LoginScreen() {
           <Text style={styles.subtitle}>Sign in to your account</Text>
           {pendingAction && (
             <View style={styles.pendingActionBanner}>
-              <Ionicons name="information-circle" size={16} color="#007AFF" />
+              <Ionicons name="information-circle" size={16} color="#1A2980" />
               <Text style={styles.pendingActionText}>
                 {pendingAction.type === 'post-task' ? 
                   'Complete your login to post your task' :
@@ -832,7 +832,7 @@ export default function LoginScreen() {
             value={email}
             onChangeText={setEmail}
             placeholder="Enter your email"
-            placeholderTextColor="#999"
+            placeholderTextColor="#9CA3AF"
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -844,7 +844,7 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               placeholder="Enter your password"
-              placeholderTextColor="#999"
+              placeholderTextColor="#9CA3AF"
               secureTextEntry={!showPassword}
               textContentType="password"
               autoComplete="password"
@@ -993,7 +993,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   logoBackground: {
-    backgroundColor: '#0a2d5c',
+    backgroundColor: '#1A2980',
     borderRadius: 16,
     padding: 12,
     alignItems: 'center',
@@ -1006,9 +1006,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: RFValue(24),
-    fontWeight: 'bold',
+    fontWeight: '800',
     marginBottom: 6,
-    color: '#333',
+    color: '#1A1D2E',
   },
   subtitle: {
     fontSize: RFValue(14),
@@ -1024,23 +1024,24 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderColor: '#E8ECF4',
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginBottom: 12,
-    color: '#333',
-    backgroundColor: '#fff',
+    color: '#1A1D2E',
+    backgroundColor: '#F4F6FB',
     fontSize: RFValue(15),
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderColor: '#E8ECF4',
+    borderRadius: 12,
     marginBottom: 12,
     paddingRight: 8,
+    backgroundColor: '#F4F6FB',
   },
   passwordInput: {
     flex: 1,
@@ -1064,7 +1065,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
-    borderColor: '#ccc',
+    borderColor: '#E8ECF4',
     borderRadius: 4,
     marginRight: 10,
     justifyContent: 'center',
@@ -1072,23 +1073,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   checkboxChecked: {
-    backgroundColor: '#007BFF',
-    borderColor: '#007BFF',
+    backgroundColor: '#1A2980',
+    borderColor: '#1A2980',
   },
   rememberMeText: {
     fontSize: RFValue(14),
     color: '#333',
   },
   forgotPassword: {
-    color: '#007BFF',
+    color: '#1A2980',
     textAlign: 'right',
     marginBottom: 16,
     fontSize: RFValue(14),
   },
   loginButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#FF7A00',
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 14,
     alignItems: 'center',
   },
   loginButtonText: {
@@ -1116,11 +1117,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#E8ECF4',
     marginBottom: 8,
   },
   googleIcon: {
@@ -1139,7 +1140,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#000',
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 8,
   },
   appleIcon: {
@@ -1158,7 +1159,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   registerText: {
-    color: '#007BFF',
+    color: '#FF7A00',
     fontWeight: 'bold',
   },
   closeIcon: {
@@ -1172,7 +1173,7 @@ const styles = StyleSheet.create({
   pendingActionBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#EEF2FF',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
@@ -1181,7 +1182,7 @@ const styles = StyleSheet.create({
   },
   pendingActionText: {
     flex: 1,
-    color: '#1976D2',
+    color: '#1A2980',
     fontSize: RFValue(13),
     fontWeight: '500',
   },

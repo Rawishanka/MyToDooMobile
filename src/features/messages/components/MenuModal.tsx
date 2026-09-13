@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { ConstructionIcon } from './ConstructionIcon';
 import type { NotificationItem } from './message-types';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface MenuModalProps {
   visible: boolean;
@@ -171,14 +172,14 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   cancelledTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#2c3e50',
     textAlign: 'center',
     marginBottom: 5,
   },
   cancelledSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#7f8c8d',
     textAlign: 'center',
     marginBottom: 30,
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
   },
   postTaskButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     textAlign: 'center',
   },
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
     borderRadius: 0,
   },
   taskTitle: {
-    fontSize: 28,
+    fontSize: RFValue(28),
     fontWeight: '700',
     color: '#1a237e',
     marginBottom: 20,
@@ -215,24 +216,24 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   taskDetailText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#2c3e50',
     marginLeft: 8,
     fontWeight: '400',
   },
   currencySymbol: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     marginRight: 8,
   },
   budgetLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#7f8c8d',
     marginLeft: 8,
     marginTop: 2,
   },
   taskDescription: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#2c3e50',
     marginTop: 15,
     lineHeight: 18,
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   moreOptionsText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#7f8c8d',
     textAlign: 'center',
     paddingVertical: 15,
@@ -255,13 +256,13 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f0f0f0',
   },
   menuOptionText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#007AFF',
     textAlign: 'center',
     fontWeight: '400',
   },
   cancelOptionText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#007AFF',
     textAlign: 'center',
     fontWeight: '400',

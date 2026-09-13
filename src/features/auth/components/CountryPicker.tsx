@@ -5,6 +5,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { CountryData } from './signup-types';
 import { COUNTRIES } from './signup-types';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface CountryPickerProps {
   selectedCountry: CountryData;
@@ -28,10 +29,13 @@ export const CountryPicker: React.FC<CountryPickerProps> = ({
         onPress={onTogglePicker}
         activeOpacity={0.7}
       >
-        <Text style={styles.dropdownText}>
-          {selectedCountry.flag} {selectedCountry.name}
-        </Text>
-        <Ionicons name="chevron-down" size={20} color="#666" />
+        <View style={styles.dropdownLeft}>
+          <View style={styles.flagIconWrap}>
+            <Ionicons name="flag" size={16} color="#1A2980" />
+          </View>
+          <Text style={styles.dropdownText}>{selectedCountry.name}</Text>
+        </View>
+        <Ionicons name={showPicker ? "chevron-up" : "chevron-down"} size={18} color="#1A2980" />
       </TouchableOpacity>
 
       {showPicker && (
@@ -45,11 +49,16 @@ export const CountryPicker: React.FC<CountryPickerProps> = ({
               ]}
               onPress={() => onSelectCountry(country)}
             >
-              <Text style={styles.dropdownItemText}>
-                {country.flag} {country.name}
-              </Text>
+              <View style={styles.dropdownLeft}>
+                <View style={styles.flagIconWrap}>
+                  <Ionicons name="flag" size={15} color={selectedCountry.code === country.code ? '#1A2980' : '#666'} />
+                </View>
+                <Text style={[styles.dropdownItemText, selectedCountry.code === country.code && styles.dropdownItemTextSelected]}>
+                  {country.name}
+                </Text>
+              </View>
               {selectedCountry.code === country.code && (
-                <Ionicons name="checkmark" size={20} color="#0057FF" />
+                <Ionicons name="checkmark-circle" size={20} color="#1A2980" />
               )}
             </TouchableOpacity>
           ))}
@@ -65,45 +74,68 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E0E0E0',
-    borderRadius: 10,
-    paddingHorizontal: 16,
+    borderColor: '#E8ECF4',
+    borderRadius: 12,
+    paddingHorizontal: 14,
     paddingVertical: 14,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: '#F4F6FB',
     marginBottom: 4,
   },
   dropdownError: {
-    borderColor: '#FF3B30',
+    borderColor: '#EF4444',
     backgroundColor: '#FFF5F5',
   },
+  dropdownLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  flagIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   dropdownText: {
-    fontSize: 15,
-    color: '#000',
-    fontWeight: '500',
+    fontSize: RFValue(15),
+    color: '#1A1D2E',
+    fontWeight: '600',
   },
   dropdownList: {
     borderWidth: 1.5,
-    borderColor: '#E0E0E0',
-    borderRadius: 10,
+    borderColor: '#E8ECF4',
+    borderRadius: 12,
     backgroundColor: '#FFF',
     marginBottom: 16,
     maxHeight: 200,
     overflow: 'scroll',
+    shadowColor: '#1A2980',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
   },
   dropdownItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
   dropdownItemSelected: {
-    backgroundColor: '#F0F7FF',
+    backgroundColor: '#EEF2FF',
   },
   dropdownItemText: {
-    fontSize: 15,
-    color: '#000',
+    fontSize: RFValue(15),
+    color: '#333',
+    fontWeight: '500',
+  },
+  dropdownItemTextSelected: {
+    color: '#1A2980',
+    fontWeight: '700',
   },
 });

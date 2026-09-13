@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { formatUserName, formatAvatarName } from '@/src/utils/formatUserName';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface Offer {
   _id: string;
@@ -203,7 +204,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   taskerName: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
     marginBottom: 2,
@@ -214,19 +215,19 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   ratingText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginLeft: 4,
   },
   offerDate: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
   offerPriceContainer: {
     alignItems: 'flex-end',
   },
   offerPrice: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#007bff',
     marginBottom: 6,
@@ -238,7 +239,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     color: '#fff',
-    fontSize: 10,
+    fontSize: RFValue(10),
     fontWeight: '600',
     textTransform: 'uppercase',
   },
@@ -249,13 +250,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   messageLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginBottom: 4,
     fontWeight: '500',
   },
   messageText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     lineHeight: 20,
   },
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
   },
   acceptButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
   },
   rejectButton: {
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
   },
   rejectButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
   },
   contactButton: {
@@ -300,7 +301,7 @@ const styles = StyleSheet.create({
   },
   contactButtonText: {
     color: '#007bff',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '500',
   },
 });

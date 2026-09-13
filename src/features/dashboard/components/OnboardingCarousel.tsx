@@ -13,6 +13,7 @@ import {
   View,
   ViewToken,
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 const { width, height } = Dimensions.get('window');
 
@@ -254,14 +255,14 @@ const styles = StyleSheet.create({
   },
   title: {
     color: 'white',
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
     color: 'white',
-    fontSize: 14,
+    fontSize: RFValue(14),
     textAlign: 'center',
   },
   buttonContainer: {
@@ -294,6 +295,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
 });

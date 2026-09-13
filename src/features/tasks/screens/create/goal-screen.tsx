@@ -4,6 +4,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function GoalSelectionScreen() {
   const [selectedGoal, setSelectedGoal] = useState('');
@@ -95,14 +96,14 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   title: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '700',
     color: '#1C1C1E',
     marginBottom: 5,
     marginTop: 40,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#8E8E93',
     marginBottom: 30,
   },
@@ -128,12 +129,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#1C1C1E',
   },
   cardSubtitle: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#8E8E93',
   },
   iconImage: {
@@ -157,6 +158,6 @@ const styles = StyleSheet.create({
   continueText: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
 });

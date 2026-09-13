@@ -15,6 +15,7 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface ServiceFeeConfigScreenProps {
   onBackToAccount: () => void;
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
   },
@@ -320,7 +321,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   errorContainer: {
@@ -331,14 +332,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   errorTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
   errorText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
     marginBottom: 24,
@@ -351,7 +352,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: '#FFF',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
   },
   infoBox: {
@@ -364,7 +365,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#0052A2',
     marginLeft: 8,
     lineHeight: 18,
@@ -376,7 +377,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 12,
@@ -394,11 +395,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   configLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   configValue: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#0052A2',
   },
@@ -406,7 +407,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
@@ -418,11 +419,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
   },
   helperText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
     marginTop: 4,
   },
@@ -445,7 +446,7 @@ const styles = StyleSheet.create({
   },
   resetButtonText: {
     color: '#666',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
   },
   saveButton: {
@@ -453,7 +454,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#FFF',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
   },
   buttonDisabled: {
@@ -473,12 +474,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   currencyLabel: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
     fontWeight: '600',
   },
   currencyValue: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#333',
   },
 });

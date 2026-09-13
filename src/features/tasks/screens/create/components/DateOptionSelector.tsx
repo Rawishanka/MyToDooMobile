@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface DateOption {
   label: string;
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#1C1C1E',
     marginBottom: 12,
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   optionText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#1C1C1E',
     fontWeight: '500',
   },
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     color: '#0057FF',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '500',
   },
 });

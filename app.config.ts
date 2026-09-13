@@ -15,7 +15,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: IS_UAT ? 'MyToDoo UAT' : 'MyToDoo',
   slug: 'mytodoomobile-app',
   owner: 'sithila345',
-  version: '1.0.8',
+  version: '1.3.4',
   orientation: 'portrait',
   icon: './assets/images/mytodoo-adaptive-icon.png',
   scheme: 'mytodoo',
@@ -25,10 +25,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: IS_UAT ? 'com.unexo.mytodoomobile' : 'com.mytodoo.mytodoolive',
     supportsTablet: true,
-    buildNumber: "43",
-    googleServicesFile: './GoogleService-Info.plist',
+    buildNumber: "97",
+    googleServicesFile: IS_UAT
+      ? './GoogleService-Info-UAT.plist'
+      : './GoogleService-Info.plist',
     entitlements: {
-      'com.apple.developer.in-app-payments': ['merchant.com.mytodoo.mytodoolive'],
+      ...(IS_UAT
+        ? {}
+        : {
+            'com.apple.developer.in-app-payments': ['merchant.com.mytodoo.mytodoolive'],
+          }),
     },
     infoPlist: {
       NSCameraUsageDescription: 'Allow MyToDoo to use your camera to capture and upload task photos.',

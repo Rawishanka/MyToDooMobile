@@ -93,10 +93,27 @@ target 'MyToDoo' do
           config.build_settings['OTHER_CFLAGS'] = '$(inherited) -Wno-error=implicit-int -Wno-implicit-int -Wno-error=strict-prototypes -Wno-strict-prototypes -Wno-error -w'
         end
 
+        if target.name == 'RNFBAuth'
+          config.build_settings['HEADER_SEARCH_PATHS'] ||= ['$(inherited)']
+          config.build_settings['HEADER_SEARCH_PATHS'] << '"${PODS_CONFIGURATION_BUILD_DIR}/FirebaseAuth/Swift Compatibility Header"'
+        end
+
         if target.name == 'RCT-Folly'
           config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
           config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
         end
+      end
+    end
+
+    # Static Firebase pods ship as .a — drop stale weak framework flag from CocoaPods xcconfig
+    installer.aggregate_targets.each do |aggregate_target|
+      aggregate_target.xcconfigs.each do |config_name, _xcconfig|
+        xcconfig_path = aggregate_target.xcconfig_path(config_name)
+        next unless File.exist?(xcconfig_path)
+
+        contents = File.read(xcconfig_path)
+        patched = contents.gsub(/-weak_framework "FirebaseFirestoreInternal"/, '')
+        File.write(xcconfig_path, patched) if patched != contents
       end
     end
   end

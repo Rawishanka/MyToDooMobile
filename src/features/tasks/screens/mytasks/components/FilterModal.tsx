@@ -3,6 +3,7 @@ import { BlurView } from 'expo-blur';
 import React from 'react';
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { TASK_FILTERS, TaskFilter } from '../hooks/useMyTasksFilters';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface FilterModalProps {
   visible: boolean;
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f0f0f0',
   },
   title: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#002A5C',
   },
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f0f0f0',
   },
   optionText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#333',
   },
   selectedOptionText: {

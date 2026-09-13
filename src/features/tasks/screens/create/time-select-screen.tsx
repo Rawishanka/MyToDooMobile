@@ -4,6 +4,7 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -18,11 +19,14 @@ import {
   TimeOfDayGrid,
   TimeToggle,
 } from './components';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 const TimeSelectScreen = () => {
+  const insets = useSafeAreaInsets();
   const [selectedOption, setSelectedOption] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [activePickerOption, setActivePickerOption] = useState('');
+  const [tempDate, setTempDate] = useState<Date>(new Date());
   const [onTimeDate, setOnTimeDate] = useState<Date | null>(null);
   const [beforeDate, setBeforeDate] = useState<Date | null>(null);
   const [selectedTimeBlock, setSelectedTimeBlock] = useState('');
@@ -65,14 +69,29 @@ const TimeSelectScreen = () => {
     event: DateTimePickerEvent,
     date?: Date | undefined
   ): void => {
-    setShowDatePicker(false);
-    if (date) {
-      if (activePickerOption === 'on_time') {
-        setOnTimeDate(date);
-      } else if (activePickerOption === 'before') {
-        setBeforeDate(date);
+    if (Platform.OS === 'android') {
+      // Android: apply immediately on change
+      setShowDatePicker(false);
+      if (date) {
+        if (activePickerOption === 'on_time') setOnTimeDate(date);
+        else if (activePickerOption === 'before') setBeforeDate(date);
       }
+      setActivePickerOption('');
+    } else {
+      // iOS spinner: just update temp state while user scrolls
+      if (date) setTempDate(date);
     }
+  };
+
+  const handleIOSDone = () => {
+    if (activePickerOption === 'on_time') setOnTimeDate(tempDate);
+    else if (activePickerOption === 'before') setBeforeDate(tempDate);
+    setShowDatePicker(false);
+    setActivePickerOption('');
+  };
+
+  const handleIOSCancel = () => {
+    setShowDatePicker(false);
     setActivePickerOption('');
   };
 
@@ -85,6 +104,13 @@ const TimeSelectScreen = () => {
   };
 
   const handleOpenPicker = (pickerType: string) => {
+    const seed =
+      pickerType === 'on_time'
+        ? onTimeDate || new Date()
+        : pickerType === 'before'
+        ? beforeDate || new Date()
+        : new Date();
+    setTempDate(seed);
     setActivePickerOption(pickerType);
     setShowDatePicker(true);
   };
@@ -190,21 +216,61 @@ const TimeSelectScreen = () => {
         <Text style={styles.continueText}>Continue</Text>
       </TouchableOpacity>
 
-      {/* Date Picker */}
-      {showDatePicker && (
-        <DateTimePicker
-          value={
-            activePickerOption === 'on_time' 
-              ? (onTimeDate || new Date()) 
-              : activePickerOption === 'before'
-              ? (beforeDate || new Date())
-              : new Date()
-          }
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleDateChange}
-          minimumDate={new Date()}
-        />
+      {/* ── Date Picker ── iOS: proper Modal bottom-sheet / Android: default */}
+      {Platform.OS === 'ios' ? (
+        <Modal
+          visible={showDatePicker}
+          transparent
+          animationType="none"
+          onRequestClose={handleIOSCancel}
+        >
+          {/* Full-screen wrapper: overlay tap area + sheet at bottom */}
+          <View style={styles.modalWrapper}>
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPress={handleIOSCancel}
+            />
+            <View style={[styles.pickerSheet, { paddingBottom: insets.bottom + 8 }]}>
+              {/* Toolbar */}
+              <View style={styles.pickerToolbar}>
+                <TouchableOpacity onPress={handleIOSCancel} style={styles.pickerToolbarBtn}>
+                  <Text style={styles.pickerCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <Text style={styles.pickerTitle}>Select Date</Text>
+                <TouchableOpacity onPress={handleIOSDone} style={styles.pickerToolbarBtn}>
+                  <Text style={styles.pickerDoneText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+              {/* Wheel picker */}
+              <DateTimePicker
+                value={tempDate}
+                mode="date"
+                display="spinner"
+                onChange={handleDateChange}
+                minimumDate={new Date()}
+                style={styles.iosPicker}
+                textColor="#1C1C1E"
+              />
+            </View>
+          </View>
+        </Modal>
+      ) : (
+        showDatePicker && (
+          <DateTimePicker
+            value={
+              activePickerOption === 'on_time'
+                ? (onTimeDate || new Date())
+                : activePickerOption === 'before'
+                ? (beforeDate || new Date())
+                : new Date()
+            }
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+            minimumDate={new Date()}
+          />
+        )
       )}
     </View>
   );
@@ -232,14 +298,14 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: RFValue(24),
     fontWeight: '700',
     marginBottom: 4,
     color: '#1C1C1E',
     marginTop: 36,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#8E8E93',
     marginBottom: 24,
   },
@@ -258,7 +324,57 @@ const styles = StyleSheet.create({
   },
   continueText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
+  },
+
+  // ── iOS Date Picker Modal bottom-sheet ──
+  modalWrapper: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalOverlay: {
+    flex: 1,
+  },
+  pickerSheet: {
+    backgroundColor: '#F2F2F7',
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
+  },
+  pickerToolbar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#C7C7CC',
+    backgroundColor: '#F2F2F7',
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
+  },
+  pickerToolbarBtn: {
+    minWidth: 60,
+  },
+  pickerTitle: {
+    fontSize: RFValue(16),
+    fontWeight: '600',
+    color: '#1C1C1E',
+  },
+  pickerCancelText: {
+    fontSize: RFValue(16),
+    color: '#8E8E93',
+  },
+  pickerDoneText: {
+    fontSize: RFValue(16),
+    color: '#0057FF',
+    fontWeight: '600',
+    textAlign: 'right',
+  },
+  iosPicker: {
+    height: 220,
+    backgroundColor: '#F2F2F7',
   },
 });

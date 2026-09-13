@@ -10,9 +10,9 @@ import { typography } from '../typography';
 
 // Button base styles
 const buttonBase: ViewStyle = {
-  paddingVertical: spacing.buttonPadding,
+  paddingVertical: 14,
   paddingHorizontal: spacing.xl,
-  borderRadius: borderRadius.button,
+  borderRadius: 14,
   alignItems: 'center',
   justifyContent: 'center',
   flexDirection: 'row',
@@ -37,10 +37,10 @@ export const buttonStyles = StyleSheet.create({
     color: colors.textLight,
   } as TextStyle,
   
-  // Secondary Button (Blue/Primary)
+  // Secondary Button (Green/Success)
   secondary: {
     ...buttonBase,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.success,
     ...shadows.button,
   } as ViewStyle,
   
@@ -53,13 +53,13 @@ export const buttonStyles = StyleSheet.create({
   outline: {
     ...buttonBase,
     backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: colors.accent,
+    borderWidth: 2,
+    borderColor: colors.primary,
   } as ViewStyle,
   
   outlineText: {
     ...buttonTextBase,
-    color: colors.accent,
+    color: colors.primary,
   } as TextStyle,
   
   // Text Button (no background)

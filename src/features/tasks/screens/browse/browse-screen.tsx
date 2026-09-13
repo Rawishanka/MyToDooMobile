@@ -301,28 +301,87 @@ export default function BrowseTasksScreen() {
     />
   );
 
-  const renderServiceCard = ({ item }: { item: ServiceListing }) => (
-    <TouchableOpacity
-      style={styles.serviceCard}
-      activeOpacity={0.8}
-      onPress={() => {
-        setSelectedServiceListing(item);
-        setSelectedServiceId(item._id);
-      }}
-    >
-      <Text style={styles.serviceTitle}>{item.title}</Text>
-      <Text style={styles.servicePrice}>
-        ${Number(item.price).toFixed(0)} {item.currency || 'AUD'}
-      </Text>
-      <Text style={styles.serviceMeta} numberOfLines={2}>
-        {item.suburb}
-        {item.radiusKm ? ` · ${item.radiusKm} km` : ''}
-      </Text>
-      <Text style={styles.serviceDescription} numberOfLines={2}>
-        {item.description}
-      </Text>
-    </TouchableOpacity>
-  );
+  const renderServiceCard = ({ item }: { item: ServiceListing }) => {
+    // Generate initials for avatar placeholder
+    const initials = (item.title || 'S')
+      .split(' ')
+      .map((w: string) => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+
+    return (
+      <TouchableOpacity
+        style={styles.serviceCard}
+        activeOpacity={0.82}
+        onPress={() => {
+          setSelectedServiceListing(item);
+          setSelectedServiceId(item._id);
+        }}
+      >
+        {/* Left accent strip */}
+        <View style={styles.serviceAccentStrip} />
+
+        <View style={styles.serviceCardInner}>
+          {/* Top row: Avatar + Details */}
+          <View style={styles.serviceCardTop}>
+            {/* Avatar circle */}
+            <View style={styles.serviceAvatar}>
+              <Text style={styles.serviceAvatarText}>{initials}</Text>
+            </View>
+
+            {/* Content */}
+            <View style={styles.serviceCardContent}>
+              <Text style={styles.serviceTitle} numberOfLines={2}>
+                {item.title}
+              </Text>
+
+              {/* Location & Radius row */}
+              <View style={styles.serviceMetaRow}>
+                <View style={[styles.serviceIconBadge, styles.locationIconBadge]}>
+                  <Ionicons name="location-sharp" size={11} color="#0284C7" />
+                </View>
+                <Text style={styles.serviceMeta} numberOfLines={1}>
+                  {item.suburb || 'Location not set'}
+                </Text>
+                {item.radiusKm ? (
+                  <View style={styles.radiusBadge}>
+                    <Ionicons name="navigate-outline" size={10} color="#6366F1" />
+                    <Text style={styles.radiusText}>{item.radiusKm} km</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              {/* Description */}
+              {item.description ? (
+                <Text style={styles.serviceDescription} numberOfLines={2}>
+                  {item.description}
+                </Text>
+              ) : null}
+            </View>
+          </View>
+
+          {/* Bottom row: Price + Action */}
+          <View style={styles.serviceCardBottom}>
+            <View style={styles.servicePriceBadge}>
+              <Text style={styles.servicePriceLabel}>From</Text>
+              <Text style={styles.servicePrice}>
+                ${Number(item.price).toFixed(0)}
+              </Text>
+              <Text style={styles.serviceCurrency}>
+                {item.currency || 'AUD'}
+              </Text>
+            </View>
+
+            <View style={styles.serviceActionBtn}>
+              <Text style={styles.serviceActionText}>View</Text>
+              <Ionicons name="chevron-forward" size={13} color="#FFFFFF" />
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   if (selectedServiceId) {
     return (
@@ -357,14 +416,14 @@ export default function BrowseTasksScreen() {
         </Text>
         <View style={styles.headerIcons}>
           <TouchableOpacity onPress={() => setSearchVisible(true)}>
-            <Ionicons name="search-outline" size={20} color="#000" />
+            <Ionicons name="search-outline" size={20} color="#fff" />
           </TouchableOpacity>
           
           <TouchableOpacity 
             onPress={() => setShowNotifications(true)} 
             style={styles.notificationButton}
           >
-            <Ionicons name="notifications-outline" size={20} color="#000" />
+            <Ionicons name="notifications-outline" size={20} color="#fff" />
             {notificationCount > 0 && (
               <View style={styles.notificationBadge}>
                 <Text style={styles.badgeText}>
@@ -455,7 +514,7 @@ export default function BrowseTasksScreen() {
           </View>
         ) : servicesLoading && serviceListings.length === 0 ? (
           <View style={styles.emptyState}>
-            <ActivityIndicator size="large" color="#007bff" style={{ marginBottom: 16 }} />
+            <ActivityIndicator size="large" color="#1A2980" style={{ marginBottom: 16 }} />
             <Text style={styles.loadingText}>Loading services...</Text>
           </View>
         ) : servicesError ? (
@@ -569,7 +628,7 @@ export default function BrowseTasksScreen() {
             </View>
           ) : isLoading && filteredAndSortedTasks.length === 0 ? (
             <View style={styles.emptyState}>
-              <ActivityIndicator size="large" color="#007bff" style={{ marginBottom: 16 }} />
+              <ActivityIndicator size="large" color="#1A2980" style={{ marginBottom: 16 }} />
               <Text style={styles.loadingText}>
                 {searchText.trim() ? 'Searching tasks...' : 'Loading tasks...'}
               </Text>
@@ -651,7 +710,7 @@ export default function BrowseTasksScreen() {
               ListFooterComponent={() => 
                 isLoadingMore ? (
                   <View style={{ padding: 20, alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color="#007AFF" />
+                    <ActivityIndicator size="large" color="#1A2980" />
                     <Text style={styles.loadingText}>Loading more tasks...</Text>
                   </View>
                 ) : null
@@ -716,15 +775,17 @@ export default function BrowseTasksScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
-    paddingTop: hp('6%'),
+    backgroundColor: '#F4F6FB',
+    paddingTop: 0,
   },
   header: {
+    backgroundColor: '#1A2980',
     flexDirection: 'row',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('3%'),
+    paddingTop: hp('6%'),
+    paddingBottom: hp('1.5%'),
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: hp('1.2%'),
     minHeight: 50,
   },
   headerTitle: {
@@ -733,6 +794,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     marginHorizontal: wp('2%'),
+    color: '#FFFFFF',
   },
   headerIcons: {
     flexDirection: 'row',
@@ -741,59 +803,200 @@ const styles = StyleSheet.create({
   },
   modeToggleRow: {
     flexDirection: 'row',
-    marginHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    marginBottom: hp('1%'),
-    backgroundColor: '#eef2f7',
-    borderRadius: 10,
-    padding: 4,
+    backgroundColor: '#1A2980',
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('5%'),
+    paddingBottom: hp('1.5%'),
+    paddingTop: hp('0.5%'),
+    gap: wp('2%'),
   },
   modeToggleButton: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingVertical: 10,
+    borderRadius: 30,
     alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1.5,
+    borderColor: 'transparent',
   },
   modeToggleActive: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    borderColor: 'rgba(255,255,255,0.6)',
+    borderBottomWidth: 0,
   },
   modeToggleText: {
     fontSize: RFValue(13),
-    color: '#666',
+    color: 'rgba(255,255,255,0.6)',
     fontWeight: '500',
+    letterSpacing: 0.3,
   },
   modeToggleTextActive: {
-    color: '#0052A2',
+    color: '#FFFFFF',
     fontWeight: '700',
+    letterSpacing: 0.3,
   },
+  // ─── Service Card ─────────────────────────────────────────────────────────
   serviceCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    marginBottom: 12,
+    marginTop: 2,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    shadowColor: '#1A2980',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: '#E8ECF4',
+  },
+  serviceAccentStrip: {
+    width: 4.5,
+    backgroundColor: '#FF6B00',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+  },
+  serviceCardInner: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  serviceCardTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 10,
+  },
+  serviceAvatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FF6B00',
+    borderWidth: 2,
+    borderColor: '#FFE2D1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+    shadowColor: '#FF6B00',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  serviceAvatarText: {
+    fontSize: RFValue(13),
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  serviceCardContent: {
+    flex: 1,
   },
   serviceTitle: {
-    fontSize: RFValue(15),
-    fontWeight: '700',
-    color: '#222',
-  },
-  servicePrice: {
-    marginTop: 4,
     fontSize: RFValue(14),
     fontWeight: '700',
-    color: '#0052A2',
+    color: '#0F172A',
+    marginBottom: 4,
+    lineHeight: RFValue(19),
+  },
+  serviceMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+    flexWrap: 'wrap',
+  },
+  serviceIconBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  locationIconBadge: {
+    backgroundColor: '#EFF6FF',
   },
   serviceMeta: {
-    marginTop: 4,
-    fontSize: RFValue(12),
-    color: '#666',
+    fontSize: RFValue(11),
+    color: '#475569',
+    fontWeight: '500',
+    flexShrink: 1,
+  },
+  radiusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#E0E7FF',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  radiusText: {
+    fontSize: RFValue(9.5),
+    color: '#4F46E5',
+    fontWeight: '600',
   },
   serviceDescription: {
-    marginTop: 8,
-    fontSize: RFValue(13),
-    color: '#444',
-    lineHeight: 18,
+    fontSize: RFValue(11.5),
+    color: '#64748B',
+    lineHeight: RFValue(16),
+  },
+  serviceCardBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  servicePriceBadge: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 3.5,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+    paddingHorizontal: 9,
+    paddingVertical: 3.5,
+    borderRadius: 10,
+  },
+  servicePriceLabel: {
+    fontSize: RFValue(9.5),
+    color: '#16A34A',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  servicePrice: {
+    fontSize: RFValue(15),
+    fontWeight: '800',
+    color: '#15803D',
+  },
+  serviceCurrency: {
+    fontSize: RFValue(10),
+    fontWeight: '600',
+    color: '#16A34A',
+  },
+  serviceActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#1A2980',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    shadowColor: '#1A2980',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  serviceActionText: {
+    fontSize: RFValue(11),
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.2,
   },
   notificationButton: {
     position: 'relative',
@@ -804,7 +1007,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -2,
     right: -2,
-    backgroundColor: '#ff4444',
+    backgroundColor: '#FF7A00',
     borderRadius: 10,
     minWidth: isTablet ? 20 : 18,
     height: isTablet ? 20 : 18,
@@ -822,9 +1025,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     paddingVertical: hp('1.2%'),
-    backgroundColor: '#f0f8ff',
+    backgroundColor: '#EEF2FF',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: '#E8ECF4',
   },
   searchResultsText: {
     fontSize: RFValue(12),
@@ -835,8 +1038,11 @@ const styles = StyleSheet.create({
   filterSortRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    marginBottom: hp('1.2%'),
+    paddingVertical: hp('1%'),
+    marginBottom: hp('0.5%'),
+    backgroundColor: '#F4F6FB',
   },
   mapContainer: {
     flex: 1,
@@ -876,7 +1082,7 @@ const styles = StyleSheet.create({
     marginTop: hp('2%'),
     paddingHorizontal: wp('5%'),
     paddingVertical: hp('1.2%'),
-    backgroundColor: '#007bff',
+    backgroundColor: '#1A2980',
     borderRadius: 8,
   },
   clearSearchText: {
@@ -904,7 +1110,7 @@ const styles = StyleSheet.create({
     marginBottom: hp('2%'),
   },
   retryButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#1A2980',
     padding: 12,
     borderRadius: 8,
   },
@@ -918,12 +1124,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: hp('0.8%'),
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    backgroundColor: '#e6f2ff',
+    backgroundColor: '#EEF2FF',
     gap: wp('1%'),
   },
   locationIndicatorText: {
     fontSize: RFValue(11),
-    color: '#007bff',
+    color: '#1A2980',
     fontWeight: '500',
   },
 });

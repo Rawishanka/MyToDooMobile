@@ -21,6 +21,7 @@ import {
   View
 } from 'react-native';
 import type { VerificationStep } from './signup-types';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface OTPModalProps {
   // Modal visibility
@@ -494,18 +495,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '700',
     color: '#1a1a1a',
     marginBottom: 6,
   },
   modalSubtitle: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
     marginBottom: 4,
   },
   contactText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#007BFF',
   },
@@ -536,12 +537,12 @@ const styles = StyleSheet.create({
   },
   progressDotText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '700',
   },
   progressDotTextInactive: {
     color: '#999',
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
   },
   progressLine: {
@@ -556,7 +557,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#28a745',
   },
   progressLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
     fontWeight: '500',
   },
@@ -572,7 +573,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   otpLabel: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
     marginBottom: 12,
     textAlign: 'center',
@@ -590,7 +591,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#E0E0E0',
     borderRadius: 12,
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#1a1a1a',
     backgroundColor: '#fafafa',
@@ -604,7 +605,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
   timerText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
     textAlign: 'center',
   },
@@ -619,11 +620,11 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   resendInlineText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
   },
   resendInlineLink: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#007BFF',
     fontWeight: '600',
   },
@@ -639,7 +640,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   successBadgeText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#28a745',
     fontWeight: '600',
   },
@@ -661,7 +662,7 @@ const styles = StyleSheet.create({
   },
   verifyButtonText: {
     color: 'white',
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '700',
   },
   securityNote: {
@@ -671,7 +672,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   securityNoteText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
   },
 });

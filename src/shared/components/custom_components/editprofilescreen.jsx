@@ -1,4 +1,5 @@
 // EditProfileScreen.tsx
+import { useGetCategoryNames } from '@/src/shared/hooks/useCategoriesApi';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
@@ -26,6 +27,72 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
   const [firstName, setFirstName] = useState(userData?.firstName || '');
   const [lastName, setLastName] = useState(userData?.lastName || '');
   const [bio, setBio] = useState(userData?.bio || '');
+  // Phone change with SMS OTP verification states
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [newPhoneInput, setNewPhoneInput] = useState("");
+  const [phoneOtpCode, setPhoneOtpCode] = useState("");
+  const [phoneStep, setPhoneStep] = useState("input");
+  const [phoneLoading, setPhoneLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState(null);
+  const [phoneResendTimer, setPhoneResendTimer] = useState(0);
+
+  const startResendTimer = () => {
+    setPhoneResendTimer(60);
+    const interval = setInterval(() => {
+      setPhoneResendTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleRequestPhoneOtp = async () => {
+    const trimmed = newPhoneInput.trim();
+    if (!trimmed || trimmed.length < 8) {
+      setPhoneError("Please enter a valid phone number");
+      return;
+    }
+    setPhoneLoading(true);
+    setPhoneError(null);
+    try {
+      await requestPhoneOtp(trimmed);
+      setPhoneStep("otp");
+      startResendTimer();
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || "Failed to send code";
+      setPhoneError(msg);
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
+  const handleVerifyPhoneOtp = async () => {
+    const trimmedOtp = phoneOtpCode.trim();
+    if (!trimmedOtp || trimmedOtp.length !== 6) {
+      setPhoneError("Please enter 6-digit code");
+      return;
+    }
+    setPhoneLoading(true);
+    setPhoneError(null);
+    try {
+      await verifyPhoneOtp(newPhoneInput.trim(), trimmedOtp);
+      setPhone(newPhoneInput.trim());
+      setShowPhoneModal(false);
+      setPhoneStep("input");
+      setNewPhoneInput("");
+      setPhoneOtpCode("");
+      Alert.alert("Success", "Phone number verified and updated!");
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.message || "Invalid or expired verification code";
+      setPhoneError(msg);
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
   const [phone, setPhone] = useState(userData?.phone || '');
   
   // Extract location fields from userData
@@ -59,6 +126,9 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
   const [showPhotoSelectionScreen, setShowPhotoSelectionScreen] = useState(false);
   const [showSkillsModal, setShowSkillsModal] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
+  // ── Load categories from API (with built-in fallback) ──
+  const { data: categoryNames = [], isLoading: categoriesLoading } = useGetCategoryNames();
 
   // Example photos for selection
   const examplePhotos = [
@@ -104,7 +174,6 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
       const profileUpdateData = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        phone: phone.trim() || undefined, // Don't send empty string
         location: {
           country: country.trim() || 'Australia', // Default to Australia
           countryCode: (countryCode.trim() || 'AU').toUpperCase(), // Default to AU
@@ -542,16 +611,34 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Phone Number</Text>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <Text style={styles.sectionTitle}>Phone Number</Text>
+            <TouchableOpacity
+              style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#EFF6FF", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: "#BFDBFE" }}
+              activeOpacity={0.8}
+              onPress={() => {
+                setPhoneStep("input");
+                setNewPhoneInput("");
+                setPhoneOtpCode("");
+                setPhoneError(null);
+                setShowPhoneModal(true);
+              }}
+            >
+              <Ionicons name="create-outline" size={13} color="#003399" />
+              <Text style={{ fontSize: 11.5, fontWeight: "700", color: "#003399" }}>Change</Text>
+            </TouchableOpacity>
+          </View>
           <TextInput
             style={[styles.textInput, styles.readOnlyInput]}
-            value={phone}
+            value={phone || "No phone number added"}
             editable={false}
             placeholder="Phone number"
             placeholderTextColor="#999"
             keyboardType="phone-pad"
           />
-          <Text style={styles.webOnlyMessage}>📱 Phone number can only be changed from the web</Text>
+          <Text style={{ fontSize: 11.5, color: "#059669", marginTop: 4, fontWeight: "500" }}>
+            🔒 Protected by SMS verification for your security
+          </Text>
         </View>
 
         {/* Location Section */}
@@ -760,9 +847,11 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
 
             <View style={styles.suggestedSkillsSection}>
               <Text style={styles.suggestedSkillsTitle}>Suggested Skills</Text>
-              <View style={styles.skillsContainer}>
-                {['Cleaning', 'Handyman', 'Moving', 'Gardening', 'Painting', 'Assembly', 'Delivery', 'Photography'].map((skill) => (
-                  !skills.includes(skill) && (
+              {categoriesLoading ? (
+                <ActivityIndicator size="small" color="#0052A2" style={{ marginTop: 8 }} />
+              ) : (
+                <View style={styles.skillsContainer}>
+                  {categoryNames.filter(cat => !skills.includes(cat) && (newSkill.trim() === '' || cat.toLowerCase().includes(newSkill.toLowerCase()))).map((skill) => (
                     <TouchableOpacity 
                       key={skill}
                       style={styles.suggestedSkillChip}
@@ -771,11 +860,143 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
                       <Text style={styles.suggestedSkillText}>{skill}</Text>
                       <Ionicons name="add" size={16} color="#0052A2" />
                     </TouchableOpacity>
-                  )
-                ))}
-              </View>
+                  ))}
+                </View>
+              )}
             </View>
-          </ScrollView>
+          
+      {/* Phone OTP Modal */}
+      <Modal
+        visible={showPhoneModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          if (!phoneLoading) setShowPhoneModal(false);
+        }}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.phoneModalOverlay}
+        >
+          <View style={styles.phoneModalCard}>
+            <View style={{ alignItems: "center", marginBottom: 16 }}>
+              <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: "#EFF6FF", justifyContent: "center", alignItems: "center", marginBottom: 12 }}>
+                <Ionicons
+                  name={phoneStep === "input" ? "call-outline" : "shield-checkmark-outline"}
+                  size={24}
+                  color="#003399"
+                />
+              </View>
+              <Text style={{ fontSize: 18, fontWeight: "800", color: "#0F172A", marginBottom: 6 }}>
+                {phoneStep === "input" ? "Update Phone Number" : "Verify SMS Code"}
+              </Text>
+              <Text style={{ fontSize: 13, color: "#64748B", textAlign: "center", lineHeight: 18 }}>
+                {phoneStep === "input"
+                  ? "Enter your new phone number to receive a 6-digit verification code."
+                  : "Enter the 6-digit verification code sent via SMS to " + newPhoneInput}
+              </Text>
+            </View>
+
+            {phoneError && (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FEF2F2", borderRadius: 10, padding: 10, marginBottom: 14, borderWidth: 1, borderColor: "#FCA5A5" }}>
+                <Ionicons name="alert-circle" size={16} color="#DC2626" />
+                <Text style={{ flex: 1, fontSize: 12, color: "#DC2626", fontWeight: "500" }}>{phoneError}</Text>
+              </View>
+            )}
+
+            {phoneStep === "input" ? (
+              <View style={{ width: "100%" }}>
+                <Text style={{ fontSize: 12.5, fontWeight: "700", color: "#334155", marginBottom: 6 }}>New Phone Number</Text>
+                <TextInput
+                  style={{ backgroundColor: "#F8FAFC", borderWidth: 1.5, borderColor: "#CBD5E1", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, color: "#0F172A", fontWeight: "600" }}
+                  value={newPhoneInput}
+                  onChangeText={setNewPhoneInput}
+                  placeholder="+61 400 000 000"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="phone-pad"
+                  autoFocus={true}
+                />
+                <Text style={{ fontSize: 11.5, color: "#64748B", marginTop: 6, lineHeight: 16 }}>
+                  Include country code (e.g. +61 for Australia) or enter standard Australian mobile (04...).
+                </Text>
+
+                <View style={{ flexDirection: "row", gap: 10, marginTop: 18 }}>
+                  <TouchableOpacity
+                    style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: "#F1F5F9", alignItems: "center", justifyContent: "center" }}
+                    onPress={() => setShowPhoneModal(false)}
+                    disabled={phoneLoading}
+                  >
+                    <Text style={{ fontSize: 14, fontWeight: "600", color: "#64748B" }}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{ flex: 1.6, paddingVertical: 12, borderRadius: 12, backgroundColor: "#003399", alignItems: "center", justifyContent: "center" }}
+                    onPress={handleRequestPhoneOtp}
+                    disabled={phoneLoading}
+                  >
+                    {phoneLoading ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <Text style={{ fontSize: 14, fontWeight: "700", color: "#FFFFFF" }}>Send Code</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <View style={{ width: "100%" }}>
+                <Text style={{ fontSize: 12.5, fontWeight: "700", color: "#334155", marginBottom: 6 }}>6-Digit Verification Code</Text>
+                <TextInput
+                  style={{ backgroundColor: "#F8FAFC", borderWidth: 2, borderColor: "#003399", borderRadius: 14, paddingVertical: 14, fontSize: 24, fontWeight: "800", color: "#0F172A", textAlign: "center", letterSpacing: 10 }}
+                  value={phoneOtpCode}
+                  onChangeText={setPhoneOtpCode}
+                  placeholder="000000"
+                  placeholderTextColor="#CBD5E1"
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  autoFocus={true}
+                />
+
+                <View style={{ alignItems: "center", marginVertical: 12 }}>
+                  {phoneResendTimer > 0 ? (
+                    <Text style={{ fontSize: 12.5, color: "#94A3B8", fontWeight: "500" }}>
+                      Resend code in {phoneResendTimer}s
+                    </Text>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={handleRequestPhoneOtp}
+                      disabled={phoneLoading}
+                    >
+                      <Text style={{ fontSize: 13, color: "#003399", fontWeight: "700" }}>Resend Code</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                <View style={{ flexDirection: "row", gap: 10, marginTop: 18 }}>
+                  <TouchableOpacity
+                    style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: "#F1F5F9", alignItems: "center", justifyContent: "center" }}
+                    onPress={() => setPhoneStep("input")}
+                    disabled={phoneLoading}
+                  >
+                    <Text style={{ fontSize: 14, fontWeight: "600", color: "#64748B" }}>Back</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{ flex: 1.6, paddingVertical: 12, borderRadius: 12, backgroundColor: "#003399", alignItems: "center", justifyContent: "center" }}
+                    onPress={handleVerifyPhoneOtp}
+                    disabled={phoneLoading}
+                  >
+                    {phoneLoading ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <Text style={{ fontSize: 14, fontWeight: "700", color: "#FFFFFF" }}>Verify & Save</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+</ScrollView>
         </View>
       </Modal>
 

@@ -2,6 +2,7 @@ import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { formatUserName } from '@/src/utils/formatUserName';
 import { StyleSheet, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TaskSummaryCardProps {
   title: string;
@@ -70,18 +71,18 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   taskTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#000',
     marginBottom: 8,
   },
   taskCreator: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginBottom: 4,
   },
   taskLocation: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginBottom: 12,
   },
@@ -91,17 +92,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   budgetLabel: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#333',
     fontWeight: '600',
   },
   budgetAmount: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     color: '#28a745',
     fontWeight: '700',
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#999',
     fontStyle: 'italic',
   },

@@ -1,3 +1,4 @@
+import { BRAND_GREEN } from '@/src/shared/theme/brandColors';
 import { CreateTaskRequest } from '@/src/api/types/tasks';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useStorageState } from '@/src/shared/hooks/useStorageState';
@@ -76,6 +77,9 @@ export default function DetailScreen() {
     // If no location set, use detected country's currency
     if (locationForCurrency) {
       return getCurrencyFromLocation(locationForCurrency);
+    }
+    if (!countryInfo) {
+      return { code: 'AUD', symbol: 'A$' };
     }
     return { code: countryInfo.currency, symbol: getCurrencySymbol(countryInfo.currency) };
   };
@@ -493,7 +497,7 @@ const styles = StyleSheet.create({
     marginTop: hp('0.3%'),
   },
   continueBtn: {
-    backgroundColor: '#0052CC',
+    backgroundColor: BRAND_GREEN,
     paddingVertical: hp('1.8%'),
     borderRadius: 30,
     marginBottom: hp('3%'),

@@ -7,7 +7,7 @@
 // ✅ Local storage integration for message previews
 // ✅ Pull-to-refresh functionality
 
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { hp, isTablet, RFValue, TAB_BAR_CLEARANCE, wp } from '@/src/shared/utils/responsive';
 import { formatAvatarName } from '@/src/utils/formatUserName';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -178,15 +178,15 @@ const MessageScreen: React.FC = () => {
             const firstName = otherUser.firstName || '';
             const lastName = otherUser.lastName || '';
             const name = formatAvatarName(firstName, lastName);
-            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=007AFF&color=fff&size=100&bold=true&rounded=true`;
+            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1A2980&color=fff&size=100&bold=true&rounded=true`;
           } else if (posterId?.firstName || taskerId?.firstName) {
             const participant = posterId?._id !== chat.currentUserId ? posterId : taskerId;
             const firstName = participant?.firstName || '';
             const lastName = participant?.lastName || '';
             const name = formatAvatarName(firstName, lastName);
-            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=007AFF&color=fff&size=100&bold=true&rounded=true`;
+            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1A2980&color=fff&size=100&bold=true&rounded=true`;
           } else {
-            avatarUrl = 'https://ui-avatars.com/api/?name=User&background=007AFF&color=fff&size=100';
+            avatarUrl = 'https://ui-avatars.com/api/?name=User&background=1A2980&color=fff&size=100';
           }
         }
         
@@ -310,7 +310,7 @@ const MessageScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor="#1A2980" />
       
       {/* Offline Banner */}
       <OfflineBanner />
@@ -322,7 +322,7 @@ const MessageScreen: React.FC = () => {
           onPress={() => setShowNotifications(true)}
           style={styles.notificationButton}
         >
-          <Ionicons name="notifications-outline" size={24} color="#000" />
+          <Ionicons name="notifications-outline" size={24} color="#fff" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
               <Text style={styles.badgeText}>
@@ -343,7 +343,7 @@ const MessageScreen: React.FC = () => {
       {/* Messages List */}
       {isLoadingChats ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <ActivityIndicator size="large" color="#1A2980" />
           <Text style={styles.loadingText}>Loading chats...</Text>
         </View>
       ) : (
@@ -362,8 +362,8 @@ const MessageScreen: React.FC = () => {
             <RefreshControl
               refreshing={isLoadingChats}
               onRefresh={handleRefresh}
-              colors={['#007AFF']}
-              tintColor="#007AFF"
+              colors={['#1A2980']}
+              tintColor="#1A2980"
             />
           }
           ListEmptyComponent={() => (
@@ -413,7 +413,7 @@ const MessageScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
   },
   header: {
     flexDirection: 'row',
@@ -422,14 +422,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     paddingTop: isTablet ? hp('6%') : hp('6.5%'),
     paddingBottom: isTablet ? hp('2%') : hp('2%'),
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#1A2980',
   },
   headerTitle: {
-    fontSize: RFValue(isTablet ? 18 : 24),
+    fontSize: RFValue(isTablet ? 18 : 22),
     fontWeight: '700',
-    color: '#000',
+    color: '#FFFFFF',
   },
   notificationButton: {
     padding: isTablet ? 10 : 8,
@@ -439,7 +437,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0,
-    backgroundColor: '#FF0000',
+    backgroundColor: '#FF7A00',
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -454,6 +452,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     flexGrow: 1,
+    paddingBottom: TAB_BAR_CLEARANCE,
   },
   loadingContainer: {
     flex: 1,
@@ -482,7 +481,7 @@ const styles = StyleSheet.create({
     marginTop: isTablet ? hp('2%') : hp('2%'),
     paddingHorizontal: isTablet ? wp('5%') : wp('5%'),
     paddingVertical: isTablet ? hp('1.5%') : hp('1.2%'),
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1A2980',
     borderRadius: isTablet ? 10 : 8,
   },
   retryButtonText: {

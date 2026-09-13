@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TaskDetailsProps {
   description?: string;
@@ -40,13 +41,13 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
     marginBottom: 12,
   },
   taskDescription: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#333',
     lineHeight: 24,
     marginBottom: 16,
@@ -57,7 +58,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   dueDateText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginLeft: 8,
   },
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   urgencyText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#ff6b6b',
     fontWeight: '600',
     marginLeft: 8,

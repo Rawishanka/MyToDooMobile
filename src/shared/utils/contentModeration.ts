@@ -11,7 +11,7 @@
  */
 
 const CONTACT_WARNING =
-  'Do not include personal contact details (phone, email, or websites). Please amend and resubmit.';
+  'Sharing contact details is not allowed before the task is assigned. Keep the conversation on MyToDoo — remove any phone, email or website and submit again.';
 
 // Phone number patterns - detects various formats
 const PHONE_PATTERNS = [

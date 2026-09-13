@@ -1,15 +1,21 @@
 /**
  * Typography system for MyToDoo Mobile App
  * Font sizes, weights, and text styles
+ *
+ * Font sizes use rf() — width-based scaling capped at 1.15x for tablets.
+ * This ensures consistent, professional sizing on all devices (phones,
+ * tablets, landscape) — matching the approach used by Facebook/Instagram.
  */
+import { rf } from '@/src/shared/utils/responsive';
+
 export const typography = {
   // Font Families
   fontFamily: {
-    regular: 'System',
-    medium: 'System',
-    bold: 'System',
-    semibold: 'System',
-    light: 'System',
+    regular: undefined,
+    medium: undefined,
+    bold: undefined,
+    semibold: undefined,
+    light: undefined,
   },
   
   // Font Weights
@@ -22,19 +28,19 @@ export const typography = {
     extrabold: '800' as const,
   },
   
-  // Font Sizes
+  // Font Sizes — responsive, capped at 1.15x on tablets
   fontSize: {
-    xs: 10,
-    sm: 12,
-    base: 14,
-    md: 16,
-    lg: 18,
-    xl: 20,
-    '2xl': 24,
-    '3xl': 28,
-    '4xl': 32,
-    '5xl': 36,
-    '6xl': 42,
+    xs:   rf(10),
+    sm:   rf(12),
+    base: rf(14),
+    md:   rf(16),
+    lg:   rf(18),
+    xl:   rf(20),
+    '2xl': rf(24),
+    '3xl': rf(28),
+    '4xl': rf(32),
+    '5xl': rf(36),
+    '6xl': rf(42),
   },
   
   // Line Heights

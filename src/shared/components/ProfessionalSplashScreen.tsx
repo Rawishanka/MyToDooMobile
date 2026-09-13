@@ -1,4 +1,5 @@
-import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
+import MyToDooSvgLogoBox from '@/src/shared/components/MyToDooSvgLogoBox';
+import { MYTDOO_BRAND_BLUE } from '@/src/shared/components/MyToDooBrandLogo';
 import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -129,13 +130,7 @@ export default function ProfessionalSplashScreen({
           },
         ]}
       >
-        {/* Dark blue background box for logo visibility */}
-        <View style={styles.logoBackground}>
-          <MyToDooLogo
-            width={120}
-            height={120}
-          />
-        </View>
+        <MyToDooSvgLogoBox variant="splash" />
       </Animated.View>
 
       {/* Loading animation dots */}

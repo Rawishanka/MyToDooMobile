@@ -1,45 +1,68 @@
+import { formatUserName } from '@/src/utils/formatUserName';
+
+export interface TaskChatParticipants {
+  posterId?: string;
+  taskerId?: string;
+  posterName?: string;
+  taskerName?: string;
+  posterAvatar?: string;
+  taskerAvatar?: string;
+  taskTitle?: string;
+}
+
 /**
- * Resolve poster + assigned tasker IDs from a task payload for chat bootstrap.
+ * Resolve poster/tasker IDs from a task object (same rules as TaskActionButtons).
  */
-export function resolveTaskChatParticipants(task: any): {
-  posterId: string | null;
-  taskerId: string | null;
-} {
-  if (!task) {
-    return { posterId: null, taskerId: null };
+export function resolveTaskChatParticipants(task: any): TaskChatParticipants {
+  if (!task) return {};
+
+  const createdByObj = typeof task.createdBy === 'object' ? task.createdBy : null;
+  const posterId =
+    asString(createdByObj?._id) ||
+    (typeof task.createdBy === 'string' ? task.createdBy : undefined);
+  const posterName = createdByObj
+    ? formatUserName(createdByObj.firstName, createdByObj.lastName)
+    : '';
+  const posterAvatar = createdByObj?.avatar || createdByObj?.profilePicture || '';
+
+  let taskerId: string | undefined;
+  let taskerName = '';
+  let taskerAvatar = '';
+  const assignedTo = task.assignedTo;
+
+  if (typeof assignedTo === 'object' && assignedTo?._id) {
+    taskerId = assignedTo._id;
+    taskerName = formatUserName(assignedTo.firstName, assignedTo.lastName);
+    taskerAvatar = assignedTo.avatar || assignedTo.profilePicture || '';
+  } else if (typeof assignedTo === 'string') {
+    taskerId = assignedTo;
+  } else if (Array.isArray(task.offers)) {
+    const acceptedOffer = task.offers.find((o: any) => o.status === 'accepted');
+    if (acceptedOffer) {
+      const taskTaker: any = acceptedOffer.taskTaker || acceptedOffer.taskTakerId;
+      if (typeof taskTaker === 'object') {
+        taskerId = taskTaker?._id;
+        taskerName = formatUserName(taskTaker?.firstName, taskTaker?.lastName);
+        taskerAvatar = taskTaker?.avatar || taskTaker?.profilePicture || '';
+      } else if (typeof taskTaker === 'string') {
+        taskerId = taskTaker;
+      }
+    }
   }
 
-  const posterRaw =
-    task.createdBy?._id ||
-    task.createdBy ||
-    task.posterId?._id ||
-    task.posterId ||
-    task.userId?._id ||
-    task.userId ||
-    null;
-
-  const taskerRaw =
-    task.assignedTo?._id ||
-    task.assignedTo ||
-    task.taskerId?._id ||
-    task.taskerId ||
-    task.acceptedOffer?.taskTakerId?._id ||
-    task.acceptedOffer?.taskTakerId ||
-    task.acceptedOffer?.userId?._id ||
-    task.acceptedOffer?.userId ||
-    null;
-
-  const toId = (value: unknown): string | null => {
-    if (!value) return null;
-    if (typeof value === 'string') return value;
-    if (typeof value === 'object' && value !== null && '_id' in value) {
-      return String((value as { _id: unknown })._id);
-    }
-    return String(value);
-  };
-
   return {
-    posterId: toId(posterRaw),
-    taskerId: toId(taskerRaw),
+    posterId,
+    taskerId,
+    posterName,
+    taskerName,
+    posterAvatar,
+    taskerAvatar,
+    taskTitle: task.title,
   };
+}
+
+function asString(value: unknown): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  const text = String(value).trim();
+  return text.length > 0 ? text : undefined;
 }

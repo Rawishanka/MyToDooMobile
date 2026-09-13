@@ -18,6 +18,8 @@ interface UserProfile {
   lastActive: string;
   completedTasks: number;
   activeOffers: number;
+  completionRate?: number;
+  completion_rate?: number;
   location?: {
     city: string;
     state: string;

@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CompletionMilestone } from '../hooks/useCompletionStatus';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface MilestonesCardProps {
   milestones: CompletionMilestone[];
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   title: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
     marginBottom: 16,
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   progressText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginBottom: 8,
   },
@@ -130,18 +131,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   milestoneTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     marginBottom: 4,
   },
   description: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     lineHeight: 18,
     marginBottom: 4,
   },
   date: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
 });

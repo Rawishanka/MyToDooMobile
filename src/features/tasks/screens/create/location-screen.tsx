@@ -17,6 +17,7 @@ import {
     MovingToggle,
     RemovalLocationInputs,
 } from './components';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface LocationData {
     address: string;
@@ -281,13 +282,13 @@ const styles = StyleSheet.create({
         overflow: 'visible', // Allow dropdown to escape bounds
     },
     title: {
-        fontSize: 22,
+        fontSize: RFValue(22),
         fontWeight: '700',
         color: '#1C1C1E',
         marginBottom: 5,
     },
     subtitle: {
-        fontSize: 14,
+        fontSize: RFValue(14),
         color: '#666',
         marginBottom: 20,
     },
@@ -301,7 +302,7 @@ const styles = StyleSheet.create({
     },
     continueText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: RFValue(16),
         fontWeight: '600',
     },
 });

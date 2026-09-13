@@ -1,0 +1,39 @@
+UAT Phase 1 QA → https://api.mytodoo.com/api
+
+PASS  GET /categories — 200
+PASS  GET /tasks — 200
+PASS  GET /tasks geo 100km — 200 count=3
+PASS  GET /tasks/filter — 200
+PASS  Poster login — 200 + token
+PASS  Tasker login — 200 + token
+PASS  GET profile badges — {"mobile":false,"email":false,"abn":true,"stripe":true}
+PASS  GET profile searchPrefs — {"radiusKm":100,"lat":-38.1446,"lng":145.1228,"suburb":"Frankston"}
+PASS  GET search-prefs — {"radiusKm":100,"lat":-38.1446,"lng":145.1228,"suburb":"Frankston"}
+PASS  PUT search-prefs 100km — profile location not written
+PASS  searchPrefs did not require profile location rewrite — suburb=Sydney
+PASS  PUT profile blocks new phone — 400 PHONE_OTP_REQUIRED
+PASS  PUT profile blocks DOB — 400 Date of birth can only be changed by MyToDoo support
+PASS  PUT profile safe fields — bio only
+PASS  POST phone request-otp — Twilio accepted (no AU handset needed for this step)
+PASS  POST email request-otp — OTP emailed to unused address
+PASS  GET /receipts poster — count=0 (email-on-complete uses same PDF generator)
+PASS  GET my-tasks poster — budget=587.78 originalBudget=n/a
+PASS  GET tasker ABN — verified=true method=manual
+PASS  PUT invalid ABN rejected — ABN_INVALID
+PASS  Tasker badges DTO — {"mobile":true,"email":true,"abn":true,"stripe":true}
+
+--- Phase 2 ---
+
+PASS  GET /credits/balance — balance=0
+PASS  GET /credits/settings — min=100 referralAmt=10
+PASS  POST /credits/preview-fee-spend — allowed=false max=0
+PASS  GET /referrals/me — code=56607873
+PASS  Profile credits+referralCode — bal=0 code=56607873
+PASS  GET /service-listings/search — count=0
+PASS  POST /service-listings — 6aa1204094fa6ac77f4b3354
+PASS  GET /service-listings/mine — count=1
+PASS  POST /service-listings/:id/book — task=6aa1204194fa6ac77f4b335f offer=6aa1204194fa6ac77f4b3361
+PASS  DELETE /service-listings/:id — soft-delete attempted
+PASS  Live API untouched/healthy — 200 — this QA did not restart Live
+
+32/32 passed

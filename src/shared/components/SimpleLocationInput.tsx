@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface LocationData {
   address: string;
@@ -95,14 +96,14 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
   },
   submitButton: {
     padding: 4,
   },
   helperText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginTop: 4,
     marginLeft: 12,

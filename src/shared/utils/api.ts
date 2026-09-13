@@ -198,76 +198,19 @@ export function createApi(baseURL: string) {
                                       requestUrl.includes('/users/firebase-auth') || // Firebase Google Sign-In
                                       requestUrl.includes('/users/firebase-token'); // Firebase custom token
                 
-                // Attempt automatic token refresh if token is expired and not already retried
-                if (isTokenExpired && !originalRequest._retry && !isAuthEndpoint && !isNonCriticalEndpoint) {
+                // Remember Me: renew on any 401 (not only jwt-expired wording) and retry once
+                if (!originalRequest._retry && !isAuthEndpoint && !isNonCriticalEndpoint) {
                     originalRequest._retry = true;
-                    
-                    console.log("🔄 Token expired - attempting automatic re-authentication");
-                    
                     try {
-                        // Try to get stored credentials
-                        const storedEmail = await AsyncStorage.getItem('userEmail');
-                        const storedPassword = await AsyncStorage.getItem('userPassword');
-                        
-                        if (storedEmail && storedPassword) {
-                            console.log("🔐 Found stored credentials, re-authenticating...");
-                            
-                            // Create a new axios instance to avoid interceptor loops
-                            const loginResponse = await axios.post(
-                                `${baseURL}/auth/login`,
-                                { email: storedEmail, password: storedPassword },
-                                {
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Accept': 'application/json',
-                                    },
-                                    timeout: 30000,
-                                }
-                            );
-                            
-                            const { token, user, expiresIn } = loginResponse.data;
-                            
-                            if (token && user) {
-                                console.log("✅ Re-authentication successful, updating token");
-                                
-                                // Update token in store and AsyncStorage
-                                const { setAuthData } = useAuthStore.getState();
-                                await setAuthData(token, user, expiresIn);
-                                await AsyncStorage.setItem('token', token);
-                                
-                                // Update the original request with new token
-                                originalRequest.headers.Authorization = `Bearer ${token}`;
-                                
-                                console.log("🔄 Retrying original request with new token");
-                                
-                                // Retry the original request
-                                return axiosInstance(originalRequest);
-                            }
-                        } else {
-                            console.log("⚠️ No stored credentials found for automatic re-authentication");
-                            // Clear auth and redirect to login
-                            const { clearAuth } = useAuthStore.getState();
-                            await clearAuth();
-                            
-                            // Import router dynamically to avoid circular dependencies
-                            const { router } = require('expo-router');
-                            if (router) {
-                                console.log("🔄 Redirecting to login screen...");
-                                router.replace('/(auth)/login');
-                            }
+                        const { tryRememberMeRenew } = require('./auth-utils');
+                        const renewed = await tryRememberMeRenew();
+                        const nextToken = useAuthStore.getState().token;
+                        if (renewed && nextToken) {
+                            originalRequest.headers.Authorization = `Bearer ${nextToken}`;
+                            return axiosInstance(originalRequest);
                         }
                     } catch (refreshError: any) {
                         console.error("❌ Automatic re-authentication failed:", refreshError?.message);
-                        // Clear auth on refresh failure
-                        const { clearAuth } = useAuthStore.getState();
-                        await clearAuth();
-                        
-                        // Redirect to login screen
-                        const { router } = require('expo-router');
-                        if (router) {
-                            console.log("🔄 Token refresh failed, redirecting to login screen...");
-                            router.replace('/(auth)/login');
-                        }
                     }
                 }
                 

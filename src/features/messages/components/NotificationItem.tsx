@@ -3,6 +3,7 @@
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { NotificationItem as NotificationItemType } from './message-types';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface NotificationItemProps {
   item: NotificationItemType;
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   notificationText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#000',
     lineHeight: 20,
     marginBottom: 4,
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   timeText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#8e8e93',
     marginTop: 2,
   },

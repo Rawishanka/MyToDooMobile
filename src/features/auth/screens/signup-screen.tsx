@@ -1,12 +1,12 @@
 // Refactored Signup Screen - Main Orchestrator
 
+import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import {
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -17,6 +17,8 @@ import {
 import { OTPModal } from '../components/OTPModal';
 import { SignupForm } from '../components/SignupForm';
 import { useSignup } from '../components/useSignup';
+import { FORM_MAX_WIDTH, RFValue, isTablet } from '@/src/shared/utils/responsive';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -25,6 +27,7 @@ WebBrowser.warmUpAsync();
 
 export default function SignUpScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const signup = useSignup();
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
@@ -53,11 +56,16 @@ export default function SignUpScreen() {
             onPress={() => router.replace('/')}
             hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
           >
-            <Ionicons name="close" size={28} color="#333" />
+            <Ionicons name="close" size={28} color="#fff" />
           </TouchableOpacity>
         )}
         
         <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            <View style={styles.logoBackground}>
+              <MyToDooLogo width={50} height={50} />
+            </View>
+          </View>
           <Text style={styles.title}>Create Account</Text>
           <Text style={styles.subtitle}>Sign up to get started</Text>
         </View>
@@ -70,7 +78,11 @@ export default function SignUpScreen() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <ScrollView 
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: Math.max(insets.bottom, 32) },
+            isTablet && styles.scrollContentTablet,
+          ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -111,6 +123,12 @@ export default function SignUpScreen() {
             handleAppleSignIn={signup.handleAppleSignIn}
             appleLoading={signup.appleLoading}
             appleAuthAvailable={signup.appleAuthAvailable}
+            notifyNewTask={signup.notifyNewTask}
+            notifySkillMatch={signup.notifySkillMatch}
+            setNotifyNewTask={signup.setNotifyNewTask}
+            setNotifySkillMatch={signup.setNotifySkillMatch}
+            abnInput={signup.abnInput}
+            setAbnInput={signup.setAbnInput}
           />
 
           <View style={styles.footer}>
@@ -159,14 +177,14 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#1A2980',
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#1A2980',
   },
   bottomSafeArea: {
-    backgroundColor: '#fff',
+    backgroundColor: '#1A2980',
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -174,12 +192,10 @@ const styles = StyleSheet.create({
     height: Platform.OS === 'android' ? 48 : 0, // Cover Android navigation bar area
   },
   fixedHeader: {
-    backgroundColor: '#fff',
+    backgroundColor: '#1A2980',
     paddingHorizontal: 24,
     paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : 8,
     paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   closeIcon: {
     position: 'absolute',
@@ -195,24 +211,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 8,
   },
+  logoContainer: {
+    marginBottom: 12,
+  },
+  logoBackground: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 16,
+    padding: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   innerContainer: {
     flex: 1,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: 'hidden',
   },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
     paddingTop: 24,
-    paddingBottom: 60, // Increased for better bottom spacing
+    paddingBottom: 60,
+  },
+  scrollContentTablet: {
+    maxWidth: FORM_MAX_WIDTH,
+    alignSelf: 'center',
+    width: '100%',
   },
   title: {
-    fontSize: 28,
+    fontSize: RFValue(28),
     fontWeight: 'bold',
     marginBottom: 8,
-    color: '#333',
+    color: '#fff',
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: RFValue(16),
+    color: 'rgba(255,255,255,0.8)',
   },
   footer: {
     flexDirection: 'row',
@@ -223,12 +258,12 @@ const styles = StyleSheet.create({
   },
   footerText: {
     color: '#666',
-    fontSize: 14,
+    fontSize: RFValue(14),
   },
   registerText: {
-    color: '#0057FF',
+    color: '#FF7A00',
     fontWeight: '600',
-    fontSize: 14,
+    fontSize: RFValue(14),
   },
   disabledText: {
     color: '#999',

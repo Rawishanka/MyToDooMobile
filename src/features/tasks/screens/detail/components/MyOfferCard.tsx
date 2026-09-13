@@ -203,13 +203,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   messageLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginBottom: 6,
     fontWeight: '600',
   },
   message: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     lineHeight: 20,
   },
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   infoText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginLeft: 6,
     flex: 1,
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   },
   acceptOfferButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '700',
   },
 });

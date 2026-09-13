@@ -25,6 +25,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useConnectivity } from '@/src/services/offline/ConnectivityProvider';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -364,13 +365,13 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '700',
     letterSpacing: 0.2,
   },
   bannerSubtitle: {
     color: 'rgba(255,255,255,0.85)',
-    fontSize: 11.5,
+    fontSize: RFValue(12),
     fontWeight: '500',
     marginTop: 1,
   },

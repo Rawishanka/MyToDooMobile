@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PaymentMethod } from '../hooks/usePaymentForm';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PaymentMethodSelectorProps {
   paymentMethods: PaymentMethod[];
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#000',
     marginBottom: 20,
@@ -69,13 +70,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   methodLabel: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
     marginBottom: 4,
   },
   methodDescription: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
 });

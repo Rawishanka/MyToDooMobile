@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ErrorState, LoadingState } from '../../components/shared';
 import EmptyQuestionsState from './components/EmptyQuestionsState';
 import QuestionCard from './components/QuestionCard';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface QuestionItem {
   _id: string;
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   errorContainer: {
@@ -237,14 +238,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   errorTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     textAlign: 'center',
     lineHeight: 22,
@@ -259,7 +260,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   backButton: {
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: '#007bff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   header: {
@@ -285,7 +286,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
@@ -305,13 +306,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#007bff',
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     textTransform: 'uppercase',
     fontWeight: '500',
@@ -323,14 +324,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     textAlign: 'center',
     lineHeight: 22,
@@ -344,7 +345,7 @@ const styles = StyleSheet.create({
   },
   askButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   questionCard: {
@@ -374,16 +375,16 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   userName: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#000',
   },
   questionDate: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
   questionText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#333',
     lineHeight: 22,
   },
@@ -401,16 +402,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   answeredBy: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#28a745',
   },
   answerDate: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
   answerText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#333',
     lineHeight: 20,
   },
@@ -421,7 +422,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   pendingText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#ffc107',
     fontStyle: 'italic',
   },
@@ -450,7 +451,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
@@ -459,7 +460,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     height: 120,
     textAlignVertical: 'top',
   },
@@ -469,7 +470,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   characterText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
   modalActions: {
@@ -486,7 +487,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: '#666',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   submitButton: {
@@ -498,7 +499,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

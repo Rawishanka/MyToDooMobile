@@ -327,9 +327,18 @@ export default function WelcomeScreen() {
         >
         {/* Blue Section with Input */}
         <View style={styles.blueSection}>
-          <Text style={styles.title}>Let&apos;s knock those tasks off your list! 🔥</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>Get it Done Now!</Text>
+            {/* Was 🔥 emoji (tofu on iOS Release) — use vector fire matching original brand look */}
+            <MaterialCommunityIcons
+              name="fire"
+              size={RFValue(isTablet ? 22 : 24)}
+              color="#FF6A00"
+              style={styles.titleFlame}
+            />
+          </View>
           <Text style={styles.subtitle}>
-            Tell us what you need help with—taskers are waiting!
+            Describe your job and get offers from MyToDoo
           </Text>
           
           <TextInput
@@ -370,8 +379,9 @@ export default function WelcomeScreen() {
               setPendingAccountNavigation({ screen: 'create-service' });
               router.push('/(tabs)/account' as any);
             }}
+            activeOpacity={0.85}
           >
-            <Ionicons name="construct-outline" size={18} color="#fff" />
+            <MaterialCommunityIcons name="briefcase-outline" size={18} color="#003399" />
             <Text style={styles.offerServiceText}>Offer a service</Text>
           </TouchableOpacity>
           
@@ -613,14 +623,24 @@ const styles = StyleSheet.create({
     paddingBottom: hp('2%'),
     width: '100%',
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    marginTop: 0,
+    marginBottom: hp('0.8%'),
+    paddingHorizontal: wp('2%'),
+    gap: 6,
+  },
   title: {
     fontSize: RFValue(isTablet ? 20 : 22),
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
-    marginTop: 0,
-    marginBottom: hp('0.8%'),
-    paddingHorizontal: wp('2%'),
+  },
+  titleFlame: {
+    marginTop: 2,
   },
   subtitle: {
     fontSize: RFValue(isTablet ? 13 : 14),
@@ -675,8 +695,8 @@ const styles = StyleSheet.create({
     marginHorizontal: wp('2%'),
   },
   offerServiceButton: {
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.55)',
+    backgroundColor: '#ffffff',
+    borderWidth: 0,
     borderRadius: 8,
     paddingVertical: hp('1.3%'),
     flexDirection: 'row',
@@ -684,9 +704,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     marginBottom: hp('1%'),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.12,
+    shadowRadius: 2,
+    elevation: 2,
   },
   offerServiceText: {
-    color: '#fff',
+    color: '#003399',
     fontSize: RFValue(13),
     fontWeight: '600',
   },
@@ -780,7 +805,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   imageSkeleton: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: '#e8e8e8',
     zIndex: 1,
   },

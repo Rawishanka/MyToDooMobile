@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TaskCounts {
   created: number;
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   title: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: '#000',
     marginBottom: 12,
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#007bff',
   },
   tabText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '500',
     color: '#666',
   },

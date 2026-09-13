@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TaskSummaryProps {
   title: string;
@@ -27,13 +28,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   title: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
     marginBottom: 8,
   },
   location: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
 });

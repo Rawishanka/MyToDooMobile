@@ -55,3 +55,4 @@ builds/
 .env.uat
 .env.backup*
 .env.current.backup
+.env*

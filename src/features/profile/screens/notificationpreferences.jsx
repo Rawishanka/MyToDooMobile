@@ -1,434 +1,118 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Platform } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useUpdateUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 
-export default function NotificationPreferences({ onBack }) {
-  // Hidden - no backend endpoints available
-  return null;
-  const [currentScreen, setCurrentScreen] = useState('main');
-  
-  // State for notification settings
-  const [transactionalSettings, setTransactionalSettings] = useState({
-    email: true,
-    sms: true,
-    push: true,
-  });
-  
-  const [taskUpdatesSettings, setTaskUpdatesSettings] = useState({
-    email: true,
-    sms: true,
-    push: true,
-  });
-  
-  const [taskRemindersSettings, setTaskRemindersSettings] = useState({
-    email: true,
-    sms: true,
-    push: true,
-  });
-  
-  const [keywordAlertsSettings, setKeywordAlertsSettings] = useState({
-    push: true,
-  });
-  
-  const [recommendedAlertsSettings, setRecommendedAlertsSettings] = useState({
-    push: true,
-  });
-  
-  const [helpfulInfoSettings, setHelpfulInfoSettings] = useState({
-    email: true,
-    sms: true,
-    push: true,
-  });
-  
-  const [updatesNewslettersSettings, setUpdatesNewslettersSettings] = useState({
-    email: true,
-    sms: true,
-    push: true,
-  });
+export default function NotificationPreferences({ onBack, userData }) {
+  const insets = useSafeAreaInsets();
+  const updateProfile = useUpdateUserProfile();
 
-  const navigateToDetail = (screenName) => {
-    setCurrentScreen(screenName);
+  const [notifyNewTask, setNotifyNewTask] = useState(
+    userData?.notifyNewTask ?? false
+  );
+  const [notifySkillMatch, setNotifySkillMatch] = useState(
+    userData?.notifySkillMatch ?? false
+  );
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      await updateProfile.mutateAsync({
+        notifyNewTask,
+        notifySkillMatch,
+      });
+      Alert.alert('Saved', 'Tasker preferences updated successfully.');
+      onBack();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save preferences. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const navigateBack = () => {
-    setCurrentScreen('main');
-  };
-
-  // Detail screens for each notification type
-  const renderTransactionalScreen = () => (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={navigateBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
-          <Text style={styles.saveText}>Save</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Transactional</Text>
-      </View>
-      
-      <View style={styles.content}>
-        <Text style={styles.description}>
-          You will always receive important notifications about any payments, cancellations and your account.
-        </Text>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Email</Text>
-          <Switch
-            value={transactionalSettings.email}
-            onValueChange={(value) => setTransactionalSettings({...transactionalSettings, email: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>SMS</Text>
-          <Switch
-            value={transactionalSettings.sms}
-            onValueChange={(value) => setTransactionalSettings({...transactionalSettings, sms: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Push</Text>
-          <Switch
-            value={transactionalSettings.push}
-            onValueChange={(value) => setTransactionalSettings({...transactionalSettings, push: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderTaskUpdatesScreen = () => (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={navigateBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
-          <Text style={styles.saveText}>Save</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Task updates</Text>
-      </View>
-      
-      <View style={styles.content}>
-        <Text style={styles.description}>
-          Receive updates on any new comments, private messages, offers and reviews.
-        </Text>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Email</Text>
-          <Switch
-            value={taskUpdatesSettings.email}
-            onValueChange={(value) => setTaskUpdatesSettings({...taskUpdatesSettings, email: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>SMS</Text>
-          <Switch
-            value={taskUpdatesSettings.sms}
-            onValueChange={(value) => setTaskUpdatesSettings({...taskUpdatesSettings, sms: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Push</Text>
-          <Switch
-            value={taskUpdatesSettings.push}
-            onValueChange={(value) => setTaskUpdatesSettings({...taskUpdatesSettings, push: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderTaskRemindersScreen = () => (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={navigateBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
-          <Text style={styles.saveText}>Save</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Task reminders</Text>
-      </View>
-      
-      <View style={styles.content}>
-        <Text style={styles.description}>
-          Friendly reminders if you've forgotten to accept an offer, release a payment or leave a review.
-        </Text>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Email</Text>
-          <Switch
-            value={taskRemindersSettings.email}
-            onValueChange={(value) => setTaskRemindersSettings({...taskRemindersSettings, email: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>SMS</Text>
-          <Switch
-            value={taskRemindersSettings.sms}
-            onValueChange={(value) => setTaskRemindersSettings({...taskRemindersSettings, sms: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Push</Text>
-          <Switch
-            value={taskRemindersSettings.push}
-            onValueChange={(value) => setTaskRemindersSettings({...taskRemindersSettings, push: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderKeywordAlertsScreen = () => (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={navigateBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
-          <Text style={styles.saveText}>Save</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Keyword task alerts</Text>
-      </View>
-      
-      <View style={styles.content}>
-        <Text style={styles.description}>
-          Once you've set up your keyword task alerts, you'll be instantly notified when a task is posted that matches your preferences.
-        </Text>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Push</Text>
-          <Switch
-            value={keywordAlertsSettings.push}
-            onValueChange={(value) => setKeywordAlertsSettings({...keywordAlertsSettings, push: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderRecommendedAlertsScreen = () => (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={navigateBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
-          <Text style={styles.saveText}>Save</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Recommended task alerts</Text>
-      </View>
-      
-      <View style={styles.content}>
-        <Text style={styles.description}>
-          Get notified about tasks that match your skills and location. We'll recommend tasks based on your profile and previous activity.
-        </Text>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Push</Text>
-          <Switch
-            value={recommendedAlertsSettings.push}
-            onValueChange={(value) => setRecommendedAlertsSettings({...recommendedAlertsSettings, push: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderHelpfulInfoScreen = () => (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={navigateBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
-          <Text style={styles.saveText}>Save</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Helpful information</Text>
-      </View>
-      
-      <View style={styles.content}>
-        <Text style={styles.description}>
-          Tips, guides and helpful information to get the most out of Airtasker and improve your success rate.
-        </Text>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Email</Text>
-          <Switch
-            value={helpfulInfoSettings.email}
-            onValueChange={(value) => setHelpfulInfoSettings({...helpfulInfoSettings, email: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>SMS</Text>
-          <Switch
-            value={helpfulInfoSettings.sms}
-            onValueChange={(value) => setHelpfulInfoSettings({...helpfulInfoSettings, sms: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Push</Text>
-          <Switch
-            value={helpfulInfoSettings.push}
-            onValueChange={(value) => setHelpfulInfoSettings({...helpfulInfoSettings, push: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  const renderUpdatesNewslettersScreen = () => (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={navigateBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
-          <Text style={styles.saveText}>Save</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Updates & newsletters</Text>
-      </View>
-      
-      <View style={styles.content}>
-        <Text style={styles.description}>
-          Be the first to hear about new features and exciting updates on Airtasker.
-        </Text>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Email</Text>
-          <Switch
-            value={updatesNewslettersSettings.email}
-            onValueChange={(value) => setUpdatesNewslettersSettings({...updatesNewslettersSettings, email: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>SMS</Text>
-          <Switch
-            value={updatesNewslettersSettings.sms}
-            onValueChange={(value) => setUpdatesNewslettersSettings({...updatesNewslettersSettings, sms: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-        
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Push</Text>
-          <Switch
-            value={updatesNewslettersSettings.push}
-            onValueChange={(value) => setUpdatesNewslettersSettings({...updatesNewslettersSettings, push: value})}
-            trackColor={{ false: '#ccc', true: '#0052A2' }}
-          />
-        </View>
-      </View>
-    </ScrollView>
-  );
-
-  // Switch between screens
-  switch (currentScreen) {
-    case 'transactional':
-      return renderTransactionalScreen();
-    case 'task-updates':
-      return renderTaskUpdatesScreen();
-    case 'task-reminders':
-      return renderTaskRemindersScreen();
-    case 'keyword-alerts':
-      return renderKeywordAlertsScreen();
-    case 'recommended-alerts':
-      return renderRecommendedAlertsScreen();
-    case 'helpful-info':
-      return renderHelpfulInfoScreen();
-    case 'updates-newsletters':
-      return renderUpdatesNewslettersScreen();
-    default:
-      break;
-  }
-
-  // Main notification settings screen
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 16 }]}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <Ionicons name="chevron-back" size={24} color="#0052A2" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notification settings</Text>
+        <Text style={styles.headerTitle}>Tasker Preferences</Text>
+        <TouchableOpacity onPress={handleSave} disabled={saving} style={styles.saveBtn}>
+          {saving ? (
+            <ActivityIndicator size="small" color="#0052A2" />
+          ) : (
+            <Text style={styles.saveText}>Save</Text>
+          )}
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
-        <Text style={styles.sectionTitle}>TRANSACTIONAL</Text>
-        <NotificationMenuItem 
-          text="Transactional"
-          subtext="Email, SMS, Push"
-          onPress={() => navigateToDetail('transactional')}
-        />
-
-        <Text style={styles.sectionTitle}>REMINDERS & UPDATES</Text>
-        <NotificationMenuItem 
-          text="Task updates"
-          subtext="Email, SMS, Push"
-          onPress={() => navigateToDetail('task-updates')}
-        />
-        <NotificationMenuItem 
-          text="Task reminders"
-          subtext="Email, SMS, Push"
-          onPress={() => navigateToDetail('task-reminders')}
-        />
-
-        <Text style={styles.sectionTitle}>TASK ALERTS</Text>
-        <NotificationMenuItem 
-          text="Keyword task alerts"
-          subtext="Push"
-          onPress={() => navigateToDetail('keyword-alerts')}
-        />
-        <NotificationMenuItem 
-          text="Recommended task alerts"
-          subtext="Push"
-          onPress={() => navigateToDetail('recommended-alerts')}
-        />
-
-        <Text style={styles.sectionTitle}>OTHER NOTIFICATIONS</Text>
-        <NotificationMenuItem 
-          text="Helpful information"
-          subtext="Email, SMS, Push"
-          onPress={() => navigateToDetail('helpful-info')}
-        />
-        <NotificationMenuItem 
-          text="Updates & newsletters"
-          subtext="Email, SMS, Push"
-          onPress={() => navigateToDetail('updates-newsletters')}
-        />
+      {/* Info Banner */}
+      <View style={styles.infoBanner}>
+        <Ionicons name="information-circle-outline" size={18} color="#0052A2" />
+        <Text style={styles.infoText}>
+          Control how you get notified about new tasks on the platform.
+        </Text>
       </View>
+
+      {/* Tasker Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>TASK NOTIFICATIONS</Text>
+
+        {/* Register as Tasker toggle */}
+        <View style={styles.row}>
+          <View style={styles.rowContent}>
+            <Text style={styles.rowLabel}>Register as a Tasker</Text>
+            <Text style={styles.rowDesc}>Get notified when new tasks are posted on the platform.</Text>
+          </View>
+          <Switch
+            value={notifyNewTask}
+            onValueChange={(val) => {
+              setNotifyNewTask(val);
+              if (!val) setNotifySkillMatch(false);
+            }}
+            trackColor={{ false: '#ccc', true: '#0052A2' }}
+            thumbColor="#fff"
+          />
+        </View>
+
+        {/* Skillset only toggle */}
+        <View style={[styles.row, !notifyNewTask && styles.rowDisabled]}>
+          <View style={styles.rowContent}>
+            <Text style={[styles.rowLabel, !notifyNewTask && styles.labelDisabled]}>
+              Only notify tasks in my skillset
+            </Text>
+            <Text style={[styles.rowDesc, !notifyNewTask && styles.labelDisabled]}>
+              Filter notifications to tasks that match your skills only.
+            </Text>
+          </View>
+          <Switch
+            value={notifySkillMatch && notifyNewTask}
+            onValueChange={(val) => { if (notifyNewTask) setNotifySkillMatch(val); }}
+            disabled={!notifyNewTask}
+            trackColor={{ false: '#ccc', true: '#0052A2' }}
+            thumbColor="#fff"
+          />
+        </View>
+      </View>
+
+      {/* Save Button */}
+      <TouchableOpacity
+        style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+        onPress={handleSave}
+        disabled={saving}
+      >
+        {saving ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.saveButtonText}>Save Preferences</Text>
+        )}
+      </TouchableOpacity>
     </ScrollView>
   );
 }
-
-/**
- * @typedef {Object} NotificationMenuItemProps
- * @property {string} text
- * @property {string} [subtext]
- * @property {function} [onPress]
- */ 
-
-const NotificationMenuItem = ({ text, subtext, onPress }) => (
-  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
-    <View style={{ flex: 1 }}>
-      <Text style={styles.menuText}>{text}</Text>
-      {subtext && <Text style={styles.subtext}>{subtext}</Text>}
-    </View>
-    <Ionicons name="chevron-forward" size={18} color="#888" />
-  </TouchableOpacity>
-);
 
 const styles = StyleSheet.create({
   container: {
@@ -440,76 +124,105 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingTop: Platform.OS === 'ios' ? 60 : 12,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    justifyContent: 'space-between',
   },
   backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  saveText: {
-    fontSize: 16,
-    color: '#0052A2',
-    marginLeft: 4,
+    padding: 4,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
     color: '#003366',
     flex: 1,
     textAlign: 'center',
-    marginRight: 60, // To center the title accounting for back button
   },
-  content: {
+  saveBtn: {
+    minWidth: 44,
+    alignItems: 'flex-end',
+  },
+  saveText: {
+    fontSize: 16,
+    color: '#0052A2',
+    fontWeight: '600',
+  },
+  infoBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#EEF4FF',
+    margin: 16,
+    padding: 12,
+    borderRadius: 10,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#D0E4FF',
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#0052A2',
+    lineHeight: 18,
+  },
+  section: {
     backgroundColor: '#fff',
-    marginTop: 10,
-    paddingHorizontal: 16,
-    paddingBottom: 20,
+    marginHorizontal: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 12,
     color: '#999',
-    marginTop: 25,
-    marginBottom: 10,
-    fontWeight: '500',
+    fontWeight: '600',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    letterSpacing: 0.5,
   },
-  menuItem: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 16,
     paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    gap: 12,
   },
-  menuText: {
+  rowDisabled: {
+    opacity: 0.45,
+  },
+  rowContent: {
+    flex: 1,
+  },
+  rowLabel: {
     fontSize: 15,
-    fontWeight: '500',
-    color: '#003366',
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 2,
   },
-  subtext: {
-    fontSize: 13,
+  rowDesc: {
+    fontSize: 12,
     color: '#666',
-    marginTop: 2,
+    lineHeight: 17,
   },
-  description: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-    marginTop: 16,
-    marginBottom: 24,
+  labelDisabled: {
+    color: '#aaa',
   },
-  settingItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  saveButton: {
+    backgroundColor: '#0052A2',
+    marginHorizontal: 16,
+    borderRadius: 12,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    alignItems: 'center',
   },
-  settingLabel: {
+  saveButtonDisabled: {
+    opacity: 0.6,
+  },
+  saveButtonText: {
+    color: '#fff',
     fontSize: 16,
-    color: '#003366',
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });

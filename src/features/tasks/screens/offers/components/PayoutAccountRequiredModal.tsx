@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PayoutAccountRequiredModalProps {
   visible: boolean;
@@ -62,16 +63,16 @@ export default function PayoutAccountRequiredModal({
               <View style={styles.stepNumber}>
                 <Text style={styles.stepNumberText}>1</Text>
               </View>
-              <Text style={styles.stepText}>Go to Profile → Payment Options</Text>
+              <Text style={styles.stepText}>Verify your ABN in Payment Options</Text>
             </View>
-            
+
             <View style={styles.stepRow}>
               <View style={styles.stepNumber}>
                 <Text style={styles.stepNumberText}>2</Text>
               </View>
               <Text style={styles.stepText}>Tap "Setup Payout Account"</Text>
             </View>
-            
+
             <View style={styles.stepRow}>
               <View style={styles.stepNumber}>
                 <Text style={styles.stepNumberText}>3</Text>
@@ -136,14 +137,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '700',
     color: '#1a1a1a',
     textAlign: 'center',
     marginBottom: 12,
   },
   description: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#666',
     textAlign: 'center',
     lineHeight: 22,
@@ -173,12 +174,12 @@ const styles = StyleSheet.create({
   },
   stepNumberText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '700',
   },
   stepText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     fontWeight: '500',
   },
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   secondaryButton: {
@@ -214,7 +215,7 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: '#666',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     textAlign: 'center',
   },

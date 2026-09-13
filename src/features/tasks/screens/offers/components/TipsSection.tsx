@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export const TipsSection: React.FC = () => {
   return (
@@ -21,13 +22,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   tipsTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#1976d2',
     marginBottom: 8,
   },
   tip: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#1976d2',
     marginBottom: 4,
   },

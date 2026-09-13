@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { PaymentItem } from '../hooks/usePaymentStatus';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PaymentSummaryProps {
   payments: PaymentItem[];
@@ -67,12 +68,12 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   label: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginBottom: 8,
   },
   amount: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#28a745',
   },

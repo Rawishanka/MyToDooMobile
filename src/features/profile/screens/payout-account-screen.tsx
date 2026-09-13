@@ -1,3 +1,5 @@
+import { getAbnStatus, isAbnRequiredError, type TaskerAbnStatus } from '@/src/api/abn-api';
+import TaskerAbnSection from '@/src/features/profile/components/TaskerAbnSection';
 import {
     useCreateStripeAccount,
     useDeleteStripeAccount,
@@ -5,7 +7,7 @@ import {
     useGetStripeAccountStatus,
 } from '@/src/shared/hooks/useStripeConnectApi';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -16,10 +18,32 @@ import {
     View
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 const PayoutAccountScreen = ({ navigation }: any) => {
   const [showWebView, setShowWebView] = useState(false);
   const [onboardingUrl, setOnboardingUrl] = useState<string | null>(null);
+  const [abnStatus, setAbnStatus] = useState<TaskerAbnStatus | null>(null);
+  const [loadingAbn, setLoadingAbn] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const status = await getAbnStatus();
+        if (mounted) setAbnStatus(status);
+      } catch (err) {
+        console.warn('Failed to load ABN status for payout screen:', err);
+      } finally {
+        if (mounted) setLoadingAbn(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const abnVerified = !!abnStatus?.abnVerified;
 
   // API Hooks
   const { data: accountStatus, isLoading, error, refetch } = useGetStripeAccountStatus();
@@ -37,6 +61,10 @@ const PayoutAccountScreen = ({ navigation }: any) => {
 
   // Handle create account
   const handleCreateAccount = async () => {
+    if (!abnVerified) {
+      Alert.alert('ABN Required', 'Please verify your ABN first.');
+      return;
+    }
     try {
       // Step 1: Create Stripe Connect account
       console.log('🔑 Creating Stripe Connect account...');
@@ -70,6 +98,12 @@ const PayoutAccountScreen = ({ navigation }: any) => {
           'Your session has expired. Please log in again.',
           [{ text: 'OK' }]
         );
+      } else if (isAbnRequiredError(err)) {
+        Alert.alert(
+          'ABN Required',
+          err?.message || 'An Australian Business Number (ABN) is required before setting up payouts.',
+          [{ text: 'OK' }]
+        );
       } else if (err?.status === 500) {
         Alert.alert(
           'Server Error',
@@ -88,6 +122,10 @@ const PayoutAccountScreen = ({ navigation }: any) => {
 
   // Handle refresh onboarding link
   const handleRefreshOnboarding = async () => {
+    if (!abnVerified) {
+      Alert.alert('ABN Required', 'Please verify your ABN first.');
+      return;
+    }
     try {
       console.log('🔄 Refreshing onboarding link...');
       const url = await getAccountLink.mutateAsync({ returnUrl, refreshUrl });
@@ -111,6 +149,12 @@ const PayoutAccountScreen = ({ navigation }: any) => {
         Alert.alert(
           'Authentication Error',
           'Your session has expired. Please log in again.',
+          [{ text: 'OK' }]
+        );
+      } else if (isAbnRequiredError(err)) {
+        Alert.alert(
+          'ABN Required',
+          err?.message || 'An Australian Business Number (ABN) is required before setting up payouts.',
           [{ text: 'OK' }]
         );
       } else if (err?.status === 500) {
@@ -271,6 +315,19 @@ const PayoutAccountScreen = ({ navigation }: any) => {
       </View>
 
       <View style={styles.content}>
+        <TaskerAbnSection
+          onVerified={(status) => setAbnStatus(status)}
+        />
+
+        {!loadingAbn && !abnVerified && (
+          <View style={styles.abnGateCard}>
+            <Ionicons name="information-circle-outline" size={20} color="#b45309" />
+            <Text style={styles.abnGateText}>
+              Verify your ABN above before setting up payouts.
+            </Text>
+          </View>
+        )}
+
         {/* No Account */}
         {accountNotFound && (
           <View style={styles.emptyState}>
@@ -283,9 +340,9 @@ const PayoutAccountScreen = ({ navigation }: any) => {
               You'll need your Australian bank details (BSB and Account Number).
             </Text>
             <TouchableOpacity
-              style={styles.primaryButton}
+              style={[styles.primaryButton, !abnVerified && styles.primaryButtonDisabled]}
               onPress={handleCreateAccount}
-              disabled={createAccount.isPending || getAccountLink.isPending}
+              disabled={!abnVerified || createAccount.isPending || getAccountLink.isPending}
             >
               {createAccount.isPending || getAccountLink.isPending ? (
                 <ActivityIndicator color="#fff" />
@@ -373,9 +430,9 @@ const PayoutAccountScreen = ({ navigation }: any) => {
               {/* Continue Onboarding */}
               {!accountStatus.detailsSubmitted && (
                 <TouchableOpacity
-                  style={styles.primaryButton}
+                  style={[styles.primaryButton, !abnVerified && styles.primaryButtonDisabled]}
                   onPress={handleRefreshOnboarding}
-                  disabled={getAccountLink.isPending}
+                  disabled={!abnVerified || getAccountLink.isPending}
                 >
                   {getAccountLink.isPending ? (
                     <ActivityIndicator color="#fff" />
@@ -447,7 +504,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     marginLeft: 12,
     color: '#000',
@@ -463,7 +520,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   emptyState: {
@@ -473,20 +530,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   emptyTitle: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: '600',
     marginTop: 24,
     color: '#000',
   },
   emptyDescription: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     textAlign: 'center',
     marginTop: 8,
     lineHeight: 20,
   },
   emptyInfo: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
     textAlign: 'center',
     marginTop: 16,
@@ -504,9 +561,30 @@ const styles = StyleSheet.create({
     minHeight: 48,
     gap: 8,
   },
+  primaryButtonDisabled: {
+    opacity: 0.5,
+  },
+  abnGateCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#f59e0b',
+    backgroundColor: '#fffbeb',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  abnGateText: {
+    flex: 1,
+    fontSize: RFValue(13),
+    color: '#92400e',
+    lineHeight: 18,
+  },
   primaryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   accountContainer: {
@@ -530,7 +608,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   statusLabel: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
   },
@@ -541,7 +619,7 @@ const styles = StyleSheet.create({
   },
   statusBadgeText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
   },
   detailRow: {
@@ -551,7 +629,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   detailText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
   },
   accountIdContainer: {
@@ -561,12 +639,12 @@ const styles = StyleSheet.create({
     borderTopColor: '#e0e0e0',
   },
   accountIdLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginBottom: 4,
   },
   accountIdText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
@@ -580,7 +658,7 @@ const styles = StyleSheet.create({
   },
   infoText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#92400e',
     lineHeight: 18,
   },
@@ -589,7 +667,7 @@ const styles = StyleSheet.create({
   },
   warningText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#991b1b',
     lineHeight: 18,
   },
@@ -611,7 +689,7 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: '#6200ee',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   dangerButton: {
@@ -629,7 +707,7 @@ const styles = StyleSheet.create({
   },
   dangerButtonText: {
     color: '#ef4444',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   payoutInfo: {
@@ -639,13 +717,13 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   payoutInfoTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#075985',
     marginBottom: 4,
   },
   payoutInfoText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#0c4a6e',
     lineHeight: 16,
   },

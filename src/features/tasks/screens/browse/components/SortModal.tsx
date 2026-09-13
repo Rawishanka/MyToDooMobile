@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface SortModalProps {
   visible: boolean;
@@ -15,6 +16,17 @@ interface SortModalProps {
   onSortChange: (index: number) => void;
   sortOptions: string[];
 }
+
+// Icon mapping for each sort option
+const SORT_ICONS: Record<string, string> = {
+  'Recommended':        'star-outline',
+  'Price: High to low': 'trending-down-outline',
+  'Price: Low to High': 'trending-up-outline',
+  'Due date: Earliest': 'calendar-outline',
+  'Due date: Latest':   'calendar-outline',
+  'Newest tasks':       'time-outline',
+  'Oldest tasks':       'hourglass-outline',
+};
 
 export default function SortModal({
   visible,
@@ -31,48 +43,68 @@ export default function SortModal({
       transparent
       onRequestClose={onClose}
     >
-      <TouchableOpacity 
-        style={styles.modalOverlay} 
-        activeOpacity={1} 
+      <TouchableOpacity
+        style={styles.overlay}
+        activeOpacity={1}
         onPress={onClose}
       >
-        <View style={styles.sortModal}>
-          <View style={styles.sortHeader}>
-            <Text style={styles.sortTitle}>Sort By</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color="#666" />
+        <View style={styles.sheet}>
+          {/* Handle bar */}
+          <View style={styles.handle} />
+
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <View style={styles.headerIconWrap}>
+                <Ionicons name="funnel-outline" size={18} color="#1A2980" />
+              </View>
+              <Text style={styles.headerTitle}>Sort By</Text>
+            </View>
+            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+              <Ionicons name="close" size={20} color="#6B7280" />
             </TouchableOpacity>
           </View>
-          <ScrollView 
-            style={styles.scrollView}
+
+          {/* Divider */}
+          <View style={styles.divider} />
+
+          {/* Options */}
+          <ScrollView
+            style={styles.scroll}
             contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={true}
+            showsVerticalScrollIndicator={false}
           >
-            {sortOptions.map((option, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.sortOption,
-                  selectedSort === index && styles.sortOptionSelected,
-                ]}
-                onPress={() => {
-                  onSortChange(index);
-                  onClose();
-                }}
-              >
-                <Text
-                  style={[
-                    styles.sortOptionText,
-                    selectedSort === index && styles.sortOptionTextSelected,
-                  ]}
+            {sortOptions.map((option, index) => {
+              const isActive = selectedSort === index;
+              const iconName = SORT_ICONS[option] || 'list-outline';
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.option, isActive && styles.optionActive]}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    onSortChange(index);
+                    onClose();
+                  }}
                 >
-                  {option}
-                </Text>
-                {selectedSort === index && (
-                  <Ionicons name="checkmark" size={20} color="#007bff" />
-                )}
-              </TouchableOpacity>
-            ))}
+                  <View style={[styles.optionIconWrap, isActive && styles.optionIconWrapActive]}>
+                    <Ionicons
+                      name={iconName as any}
+                      size={18}
+                      color={isActive ? '#fff' : '#6B7280'}
+                    />
+                  </View>
+                  <Text style={[styles.optionText, isActive && styles.optionTextActive]}>
+                    {option}
+                  </Text>
+                  {isActive && (
+                    <View style={styles.checkWrap}>
+                      <Ionicons name="checkmark-circle" size={22} color="#FF7A00" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         </View>
       </TouchableOpacity>
@@ -81,53 +113,117 @@ export default function SortModal({
 }
 
 const styles = StyleSheet.create({
-  modalOverlay: {
+  overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(10,20,60,0.45)',
     justifyContent: 'flex-end',
   },
-  sortModal: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '70%',
-    paddingBottom: 20, // Add bottom padding to prevent content from being hidden by nav bar
+  sheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    maxHeight: '75%',
+    paddingBottom: 32,
+    shadowColor: '#1A2980',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 16,
   },
-  sortHeader: {
+  handle: {
+    width: 44,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E8ECF4',
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
-  sortTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
-  scrollView: {
-    flexGrow: 0, // Prevent ScrollView from expanding beyond maxHeight
+  headerIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#EEF2FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: RFValue(17),
+    fontWeight: '700',
+    color: '#1A1D2E',
+    letterSpacing: -0.3,
+  },
+  closeBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#F4F6FB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#F0F2F8',
+    marginHorizontal: 20,
+  },
+  scroll: {
+    flexGrow: 0,
   },
   scrollContent: {
-    paddingBottom: 24, // Extra padding at bottom for better scrolling experience
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 12,
   },
-  sortOption: {
+  option: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingVertical: 13,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    marginVertical: 3,
+    gap: 14,
+    backgroundColor: '#FAFBFF',
+    borderWidth: 1,
+    borderColor: '#F0F2F8',
   },
-  sortOptionSelected: {
-    backgroundColor: '#f0f8ff',
+  optionActive: {
+    backgroundColor: '#EEF2FF',
+    borderColor: '#C7D2FE',
   },
-  sortOptionText: {
-    fontSize: 16,
+  optionIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#F0F2F8',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  sortOptionTextSelected: {
-    color: '#007bff',
-    fontWeight: '600',
+  optionIconWrapActive: {
+    backgroundColor: '#1A2980',
+  },
+  optionText: {
+    flex: 1,
+    fontSize: RFValue(15),
+    color: '#4B5563',
+    fontWeight: '500',
+  },
+  optionTextActive: {
+    color: '#1A2980',
+    fontWeight: '700',
+  },
+  checkWrap: {
+    marginLeft: 'auto',
   },
 });

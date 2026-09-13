@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 const NOTIFICATION_PROMPT_KEY = '@notification_permission_asked';
 
@@ -172,14 +173,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: RFValue(24),
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 12,
     textAlign: 'center',
   },
   message: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     textAlign: 'center',
     marginBottom: 20,
@@ -196,7 +197,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   featureText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#333',
     marginLeft: 12,
   },
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
   },
   allowButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   notNowButton: {
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
   },
   notNowButtonText: {
     color: '#007AFF',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '500',
   },
 });

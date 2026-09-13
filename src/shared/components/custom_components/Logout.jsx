@@ -1,5 +1,5 @@
 import { removeFCMToken } from '@/src/api/fcm-api';
-import { getPushToken } from '@/src/services/notification-service';
+import { deleteFCMToken, getFCMToken } from '@/src/services/notification-service';
 import { useClearAllCaches } from '@/src/shared/utils/cache-utils';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useCreateTaskStore } from '@/src/store/create-task-store';
@@ -27,19 +27,27 @@ export default function LogoutPopup({ onBack }) {
       setIsLoggingOut(true);
       console.log("🔐 Starting logout process...");
       
-      // STEP 1: Delete FCM token from backend (while still authenticated)
+      // STEP 1: Remove THIS device's FCM token from backend + invalidate on Firebase
+      // Phase A: Remove from backend DB (best effort)
+      // Phase B: Delete from Firebase device-level → token permanently dead even if backend cleanup fails
+      // This prevents duplicate notifications WITHOUT affecting other logged-in devices
       try {
         console.log("🗑️ Removing FCM token from backend...");
-        const currentToken = await getPushToken();
+        const currentToken = await getFCMToken();
         if (currentToken) {
           await removeFCMToken({ token: currentToken });
-          console.log("✅ FCM token removed from backend successfully");
-        } else {
-          console.log("ℹ️ No FCM token to remove");
+          console.log("✅ FCM token removed from backend");
         }
       } catch (fcmError) {
-        // Don't block logout if FCM deletion fails
-        console.warn("⚠️ Failed to remove FCM token (continuing logout):", fcmError);
+        console.warn("⚠️ Failed to remove FCM token from backend (continuing):", fcmError);
+      }
+      try {
+        // Invalidate token on Firebase device-level → backend stale tokens won't deliver
+        console.log("🗑️ Invalidating FCM token on device (Firebase)...");
+        await deleteFCMToken();
+        console.log("✅ FCM token invalidated on device");
+      } catch (fcmError) {
+        console.warn("⚠️ Failed to invalidate FCM token on device (continuing):", fcmError);
       }
       
       // STEP 2: Clear React Query cache FIRST while user is still authenticated

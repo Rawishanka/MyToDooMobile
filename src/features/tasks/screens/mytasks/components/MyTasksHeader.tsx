@@ -2,6 +2,7 @@ import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface MyTasksHeaderProps {
   notificationCount?: number;
@@ -15,15 +16,21 @@ export default function MyTasksHeader({
   onNotificationPress,
 }: Omit<MyTasksHeaderProps, 'selectedFilter' | 'onFilterPress'>) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.header}>
-      <View style={styles.headerLeft}>
+    <View style={[styles.header, { paddingTop: Math.max(insets.top, hp('1%')) }]}>
+      {/* Left spacer to balance the right icons */}
+      <View style={styles.headerSpacer} />
+
+      {/* Centered Title */}
+      <View style={styles.headerCenter}>
         <Text style={styles.headerTitle}>My Tasks</Text>
       </View>
+
       <View style={styles.headerIcons}>
         <TouchableOpacity onPress={onSearchPress} style={styles.iconButton}>
-          <Ionicons name="search-outline" size={isTablet ? 26 : 20} color="#000" />
+          <Ionicons name="search-outline" size={isTablet ? 26 : 20} color="#fff" />
         </TouchableOpacity>
         
         {/* Payment Summary Button */}
@@ -31,12 +38,12 @@ export default function MyTasksHeader({
           onPress={() => router.push('/payment-summary' as any)}
           style={styles.iconButton}
         >
-          <Ionicons name="card-outline" size={isTablet ? 26 : 20} color="#007bff" />
+          <Ionicons name="card-outline" size={isTablet ? 26 : 20} color="#FF7A00" />
         </TouchableOpacity>
         
         {/* Notification Button */}
         <TouchableOpacity onPress={onNotificationPress} style={styles.iconButton}>
-          <Ionicons name="notifications-outline" size={isTablet ? 26 : 20} color="#000" />
+          <Ionicons name="notifications-outline" size={isTablet ? 26 : 20} color="#fff" />
           {notificationCount > 0 && (
             <View style={styles.notificationBadge}>
               <Text style={styles.badgeText}>
@@ -56,22 +63,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: isTablet ? hp('8%') : hp('7%'),
+    paddingBottom: hp('1.5%'),
+    backgroundColor: '#1A2980',
   },
-  headerLeft: {
+  headerSpacer: {
     flex: 1,
+  },
+  headerCenter: {
+    flex: 2,
+    alignItems: 'center',
     justifyContent: 'center',
   },
   headerIcons: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   headerTitle: {
-    fontSize: RFValue(isTablet ? 15 : 14),
-    fontWeight: '600',
-    color: '#000',
+    fontSize: RFValue(isTablet ? 22 : 18),
+    fontWeight: 'bold',
+    color: '#FFFFFF',
     textAlign: 'center',
-    paddingLeft: wp('5%'),
   },
   iconButton: {
     marginLeft: isTablet ? wp('3%') : wp('4%'),
@@ -81,7 +94,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: '#FF0000',
+    backgroundColor: '#FF7A00',
     borderRadius: 10,
     minWidth: 20,
     height: 20,

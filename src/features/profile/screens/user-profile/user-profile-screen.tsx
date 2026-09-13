@@ -14,6 +14,7 @@ import { GetMoreReviewsSection } from './components/GetMoreReviewsSection';
 import { OverallRatingSection } from './components/OverallRatingSection';
 import { ReviewsList } from './components/ReviewsList';
 import { useUserProfile } from './hooks/useUserProfile';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function UserProfileScreen() {
   const {
@@ -191,7 +192,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   messageButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#007bff',
   },
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   reportButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#dc3545',
   },

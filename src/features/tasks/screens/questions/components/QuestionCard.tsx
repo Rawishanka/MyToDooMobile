@@ -2,6 +2,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { formatUserName } from '@/src/utils/formatUserName';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface QuestionItem {
   _id: string;
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   userName: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#000',
   },
@@ -125,11 +126,11 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   questionDate: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
   questionText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#333',
     lineHeight: 22,
     marginBottom: 12,
@@ -147,23 +148,23 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   answerLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
     color: '#28a745',
   },
   answeredBy: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#666',
     marginLeft: 6,
   },
   answerText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     lineHeight: 20,
     marginBottom: 4,
   },
   answeredDate: {
-    fontSize: 10,
+    fontSize: RFValue(10),
     color: '#999',
     textAlign: 'right',
   },
@@ -173,7 +174,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   pendingText: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#ffc107',
     fontStyle: 'italic',
   },

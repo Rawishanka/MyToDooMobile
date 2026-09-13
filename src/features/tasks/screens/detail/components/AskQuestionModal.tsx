@@ -1,10 +1,10 @@
 import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Dimensions, Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface AskQuestionModalProps {
   visible: boolean;
@@ -24,12 +24,31 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
   isSubmitting,
 }) => {
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+  const { height: SCREEN_HEIGHT } = useWindowDimensions();
+
+  // Track keyboard height for Android
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow',
+      (e) => setKeyboardHeight(e.endCoordinates.height)
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide',
+      () => setKeyboardHeight(0)
+    );
+    return () => { showSub.remove(); hideSub.remove(); };
+  }, []);
 
   // Cleanup attachments when modal closes
   useEffect(() => {
     if (!visible) {
       setAttachments([]);
+      setKeyboardHeight(0);
+    } else {
+      // Scroll to top when modal opens
+      setTimeout(() => scrollViewRef.current?.scrollTo({ y: 0, animated: false }), 100);
     }
   }, [visible]);
 
@@ -55,21 +74,28 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
       {/* KAV must be outermost inside Modal for keyboard avoidance to work */}
       <KeyboardAvoidingView
         style={styles.kavWrapper}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
+        enabled
       >
         <TouchableWithoutFeedback onPress={handleClose}>
           <View style={styles.modalOverlay} />
         </TouchableWithoutFeedback>
 
-        <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <View style={[
+          styles.modalContent,
+          { paddingBottom: Math.max(insets.bottom, 16) },
+          keyboardHeight > 0
+            ? { maxHeight: SCREEN_HEIGHT - keyboardHeight - (Platform.OS === 'ios' ? insets.top + 20 : 40) }
+            : { maxHeight: SCREEN_HEIGHT * 0.85 },
+        ]}>
           {/* Handle bar */}
           <View style={styles.handleBar} />
 
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Ask a Question</Text>
             <TouchableOpacity onPress={handleClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Ionicons name="close" size={24} color="#000" />
+              <Ionicons name="close" size={24} color={BRAND_BLUE} />
             </TouchableOpacity>
           </View>
 
@@ -167,7 +193,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     paddingTop: 12,
     paddingHorizontal: 20,
-    maxHeight: SCREEN_HEIGHT * 0.90,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -176,9 +201,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#000',
+    color: BRAND_BLUE,
   },
   scrollContainer: {
     flexShrink: 1,
@@ -190,7 +215,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   charCount: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
     textAlign: 'right',
     marginTop: 4,
@@ -200,7 +225,7 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
     borderRadius: 12,
     padding: 16,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     minHeight: 120,
   },
@@ -212,19 +237,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   guidelinesTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#007AFF',
+    color: BRAND_BLUE,
     marginBottom: 8,
   },
   guideline: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#555',
     marginBottom: 4,
     lineHeight: 18,
   },
   submitQuestionButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -233,7 +258,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
   },
   submitQuestionButtonText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#fff',
   },

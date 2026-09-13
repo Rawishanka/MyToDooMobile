@@ -10,10 +10,16 @@ import { borderRadius, spacing } from '../spacing';
 export const cardStyles = StyleSheet.create({
   // Base Card
   card: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: borderRadius.card,
-    padding: spacing.cardPadding,
-    ...shadows.card,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    shadowColor: '#1A2980',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 3,
   } as ViewStyle,
   
   // Card with border
@@ -50,11 +56,17 @@ export const cardStyles = StyleSheet.create({
   
   // Task Card (specific for task items)
   taskCard: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: borderRadius.card,
-    padding: spacing.base,
-    marginBottom: spacing.md,
-    ...shadows.card,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    shadowColor: '#1A2980',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 3,
   } as ViewStyle,
   
   // Section Container

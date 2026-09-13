@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface RemovalLocationInputsProps {
   pickupCode: string;
@@ -48,7 +49,7 @@ export const RemovalLocationInputs: React.FC<RemovalLocationInputsProps> = ({
 
 const styles = StyleSheet.create({
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#555',
     marginBottom: 6,
     marginTop: 10,
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
   },
 });

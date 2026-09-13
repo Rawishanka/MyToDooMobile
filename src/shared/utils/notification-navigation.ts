@@ -256,6 +256,7 @@ function isReviewNotification(notification: StoredNotification): boolean {
       'REVIEW_RECEIVED',
       'NEW_REVIEW',
       'REVIEW_REQUEST',
+      'REVIEW_REQUIRED',
       'RATING_RECEIVED',
     ].includes(eventType) ||
     resourceType === 'REVIEW'
@@ -268,6 +269,7 @@ function isReviewNotification(notification: StoredNotification): boolean {
     'new review received',
     'rated you',
     'left you a review',
+    'please leave a review',
     'star review',
     'stars for',
     '/5 stars'
@@ -393,6 +395,13 @@ export function getNotificationNavigationTarget(
   }
 
   if (isReviewNotification(notification)) {
+    const reviewEvent = getEventType(notification);
+    if (
+      reviewEvent === 'REVIEW_REQUIRED' ||
+      textIncludes(notification, 'please leave a review', 'review required', 'leave a review so')
+    ) {
+      return myTasksTarget({ tab: 'review_required' });
+    }
     return profileRatingsTarget(notification);
   }
 
@@ -450,6 +459,9 @@ export function getNotificationNavigationTarget(
     case 'QUESTION_ANSWERED':
       if (taskId) return questionTaskDetailTarget(taskId);
       return myTasksTarget();
+
+    case 'REVIEW_REQUIRED':
+      return myTasksTarget({ tab: 'review_required' });
 
     case 'REVIEW_RECEIVED':
     case 'NEW_REVIEW':

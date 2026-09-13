@@ -26,16 +26,19 @@ import BrowseTasksScreen from '@/src/features/tasks/screens/browse/browse-screen
 import TaskDetailScreen from '@/src/features/tasks/screens/detail/task-detail-screen';
 import MyTasksScreen from '@/src/features/tasks/screens/mytasks/mytasks-screen';
 import MakeOfferScreen from '@/src/features/tasks/screens/offers/make-offer-screen';
+import { RFValue } from '@/src/shared/utils/responsive';
+import { rf } from '@/src/shared/utils/responsive';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const isSmallDevice = SCREEN_WIDTH < 375;
+const isTabletDevice = SCREEN_WIDTH >= 600;
 
-// Responsive sizing
-const CIRCLE_SIZE  = isSmallDevice ? 42 : 46;   // active icon circle diameter
-const ICON_SIZE    = isSmallDevice ? 20 : 22;
+// Responsive sizing — tabs stay compact on tablets (Facebook-style)
+const CIRCLE_SIZE = isSmallDevice ? 42 : isTabletDevice ? 44 : 46;
+const ICON_SIZE   = isSmallDevice ? 20 : isTabletDevice ? 21 : 22;
 
 const TAB_ROUTES = ['index', 'browse', 'my-tasks', 'message', 'account'];
 
@@ -279,7 +282,7 @@ const tabStyles = StyleSheet.create({
     backgroundColor: BRAND_BLUE,
   },
   label: {
-    fontSize: isSmallDevice ? 9 : 10,
+    fontSize: rf(isSmallDevice ? 9 : 10),
     fontWeight: '500',
     color: '#888',
     marginTop: 3,
@@ -305,7 +308,7 @@ const tabStyles = StyleSheet.create({
   },
   badgeText: {
     color: '#fff',
-    fontSize: 9,
+    fontSize: rf(9),
     fontWeight: 'bold',
   },
 });

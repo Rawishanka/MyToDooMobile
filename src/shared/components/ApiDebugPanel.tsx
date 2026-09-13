@@ -2,6 +2,7 @@ import API_CONFIG from '@/src/api/config';
 import { MockApiService } from '@/src/api/mock-api';
 import React, { useState } from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function ApiDebugPanel() {
   const [testResult, setTestResult] = useState<string>('');
@@ -61,17 +62,17 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
   title: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: 'bold',
     marginBottom: 8,
   },
   info: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginBottom: 4,
   },
   result: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#333',
     marginBottom: 8,
     fontWeight: 'bold',
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: 'bold',
   },
 });

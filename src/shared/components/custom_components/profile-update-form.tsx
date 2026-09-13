@@ -6,12 +6,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Modal,
   Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -19,6 +21,9 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RFValue } from '@/src/shared/utils/responsive';
+import AddSkillsModal from '@/src/shared/components/custom_components/add-skills-modal';
+import { requestPhoneOtp, verifyPhoneOtp } from '@/src/api/contact-change-api';
 
 interface ProfileUpdateFormProps {
   onBack: () => void;
@@ -100,6 +105,12 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
   
   const [location, setLocation] = useState(getLocationString());
   const [bio, setBio] = useState(userData?.bio || '');
+  const [notifyNewTask, setNotifyNewTask] = useState<boolean>(
+    (userData as any)?.notifyNewTask ?? false
+  );
+  const [notifySkillMatch, setNotifySkillMatch] = useState<boolean>(
+    (userData as any)?.notifySkillMatch ?? false
+  );
   
   // Skills state
   const getSkillsArray = (field: 'goodAt' | 'transport' | 'languages' | 'qualifications' | 'experience') => {
@@ -117,10 +128,75 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
   const [experience, setExperience] = useState<string[]>(getSkillsArray('experience'));
   
   // Input fields for adding new items
-  const [newGoodAt, setNewGoodAt] = useState('');
+  const [showSkillsModal, setShowSkillsModal] = useState(false);
   const [newLanguage, setNewLanguage] = useState('');
   const [newQualification, setNewQualification] = useState('');
   const [newExperience, setNewExperience] = useState('');
+  // Phone change with OTP states
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [newPhoneInput, setNewPhoneInput] = useState("");
+  const [phoneOtpCode, setPhoneOtpCode] = useState("");
+  const [phoneStep, setPhoneStep] = useState<"input" | "otp">("input");
+  const [phoneLoading, setPhoneLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [phoneResendTimer, setPhoneResendTimer] = useState(0);
+
+  const startResendTimer = () => {
+    setPhoneResendTimer(60);
+    const interval = setInterval(() => {
+      setPhoneResendTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleRequestPhoneOtp = async () => {
+    const trimmed = newPhoneInput.trim();
+    if (!trimmed || trimmed.length < 8) {
+      setPhoneError("Please enter a valid phone number (e.g. +61400000000 or 0400000000)");
+      return;
+    }
+    setPhoneLoading(true);
+    setPhoneError(null);
+    try {
+      await requestPhoneOtp(trimmed);
+      setPhoneStep("otp");
+      startResendTimer();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || "Failed to send verification code. Please check the number and try again.";
+      setPhoneError(msg);
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
+  const handleVerifyPhoneOtp = async () => {
+    const trimmedOtp = phoneOtpCode.trim();
+    if (!trimmedOtp || trimmedOtp.length !== 6) {
+      setPhoneError("Please enter the 6-digit verification code");
+      return;
+    }
+    setPhoneLoading(true);
+    setPhoneError(null);
+    try {
+      await verifyPhoneOtp(newPhoneInput.trim(), trimmedOtp);
+      setPhone(newPhoneInput.trim());
+      setShowPhoneModal(false);
+      setPhoneStep("input");
+      setNewPhoneInput("");
+      setPhoneOtpCode("");
+      Alert.alert("Success", "Your phone number has been successfully verified and updated!");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || "Invalid or expired verification code. Please try again.";
+      setPhoneError(msg);
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
   
   const updateProfile = useUpdateUserProfile();
 
@@ -149,6 +225,8 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
         phone: phone.trim(),
         location: location.trim(),
         bio: bio.trim(),
+        notifyNewTask,
+        notifySkillMatch,
         skills: {
           goodAt,
           transport,
@@ -254,17 +332,35 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           </View>
           
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Phone</Text>
+            <View style={styles.phoneLabelRow}>
+              <Text style={styles.label}>Phone Number</Text>
+              <TouchableOpacity
+                style={styles.changePhoneBadge}
+                activeOpacity={0.8}
+                onPress={() => {
+                  setPhoneStep('input');
+                  setNewPhoneInput('');
+                  setPhoneOtpCode('');
+                  setPhoneError(null);
+                  setShowPhoneModal(true);
+                }}
+              >
+                <Ionicons name="create-outline" size={13} color="#003399" />
+                <Text style={styles.changePhoneBadgeText}>Change</Text>
+              </TouchableOpacity>
+            </View>
             <TextInput
               style={[styles.input, styles.disabledInput]}
-              value={phone}
+              value={phone || 'No phone number added'}
               editable={false}
               placeholder="Enter your phone number"
               keyboardType="phone-pad"
               placeholderTextColor="#999"
               maxLength={20}
             />
-            <Text style={styles.webOnlyMessage}>📱 Phone number can only be changed from the web</Text>
+            <Text style={styles.phoneSecurityHint}>
+              🔒 Protected by SMS verification for your security
+            </Text>
           </View>
           
           <View style={styles.inputGroup}>
@@ -301,40 +397,44 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           {/* Skills Section */}
           <Text style={styles.sectionTitle}>Skills</Text>
           
-          {/* What are you good at? */}
+          {/* What are you good at? — opens animated AddSkillsModal */}
           <View style={styles.skillGroup}>
             <Text style={styles.label}>What are you good at?</Text>
-            <View style={styles.skillsTagsContainer}>
-              {goodAt.map((skill, index) => (
-                <View key={index} style={styles.skillTag}>
-                  <Text style={styles.skillTagText}>{skill}</Text>
-                  <TouchableOpacity onPress={() => setGoodAt(goodAt.filter((_, i) => i !== index))}>
-                    <Ionicons name="close-circle" size={18} color="#666" />
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
-            <View style={styles.addSkillContainer}>
-              <TextInput
-                style={styles.addSkillInput}
-                value={newGoodAt}
-                onChangeText={setNewGoodAt}
-                placeholder="Add a skill..."
-                placeholderTextColor="#999"
-                maxLength={50}
-              />
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => {
-                  if (newGoodAt.trim() && !goodAt.includes(newGoodAt.trim())) {
-                    setGoodAt([...goodAt, newGoodAt.trim()]);
-                    setNewGoodAt('');
-                  }
-                }}
-              >
-                <Text style={styles.addButtonText}>Add</Text>
-              </TouchableOpacity>
-            </View>
+
+            {/* Selected skills preview chips */}
+            {goodAt.length > 0 && (
+              <View style={styles.skillsTagsContainer}>
+                {goodAt.map((skill, index) => (
+                  <View key={index} style={styles.skillTag}>
+                    <Text style={styles.skillTagText}>{skill}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Tap to open modal */}
+            <TouchableOpacity
+              style={styles.openSkillsBtn}
+              onPress={() => setShowSkillsModal(true)}
+              activeOpacity={0.75}
+            >
+              <Ionicons name="add-circle-outline" size={18} color="#0052A2" />
+              <Text style={styles.openSkillsBtnText}>
+                {goodAt.length === 0 ? 'Add Skills' : `Edit Skills (${goodAt.length})`}
+              </Text>
+              <Ionicons name="chevron-forward" size={16} color="#0052A2" style={{ marginLeft: 'auto' }} />
+            </TouchableOpacity>
+
+            {/* Add Skills Modal */}
+            <AddSkillsModal
+              visible={showSkillsModal}
+              currentSkills={goodAt}
+              onSave={(skills) => {
+                setGoodAt(skills);
+                setShowSkillsModal(false);
+              }}
+              onClose={() => setShowSkillsModal(false)}
+            />
           </View>
           
           {/* How do you get around? */}
@@ -472,6 +572,45 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
             </View>
           </View>
           
+          {/* Notification Preferences */}
+          <Text style={styles.sectionTitle}>Notification Preferences</Text>
+          
+          <View style={styles.notifCard}>
+            {/* Register as a Tasker */}
+            <View style={styles.notifRow}>
+              <View style={styles.notifTextBlock}>
+                <Text style={styles.notifLabel}>Register as a Tasker</Text>
+                <Text style={styles.notifDesc}>Receive notifications when new tasks are posted on the platform.</Text>
+              </View>
+              <Switch
+                value={notifyNewTask}
+                onValueChange={(val) => {
+                  setNotifyNewTask(val);
+                  if (!val) setNotifySkillMatch(false);
+                }}
+                trackColor={{ false: '#ddd', true: '#0052A2' }}
+                thumbColor={notifyNewTask ? '#fff' : '#f4f3f4'}
+              />
+            </View>
+
+            <View style={styles.notifDivider} />
+
+            {/* Only notify tasks in skillset */}
+            <View style={[styles.notifRow, !notifyNewTask && styles.notifRowDisabled]}>
+              <View style={styles.notifTextBlock}>
+                <Text style={[styles.notifLabel, !notifyNewTask && styles.notifLabelDisabled]}>Only notify tasks in my skillset</Text>
+                <Text style={[styles.notifDesc, !notifyNewTask && styles.notifLabelDisabled]}>Filter notifications to tasks matching your skills only. You can still browse all tasks.</Text>
+              </View>
+              <Switch
+                value={notifySkillMatch && notifyNewTask}
+                onValueChange={(val) => { if (notifyNewTask) setNotifySkillMatch(val); }}
+                disabled={!notifyNewTask}
+                trackColor={{ false: '#ddd', true: '#0052A2' }}
+                thumbColor={(notifySkillMatch && notifyNewTask) ? '#fff' : '#f4f3f4'}
+              />
+            </View>
+          </View>
+
           {/* Extra padding to ensure fields are visible above keyboard */}
           <View style={{ height: 100 }} />
         </View>
@@ -493,7 +632,139 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           )}
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+    
+      {/* 2026 Modern Phone Update & SMS OTP Modal */}
+      <Modal
+        visible={showPhoneModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          if (!phoneLoading) setShowPhoneModal(false);
+        }}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.phoneModalOverlay}
+        >
+          <View style={styles.phoneModalCard}>
+            <View style={styles.phoneModalHeader}>
+              <View style={styles.phoneModalIconBg}>
+                <Ionicons
+                  name={phoneStep === 'input' ? 'call-outline' : 'shield-checkmark-outline'}
+                  size={24}
+                  color="#003399"
+                />
+              </View>
+              <Text style={styles.phoneModalTitle}>
+                {phoneStep === 'input' ? 'Update Phone Number' : 'Verify SMS Code'}
+              </Text>
+              <Text style={styles.phoneModalSubtitle}>
+                {phoneStep === 'input'
+                  ? 'Enter your new phone number to receive a 6-digit verification code.'
+                  : `Enter the 6-digit verification code sent via SMS to ${newPhoneInput}.`}
+              </Text>
+            </View>
+
+            {phoneError && (
+              <View style={styles.phoneErrorBanner}>
+                <Ionicons name="alert-circle" size={16} color="#DC2626" />
+                <Text style={styles.phoneErrorBannerText}>{phoneError}</Text>
+              </View>
+            )}
+
+            {phoneStep === 'input' ? (
+              <View style={styles.phoneStepBody}>
+                <Text style={styles.phoneFieldLabel}>New Phone Number</Text>
+                <TextInput
+                  style={styles.phoneModalInput}
+                  value={newPhoneInput}
+                  onChangeText={setNewPhoneInput}
+                  placeholder="+61 400 000 000"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="phone-pad"
+                  autoFocus={true}
+                />
+                <Text style={styles.phoneFieldNote}>
+                  Include country code (e.g. +61 for Australia) or enter standard Australian mobile (04...).
+                </Text>
+
+                <View style={styles.phoneModalBtnRow}>
+                  <TouchableOpacity
+                    style={styles.phoneModalCancelBtn}
+                    onPress={() => setShowPhoneModal(false)}
+                    disabled={phoneLoading}
+                  >
+                    <Text style={styles.phoneModalCancelBtnText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.phoneModalSubmitBtn}
+                    onPress={handleRequestPhoneOtp}
+                    disabled={phoneLoading}
+                  >
+                    {phoneLoading ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.phoneModalSubmitBtnText}>Send Code</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.phoneStepBody}>
+                <Text style={styles.phoneFieldLabel}>6-Digit Verification Code</Text>
+                <TextInput
+                  style={styles.phoneOtpInput}
+                  value={phoneOtpCode}
+                  onChangeText={setPhoneOtpCode}
+                  placeholder="000000"
+                  placeholderTextColor="#CBD5E1"
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  autoFocus={true}
+                />
+
+                <View style={styles.phoneResendRow}>
+                  {phoneResendTimer > 0 ? (
+                    <Text style={styles.phoneResendTimerText}>
+                      Resend code in {phoneResendTimer}s
+                    </Text>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={handleRequestPhoneOtp}
+                      disabled={phoneLoading}
+                    >
+                      <Text style={styles.phoneResendActionText}>Resend Code</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                <View style={styles.phoneModalBtnRow}>
+                  <TouchableOpacity
+                    style={styles.phoneModalCancelBtn}
+                    onPress={() => setPhoneStep('input')}
+                    disabled={phoneLoading}
+                  >
+                    <Text style={styles.phoneModalCancelBtnText}>Back</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.phoneModalSubmitBtn}
+                    onPress={handleVerifyPhoneOtp}
+                    disabled={phoneLoading}
+                  >
+                    {phoneLoading ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.phoneModalSubmitBtnText}>Verify & Save</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+</KeyboardAvoidingView>
   );
 }
 
@@ -515,7 +786,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
@@ -535,7 +806,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
     marginBottom: 20,
@@ -544,7 +815,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '500',
     color: '#333',
     marginBottom: 8,
@@ -555,7 +826,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     backgroundColor: '#f9f9f9',
   },
   textArea: {
@@ -566,7 +837,7 @@ const styles = StyleSheet.create({
     borderColor: '#e67e22',
   },
   charCount: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
     textAlign: 'right',
     marginTop: 4,
@@ -591,7 +862,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   // Modal Styles
@@ -616,21 +887,21 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#333',
     marginBottom: 12,
     textAlign: 'center',
   },
   modalMessage: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#666',
     textAlign: 'center',
     marginBottom: 8,
     lineHeight: 22,
   },
   modalSubMessage: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#999',
     textAlign: 'center',
     marginBottom: 24,
@@ -649,7 +920,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalCancelText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#666',
   },
@@ -665,7 +936,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
   },
   modalSendText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#fff',
   },
@@ -697,7 +968,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   pendingText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#856404',
   },
@@ -711,12 +982,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backToProfileText: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#fff',
   },
   modalFooterText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
     textAlign: 'center',
     fontStyle: 'italic',
@@ -741,8 +1012,26 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   skillTagText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#0052A2',
+  },
+  // "Add Skills" / "Edit Skills" tap row for goodAt
+  openSkillsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1.5,
+    borderColor: '#0052A2',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginTop: 8,
+    backgroundColor: '#f0f6ff',
+  },
+  openSkillsBtnText: {
+    fontSize: RFValue(15),
+    color: '#0052A2',
+    fontWeight: '600',
   },
   addSkillContainer: {
     flexDirection: 'row',
@@ -755,7 +1044,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    fontSize: 15,
+    fontSize: RFValue(15),
     backgroundColor: '#f9f9f9',
   },
   addButton: {
@@ -768,7 +1057,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     color: '#fff',
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
   },
   transportOptions: {
@@ -789,7 +1078,7 @@ const styles = StyleSheet.create({
     borderColor: '#0052A2',
   },
   transportOptionText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
   },
   transportOptionTextSelected: {
@@ -801,8 +1090,221 @@ const styles = StyleSheet.create({
     color: '#888',
   },
   webOnlyMessage: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#dc3545',
     marginTop: 4,
+  },
+  // Notification Preferences Styles
+  notifCard: {
+    backgroundColor: '#F0F6FF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D0E4FF',
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  notifRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  notifRowDisabled: {
+    opacity: 0.45,
+  },
+  notifTextBlock: {
+    flex: 1,
+  },
+  notifLabel: {
+    fontSize: RFValue(14),
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 3,
+  },
+  notifLabelDisabled: {
+    color: '#999',
+  },
+  notifDesc: {
+    fontSize: RFValue(12),
+    color: '#555',
+    lineHeight: 17,
+  },
+  notifDivider: {
+    height: 1,
+    backgroundColor: '#D0E4FF',
+    marginHorizontal: 16,
+  },
+  phoneLabelRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  changePhoneBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#EFF6FF",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+  },
+  changePhoneBadgeText: {
+    fontSize: RFValue(11.5),
+    fontWeight: "700",
+    color: "#003399",
+  },
+  phoneSecurityHint: {
+    fontSize: RFValue(11.5),
+    color: "#059669",
+    marginTop: 4,
+    fontWeight: "500",
+  },
+  phoneModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  phoneModalCard: {
+    width: "100%",
+    maxWidth: 380,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    padding: 22,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  phoneModalHeader: {
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  phoneModalIconBg: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#EFF6FF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  phoneModalTitle: {
+    fontSize: RFValue(18),
+    fontWeight: "800",
+    color: "#0F172A",
+    marginBottom: 6,
+  },
+  phoneModalSubtitle: {
+    fontSize: RFValue(13),
+    color: "#64748B",
+    textAlign: "center",
+    lineHeight: 18,
+  },
+  phoneErrorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#FEF2F2",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#FCA5A5",
+  },
+  phoneErrorBannerText: {
+    flex: 1,
+    fontSize: RFValue(12),
+    color: "#DC2626",
+    fontWeight: "500",
+  },
+  phoneStepBody: {
+    width: "100%",
+  },
+  phoneFieldLabel: {
+    fontSize: RFValue(12.5),
+    fontWeight: "700",
+    color: "#334155",
+    marginBottom: 6,
+  },
+  phoneModalInput: {
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: RFValue(16),
+    color: "#0F172A",
+    fontWeight: "600",
+  },
+  phoneOtpInput: {
+    backgroundColor: "#F8FAFC",
+    borderWidth: 2,
+    borderColor: "#003399",
+    borderRadius: 14,
+    paddingVertical: 14,
+    fontSize: RFValue(24),
+    fontWeight: "800",
+    color: "#0F172A",
+    textAlign: "center",
+    letterSpacing: 10,
+  },
+  phoneFieldNote: {
+    fontSize: RFValue(11.5),
+    color: "#64748B",
+    marginTop: 6,
+    lineHeight: 16,
+  },
+  phoneResendRow: {
+    alignItems: "center",
+    marginVertical: 12,
+  },
+  phoneResendTimerText: {
+    fontSize: RFValue(12.5),
+    color: "#94A3B8",
+    fontWeight: "500",
+  },
+  phoneResendActionText: {
+    fontSize: RFValue(13),
+    color: "#003399",
+    fontWeight: "700",
+  },
+  phoneModalBtnRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 18,
+  },
+  phoneModalCancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: "#F1F5F9",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  phoneModalCancelBtnText: {
+    fontSize: RFValue(14),
+    fontWeight: "600",
+    color: "#64748B",
+  },
+  phoneModalSubmitBtn: {
+    flex: 1.6,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: "#003399",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  phoneModalSubmitBtnText: {
+    fontSize: RFValue(14),
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
 });

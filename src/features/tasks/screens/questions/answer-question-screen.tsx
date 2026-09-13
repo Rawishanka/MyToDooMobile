@@ -16,6 +16,7 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function AnswerQuestionScreen() {
   const router = useRouter();
@@ -39,28 +40,32 @@ export default function AnswerQuestionScreen() {
 
   const isLoading = isTaskLoading || isQuestionsLoading;
 
+  const canSubmitAnswer =
+    attachments.length > 0 || answer.trim().length >= 10;
+
   const handleSubmitAnswer = async () => {
     try {
-      // Validate input
-      if (!answer.trim()) {
-        Alert.alert('Missing Answer', 'Please enter your answer.');
+      if (!answer.trim() && attachments.length === 0) {
+        Alert.alert('Missing Answer', 'Please enter your answer or attach a file.');
         return;
       }
 
-      if (answer.trim().length < 10) {
+      if (attachments.length === 0 && answer.trim().length < 10) {
         Alert.alert('Answer Too Short', 'Please provide more details in your answer.');
         return;
       }
 
       // Moderate content before submitting
-      const moderationResult = moderateContent(answer);
-      if (!moderationResult.isClean) {
-        Alert.alert(
-          'Answer Blocked',
-          moderationResult.reason || 'Your answer contains inappropriate content.',
-          [{ text: 'OK' }]
-        );
-        return;
+      if (answer.trim()) {
+        const moderationResult = moderateContent(answer);
+        if (!moderationResult.isClean) {
+          Alert.alert(
+            'Answer Blocked',
+            moderationResult.reason || 'Your answer contains inappropriate content.',
+            [{ text: 'OK' }]
+          );
+          return;
+        }
       }
 
       setIsSubmitting(true);
@@ -70,20 +75,17 @@ export default function AnswerQuestionScreen() {
         attachments: attachments.length
       });
 
-      // TODO: Update API to support attachments
-      // For now, we'll include attachment info in the answer text if there are any
-      let finalAnswer = answer.trim();
-      if (attachments.length > 0) {
-        const attachmentInfo = attachments.map(att => 
-          `📎 ${att.type === 'image' ? '🖼️' : '📄'} ${att.name}`
-        ).join('\n');
-        finalAnswer += `\n\nAttached files:\n${attachmentInfo}`;
-      }
+      const files = attachments.map(att => ({
+        uri: att.uri,
+        name: att.name,
+        type: att.type === 'image' ? 'image/jpeg' : 'application/pdf',
+      }));
 
       const result = await answerQuestionMutation.mutateAsync({
         taskId: taskId!,
         questionId: questionId!,
-        answer: finalAnswer,
+        answer: answer.trim(),
+        files: files.length > 0 ? files : undefined,
       });
 
       console.log('✅ Answer posted successfully:', result);
@@ -204,6 +206,7 @@ export default function AnswerQuestionScreen() {
               textAlignVertical="top"
               placeholderTextColor="#999"
               maxLength={1000}
+              scrollEnabled
             />
             <Text style={styles.characterCount}>
               {answer.length}/1000 characters
@@ -244,9 +247,9 @@ export default function AnswerQuestionScreen() {
       {/* Submit Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity 
-          style={[styles.submitButton, isSubmitting && styles.submittingButton]}
+          style={[styles.submitButton, (isSubmitting || !canSubmitAnswer) && styles.submittingButton]}
           onPress={handleSubmitAnswer}
-          disabled={isSubmitting || answer.trim().length < 10}
+          disabled={isSubmitting || !canSubmitAnswer}
         >
           {isSubmitting ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -274,7 +277,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   errorContainer: {
@@ -284,14 +287,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   errorTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     textAlign: 'center',
     marginBottom: 24,
@@ -302,7 +305,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: '#007bff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   header: {
@@ -319,7 +322,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
@@ -337,13 +340,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   taskTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
     marginBottom: 8,
   },
   taskLocation: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   questionContainer: {
@@ -363,16 +366,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   questionAsker: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#495057',
   },
   questionDate: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#6c757d',
   },
   questionText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     lineHeight: 22,
   },
@@ -380,7 +383,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#000',
     marginBottom: 20,
@@ -394,13 +397,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     minHeight: 120,
+    maxHeight: 200,
     backgroundColor: '#fff',
   },
   characterCount: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     textAlign: 'right',
     marginTop: 4,
@@ -409,7 +413,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   tipsTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 12,
@@ -420,14 +424,14 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   tipBullet: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#495057',
     marginRight: 8,
     marginTop: 2,
   },
   tipText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#495057',
     lineHeight: 20,
   },
@@ -437,13 +441,13 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   guidelinesTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#2e7d32',
     marginBottom: 8,
   },
   guideline: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#2e7d32',
     marginBottom: 4,
   },
@@ -468,7 +472,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function CommitmentSection() {
   return (
@@ -51,13 +52,13 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   commitmentTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#1976d2',
     marginBottom: 8,
   },
   commitmentText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#1976d2',
     marginBottom: 12,
   },
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   commitmentItemText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#1976d2',
     marginLeft: 8,
     flex: 1,

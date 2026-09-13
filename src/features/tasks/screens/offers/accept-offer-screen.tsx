@@ -17,9 +17,11 @@ import {
     Text,
     TouchableOpacity,
     View,
+    Platform,
 } from 'react-native';
 import { ErrorState, LoadingState } from '../../components/shared';
 import TermsConditionsScreen from '@/src/features/legal/screens/TermsConditionsScreen';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function AcceptOfferScreen() {
   const router = useRouter();
@@ -144,7 +146,7 @@ export default function AcceptOfferScreen() {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" removeClippedSubviews={false}>
         {/* Task Summary */}
         <View style={styles.taskSummary}>
           <Text style={styles.taskTitle} numberOfLines={2}>{task.title}</Text>
@@ -287,7 +289,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   errorContainer: {
@@ -297,14 +299,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   errorTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     textAlign: 'center',
     marginBottom: 24,
@@ -315,7 +317,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: '#007bff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   header: {
@@ -333,7 +335,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
@@ -351,20 +353,20 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   taskTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
     marginBottom: 8,
   },
   taskLocation: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   offersContainer: {
     marginTop: 24,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#000',
     marginBottom: 20,
@@ -391,7 +393,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   offerUserName: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
     marginBottom: 4,
@@ -401,7 +403,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ratingText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginLeft: 4,
   },
@@ -411,7 +413,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   offerPrice: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#28a745',
   },
@@ -422,7 +424,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   offerMessageText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#495057',
     lineHeight: 20,
   },
@@ -432,7 +434,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   offerDate: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#6c757d',
   },
   offerStatus: {
@@ -444,7 +446,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#fff',
     fontWeight: '600',
   },
@@ -455,7 +457,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   selectionTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#2e7d32',
     marginBottom: 12,
@@ -467,19 +469,19 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   summaryLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#2e7d32',
     flex: 1,
   },
   summaryValue: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#2e7d32',
     fontWeight: '600',
     flex: 1,
     textAlign: 'right',
   },
   summaryAmount: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#2e7d32',
     fontWeight: '700',
   },
@@ -492,13 +494,13 @@ const styles = StyleSheet.create({
     borderColor: '#ffeaa7',
   },
   termsTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#856404',
     marginBottom: 8,
   },
   termItem: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#856404',
     marginBottom: 4,
   },
@@ -513,14 +515,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '600',
     color: '#666',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#999',
     textAlign: 'center',
   },
@@ -545,7 +547,7 @@ const styles = StyleSheet.create({
   },
   acceptButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export interface Coordinates {
   lat: number;
@@ -521,7 +522,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           <Ionicons 
             name="locate" 
             size={20} 
-            color={permissionStatus === 'denied' ? '#999' : '#4285F4'} 
+            color={permissionStatus === 'denied' ? '#999' : '#FFFFFF'} 
           />
         )}
         <Text style={[
@@ -551,9 +552,23 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
             onDropdownStateChange?.(true);
           }}
         />
-        {loading && (
+        {loading ? (
           <ActivityIndicator size="small" color="#4285F4" style={styles.loadingIcon} />
-        )}
+        ) : query.length > 0 ? (
+          <TouchableOpacity
+            onPress={() => {
+              setQuery('');
+              setSuggestions([]);
+              setShowSuggestions(false);
+              onDropdownStateChange?.(false);
+              setError(null);
+            }}
+            style={styles.clearButton}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="close-circle" size={20} color="#BDBDBD" />
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       {/* Dropdown Suggestions List */}
@@ -584,57 +599,72 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    zIndex: 9999, // Extremely high to ensure dropdown appears above all content
-    elevation: 9999, // For Android support
+    zIndex: 9999,
+    elevation: 9999,
   },
   currentLocationButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E8F4FF',
-    borderWidth: 1,
-    borderColor: '#4285F4',
-    borderRadius: 8,
+    backgroundColor: '#0052A2',
+    borderRadius: 12,
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     marginBottom: 12,
     gap: 8,
+    shadowColor: '#0052A2',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
   },
   currentLocationButtonDisabled: {
-    backgroundColor: '#F5F5F5',
-    borderColor: '#DDD',
+    backgroundColor: '#E8E8E8',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   currentLocationText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#4285F4',
+    fontSize: RFValue(15),
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.2,
   },
   currentLocationTextDisabled: {
     color: '#999',
   },
   inputContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderWidth: 1,
+    backgroundColor: '#FAFAFA',
+    borderWidth: 1.5,
     borderColor: '#E0E0E0',
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    borderRadius: 12,
+    paddingHorizontal: 14,
     paddingVertical: 12,
     alignItems: 'center',
-    minHeight: 48,
+    minHeight: 52,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   inputIcon: {
-    marginRight: 12,
-    color: '#999',
+    marginRight: 10,
+    color: '#0052A2',
   },
   input: {
     flex: 1,
-    fontSize: 16,
-    color: '#000',
+    fontSize: RFValue(15),
+    color: '#1A1A1A',
     padding: 0,
+    fontWeight: '400',
   },
   loadingIcon: {
     marginLeft: 8,
+  },
+  clearButton: {
+    marginLeft: 8,
+    padding: 2,
   },
   // Dropdown Styles
   dropdownContainer: {
@@ -643,29 +673,30 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#fff',
-    borderRadius: 8,
-    marginTop: 4,
-    maxHeight: 250, // Reduced from 400 to prevent excessive overlap
-    elevation: 99999, // Extremely high for Android layering
+    borderRadius: 14,
+    marginTop: 6,
+    maxHeight: 280,
+    elevation: 99999,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    zIndex: 99999, // Must be higher than parent container
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    zIndex: 99999,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#EBEBEB',
+    overflow: 'hidden',
   },
   dropdownList: {
-    maxHeight: 250, // Reduced from 400 to prevent excessive overlap
+    maxHeight: 280,
   },
   dropdownContent: {
-    paddingVertical: 4,
+    paddingVertical: 6,
   },
   suggestionItem: {
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E8',
+    borderBottomColor: '#F2F2F2',
     backgroundColor: '#fff',
   },
   suggestionItemLast: {
@@ -677,30 +708,30 @@ const styles = StyleSheet.create({
   },
   suggestionIcon: {
     marginRight: 12,
-    marginTop: 3,
-    color: '#666',
+    marginTop: 2,
+    color: '#0052A2',
     flexShrink: 0,
   },
   suggestionTextContainer: {
     flex: 1,
     flexShrink: 1,
-    paddingRight: 8,
+    paddingRight: 4,
   },
   suggestionMainText: {
-    fontSize: 16,
+    fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#000',
-    marginBottom: 4,
+    color: '#1A1A1A',
+    marginBottom: 3,
     lineHeight: 22,
   },
   suggestionSubText: {
-    fontSize: 13,
-    color: '#666',
+    fontSize: RFValue(13),
+    color: '#888',
     lineHeight: 18,
   },
   manualEntryText: {
-    fontSize: 14,
-    color: '#4285F4',
+    fontSize: RFValue(13),
+    color: '#0052A2',
     fontStyle: 'italic',
   },
   errorContainer: {
@@ -708,12 +739,12 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: 'center',
     backgroundColor: '#FFF3F3',
-    borderRadius: 8,
-    marginTop: 4,
+    borderRadius: 10,
+    marginTop: 6,
   },
   errorText: {
     color: '#FF6B6B',
-    fontSize: 13,
+    fontSize: RFValue(13),
     marginLeft: 8,
     flex: 1,
   },

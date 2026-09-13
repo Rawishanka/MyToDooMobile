@@ -1,10 +1,72 @@
 // 🔐 **AUTHENTICATION UTILITIES**
 // Utility functions for handling authentication state and recovery
 
+import API_CONFIG from '@/src/api/config';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { router } from 'expo-router';
 import { Alert } from 'react-native';
+
+let rememberMeRenewInFlight: Promise<boolean> | null = null;
+
+export async function getRememberMeCredentials(): Promise<{ email: string; password: string } | null> {
+  const rememberMe = await AsyncStorage.getItem('remember_me');
+  const userLoggedOut = await AsyncStorage.getItem('userLoggedOut');
+  if (rememberMe !== 'true' || userLoggedOut === 'true') return null;
+
+  const email =
+    (await AsyncStorage.getItem('saved_email')) ||
+    (await AsyncStorage.getItem('userEmail'));
+  const password =
+    (await AsyncStorage.getItem('saved_password')) ||
+    (await AsyncStorage.getItem('userPassword'));
+
+  if (!email || !password) return null;
+  return { email, password };
+}
+
+/** Silent login when Remember Me is on. Used for 24h JWT auto-renewal. */
+export async function tryRememberMeRenew(): Promise<boolean> {
+  if (rememberMeRenewInFlight) return rememberMeRenewInFlight;
+
+  rememberMeRenewInFlight = (async () => {
+    const creds = await getRememberMeCredentials();
+    if (!creds) return false;
+
+    const response = await axios.post(
+      `${API_CONFIG.BASE_URL}/auth/login`,
+      { email: creds.email, password: creds.password },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        timeout: 30000,
+      }
+    );
+
+    const { token, user, expiresIn } = response.data || {};
+    if (!token || !user) return false;
+
+    await useAuthStore.getState().setAuthData(token, user, expiresIn);
+    await AsyncStorage.setItem('userEmail', creds.email);
+    await AsyncStorage.setItem('userPassword', creds.password);
+    await AsyncStorage.setItem('saved_email', creds.email);
+    await AsyncStorage.setItem('saved_password', creds.password);
+    await AsyncStorage.setItem('remember_me', 'true');
+    return true;
+  })();
+
+  try {
+    return await rememberMeRenewInFlight;
+  } catch (error: any) {
+    console.warn('⚠️ Remember Me renew failed:', error?.message);
+    return false;
+  } finally {
+    rememberMeRenewInFlight = null;
+  }
+}
 
 /**
  * 🧹 Clear All Authentication Data
@@ -98,6 +160,12 @@ export async function forceFreshLogin() {
 export async function handleAuthenticationError(error: any, showAlert = true) {
   try {
     console.log("🚨 Authentication error detected:", error?.message || "Token expired");
+
+    const renewed = await tryRememberMeRenew();
+    if (renewed) {
+      console.log("✅ Session renewed with Remember Me — staying logged in");
+      return;
+    }
     
     // Clear all authentication data
     await clearAllAuthData();

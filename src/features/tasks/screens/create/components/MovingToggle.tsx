@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface MovingToggleProps {
   value: boolean;
@@ -26,7 +27,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   switchLabel: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#333',
   },
 });

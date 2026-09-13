@@ -63,11 +63,13 @@ echo "   ✅ UAT .env applied"
 
 # Step 2: Clean previous build outputs
 echo ""
-echo "🧹 Step 2: Cleaning previous build outputs..."
-rm -rf android/app/build/outputs 2>/dev/null || true
-rm -rf android/app/build/generated 2>/dev/null || true
-rm -rf android/app/build/intermediates 2>/dev/null || true
-echo "   ✅ Cleaned"
+echo "🧹 Step 2: Cleaning ALL build artifacts and caches..."
+rm -rf android/app/build 2>/dev/null || true
+rm -rf android/app/.cxx 2>/dev/null || true
+rm -rf android/build 2>/dev/null || true
+rm -rf android/.gradle 2>/dev/null || true
+rm -rf ~/.gradle/caches/build-cache* 2>/dev/null || true
+echo "   ✅ Cleaned (including Gradle incremental cache)"
 
 # Step 3: Clear Metro / cache
 echo ""
@@ -126,9 +128,11 @@ echo "============================================"
 # APK
 if [ -f "$APK_PATH" ]; then
     APK_SIZE=$(du -h "$APK_PATH" | cut -f1)
+    VERSION=$(grep versionName android/app/build.gradle | awk -F'"' '{print $2}')
     cp "$APK_PATH" "builds/Mytodoo_uat.apk"
-    echo "✅ APK: builds/Mytodoo_uat.apk ($APK_SIZE)"
-    echo "   → Use for: Direct install on device (adb install -r builds/Mytodoo_uat.apk)"
+    cp "$APK_PATH" "builds/Mytodoo_uat_v${VERSION}.apk"
+    echo "✅ APK: builds/Mytodoo_uat_v${VERSION}.apk ($APK_SIZE)"
+    echo "   → Use for: Direct install on device"
 else
     echo "❌ APK not found! Check Gradle output above."
 fi
@@ -136,8 +140,10 @@ fi
 # AAB
 if [ -f "$AAB_PATH" ]; then
     AAB_SIZE=$(du -h "$AAB_PATH" | cut -f1)
+    VERSION=$(grep versionName android/app/build.gradle | awk -F'"' '{print $2}')
     cp "$AAB_PATH" "builds/Mytodoo_uat.aab"
-    echo "✅ AAB: builds/Mytodoo_uat.aab ($AAB_SIZE)"
+    cp "$AAB_PATH" "builds/Mytodoo_uat_v${VERSION}.aab"
+    echo "✅ AAB: builds/Mytodoo_uat_v${VERSION}.aab ($AAB_SIZE)"
     echo "   → Use for: Internal testing upload"
 else
     echo "❌ AAB not found! Check Gradle output above."

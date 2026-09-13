@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { formatUserName } from '@/src/utils/formatUserName';
 import { CompletionUser } from '../hooks/useCompletionStatus';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface StatusCardProps {
   status: string;
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   statusText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
   },
   info: {
@@ -91,11 +92,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   label: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   value: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#333',
   },
@@ -106,13 +107,13 @@ const styles = StyleSheet.create({
     borderTopColor: '#f0f0f0',
   },
   notesLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
   },
   notesText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     lineHeight: 20,
   },

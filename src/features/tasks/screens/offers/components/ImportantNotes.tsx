@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function ImportantNotes() {
   return (
@@ -31,13 +32,13 @@ const styles = StyleSheet.create({
     borderColor: '#ffeaa7',
   },
   notesTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#856404',
     marginBottom: 8,
   },
   noteItem: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#856404',
     marginBottom: 4,
   },

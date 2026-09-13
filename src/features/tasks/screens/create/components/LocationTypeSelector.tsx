@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 type LocationType = 'In-person' | 'Online' | 'Both';
 
@@ -96,14 +97,14 @@ export const LocationTypeSelector: React.FC<LocationTypeSelectorProps> = ({
 
 const styles = StyleSheet.create({
   sectionTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#1C1C1E',
     marginTop: 4,
     marginBottom: 4,
   },
   sectionSubtitle: {
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#666',
     marginBottom: 16,
   },
@@ -132,7 +133,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   locationTypeTitle: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#2c3e50',
     marginBottom: 6,
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   locationTypeDescription: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#7f8c8d',
     textAlign: 'center',
     lineHeight: 14,
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     borderColor: '#0057FF',
   },
   locationTypeBothText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#2c3e50',
   },

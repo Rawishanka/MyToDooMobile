@@ -1,5 +1,11 @@
 import { LocationAutocomplete, type LocationData } from '@/src/shared/components/LocationAutocomplete';
 import { getDeleteRequest, submitDeleteRequest } from '@/src/api/user-profile-api';
+import {
+  useRequestEmailOtp,
+  useRequestPhoneOtp,
+  useVerifyEmailOtp,
+  useVerifyPhoneOtp,
+} from '@/src/shared/hooks/useContactChangeApi';
 import { useGetUserProfile, useUpdateUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +13,7 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface AccountInformationProps {
   onBack: () => void;
@@ -24,6 +31,10 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   // Fetch user profile data
   const { data: profileData, isLoading, error, refetch, isFetching } = useGetUserProfile();
   const updateProfileMutation = useUpdateUserProfile();
+  const requestPhoneOtpMutation = useRequestPhoneOtp();
+  const verifyPhoneOtpMutation = useVerifyPhoneOtp();
+  const requestEmailOtpMutation = useRequestEmailOtp();
+  const verifyEmailOtpMutation = useVerifyEmailOtp();
   const { clearAuth, isAuthenticated, token, user } = useAuthStore();
   
   // Debug logging
@@ -50,6 +61,12 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   const [bio, setBio] = useState('');
   // Store raw location object for API submission
   const [locationRaw, setLocationRaw] = useState<Record<string, string>>({});
+  const [newPhone, setNewPhone] = useState('');
+  const [phoneOtp, setPhoneOtp] = useState('');
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [emailOtp, setEmailOtp] = useState('');
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
   
   // Populate form with API data
   useEffect(() => {
@@ -98,7 +115,27 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   };
 
   const handleUpdateMobile = () => {
+    setNewPhone(phone);
+    setPhoneOtp('');
+    setPhoneOtpSent(false);
     setCurrentScreen('mobile-verification');
+  };
+
+  const handleChangeEmail = () => {
+    setNewEmail(email);
+    setEmailOtp('');
+    setEmailOtpSent(false);
+    setCurrentScreen('email-verification');
+  };
+
+  const getApiError = (error: any, fallback: string) => {
+    const responseData = error?.response?.data;
+    if (responseData?.errors && Array.isArray(responseData.errors) && responseData.errors.length > 0) {
+      return responseData.errors
+        .map((e: any) => e?.message || e?.msg || String(e))
+        .join('\n');
+    }
+    return responseData?.message || error?.message || fallback;
   };
 
   const handleDeleteAccount = async () => {
@@ -205,7 +242,6 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
       await updateProfileMutation.mutateAsync({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        phone,
         location: Object.keys(locationRaw).length > 0
           ? locationRaw
           : { country: location || 'Unknown', countryCode: 'AU' },
@@ -246,47 +282,83 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
 
   const handleRemoveMobile = () => {
     Alert.alert(
-      'Remove Mobile Number',
-      'Are you sure you want to remove your mobile number?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Remove', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await updateProfileMutation.mutateAsync({
-                phone: '',
-              });
-              setPhone('');
-              Alert.alert('Mobile Removed', 'Your mobile number has been removed successfully.');
-            } catch (error) {
-              Alert.alert('Error', 'Failed to remove mobile number.');
-            }
-          }
-        }
-      ]
+      'Change Mobile Number',
+      'Mobile numbers can no longer be removed from profile settings. Use Change phone to verify a new number.',
+      [{ text: 'OK' }]
     );
   };
 
-  const handleSaveMobile = async () => {
-    if (phone.trim() === '') {
+  const handleRequestPhoneOtp = async () => {
+    if (newPhone.trim() === '') {
       Alert.alert('Error', 'Please enter a valid mobile number.');
       return;
     }
-    
     try {
-      await updateProfileMutation.mutateAsync({
-        phone: phone.trim(),
-      });
-      
+      await requestPhoneOtpMutation.mutateAsync(newPhone.trim());
+      setPhoneOtpSent(true);
+      Alert.alert('Code sent', 'Enter the verification code sent to your new mobile number.');
+    } catch (error) {
+      Alert.alert('Error', getApiError(error, 'Failed to send phone verification code.'));
+    }
+  };
+
+  const handleVerifyPhoneOtp = async () => {
+    if (!newPhone.trim() || !phoneOtp.trim()) {
+      Alert.alert('Error', 'Please enter the mobile number and verification code.');
+      return;
+    }
+    try {
+      await verifyPhoneOtpMutation.mutateAsync({ phone: newPhone.trim(), otp: phoneOtp.trim() });
+      setPhone(newPhone.trim());
       Alert.alert(
-        'Mobile Number Updated', 
+        'Mobile Number Updated',
         'Your mobile number has been updated successfully.',
         [{ text: 'OK', onPress: () => setCurrentScreen('main') }]
       );
+      refetch();
     } catch (error) {
-      Alert.alert('Error', 'Failed to update mobile number.');
+      Alert.alert('Error', getApiError(error, 'Failed to verify mobile number.'));
+    }
+  };
+
+  const handleSaveMobile = async () => {
+    if (phoneOtpSent) {
+      await handleVerifyPhoneOtp();
+      return;
+    }
+    await handleRequestPhoneOtp();
+  };
+
+  const handleRequestEmailOtp = async () => {
+    if (newEmail.trim() === '') {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+    try {
+      await requestEmailOtpMutation.mutateAsync(newEmail.trim());
+      setEmailOtpSent(true);
+      Alert.alert('Code sent', 'Enter the verification code sent to your new email address.');
+    } catch (error) {
+      Alert.alert('Error', getApiError(error, 'Failed to send email verification code.'));
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    if (!newEmail.trim() || !emailOtp.trim()) {
+      Alert.alert('Error', 'Please enter the email address and verification code.');
+      return;
+    }
+    try {
+      await verifyEmailOtpMutation.mutateAsync({ email: newEmail.trim(), otp: emailOtp.trim() });
+      setEmail(newEmail.trim());
+      Alert.alert(
+        'Email Updated',
+        'Your email has been updated successfully.',
+        [{ text: 'OK', onPress: () => setCurrentScreen('main') }]
+      );
+      refetch();
+    } catch (error) {
+      Alert.alert('Error', getApiError(error, 'Failed to verify email.'));
     }
   };
 
@@ -435,7 +507,9 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
               placeholder="Email address"
             />
           </View>
-          <Text style={styles.subLabel}>Email cannot be changed for security reasons</Text>
+          <TouchableOpacity onPress={handleChangeEmail}>
+            <Text style={styles.changeContactLink}>Change email</Text>
+          </TouchableOpacity>
 
           <Text style={styles.label}>Phone Number</Text>
           <View style={styles.inputContainer}>
@@ -447,7 +521,9 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
               keyboardType="phone-pad"
             />
           </View>
-          <Text style={styles.webOnlyLabel}>📱 Phone number can only be changed from the web</Text>
+          <TouchableOpacity onPress={handleUpdateMobile}>
+            <Text style={styles.changeContactLink}>Change phone</Text>
+          </TouchableOpacity>
 
           <Text style={styles.label}>Location</Text>
           <View style={styles.locationSection}>
@@ -530,25 +606,131 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
 
   // Mobile Verification Screen
   if (currentScreen === 'mobile-verification') {
+    const phoneBusy = requestPhoneOtpMutation.isPending || verifyPhoneOtpMutation.isPending;
     return (
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={goBackToMain} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color="#333" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Update Mobile Number</Text>
+          <Text style={styles.headerTitle}>Change phone</Text>
         </View>
-        <View style={styles.webOnlyScreen}>
-          <Ionicons name="phone-portrait-outline" size={64} color="#0052A2" style={{ marginBottom: 24 }} />
-          <Text style={styles.webOnlyTitle}>Web Only Feature</Text>
-          <Text style={styles.webOnlyDescription}>
-            Mobile number changes can only be made from the web platform for security reasons.
-          </Text>
-          <Text style={styles.webOnlyUrl}>Visit: www.mytodoo.com.au</Text>
-          <TouchableOpacity style={styles.saveButton} onPress={goBackToMain}>
-            <Text style={styles.saveButtonText}>Go Back</Text>
+        <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+          <Text style={styles.label}>New mobile number</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.inputText}
+              value={newPhone}
+              onChangeText={setNewPhone}
+              placeholder="Enter phone number"
+              keyboardType="phone-pad"
+              autoCapitalize="none"
+            />
+          </View>
+          {phoneOtpSent && (
+            <>
+              <Text style={styles.label}>Verification code</Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.inputText}
+                  value={phoneOtp}
+                  onChangeText={setPhoneOtp}
+                  placeholder="Enter OTP"
+                  keyboardType="number-pad"
+                />
+              </View>
+            </>
+          )}
+          <View style={styles.mobileButtonsContainer}>
+            <TouchableOpacity
+              style={[styles.saveMobileButton, phoneBusy && styles.saveButtonDisabled]}
+              onPress={phoneOtpSent ? handleVerifyPhoneOtp : handleRequestPhoneOtp}
+              disabled={phoneBusy}
+            >
+              {phoneBusy ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.saveMobileButtonText}>
+                  {phoneOtpSent ? 'Verify phone' : 'Send verification code'}
+                </Text>
+              )}
+            </TouchableOpacity>
+            {phoneOtpSent && (
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={handleRequestPhoneOtp}
+                disabled={phoneBusy}
+              >
+                <Text style={styles.removeButtonText}>Resend code</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  if (currentScreen === 'email-verification') {
+    const emailBusy = requestEmailOtpMutation.isPending || verifyEmailOtpMutation.isPending;
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={goBackToMain} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={24} color="#333" />
           </TouchableOpacity>
+          <Text style={styles.headerTitle}>Change email</Text>
         </View>
+        <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
+          <Text style={styles.label}>New email</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.inputText}
+              value={newEmail}
+              onChangeText={setNewEmail}
+              placeholder="Enter email address"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
+          {emailOtpSent && (
+            <>
+              <Text style={styles.label}>Verification code</Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.inputText}
+                  value={emailOtp}
+                  onChangeText={setEmailOtp}
+                  placeholder="Enter OTP"
+                  keyboardType="number-pad"
+                />
+              </View>
+            </>
+          )}
+          <View style={styles.mobileButtonsContainer}>
+            <TouchableOpacity
+              style={[styles.saveMobileButton, emailBusy && styles.saveButtonDisabled]}
+              onPress={emailOtpSent ? handleVerifyEmailOtp : handleRequestEmailOtp}
+              disabled={emailBusy}
+            >
+              {emailBusy ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.saveMobileButtonText}>
+                  {emailOtpSent ? 'Verify email' : 'Send verification code'}
+                </Text>
+              )}
+            </TouchableOpacity>
+            {emailOtpSent && (
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={handleRequestEmailOtp}
+                disabled={emailBusy}
+              >
+                <Text style={styles.removeButtonText}>Resend code</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </ScrollView>
       </View>
     );
   }
@@ -577,11 +759,14 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
           subtitle="Can only be changed from the web"
         />
         <MenuItem 
-          text="Update mobile number" 
+          text="Change phone" 
           onPress={handleUpdateMobile}
           showArrow={true}
-          disabled={true}
-          subtitle="Can only be changed from the web"
+        />
+        <MenuItem 
+          text="Change email" 
+          onPress={handleChangeEmail}
+          showArrow={true}
         />
         <MenuItem 
           text="Delete my account" 
@@ -703,7 +888,7 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
   },
@@ -721,7 +906,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e0e0e0',
   },
   menuText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '500',
   },
   menuItemDisabled: {
@@ -729,13 +914,20 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   menuSubtitle: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#dc3545',
     marginTop: 2,
   },
   webOnlyLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#dc3545',
+    marginBottom: 8,
+    marginHorizontal: 20,
+  },
+  changeContactLink: {
+    fontSize: RFValue(14),
+    color: '#0052A2',
+    fontWeight: '600',
     marginBottom: 8,
     marginHorizontal: 20,
   },
@@ -753,27 +945,27 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   webOnlyTitle: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#333',
     marginBottom: 12,
     textAlign: 'center',
   },
   webOnlyDescription: {
-    fontSize: 15,
+    fontSize: RFValue(15),
     color: '#666',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 16,
   },
   webOnlyUrl: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#0052A2',
     fontWeight: '600',
     marginBottom: 32,
   },
   label: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '500',
     color: '#333',
     marginTop: 24,
@@ -781,13 +973,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
   },
   subLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginBottom: 8,
     marginHorizontal: 20,
   },
   charCount: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
     textAlign: 'right',
     marginHorizontal: 20,
@@ -805,7 +997,7 @@ const styles = StyleSheet.create({
   },
   inputText: {
     flex: 1,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#333',
   },
   disabledInput: {
@@ -829,7 +1021,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   passwordContent: {
@@ -875,14 +1067,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   passwordText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#333',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 16,
   },
   emailText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     textAlign: 'center',
@@ -890,6 +1082,7 @@ const styles = StyleSheet.create({
   },
   mobileButtonsContainer: {
     marginTop: 24,
+    marginHorizontal: 20,
     gap: 16,
   },
   removeButton: {
@@ -903,7 +1096,7 @@ const styles = StyleSheet.create({
   },
   removeButtonText: {
     color: '#dc3545',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   saveMobileButton: {
@@ -915,7 +1108,7 @@ const styles = StyleSheet.create({
   },
   saveMobileButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   modalOverlay: {
@@ -933,14 +1126,14 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#333',
     marginBottom: 16,
     textAlign: 'center',
   },
   modalText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     lineHeight: 20,
     marginBottom: 24,
@@ -959,7 +1152,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: '#333',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   deleteButton: {
@@ -971,7 +1164,7 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   reasonContainer: {
@@ -980,7 +1173,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   reasonLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#333',
     marginBottom: 6,
@@ -990,13 +1183,13 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 8,
     padding: 10,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     backgroundColor: '#f9f9f9',
     minHeight: 80,
   },
   reasonCharCount: {
-    fontSize: 11,
+    fontSize: RFValue(11),
     color: '#999',
     textAlign: 'right',
     marginTop: 2,
@@ -1012,7 +1205,7 @@ const styles = StyleSheet.create({
   },
   pendingRequestText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: RFValue(13),
     color: '#856404',
     lineHeight: 18,
   },
@@ -1024,7 +1217,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 16,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
   },
   errorContainer: {
@@ -1036,7 +1229,7 @@ const styles = StyleSheet.create({
   errorText: {
     marginTop: 16,
     marginBottom: 24,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     textAlign: 'center',
   },
@@ -1048,7 +1241,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

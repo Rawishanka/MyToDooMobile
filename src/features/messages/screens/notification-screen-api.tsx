@@ -1,6 +1,7 @@
 // Notification Screen - Backend API + Local Storage Integration
 // Loads notification history from the backend (GET /notifications) AND local FCM storage
 // Supports mark-as-read, mark-all-as-read, delete, delete-all
+import { AppAlert } from '@/src/shared/components/AppAlert';
 import {
     deleteAllNotifications,
     deleteNotification,
@@ -19,10 +20,11 @@ import {
     type StoredNotification,
 } from '@/src/services/notification-storage';
 import { emitNotificationsChanged } from '@/src/services/notification-events';
+import { navigateFromNotification } from '@/src/shared/utils/notification-navigation';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-    Alert,
     Modal,
     SafeAreaView,
     StatusBar,
@@ -31,6 +33,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { RFValue, isTablet, wp, hp } from '@/src/shared/utils/responsive';
 
 interface NotificationModalProps {
   visible: boolean;
@@ -39,12 +42,39 @@ interface NotificationModalProps {
 
 // Map backend Notification → StoredNotification shape used by NotificationHistoryList
 function mapToDisplayNotification(n: APINotification): StoredNotification {
+  const data = { ...(n.data || {}) };
+
+  if (n.resourceId && !data.resourceId) {
+    data.resourceId = n.resourceId;
+  }
+  if (n.resourceType && !data.resourceType) {
+    data.resourceType = n.resourceType;
+  }
+
+  const resourceType = (n.resourceType || data.resourceType || '').toString().toUpperCase();
+  if (n.resourceId) {
+    if ((resourceType === 'CHAT' || resourceType === 'MESSAGE') && !data.chatId && !data.chat_id && n.resourceId) {
+      data.chatId = n.resourceId;
+    }
+    if (resourceType === 'TASK' && !data.taskId && !data.task_id) {
+      data.taskId = n.resourceId;
+    }
+    if (resourceType === 'REVIEW' && !data.reviewId) {
+      const eventType = String(data.type || n.type || '').toUpperCase();
+      if (eventType === 'REVIEW_REQUIRED') {
+        if (!data.taskId && !data.task_id) data.taskId = n.resourceId;
+      } else {
+        data.reviewId = n.resourceId;
+      }
+    }
+  }
+
   return {
     id: n._id || n.id,
     title: n.title,
     body: n.message,
-    data: n.data,
-    type: n.resourceType || n.type || 'unknown',
+    data,
+    type: n.resourceType || data.type || n.type || 'unknown',
     createdAt: n.createdAt,
     readAt: n.readAt ?? undefined,
     isRead: n.isRead,
@@ -55,6 +85,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
   visible,
   onClose,
 }) => {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<StoredNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -190,7 +221,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
 
   // Delete all notifications (both backend + local)
   const handleDeleteAll = () => {
-    Alert.alert(
+    AppAlert.alert(
       'Delete All Notifications',
       'Are you sure you want to delete all notifications? This cannot be undone.',
       [
@@ -210,7 +241,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
               setTotalCount(0);
             } catch (error) {
               console.error('❌ Error deleting all notifications:', error);
-              Alert.alert('Error', 'Failed to delete notifications. Please try again.');
+              AppAlert.alert('Error', 'Failed to delete notifications. Please try again.');
             }
           },
         },
@@ -288,6 +319,22 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
               if (!notification.isRead) {
                 handleMarkAsRead(notification.id);
               }
+
+              onClose();
+              setTimeout(() => {
+                try {
+                  const navigated = navigateFromNotification(router, notification);
+                  if (!navigated) {
+                    console.log('ℹ️ No navigation target for notification:', notification.id);
+                  }
+                } catch (error) {
+                  console.error('❌ Notification navigation failed:', error);
+                  AppAlert.alert(
+                    'Navigation Error',
+                    'Could not open this notification. Please try again from the relevant screen.'
+                  );
+                }
+              }, 300);
             }}
           />
         </View>
@@ -307,8 +354,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: isTablet ? wp('6%') : 16,
+    paddingVertical: isTablet ? 16 : 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
     backgroundColor: '#fff',
@@ -323,7 +370,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(isTablet ? 16 : 18),
     fontWeight: '600',
     color: '#000',
   },
@@ -336,7 +383,7 @@ const styles = StyleSheet.create({
   },
   headerBadgeText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
   },
   headerActions: {
@@ -350,14 +397,14 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: isTablet ? wp('6%') : 16,
+    paddingVertical: isTablet ? 10 : 8,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
   tab: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: isTablet ? 10 : 8,
     alignItems: 'center',
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
@@ -366,7 +413,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#003399',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: RFValue(isTablet ? 13 : 14),
     color: '#6c757d',
     fontWeight: '500',
   },

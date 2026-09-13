@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PaymentNotesProps {
   notes: string;
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   inputLabel: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
@@ -74,13 +75,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#000',
     minHeight: 80,
     backgroundColor: '#fff',
   },
   characterCount: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     textAlign: 'right',
     marginTop: 4,
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
   },
   securityText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#2e7d32',
     marginLeft: 8,
     lineHeight: 20,
@@ -108,13 +109,13 @@ const styles = StyleSheet.create({
     borderColor: '#ffeaa7',
   },
   notesTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#856404',
     marginBottom: 8,
   },
   noteItem: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#856404',
     marginBottom: 4,
   },

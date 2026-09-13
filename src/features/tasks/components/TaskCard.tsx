@@ -1,5 +1,6 @@
 import { cardStyles, colors } from '@/src/shared/theme';
 import { formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
+import { resolveTaskBudget } from '@/src/shared/utils/resolveTaskBudget';
 import { formatUserName, formatAvatarName } from '@/src/utils/formatUserName';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
@@ -170,8 +171,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   // Use task's original currency and formatted budget from backend
   // If backend provides formattedBudget, use it directly
   // Otherwise, format using task's original currency
+  const taskBudget = resolveTaskBudget(task);
   const formattedBudget = task.formattedBudget || 
-    (task.budget && task.currency ? formatCurrency(task.budget, { code: task.currency, symbol: getCurrencySymbol(task.currency) }) : 
+    (taskBudget && task.currency ? formatCurrency(taskBudget, { code: task.currency, symbol: getCurrencySymbol(task.currency) }) : 
     'Budget not specified');
 
   // Compact variant (for lists with many items)
@@ -258,124 +260,208 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   return (
     <TouchableOpacity
       style={[cardStyles.taskCard, styles.defaultCard]}
-      activeOpacity={0.6}
+      activeOpacity={0.75}
       onPress={() => onPress(task._id)}
     >
-      {/* Task Title */}
-      <Text style={styles.taskTitle} numberOfLines={2}>
-        {task.title}
-      </Text>
+      {/* Left accent strip */}
+      <View style={styles.accentStrip} />
 
-      {/* Location */}
-      <View style={styles.taskRow}>
-        <Ionicons name={locationInfo.icon as any} size={RFValue(14)} color={colors.textSecondary} />
-        <Text style={styles.taskRowText} numberOfLines={1}>
-          {(() => {
-            const address = parsedLocation?.address || 'Location not specified';
-            if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
-              const match = address.match(/\"address\":\"([^\"]+)\"/);
-              return match ? match[1] : address;
-            }
-            return address;
-          })()}
-        </Text>
-      </View>
-
-      {/* Time Preference */}
-      <View style={styles.taskRow}>
-        <Ionicons name="time-outline" size={RFValue(14)} color={colors.textSecondary} />
-        <Text style={styles.taskRowText}>{getTimePreference()}</Text>
-      </View>
-
-      {/* Date Display - Show when specific date is set */}
-      {dateDisplay && (
-        <View style={styles.taskRow}>
-          <Ionicons name="calendar-outline" size={RFValue(14)} color={colors.textSecondary} />
-          <Text style={styles.taskRowText}>{dateDisplay}</Text>
-        </View>
-      )}
-
-      {/* Categories */}
-      {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
-        <View style={styles.categoriesRow}>
-          {task.categories.slice(0, 2).map((category, index) => (
-            <View key={index} style={styles.categoryTag}>
-              <Text style={styles.categoryText}>{category}</Text>
-            </View>
-          ))}
-          {task.categories.length > 2 && (
-            <Text style={styles.moreCategoriesText}>
-              +{task.categories.length - 2} more
-            </Text>
-          )}
-        </View>
-      )}
-
-      {/* Offer Count Row */}
-      <View style={styles.bottomRow}>
-        <View style={styles.statusContainer}>
-          {/* Offer Count */}
-          <Text style={styles.offerText}>
-            {task.status === 'accepted' || task.status === 'completed' || 
-             task.status === 'assigned' || task.status === 'in_progress' || task.status === 'in-progress'
-              ? task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')
-              : (() => {
-                  // Try multiple ways to get offer count
-                  const offerCount = task.offerCount || task.offers?.length || 0;
-                  
-                  // Only log for the first few tasks to avoid spam
-                  if (task._id && task.title && Math.random() < 0.1) {
-                    console.log('🔍 [Browse TaskCard] Offer count:', {
-                      taskId: task._id,
-                      title: task.title,
-                      offerCount: task.offerCount,
-                      offersLength: task.offers?.length,
-                      calculatedCount: offerCount
-                    });
-                  }
-                  
-                  return offerCount > 0
-                    ? `${offerCount} Offer${offerCount !== 1 ? 's' : ''}`
-                    : 'Make the first offer';
-                })()}
+      <View style={styles.cardBody}>
+        {/* Header row: Title + Price */}
+        <View style={styles.cardHeaderRow}>
+          <Text style={styles.taskTitle} numberOfLines={2}>
+            {task.title}
           </Text>
+          <View style={styles.priceBubble}>
+            <Text style={styles.priceText}>{formattedBudget}</Text>
+          </View>
         </View>
 
-        {/* Price */}
-        <Text style={styles.priceText}>{formattedBudget}</Text>
+        {/* Metadata with Logo-inspired colored badges */}
+        <View style={styles.metaContainer}>
+          {/* Location */}
+          <View style={styles.taskRow}>
+            <View style={[styles.iconBadge, styles.locationIconBadge]}>
+              <Ionicons
+                name={(locationInfo.icon === 'car-outline' ? 'car' : 'location-sharp') as any}
+                size={RFValue(11)}
+                color="#0284C7"
+              />
+            </View>
+            <Text style={styles.taskRowText} numberOfLines={1}>
+              {(() => {
+                const address = parsedLocation?.address || 'Location not specified';
+                if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
+                  const match = address.match(/\"address\":\"([^\"]+)\"/);
+                  return match ? match[1] : address;
+                }
+                return address;
+              })()}
+            </Text>
+          </View>
+
+          {/* Date Display - Show when specific date is set */}
+          {dateDisplay && (
+            <View style={styles.taskRow}>
+              <View style={[styles.iconBadge, styles.dateIconBadge]}>
+                <Ionicons name="calendar" size={RFValue(11)} color="#10B981" />
+              </View>
+              <Text style={[styles.taskRowText, styles.dateRowText]}>{dateDisplay}</Text>
+            </View>
+          )}
+
+          {/* Time / Flexibility */}
+          <View style={styles.taskRow}>
+            <View style={[styles.iconBadge, styles.timeIconBadge]}>
+              <Ionicons name="time" size={RFValue(11)} color="#FF6B00" />
+            </View>
+            <Text style={styles.taskRowText}>{getTimePreference()}</Text>
+          </View>
+        </View>
+
+        {/* Categories */}
+        {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
+          <View style={styles.categoriesRow}>
+            {task.categories.slice(0, 2).map((category, index) => (
+              <View key={index} style={styles.categoryTag}>
+                <View style={styles.categoryDot} />
+                <Text style={styles.categoryText}>{category}</Text>
+              </View>
+            ))}
+            {task.categories.length > 2 && (
+              <View style={styles.moreCategoriesTag}>
+                <Text style={styles.moreCategoriesText}>
+                  +{task.categories.length - 2}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Bottom: Dynamic Offer / Status chip + Poster */}
+        <View style={styles.bottomRow}>
+          {/* Dynamic Offer Chip */}
+          {(() => {
+            const isAcceptedOrComplete =
+              task.status === 'accepted' ||
+              task.status === 'completed' ||
+              task.status === 'assigned' ||
+              task.status === 'in_progress' ||
+              task.status === 'in-progress';
+
+            if (isAcceptedOrComplete) {
+              const statusColor = getStatusColor(task.status);
+              return (
+                <View style={[styles.statusChip, { backgroundColor: `${statusColor}14`, borderColor: `${statusColor}30` }]}>
+                  <Ionicons name="checkmark-circle" size={RFValue(11)} color={statusColor} />
+                  <Text style={[styles.statusChipText, { color: statusColor }]}>
+                    {task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')}
+                  </Text>
+                </View>
+              );
+            }
+
+            const offerCount = task.offerCount || task.offers?.length || 0;
+            if (offerCount > 0) {
+              return (
+                <View style={styles.offerChipActive}>
+                  <Ionicons name="pricetag" size={RFValue(10)} color="#FF6B00" />
+                  <Text style={styles.offerTextActive}>
+                    {offerCount} {offerCount === 1 ? 'Offer' : 'Offers'}
+                  </Text>
+                </View>
+              );
+            }
+
+            return (
+              <View style={styles.firstOfferChip}>
+                <Ionicons name="sparkles" size={RFValue(10)} color="#10B981" />
+                <Text style={styles.firstOfferText}>Be first to offer</Text>
+              </View>
+            );
+          })()}
+
+          {/* Poster */}
+          <View style={styles.posterRow}>
+            <Image
+              source={{
+                uri: task.createdBy?.avatar ||
+                     task.createdBy?.profilePicture ||
+                     `https://ui-avatars.com/api/?name=${formatAvatarName(task.createdBy?.firstName, task.createdBy?.lastName)}&background=1A2980&color=fff&size=80`,
+              }}
+              style={styles.userAvatar}
+            />
+            <Text style={styles.posterName} numberOfLines={1}>
+              {formatUserName(task.createdBy?.firstName, task.createdBy?.lastName)}
+            </Text>
+          </View>
+        </View>
       </View>
 
-      {/* User Avatar */}
-      <View style={styles.userAvatarContainer}>
-        <Image
-          source={{
-            uri: task.createdBy?.avatar || 
-                 task.createdBy?.profilePicture ||
-                 `https://ui-avatars.com/api/?name=${formatAvatarName(task.createdBy?.firstName, task.createdBy?.lastName)}&background=0052A2&color=fff&size=80`,
-          }}
-          style={styles.userAvatar}
-        />
-        {/* Poster Name */}
-        <Text style={styles.posterName} numberOfLines={2}>
-          Posted by: {formatUserName(task.createdBy?.firstName, task.createdBy?.lastName)}
-        </Text>
-      </View>
-
-      {/* Navigation Indicator */}
+      {/* Navigation indicator */}
       <View style={styles.navigationIndicator}>
-        <Ionicons name="chevron-forward" size={RFValue(14)} color={colors.border} />
+        <View style={styles.chevronCircle}>
+          <Ionicons name="chevron-forward" size={RFValue(11)} color="#94A3B8" />
+        </View>
       </View>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  // Default Card Styles - RESPONSIVE
+  // Default Card Styles - 2026 PREMIUM
   defaultCard: {
-    marginHorizontal: isTablet ? wp('-2%') : wp('4%'), // Wider cards on tablets
-    marginBottom: hp('1%'),
+    marginHorizontal: isTablet ? wp('-2%') : wp('4%'),
+    marginBottom: hp('1.5%'),
     position: 'relative',
-    paddingRight: isTablet ? wp('10%') : wp('20%'), // More space on phones for avatar
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    shadowColor: '#1A2980',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    overflow: 'hidden',
+    flexDirection: 'row',
+  },
+  accentStrip: {
+    width: 4.5,
+    backgroundColor: '#1A2980',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+    flexShrink: 0,
+  },
+  cardBody: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    paddingRight: wp('2%'),
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginBottom: hp('0.9%'),
+    paddingRight: 24, // Space for chevron
+  },
+  priceBubble: {
+    backgroundColor: '#F0F4FF',
+    borderWidth: 1,
+    borderColor: '#D8E2FD',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4.5,
+    flexShrink: 0,
+    alignSelf: 'flex-start',
+  },
+  priceText: {
+    fontSize: RFValue(isTablet ? 14 : 15),
+    fontWeight: '800',
+    color: '#1A2980',
+    letterSpacing: 0.2,
   },
 
   // Compact Card Styles - RESPONSIVE
@@ -431,14 +517,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: wp('2%'),
   },
-  taskTitle: {
-    fontSize: RFValue(isTablet ? 13 : 14),
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: hp('0.5%'),
-    lineHeight: RFValue(isTablet ? 16 : 18),
-    paddingRight: wp('1%'),
-  },
   taskLocation: {
     fontSize: RFValue(isTablet ? 10 : 11),
     color: colors.textSecondary,
@@ -467,69 +545,165 @@ const styles = StyleSheet.create({
   },
 
   // Common Task Row Styles (Default) - RESPONSIVE
+  taskTitle: {
+    fontSize: RFValue(isTablet ? 13.5 : 15),
+    fontWeight: '700',
+    color: '#0F172A',
+    flex: 1,
+    lineHeight: RFValue(isTablet ? 18 : 21),
+  },
+  metaContainer: {
+    gap: hp('0.5%'),
+    marginBottom: hp('0.6%'),
+  },
   taskRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: hp('0.5%'),
-    gap: wp('1.5%'),
-    paddingRight: wp('2%'),
+    gap: 8,
+  },
+  iconBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  locationIconBadge: {
+    backgroundColor: '#EFF6FF',
+  },
+  dateIconBadge: {
+    backgroundColor: '#ECFDF5',
+  },
+  timeIconBadge: {
+    backgroundColor: '#FFF7ED',
   },
   taskRowText: {
-    fontSize: RFValue(isTablet ? 10 : 11),
-    color: colors.textSecondary,
+    fontSize: RFValue(isTablet ? 11 : 12),
+    color: '#475569',
+    fontWeight: '500',
     flex: 1,
     flexShrink: 1,
   },
-
+  dateRowText: {
+    color: '#047857',
+    fontWeight: '600',
+  },
   categoriesRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    gap: wp('1.5%'),
-    marginBottom: hp('0.5%'),
+    gap: 6,
+    marginBottom: hp('0.8%'),
+    marginTop: hp('0.2%'),
   },
   categoryTag: {
-    backgroundColor: '#e3f2fd',
-    paddingHorizontal: wp('2%'),
-    paddingVertical: hp('0.3%'),
-    borderRadius: getResponsiveValue(8, 10, 12),
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 12,
+  },
+  categoryDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#0284C7',
   },
   categoryText: {
-    fontSize: RFValue(9),
-    color: '#1976d2',
-    fontWeight: '500',
+    fontSize: RFValue(9.5),
+    color: '#334155',
+    fontWeight: '600',
+  },
+  moreCategoriesTag: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 6,
+    paddingVertical: 3.5,
+    borderRadius: 12,
   },
   moreCategoriesText: {
     fontSize: RFValue(9),
-    color: '#666',
-    fontStyle: 'italic',
+    color: '#64748B',
+    fontWeight: '600',
   },
-
   bottomRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: hp('0.5%'),
-    marginBottom: hp('1%'),
-    paddingRight: wp('1%'),
+    marginTop: hp('0.8%'),
+    paddingTop: hp('0.8%'),
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
   },
-  statusContainer: {
-    flexDirection: 'column',
+  offerChipActive: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4.5,
+    backgroundColor: '#FFF4ED',
+    borderWidth: 1,
+    borderColor: '#FFE2D1',
+    paddingHorizontal: 9,
+    paddingVertical: 4.5,
+    borderRadius: 16,
   },
-  statusText: {
-    fontSize: RFValue(isTablet ? 8 : 9),
-    color: colors.textTertiary,
-    marginBottom: hp('0.2%'),
-  },
-  offerText: {
+  offerTextActive: {
     fontSize: RFValue(isTablet ? 10 : 11),
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  priceText: {
-    fontSize: RFValue(isTablet ? 15 : 16),
+    color: '#EA580C',
     fontWeight: '700',
-    color: colors.primary,
+  },
+  firstOfferChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4.5,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#D1FAE5',
+    paddingHorizontal: 9,
+    paddingVertical: 4.5,
+    borderRadius: 16,
+  },
+  firstOfferText: {
+    fontSize: RFValue(isTablet ? 10 : 11),
+    color: '#059669',
+    fontWeight: '600',
+  },
+  statusChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4.5,
+    borderWidth: 1,
+    paddingHorizontal: 9,
+    paddingVertical: 4.5,
+    borderRadius: 16,
+  },
+  statusChipText: {
+    fontSize: RFValue(isTablet ? 10 : 11),
+    fontWeight: '700',
+  },
+  posterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexShrink: 1,
+  },
+  userAvatar: {
+    width: isTablet ? 26 : 24,
+    height: isTablet ? 26 : 24,
+    borderRadius: isTablet ? 13 : 12,
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+  },
+  posterName: {
+    fontSize: RFValue(isTablet ? 9.5 : 10.5),
+    color: '#475569',
+    fontWeight: '600',
+    flexShrink: 1,
+    maxWidth: isTablet ? 120 : 100,
   },
 
   // Map Button - RESPONSIVE
@@ -550,40 +724,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  // User Avatar - RESPONSIVE
-  userAvatarContainer: {
-    position: 'absolute',
-    top: hp('1%'),
-    right: wp('2%'),
-    alignItems: 'center',
-    width: isTablet ? 80 : wp('20%'),
-    zIndex: 2,
-  },
-  userAvatar: {
-    width: isTablet ? 50 : wp('10%'),
-    height: isTablet ? 50 : wp('10%'),
-    borderRadius: isTablet ? 25 : wp('5%'),
-    backgroundColor: colors.backgroundDark,
-  },
-  posterName: {
-    fontSize: RFValue(isTablet ? 9 : 7),
-    color: colors.textPrimary,
-    textAlign: 'center',
-    marginTop: hp('0.3%'),
-    maxWidth: isTablet ? 75 : wp('18%'),
-    lineHeight: RFValue(isTablet ? 11 : 9),
-    fontWeight: '500',
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    paddingHorizontal: wp('0.5%'),
-    paddingVertical: hp('0.1%'),
-    borderRadius: getResponsiveValue(2, 3, 4),
-    overflow: 'hidden',
-  },
-
   // Navigation Indicator - RESPONSIVE
   navigationIndicator: {
     position: 'absolute',
-    bottom: hp('1%'),
-    right: wp('2%'),
+    top: 14,
+    right: 12,
+  },
+  chevronCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

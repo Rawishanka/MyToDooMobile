@@ -3,25 +3,18 @@ import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Text, TextInput } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-// ─── Prevent device Accessibility font-size from breaking layouts ─────────────
-// Primary fix is in index.js (runs before this module).
-// This is a safety net in case any lazy-loaded module re-registers Text defaults.
-(Text as any).defaultProps = { ...((Text as any).defaultProps || {}), allowFontScaling: false };
-(TextInput as any).defaultProps = { ...((TextInput as any).defaultProps || {}), allowFontScaling: false };
-// ─────────────────────────────────────────────────────────────────────────────
-
+import { ConnectivityProvider } from '@/src/services/offline/ConnectivityProvider';
 import { AuthProvider } from '@/src/shared/AuthProvider';
+import { AppAlertHost } from '@/src/shared/components/AppAlert';
 import { DeepLinkHandler } from '@/src/shared/components/DeepLinkHandler';
 import { EnhancedOfflineBanner } from '@/src/shared/components/EnhancedOfflineBanner';
 import { NotificationPermissionPrompt } from '@/src/shared/components/NotificationPermissionPrompt';
 import ProfessionalSplashScreen from '@/src/shared/components/ProfessionalSplashScreen';
 import { useColorScheme } from '@/src/shared/hooks/useColorScheme';
 import { useInitializeFCM } from '@/src/shared/hooks/useInitializeFCM';
-import { ConnectivityProvider } from '@/src/services/offline/ConnectivityProvider';
 import { setupAppleCredentialListener, verifyAppleCredentialState } from '@/src/shared/utils/apple-auth-manager';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
@@ -212,6 +205,7 @@ export default function RootLayout() {
                   <Stack.Screen name="+not-found" />
                 </Stack>
                 <StatusBar style="dark" />
+                <AppAlertHost />
                 
                 {/* 🌐 Offline Sync Banner - Shows on ALL screens when offline/syncing */}
                 <EnhancedOfflineBanner />

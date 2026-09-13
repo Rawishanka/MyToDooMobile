@@ -1,110 +1,190 @@
 import FallingStars from '@/src/shared/components/FallingStars';
+import MyToDooBrandLogo, { MYTDOO_BRAND_BLUE } from '@/src/shared/components/MyToDooBrandLogo';
+import { RFValue, isTablet, wp } from '@/src/shared/utils/responsive';
 import { useAuthStore } from '@/src/store/auth-task-store';
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link, useRouter } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const { width: screenWidth } = Dimensions.get('window');
-const MyToDooLogo = require('@/assets/MyToDoo_logo.gif');
-// TODO: Replace with actual cartoon/graphic asset for overlay
-const CartoonShears = null; // e.g. require('@/assets/gardening_shears.png')
+const IndexHeroVideo = require('@/assets/index_screen/mian_index.mp4');
 
-import { categoryVideos, getCategoryVideo } from '@/src/shared/utils/videoLoader';
+const VIDEO_ASPECT = 16 / 9;
+const LOGO_ASPECT = 2;
+
+interface IndexLayout {
+  logoWidth: number;
+  videoWidth: number;
+  videoHeight: number;
+  contentMaxWidth: number;
+  heroHeight: number;
+  bottomPadding: number;
+  heroPaddingTop: number;
+  heroPaddingBottom: number;
+  contentGap: number;
+  useScroll: boolean;
+  isTabletLayout: boolean;
+  isTabletPortrait: boolean;
+}
 
 export default function WelcomeScreen() {
-  console.log('🏠 WelcomeScreen component rendering...');
   const router = useRouter();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [nextIndex, setNextIndex] = useState(1);
-  const [videoLoaded, setVideoLoaded] = useState(false);
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const isLandscape = width > height;
+  const isTabletPortrait = isTablet && !isLandscape;
+  const [isMuted, setIsMuted] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const { isAuthenticated, token } = useAuthStore();
-  
-  console.log('🔑 Current auth state:', { isAuthenticated, hasToken: !!token });
-  
-  // Check authentication and navigate to appropriate screen
+
   useEffect(() => {
     const checkAuth = async () => {
-      console.log('🔐 Checking authentication status...', { isAuthenticated, hasToken: !!token });
-      
-      // Wait for AuthProvider to restore state from AsyncStorage
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       const currentAuthState = useAuthStore.getState();
-      
-      // Check if user has ever logged in before
       const hasLoggedInBefore = await AsyncStorage.getItem('hasLoggedInBefore');
-      
-      console.log('🔐 Auth state after delay:', { 
-        isAuthenticated: currentAuthState.isAuthenticated, 
-        hasToken: !!currentAuthState.token,
-        userId: currentAuthState.user?._id,
-        hasLoggedInBefore: hasLoggedInBefore
-      });
-      
-      // Priority 1: If user is authenticated with valid token -> go to tabs
+
       if (currentAuthState.isAuthenticated && currentAuthState.token) {
-        console.log('✅ User is authenticated, navigating to tabs...');
         router.replace('/(tabs)' as any);
         return;
       }
-      
-      // Priority 2: If user has logged in before (but now logged out) -> go to login
+
       if (hasLoggedInBefore === 'true') {
-        console.log('🔑 User has logged in before but is now logged out, navigating to login screen...');
         router.replace('/(auth)/login' as any);
         return;
       }
-      
-      // Priority 3: First-time user -> show welcome screen
-      console.log('👋 First-time user, showing welcome screen');
+
       setIsCheckingAuth(false);
     };
-    
+
     checkAuth();
-  }, []); // Run only once on mount
-  
-  useEffect(() => {
-    console.log('🚀 WelcomeScreen: Component mounted, starting video timer...');
-    
-    // Start video rotation after a small delay to allow initial render
-    const startTimer = setTimeout(() => {
-      console.log('🎬 Starting video rotation...');
-      const interval = setInterval(() => {
-        setCurrentIndex((prev) => {
-          const nextIndex = (prev + 1) % categoryVideos.length;
-          setNextIndex((nextIndex + 1) % categoryVideos.length);
-          return nextIndex;
-        });
-      }, 4000); // Increased interval for smoother experience
-      return () => clearInterval(interval);
-    }, 1000); // 1 second delay
-    
-    return () => {
-      console.log('🛑 WelcomeScreen: Cleaning up timers...');
-      clearTimeout(startTimer);
-    };
   }, []);
 
-  const currentCategory = categoryVideos[currentIndex];
-  const nextCategory = categoryVideos[nextIndex];
-  const currentVideo = getCategoryVideo(currentCategory.id);
-  const nextVideo = getCategoryVideo(nextCategory.id);
-  
-  // Create video player for current video
-  const player = useVideoPlayer(currentVideo || undefined, player => {
-    player.loop = true;
-    player.muted = true;
-    player.play();
+  const player = useVideoPlayer(IndexHeroVideo, p => {
+    p.loop = true;
+    p.muted = false;
+    p.play();
   });
 
-  // Show loading while checking authentication
+  useEffect(() => {
+    if (player) {
+      player.muted = isMuted;
+    }
+  }, [isMuted, player]);
+
+  const layout = useMemo((): IndexLayout => {
+    const safeTop = insets.top;
+    const safeBottom = insets.bottom;
+    const bottomPadding = Math.max(safeBottom, isTablet ? 14 : 10);
+
+    const bottomPanelHeight =
+      (isTablet ? 18 : 22) +
+      26 +
+      12 +
+      (isTablet ? 46 : 42) +
+      12 +
+      (isTablet ? 46 : 42) +
+      bottomPadding;
+
+    const heroHeight = Math.max(height - safeTop - bottomPanelHeight, 160);
+
+    const contentMaxWidth = isTablet
+      ? isLandscape
+        ? Math.min(width * 0.62, 680)
+        : Math.min(width * 0.9, 760)
+      : width;
+
+    const fitSizes = (baseLogoWidth: number, baseVideoWidth: number, maxStackHeight: number) => {
+      let logoWidth = baseLogoWidth;
+      let videoWidth = baseVideoWidth;
+      let videoHeight = videoWidth / VIDEO_ASPECT;
+      const logoHeight = logoWidth / LOGO_ASPECT;
+      const stackHeight = logoHeight + videoHeight;
+
+      if (stackHeight > maxStackHeight) {
+        const scale = maxStackHeight / stackHeight;
+        logoWidth *= scale;
+        videoWidth *= scale;
+        videoHeight = videoWidth / VIDEO_ASPECT;
+      }
+
+      return { logoWidth, videoWidth, videoHeight };
+    };
+
+    if (isTablet) {
+      if (isTabletPortrait) {
+        const maxStackHeight = Math.min(heroHeight * 0.52, height * 0.38);
+        const baseLogo = Math.min(contentMaxWidth * 0.58, 280);
+        const baseVideo = contentMaxWidth * 0.84;
+        const sized = fitSizes(baseLogo, baseVideo, maxStackHeight);
+
+        return {
+          ...sized,
+          contentMaxWidth,
+          heroHeight,
+          bottomPadding,
+          heroPaddingTop: 12,
+          heroPaddingBottom: 12,
+          contentGap: 12,
+          useScroll: true,
+          isTabletLayout: true,
+          isTabletPortrait: true,
+        };
+      }
+
+      const maxStackHeight = heroHeight * 0.68;
+      const baseLogo = Math.min(contentMaxWidth * 0.76, 340);
+      const baseVideo = contentMaxWidth;
+      const sized = fitSizes(baseLogo, baseVideo, maxStackHeight);
+
+      return {
+        ...sized,
+        contentMaxWidth,
+        heroHeight,
+        bottomPadding,
+        heroPaddingTop: 16,
+        heroPaddingBottom: 20,
+        contentGap: 0,
+        useScroll: false,
+        isTabletLayout: true,
+        isTabletPortrait: false,
+      };
+    }
+
+    const contentGap = 10;
+    const logoWidth = Math.min(width * 0.85, wp('85%'));
+    const videoTarget = Math.min(width * 0.92, wp('92%'));
+    const maxStackHeight = heroHeight * 0.78;
+    const sized = fitSizes(logoWidth, videoTarget, maxStackHeight);
+    const logoHeight = sized.logoWidth / LOGO_ASPECT;
+
+    return {
+      ...sized,
+      contentMaxWidth: width,
+      contentGap,
+      heroHeight,
+      bottomPadding,
+      heroPaddingTop: 12,
+      heroPaddingBottom: 10,
+      useScroll: heroHeight < logoHeight + sized.videoHeight + contentGap + 24,
+      isTabletLayout: false,
+      isTabletPortrait: false,
+    };
+  }, [width, height, insets.top, insets.bottom, isLandscape, isTabletPortrait]);
+
   if (isCheckingAuth) {
-    console.log('🔄 Showing authentication check loading screen');
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: '#004aad' }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: MYTDOO_BRAND_BLUE }]}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#fff" />
           <Text style={styles.loadingText}>Loading...</Text>
@@ -112,55 +192,134 @@ export default function WelcomeScreen() {
       </SafeAreaView>
     );
   }
-  
-  console.log('✅ Rendering welcome screen with video:', currentCategory?.title);
+
+  const renderHeroVideo = () => (
+    <View
+      style={[
+        styles.heroVideoWrapper,
+        { width: layout.videoWidth, height: layout.videoHeight },
+      ]}
+    >
+      <VideoView
+        player={player}
+        style={styles.heroVideo}
+        nativeControls={false}
+        contentFit="cover"
+      />
+      <TouchableOpacity
+        style={styles.muteButton}
+        onPress={() => setIsMuted(prev => !prev)}
+        activeOpacity={0.85}
+        accessibilityRole="button"
+        accessibilityLabel={isMuted ? 'Unmute video sound' : 'Mute video sound'}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Ionicons
+          name={isMuted ? 'volume-mute' : 'volume-high'}
+          size={isTablet ? 20 : 16}
+          color="#fff"
+        />
+      </TouchableOpacity>
+    </View>
+  );
+
+  const heroSection = layout.isTabletLayout ? (
+    <View
+      style={[
+        styles.heroSectionTablet,
+        layout.isTabletPortrait && styles.heroSectionTabletPortrait,
+        {
+          minHeight: layout.isTabletPortrait ? undefined : layout.heroHeight,
+          paddingTop: layout.heroPaddingTop,
+          paddingBottom: layout.heroPaddingBottom,
+        },
+      ]}
+    >
+      <MyToDooBrandLogo width={layout.logoWidth} />
+      {renderHeroVideo()}
+    </View>
+  ) : (
+    <View
+      style={[
+        styles.heroSectionPhone,
+        {
+          minHeight: layout.heroHeight,
+          paddingTop: layout.heroPaddingTop,
+          paddingBottom: layout.heroPaddingBottom,
+        },
+      ]}
+    >
+      <View style={[styles.phoneHeroStack, { gap: layout.contentGap }]}>
+        <MyToDooBrandLogo width={layout.logoWidth} />
+        {renderHeroVideo()}
+      </View>
+    </View>
+  );
+
+  const bottomPanel = (
+    <View
+      style={[
+        styles.bottomContainer,
+        {
+          paddingBottom: layout.bottomPadding,
+          maxWidth: isTablet ? layout.contentMaxWidth : undefined,
+          alignSelf: isTablet ? 'center' : 'stretch',
+          marginTop: isTablet ? (isLandscape ? 8 : 0) : 0,
+        },
+      ]}
+    >
+      <Text style={styles.welcomeText}>Welcome to MyToDoo</Text>
+      <Link href={'/(welcome-screen)/first-screen' as any} asChild>
+        <TouchableOpacity style={styles.buttonPrimary} activeOpacity={0.8}>
+          <Text style={styles.buttonText}>Get Started</Text>
+        </TouchableOpacity>
+      </Link>
+      <TouchableOpacity
+        style={[styles.buttonSecondary, styles.buttonSecondaryLast]}
+        activeOpacity={0.8}
+        onPress={() => router.replace('/(auth)/login')}
+      >
+        <Text style={styles.buttonText}>Login</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Falling Stars Animation */}
+    <SafeAreaView
+      style={styles.container}
+      edges={layout.isTabletPortrait ? ['top', 'left', 'right', 'bottom'] : ['top', 'left', 'right']}
+    >
       <FallingStars />
-      
-      {/* Logo */}
-      <View style={styles.logoContainer}>
-        <Image source={MyToDooLogo} style={styles.logoImage} resizeMode="contain" />
-      </View>
 
-      {/* Hero Category Video Card */}
-      <View style={styles.heroContainer}>
-        <View style={styles.heroVideoWrapper}>
-          {currentVideo !== null && currentVideo !== undefined ? (
-            <VideoView
-              player={player}
-              style={styles.heroVideo}
-              nativeControls={false}
-              contentFit="contain"
-            />
-          ) : (
-            <View style={styles.videoPlaceholder}>
-              <Text style={styles.placeholderText}>{currentCategory.title}</Text>
-            </View>
-          )}
-        </View>
-        {/* Show full category title below video */}
-        <Text style={styles.fullCategoryTitle}>{currentCategory.title}</Text>
-      </View>
-
-      {/* Bottom Container */}
-      <View style={styles.bottomContainer}>
-        <Text style={styles.welcomeText}>Welcome to MyToDoo</Text>
-        <Link href={"/(welcome-screen)/first-screen" as any} asChild>
-          <TouchableOpacity style={styles.buttonPrimary} activeOpacity={0.8}>
-            <Text style={styles.buttonText}>Get Started</Text>
-          </TouchableOpacity>
-        </Link>
-        <TouchableOpacity
-          style={styles.buttonSecondary}
-          activeOpacity={0.8}
-          onPress={() => router.replace('/(auth)/login')}
+      {layout.isTabletPortrait ? (
+        <ScrollView
+          style={styles.mainLayout}
+          contentContainerStyle={styles.tabletPortraitScrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-      </View>
+          {heroSection}
+          {bottomPanel}
+        </ScrollView>
+      ) : (
+        <View style={styles.mainLayout}>
+          {layout.useScroll ? (
+            <ScrollView
+              style={styles.heroScroll}
+              contentContainerStyle={styles.heroScrollContent}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {heroSection}
+            </ScrollView>
+          ) : (
+            heroSection
+          )}
+          {bottomPanel}
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -168,110 +327,113 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#004aad',
-    alignItems: 'center',
+    backgroundColor: MYTDOO_BRAND_BLUE,
+  },
+  mainLayout: {
+    flex: 1,
     justifyContent: 'space-between',
   },
-  logoContainer: {
-    marginTop: 40,
+  heroScroll: {
+    flex: 1,
+  },
+  heroScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  /** Tablet: evenly spread logo + video in blue area (no top gap, no bottom cluster) */
+  heroSectionTablet: {
+    flex: 1,
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    paddingHorizontal: wp('5%'),
+    width: '100%',
+  },
+  heroSectionTabletPortrait: {
+    flex: 0,
+    justifyContent: 'center',
+    gap: 12,
+  },
+  tabletPortraitScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+  },
+  /** Phone: logo + video centred in blue hero (tablet layout untouched) */
+  heroSectionPhone: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: wp('4%'),
+  },
+  phoneHeroStack: {
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1.2,
-    marginBottom: -10,
-  },
-  logoImage: {
-    width: 480,
-    height: 420,
   },
   welcomeText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     color: '#888',
     textAlign: 'center',
     marginBottom: 12,
     fontWeight: '500',
   },
-  heroContainer: {
-    width: '100%',
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 10,
-  },
   heroVideoWrapper: {
-    width: '80%', // Reduced width for better balance
-    aspectRatio: 16 / 9, // Landscape aspect ratio to show full video content
-    borderRadius: 28,
+    borderRadius: isTablet ? 20 : 16,
     overflow: 'hidden',
-    backgroundColor: 'transparent', // Changed from #0052CC to prevent blue flash
-    marginBottom: 10,
+    backgroundColor: '#003380',
     position: 'relative',
+    alignSelf: 'center',
   },
   heroVideo: {
     width: '100%',
     height: '100%',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    backgroundColor: 'transparent', // Changed from #0052CC to prevent blue flash
   },
-  videoPlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#F5F5F5', // Changed from #0052CC to a subtle gray
+  muteButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  placeholderText: {
-    color: '#333', // Changed from #fff to dark text for gray background
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    paddingHorizontal: 20,
-  },
-  fullCategoryTitle: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 12,
-    marginBottom: 0,
-    letterSpacing: 1,
-    textShadowColor: '#000',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 4,
+    zIndex: 2,
   },
   bottomContainer: {
-    flex: 1.3,
     width: '100%',
     backgroundColor: '#F0F0F0',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 10,
-    paddingBottom: 15,
+    paddingTop: isTablet ? 18 : 22,
+    paddingHorizontal: wp('5%'),
   },
   buttonPrimary: {
     backgroundColor: '#FF6B35',
-    paddingVertical: 12,
+    paddingVertical: isTablet ? 14 : 12,
     paddingHorizontal: 24,
-    width: '90%',
+    width: '100%',
+    maxWidth: 420,
     alignItems: 'center',
     borderRadius: 30,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   buttonSecondary: {
     backgroundColor: '#4CAF50',
-    paddingVertical: 12,
+    paddingVertical: isTablet ? 14 : 12,
     paddingHorizontal: 24,
-    width: '90%',
+    width: '100%',
+    maxWidth: 420,
     alignItems: 'center',
     borderRadius: 30,
-    marginTop: 0,
-    marginBottom: 10,
+  },
+  buttonSecondaryLast: {
+    marginBottom: 0,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     textAlign: 'center',
   },
@@ -282,7 +444,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     marginTop: 16,
     fontWeight: '500',
   },

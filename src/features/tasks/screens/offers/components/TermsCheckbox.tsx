@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Modal, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import TermsConditionsScreen from '@/src/features/legal/screens/TermsConditionsScreen';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TermsCheckboxProps {
   agreed: boolean;
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
   },
   termsText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     lineHeight: 20,
   },

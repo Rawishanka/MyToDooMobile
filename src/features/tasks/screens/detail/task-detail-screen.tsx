@@ -1,9 +1,10 @@
+import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
 import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { useLocalSearchParams } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
 import { PayoutAccountRequiredModal } from '../offers/components';
@@ -26,10 +27,11 @@ import { TaskActionButtons } from './components/TaskActionButtons';
 import { useTaskDetail } from './hooks/useTaskDetail';
 
 export default function TaskDetailScreen() {
-  const { taskId, fromUserRole, fromStatus } = useLocalSearchParams<{ 
+  const { taskId, fromUserRole, fromStatus, tab } = useLocalSearchParams<{ 
     taskId: string; 
     fromUserRole?: string; 
-    fromStatus?: string; 
+    fromStatus?: string;
+    tab?: string | string[];
   }>();
   const scrollViewRef = useRef<ScrollView>(null);
   const tabsSectionRef = useRef<View>(null);
@@ -88,6 +90,23 @@ export default function TaskDetailScreen() {
     showPayoutModal,
     setShowPayoutModal,
   } = useTaskDetail({ taskId: taskId! });
+
+  // Open Questions tab when navigated from Q&A notification
+  useEffect(() => {
+    const normalizedTab = Array.isArray(tab) ? tab[0] : tab;
+    if (normalizedTab !== 'questions') return;
+
+    setActiveTab('questions');
+    setTimeout(() => {
+      tabsSectionRef.current?.measureLayout(
+        scrollViewRef.current as any,
+        (_x, y) => {
+          scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 20), animated: true });
+        },
+        () => console.log('Failed to measure tabs section for questions tab')
+      );
+    }, 350);
+  }, [tab, setActiveTab]);
 
   // Handle tab change with auto-scroll
   const handleTabChange = (tab: 'offers' | 'questions') => {
@@ -153,7 +172,7 @@ export default function TaskDetailScreen() {
     <View style={styles.wrapper}>
       <OfflineBanner />
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
 
         <DetailHeader />
 
@@ -161,6 +180,8 @@ export default function TaskDetailScreen() {
           ref={scrollViewRef}
           style={styles.content} 
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          removeClippedSubviews={false}
         >
         {/* Only show Make Offer section to taskers (not the task creator) */}
         {/* Hide if user is assigned to this task (Todoo Tasks or Completed) */}

@@ -13,6 +13,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export interface AttachmentItem {
   id: string;
@@ -62,41 +63,48 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
         return;
       }
 
+      const remainingSlots = maxAttachments - attachments.length;
+      if (remainingSlots <= 0) {
+        Alert.alert('Maximum Reached', `You can only attach up to ${maxAttachments} items.`);
+        setIsProcessing(false);
+        return;
+      }
+
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: false,
-        aspect: [4, 3],
         quality: 0.8,
-        allowsMultipleSelection: false
+        allowsMultipleSelection: true,
+        selectionLimit: remainingSlots,
       });
 
-      if (!result.canceled && result.assets?.[0]) {
-        const asset = result.assets[0];
-        
-        // ✅ OCR: Validate image for sensitive data
-        console.log('🔍 Analyzing image for sensitive data...');
-        const validation = await OCRAPI.validateImageForUpload(asset.uri);
-        
-        if (!validation.isValid) {
-          console.warn('❌ Image contains sensitive data:', validation.reason);
-          Alert.alert(
-            'Sensitive Data Detected',
-            `This image contains sensitive information and cannot be uploaded:\n\n${validation.reason}\n\nPlease remove phone numbers and addresses before uploading.`,
-            [{ text: 'OK' }]
-          );
-          setIsProcessing(false);
-          return;
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const accepted: AttachmentItem[] = [];
+        for (const asset of result.assets) {
+          if (attachments.length + accepted.length >= maxAttachments) break;
+
+          const validation = await OCRAPI.validateImageForUpload(asset.uri);
+
+          if (!validation.isValid) {
+            Alert.alert(
+              'Sensitive Data Detected',
+              `This image contains sensitive information and cannot be uploaded:\n\n${validation.reason}\n\nPlease remove phone numbers and addresses before uploading.`,
+              [{ text: 'OK' }]
+            );
+            continue;
+          }
+
+          accepted.push({
+            id: `${Date.now()}-${accepted.length}`,
+            uri: asset.uri,
+            type: 'image',
+            name: asset.fileName || `image_${Date.now()}.jpg`,
+            size: asset.fileSize
+          });
         }
-        
-        console.log('✅ Image passed OCR validation');
-        const newAttachment: AttachmentItem = {
-          id: Date.now().toString(),
-          uri: asset.uri,
-          type: 'image',
-          name: asset.fileName || `image_${Date.now()}.jpg`,
-          size: asset.fileSize
-        };
-        addAttachment(newAttachment);
+        if (accepted.length > 0) {
+          onAttachmentsChange([...attachments, ...accepted]);
+        }
       }
     } catch (error) {
       console.error('Error picking image:', error);
@@ -349,12 +357,12 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   attachmentName: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '500',
     color: '#333',
   },
   attachmentSize: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginTop: 2,
   },
@@ -377,13 +385,13 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
   },
   addButtonText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#007AFF',
     fontWeight: '500',
     marginLeft: 8,
   },
   addButtonTextDisabled: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
     fontWeight: '500',
     marginLeft: 8,

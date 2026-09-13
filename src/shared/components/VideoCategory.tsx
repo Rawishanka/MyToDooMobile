@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface VideoCategoryProps {
   title: string;
@@ -46,22 +47,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   videoPlaceholder: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     color: '#fff',
   },
   videoLabel: {
-    fontSize: 8,
+    fontSize: RFValue(8),
     color: '#fff',
     fontWeight: 'bold',
   },
   gridLabel: {
     marginTop: 8,
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     textAlign: 'center',
   },
   debugText: {
-    fontSize: 10,
+    fontSize: RFValue(10),
     color: 'red',
     fontWeight: 'bold',
     marginTop: 4,

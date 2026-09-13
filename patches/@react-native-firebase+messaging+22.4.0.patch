@@ -1,0 +1,12 @@
+diff --git a/node_modules/@react-native-firebase/messaging/ios/RNFBMessaging/RNFBMessaging+AppDelegate.m b/node_modules/@react-native-firebase/messaging/ios/RNFBMessaging/RNFBMessaging+AppDelegate.m
+index 1234567..abcdefg 100644
+--- a/node_modules/@react-native-firebase/messaging/ios/RNFBMessaging/RNFBMessaging+AppDelegate.m
++++ b/node_modules/@react-native-firebase/messaging/ios/RNFBMessaging/RNFBMessaging+AppDelegate.m
+@@ -16,6 +16,7 @@
+  */
+ 
+ #import <Firebase/Firebase.h>
++#import <FirebaseAuth/FirebaseAuth.h>
+ #import <GoogleUtilities/GULAppDelegateSwizzler.h>
+ #import <objc/runtime.h>
+ 

@@ -1,6 +1,7 @@
 import API_CONFIG from '@/src/api/config';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 // Quick Auth Test Component - Add this to any screen to test authentication
 export const QuickAuthTest = () => {
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
   },
   testButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: 'bold',
     textAlign: 'center',
   },

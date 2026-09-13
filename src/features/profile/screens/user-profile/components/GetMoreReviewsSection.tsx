@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Alert, Clipboard, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RequestReviewModal } from './RequestReviewModal';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface GetMoreReviewsProps {
   userId: string;
@@ -133,13 +134,13 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   title: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#666',
     marginBottom: 24,
     lineHeight: 22,
@@ -176,13 +177,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#333',
     marginBottom: 2,
   },
   actionSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   howItWorksContainer: {
@@ -196,7 +197,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   howItWorksTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#007AFF',
     marginLeft: 8,
@@ -209,13 +210,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   stepBullet: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: '#007AFF',
     marginRight: 8,
     marginTop: 2,
   },
   stepText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     flex: 1,
     lineHeight: 20,

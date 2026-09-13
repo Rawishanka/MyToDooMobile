@@ -21,6 +21,9 @@ import {
 
 // ✅ NEW: Use OCR API for sensitive data detection
 import { OCRAPI } from '@/src/api/ocr-api';
+import { RFValue } from '@/src/shared/utils/responsive';
+
+const MAX_TASK_PHOTOS = 5;
 
 // Helper function to copy image to persistent storage
 const copyImageToPersistentStorage = async (sourceUri: string): Promise<string> => {
@@ -145,7 +148,7 @@ export default function SnapPhotoScreen() {
   }, []);
 
   const showImagePickerOptions = useCallback(() => {
-    if (images.length >= 10) return;
+    if (images.length >= MAX_TASK_PHOTOS) return;
 
     Alert.alert(
       'Add Photo',
@@ -234,7 +237,7 @@ export default function SnapPhotoScreen() {
 
     setIsProcessing(true);
     try {
-      const remainingSlots = 10 - images.length;
+      const remainingSlots = MAX_TASK_PHOTOS - images.length;
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsMultipleSelection: true,
@@ -302,8 +305,8 @@ export default function SnapPhotoScreen() {
   const renderGridItems = useMemo(() => {
     const items = [...images];
     
-    // Add upload button if less than 10 images
-    if (items.length < 10) {
+    // Add upload button if under the photo limit
+    if (items.length < MAX_TASK_PHOTOS) {
       items.push('upload_button');
     }
     
@@ -393,7 +396,7 @@ export default function SnapPhotoScreen() {
       >
         <Text style={styles.title}>Add photos & location</Text>
         <Text style={styles.subtitle}>
-          Help taskers understand what needs doing. Add up to 10 photos ({images.length}/10)
+          Help taskers understand what needs doing. Add up to {MAX_TASK_PHOTOS} photos ({images.length}/{MAX_TASK_PHOTOS})
         </Text>
 
         <View style={styles.imageSection}>
@@ -459,13 +462,13 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   title: {
-    fontSize: 22,
+    fontSize: RFValue(22),
     fontWeight: 'bold',
     color: '#0B1A33',
   },
   subtitle: {
     color: '#667085',
-    fontSize: 14,
+    fontSize: RFValue(14),
     marginTop: 5,
     marginBottom: 20,
   },
@@ -542,13 +545,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#1C1C1E',
     marginBottom: 5,
   },
   sectionSubtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#8E8E93',
     marginBottom: 15,
   },
@@ -563,7 +566,7 @@ const styles = StyleSheet.create({
   selectedLocationText: {
     flex: 1,
     marginLeft: 8,
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#0057FF',
   },
   continueButton: {
@@ -581,7 +584,7 @@ const styles = StyleSheet.create({
   },
   continueText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
   // NEW: Loading and validation styles
@@ -591,7 +594,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   uploadingText: {
-    fontSize: 9,
+    fontSize: RFValue(9),
     color: '#467FFF',
     fontWeight: '600',
     marginTop: 2,
@@ -614,7 +617,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   validatingText: {
-    fontSize: 9,
+    fontSize: RFValue(9),
     color: '#467FFF',
     fontWeight: '700',
     marginTop: 6,
@@ -648,25 +651,25 @@ const styles = StyleSheet.create({
     borderColor: '#E5E5E5',
   },
   validationTextSuccess: {
-    fontSize: 10,
+    fontSize: RFValue(10),
     color: '#16A34A', // Darker green for better readability
     fontWeight: '600',
     textAlign: 'center',
   },
   validationTextWarning: {
-    fontSize: 10,
+    fontSize: RFValue(10),
     color: '#DC2626', // Darker red for better readability
     fontWeight: '600',
     textAlign: 'center',
   },
   validationTextLoading: {
-    fontSize: 10,
+    fontSize: RFValue(10),
     color: '#3B82F6', // Blue for loading state
     fontWeight: '500',
     textAlign: 'center',
   },
   validationTextDetails: {
-    fontSize: 9,
+    fontSize: RFValue(9),
     color: '#6B7280',
     fontWeight: '400',
     textAlign: 'center',

@@ -13,8 +13,20 @@ function getApi() {
 
 // 🏷️ **CATEGORY TYPES**
 export interface Category {
+  _id?: string;
   name: string;
   count: number;
+  description?: string;
+  icon?: string;
+  iconUrl?: string;
+  locationType?: string;
+  order?: number;
+  videoUrl?: string;
+  videoFileName?: string;
+  videoUploadedAt?: string;
+  carouselImageUrl?: string;
+  carouselImageFileName?: string;
+  carouselImageUploadedAt?: string;
 }
 
 export interface CategoriesResponse {
@@ -46,14 +58,28 @@ export async function getAllCategories(): Promise<CategoriesResponse> {
       if (categoriesResponse.data && categoriesResponse.data.data) {
         const dbCategories = categoriesResponse.data.data;
         
-        // Convert database categories to our format
+        // Convert database categories to our format (preserve video fields)
         const categories: Category[] = dbCategories.map((cat: any) => ({
+          _id: cat._id || cat.id,
           name: cat.name || cat.title || 'Unknown Category',
-          count: cat.count || 0
+          count: cat.count || 0,
+          description: cat.description,
+          icon: cat.icon,
+          iconUrl: cat.iconUrl,
+          locationType: cat.locationType,
+          order: cat.order,
+          videoUrl: cat.videoUrl,
+          videoFileName: cat.videoFileName,
+          videoUploadedAt: cat.videoUploadedAt,
+          carouselImageUrl: cat.carouselImageUrl,
+          carouselImageFileName: cat.carouselImageFileName,
+          carouselImageUploadedAt: cat.carouselImageUploadedAt,
         }));
 
         console.log("✅ Database categories loaded:", {
           totalCategories: categories.length,
+          categoriesWithCarouselImage: categories.filter(c => !!c.carouselImageUrl).length,
+          categoriesWithVideo: categories.filter(c => !!c.videoUrl).length,
           categories: categories.map(c => `${c.name} (${c.count})`)
         });
 

@@ -5,7 +5,7 @@ import { moderateContent } from '@/src/shared/utils/contentModeration';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Alert } from 'react-native';
+import { AppAlert } from '@/src/shared/components/AppAlert';
 
 interface UseOfferSubmissionProps {
   taskId: string;
@@ -160,7 +160,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
     
     if (now - lastSubmitTime < 3000) {
       console.log('⚠️ Duplicate submission detected within 3 seconds, ignoring');
-      Alert.alert(
+      AppAlert.alert(
         'Please Wait',
         'Your offer is being submitted. Please wait a moment.',
         [{ text: 'OK', style: 'default' }]
@@ -170,7 +170,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
 
     // Double-check if user already has an offer on this task (safety check)
     if (userHasExistingOffer) {
-      Alert.alert(
+      AppAlert.alert(
         'Offer Already Submitted',
         'You have already made an offer on this task. You can only submit one offer per task.',
         [{ text: 'OK', style: 'default' }]
@@ -180,7 +180,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
 
     // Prevent submission while offers are still loading
     if (isLoadingOffers) {
-      Alert.alert(
+      AppAlert.alert(
         'Please Wait',
         'Still checking your previous offers. Please wait a moment and try again.',
         [{ text: 'OK', style: 'default' }]
@@ -217,7 +217,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
       console.log('🔄 Refetching offers to verify submission...');
       await refetchOffers();
 
-      Alert.alert(
+      AppAlert.alert(
         'Offer Submitted!',
         "Your offer has been sent to the task creator. You'll be notified when they respond.",
         [
@@ -244,7 +244,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
       
       if (offerWasCreated) {
         console.log('✅ Offer was created successfully despite error - showing success message');
-        Alert.alert(
+        AppAlert.alert(
           'Offer Submitted!',
           "Your offer has been sent to the task creator. You'll be notified when they respond.",
           [
@@ -257,7 +257,7 @@ export const useOfferSubmission = ({ taskId, taskBudget, taskLocation }: UseOffe
       } else {
         console.log('❌ Offer was not created - showing error message');
         setIsSubmitting(false); // Reset on error so user can retry
-        Alert.alert(
+        AppAlert.alert(
           'Failed to Submit Offer',
           error?.message || 'Something went wrong. Please try again.'
         );

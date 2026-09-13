@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface Stats {
   totalTasksCreated: number;
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   statsTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: '#000',
     marginBottom: 16,
@@ -81,13 +82,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: RFValue(24),
     fontWeight: '700',
     color: '#007bff',
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     textAlign: 'center',
   },
@@ -100,11 +101,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   responseTimeLabel: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   responseTimeValue: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#000',
   },

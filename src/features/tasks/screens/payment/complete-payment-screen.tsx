@@ -24,6 +24,7 @@ import {
 
 // Hooks
 import { usePaymentForm } from './hooks';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function CompletePaymentScreen() {
   const router = useRouter();
@@ -85,7 +86,11 @@ export default function CompletePaymentScreen() {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
         <TaskSummary title={task.title} location={task.location?.address} />
         
         <PaymentDetails
@@ -111,7 +116,7 @@ export default function CompletePaymentScreen() {
       </ScrollView>
 
       {/* Submit Button */}
-      <View style={styles.buttonContainer}>
+      <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 15) }]}>
         <TouchableOpacity 
           style={[styles.submitButton, isSubmitting && styles.submittingButton]}
           onPress={handleCompletePayment}
@@ -152,7 +157,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '600',
     color: '#000',
   },
@@ -186,7 +191,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
   },
 });

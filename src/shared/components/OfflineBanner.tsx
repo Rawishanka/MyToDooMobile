@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export const OfflineBanner: React.FC = () => {
   const { isConnected } = useNetworkStatus();
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: RFValue(13),
     fontWeight: '600',
     marginLeft: 8,
     flex: 1,

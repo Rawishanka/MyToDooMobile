@@ -27,6 +27,9 @@ export interface User {
   avatar?: string; // Base64 image data from /api/users/profile
   location?: string;
   bio?: string;
+  notifyNewTask?: boolean;
+  notifySkillMatch?: boolean;
+  isTasker?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -51,6 +54,8 @@ export interface SignUpRequest {
   password: string;
   phone: string;
   dateOfBirth?: string; // YYYY-MM-DD format
+  notifyNewTask?: boolean;
+  notifySkillMatch?: boolean;
   location: {
     country: string;
     countryCode: string;

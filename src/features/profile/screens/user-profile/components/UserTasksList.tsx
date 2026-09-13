@@ -2,6 +2,7 @@ import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import React from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface Task {
   _id: string;
@@ -117,13 +118,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   taskTitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     fontWeight: '600',
     color: '#000',
     marginBottom: 8,
   },
   taskLocation: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
     marginBottom: 8,
   },
@@ -133,12 +134,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   taskStatus: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     fontWeight: '600',
     textTransform: 'capitalize',
   },
   taskDate: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
   },
   taskPrice: {
@@ -146,7 +147,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   priceText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: '700',
     color: '#007bff',
   },
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#999',
   },
 });

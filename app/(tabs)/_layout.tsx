@@ -22,7 +22,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const isSmallDevice = SCREEN_WIDTH < 375;
 const CIRCLE_SIZE = isSmallDevice ? 42 : 46;
 const ICON_SIZE = isSmallDevice ? 20 : 22;
-const BRAND_BLUE = '#003399';
+const BRAND_BLUE = '#1A2980';
 
 const TAB_META = [
   { name: 'index', label: 'Post Task', icon: 'rocket-outline' as const, iconActive: 'rocket' as const },
@@ -186,15 +186,15 @@ const tabStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
     borderRadius: 40,
     paddingVertical: 8,
     paddingHorizontal: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.10,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 14,
   },
   tabTouch: {
     flex: 1,
@@ -219,7 +219,7 @@ const tabStyles = StyleSheet.create({
   label: {
     fontSize: isSmallDevice ? 9 : 10,
     fontWeight: '500',
-    color: '#888',
+    color: '#9CA3AF',
     marginTop: 3,
     textAlign: 'center',
     width: '100%',

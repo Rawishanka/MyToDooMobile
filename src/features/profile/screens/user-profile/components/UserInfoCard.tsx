@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { formatUserName } from '@/src/utils/formatUserName';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 interface UserProfile {
   _id: string;
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   userName: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#000',
     marginBottom: 8,
@@ -185,19 +186,19 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   ratingText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#666',
   },
   userMeta: {
     marginBottom: 4,
   },
   metaText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
     marginBottom: 4,
   },
   locationText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#666',
   },
   bioSection: {
@@ -207,7 +208,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#f0f0f0',
   },
   bioText: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: '#333',
     lineHeight: 20,
   },
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#f0f0f0',
   },
   skillsTitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     fontWeight: '600',
     color: '#000',
     marginBottom: 8,
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   skillText: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#007bff',
     fontWeight: '500',
   },
