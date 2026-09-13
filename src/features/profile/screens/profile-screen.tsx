@@ -9,7 +9,8 @@ import FAQScreen from '@/src/shared/components/custom_components/faq-screen';
 import LegalScreen from '@/src/shared/components/custom_components/legal-screen';
 import Logout from '@/src/shared/components/custom_components/Logout';
 import { useGetUserProfile, useGetUserRatingStats, useGetUserReviews, useUploadUserAvatar } from '@/src/shared/hooks/useUserProfileApi';
-import { useGetMyTasks } from '@/src/shared/hooks/useTaskApi';
+import { useGetMyTasks, useSubmitReview } from '@/src/shared/hooks/useTaskApi';
+import { RatingReviewModal } from '@/src/features/tasks/components/RatingReviewModal';
 import { useGetStripeAccountStatus, useUpdateStripeAccount } from '@/src/shared/hooks/useStripeConnectApi';
 import { autoLoginForDevelopment } from '@/src/shared/utils/dev-auth';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
@@ -68,6 +69,8 @@ export default function AccountScreen() {
   
   // Bank account details modal
   const [showBankAccountModal, setShowBankAccountModal] = useState(false);
+  const [reviewModalTask, setReviewModalTask] = useState<any | null>(null);
+  const submitReviewMutation = useSubmitReview();
 
   // Local state for profile picture preview
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
@@ -1347,10 +1350,7 @@ export default function AccountScreen() {
                     style={styles.reviewNowBtn}
                     activeOpacity={0.85}
                     onPress={() => {
-                      router.push({
-                        pathname: '/(tabs)/my-tasks' as any,
-                        params: { tab: 'review_required', focusTaskId: task._id || task.id },
-                      });
+                      setReviewModalTask(task);
                     }}
                   >
                     <Text style={styles.reviewNowBtnText}>Review</Text>
@@ -1365,7 +1365,7 @@ export default function AccountScreen() {
                   onPress={() => {
                     router.push({
                       pathname: '/(tabs)/my-tasks' as any,
-                      params: { tab: 'review_required' },
+                      params: { tab: 'completed' },
                     });
                   }}
                 >
@@ -1766,6 +1766,40 @@ export default function AccountScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Direct Rating & Review Modal from Pending Reviews */}
+      {reviewModalTask && (
+        <RatingReviewModal
+          visible={!!reviewModalTask}
+          onClose={() => setReviewModalTask(null)}
+          onSubmit={async (reviewData) => {
+            try {
+              if (reviewData.rating === 0) {
+                setReviewModalTask(null);
+                return;
+              }
+              await submitReviewMutation.mutateAsync({
+                taskId: reviewModalTask._id || reviewModalTask.id,
+                rating: reviewData.rating,
+                reviewText: reviewData.reviewText,
+                attachments: reviewData.attachments,
+              });
+              setReviewModalTask(null);
+              AppAlert.alert('Review Submitted', 'Thank you! Your review has been submitted successfully.');
+            } catch (err: any) {
+              const msg = err?.response?.data?.message || err?.message || 'Failed to submit review';
+              AppAlert.alert('Error', msg);
+            }
+          }}
+          taskTitle={reviewModalTask.title || 'Task'}
+          userRole={
+            reviewModalTask.taskerId === (authUser?.id || authUser?._id) ||
+            reviewModalTask.assignedTo === (authUser?.id || authUser?._id)
+              ? 'tasker'
+              : 'poster'
+          }
+        />
+      )}
 
     </ScrollView>
   );

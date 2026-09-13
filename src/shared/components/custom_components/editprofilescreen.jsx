@@ -637,28 +637,41 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
             <Text style={styles.sectionTitle}>Phone Number</Text>
             <TouchableOpacity
-              style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#EFF6FF", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: "#BFDBFE" }}
-              activeOpacity={0.8}
+              style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#EFF6FF", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: "#BFDBFE" }}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               onPress={() => {
                 setPhoneStep("input");
-                setNewPhoneInput("");
+                setNewPhoneInput(phone || "");
                 setPhoneOtpCode("");
                 setPhoneError(null);
                 setShowPhoneModal(true);
               }}
             >
-              <Ionicons name="create-outline" size={13} color="#003399" />
-              <Text style={{ fontSize: 11.5, fontWeight: "700", color: "#003399" }}>Change</Text>
+              <Ionicons name="create-outline" size={14} color="#003399" />
+              <Text style={{ fontSize: 12, fontWeight: "700", color: "#003399" }}>Change</Text>
             </TouchableOpacity>
           </View>
-          <TextInput
-            style={[styles.textInput, styles.readOnlyInput]}
-            value={phone || "No phone number added"}
-            editable={false}
-            placeholder="Phone number"
-            placeholderTextColor="#999"
-            keyboardType="phone-pad"
-          />
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => {
+              setPhoneStep("input");
+              setNewPhoneInput(phone || "");
+              setPhoneOtpCode("");
+              setPhoneError(null);
+              setShowPhoneModal(true);
+            }}
+          >
+            <TextInput
+              style={[styles.textInput, styles.readOnlyInput]}
+              value={phone || "No phone number added"}
+              editable={false}
+              pointerEvents="none"
+              placeholder="Phone number"
+              placeholderTextColor="#999"
+              keyboardType="phone-pad"
+            />
+          </TouchableOpacity>
           <Text style={{ fontSize: 11.5, color: "#059669", marginTop: 4, fontWeight: "500" }}>
             🔒 Protected by SMS verification for your security
           </Text>
@@ -888,6 +901,12 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
               )}
             </View>
           
+
+
+</ScrollView>
+        </View>
+      </Modal>
+
       {/* Phone OTP Modal */}
       <Modal
         visible={showPhoneModal}
@@ -1017,10 +1036,6 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
             )}
           </View>
         </KeyboardAvoidingView>
-      </Modal>
-
-</ScrollView>
-        </View>
       </Modal>
 
       {/* Photo Selection Screen */}
@@ -1502,4 +1517,23 @@ const styles = StyleSheet.create({
     color: '#666',
     marginRight: 4,
   },
-});  
+phoneModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  phoneModalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+});

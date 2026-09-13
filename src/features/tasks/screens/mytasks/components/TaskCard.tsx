@@ -244,30 +244,29 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     markReviewPromptShown,
   ]);
 
-  // Poster navigated from task detail after payment release
+  // Auto-prompt review modal when navigated with autoPromptReview
   useEffect(() => {
     if (!autoPromptReview || reviewPromptHandledRef.current) return;
-    if (!isCompletedTask || userRole !== 'Poster' || hasAlreadyReviewed || showRatingModal) return;
+    if (!isCompletedTask || hasAlreadyReviewed || showRatingModal) return;
 
     let cancelled = false;
 
     const attemptPrompt = async () => {
-      for (let attempt = 0; attempt < 6; attempt += 1) {
-        if (cancelled || reviewPromptHandledRef.current) return;
-
-        const opened = await openReviewModalIfEligible();
-        if (opened) {
-          reviewPromptHandledRef.current = true;
-          return;
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 700));
+      if (cancelled || reviewPromptHandledRef.current) return;
+      const opened = await openReviewModalIfEligible();
+      if (!opened && !cancelled && !reviewPromptHandledRef.current) {
+        // Direct open fallback
+        reviewPromptHandledRef.current = true;
+        await markReviewPromptShown();
+        setShowRatingModal(true);
+      } else if (opened) {
+        reviewPromptHandledRef.current = true;
       }
     };
 
     const timer = setTimeout(() => {
       attemptPrompt();
-    }, 1200);
+    }, 400);
 
     return () => {
       cancelled = true;
@@ -276,10 +275,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   }, [
     autoPromptReview,
     isCompletedTask,
-    userRole,
     hasAlreadyReviewed,
     showRatingModal,
-    canReviewData?.data?.canReview,
     markReviewPromptShown,
     openReviewModalIfEligible,
   ]);

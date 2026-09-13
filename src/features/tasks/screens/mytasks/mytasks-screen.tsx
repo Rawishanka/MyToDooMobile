@@ -326,9 +326,11 @@ export default function MyTasksScreen() {
   const currentUserId = currentUser?.id || currentUser?._id;
   
   // Get navigation params
-  const params = useLocalSearchParams<{ role?: string; tab?: string; promptReviewTaskId?: string }>();
+  const params = useLocalSearchParams<{ role?: string; tab?: string; promptReviewTaskId?: string; focusTaskId?: string }>();
   const promptReviewTaskId = typeof params.promptReviewTaskId === 'string'
     ? params.promptReviewTaskId
+    : typeof params.focusTaskId === 'string'
+    ? params.focusTaskId
     : undefined;
   const initialTabKey = typeof params.tab === 'string' ? params.tab : undefined;
 
