@@ -21,6 +21,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LocationAutocomplete } from '@/src/shared/components/LocationAutocomplete';
 import { uploadUserAvatar } from '@/src/api/user-profile-api';
 import OCRAPI from '@/src/api/ocr-api';
+import { requestPhoneOtp, verifyPhoneOtp } from '@/src/api/contact-change-api';
+
+const formatToE164 = (input) => {
+  if (!input) return '';
+  let cleaned = input.trim().replace(/[\s\-\(\)]/g, '');
+  if (cleaned.startsWith('04')) {
+    cleaned = '+61' + cleaned.slice(1);
+  } else if (/^4\d{8}$/.test(cleaned)) {
+    cleaned = '+61' + cleaned;
+  } else if (!cleaned.startsWith('+') && cleaned.startsWith('61')) {
+    cleaned = '+' + cleaned;
+  }
+  return cleaned;
+};
 
 const EditProfileScreen = ({ onBack, onSave, userData }) => {
   const insets = useSafeAreaInsets();
@@ -51,15 +65,15 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
   };
 
   const handleRequestPhoneOtp = async () => {
-    const trimmed = newPhoneInput.trim();
-    if (!trimmed || trimmed.length < 8) {
-      setPhoneError("Please enter a valid phone number");
+    const formatted = formatToE164(newPhoneInput);
+    if (!formatted || formatted.length < 9) {
+      setPhoneError("Please enter a valid phone number (e.g. +61400000000 or 0400000000)");
       return;
     }
     setPhoneLoading(true);
     setPhoneError(null);
     try {
-      await requestPhoneOtp(trimmed);
+      await requestPhoneOtp(formatted);
       setPhoneStep("otp");
       startResendTimer();
     } catch (err) {
@@ -71,6 +85,7 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
   };
 
   const handleVerifyPhoneOtp = async () => {
+    const formatted = formatToE164(newPhoneInput);
     const trimmedOtp = phoneOtpCode.trim();
     if (!trimmedOtp || trimmedOtp.length !== 6) {
       setPhoneError("Please enter 6-digit code");
@@ -79,13 +94,20 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
     setPhoneLoading(true);
     setPhoneError(null);
     try {
-      await verifyPhoneOtp(newPhoneInput.trim(), trimmedOtp);
-      setPhone(newPhoneInput.trim());
+      await verifyPhoneOtp(formatted, trimmedOtp);
+      setPhone(formatted);
       setShowPhoneModal(false);
       setPhoneStep("input");
       setNewPhoneInput("");
       setPhoneOtpCode("");
       Alert.alert("Success", "Phone number verified and updated!");
+      try {
+        const { queryClient } = await import('@tanstack/react-query');
+        if (queryClient) {
+          await queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+          await queryClient.invalidateQueries({ queryKey: ['profile'] });
+        }
+      } catch (_) {}
     } catch (err) {
       const msg = err?.response?.data?.message || err?.message || "Invalid or expired verification code";
       setPhoneError(msg);

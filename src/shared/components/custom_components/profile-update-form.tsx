@@ -25,6 +25,19 @@ import { RFValue } from '@/src/shared/utils/responsive';
 import AddSkillsModal from '@/src/shared/components/custom_components/add-skills-modal';
 import { requestPhoneOtp, verifyPhoneOtp } from '@/src/api/contact-change-api';
 
+export function formatToE164(input: string): string {
+  if (!input) return '';
+  let cleaned = input.trim().replace(/[\s\-\(\)]/g, '');
+  if (cleaned.startsWith('04')) {
+    cleaned = '+61' + cleaned.slice(1);
+  } else if (/^4\d{8}$/.test(cleaned)) {
+    cleaned = '+61' + cleaned;
+  } else if (!cleaned.startsWith('+') && cleaned.startsWith('61')) {
+    cleaned = '+' + cleaned;
+  }
+  return cleaned;
+}
+
 interface ProfileUpdateFormProps {
   onBack: () => void;
   userData: User | UserProfile | null;
@@ -155,15 +168,15 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
   };
 
   const handleRequestPhoneOtp = async () => {
-    const trimmed = newPhoneInput.trim();
-    if (!trimmed || trimmed.length < 8) {
+    const formatted = formatToE164(newPhoneInput);
+    if (!formatted || formatted.length < 9) {
       setPhoneError("Please enter a valid phone number (e.g. +61400000000 or 0400000000)");
       return;
     }
     setPhoneLoading(true);
     setPhoneError(null);
     try {
-      await requestPhoneOtp(trimmed);
+      await requestPhoneOtp(formatted);
       setPhoneStep("otp");
       startResendTimer();
     } catch (err: any) {
@@ -175,6 +188,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
   };
 
   const handleVerifyPhoneOtp = async () => {
+    const formatted = formatToE164(newPhoneInput);
     const trimmedOtp = phoneOtpCode.trim();
     if (!trimmedOtp || trimmedOtp.length !== 6) {
       setPhoneError("Please enter the 6-digit verification code");
@@ -183,8 +197,8 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
     setPhoneLoading(true);
     setPhoneError(null);
     try {
-      await verifyPhoneOtp(newPhoneInput.trim(), trimmedOtp);
-      setPhone(newPhoneInput.trim());
+      await verifyPhoneOtp(formatted, trimmedOtp);
+      setPhone(formatted);
       setShowPhoneModal(false);
       setPhoneStep("input");
       setNewPhoneInput("");
