@@ -7,6 +7,7 @@ import {
     ActivityIndicator,
     Alert,
     Image,
+    KeyboardAvoidingView,
     Modal,
     Platform,
     ScrollView,
