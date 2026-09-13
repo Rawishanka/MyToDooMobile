@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -22,7 +22,7 @@ import ServiceListingDetailScreen from './service-listing-detail-screen';
 
 // Components
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
-import { TaskCard } from '@/src/features/tasks/components';
+import { TaskCard, TaskCardSkeletonList } from '@/src/features/tasks/components';
 import { useMergedUnreadCount } from '@/src/shared/hooks/useNotifications';
 import {
     FilterButton,
@@ -54,7 +54,16 @@ export default function BrowseTasksScreen() {
   const [filterVisible, setFilterVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [browseMode, setBrowseMode] = useState<'tasks' | 'services'>('tasks');
+  const searchParams = useLocalSearchParams<{ mode?: string }>();
+  const [browseMode, setBrowseMode] = useState<'tasks' | 'services'>(
+    searchParams.mode === 'services' ? 'services' : 'tasks'
+  );
+
+  useEffect(() => {
+    if (searchParams.mode === 'services' || searchParams.mode === 'tasks') {
+      setBrowseMode(searchParams.mode);
+    }
+  }, [searchParams.mode]);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [selectedServiceListing, setSelectedServiceListing] = useState<ServiceListing | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -435,26 +444,59 @@ export default function BrowseTasksScreen() {
         </View>
       </View>
 
-      <View style={styles.modeToggleRow}>
-        <TouchableOpacity
-          style={[styles.modeToggleButton, browseMode === 'tasks' && styles.modeToggleActive]}
-          onPress={() => setBrowseMode('tasks')}
-        >
-          <Text style={[styles.modeToggleText, browseMode === 'tasks' && styles.modeToggleTextActive]}>
-            Tasks
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.modeToggleButton, browseMode === 'services' && styles.modeToggleActive]}
-          onPress={() => {
-            setBrowseMode('services');
-            setViewMode('list');
-          }}
-        >
-          <Text style={[styles.modeToggleText, browseMode === 'services' && styles.modeToggleTextActive]}>
-            Services
-          </Text>
-        </TouchableOpacity>
+      {/* Booking.com Style Segmented Pill Controls */}
+      <View style={styles.segmentedContainer}>
+        <View style={styles.segmentedTrack}>
+          <TouchableOpacity
+            style={[
+              styles.segmentedButton,
+              browseMode === 'tasks' && styles.segmentedButtonActive,
+            ]}
+            activeOpacity={0.85}
+            onPress={() => setBrowseMode('tasks')}
+          >
+            <Ionicons
+              name={browseMode === 'tasks' ? 'layers' : 'layers-outline'}
+              size={RFValue(15)}
+              color={browseMode === 'tasks' ? '#0F2B66' : 'rgba(255,255,255,0.75)'}
+              style={styles.segmentedIcon}
+            />
+            <Text
+              style={[
+                styles.segmentedText,
+                browseMode === 'tasks' && styles.segmentedTextActive,
+              ]}
+            >
+              Tasks
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.segmentedButton,
+              browseMode === 'services' && styles.segmentedButtonActive,
+            ]}
+            activeOpacity={0.85}
+            onPress={() => {
+              setBrowseMode('services');
+              setViewMode('list');
+            }}
+          >
+            <Ionicons
+              name={browseMode === 'services' ? 'sparkles' : 'sparkles-outline'}
+              size={RFValue(15)}
+              color={browseMode === 'services' ? '#0F2B66' : 'rgba(255,255,255,0.75)'}
+              style={styles.segmentedIcon}
+            />
+            <Text
+              style={[
+                styles.segmentedText,
+                browseMode === 'services' && styles.segmentedTextActive,
+              ]}
+            >
+              Services
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search Bar */}
@@ -512,11 +554,8 @@ export default function BrowseTasksScreen() {
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
           </View>
-        ) : servicesLoading && serviceListings.length === 0 ? (
-          <View style={styles.emptyState}>
-            <ActivityIndicator size="large" color="#1A2980" style={{ marginBottom: 16 }} />
-            <Text style={styles.loadingText}>Loading services...</Text>
-          </View>
+        ) : servicesLoading ? (
+          <TaskCardSkeletonList count={4} />
         ) : servicesError ? (
           <View style={styles.errorContainer}>
             <Ionicons name="alert-circle-outline" size={64} color="#ff6b6b" style={{ marginBottom: 16 }} />
@@ -626,13 +665,8 @@ export default function BrowseTasksScreen() {
                 <Text style={styles.retryButtonText}>Retry</Text>
               </TouchableOpacity>
             </View>
-          ) : isLoading && filteredAndSortedTasks.length === 0 ? (
-            <View style={styles.emptyState}>
-              <ActivityIndicator size="large" color="#1A2980" style={{ marginBottom: 16 }} />
-              <Text style={styles.loadingText}>
-                {searchText.trim() ? 'Searching tasks...' : 'Loading tasks...'}
-              </Text>
-            </View>
+          ) : isLoading ? (
+            <TaskCardSkeletonList count={4} />
           ) : error ? (
             <View style={styles.errorContainer}>
               <Ionicons name="alert-circle-outline" size={64} color="#ff6b6b" style={{ marginBottom: 16 }} />
@@ -801,38 +835,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: wp('2%'),
   },
-  modeToggleRow: {
-    flexDirection: 'row',
+  segmentedContainer: {
     backgroundColor: '#1A2980',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('5%'),
-    paddingBottom: hp('1.5%'),
-    paddingTop: hp('0.5%'),
-    gap: wp('2%'),
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
+    paddingBottom: hp('1.2%'),
+    paddingTop: hp('0.4%'),
   },
-  modeToggleButton: {
-    flex: 1,
-    paddingVertical: 10,
+  segmentedTrack: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(5, 18, 55, 0.45)',
     borderRadius: 30,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  segmentedButton: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderWidth: 1.5,
-    borderColor: 'transparent',
+    justifyContent: 'center',
+    paddingVertical: 9,
+    borderRadius: 26,
+    backgroundColor: 'transparent',
   },
-  modeToggleActive: {
-    backgroundColor: 'rgba(255,255,255,0.22)',
-    borderColor: 'rgba(255,255,255,0.6)',
-    borderBottomWidth: 0,
+  segmentedButtonActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.16,
+    shadowRadius: 5,
+    elevation: 4,
   },
-  modeToggleText: {
-    fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.6)',
-    fontWeight: '500',
-    letterSpacing: 0.3,
+  segmentedIcon: {
+    marginRight: 6,
   },
-  modeToggleTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    letterSpacing: 0.3,
+  segmentedText: {
+    fontSize: RFValue(13.5),
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '600',
+    letterSpacing: 0.2,
+  },
+  segmentedTextActive: {
+    color: '#0F2B66',
+    fontWeight: '800',
+    letterSpacing: 0.2,
   },
   // ─── Service Card ─────────────────────────────────────────────────────────
   serviceCard: {

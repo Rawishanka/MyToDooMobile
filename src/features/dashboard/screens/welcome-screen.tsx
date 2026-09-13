@@ -1,6 +1,7 @@
 // app/(tabs)/welcome-screen.tsx - Welcome dashboard with API category carousel
 import { getSocialMediaAccounts, SocialMediaAccount } from '@/src/api/user-profile-api';
 import MyToDooBrandLogo from '@/src/shared/components/MyToDooBrandLogo';
+import { AnimatedFireFlame } from '@/src/shared/components/AnimatedFireFlame';
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
 import { useGetCategoriesWithCarouselImages } from '@/src/shared/hooks/useCategoriesApi';
 import { useMergedUnreadCount } from '@/src/shared/hooks/useNotifications';
@@ -329,11 +330,8 @@ export default function WelcomeScreen() {
         <View style={styles.blueSection}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>Get it Done Now!</Text>
-            {/* Was 🔥 emoji (tofu on iOS Release) — use vector fire matching original brand look */}
-            <MaterialCommunityIcons
-              name="fire"
-              size={RFValue(isTablet ? 22 : 24)}
-              color="#FF6A00"
+            <AnimatedFireFlame
+              size={RFValue(isTablet ? 24 : 26)}
               style={styles.titleFlame}
             />
           </View>
