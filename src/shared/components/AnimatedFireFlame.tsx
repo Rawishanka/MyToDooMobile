@@ -9,297 +9,169 @@ export interface AnimatedFireFlameProps {
 
 /**
  * AnimatedFireFlame
- * High-performance, realistic burning flame with:
- * - Multi-layered SVG gradient flames (outer fiery red/orange, mid vivid amber, core white-hot ember)
- * - Organic flickering & breathing micro-animations (scale, sway, vertical flicker)
- * - Pulsing fiery glow halo
- * - Floating spark / ember particles that rise and fade
+ * Ultra-realistic, organic burning flame:
+ * - Natural 3-tone gradient flame curvature (crimson base -> bright amber -> glowing gold/white core)
+ * - Subtle, calm organic breathing & gentle flicker (NO artificial blurry halos, NO fake floating noise dots)
+ * - Matches the authentic clean aesthetic of the iOS/App Store brand flame
  */
 export const AnimatedFireFlame: React.FC<AnimatedFireFlameProps> = ({
-  size = 26,
+  size = 24,
   style,
 }) => {
-  // Main flame flicker & breath
   const scaleY = useRef(new Animated.Value(1)).current;
   const scaleX = useRef(new Animated.Value(1)).current;
-  const rotate = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(0)).current;
-  const glowOpacity = useRef(new Animated.Value(0.65)).current;
-
-  // Floating embers / sparks
-  const ember1Y = useRef(new Animated.Value(0)).current;
-  const ember1X = useRef(new Animated.Value(0)).current;
-  const ember1Opacity = useRef(new Animated.Value(0)).current;
-
-  const ember2Y = useRef(new Animated.Value(0)).current;
-  const ember2X = useRef(new Animated.Value(0)).current;
-  const ember2Opacity = useRef(new Animated.Value(0)).current;
+  const rotate = useRef(new Animated.Value(0)).current;
+  const innerFlicker = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // 1. Organic Flame Breathing & Vertical Flicker
-    const flameFlicker = Animated.loop(
+    // 1. Gentle, natural flame breathing (calm, organic flicker like a candle / torch flame)
+    const flameCycle = Animated.loop(
       Animated.sequence([
         Animated.parallel([
           Animated.timing(scaleY, {
-            toValue: 1.12,
-            duration: 180,
-            easing: Easing.bezier(0.4, 0, 0.2, 1),
+            toValue: 1.06,
+            duration: 380,
+            easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
           }),
           Animated.timing(scaleX, {
-            toValue: 0.94,
-            duration: 180,
-            easing: Easing.bezier(0.4, 0, 0.2, 1),
-            useNativeDriver: true,
-          }),
-          Animated.timing(translateY, {
-            toValue: -1.5,
-            duration: 180,
-            useNativeDriver: true,
-          }),
-          Animated.timing(rotate, {
-            toValue: 1,
-            duration: 180,
-            easing: Easing.ease,
-            useNativeDriver: true,
-          }),
-          Animated.timing(glowOpacity, {
-            toValue: 0.95,
-            duration: 180,
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.parallel([
-          Animated.timing(scaleY, {
-            toValue: 0.96,
-            duration: 140,
-            easing: Easing.ease,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scaleX, {
-            toValue: 1.05,
-            duration: 140,
-            easing: Easing.ease,
-            useNativeDriver: true,
-          }),
-          Animated.timing(translateY, {
-            toValue: 0.5,
-            duration: 140,
-            useNativeDriver: true,
-          }),
-          Animated.timing(rotate, {
-            toValue: -1,
-            duration: 140,
-            useNativeDriver: true,
-          }),
-          Animated.timing(glowOpacity, {
-            toValue: 0.55,
-            duration: 140,
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.parallel([
-          Animated.timing(scaleY, {
-            toValue: 1.08,
-            duration: 220,
-            easing: Easing.bezier(0.3, 0.1, 0.3, 1),
-            useNativeDriver: true,
-          }),
-          Animated.timing(scaleX, {
-            toValue: 0.96,
-            duration: 220,
+            toValue: 0.97,
+            duration: 380,
+            easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
           }),
           Animated.timing(translateY, {
             toValue: -1,
-            duration: 220,
+            duration: 380,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(rotate, {
+            toValue: 1,
+            duration: 380,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(scaleY, {
+            toValue: 0.98,
+            duration: 320,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleX, {
+            toValue: 1.03,
+            duration: 320,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateY, {
+            toValue: 0.4,
+            duration: 320,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(rotate, {
+            toValue: -0.8,
+            duration: 320,
+            easing: Easing.inOut(Easing.sin),
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(scaleY, {
+            toValue: 1.03,
+            duration: 350,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleX, {
+            toValue: 0.98,
+            duration: 350,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateY, {
+            toValue: -0.6,
+            duration: 350,
+            easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
           }),
           Animated.timing(rotate, {
             toValue: 0.5,
-            duration: 220,
-            useNativeDriver: true,
-          }),
-          Animated.timing(glowOpacity, {
-            toValue: 0.85,
-            duration: 220,
+            duration: 350,
+            easing: Easing.inOut(Easing.sin),
             useNativeDriver: true,
           }),
         ]),
         Animated.parallel([
           Animated.timing(scaleY, {
             toValue: 1,
-            duration: 160,
-            easing: Easing.ease,
+            duration: 300,
+            easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
           }),
           Animated.timing(scaleX, {
             toValue: 1,
-            duration: 160,
+            duration: 300,
+            easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
           }),
           Animated.timing(translateY, {
             toValue: 0,
-            duration: 160,
+            duration: 300,
+            easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
           }),
           Animated.timing(rotate, {
             toValue: 0,
-            duration: 160,
-            useNativeDriver: true,
-          }),
-          Animated.timing(glowOpacity, {
-            toValue: 0.65,
-            duration: 160,
+            duration: 300,
+            easing: Easing.inOut(Easing.sin),
             useNativeDriver: true,
           }),
         ]),
       ])
     );
 
-    // 2. Ember 1 loop (rising spark left side)
-    const ember1Animation = Animated.loop(
+    // 2. Subtle internal glow pulse
+    const innerPulse = Animated.loop(
       Animated.sequence([
-        Animated.parallel([
-          Animated.timing(ember1Y, {
-            toValue: -size * 0.7,
-            duration: 650,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-          Animated.timing(ember1X, {
-            toValue: -size * 0.22,
-            duration: 650,
-            useNativeDriver: true,
-          }),
-          Animated.sequence([
-            Animated.timing(ember1Opacity, {
-              toValue: 0.9,
-              duration: 200,
-              useNativeDriver: true,
-            }),
-            Animated.timing(ember1Opacity, {
-              toValue: 0,
-              duration: 450,
-              useNativeDriver: true,
-            }),
-          ]),
-        ]),
-        Animated.parallel([
-          Animated.timing(ember1Y, { toValue: 0, duration: 0, useNativeDriver: true }),
-          Animated.timing(ember1X, { toValue: 0, duration: 0, useNativeDriver: true }),
-          Animated.timing(ember1Opacity, { toValue: 0, duration: 0, useNativeDriver: true }),
-        ]),
+        Animated.timing(innerFlicker, {
+          toValue: 0.88,
+          duration: 260,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(innerFlicker, {
+          toValue: 1,
+          duration: 290,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
       ])
     );
 
-    // 3. Ember 2 loop (rising spark right side with offset)
-    const ember2Animation = Animated.loop(
-      Animated.sequence([
-        Animated.delay(300),
-        Animated.parallel([
-          Animated.timing(ember2Y, {
-            toValue: -size * 0.85,
-            duration: 720,
-            easing: Easing.out(Easing.quad),
-            useNativeDriver: true,
-          }),
-          Animated.timing(ember2X, {
-            toValue: size * 0.24,
-            duration: 720,
-            useNativeDriver: true,
-          }),
-          Animated.sequence([
-            Animated.timing(ember2Opacity, {
-              toValue: 0.95,
-              duration: 220,
-              useNativeDriver: true,
-            }),
-            Animated.timing(ember2Opacity, {
-              toValue: 0,
-              duration: 500,
-              useNativeDriver: true,
-            }),
-          ]),
-        ]),
-        Animated.parallel([
-          Animated.timing(ember2Y, { toValue: 0, duration: 0, useNativeDriver: true }),
-          Animated.timing(ember2X, { toValue: 0, duration: 0, useNativeDriver: true }),
-          Animated.timing(ember2Opacity, { toValue: 0, duration: 0, useNativeDriver: true }),
-        ]),
-      ])
-    );
-
-    flameFlicker.start();
-    ember1Animation.start();
-    ember2Animation.start();
+    flameCycle.start();
+    innerPulse.start();
 
     return () => {
-      flameFlicker.stop();
-      ember1Animation.stop();
-      ember2Animation.stop();
+      flameCycle.stop();
+      innerPulse.stop();
     };
-  }, [size]);
+  }, []);
 
   const spin = rotate.interpolate({
     inputRange: [-1, 0, 1],
-    outputRange: ['-3.5deg', '0deg', '3.5deg'],
+    outputRange: ['-1.5deg', '0deg', '1.5deg'],
   });
 
-  const emberSize = Math.max(3, Math.round(size * 0.12));
-
   return (
-    <View style={[styles.wrapper, { width: size, height: size * 1.2 }, style]}>
-      {/* Dynamic Fiery Back Glow */}
+    <View style={[styles.container, { width: size, height: size * 1.18 }, style]}>
       <Animated.View
         style={[
-          styles.glowLayer,
-          {
-            width: size * 0.9,
-            height: size * 0.9,
-            borderRadius: size * 0.45,
-            opacity: glowOpacity,
-          },
-        ]}
-      />
-
-      {/* Floating ember 1 */}
-      <Animated.View
-        style={[
-          styles.ember,
-          {
-            width: emberSize,
-            height: emberSize,
-            borderRadius: emberSize / 2,
-            bottom: size * 0.35,
-            left: size * 0.4,
-            opacity: ember1Opacity,
-            transform: [{ translateX: ember1X }, { translateY: ember1Y }],
-          },
-        ]}
-      />
-
-      {/* Floating ember 2 */}
-      <Animated.View
-        style={[
-          styles.ember,
-          styles.emberAlt,
-          {
-            width: emberSize * 0.85,
-            height: emberSize * 0.85,
-            borderRadius: (emberSize * 0.85) / 2,
-            bottom: size * 0.35,
-            right: size * 0.38,
-            opacity: ember2Opacity,
-            transform: [{ translateX: ember2X }, { translateY: ember2Y }],
-          },
-        ]}
-      />
-
-      {/* Main Flame SVG with animated scale/sway */}
-      <Animated.View
-        style={[
-          styles.flameContainer,
+          styles.flameWrapper,
           {
             transform: [
               { translateY },
@@ -317,45 +189,45 @@ export const AnimatedFireFlame: React.FC<AnimatedFireFlameProps> = ({
           fill="none"
         >
           <Defs>
-            {/* Outer Flame Gradient: Burning Deep Crimson/Orange to Vivid Amber */}
-            <LinearGradient id="outerFlameGrad" x1="50%" y1="100%" x2="50%" y2="0%">
-              <Stop offset="0%" stopColor="#D82600" stopOpacity="1" />
-              <Stop offset="30%" stopColor="#FF4500" stopOpacity="1" />
-              <Stop offset="70%" stopColor="#FF7A00" stopOpacity="1" />
-              <Stop offset="100%" stopColor="#FFAE00" stopOpacity="1" />
+            {/* Outer Flame Gradient: Deep fiery red-orange base to luminous amber tip */}
+            <LinearGradient id="realFlameOuter" x1="50%" y1="100%" x2="50%" y2="0%">
+              <Stop offset="0%" stopColor="#E52D00" stopOpacity="1" />
+              <Stop offset="25%" stopColor="#FF4D00" stopOpacity="1" />
+              <Stop offset="65%" stopColor="#FF8500" stopOpacity="1" />
+              <Stop offset="95%" stopColor="#FFB300" stopOpacity="1" />
             </LinearGradient>
 
-            {/* Middle Flame Gradient: Bright Orange to Radiant Yellow */}
-            <LinearGradient id="midFlameGrad" x1="50%" y1="100%" x2="50%" y2="0%">
-              <Stop offset="0%" stopColor="#FF5E00" stopOpacity="1" />
-              <Stop offset="50%" stopColor="#FF9900" stopOpacity="1" />
-              <Stop offset="100%" stopColor="#FFDE00" stopOpacity="1" />
+            {/* Mid Flame Gradient: Vibrant golden orange to bright yellow */}
+            <LinearGradient id="realFlameMid" x1="50%" y1="100%" x2="50%" y2="0%">
+              <Stop offset="0%" stopColor="#FF6B00" stopOpacity="1" />
+              <Stop offset="40%" stopColor="#FFA600" stopOpacity="1" />
+              <Stop offset="85%" stopColor="#FFDE00" stopOpacity="1" />
             </LinearGradient>
 
-            {/* Inner Core Hot Flame: Golden Sun to Ultra-Bright White Hot */}
-            <LinearGradient id="innerCoreGrad" x1="50%" y1="100%" x2="50%" y2="0%">
-              <Stop offset="0%" stopColor="#FFB300" stopOpacity="1" />
-              <Stop offset="50%" stopColor="#FFF066" stopOpacity="1" />
+            {/* Core Hot Heart Gradient: Warm sun gold to luminous white */}
+            <LinearGradient id="realFlameCore" x1="50%" y1="100%" x2="50%" y2="0%">
+              <Stop offset="0%" stopColor="#FFC700" stopOpacity="0.95" />
+              <Stop offset="55%" stopColor="#FFF275" stopOpacity="0.98" />
               <Stop offset="100%" stopColor="#FFFFFF" stopOpacity="1" />
             </LinearGradient>
           </Defs>
 
-          {/* 1. Outer Flame Silhouette */}
+          {/* 1. Main Realistic Flame Contour */}
           <Path
-            d="M50 2 C52 14 62 26 70 36 C80 48 88 62 86 78 C84 96 68 114 49 114 C30 114 14 96 14 77 C14 59 26 44 34 32 C37 28 39 20 37 12 C42 18 47 26 47 34 C47 38 45 42 43 45 C41 48 39 52 40 56 C42 63 51 66 54 60 C58 52 54 42 53 34 C51 22 50 11 50 2 Z"
-            fill="url(#outerFlameGrad)"
+            d="M50 4 C51 14 58 24 67 35 C77 47 84 61 82 77 C80 95 65 112 48 112 C30 112 16 95 16 77 C16 60 27 45 34 33 C37 28 38 21 36 14 C41 20 46 27 46 35 C46 39 44 43 42 46 C40 50 38 54 39 58 C41 64 49 67 52 61 C55 53 52 43 51 34 C50 23 49 13 50 4 Z"
+            fill="url(#realFlameOuter)"
           />
 
-          {/* 2. Middle Vibrant Fiery Layer */}
+          {/* 2. Secondary Inner Flickering Layer */}
           <Path
-            d="M51 25 C53 34 60 43 65 52 C71 62 72 73 70 84 C67 96 56 106 48 106 C38 106 28 97 27 84 C26 72 32 62 38 52 C41 47 43 41 42 35 C46 41 49 48 48 55 C48 59 45 62 47 66 C49 70 55 70 57 65 C59 58 55 50 54 42 C52 35 51 29 51 25 Z"
-            fill="url(#midFlameGrad)"
+            d="M50 30 C52 38 58 46 62 55 C67 64 68 74 66 84 C63 94 54 103 47 103 C39 103 30 95 29 84 C28 73 34 63 39 54 C42 49 43 43 42 38 C45 43 48 49 47 55 C47 58 44 61 46 65 C48 68 53 68 55 64 C57 58 53 51 52 44 C51 38 50 33 50 30 Z"
+            fill="url(#realFlameMid)"
           />
 
-          {/* 3. Inner White-Hot Core Flame */}
+          {/* 3. Core Hot White-Yellow Center */}
           <Path
-            d="M50 50 C52 58 56 64 59 70 C63 76 64 83 62 90 C60 97 54 102 48 102 C42 102 36 97 36 90 C36 82 40 76 43 70 C46 64 47 58 48 52 C50 56 50 60 51 64 C52 67 55 67 56 64 C57 59 54 55 52 52 C51 51 50 50 50 50 Z"
-            fill="url(#innerCoreGrad)"
+            d="M49 56 C51 63 54 69 57 75 C60 80 61 86 59 92 C57 98 52 102 47 102 C42 102 37 98 37 92 C37 85 40 80 43 75 C45 70 46 64 47 59 C49 62 49 66 50 69 C51 71 53 71 54 69 C55 65 52 61 51 58 C50 57 49 56 49 56 Z"
+            fill="url(#realFlameCore)"
           />
         </Svg>
       </Animated.View>
@@ -364,36 +236,12 @@ export const AnimatedFireFlame: React.FC<AnimatedFireFlameProps> = ({
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
+  container: {
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     overflow: 'visible',
-    position: 'relative',
   },
-  glowLayer: {
-    position: 'absolute',
-    bottom: 2,
-    backgroundColor: '#FF5E00',
-    shadowColor: '#FF4500',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  ember: {
-    position: 'absolute',
-    backgroundColor: '#FFE57F',
-    shadowColor: '#FFD700',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  emberAlt: {
-    backgroundColor: '#FFAB40',
-    shadowColor: '#FF6D00',
-  },
-  flameContainer: {
+  flameWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
   },

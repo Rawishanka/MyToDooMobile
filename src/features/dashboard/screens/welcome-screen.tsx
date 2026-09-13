@@ -328,15 +328,18 @@ export default function WelcomeScreen() {
         >
         {/* Blue Section with Input */}
         <View style={styles.blueSection}>
-          <View style={styles.titleRow}>
-            <Text style={styles.title}>Get it Done Now!</Text>
-            <AnimatedFireFlame
-              size={RFValue(isTablet ? 24 : 26)}
-              style={styles.titleFlame}
-            />
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Let&apos;s knock those tasks off your</Text>
+            <View style={styles.titleSecondLine}>
+              <Text style={styles.title}>list!</Text>
+              <AnimatedFireFlame
+                size={RFValue(isTablet ? 22 : 24)}
+                style={styles.titleFlame}
+              />
+            </View>
           </View>
           <Text style={styles.subtitle}>
-            Describe your job and get offers from MyToDoo
+            Tell us what you need help with—taskers are waiting!
           </Text>
           
           <TextInput
@@ -621,15 +624,19 @@ const styles = StyleSheet.create({
     paddingBottom: hp('2%'),
     width: '100%',
   },
-  titleRow: {
-    flexDirection: 'row',
+  titleContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    flexWrap: 'wrap',
     marginTop: 0,
     marginBottom: hp('0.8%'),
     paddingHorizontal: wp('2%'),
+  },
+  titleSecondLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
+    marginTop: 2,
   },
   title: {
     fontSize: RFValue(isTablet ? 20 : 22),
