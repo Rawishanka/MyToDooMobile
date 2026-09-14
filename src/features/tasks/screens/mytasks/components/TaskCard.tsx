@@ -33,7 +33,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Responsive utilities
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
@@ -70,6 +71,7 @@ interface TaskCardProps {
 
 export default function TaskCard({ task, onPress, status, userRole, onTaskCancelled, onTaskDeleted, onTaskCompleted, myOffer, onOfferDeleted, autoPromptReview = false }: TaskCardProps) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   
   // Get current user from auth store
   const { user: currentUser } = useAuthStore();
@@ -2199,38 +2201,56 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 <Text style={styles.emptyReasonsText}>No cancellation reasons available.</Text>
               </View>
             ) : (
-              <View style={styles.reasonsList}>
-                {cancellationReasons.map((reasonData: any, index: number) => (
-                  <TouchableOpacity
-                    key={reasonData._id || index}
-                    style={[
-                      styles.reasonItem,
-                      selectedCancelReason === index && styles.reasonItemSelected
-                    ]}
-                    onPress={() => {
-                      setSelectedCancelReason(index);
-                      setSelectedCancelReasonData(reasonData);
-                    }}
-                  >
-                    <Text style={styles.reasonNumber}>{index + 1}.</Text>
-                    <Text style={styles.reasonText}>{reasonData.reason}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              <ScrollView 
+                style={styles.reasonsScrollView}
+                contentContainerStyle={styles.reasonsScrollContent}
+                showsVerticalScrollIndicator={true}
+                bounces={false}
+              >
+                {cancellationReasons.map((reasonData: any, index: number) => {
+                  const isSelected = selectedCancelReason === index;
+                  return (
+                    <TouchableOpacity
+                      key={reasonData._id || index}
+                      style={[
+                        styles.reasonItem,
+                        isSelected && styles.reasonItemSelected
+                      ]}
+                      onPress={() => {
+                        setSelectedCancelReason(index);
+                        setSelectedCancelReasonData(reasonData);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <View style={[
+                        styles.radioButton,
+                        isSelected && styles.radioButtonSelected
+                      ]}>
+                        {isSelected && <View style={styles.radioButtonInner} />}
+                      </View>
+                      <Text style={[styles.reasonNumber, isSelected && styles.reasonNumberSelected]}>{index + 1}.</Text>
+                      <Text style={[styles.reasonText, isSelected && styles.reasonTextSelected]}>{reasonData.reason}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
             )}
 
-            <TouchableOpacity
-              style={[
-                styles.confirmCancelButton,
-                (selectedCancelReason === null || loadingReasons) && styles.confirmCancelButtonDisabled
-              ]}
-              onPress={handleConfirmPosterCancel}
-              disabled={selectedCancelReason === null || loadingReasons}
-            >
-              <Text style={styles.confirmCancelButtonText}>
-                Confirm Cancellation
-              </Text>
-            </TouchableOpacity>
+            <View style={[styles.cancelModalFooter, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+              <TouchableOpacity
+                style={[
+                  styles.confirmCancelButton,
+                  (selectedCancelReason === null || loadingReasons) && styles.confirmCancelButtonDisabled
+                ]}
+                onPress={handleConfirmPosterCancel}
+                disabled={selectedCancelReason === null || loadingReasons}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.confirmCancelButtonText}>
+                  {selectedCancelReason === null ? 'Select a Reason to Cancel' : 'Confirm Cancellation'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -2279,38 +2299,56 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 <Text style={styles.emptyReasonsText}>No cancellation reasons available.</Text>
               </View>
             ) : (
-              <View style={styles.reasonsList}>
-                {cancellationReasons.map((reasonData: any, index: number) => (
-                  <TouchableOpacity
-                    key={reasonData._id || index}
-                    style={[
-                      styles.reasonItem,
-                      selectedCancelReason === index && styles.reasonItemSelected
-                    ]}
-                    onPress={() => {
-                      setSelectedCancelReason(index);
-                      setSelectedCancelReasonData(reasonData);
-                    }}
-                  >
-                    <Text style={styles.reasonNumber}>{index + 1}.</Text>
-                    <Text style={styles.reasonText}>{reasonData.reason}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              <ScrollView 
+                style={styles.reasonsScrollView}
+                contentContainerStyle={styles.reasonsScrollContent}
+                showsVerticalScrollIndicator={true}
+                bounces={false}
+              >
+                {cancellationReasons.map((reasonData: any, index: number) => {
+                  const isSelected = selectedCancelReason === index;
+                  return (
+                    <TouchableOpacity
+                      key={reasonData._id || index}
+                      style={[
+                        styles.reasonItem,
+                        isSelected && styles.reasonItemSelected
+                      ]}
+                      onPress={() => {
+                        setSelectedCancelReason(index);
+                        setSelectedCancelReasonData(reasonData);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <View style={[
+                        styles.radioButton,
+                        isSelected && styles.radioButtonSelected
+                      ]}>
+                        {isSelected && <View style={styles.radioButtonInner} />}
+                      </View>
+                      <Text style={[styles.reasonNumber, isSelected && styles.reasonNumberSelected]}>{index + 1}.</Text>
+                      <Text style={[styles.reasonText, isSelected && styles.reasonTextSelected]}>{reasonData.reason}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
             )}
 
-            <TouchableOpacity
-              style={[
-                styles.confirmCancelButton,
-                (selectedCancelReason === null || loadingReasons) && styles.confirmCancelButtonDisabled
-              ]}
-              onPress={handleConfirmTaskerCancel}
-              disabled={selectedCancelReason === null || loadingReasons}
-            >
-              <Text style={styles.confirmCancelButtonText}>
-                Confirm Cancellation
-              </Text>
-            </TouchableOpacity>
+            <View style={[styles.cancelModalFooter, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+              <TouchableOpacity
+                style={[
+                  styles.confirmCancelButton,
+                  (selectedCancelReason === null || loadingReasons) && styles.confirmCancelButtonDisabled
+                ]}
+                onPress={handleConfirmTaskerCancel}
+                disabled={selectedCancelReason === null || loadingReasons}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.confirmCancelButtonText}>
+                  {selectedCancelReason === null ? 'Select a Reason to Cancel' : 'Confirm Cancellation'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -3034,8 +3072,51 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f9',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingBottom: 40,
-    maxHeight: '96%',
+    maxHeight: '88%',
+    flexDirection: 'column',
+  },
+  reasonsScrollView: {
+    flexShrink: 1,
+    maxHeight: hp('48%'),
+  },
+  reasonsScrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+  cancelModalFooter: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  radioButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#94a3b8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+    marginTop: 2,
+  },
+  radioButtonSelected: {
+    borderColor: '#2563eb',
+  },
+  radioButtonInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#2563eb',
+  },
+  reasonNumberSelected: {
+    color: '#1d4ed8',
+  },
+  reasonTextSelected: {
+    color: '#1d4ed8',
+    fontWeight: '600',
   },
   posterCancelHeader: {
     flexDirection: 'row',
@@ -3111,11 +3192,11 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    borderWidth: 2,
-    borderColor: '#2563eb',
+    borderWidth: 1.5,
+    borderColor: '#cbd5e1',
   },
   reasonItemSelected: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#eff6ff',
     borderColor: '#2563eb',
     borderWidth: 2,
   },
