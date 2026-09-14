@@ -15,7 +15,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: IS_UAT ? 'MyToDoo UAT' : 'MyToDoo',
   slug: 'mytodoomobile-app',
   owner: 'sithila345',
-  version: '1.3.4',
+  version: '1.1.4',
   orientation: 'portrait',
   icon: './assets/images/mytodoo-adaptive-icon.png',
   scheme: 'mytodoo',
@@ -25,7 +25,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: IS_UAT ? 'com.unexo.mytodoomobile' : 'com.mytodoo.mytodoolive',
     supportsTablet: true,
-    buildNumber: "97",
+    buildNumber: "98",
     googleServicesFile: IS_UAT
       ? './GoogleService-Info-UAT.plist'
       : './GoogleService-Info.plist',

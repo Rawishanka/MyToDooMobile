@@ -119,6 +119,8 @@ export default function CreateTaskScreen() {
   const [isOCRProcessing, setIsOCRProcessing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+  const [isTitleFocused, setIsTitleFocused] = useState(false);
+  const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
 
   const imagesRef = useRef<string[]>([]);
 
@@ -1092,8 +1094,10 @@ Please remove phone numbers and addresses from the image.`,
             <TouchableOpacity
               style={[
                 styles.categorySelector,
+                showCategoryDropdown && styles.categorySelectorActive,
                 touched.category && !selectedCategory && styles.inputError
               ]}
+              activeOpacity={0.7}
               onPress={() => {
                 const wasOpen = showCategoryDropdown;
                 setShowCategoryDropdown(!showCategoryDropdown);
@@ -1104,10 +1108,22 @@ Please remove phone numbers and addresses from the image.`,
                 }
               }}
             >
-              <Text style={[styles.categorySelectorText, !selectedCategory && styles.placeholder]}>
-                {selectedCategory || 'Select a category'}
-              </Text>
-              <Ionicons name="chevron-down" size={20} color="#666" />
+              <View style={styles.categoryLeftContent}>
+                <Ionicons 
+                  name="grid-outline" 
+                  size={18} 
+                  color={selectedCategory ? "#0057FF" : "#94A3B8"} 
+                  style={styles.fieldIcon} 
+                />
+                <Text style={[styles.categorySelectorText, !selectedCategory && styles.placeholder]}>
+                  {selectedCategory || 'Select a category'}
+                </Text>
+              </View>
+              <Ionicons 
+                name={showCategoryDropdown ? "chevron-up" : "chevron-down"} 
+                size={20} 
+                color="#64748B" 
+              />
             </TouchableOpacity>
             {touched.category && !selectedCategory && (
               <Text style={styles.validationText}>Category is required</Text>
@@ -1126,13 +1142,13 @@ Please remove phone numbers and addresses from the image.`,
                 />
                 <View style={styles.categoryDropdown}>
                   <View style={styles.searchContainer}>
-                    <Ionicons name="search" size={18} color="#999" />
+                    <Ionicons name="search" size={18} color="#94A3B8" />
                     <TextInput
                       style={styles.searchInput}
                       placeholder="Search categories..."
                       value={categorySearchQuery}
                       onChangeText={setCategorySearchQuery}
-                      placeholderTextColor="#999"
+                      placeholderTextColor="#94A3B8"
                     />
                   </View>
 
@@ -1169,7 +1185,7 @@ Please remove phone numbers and addresses from the image.`,
                         >
                           {category}
                         </Text>
-                        {selectedCategory === category && <Ionicons name="checkmark" size={20} color="#0057FF" />}
+                        {selectedCategory === category && <Ionicons name="checkmark-circle" size={20} color="#0057FF" />}
                       </TouchableOpacity>
                     ))
                   )}
@@ -1184,23 +1200,37 @@ Please remove phone numbers and addresses from the image.`,
             <Text style={styles.label}>
               Title <Text style={styles.required}>*</Text>
             </Text>
-            <TextInput
-              style={[
-                styles.input,
-                titleError && styles.inputError
-              ]}
-              placeholder="e.g. Move my couch"
-              value={title}
-              onChangeText={handleTitleChange}
-              onBlur={handleTitleBlur}
-              placeholderTextColor="#999"
-              maxLength={200}
-            />
-            <Text style={styles.charCount}>{titleLength}/200</Text>
-            {titleError && (
+            <View style={[
+              styles.inputWrapper,
+              isTitleFocused && styles.inputWrapperFocused,
+              titleError ? styles.inputError : null
+            ]}>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. Move my couch"
+                value={title}
+                onChangeText={handleTitleChange}
+                onFocus={() => setIsTitleFocused(true)}
+                onBlur={() => {
+                  setIsTitleFocused(false);
+                  handleTitleBlur();
+                }}
+                placeholderTextColor="#94A3B8"
+                maxLength={200}
+              />
+            </View>
+            <View style={styles.fieldMetaRow}>
+              <View style={styles.helperRow}>
+                <Ionicons name="information-circle-outline" size={13} color="#94A3B8" />
+                <Text style={styles.helperText}>Only letters, spaces, and basic punctuation</Text>
+              </View>
+              <View style={styles.charCountBadge}>
+                <Text style={styles.charCountText}>{titleLength}/200</Text>
+              </View>
+            </View>
+            {titleError ? (
               <Text style={styles.errorText}>{titleError}</Text>
-            )}
-            <Text style={styles.helperText}>Only letters, spaces, and basic punctuation allowed</Text>
+            ) : null}
           </View>
 
           {/* Description Input */}
@@ -1208,29 +1238,43 @@ Please remove phone numbers and addresses from the image.`,
             <Text style={styles.label}>
               Description <Text style={styles.required}>*</Text>
             </Text>
-            <TextInput
-              style={[
-                styles.textArea,
-                touched.description && (descriptionError || (descriptionLength > 0 && descriptionLength < 20)) && styles.inputError
-              ]}
-              multiline
-              placeholder="Give a detailed description of your task..."
-              value={description}
-              onChangeText={handleDescriptionChange}
-              onBlur={handleDescriptionBlur}
-              placeholderTextColor="#999"
-              textAlignVertical="top"
-              numberOfLines={4}
-              maxLength={1000}
-            />
-            <Text style={styles.charCount}>{descriptionLength}/1000</Text>
-            {touched.description && descriptionError && (
+            <View style={[
+              styles.textAreaWrapper,
+              isDescriptionFocused && styles.inputWrapperFocused,
+              (touched.description && (descriptionError || (descriptionLength > 0 && descriptionLength < 20))) ? styles.inputError : null
+            ]}>
+              <TextInput
+                style={styles.textArea}
+                multiline
+                placeholder="Give a detailed description of your task..."
+                value={description}
+                onChangeText={handleDescriptionChange}
+                onFocus={() => setIsDescriptionFocused(true)}
+                onBlur={() => {
+                  setIsDescriptionFocused(false);
+                  handleDescriptionBlur();
+                }}
+                placeholderTextColor="#94A3B8"
+                textAlignVertical="top"
+                numberOfLines={4}
+                maxLength={1000}
+              />
+            </View>
+            <View style={styles.fieldMetaRow}>
+              <View style={styles.helperRow}>
+                <Ionicons name="information-circle-outline" size={13} color="#94A3B8" />
+                <Text style={styles.helperText}>Min 20 characters required</Text>
+              </View>
+              <View style={styles.charCountBadge}>
+                <Text style={styles.charCountText}>{descriptionLength}/1000</Text>
+              </View>
+            </View>
+            {touched.description && descriptionError ? (
               <Text style={styles.errorText}>{descriptionError}</Text>
-            )}
-            {touched.description && !descriptionError && descriptionLength > 0 && descriptionLength < 20 && (
+            ) : null}
+            {touched.description && !descriptionError && descriptionLength > 0 && descriptionLength < 20 ? (
               <Text style={styles.errorText}>Minimum 20 characters required</Text>
-            )}
-            <Text style={styles.helperText}>Only letters, spaces, and basic punctuation allowed</Text>
+            ) : null}
           </View>
         </View>
 
@@ -1493,22 +1537,37 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   categorySelector: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#F8FAFC',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+  },
+  categorySelectorActive: {
+    borderColor: '#0057FF',
+    backgroundColor: '#FFFFFF',
+  },
+  categoryLeftContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 10,
+  },
+  fieldIcon: {
+    marginRight: 10,
   },
   categorySelectorText: {
-    fontSize: RFValue(16),
-    color: '#000',
+    fontSize: RFValue(15),
+    fontWeight: '500',
+    color: '#0F172A',
   },
   placeholder: {
-    color: '#999',
+    color: '#94A3B8',
+    fontWeight: '400',
   },
   dropdownOverlay: {
     position: 'absolute',
@@ -1521,31 +1580,31 @@ const styles = StyleSheet.create({
   },
   categoryDropdown: {
     marginTop: 8,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     position: 'relative',
     zIndex: 999,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: '#E2E8F0',
     maxHeight: 300,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 8,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    borderBottomColor: '#F1F5F9',
   },
   searchInput: {
     flex: 1,
     marginLeft: 8,
-    fontSize: RFValue(16),
-    color: '#000',
+    fontSize: RFValue(14),
+    color: '#0F172A',
   },
   categoriesList: {
     maxHeight: 250,
@@ -1554,12 +1613,13 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#FF3B30',
-    padding: 20,
+    color: '#EF4444',
+    padding: 8,
     textAlign: 'center',
+    fontSize: RFValue(12),
   },
   noResultsText: {
-    color: '#8E8E93',
+    color: '#94A3B8',
     padding: 20,
     textAlign: 'center',
   },
@@ -1567,52 +1627,96 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 13,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F7',
+    borderBottomColor: '#F8FAFC',
   },
   categoryItemSelected: {
-    backgroundColor: '#F0F5FF',
+    backgroundColor: '#EFF6FF',
   },
   categoryItemText: {
-    fontSize: RFValue(16),
-    color: '#1C1C1E',
+    fontSize: RFValue(14),
+    color: '#1E293B',
+    fontWeight: '500',
   },
   categoryItemTextSelected: {
     color: '#0057FF',
     fontWeight: '600',
   },
+  inputWrapper: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+  },
+  textAreaWrapper: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+  },
+  inputWrapperFocused: {
+    borderColor: '#0057FF',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#0057FF',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
   input: {
-    backgroundColor: '#F2F2F7',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
-    fontSize: RFValue(16),
-    color: '#000',
-    borderWidth: 1,
-    borderColor: 'transparent',
+    fontSize: RFValue(15),
+    color: '#0F172A',
+    backgroundColor: 'transparent',
   },
   inputError: {
-    borderColor: '#FF3B30',
+    borderColor: '#EF4444',
+    backgroundColor: '#FFF8F8',
   },
   validationText: {
     fontSize: RFValue(12),
-    color: '#FF3B30',
-    marginTop: 4,
+    color: '#EF4444',
+    marginTop: 6,
+    fontWeight: '500',
   },
   textArea: {
-    backgroundColor: '#F2F2F7',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
-    fontSize: RFValue(16),
-    color: '#000',
+    fontSize: RFValue(15),
+    color: '#0F172A',
     height: 120,
-    borderWidth: 1,
-    borderColor: 'transparent',
+    backgroundColor: 'transparent',
   },
-  imageSection: {
+  fieldMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6,
+    paddingHorizontal: 2,
+  },
+  helperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    flex: 1,
+  },
+  charCountBadge: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  charCountText: {
+    fontSize: RFValue(11),
+    fontWeight: '600',
+    color: '#64748B',
+  },
+    imageSection: {
     marginBottom: 20,
   },
   imageRow: {
@@ -1702,19 +1806,30 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 20,
     right: 20,
-    backgroundColor: '#D1D1D6',
-    paddingVertical: 16,
-    marginBottom: 0,
-    borderRadius: 25,
+    backgroundColor: '#E2E8F0',
+    height: 54,
+    borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   continueButtonEnabled: {
     backgroundColor: BRAND_ORANGE,
+    shadowColor: BRAND_ORANGE,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 5,
   },
   continueText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.4,
   },
   // Validation text styles
   validationTextContainer: {
