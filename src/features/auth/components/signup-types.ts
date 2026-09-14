@@ -1,6 +1,6 @@
 // Types and interfaces for signup flow
 
-export type VerificationStep = 'email' | 'sms' | null;
+export type VerificationStep = 'phone_entry' | 'email' | 'sms' | null;
 
 export interface LocationData {
   address: string;

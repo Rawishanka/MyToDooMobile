@@ -56,6 +56,8 @@ interface OTPModalProps {
   handleVerifySms: () => void;
   handleResendEmail: () => void;
   handleResendSms: () => void;
+  onPhoneChange?: (value: string) => void;
+  handleSendPhoneOtp?: () => void;
   onClose?: () => void;
 }
 
@@ -162,6 +164,8 @@ export const OTPModal: React.FC<OTPModalProps> = ({
   handleVerifySms,
   handleResendEmail,
   handleResendSms,
+  onPhoneChange,
+  handleSendPhoneOtp,
   onClose,
 }) => {
   const handleClose = () => {
@@ -305,6 +309,104 @@ export const OTPModal: React.FC<OTPModalProps> = ({
         </View>
       </TouchableWithoutFeedback>
     </Modal>
+
+
+      {/* Phone Number Entry Modal (For Google/Apple Sign-up 2FA) */}
+      <Modal
+        visible={verificationStep === 'phone_entry'}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={handleClose}
+      >
+        <TouchableWithoutFeedback onPress={dismissKeyboard}>
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView 
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+              style={styles.keyboardAvoidingView}
+              keyboardVerticalOffset={0}
+            >
+              <View style={styles.modalInnerContainer}>
+                <ScrollView
+                  contentContainerStyle={styles.scrollContent}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                  bounces={false}
+                >
+                  <View style={styles.modalContainer}>
+                    {onClose && (
+                      <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                        <Ionicons name="close" size={24} color="#666" />
+                      </TouchableOpacity>
+                    )}
+                  
+                    <View style={styles.modalHeader}>
+                      <View style={styles.iconCircle}>
+                        <Ionicons name="shield-checkmark" size={36} color="#007BFF" />
+                      </View>
+                      <Text style={styles.modalTitle}>Two-Factor Authentication</Text>
+                      <Text style={styles.modalSubtitle}>
+                        Enter your mobile number to complete SMS 2FA verification.
+                      </Text>
+                    </View>
+
+                    <View style={styles.otpSection}>
+                      <Text style={styles.otpLabel}>Mobile Phone Number</Text>
+                      <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: '#F8F9FA',
+                        borderRadius: 12,
+                        borderWidth: 1.5,
+                        borderColor: '#E2E8F0',
+                        paddingHorizontal: 16,
+                        height: 54,
+                        marginTop: 8,
+                      }}>
+                        <Text style={{ fontSize: 16, fontWeight: '700', color: '#1E293B', marginRight: 8 }}>
+                          {phoneCode || '+61'}
+                        </Text>
+                        <TextInput
+                          style={{ flex: 1, fontSize: 16, color: '#1E293B', height: '100%' }}
+                          placeholder="412 345 678"
+                          placeholderTextColor="#94A3B8"
+                          keyboardType="phone-pad"
+                          value={phone}
+                          onChangeText={onPhoneChange}
+                          autoFocus={true}
+                        />
+                      </View>
+                    </View>
+
+                    <TouchableOpacity 
+                      style={[
+                        styles.verifyButton, 
+                        (!phone || phone.trim().length < 8) && styles.verifyButtonDisabled
+                      ]} 
+                      onPress={handleSendPhoneOtp} 
+                      disabled={verifyLoading || !phone || phone.trim().length < 8}
+                      activeOpacity={0.8}
+                    >
+                      {verifyLoading ? (
+                        <ActivityIndicator color="#fff" size="small" />
+                      ) : (
+                        <>
+                          <Text style={styles.verifyButtonText}>Send SMS Code</Text>
+                          <Ionicons name="arrow-forward" size={20} color="#fff" />
+                        </>
+                      )}
+                    </TouchableOpacity>
+
+                    <View style={styles.securityNote}>
+                      <Ionicons name="lock-closed-outline" size={14} color="#28a745" />
+                      <Text style={styles.securityNoteText}>Your phone number is encrypted and secured</Text>
+                    </View>
+                  </View>
+                </ScrollView>
+              </View>
+            </KeyboardAvoidingView>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
       {/* SMS Verification Modal */}
       <Modal

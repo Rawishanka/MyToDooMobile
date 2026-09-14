@@ -53,8 +53,10 @@ export default function BrowseTasksScreen() {
   const [sortVisible, setSortVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const searchParams = useLocalSearchParams<{ mode?: string }>();
+  const searchParams = useLocalSearchParams<{ mode?: string; view?: string }>();
+  const [viewMode, setViewMode] = useState<'list' | 'map'>(
+    searchParams.view === 'map' ? 'map' : 'list'
+  );
   const [browseMode, setBrowseMode] = useState<'tasks' | 'services'>(
     searchParams.mode === 'services' ? 'services' : 'tasks'
   );
@@ -63,7 +65,10 @@ export default function BrowseTasksScreen() {
     if (searchParams.mode === 'services' || searchParams.mode === 'tasks') {
       setBrowseMode(searchParams.mode);
     }
-  }, [searchParams.mode]);
+    if (searchParams.view === 'map' || searchParams.view === 'list') {
+      setViewMode(searchParams.view);
+    }
+  }, [searchParams.mode, searchParams.view]);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [selectedServiceListing, setSelectedServiceListing] = useState<ServiceListing | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);

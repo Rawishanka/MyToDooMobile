@@ -1,3 +1,4 @@
+import { requestPhoneOtp, verifyPhoneOtp } from '@/src/api/contact-change-api';
 // Custom hook for signup form state and logic
 
 import API_CONFIG from '@/src/api/config';
@@ -101,6 +102,7 @@ export const useSignup = () => {
   const [appleLoading, setAppleLoading] = useState(false);
   const [appleAuthAvailable, setAppleAuthAvailable] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isSocialSignup, setIsSocialSignup] = useState(false);
   
   // Timer state
   const [emailTimer, setEmailTimer] = useState(57);
@@ -512,6 +514,36 @@ export const useSignup = () => {
       return;
     }
 
+        if (isSocialSignup) {
+      try {
+        setVerifyLoading(true);
+        const fullPhone = `${selectedCountry.phoneCode}${phone.trim()}`;
+        console.log('📱 Verifying phone OTP for social signup:', { fullPhone, otpCode });
+        const verifyRes = await verifyPhoneOtp(fullPhone, otpCode);
+        if (verifyRes.success || verifyRes.data) {
+          setSmsVerified(true);
+          console.log('🎉 Social sign-up phone 2FA verified successfully!');
+          setVerificationStep(null);
+          await new Promise(resolve => setTimeout(resolve, 300));
+          await queryClient.invalidateQueries();
+          await postPendingTask();
+          router.replace('/(tabs)' as any);
+          setTimeout(() => {
+            Alert.alert('Welcome to MyToDoo!', 'Your account has been secured with two-factor authentication.', [{ text: 'OK' }]);
+          }, 500);
+          return;
+        } else {
+          Alert.alert('Error', verifyRes.message || 'Invalid SMS code.');
+          return;
+        }
+      } catch (err: any) {
+        Alert.alert('Verification Failed', err?.response?.data?.message || err?.message || 'Invalid SMS code.');
+        return;
+      } finally {
+        setVerifyLoading(false);
+      }
+    }
+
     try {
       setVerifyLoading(true);
       
@@ -604,8 +636,38 @@ export const useSignup = () => {
     console.log('⚠️ Separate SMS send endpoint may not be available');
   };
 
+
+  const handleSendPhoneOtp = async () => {
+    if (!phone || phone.trim().length < 8) {
+      Alert.alert('Invalid Mobile Number', 'Please enter a valid mobile phone number.');
+      return;
+    }
+    try {
+      setVerifyLoading(true);
+      const fullPhone = `${selectedCountry.phoneCode}${phone.trim()}`;
+      console.log('📱 Sending SMS verification code to:', fullPhone);
+      await requestPhoneOtp(fullPhone);
+      setVerificationStep('sms');
+      setSmsTimer(57);
+      Alert.alert('Verification Code Sent', `We sent a 6-digit verification code to ${fullPhone}`);
+    } catch (err: any) {
+      console.error('Failed to send phone OTP:', err);
+      Alert.alert('SMS Error', err?.response?.data?.message || err?.message || 'Failed to send SMS verification code.');
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
+
   const handleResendSms = async () => {
     try {
+      if (isSocialSignup) {
+        const fullPhone = `${selectedCountry.phoneCode}${phone.trim()}`;
+        await requestPhoneOtp(fullPhone);
+        setSmsTimer(57);
+        Alert.alert('Sent!', 'Verification code resent to your phone.');
+        return;
+      }
+
       const fullPhone = `${selectedCountry.phoneCode}${phone}`;
       console.log(`📱 Attempting to resend SMS OTP to ${fullPhone} for email ${email}`);
       
@@ -672,19 +734,35 @@ export const useSignup = () => {
         isNewUser: (result as any).isNewUser 
       });
       
-      // ✅ FIX: Google Sign-In users do NOT need OTP verification
-      // Google has already verified their email - skip 2FA and go directly to app
-      console.log('✅ Google authentication complete - skipping OTP verification');
-      
-      // Clear all caches to ensure fresh data
-      console.log('🧹 Clearing all cached data before navigation...');
+      // ✅ Google 2FA: If new user or missing phone, initiate SMS 2FA verification flow
+      const isNew = (result as any).isNewUser || !result.user?.phone;
+      console.log('🔍 Google signup result check:', { isNewUser: isNew, phone: result.user?.phone });
+
+      if (isNew) {
+        console.log('🔐 New Google Sign-Up user detected - initiating 2FA verification flow');
+        setIsSocialSignup(true);
+        if (result.user?.email) setEmail(result.user.email);
+        if (result.user?.id) setUserId(result.user.id);
+
+        if (phone && phone.trim().length >= 8) {
+          const fullPhone = `${selectedCountry.phoneCode}${phone.trim()}`;
+          try {
+            await requestPhoneOtp(fullPhone);
+            setVerificationStep('sms');
+            setSmsTimer(57);
+          } catch (e: any) {
+            setVerificationStep('phone_entry');
+          }
+        } else {
+          setVerificationStep('phone_entry');
+        }
+        return;
+      }
+
+      // Existing verified user - navigate to app
+      console.log('🚀 Existing verified Google user - navigating to app');
       await queryClient.clear();
-      
-      // Wait for auth store to be updated
       await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Navigate directly to app
-      console.log('🚀 Navigating to app after Google Sign-In');
       router.replace('/(tabs)' as any);
       
     } catch (error: any) {
@@ -815,26 +893,15 @@ export const useSignup = () => {
         userEmail: result.user?.email
       });
 
-      // ✅ CHECK: If Apple ID is already registered → redirect to login
-      if (result.isNewUser === false) {
-        console.log('⚠️ Apple ID already registered — redirecting to login');
-        // Sign out the auto-logged-in session
+      // ✅ CHECK: If Apple ID is an existing verified user → navigate directly
+      if (result.isNewUser === false && result.user?.phone) {
+        console.log('🍎 Existing verified Apple user - navigating to tabs');
         await queryClient.clear();
-        Alert.alert(
-          'Account Already Exists',
-          'This Apple account is already registered with MyToDoo.\n\nPlease use "Sign In" to access your existing account.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Go to Sign In',
-              style: 'default',
-              onPress: () => router.replace('/(auth)/login' as any),
-            },
-          ]
-        );
+        await new Promise(resolve => setTimeout(resolve, 100));
+        router.replace('/(tabs)' as any);
         return;
       }
-      
+
       // 4. Store Apple user ID in Keychain
       await SecureStore.setItemAsync(
         'apple_user_id',
@@ -845,16 +912,25 @@ export const useSignup = () => {
         }
       );
       console.log('🔐 Stored Apple user ID in Keychain');
-      
-      // 5. Clear caches and navigate
-      console.log('🧹 Clearing cached data after Apple Sign-Up...');
-      await queryClient.clear();
-      
-      // Wait for auth store to be updated
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      console.log('🚀 Navigating to app after Apple Sign-Up');
-      router.replace('/(tabs)' as any);
+
+      // Enforce 2FA phone verification for new Apple sign-ups
+      console.log('🍎 New Apple Sign-Up user detected - initiating 2FA phone verification flow');
+      setIsSocialSignup(true);
+      if (result.user?.email) setEmail(result.user.email);
+      if (result.user?.id) setUserId(result.user.id);
+
+      if (phone && phone.trim().length >= 8) {
+        const fullPhone = `${selectedCountry.phoneCode}${phone.trim()}`;
+        try {
+          await requestPhoneOtp(fullPhone);
+          setVerificationStep('sms');
+          setSmsTimer(57);
+        } catch (e: any) {
+          setVerificationStep('phone_entry');
+        }
+      } else {
+        setVerificationStep('phone_entry');
+      }
       
     } catch (error: any) {
       if (error.code === 'ERR_CANCELED') {
@@ -959,6 +1035,8 @@ export const useSignup = () => {
     handleVerifySms,
     handleResendEmail,
     handleResendSms,
+    handleSendPhoneOtp,
+    isSocialSignup,
     handleCloseVerification,
     handleGoogleSignIn,
     handleAppleSignIn,

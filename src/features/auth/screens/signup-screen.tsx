@@ -165,6 +165,8 @@ export default function SignUpScreen() {
         handleVerifySms={signup.handleVerifySms}
         handleResendEmail={signup.handleResendEmail}
         handleResendSms={signup.handleResendSms}
+        onPhoneChange={signup.setPhone}
+        handleSendPhoneOtp={signup.handleSendPhoneOtp}
         onClose={signup.handleCloseVerification}
       />
       </SafeAreaView>
