@@ -1791,7 +1791,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             return (
               <>
                 {/* Chat only available when task is in assigned (Todo) status */}
-                {task.status === 'assigned' && (
+                {['todo', 'assigned', 'in_progress', 'pending_completion'].includes(task.status) && (
                   <TouchableOpacity 
                     style={[styles.chatButton]}
                     onPress={handleOpenChat}
@@ -1883,7 +1883,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           // Only the TASKER can mark task as complete; only the POSTER can release payment
           <>
             {/* Chat only available when task is in assigned (Todo) status */}
-            {task.status === 'assigned' && (
+            {['todo', 'assigned', 'in_progress', 'pending_completion'].includes(task.status) && (
               <TouchableOpacity 
                 style={[styles.chatButton]}
                 onPress={handleOpenChat}

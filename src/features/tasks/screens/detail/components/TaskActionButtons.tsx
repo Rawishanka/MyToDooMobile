@@ -84,7 +84,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
   })();
   
   // Check if task is in accepted/assigned state (post-payment)
-  const isAcceptedTask = ['accepted', 'assigned', 'in_progress', 'todo'].includes(task?.status);
+  const isAcceptedTask = ['accepted', 'assigned', 'in_progress', 'todo', 'pending_completion'].includes(task?.status);
   
   // Show buttons based on user role:
   // - POSTER (task creator): Can see Chat and Cancel buttons only
