@@ -27,6 +27,15 @@ import React, { useEffect, useState } from 'react';
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
+import { LogBox } from 'react-native';
+LogBox.ignoreLogs([
+  'Failed to fetch user chats',
+  'Network Error',
+  'Network request failed',
+  'isNetworkError',
+  'AxiosError',
+]);
+
 // Error boundary to catch crashes in critical launch components
 class LaunchErrorBoundary extends React.Component<
   { children: React.ReactNode; fallback?: () => void },

@@ -1,3 +1,4 @@
+import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 /**
  * Task-Based Chat API
  * 
@@ -228,7 +229,9 @@ export const getUserChats = async (): Promise<GetChatsResponse> => {
       throw new Error('Authentication required');
     }
     
-    console.error('❌ Failed to fetch user chats:', error);
+    if (!isNetworkError(error)) {
+      console.error('❌ Failed to fetch user chats:', error);
+    }
     
     throw new Error(
       error?.response?.data?.message || 'Failed to fetch chats. Please try again.'

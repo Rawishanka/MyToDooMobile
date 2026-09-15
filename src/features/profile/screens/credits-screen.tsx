@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { router } from 'expo-router';
+import InviteFriendsScreen from './invite-friends-screen';
 
 interface CreditsScreenProps {
   onBack: () => void;
@@ -55,6 +56,11 @@ function formatReason(reason?: string | null, isCredit: boolean = true) {
 
 export default function CreditsScreen({ onBack }: CreditsScreenProps) {
   const insets = useSafeAreaInsets();
+  const [showInvite, setShowInvite] = React.useState(false);
+
+  if (showInvite) {
+    return <InviteFriendsScreen onBack={() => setShowInvite(false)} />;
+  }
   const {
     data: balanceData,
     isLoading: balanceLoading,
@@ -174,8 +180,7 @@ export default function CreditsScreen({ onBack }: CreditsScreenProps) {
                   style={styles.cardActionBtn}
                   activeOpacity={0.85}
                   onPress={() => {
-                    // Navigate to invite friends
-                    router.push('/(tabs)/profile' as any);
+                    setShowInvite(true);
                   }}
                 >
                   <View style={styles.actionBtnContent}>

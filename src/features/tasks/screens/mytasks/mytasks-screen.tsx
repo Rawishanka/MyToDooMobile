@@ -180,8 +180,8 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
 
-  // Reset to first tab when role changes
-  useEffect(() => { setActiveIndex(0); }, [userRole]);
+  // Reset to first tab when role changes (only if no initial tab was requested)
+  useEffect(() => { if (!initialTabKey) setActiveIndex(0); }, [userRole, initialTabKey]);
 
   const tabs: TopTabDef[] = useMemo(() => {
     if (userRole === 'Tasker') {
@@ -221,9 +221,13 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
 
   useEffect(() => {
     if (!initialTabKey) return;
-    const tabIndex = tabs.findIndex((tab) => tab.key === initialTabKey);
+    const cleanKey = initialTabKey.toLowerCase().replace(/[s-]/g, '_');
+    const tabIndex = tabs.findIndex((tab) => tab.key === initialTabKey || tab.key === cleanKey);
     if (tabIndex >= 0) {
       setActiveIndex(tabIndex);
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({ x: Math.max(0, tabIndex * 110 - 40), animated: true });
+      }, 100);
     }
   }, [initialTabKey, tabs]);
 

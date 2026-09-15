@@ -201,15 +201,13 @@ export function EnhancedOfflineBanner() {
     switch (bannerState) {
       case 'offline':
         return (
-          <Animated.View style={[styles.bannerInner, styles.offlineBanner, { transform: [{ scale: pulseAnim }] }]}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="cloud-offline" size={20} color="#fff" />
+          <Animated.View style={[styles.bannerInner, { transform: [{ scale: pulseAnim }] }]}>
+            <View style={[styles.iconContainer, styles.offlineIconContainer]}>
+              <Ionicons name="cloud-offline" size={16} color="#F59E0B" />
             </View>
             <View style={styles.textContainer}>
-              <Text style={styles.bannerTitle}>You're Offline</Text>
-              <Text style={styles.bannerSubtitle}>
-                Changes will be saved locally and synced when you reconnect
-              </Text>
+              <Text style={styles.bannerTitle}>Offline Mode</Text>
+              <Text style={styles.bannerSubtitle}>Changes will sync when reconnected</Text>
             </View>
             <View style={styles.offlineDot} />
           </Animated.View>
@@ -220,41 +218,40 @@ export function EnhancedOfflineBanner() {
           <Animated.View
             style={[
               styles.bannerInner,
-              styles.syncingBanner,
               {
                 opacity: shimmerAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0.85, 1],
+                  outputRange: [0.88, 1],
                 }),
               },
             ]}
           >
-            <View style={styles.iconContainer}>
-              <Ionicons name="sync" size={20} color="#fff" />
+            <View style={[styles.iconContainer, styles.syncIconContainer]}>
+              <Ionicons name="sync" size={16} color="#60A5FA" />
             </View>
             <View style={styles.textContainer}>
-              <Text style={styles.bannerTitle}>Syncing Your Changes...</Text>
+              <Text style={styles.bannerTitle}>Syncing Changes...</Text>
               <Text style={styles.bannerSubtitle}>
-                {pendingCount > 0 ? `${pendingCount} item${pendingCount > 1 ? 's' : ''} remaining` : 'Almost done...'}
+                {pendingCount > 0 ? `${pendingCount} item${pendingCount > 1 ? 's' : ''} remaining` : 'Almost done'}
               </Text>
             </View>
             <View style={styles.syncSpinner}>
-              <Ionicons name="reload" size={16} color="rgba(255,255,255,0.8)" />
+              <Ionicons name="reload" size={14} color="#94A3B8" />
             </View>
           </Animated.View>
         );
 
       case 'back_online':
         return (
-          <View style={[styles.bannerInner, styles.onlineBanner]}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="checkmark-circle" size={20} color="#fff" />
+          <View style={styles.bannerInner}>
+            <View style={[styles.iconContainer, styles.onlineIconContainer]}>
+              <Ionicons name="checkmark-circle" size={16} color="#34D399" />
             </View>
             <View style={styles.textContainer}>
-              <Text style={styles.bannerTitle}>Back Online!</Text>
+              <Text style={styles.bannerTitle}>Back Online</Text>
               <Text style={styles.bannerSubtitle}>
                 {pendingCount > 0
-                  ? `Syncing ${pendingCount} pending change${pendingCount > 1 ? 's' : ''}...`
+                  ? `Syncing ${pendingCount} change${pendingCount > 1 ? 's' : ''}...`
                   : 'All caught up ✓'}
               </Text>
             </View>
@@ -264,12 +261,12 @@ export function EnhancedOfflineBanner() {
       case 'pending':
         return (
           <TouchableOpacity
-            style={[styles.bannerInner, styles.pendingBanner]}
+            style={styles.bannerInner}
             onPress={() => triggerSync()}
             activeOpacity={0.8}
           >
-            <View style={styles.iconContainer}>
-              <Ionicons name="time" size={20} color="#fff" />
+            <View style={[styles.iconContainer, styles.pendingIconContainer]}>
+              <Ionicons name="time" size={16} color="#FB923C" />
             </View>
             <View style={styles.textContainer}>
               <Text style={styles.bannerTitle}>
@@ -278,7 +275,7 @@ export function EnhancedOfflineBanner() {
               <Text style={styles.bannerSubtitle}>Tap to sync now</Text>
             </View>
             <View style={styles.syncButton}>
-              <Ionicons name="arrow-up-circle" size={22} color="#fff" />
+              <Ionicons name="arrow-up-circle" size={20} color="#FB923C" />
             </View>
           </TouchableOpacity>
         );
@@ -321,66 +318,66 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 9999,
     elevation: 9999,
-    paddingHorizontal: 12,
-    paddingBottom: 2,
+    alignItems: 'center',
+    paddingHorizontal: 16,
   },
   bannerInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    backgroundColor: 'rgba(15, 23, 42, 0.94)',
+    paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 12,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    maxWidth: 380,
+    width: '100%',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 10,
   },
-  // ── State-specific backgrounds ─────────────────────────────────────────
-  offlineBanner: {
-    backgroundColor: '#E53E3E',
-  },
-  syncingBanner: {
-    backgroundColor: BRAND_BLUE,
-  },
-  onlineBanner: {
-    backgroundColor: '#38A169',
-  },
-  pendingBanner: {
-    backgroundColor: '#DD6B20',
-  },
-  // ── Icon ───────────────────────────────────────────────────────────────
   iconContainer: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
-  // ── Text ───────────────────────────────────────────────────────────────
+  offlineIconContainer: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+  },
+  syncIconContainer: {
+    backgroundColor: 'rgba(96, 165, 250, 0.15)',
+  },
+  onlineIconContainer: {
+    backgroundColor: 'rgba(52, 211, 153, 0.15)',
+  },
+  pendingIconContainer: {
+    backgroundColor: 'rgba(251, 146, 60, 0.15)',
+  },
   textContainer: {
     flex: 1,
   },
   bannerTitle: {
-    color: '#fff',
-    fontSize: RFValue(14),
+    color: '#FFFFFF',
+    fontSize: RFValue(13),
     fontWeight: '700',
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   },
   bannerSubtitle: {
-    color: 'rgba(255,255,255,0.85)',
-    fontSize: RFValue(12),
+    color: '#94A3B8',
+    fontSize: RFValue(11),
     fontWeight: '500',
     marginTop: 1,
   },
-  // ── Accessories ────────────────────────────────────────────────────────
   offlineDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#FEB2B2',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#F59E0B',
     marginLeft: 8,
   },
   syncSpinner: {
@@ -388,6 +385,6 @@ const styles = StyleSheet.create({
   },
   syncButton: {
     marginLeft: 8,
-    padding: 4,
+    padding: 2,
   },
 });

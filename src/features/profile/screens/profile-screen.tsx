@@ -1365,7 +1365,7 @@ export default function AccountScreen() {
                   onPress={() => {
                     router.push({
                       pathname: '/(tabs)/my-tasks' as any,
-                      params: { tab: 'completed' },
+                      params: { tab: 'review_required' },
                     });
                   }}
                 >
