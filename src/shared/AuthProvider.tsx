@@ -38,6 +38,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
   };
 
   const renewIfRememberMe = async () => {
+    const current = useAuthStore.getState().token;
+    // If user is not logged in, do not force-navigate to login screen
+    if (!current) return;
+
     const ok = await tryRememberMeRenew();
     if (ok) {
       const next = useAuthStore.getState().token;
@@ -66,7 +70,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
     const onAppState = (state: AppStateStatus) => {
       if (state !== 'active') return;
       const current = useAuthStore.getState().token;
-      if (!current || isTokenExpired(current, 300)) {
+      // Only renew if user has an active token and it is expired/expiring
+      if (current && isTokenExpired(current, 300)) {
         void renewIfRememberMe();
       }
     };

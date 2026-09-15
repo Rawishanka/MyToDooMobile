@@ -31,12 +31,14 @@
 			<array>
 				<string>mytodoo</string>
 				<string>com.mytodoo.mytodoolive</string>
+				<string>com.unexo.mytodoomobile</string>
 			</array>
 		</dict>
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.googleusercontent.apps.685356682007-brs7387p5gthok4o0nfdcvclvb6eghtj</string>
+				<string>com.googleusercontent.apps.685356682007-bgg0f1hieo6cip879jt722qb3417vc1a</string>
 			</array>
 		</dict>
 		<dict>

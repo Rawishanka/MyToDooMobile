@@ -709,7 +709,7 @@ export default function LoginScreen() {
         appleUserId,
         {
           keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-          keychainService: 'com.mytodoo.mytodoolive',
+          // default keychain access group
         }
       );
       
@@ -951,7 +951,7 @@ export default function LoginScreen() {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don&apos;t have an account? </Text>
-          <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
+          <TouchableOpacity onPress={() => router.replace('/(auth)/signup')}>
             <Text style={styles.registerText}>Sign Up</Text>
           </TouchableOpacity>
         </View>
@@ -1023,31 +1023,31 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#E8ECF4',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    marginBottom: 12,
-    color: '#1A1D2E',
-    backgroundColor: '#F4F6FB',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    marginBottom: 14,
+    color: '#0F172A',
+    backgroundColor: '#F8FAFC',
     fontSize: RFValue(15),
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E8ECF4',
-    borderRadius: 12,
-    marginBottom: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    marginBottom: 14,
     paddingRight: 8,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#F8FAFC',
   },
   passwordInput: {
     flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    color: '#333',
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    color: '#0F172A',
     fontSize: RFValue(15),
   },
   passwordToggle: {
@@ -1087,10 +1087,15 @@ const styles = StyleSheet.create({
     fontSize: RFValue(14),
   },
   loginButton: {
-    backgroundColor: '#FF7A00',
+    backgroundColor: '#FF914D',
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 16,
     alignItems: 'center',
+    shadowColor: '#FF914D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
   },
   loginButtonText: {
     color: '#fff',

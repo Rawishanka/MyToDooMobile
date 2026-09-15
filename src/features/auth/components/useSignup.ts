@@ -908,7 +908,7 @@ export const useSignup = () => {
         credential.user,
         {
           keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
-          keychainService: 'com.mytodoo.mytodoolive',
+          // default keychain access group
         }
       );
       console.log('🔐 Stored Apple user ID in Keychain');

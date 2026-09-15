@@ -1682,77 +1682,43 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       {/* Action Buttons - Separate from Card Content */}
       <View style={styles.actionButtons} pointerEvents="box-none">
         {isCompletedTask && userRole === 'Tasker' ? (
-          // Completed / Review Required (Tasker): Rating & Review button (hidden if already reviewed) + View Receipt button
-          <>
-            {!hasAlreadyReviewed && (
-              <TouchableOpacity 
-                style={[
-                  styles.actionButton,
-                  styles.reviewButton,
-                  isProcessing && styles.disabledButton
-                ]} 
-                activeOpacity={0.6}
-                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-                onPress={() => setShowRatingModal(true)}
-                disabled={isProcessing}
-              >
-                <MaterialIcons name="star" size={20} color={isProcessing ? "#999" : "#FFD700"} />
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity 
-              style={[
-                styles.actionButton,
-                styles.receiptButton,
-                isProcessing && styles.disabledButton
-              ]} 
-              activeOpacity={0.6}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-              onPress={handleViewReceipt}
-              disabled={isProcessing}
-            >
-              <MaterialIcons 
-                name="receipt" 
-                size={20} 
-                color={isProcessing ? "#999" : "#007AFF"} 
-              />
-            </TouchableOpacity>
-          </>
+          // Completed / Review Required (Tasker): View Receipt button (Review handled by primary LeaveReview CTA)
+          <TouchableOpacity 
+            style={[
+              styles.actionButton,
+              styles.receiptButton,
+              isProcessing && styles.disabledButton
+            ]} 
+            activeOpacity={0.6}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            onPress={handleViewReceipt}
+            disabled={isProcessing}
+          >
+            <MaterialIcons 
+              name="receipt" 
+              size={20} 
+              color={isProcessing ? "#999" : "#007AFF"} 
+            />
+          </TouchableOpacity>
         ) : isCompletedTask && userRole === 'Poster' ? (
-          // Completed / Review Required (Poster): Review button (hidden if already reviewed) + View Receipt button
-          <>
-            {!hasAlreadyReviewed && (
-              <TouchableOpacity
-                style={[
-                  styles.actionButton,
-                  styles.reviewButton,
-                  isProcessing && styles.disabledButton
-                ]}
-                activeOpacity={0.6}
-                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-                onPress={() => setShowRatingModal(true)}
-                disabled={isProcessing}
-              >
-                <MaterialIcons name="star" size={20} color={isProcessing ? '#999' : '#FFD700'} />
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity 
-              style={[
-                styles.actionButton,
-                styles.receiptButton,
-                isProcessing && styles.disabledButton
-              ]} 
-              activeOpacity={0.6}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-              onPress={handleViewReceipt}
-              disabled={isProcessing}
-            >
-              <MaterialIcons 
-                name="receipt" 
-                size={20} 
-                color={isProcessing ? "#999" : "#007AFF"} 
-              />
-            </TouchableOpacity>
-          </>
+          // Completed / Review Required (Poster): View Receipt button (Review handled by primary LeaveReview CTA)
+          <TouchableOpacity 
+            style={[
+              styles.actionButton,
+              styles.receiptButton,
+              isProcessing && styles.disabledButton
+            ]} 
+            activeOpacity={0.6}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            onPress={handleViewReceipt}
+            disabled={isProcessing}
+          >
+            <MaterialIcons 
+              name="receipt" 
+              size={20} 
+              color={isProcessing ? "#999" : "#007AFF"} 
+            />
+          </TouchableOpacity>
         ) : status === 'cancelled' || status === 'overdue' ? (
           // Cancelled tab or Overdue tab: No action buttons
           null

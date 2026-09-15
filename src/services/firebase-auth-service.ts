@@ -4,6 +4,7 @@
  */
 
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 // Detect if we're in native build or Expo Go
 const isExpoGo = Constants.appOwnership === 'expo';
@@ -46,21 +47,31 @@ export const signInWithGoogle = async (): Promise<string> => {
     // LIVE Firebase Project: mytodoo-e4cdb (685356682007)
     const WEB_CLIENT_ID = '685356682007-rj5r1ie1nrknfdiifl8akq5ata5ib4fi.apps.googleusercontent.com';
     
+    const bundleId = Constants.expoConfig?.ios?.bundleIdentifier;
+    const isUatBuild = bundleId === 'com.unexo.mytodoomobile' || 
+                       (process.env.EXPO_PUBLIC_API_URL && !process.env.EXPO_PUBLIC_API_URL.includes('au-live'));
+    const IOS_CLIENT_ID = isUatBuild
+      ? '685356682007-bgg0f1hieo6cip879jt722qb3417vc1a.apps.googleusercontent.com'
+      : '685356682007-brs7387p5gthok4o0nfdcvclvb6eghtj.apps.googleusercontent.com';
+
     try {
       await GoogleSignin.configure({
         webClientId: WEB_CLIENT_ID,
+        iosClientId: Platform.OS === 'ios' ? IOS_CLIENT_ID : undefined,
         scopes: ['email', 'profile'],
         offlineAccess: true, // Needed to get server auth code for backend
       });
-      console.log('✅ Google Sign-In configured with Web Client ID');
+      console.log('✅ Google Sign-In configured with Web & iOS Client ID for:', isUatBuild ? 'UAT' : 'LIVE');
     } catch (configError) {
       console.log('ℹ️ Google Sign-In config warning (will proceed):', configError);
     }
 
     console.log('🔐 Starting Google Sign-In flow...');
 
-    // Check if device supports Google Play services
-    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    // Check if device supports Google Play services (Android only)
+    if (Platform.OS === 'android') {
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    }
 
     // Sign in with Google (v13+ returns { type, data } structure)
     const signInResult = await GoogleSignin.signIn();

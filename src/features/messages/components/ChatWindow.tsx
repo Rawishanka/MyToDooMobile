@@ -86,6 +86,8 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
   const [selectedMessageForAction, setSelectedMessageForAction] = useState<ChatMessage | null>(null);
   const [isActionMenuVisible, setIsActionMenuVisible] = useState(false);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [uploadProgressText, setUploadProgressText] = useState<string | null>(null);
 
   // Safe area insets for header (iOS notch) and input bar (Android nav bar)
   const insets = useSafeAreaInsets();
@@ -597,56 +599,51 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
   
   const handleOpenActionMenu = (msg: ChatMessage) => {
     setSelectedMessageForAction(msg);
+    setIsConfirmingDelete(false);
     setIsActionMenuVisible(true);
   };
 
-  const handleDeleteSelectedMessage = async () => {
+  const handleDeleteSelectedMessage = () => {
+    if (!selectedMessageForAction || !chatId) return;
+    if (selectedMessageForAction.sender !== 'me') {
+      Alert.alert('Cannot Delete', 'You can only delete messages you sent.');
+      setIsActionMenuVisible(false);
+      setSelectedMessageForAction(null);
+      return;
+    }
+    // Switch to inline confirmation card inside the active modal
+    setIsConfirmingDelete(true);
+  };
+
+  const performDeleteSelectedMessage = async () => {
     if (!selectedMessageForAction || !chatId) return;
     const msgToDelete = selectedMessageForAction;
 
-    if (msgToDelete.sender !== 'me') {
-      Alert.alert('Cannot Delete', 'You can only delete messages you sent.');
+    try {
+      setIsDeletingMessage(true);
+
+      // Optimistic local removal
+      const updated = chatMessages.filter((m) => m.id !== msgToDelete.id);
+      setChatMessages(updated);
+      if (taskId) {
+        await saveMessagesToStorage(taskId, updated);
+      }
+
+      // Backend API call if real message ID
+      if (!msgToDelete.id.startsWith('temp_')) {
+        await deleteMessageApi(chatId, msgToDelete.id);
+      }
+      console.log('✅ Message deleted successfully from chat:', msgToDelete.id);
+    } catch (error: any) {
+      console.error('❌ Failed to delete message:', error);
+      Alert.alert('Error', error.message || 'Failed to delete message');
+      refetchMessages();
+    } finally {
+      setIsDeletingMessage(false);
+      setIsConfirmingDelete(false);
       setIsActionMenuVisible(false);
-      return;
+      setSelectedMessageForAction(null);
     }
-
-    Alert.alert(
-      'Delete Message',
-      'Are you sure you want to delete this message? It will be removed from the chat.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setIsDeletingMessage(true);
-              setIsActionMenuVisible(false);
-
-              // Optimistic local removal
-              const updated = chatMessages.filter((m) => m.id !== msgToDelete.id);
-              setChatMessages(updated);
-              if (taskId) {
-                await saveMessagesToStorage(taskId, updated);
-              }
-
-              // Backend API call if real message ID
-              if (!msgToDelete.id.startsWith('temp_')) {
-                await deleteMessageApi(chatId, msgToDelete.id);
-              }
-              console.log('✅ Message deleted successfully from chat:', msgToDelete.id);
-            } catch (error: any) {
-              console.error('❌ Failed to delete message:', error);
-              Alert.alert('Error', error.message || 'Failed to delete message');
-              refetchMessages();
-            } finally {
-              setIsDeletingMessage(false);
-              setSelectedMessageForAction(null);
-            }
-          },
-        },
-      ]
-    );
   };
 
   const sendMessage = async () => {
@@ -767,47 +764,47 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
+        allowsMultipleSelection: true,
+        selectionLimit: 5,
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets[0]) {
+      if (!result.canceled && result.assets && result.assets.length > 0) {
         setIsUploading(true);
-        console.log('📤 Uploading image from ChatWindow:', result.assets[0].uri);
-        
-        // Upload to CDN
-        const imageUrl = await uploadChatImage(result.assets[0].uri, taskId);
-        console.log('✅ Image uploaded, CDN URL:', imageUrl);
-        
-        // Send message with image
-        sendMessageMutation.mutate(
-          {
+        const assets = result.assets.slice(0, 5);
+        const total = assets.length;
+
+        for (let i = 0; i < total; i++) {
+          const asset = assets[i];
+          const progressMsg = total > 1 ? `Uploading photo ${i + 1} of ${total}...` : 'Uploading photo...';
+          setUploadProgressText(progressMsg);
+          console.log(`📤 Uploading image ${i + 1}/${total} from ChatWindow:`, asset.uri);
+
+          // Upload to CDN
+          const imageUrl = await uploadChatImage(asset.uri, taskId);
+          console.log(`✅ Image ${i + 1}/${total} uploaded, CDN URL:`, imageUrl);
+
+          // Send message with image
+          await sendMessageMutation.mutateAsync({
             chatId,
             data: {
               content: 'Photo',
               messageType: 'image',
               mediaUrl: imageUrl,
             },
-          },
-          {
-            onSuccess: () => {
-              console.log('✅ Image message sent from ChatWindow');
-              refetchMessages();
-              setIsUploading(false);
-            },
-            onError: (error) => {
-              setIsUploading(false);
-              console.error('❌ Failed to send image:', error);
-              Alert.alert('Error', 'Failed to send image');
-            },
-          }
-        );
+          });
+        }
+
+        console.log('✅ All selected photos sent successfully from ChatWindow');
+        refetchMessages();
+        setIsUploading(false);
+        setUploadProgressText(null);
       }
-    } catch (error) {
+    } catch (error: any) {
       setIsUploading(false);
+      setUploadProgressText(null);
       console.error('❌ Image upload error:', error);
-      Alert.alert('Error', 'Failed to upload image');
+      Alert.alert('Error', error?.message || 'Failed to upload photo(s)');
     }
   };
 
@@ -1173,7 +1170,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
           <View style={styles.uploadOverlay}>
             <View style={styles.uploadOverlayContent}>
               <Ionicons name="cloud-upload" size={48} color="#007AFF" />
-              <Text style={styles.uploadOverlayText}>Uploading...</Text>
+              <Text style={styles.uploadOverlayText}>{uploadProgressText || 'Uploading...'}</Text>
             </View>
           </View>
         )}
@@ -1192,59 +1189,99 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
             onPress={() => setIsActionMenuVisible(false)}
           >
             <View style={styles.actionModalContainer}>
-              {/* Floating Emoji Reactions Bar (WhatsApp Style) */}
-              <View style={styles.reactionsBar}>
-                {['👍', '❤️', '😂', '😮', '😢', '🙏'].map((emoji, idx) => (
-                  <TouchableOpacity
-                    key={idx}
-                    style={styles.reactionBtn}
-                    onPress={() => setIsActionMenuVisible(false)}
-                  >
-                    <Text style={styles.reactionEmoji}>{emoji}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              {isConfirmingDelete ? (
+                <View style={styles.confirmDeleteCard}>
+                  <View style={styles.confirmDeleteIconWrap}>
+                    <Ionicons name="trash" size={26} color="#DC2626" />
+                  </View>
+                  <Text style={styles.confirmDeleteTitle}>
+                    Delete {selectedMessageForAction?.messageType === 'image' ? 'Photo' : 'Message'}?
+                  </Text>
+                  <Text style={styles.confirmDeleteMessage}>
+                    Are you sure you want to delete this {selectedMessageForAction?.messageType === 'image' ? 'photo' : 'message'}? It will be removed from the chat.
+                  </Text>
+                  <View style={styles.confirmDeleteActions}>
+                    <TouchableOpacity
+                      style={styles.confirmCancelBtn}
+                      onPress={() => {
+                        setIsConfirmingDelete(false);
+                        setIsActionMenuVisible(false);
+                        setSelectedMessageForAction(null);
+                      }}
+                      disabled={isDeletingMessage}
+                    >
+                      <Text style={styles.confirmCancelText}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.confirmDeleteBtn}
+                      onPress={performDeleteSelectedMessage}
+                      disabled={isDeletingMessage}
+                    >
+                      {isDeletingMessage ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                      ) : (
+                        <Text style={styles.confirmDeleteBtnText}>Delete</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <>
+                  {/* Floating Emoji Reactions Bar (WhatsApp Style) */}
+                  <View style={styles.reactionsBar}>
+                    {['👍', '❤️', '😂', '😮', '😢', '🙏'].map((emoji, idx) => (
+                      <TouchableOpacity
+                        key={idx}
+                        style={styles.reactionBtn}
+                        onPress={() => setIsActionMenuVisible(false)}
+                      >
+                        <Text style={styles.reactionEmoji}>{emoji}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
 
-              {/* Action Menu Card */}
-              <View style={styles.actionMenuCard}>
-                {selectedMessageForAction?.sender === 'me' && (
-                  <TouchableOpacity
-                    style={styles.actionMenuItem}
-                    onPress={handleDeleteSelectedMessage}
-                  >
-                    <Ionicons name="trash-outline" size={22} color="#FF3B30" />
-                    <Text style={[styles.actionMenuText, { color: '#FF3B30' }]}>
-                      Delete {selectedMessageForAction?.messageType === 'image' ? 'Photo' : 'Message'}
-                    </Text>
-                  </TouchableOpacity>
-                )}
+                  {/* Action Menu Card */}
+                  <View style={styles.actionMenuCard}>
+                    {selectedMessageForAction?.sender === 'me' && (
+                      <TouchableOpacity
+                        style={styles.actionMenuItem}
+                        onPress={handleDeleteSelectedMessage}
+                      >
+                        <Ionicons name="trash-outline" size={22} color="#FF3B30" />
+                        <Text style={[styles.actionMenuText, { color: '#FF3B30' }]}>
+                          Delete {selectedMessageForAction?.messageType === 'image' ? 'Photo' : 'Message'}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
 
-                <TouchableOpacity
-                  style={styles.actionMenuItem}
-                  onPress={() => {
-                    setIsActionMenuVisible(false);
-                    if (selectedMessageForAction) {
-                      Alert.alert(
-                        'Message Details',
-                        `Sent at: ${selectedMessageForAction.timestamp || 'Just now'}
+                    <TouchableOpacity
+                      style={styles.actionMenuItem}
+                      onPress={() => {
+                        setIsActionMenuVisible(false);
+                        if (selectedMessageForAction) {
+                          Alert.alert(
+                            'Message Details',
+                            `Sent at: ${selectedMessageForAction.timestamp || 'Just now'}
 Type: ${selectedMessageForAction.messageType || 'text'}
 Status: ${selectedMessageForAction.isRead ? 'Read' : 'Delivered'}`
-                      );
-                    }
-                  }}
-                >
-                  <Ionicons name="information-circle-outline" size={22} color="#1E293B" />
-                  <Text style={styles.actionMenuText}>Info</Text>
-                </TouchableOpacity>
+                          );
+                        }
+                      }}
+                    >
+                      <Ionicons name="information-circle-outline" size={22} color="#1E293B" />
+                      <Text style={styles.actionMenuText}>Info</Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.actionMenuItem, { borderBottomWidth: 0 }]}
-                  onPress={() => setIsActionMenuVisible(false)}
-                >
-                  <Ionicons name="close-circle-outline" size={22} color="#64748B" />
-                  <Text style={[styles.actionMenuText, { color: '#64748B' }]}>Cancel</Text>
-                </TouchableOpacity>
-              </View>
+                    <TouchableOpacity
+                      style={[styles.actionMenuItem, { borderBottomWidth: 0 }]}
+                      onPress={() => setIsActionMenuVisible(false)}
+                    >
+                      <Ionicons name="close-circle-outline" size={22} color="#64748B" />
+                      <Text style={[styles.actionMenuText, { color: '#64748B' }]}>Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
             </View>
           </TouchableOpacity>
         </Modal>
@@ -1595,6 +1632,74 @@ const styles = StyleSheet.create({
   },
   reactionEmoji: {
     fontSize: RFValue(22),
+  },
+  confirmDeleteCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    paddingHorizontal: 22,
+    paddingTop: 24,
+    paddingBottom: 20,
+    width: '100%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    elevation: 10,
+  },
+  confirmDeleteIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  confirmDeleteTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  confirmDeleteMessage: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  confirmDeleteActions: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 12,
+  },
+  confirmCancelBtn: {
+    flex: 1,
+    paddingVertical: 13,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  confirmDeleteBtn: {
+    flex: 1,
+    paddingVertical: 13,
+    borderRadius: 12,
+    backgroundColor: '#DC2626',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  confirmDeleteBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   actionMenuCard: {
     width: '100%',
