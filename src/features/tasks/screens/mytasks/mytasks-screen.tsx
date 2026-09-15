@@ -35,10 +35,12 @@ interface TabScreenProps {
   offersMap?: Map<string, any>;
   promptReviewTaskId?: string;
   onTaskMarkedComplete?: (taskId: string) => void;
+  oppositeReviewCount?: number;
+  onSwitchRole?: () => void;
 }
 
 // Tab screen components
-const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string }> = React.memo(({ tasks, isLoading, onRefresh, status, userRole, offersMap, promptReviewTaskId, onTaskMarkedComplete }) => {
+const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string }> = React.memo(({ tasks, isLoading, onRefresh, status, userRole, offersMap, promptReviewTaskId, onTaskMarkedComplete, oppositeReviewCount, onSwitchRole }) => {
   
   const getEmptyMessage = () => {
     switch (status) {
@@ -142,12 +144,38 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
         maxToRenderPerBatch={10}
         windowSize={10}
         ListEmptyComponent={
-          <View style={styles.emptyListContent}>
-            <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
-            <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
-              <Text style={styles.refreshButtonText}>Refresh</Text>
-            </TouchableOpacity>
-          </View>
+          status === 'review_required' && (oppositeReviewCount ?? 0) > 0 ? (
+            <View style={styles.emptyListContent}>
+              <View style={styles.smartReviewCard}>
+                <View style={styles.smartReviewIconBadge}>
+                  <Ionicons name="star" size={26} color="#EA580C" />
+                </View>
+                <Text style={styles.smartReviewTitle}>
+                  {oppositeReviewCount} {oppositeReviewCount === 1 ? 'task' : 'tasks'} waiting for review
+                </Text>
+                <Text style={styles.smartReviewSubtitle}>
+                  You have completed tasks waiting for your review in your {userRole === 'Poster' ? 'Tasker' : 'Poster'} profile.
+                </Text>
+                <TouchableOpacity
+                  style={styles.switchRoleBtn}
+                  activeOpacity={0.85}
+                  onPress={onSwitchRole}
+                >
+                  <Text style={styles.switchRoleBtnText}>
+                    Switch to {userRole === 'Poster' ? 'Tasker' : 'Poster'} ({oppositeReviewCount})
+                  </Text>
+                  <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.emptyListContent}>
+              <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
+              <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
+                <Text style={styles.refreshButtonText}>Refresh</Text>
+              </TouchableOpacity>
+            </View>
+          )
         }
       />
     </View>
@@ -167,7 +195,7 @@ interface TopTabDef {
   offersMap?: Map<string, any>;
 }
 
-function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffersMap, promptReviewTaskId, initialTabKey, onTaskMarkedComplete }: {
+function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffersMap, promptReviewTaskId, initialTabKey, onTaskMarkedComplete, onSwitchRole }: {
   userRole: string;
   categorizedData: any;
   isLoading: boolean;
@@ -176,6 +204,7 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
   promptReviewTaskId?: string;
   initialTabKey?: string;
   onTaskMarkedComplete?: (taskId: string) => void;
+  onSwitchRole?: () => void;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
@@ -265,6 +294,8 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
         offersMap={activeTab.offersMap}
         promptReviewTaskId={promptReviewTaskId}
         onTaskMarkedComplete={onTaskMarkedComplete}
+        oppositeReviewCount={categorizedData.oppositeReviewCount}
+        onSwitchRole={onSwitchRole}
       />
     </>
   );
@@ -856,6 +887,8 @@ export default function MyTasksScreen() {
         finalCount: finalCancelledTasks.length
       });
       
+      const posterPendingCount = (myTasksData?.data || []).filter((t: Task) => isReviewRequired(t)).length;
+
       return {
         openTasks,
         todoTasks,
@@ -867,6 +900,7 @@ export default function MyTasksScreen() {
         postedTasks: [],
         acceptedTasks: [],
         unservicedTasks: [],
+        oppositeReviewCount: posterPendingCount,
       };
     }
     
@@ -912,7 +946,9 @@ export default function MyTasksScreen() {
     const reviewRequiredTasks = sortByCreatedDate(
       filterBySearch(
         allTasks.filter((task: Task) => {
-          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+          const isUsersTask = !currentUserId || 
+            (typeof task.createdBy === 'string' ? task.createdBy === currentUserId : (task.createdBy?._id === currentUserId || (task.createdBy as any)?.id === currentUserId)) || 
+            !task.createdBy;
           return isUsersTask && isReviewRequired(task);
         })
       )
@@ -1036,6 +1072,8 @@ export default function MyTasksScreen() {
       )
     );
 
+    const taskerPendingCount = taskerAssignedTasks.filter((t: Task) => isReviewRequired(t)).length;
+
     return {
       openTasks,
       todoTasks,
@@ -1047,6 +1085,7 @@ export default function MyTasksScreen() {
       postedTasks,
       acceptedTasks: acceptedTasks,
       unservicedTasks,
+      oppositeReviewCount: taskerPendingCount,
     };
   }, [allTasks, taskerAssignedTasks, myOffers, myOffersMap, isLoadingMyOffers, userRole, searchText, currentUserId]);
 
@@ -1164,6 +1203,11 @@ export default function MyTasksScreen() {
           promptReviewTaskId={promptReviewTaskId}
           initialTabKey={initialTabKey}
           onTaskMarkedComplete={handleTaskMarkedComplete}
+          onSwitchRole={() => {
+            setIsRoleSwitching(true);
+            setUserRole((prev) => (prev === 'Poster' ? 'Tasker' : 'Poster'));
+            setTimeout(() => setIsRoleSwitching(false), 150);
+          }}
         />
       </View>
 
@@ -1235,6 +1279,64 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: RFValue(isTablet ? 14 : 12),
     fontWeight: '600',
+  },
+  smartReviewCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  smartReviewIconBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFF7ED',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 14,
+  },
+  smartReviewTitle: {
+    fontSize: RFValue(17),
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  smartReviewSubtitle: {
+    fontSize: RFValue(13),
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 19,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  switchRoleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#FF914D',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 22,
+    shadowColor: '#FF914D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  switchRoleBtnText: {
+    color: '#FFFFFF',
+    fontSize: RFValue(14),
+    fontWeight: '700',
   },
   roleSelectorContainer: {
     flexDirection: 'row',

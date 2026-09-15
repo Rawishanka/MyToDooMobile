@@ -29,7 +29,7 @@ import { formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
 import { resolveTaskBudget } from '@/src/shared/utils/resolveTaskBudget';
 import { isNetworkError } from '@/src/shared/utils/networkErrorHandler';
 import { useAuthStore } from '@/src/store/auth-task-store';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -1731,17 +1731,18 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 <TouchableOpacity
                   style={[
                     styles.actionButton,
+                    styles.withdrawOfferBtn,
                     (isProcessing || deleteOfferMutation.isPending) && styles.disabledButton
                   ]}
-                  activeOpacity={0.6}
+                  activeOpacity={0.7}
                   hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
                   onPress={() => setShowDeleteOfferModal(true)}
                   disabled={isProcessing || deleteOfferMutation.isPending}
                 >
-                  <MaterialIcons
-                    name="local-offer"
-                    size={20}
-                    color={(isProcessing || deleteOfferMutation.isPending) ? '#999' : '#e67e22'}
+                  <Ionicons
+                    name="trash-outline"
+                    size={18}
+                    color={(isProcessing || deleteOfferMutation.isPending) ? '#999' : '#EF4444'}
                   />
                 </TouchableOpacity>
               )}
@@ -2362,37 +2363,42 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         </View>
       </Modal>
 
-      {/* Delete Offer Confirmation Modal */}
+      {/* 2026 Withdraw Offer Confirmation Modal */}
       <Modal
         visible={showDeleteOfferModal}
         transparent={true}
         animationType="fade"
-        onRequestClose={() => setShowDeleteOfferModal(false)}
+        onRequestClose={() => {
+          if (!deleteOfferMutation.isPending) setShowDeleteOfferModal(false);
+        }}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.deleteModalContent}>
-            <View style={styles.deleteIconContainer}>
-              <MaterialIcons name="local-offer" size={48} color="#e67e22" />
+          <View style={styles.withdrawModalCard}>
+            <View style={styles.withdrawIconContainer}>
+              <Ionicons name="trash-outline" size={32} color="#EF4444" />
             </View>
 
-            <Text style={styles.deleteModalTitle}>Delete Offer?</Text>
-            <Text style={styles.deleteModalMessage}>
-              Are you sure you want to delete your offer on this task? This action cannot be undone.
+            <Text style={styles.withdrawModalTitle}>Withdraw Offer?</Text>
+            <Text style={styles.withdrawModalMessage}>
+              Are you sure you want to withdraw your offer on "{task.title}"? This action cannot be undone.
             </Text>
 
-            <View style={styles.deleteModalButtons}>
+            <View style={styles.withdrawModalButtons}>
               <TouchableOpacity
-                style={styles.deleteCancelButton}
+                style={styles.withdrawCancelButton}
+                activeOpacity={0.75}
+                disabled={deleteOfferMutation.isPending}
                 onPress={() => setShowDeleteOfferModal(false)}
               >
-                <Text style={styles.deleteCancelButtonText}>Cancel</Text>
+                <Text style={styles.withdrawCancelButtonText}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[
-                  styles.deleteConfirmButton,
-                  deleteOfferMutation.isPending && styles.deleteConfirmButtonDisabled
+                  styles.withdrawConfirmButton,
+                  deleteOfferMutation.isPending && styles.withdrawConfirmButtonDisabled
                 ]}
+                activeOpacity={0.85}
                 disabled={deleteOfferMutation.isPending}
                 onPress={async () => {
                   if (!myOffer?._id) {
@@ -2402,25 +2408,26 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                   }
                   try {
                     setIsProcessing(true);
-                    const result = await deleteOfferMutation.mutateAsync({
+                    await deleteOfferMutation.mutateAsync({
                       taskId: task._id,
                       offerId: myOffer._id,
                     });
                     setShowDeleteOfferModal(false);
                     if (onOfferDeleted) onOfferDeleted(myOffer._id);
-                    AppAlert.alert('Offer Deleted', result?.message || 'Your offer has been deleted successfully.', [{ text: 'OK' }]);
                   } catch (error: any) {
                     setShowDeleteOfferModal(false);
-                    const msg = error?.response?.data?.message || error?.message || 'Failed to delete offer. Please try again.';
-                    AppAlert.alert('Delete Failed', msg, [{ text: 'OK' }]);
+                    const msg = error?.response?.data?.message || error?.message || 'Failed to withdraw offer. Please try again.';
+                    AppAlert.alert('Withdraw Failed', msg, [{ text: 'OK' }]);
                   } finally {
                     setIsProcessing(false);
                   }
                 }}
               >
-                <Text style={styles.deleteConfirmButtonText}>
-                  {deleteOfferMutation.isPending ? 'Deleting...' : 'Delete'}
-                </Text>
+                {deleteOfferMutation.isPending ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.withdrawConfirmButtonText}>Withdraw Offer</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -3221,6 +3228,87 @@ const styles = StyleSheet.create({
   },
   reviewButton: {
     backgroundColor: '#FFF9E6',
+  },
+  withdrawOfferBtn: {
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FEE2E2',
+  },
+  withdrawModalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    width: '88%',
+    maxWidth: 380,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    elevation: 10,
+  },
+  withdrawIconContainer: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  withdrawModalTitle: {
+    fontSize: RFValue(20),
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  withdrawModalMessage: {
+    fontSize: RFValue(14),
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 22,
+    paddingHorizontal: 8,
+  },
+  withdrawModalButtons: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 12,
+  },
+  withdrawCancelButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  withdrawCancelButtonText: {
+    fontSize: RFValue(14),
+    fontWeight: '700',
+    color: '#475569',
+  },
+  withdrawConfirmButton: {
+    flex: 1.2,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#EF4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  withdrawConfirmButtonDisabled: {
+    opacity: 0.65,
+  },
+  withdrawConfirmButtonText: {
+    fontSize: RFValue(14),
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   deleteModalContent: {
     backgroundColor: '#fff',

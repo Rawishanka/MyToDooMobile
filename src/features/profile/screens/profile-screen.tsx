@@ -178,23 +178,48 @@ export default function AccountScreen() {
     role: 'tasker',
     section: 'all-tasks',
   });
-  const { pendingReviewCount, pendingReviewTasks } = React.useMemo(() => {
+  const { pendingReviewCount, pendingReviewTasks, targetReviewRole } = React.useMemo(() => {
     const posterList = (myTasksForReviews as any)?.data || (myTasksForReviews as any)?.tasks || [];
     const taskerList =
       (taskerTasksForReviews as any)?.data || (taskerTasksForReviews as any)?.tasks || [];
     const seen = new Set<string>();
     const tasks: any[] = [];
-    for (const task of [...posterList, ...taskerList]) {
+    let posterCount = 0;
+    let taskerCount = 0;
+
+    for (const task of posterList) {
       if (task?.status !== 'completed') continue;
       const rs = task.reviewStatus;
       if (rs && rs !== 'review_required' && rs !== 'none') continue;
       const id = String(task._id || task.id || '');
       if (id && !seen.has(id)) {
         seen.add(id);
-        tasks.push(task);
+        tasks.push({ ...task, targetRole: 'Poster' });
+        posterCount++;
       }
     }
-    return { pendingReviewCount: seen.size, pendingReviewTasks: tasks };
+
+    for (const task of taskerList) {
+      if (task?.status !== 'completed') continue;
+      const rs = task.reviewStatus;
+      if (rs && rs !== 'review_required' && rs !== 'none') continue;
+      const id = String(task._id || task.id || '');
+      if (id && !seen.has(id)) {
+        seen.add(id);
+        tasks.push({ ...task, targetRole: 'Tasker' });
+        taskerCount++;
+      }
+    }
+
+    const targetRole: 'Tasker' | 'Poster' = taskerCount > 0 && taskerCount >= posterCount ? 'Tasker' : 'Poster';
+
+    return { 
+      pendingReviewCount: seen.size, 
+      pendingReviewTasks: tasks, 
+      targetReviewRole: targetRole,
+      posterReviewCount: posterCount,
+      taskerReviewCount: taskerCount 
+    };
   }, [myTasksForReviews, taskerTasksForReviews]);
   const { user: authUser, isAuthenticated, token, clearAuth } = useAuthStore();
 
@@ -1297,7 +1322,7 @@ export default function AccountScreen() {
               } else {
                 router.push({
                   pathname: '/(tabs)/my-tasks' as any,
-                  params: { tab: 'review_required' },
+                  params: { tab: 'review_required', role: targetReviewRole },
                 });
               }
             }}
@@ -1365,7 +1390,7 @@ export default function AccountScreen() {
                   onPress={() => {
                     router.push({
                       pathname: '/(tabs)/my-tasks' as any,
-                      params: { tab: 'review_required' },
+                      params: { tab: 'review_required', role: targetReviewRole },
                     });
                   }}
                 >
