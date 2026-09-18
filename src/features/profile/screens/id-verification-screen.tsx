@@ -12,6 +12,7 @@ import {
     View
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface IDVerificationScreenProps {
   onBack: () => void;
@@ -19,6 +20,7 @@ interface IDVerificationScreenProps {
 }
 
 export default function IDVerificationScreen({ onBack, userData }: IDVerificationScreenProps) {
+  const { isDarkMode } = useTheme();
   const { refetch } = useGetUserProfile();
   const simulateVerification = useSimulateVerification();
 
@@ -97,14 +99,14 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#38BDF8" : "#0052A2"} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>ID Verification</Text>
+        <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>ID Verification</Text>
         <View style={styles.placeholder} />
       </View>
 
       {/* Verification Status Card */}
-      <View style={styles.statusCard}>
+      <View style={[styles.statusCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <View style={styles.statusHeader}>
           <View style={[
             styles.statusIconContainer, 
@@ -117,7 +119,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
             />
           </View>
           <View style={styles.statusInfo}>
-            <Text style={styles.statusTitle}>
+            <Text style={[styles.statusTitle, isDarkMode && { color: '#F8FAFC' }]}>
               {isVerified ? 'Identity Verified' : 'Identity Not Verified'}
             </Text>
             <Text style={styles.statusSubtitle}>
@@ -149,7 +151,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
       </View>
 
       {/* Benefits Section */}
-      <View style={styles.benefitsSection}>
+      <View style={[styles.benefitsSection, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <Text style={styles.sectionTitle}>Benefits of ID Verification</Text>
         
         <View style={styles.benefitItem}>
@@ -184,7 +186,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
       </View>
 
       {/* Requirements Section */}
-      <View style={styles.requirementsSection}>
+      <View style={[styles.requirementsSection, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <Text style={styles.sectionTitle}>What You'll Need</Text>
         
         <View style={styles.requirementItem}>

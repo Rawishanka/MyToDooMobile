@@ -1,4 +1,5 @@
 import { BRAND_BLUE, BRAND_GREEN, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { useTheme } from '@/src/shared/theme';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
@@ -78,6 +79,7 @@ Alert.alert = ((title: string, message?: string, buttons?: any[]) => {
 }) as typeof Alert.alert;
 
 export function AppAlertHost() {
+  const { isDarkMode } = useTheme();
   const [payload, setPayload] = useState<AppAlertPayload | null>(null);
 
   useEffect(() => {
@@ -118,12 +120,12 @@ export function AppAlertHost() {
   return (
     <Modal visible transparent animationType="fade" onRequestClose={() => close()}>
       <Pressable style={styles.overlay} onPress={() => {}}>
-        <View style={styles.card}>
+        <View style={[styles.card, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
           <View style={[styles.iconWrap, { backgroundColor: accent }]}>
             <Text style={styles.icon}>{icon}</Text>
           </View>
-          <Text style={styles.title}>{payload.title}</Text>
-          {payload.message ? <Text style={styles.message}>{payload.message}</Text> : null}
+          <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>{payload.title}</Text>
+          {payload.message ? <Text style={[styles.message, isDarkMode && { color: '#94A3B8' }]}>{payload.message}</Text> : null}
           {!hideOk ? (
             <View style={styles.actions}>
               {(payload.buttons || [{ text: 'OK' }]).map((btn, i) => {
@@ -137,7 +139,7 @@ export function AppAlertHost() {
                     style={[
                       styles.button,
                       isPrimary && !isDestructive && { backgroundColor: type === 'success' ? BRAND_GREEN : BRAND_ORANGE },
-                      isCancel && styles.buttonGhost,
+                      isCancel && (isDarkMode ? { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' } : styles.buttonGhost),
                       isDestructive && styles.buttonDanger,
                     ]}
                     onPress={() => close(btn)}
@@ -146,7 +148,7 @@ export function AppAlertHost() {
                     <Text
                       style={[
                         styles.buttonText,
-                        isCancel && styles.buttonGhostText,
+                        isCancel && (isDarkMode ? { color: '#94A3B8' } : styles.buttonGhostText),
                         (isPrimary || isDestructive) && styles.buttonPrimaryText,
                       ]}
                     >

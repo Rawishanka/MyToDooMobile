@@ -1,6 +1,7 @@
 import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
 import { forgotPassword } from '@/src/api/auth-api';
 import { FORM_MAX_WIDTH, RFValue, isTablet } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -21,6 +22,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ForgotPasswordScreen() {
+  const { isDarkMode } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
@@ -78,15 +80,15 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       {/* Sleek 2026 Back button */}
       <TouchableOpacity
-        style={[styles.backButton, { top: insets.top + 10 }]}
+        style={[styles.backButton, { top: insets.top + 10 }, isDarkMode && { backgroundColor: '#1E293B' }]}
         onPress={() => router.back()}
         hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
         activeOpacity={0.7}
       >
-        <Ionicons name="arrow-back" size={20} color="#0F172A" />
+        <Ionicons name="arrow-back" size={20} color={isDarkMode ? '#F8FAFC' : '#0F172A'} />
       </TouchableOpacity>
 
       <KeyboardAvoidingView
@@ -113,23 +115,23 @@ export default function ForgotPasswordScreen() {
                       <MyToDooLogo width={50} height={50} />
                     </View>
                   </View>
-                  <Text style={styles.title}>Forgot Password?</Text>
-                  <Text style={styles.subtitle}>
+                  <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Forgot Password?</Text>
+                  <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>
                     Enter your email address and we'll send{'\n'}you a password reset link.
                   </Text>
                 </View>
 
                 {/* Form Section */}
                 <View style={styles.form}>
-                  <Text style={styles.label}>Email Address</Text>
-                  <View style={styles.inputWrapper}>
+                  <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Email Address</Text>
+                  <View style={[styles.inputWrapper, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
                     <Ionicons name="mail-outline" size={19} color="#64748B" style={styles.inputIcon} />
                     <TextInput
-                      style={styles.input}
+                      style={[styles.input, isDarkMode && { color: '#F8FAFC' }]}
                       value={email}
                       onChangeText={setEmail}
                       placeholder="Enter your email"
-                      placeholderTextColor="#94A3B8"
+                      placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
                       keyboardType="email-address"
                       autoCapitalize="none"
                       autoFocus
@@ -164,19 +166,19 @@ export default function ForgotPasswordScreen() {
 
                 {/* Divider */}
                 <View style={styles.dividerRow}>
-                  <View style={styles.divider} />
-                  <Text style={styles.dividerText}>or</Text>
-                  <View style={styles.divider} />
+                  <View style={[styles.divider, isDarkMode && { backgroundColor: '#334155' }]} />
+                  <Text style={[styles.dividerText, isDarkMode && { color: '#64748B' }]}>or</Text>
+                  <View style={[styles.divider, isDarkMode && { backgroundColor: '#334155' }]} />
                 </View>
 
                 {/* Back to Login */}
                 <TouchableOpacity
-                  style={styles.backToLoginButton}
+                  style={[styles.backToLoginButton, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
                   onPress={() => router.back()}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="arrow-back-outline" size={17} color="#0F172A" style={styles.backIcon} />
-                  <Text style={styles.backToLoginText}>Back to Login</Text>
+                  <Ionicons name="arrow-back-outline" size={17} color={isDarkMode ? "#F8FAFC" : "#0F172A"} style={styles.backIcon} />
+                  <Text style={[styles.backToLoginText, isDarkMode && { color: '#F8FAFC' }]}>Back to Login</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>

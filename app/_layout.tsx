@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ConnectivityProvider } from '@/src/services/offline/ConnectivityProvider';
+import { ThemeProvider as AppThemeProvider, useTheme as useAppTheme } from '@/src/shared/theme';
 import { AuthProvider } from '@/src/shared/AuthProvider';
 import { AppAlertHost } from '@/src/shared/components/AppAlert';
 import { DeepLinkHandler } from '@/src/shared/components/DeepLinkHandler';
@@ -195,39 +196,63 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <ConnectivityProvider>
             <SafeAreaProvider>
-              <ThemeProvider value={DefaultTheme}>
-                <DeepLinkHandler />
-                <Stack>
-                  <Stack.Screen name='index' options={{ headerShown: false }} />
-                  <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-                  <Stack.Screen name="(welcome-screen)" options={{ headerShown: false }} />
-                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                  <Stack.Screen name="(legal)" options={{ headerShown: false }} />
-                  <Stack.Screen name="task-detail" options={{ headerShown: false }} />
-                  <Stack.Screen name="make-offer-screen" options={{ headerShown: false }} />
-                  <Stack.Screen name="edit-task" options={{ headerShown: false }} />
-                  <Stack.Screen name="task-chat" options={{ headerShown: false, gestureEnabled: true, fullScreenGestureEnabled: true, animation: 'slide_from_right' }} />
-                  <Stack.Screen name="payment-summary" options={{ headerShown: false }} />
-                  <Stack.Screen name="payment-receipt" options={{ headerShown: false }} />
-                  <Stack.Screen name="public-questions" options={{ headerShown: false }} />
-                  <Stack.Screen name="questions/answer-question-screen" options={{ headerShown: false }} />
-                  <Stack.Screen name="+not-found" />
-                </Stack>
-                <StatusBar style="dark" />
-                <AppAlertHost />
-                
-                {/* 🌐 Offline Sync Banner - Shows on ALL screens when offline/syncing */}
-                <EnhancedOfflineBanner />
-                
-                {/* Notification Permission Prompt - Shows after splash */}
-                {showNotificationPrompt && (
-                  <NotificationPermissionPrompt onComplete={handleNotificationPromptComplete} />
-                )}
-              </ThemeProvider>
+              <AppThemeProvider>
+                <RootNavigationContent
+                  showNotificationPrompt={showNotificationPrompt}
+                  handleNotificationPromptComplete={handleNotificationPromptComplete}
+                />
+              </AppThemeProvider>
             </SafeAreaProvider>
           </ConnectivityProvider>
         </QueryClientProvider>
       </AuthProvider>
     </GestureHandlerRootView>
+  );
+}
+
+function RootNavigationContent({
+  showNotificationPrompt,
+  handleNotificationPromptComplete,
+}: {
+  showNotificationPrompt: boolean;
+  handleNotificationPromptComplete: () => void;
+}) {
+  const { isDarkMode, navigationTheme } = useAppTheme();
+
+  return (
+    <ThemeProvider value={navigationTheme}>
+      <DeepLinkHandler />
+      <Stack screenOptions={{
+        headerShown: false,
+        contentStyle: {
+          backgroundColor: isDarkMode ? '#0B1120' : '#FFFFFF',
+        },
+      }}>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(welcome-screen)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(legal)" options={{ headerShown: false }} />
+        <Stack.Screen name="task-detail" options={{ headerShown: false }} />
+        <Stack.Screen name="make-offer-screen" options={{ headerShown: false }} />
+        <Stack.Screen name="edit-task" options={{ headerShown: false }} />
+        <Stack.Screen name="task-chat" options={{ headerShown: false, gestureEnabled: true, fullScreenGestureEnabled: true, animation: 'slide_from_right' }} />
+        <Stack.Screen name="payment-summary" options={{ headerShown: false }} />
+        <Stack.Screen name="payment-receipt" options={{ headerShown: false }} />
+        <Stack.Screen name="public-questions" options={{ headerShown: false }} />
+        <Stack.Screen name="questions/answer-question-screen" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+      <AppAlertHost />
+      
+      {/* 🌐 Offline Sync Banner - Shows on ALL screens when offline/syncing */}
+      <EnhancedOfflineBanner />
+      
+      {/* Notification Permission Prompt - Shows after splash */}
+      {showNotificationPrompt && (
+        <NotificationPermissionPrompt onComplete={handleNotificationPromptComplete} />
+      )}
+    </ThemeProvider>
   );
 }

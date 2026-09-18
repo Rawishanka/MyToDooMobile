@@ -1,15 +1,20 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useTheme } from '@/src/shared/theme';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 export default function WelcomeScreenLayout() {
+  const { isDarkMode } = useTheme();
   // integrate tanstack query
   const queryClient = new QueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: isDarkMode ? '#0B1120' : '#FFFFFF' }
+      }}>
         <Stack.Screen name="first-screen" />
         <Stack.Screen name="second-screen" />
         <Stack.Screen name="third-screen" />
@@ -23,7 +28,7 @@ export default function WelcomeScreenLayout() {
         <Stack.Screen name="detail-screen" />
         <Stack.Screen name="post-task-screen" />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
     </QueryClientProvider>
   );
 }

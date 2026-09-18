@@ -38,6 +38,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Responsive utilities
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 const REVIEW_PROMPT_STORAGE_PREFIX = '@mytodoo/review_prompt_shown_';
 const RECENT_COMPLETION_WINDOW_MS = 15 * 60 * 1000;
@@ -70,6 +71,7 @@ interface TaskCardProps {
 }
 
 export default function TaskCard({ task, onPress, status, userRole, onTaskCancelled, onTaskDeleted, onTaskCompleted, myOffer, onOfferDeleted, autoPromptReview = false }: TaskCardProps) {
+  const { isDarkMode } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   
@@ -1421,6 +1423,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   return (
     <View style={[
       styles.card,
+      isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' },
       hasPendingCancelRequestFromOther && styles.cardWithCancelRequest
     ]} pointerEvents="auto">
       {/* Pending Cancellation Request Banner */}
@@ -1478,7 +1481,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       >
         <View style={styles.header}>
           <View style={styles.info}>
-            <Text style={styles.title}>{task.title}</Text>
+            <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>{task.title}</Text>
 
             {/* Time and Date Information */}
             <View style={styles.metaRow}>
@@ -1502,7 +1505,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               {isMovingLocation() ? (
                 <Text style={styles.locationType}>Moving/Delivery</Text>
               ) : null}
-              <Text style={styles.locationText} numberOfLines={1}>
+              <Text style={[styles.locationText, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>
                 {formatLocation()}
               </Text>
             </View>
@@ -1520,7 +1523,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                   {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
                 </Text>
               </View>
-              <Text style={styles.date}>
+              <Text style={[styles.date, isDarkMode && { color: '#94A3B8' }]}>
                 {getTaskDate()}
               </Text>
             </View>
@@ -1557,7 +1560,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
           {/* Price and User Info */}
           <View style={styles.price}>
-            <Text style={styles.priceText}>
+            <Text style={[styles.priceText, isDarkMode && { color: '#38BDF8' }]}>
               {formattedBudgetDisplay}
             </Text>
             {(() => {
@@ -1686,6 +1689,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           <TouchableOpacity 
             style={[
               styles.actionButton,
+isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
               styles.receiptButton,
               isProcessing && styles.disabledButton
             ]} 
@@ -1705,6 +1709,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           <TouchableOpacity 
             style={[
               styles.actionButton,
+isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
               styles.receiptButton,
               isProcessing && styles.disabledButton
             ]} 
@@ -1731,6 +1736,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 <TouchableOpacity
                   style={[
                     styles.actionButton,
+isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
                     styles.withdrawOfferBtn,
                     (isProcessing || deleteOfferMutation.isPending) && styles.disabledButton
                   ]}
@@ -2009,6 +2015,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             <TouchableOpacity 
               style={[
                 styles.actionButton,
+isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
                 (isProcessing || deleteTaskMutation.isPending) && styles.disabledButton
               ]} 
               activeOpacity={0.6}
@@ -2063,6 +2070,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               <TouchableOpacity 
                 style={[
                   styles.actionButton,
+isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
                   isProcessing && styles.disabledButton
                 ]} 
                 activeOpacity={0.6}
@@ -2133,9 +2141,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         }}
       >
         <View style={styles.posterCancelOverlay}>
-          <View style={styles.posterCancelContent}>
+          <View style={[styles.posterCancelContent, isDarkMode && { backgroundColor: '#1E293B' }]}>
             <View style={styles.posterCancelHeader}>
-              <Text style={styles.posterCancelTitle}>Choose a reason</Text>
+              <Text style={[styles.posterCancelTitle, isDarkMode && { color: '#F8FAFC' }]}>Choose a reason</Text>
               <TouchableOpacity 
                 onPress={() => {
                   setShowPosterCancelModal(false);
@@ -2203,7 +2211,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               </ScrollView>
             )}
 
-            <View style={[styles.cancelModalFooter, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+            <View style={[styles.cancelModalFooter, { paddingBottom: Math.max(insets.bottom, 16) }, isDarkMode && { backgroundColor: '#0F172A', borderTopColor: '#334155' }]}>
               <TouchableOpacity
                 style={[
                   styles.confirmCancelButton,
@@ -2234,9 +2242,9 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         }}
       >
         <View style={styles.posterCancelOverlay}>
-          <View style={styles.posterCancelContent}>
+          <View style={[styles.posterCancelContent, isDarkMode && { backgroundColor: '#1E293B' }]}>
             <View style={styles.posterCancelHeader}>
-              <Text style={styles.posterCancelTitle}>Choose a reason</Text>
+              <Text style={[styles.posterCancelTitle, isDarkMode && { color: '#F8FAFC' }]}>Choose a reason</Text>
               <TouchableOpacity 
                 onPress={() => {
                   setShowTaskerCancelModal(false);
@@ -2301,7 +2309,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               </ScrollView>
             )}
 
-            <View style={[styles.cancelModalFooter, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+            <View style={[styles.cancelModalFooter, { paddingBottom: Math.max(insets.bottom, 16) }, isDarkMode && { backgroundColor: '#0F172A', borderTopColor: '#334155' }]}>
               <TouchableOpacity
                 style={[
                   styles.confirmCancelButton,
@@ -2373,24 +2381,24 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         }}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.withdrawModalCard}>
-            <View style={styles.withdrawIconContainer}>
-              <Ionicons name="trash-outline" size={32} color="#EF4444" />
+          <View style={[styles.withdrawModalCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
+            <View style={[styles.withdrawIconContainer, isDarkMode && { backgroundColor: '#450A0A', borderColor: '#7F1D1D', borderWidth: 1 }]}>
+              <Ionicons name="trash-outline" size={32} color={isDarkMode ? '#F87171' : '#EF4444'} />
             </View>
 
-            <Text style={styles.withdrawModalTitle}>Withdraw Offer?</Text>
-            <Text style={styles.withdrawModalMessage}>
+            <Text style={[styles.withdrawModalTitle, isDarkMode && { color: '#F8FAFC' }]}>Withdraw Offer?</Text>
+            <Text style={[styles.withdrawModalMessage, isDarkMode && { color: '#94A3B8' }]}>
               Are you sure you want to withdraw your offer on "{task.title}"? This action cannot be undone.
             </Text>
 
             <View style={styles.withdrawModalButtons}>
               <TouchableOpacity
-                style={styles.withdrawCancelButton}
+                style={[styles.withdrawCancelButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 }]}
                 activeOpacity={0.75}
                 disabled={deleteOfferMutation.isPending}
                 onPress={() => setShowDeleteOfferModal(false)}
               >
-                <Text style={styles.withdrawCancelButtonText}>Cancel</Text>
+                <Text style={[styles.withdrawCancelButtonText, isDarkMode && { color: '#94A3B8' }]}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 import React from 'react';
 import { Image, ImageSourcePropType, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
@@ -20,6 +21,7 @@ export const TimeOfDayGrid: React.FC<TimeOfDayGridProps> = ({
   selectedTimeBlock,
   onSelectTimeBlock,
 }) => {
+  const { isDarkMode } = useTheme();
   return (
     <View style={styles.gridContainer}>
       {timeBlocks.map(block => (
@@ -27,15 +29,16 @@ export const TimeOfDayGrid: React.FC<TimeOfDayGridProps> = ({
           key={block.value}
           style={[
             styles.gridItem,
-            selectedTimeBlock === block.value && styles.gridItemSelected
+            isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
+            selectedTimeBlock === block.value && [styles.gridItemSelected, isDarkMode && { backgroundColor: 'rgba(255, 106, 0, 0.15)', borderColor: '#FF6A00' }]
           ]}
           onPress={() => onSelectTimeBlock(block.value)}
         >
           <View style={styles.iconContainer}>
             <Image source={block.icon} style={styles.timeIcon} />
           </View>
-          <Text style={styles.gridTitle}>{block.label}</Text>
-          <Text style={styles.gridDescription}>{block.description}</Text>
+          <Text style={[styles.gridTitle, isDarkMode && { color: '#F8FAFC' }]}>{block.label}</Text>
+          <Text style={[styles.gridDescription, isDarkMode && { color: '#94A3B8' }]}>{block.description}</Text>
         </TouchableOpacity>
       ))}
     </View>

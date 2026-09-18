@@ -3,21 +3,23 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 export const OfferFormHeader: React.FC = () => {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { isDarkMode } = useTheme();
 
   return (
-    <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
+    <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }, isDarkMode && { backgroundColor: "#0B1120", borderBottomColor: "#334155" }]}>
       <TouchableOpacity
         style={styles.backIcon}
         onPress={() => router.back()}
       >
-        <Ionicons name="arrow-back" size={24} color="#000" />
+        <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#F8FAFC" : "#000"} />
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>Make an Offer</Text>
+      <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]}>Make an Offer</Text>
       <View style={styles.placeholder} />
     </View>
   );

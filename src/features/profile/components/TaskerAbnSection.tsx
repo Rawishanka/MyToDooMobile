@@ -6,6 +6,7 @@ import {
 } from '@/src/api/abn-api';
 import { formatAbnInput, validateAbn } from '@/src/shared/utils/abnValidation';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -29,6 +30,7 @@ export default function TaskerAbnSection({
   onVerified,
   allowUpdate = true,
 }: TaskerAbnSectionProps) {
+  const { isDarkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<TaskerAbnStatus | null>(null);
@@ -79,7 +81,7 @@ export default function TaskerAbnSection({
 
   if (loading) {
     return (
-      <View style={[styles.card, variant === 'compact' && styles.cardCompact]}>
+      <View style={[styles.card, variant === 'compact' && styles.cardCompact, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <ActivityIndicator color="#0052A2" />
         <Text style={styles.loadingText}>Loading ABN status...</Text>
       </View>
@@ -90,15 +92,15 @@ export default function TaskerAbnSection({
 
   if (isVerified && status) {
     return (
-      <View style={[styles.card, variant === 'compact' && styles.cardCompact]}>
+      <View style={[styles.card, variant === 'compact' && styles.cardCompact, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <View style={styles.verifiedHeader}>
-          <Text style={styles.title}>Australian Business Number (ABN)</Text>
+          <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Australian Business Number (ABN)</Text>
           <View style={styles.verifiedBadge}>
             <Ionicons name="checkmark-circle" size={14} color="#16a34a" />
             <Text style={styles.verifiedBadgeText}>Verified</Text>
           </View>
         </View>
-        <Text style={styles.maskedAbn}>{status.abnMasked || `********${status.abnLast3 || ''}`}</Text>
+        <Text style={[styles.maskedAbn, isDarkMode && { color: '#F8FAFC' }]}>{status.abnMasked || `********${status.abnLast3 || ''}`}</Text>
         {status.abnVerifiedAt && (
           <Text style={styles.metaText}>
             Verified {new Date(status.abnVerifiedAt).toLocaleDateString('en-AU')} (manual validation)
@@ -106,7 +108,7 @@ export default function TaskerAbnSection({
         )}
         {allowUpdate && (
           <TouchableOpacity style={styles.linkButton} onPress={() => setShowUpdateForm(true)}>
-            <Text style={styles.linkButtonText}>Update ABN</Text>
+            <Text style={[styles.linkButtonText, isDarkMode && { color: '#38BDF8' }]}>Update ABN</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -114,16 +116,20 @@ export default function TaskerAbnSection({
   }
 
   return (
-    <View style={[styles.card, variant === 'compact' && styles.cardCompact]}>
-      <Text style={styles.title}>Australian Business Number (ABN)</Text>
-      <Text style={styles.description}>
+    <View style={[styles.card, variant === 'compact' && styles.cardCompact, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+      <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Australian Business Number (ABN)</Text>
+      <Text style={[styles.description, isDarkMode && { color: '#94A3B8' }]}>
         Verify your ABN before setting up payouts. Required before payment can be released.
       </Text>
       <TextInput
-        style={styles.input}
+        style={[
+          styles.input,
+          isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }
+        ]}
         value={abnInput}
         onChangeText={(text) => setAbnInput(formatAbnInput(text))}
         placeholder="XX XXX XXX XXX"
+        placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
         keyboardType="number-pad"
         maxLength={14}
         autoCorrect={false}

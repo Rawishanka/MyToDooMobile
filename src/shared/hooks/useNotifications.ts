@@ -132,9 +132,14 @@ export const useMergedUnreadCount = (): number => {
 
     // Immediately refresh badge when notifications are deleted/read
     // (instead of waiting up to 30-60s for the next poll)
-    const unsubscribe = onNotificationsChanged(() => {
+    const unsubscribe = onNotificationsChanged(async () => {
       fetchLocal();
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.unreadCount() });
+      try {
+        const count = await getLocalUnreadCount();
+        const Notifications = require('expo-notifications');
+        await Notifications.setBadgeCountAsync(count);
+      } catch {}
     });
 
     return () => {

@@ -36,8 +36,10 @@ import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { useMergedUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
 import NotificationModal from './notification-screen-api';
+import { useTheme } from '@/src/shared/theme';
 
 const MessageScreen: React.FC = () => {
+  const { isDarkMode } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showChat, setShowChat] = useState(false);
@@ -309,7 +311,7 @@ const MessageScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <StatusBar barStyle="light-content" backgroundColor="#1A2980" />
       
       {/* Offline Banner */}
@@ -343,8 +345,8 @@ const MessageScreen: React.FC = () => {
       {/* Messages List */}
       {isLoadingChats ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1A2980" />
-          <Text style={styles.loadingText}>Loading chats...</Text>
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+          <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading chats...</Text>
         </View>
       ) : (
         <FlatList
@@ -368,8 +370,8 @@ const MessageScreen: React.FC = () => {
           }
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>
-              <Ionicons name="chatbubbles-outline" size={64} color="#ccc" />
-              <Text style={styles.emptyText}>
+              <Ionicons name="chatbubbles-outline" size={64} color={isDarkMode ? '#334155' : '#ccc'} />
+              <Text style={[styles.emptyText, isDarkMode && { color: '#94A3B8' }]}>
                 {chatError ? 'Failed to load chats' : 'No messages yet'}
               </Text>
               {chatError && (

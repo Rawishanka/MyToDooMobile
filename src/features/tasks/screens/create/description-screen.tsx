@@ -10,8 +10,10 @@ import {
   View,
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 export default function DescribeTaskScreen() {
+  const { isDarkMode } = useTheme();
   const [description, setDescription] = useState('');
   const navigation = useNavigation();
   const { myTask, updateMyTask } = useCreateTaskStore();
@@ -34,19 +36,19 @@ export default function DescribeTaskScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       {/* Back Arrow */}
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
         <Ionicons name="chevron-back" size={24} color="black" />
       </TouchableOpacity>
 
       {/* Title */}
-      <Text style={styles.title}>Describe the MyToDoo task</Text>
-      <Text style={styles.subtitle}>Give a detailed description of the MyToDoo tasks</Text>
+      <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Describe the MyToDoo task</Text>
+      <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>Give a detailed description of the MyToDoo tasks</Text>
 
       {/* Input */}
       <TextInput
-        style={styles.textArea}
+        style={[styles.textArea, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1, color: '#F8FAFC' }]}
         multiline
         placeholder="Type your task details here..."
         value={description}

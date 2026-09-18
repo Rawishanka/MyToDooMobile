@@ -524,6 +524,18 @@ export const useSignup = () => {
           setSmsVerified(true);
           console.log('🎉 Social sign-up phone 2FA verified successfully!');
           setVerificationStep(null);
+
+          // Update auth store user with verified phone & isPhoneVerified
+          const currentToken = useAuthStore.getState().token;
+          const currentUser = useAuthStore.getState().user;
+          if (currentToken && currentUser) {
+            await useAuthStore.getState().setAuthData(currentToken, {
+              ...currentUser,
+              phone: fullPhone,
+              isPhoneVerified: true,
+            });
+          }
+
           await new Promise(resolve => setTimeout(resolve, 300));
           await queryClient.invalidateQueries();
           await postPendingTask();
@@ -734,11 +746,11 @@ export const useSignup = () => {
         isNewUser: (result as any).isNewUser 
       });
       
-      // ✅ Google 2FA: If new user or missing phone, initiate SMS 2FA verification flow
-      const isNew = (result as any).isNewUser || !result.user?.phone;
-      console.log('🔍 Google signup result check:', { isNewUser: isNew, phone: result.user?.phone });
+      // ✅ Google 2FA: If new user or missing/unverified phone, initiate SMS 2FA verification flow
+      const needsPhone2FA = (result as any)?.requiresPhoneVerification || !result.user?.isPhoneVerified || !result.user?.phone || (result as any)?.isNewUser;
+      console.log('🔍 Google signup result check:', { needsPhone2FA, isPhoneVerified: result.user?.isPhoneVerified, phone: result.user?.phone });
 
-      if (isNew) {
+      if (needsPhone2FA) {
         console.log('🔐 New Google Sign-Up user detected - initiating 2FA verification flow');
         setIsSocialSignup(true);
         if (result.user?.email) setEmail(result.user.email);
@@ -894,7 +906,8 @@ export const useSignup = () => {
       });
 
       // ✅ CHECK: If Apple ID is an existing verified user → navigate directly
-      if (result.isNewUser === false && result.user?.phone) {
+      const needsApplePhone2FA = (result as any)?.requiresPhoneVerification || !result.user?.isPhoneVerified || !result.user?.phone || result.isNewUser;
+      if (!needsApplePhone2FA) {
         console.log('🍎 Existing verified Apple user - navigating to tabs');
         await queryClient.clear();
         await new Promise(resolve => setTimeout(resolve, 100));

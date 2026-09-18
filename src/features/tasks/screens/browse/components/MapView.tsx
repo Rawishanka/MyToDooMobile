@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 import { StyleSheet } from 'react-native';
 import WebView from 'react-native-webview';
 
@@ -23,6 +24,7 @@ interface MapViewProps {
 }
 
 export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: MapViewProps) {
+  const { isDarkMode } = useTheme();
   console.log('🗺️ MapView Props Received:', {
     tasksCount: tasks.length,
     focusTaskId: focusTaskId,
@@ -746,6 +748,10 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
       console.log('📍 Using calculated center from all markers:', { lat: centerLat, lng: centerLng });
     }
 
+    const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    const tileAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+    const tileSubdomains = 'abc';
+
     return `
     <!DOCTYPE html>
     <html>
@@ -842,10 +848,62 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         .action-btn:hover {
           background: linear-gradient(135deg, #e67535, #cc5f22);
         }
+        ${isDarkMode ? `
+        body { background-color: #0B1120 !important; }
+        #map { background-color: #0B1120 !important; }
+        .leaflet-container { background: #0B1120 !important; }
+        .leaflet-tile-pane {
+          background-color: #0B1120 !important;
+        }
+        .leaflet-tile {
+          filter: brightness(0.6) invert(1) contrast(2) hue-rotate(200deg) saturate(0.3) brightness(0.8) !important;
+        }
+        .leaflet-control-zoom {
+          box-shadow: 0 2px 12px rgba(0,0,0,0.5) !important;
+        }
+        .leaflet-control-zoom a {
+          background-color: #1E293B !important;
+          border: 1px solid #334155 !important;
+          color: #F8FAFC !important;
+        }
+        .leaflet-control-zoom a:hover {
+          background-color: #334155 !important;
+          color: #38BDF8 !important;
+        }
+        .leaflet-control-attribution {
+          background: rgba(15, 23, 42, 0.85) !important;
+          color: #94A3B8 !important;
+        }
+        .leaflet-control-attribution a {
+          color: #38BDF8 !important;
+        }
+        .leaflet-popup-content-wrapper {
+          background: #1E293B !important;
+          color: #F8FAFC !important;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important;
+        }
+        .leaflet-popup-tip {
+          background: #1E293B !important;
+        }
+        .marker-title {
+          color: #F8FAFC !important;
+        }
+        .marker-location {
+          color: #94A3B8 !important;
+        }
+        .marker-meta {
+          color: #64748B !important;
+          border-top: 1px solid #334155 !important;
+        }
+        .marker-actions {
+          border-top: 1px solid #334155 !important;
+        }
+        ` : `
         .leaflet-tile-pane {
           filter: brightness(1.06) contrast(0.92) grayscale(70%) saturate(40%) !important;
           background-color: #f7f5f0 !important;
         }
+        `}
         .leaflet-control-zoom {
           border: none !important;
           border-radius: 10px !important;
@@ -898,10 +956,10 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         });
         console.log('🗺️ Map initialized with center:', [${centerLat}, ${centerLng}], 'zoom:', initialZoom);
         
-// OpenStreetMap - free tiles, no API key required, clean look
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          subdomains: 'abc',
+// Dynamic OpenStreetMap / CartoDB Dark Matter tiles according to dark mode
+        L.tileLayer('${tileUrl}', {
+          attribution: '${tileAttribution}',
+          subdomains: '${tileSubdomains}',
           minZoom: 3,
           maxZoom: 19,
         }).addTo(map);
@@ -1088,7 +1146,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
 
   return (
     <WebView
-      style={styles.webView}
+      style={[styles.webView, isDarkMode && { backgroundColor: '#0B1120' }]}
       source={{ html: generateMapHTML() }}
       onMessage={(event) => {
         try {

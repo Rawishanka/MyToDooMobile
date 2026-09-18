@@ -4,6 +4,7 @@ import {
   useGetMyServiceListings,
 } from '@/src/shared/hooks/useServiceListingApi';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -25,6 +26,7 @@ interface MyServicesScreenProps {
 }
 
 export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenProps) {
+  const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const { data = [], isLoading, refetch, isRefetching } = useGetMyServiceListings();
   const deleteMutation = useDeleteServiceListing();
@@ -50,13 +52,13 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
   };
 
   const renderItem = ({ item }: { item: ServiceListing }) => (
-    <View style={styles.card}>
+    <View style={[styles.card, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
       <View style={styles.cardBody}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.meta}>
+        <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>{item.title}</Text>
+        <Text style={[styles.meta, isDarkMode && { color: '#94A3B8' }]}>
           ${Number(item.price).toFixed(0)} {item.currency || 'AUD'} · {item.suburb}
         </Text>
-        <Text style={styles.status}>Status: {item.status}</Text>
+        <Text style={[styles.status, isDarkMode && { color: '#64748B' }]}>Status: {item.status}</Text>
       </View>
       <TouchableOpacity onPress={() => confirmDelete(item)} style={styles.deleteButton}>
         <Ionicons name="trash-outline" size={20} color="#dc3545" />
@@ -65,14 +67,14 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
   );
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#0052A2'} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My services</Text>
+        <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>My services</Text>
         <TouchableOpacity onPress={onCreate} style={styles.createButton}>
-          <Ionicons name="add" size={22} color="#0052A2" />
+          <Ionicons name="add" size={22} color={isDarkMode ? '#38BDF8' : '#0052A2'} />
         </TouchableOpacity>
       </View>
 
@@ -91,7 +93,7 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
           }
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
-              <Text style={styles.emptyText}>You have not listed any services yet.</Text>
+              <Text style={[styles.emptyText, isDarkMode && { color: '#94A3B8' }]}>You have not listed any services yet.</Text>
               <TouchableOpacity style={styles.emptyCta} onPress={onCreate}>
                 <Text style={styles.emptyCtaText}>Create a service</Text>
               </TouchableOpacity>

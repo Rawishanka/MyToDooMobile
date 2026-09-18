@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface Review {
   _id: string;
@@ -66,6 +67,7 @@ interface Review {
 }
 
 const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
+  const { isDarkMode } = useTheme();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
   const formatDate = (dateString: string) => {
@@ -162,7 +164,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
   }
 
   return (
-    <View style={styles.reviewItem}>
+    <View style={[styles.reviewItem, isDarkMode && { borderBottomColor: '#334155' }]}>
       {/* Header */}
       <View style={styles.reviewHeader}>
         <View style={styles.reviewerInfo}>
@@ -173,12 +175,12 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
           </View>
           <View style={styles.reviewerDetails}>
             <View style={styles.nameContainer}>
-              <Text style={styles.reviewerName}>{reviewerName}</Text>
+              <Text style={[styles.reviewerName, isDarkMode && { color: '#F8FAFC' }]}>{reviewerName}</Text>
               {categoryLabel ? (
-                <Text style={styles.categoryBadge}>{categoryLabel}</Text>
+                <Text style={[styles.categoryBadge, isDarkMode && { color: '#93C5FD', backgroundColor: 'rgba(59, 130, 246, 0.2)' }]}>{categoryLabel}</Text>
               ) : null}
             </View>
-            <Text style={styles.reviewDate}>{formatDate(review.createdAt)}</Text>
+            <Text style={[styles.reviewDate, isDarkMode && { color: '#94A3B8' }]}>{formatDate(review.createdAt)}</Text>
           </View>
         </View>
         
@@ -190,14 +192,14 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
       {/* Task Reference */}
       {review.task && (
         <View style={styles.taskReference}>
-          <Ionicons name="briefcase-outline" size={14} color="#666" />
-          <Text style={styles.taskTitle} numberOfLines={1}>{taskTitle}</Text>
+          <Ionicons name="briefcase-outline" size={14} color={isDarkMode ? '#94A3B8' : '#666'} />
+          <Text style={[styles.taskTitle, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>{taskTitle}</Text>
         </View>
       )}
 
       {/* Review Comment */}
       {review.reviewText && review.reviewText.trim() && (
-        <Text style={styles.reviewComment}>{review.reviewText}</Text>
+        <Text style={[styles.reviewComment, isDarkMode && { color: '#E2E8F0' }]}>{review.reviewText}</Text>
       )}
       
       {/* Attachments */}
@@ -271,9 +273,9 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
       
       {/* Response */}
       {review.response && (
-        <View style={styles.responseContainer}>
-          <Text style={styles.responseLabel}>Response:</Text>
-          <Text style={styles.responseText}>
+        <View style={[styles.responseContainer, isDarkMode && { backgroundColor: '#0F172A', borderLeftColor: '#38BDF8' }]}>
+          <Text style={[styles.responseLabel, isDarkMode && { color: '#38BDF8' }]}>Response:</Text>
+          <Text style={[styles.responseText, isDarkMode && { color: '#CBD5E1' }]}>
             {review.response.responseText || review.response.text || ''}
           </Text>
         </View>
@@ -287,6 +289,7 @@ interface ReviewsListProps {
 }
 
 export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
+  const { isDarkMode } = useTheme();
   const [activeRole, setActiveRole] = React.useState<'tasker' | 'poster'>('poster');
   const [currentPage, setCurrentPage] = React.useState(1);
   const limit = 10;
@@ -367,29 +370,38 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.sectionTitle}>Reviews</Text>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
+      <View style={[styles.headerContainer, isDarkMode && { borderBottomColor: '#334155' }]}>
+        <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Reviews</Text>
       </View>
 
-      {/* Role Toggle Buttons */}
-      <View style={styles.roleToggleContainer}>
+      {/* 2026 Modern Segmented Pill Control */}
+      <View style={[
+        styles.roleToggleContainer,
+        isDarkMode && { backgroundColor: '#0B1120', borderColor: '#334155' }
+      ]}>
         <TouchableOpacity
           style={[
             styles.roleToggleButton,
-            activeRole === 'tasker' && styles.roleToggleButtonActive
+            activeRole === 'tasker'
+              ? (isDarkMode
+                  ? { backgroundColor: '#2563EB', shadowColor: '#2563EB', shadowOpacity: 0.4, shadowRadius: 6, elevation: 4 }
+                  : styles.roleToggleButtonActive)
+              : { backgroundColor: 'transparent', borderWidth: 0 }
           ]}
           onPress={() => handleRoleChange('tasker')}
+          activeOpacity={0.8}
         >
           <Ionicons
             name="hammer"
             size={18}
-            color={activeRole === 'tasker' ? '#FFF' : '#666'}
+            color={activeRole === 'tasker' ? '#FFF' : (isDarkMode ? '#94A3B8' : '#64748B')}
           />
           <Text
             style={[
               styles.roleToggleText,
-              activeRole === 'tasker' && styles.roleToggleTextActive
+              isDarkMode && { color: '#94A3B8' },
+              activeRole === 'tasker' && { color: '#FFFFFF', fontWeight: '700' }
             ]}
           >
             As Tasker
@@ -399,19 +411,25 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
         <TouchableOpacity
           style={[
             styles.roleToggleButton,
-            activeRole === 'poster' && styles.roleToggleButtonActive
+            activeRole === 'poster'
+              ? (isDarkMode
+                  ? { backgroundColor: '#2563EB', shadowColor: '#2563EB', shadowOpacity: 0.4, shadowRadius: 6, elevation: 4 }
+                  : styles.roleToggleButtonActive)
+              : { backgroundColor: 'transparent', borderWidth: 0 }
           ]}
           onPress={() => handleRoleChange('poster')}
+          activeOpacity={0.8}
         >
           <Ionicons
             name="briefcase"
             size={18}
-            color={activeRole === 'poster' ? '#FFF' : '#666'}
+            color={activeRole === 'poster' ? '#FFF' : (isDarkMode ? '#94A3B8' : '#64748B')}
           />
           <Text
             style={[
               styles.roleToggleText,
-              activeRole === 'poster' && styles.roleToggleTextActive
+              isDarkMode && { color: '#94A3B8' },
+              activeRole === 'poster' && { color: '#FFFFFF', fontWeight: '700' }
             ]}
           >
             As Poster
@@ -633,10 +651,14 @@ const styles = StyleSheet.create({
   },
   roleToggleContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    gap: 12,
-    backgroundColor: '#F8F9FA',
+    marginHorizontal: 16,
+    marginVertical: 12,
+    padding: 4,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    gap: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   roleToggleButton: {
     flex: 1,
@@ -645,15 +667,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: '#FFF',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderRadius: 10,
+    backgroundColor: 'transparent',
     gap: 8,
   },
   roleToggleButtonActive: {
-    backgroundColor: '#007AFF',
-    borderColor: '#007AFF',
+    backgroundColor: '#0052A2',
+    shadowColor: '#0052A2',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
   },
   roleToggleText: {
     fontSize: RFValue(15),

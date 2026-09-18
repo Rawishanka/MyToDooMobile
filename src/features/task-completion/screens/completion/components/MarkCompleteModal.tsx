@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 import { appAlert } from '@/src/shared/components/AppAlert';
 import { BRAND_BLUE, BRAND_GREEN } from '@/src/shared/theme/brandColors';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +17,7 @@ export default function MarkCompleteModal({
   onClose,
   onConfirm,
 }: MarkCompleteModalProps) {
+  const { isDarkMode } = useTheme();
   const [completionNotes, setCompletionNotes] = useState('');
 
   const handleConfirm = () => {
@@ -37,20 +39,20 @@ export default function MarkCompleteModal({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={styles.content}>
+        <View style={[styles.content, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
           <View style={styles.header}>
-            <Text style={styles.title}>Mark Task Complete</Text>
+            <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Mark Task Complete</Text>
             <TouchableOpacity onPress={onClose}>
               <Ionicons name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.description}>
+          <Text style={[styles.description, isDarkMode && { color: '#94A3B8' }]}>
             Add any notes about the task completion (optional):
           </Text>
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
             placeholder="Completion notes..."
             placeholderTextColor="#999"
             value={completionNotes}
@@ -61,8 +63,8 @@ export default function MarkCompleteModal({
           />
 
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+            <TouchableOpacity style={[styles.cancelButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]} onPress={onClose}>
+              <Text style={[styles.cancelButtonText, isDarkMode && { color: '#94A3B8' }]}>Cancel</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>

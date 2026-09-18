@@ -4,6 +4,7 @@ import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '@/src/shared/theme';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -16,17 +17,18 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   setSearchQuery, 
   placeholder = 'Search messages...' 
 }) => {
+  const { isDarkMode } = useTheme();
   const clearSearch = () => setSearchQuery('');
   
   return (
-    <View style={styles.searchContainer}>
-      <View style={styles.searchBox}>
-        <Ionicons name="search" size={20} color="#8E8E93" style={styles.searchIcon} />
+    <View style={[styles.searchContainer, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
+      <View style={[styles.searchBox, isDarkMode && { backgroundColor: '#1E293B' }]}>
+        <Ionicons name="search" size={20} color={isDarkMode ? '#94A3B8' : '#8E8E93'} style={styles.searchIcon} />
         
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, isDarkMode && { color: '#F8FAFC' }]}
           placeholder={placeholder}
-          placeholderTextColor="#8E8E93"
+          placeholderTextColor={isDarkMode ? '#64748B' : '#8E8E93'}
           value={searchQuery}
           onChangeText={setSearchQuery}
           autoCapitalize="none"

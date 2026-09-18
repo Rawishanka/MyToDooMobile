@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import type { VerificationStep } from './signup-types';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface OTPModalProps {
   // Modal visibility
@@ -70,6 +71,7 @@ interface OTPInputProps {
 }
 
 const OTPInput: React.FC<OTPInputProps> = ({ otp, otpRefs, onOtpChange, disabled }) => {
+  const { isDarkMode } = useTheme();
   
   // Handle key press for backspace detection - allows deleting any digit
   const handleKeyPress = useCallback((
@@ -127,6 +129,8 @@ const OTPInput: React.FC<OTPInputProps> = ({ otp, otpRefs, onOtpChange, disabled
             styles.otpBox,
             digit && styles.otpBoxFilled,
             disabled && styles.otpBoxDisabled,
+            isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' },
+            isDarkMode && digit && { borderColor: '#38BDF8', backgroundColor: '#1E293B' },
           ]}
           value={digit}
           onChangeText={(value) => handleChange(value, index)}
@@ -168,16 +172,11 @@ export const OTPModal: React.FC<OTPModalProps> = ({
   handleSendPhoneOtp,
   onClose,
 }) => {
+  const { isDarkMode } = useTheme();
   const handleClose = () => {
+    Keyboard.dismiss();
     if (onClose) {
-      Alert.alert(
-        'Cancel Verification?',
-        'You can complete verification later from your account settings. Continue without verifying?',
-        [
-          { text: 'Stay', style: 'cancel' },
-          { text: 'Close', style: 'destructive', onPress: onClose }
-        ]
-      );
+      onClose();
     }
   };
 
@@ -216,26 +215,26 @@ export const OTPModal: React.FC<OTPModalProps> = ({
               style={styles.keyboardAvoidingView}
               keyboardVerticalOffset={0}
             >
-              <View style={styles.modalInnerContainer}>
+              <View style={[styles.modalInnerContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
                 <ScrollView
                   contentContainerStyle={styles.scrollContent}
                   keyboardShouldPersistTaps="handled"
                   showsVerticalScrollIndicator={false}
                   bounces={false}
                 >
-                  <View style={styles.modalContainer}>
+                  <View style={[styles.modalContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
                     {onClose && (
-                      <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                      <TouchableOpacity style={[styles.closeButton, isDarkMode && { backgroundColor: '#0F172A' }]} onPress={handleClose} hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }} activeOpacity={0.7}>
                         <Ionicons name="close" size={24} color="#666" />
                       </TouchableOpacity>
                     )}
                   
                   <View style={styles.modalHeader}>
-                    <View style={styles.iconCircle}>
+                    <View style={[styles.iconCircle, isDarkMode && { backgroundColor: '#0F172A' }]}>
                       <Ionicons name="mail-outline" size={36} color="#007BFF" />
                     </View>
-                    <Text style={styles.modalTitle}>Verify Your Email</Text>
-                    <Text style={styles.modalSubtitle}>
+                    <Text style={[styles.modalTitle, isDarkMode && { color: '#F8FAFC' }]}>Verify Your Email</Text>
+                    <Text style={[styles.modalSubtitle, isDarkMode && { color: '#94A3B8' }]}>
                       We&apos;ve sent a 6-digit code to
                     </Text>
                     <Text style={styles.contactText}>{email}</Text>
@@ -259,7 +258,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                   </View>
 
                   <View style={styles.otpSection}>
-                    <Text style={styles.otpLabel}>Enter verification code</Text>
+                    <Text style={[styles.otpLabel, isDarkMode && { color: '#94A3B8' }]}>Enter verification code</Text>
                     <OTPInput
                       otp={emailOtp}
                       otpRefs={emailOtpRefs}
@@ -268,7 +267,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                     />
                     
                     {emailTimer > 0 ? (
-                      <Text style={styles.timerText}>
+                      <Text style={[styles.timerText, isDarkMode && { color: '#94A3B8' }]}>
                         Resend code in <Text style={styles.timerHighlight}>{formatTimer(emailTimer)}</Text>
                       </Text>
                     ) : (
@@ -300,7 +299,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
 
                   <View style={styles.securityNote}>
                     <Ionicons name="shield-checkmark-outline" size={14} color="#28a745" />
-                    <Text style={styles.securityNoteText}>Your information is secure and encrypted</Text>
+                    <Text style={[styles.securityNoteText, isDarkMode && { color: '#94A3B8' }]}>Your information is secure and encrypted</Text>
                   </View>
                 </View>
               </ScrollView>
@@ -325,32 +324,32 @@ export const OTPModal: React.FC<OTPModalProps> = ({
               style={styles.keyboardAvoidingView}
               keyboardVerticalOffset={0}
             >
-              <View style={styles.modalInnerContainer}>
+              <View style={[styles.modalInnerContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
                 <ScrollView
                   contentContainerStyle={styles.scrollContent}
                   keyboardShouldPersistTaps="handled"
                   showsVerticalScrollIndicator={false}
                   bounces={false}
                 >
-                  <View style={styles.modalContainer}>
+                  <View style={[styles.modalContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
                     {onClose && (
-                      <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                      <TouchableOpacity style={[styles.closeButton, isDarkMode && { backgroundColor: '#0F172A' }]} onPress={handleClose} hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }} activeOpacity={0.7}>
                         <Ionicons name="close" size={24} color="#666" />
                       </TouchableOpacity>
                     )}
                   
                     <View style={styles.modalHeader}>
-                      <View style={styles.iconCircle}>
+                      <View style={[styles.iconCircle, isDarkMode && { backgroundColor: '#0F172A' }]}>
                         <Ionicons name="shield-checkmark" size={36} color="#007BFF" />
                       </View>
-                      <Text style={styles.modalTitle}>Two-Factor Authentication</Text>
-                      <Text style={styles.modalSubtitle}>
+                      <Text style={[styles.modalTitle, isDarkMode && { color: '#F8FAFC' }]}>Two-Factor Authentication</Text>
+                      <Text style={[styles.modalSubtitle, isDarkMode && { color: '#94A3B8' }]}>
                         Enter your mobile number to complete SMS 2FA verification.
                       </Text>
                     </View>
 
                     <View style={styles.otpSection}>
-                      <Text style={styles.otpLabel}>Mobile Phone Number</Text>
+                      <Text style={[styles.otpLabel, isDarkMode && { color: '#94A3B8' }]}>Mobile Phone Number</Text>
                       <View style={{
                         flexDirection: 'row',
                         alignItems: 'center',
@@ -398,7 +397,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
 
                     <View style={styles.securityNote}>
                       <Ionicons name="lock-closed-outline" size={14} color="#28a745" />
-                      <Text style={styles.securityNoteText}>Your phone number is encrypted and secured</Text>
+                      <Text style={[styles.securityNoteText, isDarkMode && { color: '#94A3B8' }]}>Your phone number is encrypted and secured</Text>
                     </View>
                   </View>
                 </ScrollView>
@@ -428,26 +427,26 @@ export const OTPModal: React.FC<OTPModalProps> = ({
               style={styles.keyboardAvoidingView}
               keyboardVerticalOffset={0}
             >
-              <View style={styles.modalInnerContainer}>
+              <View style={[styles.modalInnerContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
                 <ScrollView
                   contentContainerStyle={styles.scrollContent}
                   keyboardShouldPersistTaps="handled"
                   showsVerticalScrollIndicator={false}
                   bounces={false}
                 >
-                  <View style={styles.modalContainer}>
+                  <View style={[styles.modalContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
                     {onClose && (
-                      <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+                      <TouchableOpacity style={[styles.closeButton, isDarkMode && { backgroundColor: '#0F172A' }]} onPress={handleClose} hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }} activeOpacity={0.7}>
                         <Ionicons name="close" size={24} color="#666" />
                       </TouchableOpacity>
                     )}
                   
                   <View style={styles.modalHeader}>
-                    <View style={styles.iconCircle}>
+                    <View style={[styles.iconCircle, isDarkMode && { backgroundColor: '#0F172A' }]}>
                       <Ionicons name="phone-portrait-outline" size={36} color="#007BFF" />
                     </View>
-                    <Text style={styles.modalTitle}>Verify Your Phone</Text>
-                    <Text style={styles.modalSubtitle}>
+                    <Text style={[styles.modalTitle, isDarkMode && { color: '#F8FAFC' }]}>Verify Your Phone</Text>
+                    <Text style={[styles.modalSubtitle, isDarkMode && { color: '#94A3B8' }]}>
                       We&apos;ve sent a 6-digit code to
                     </Text>
                     <Text style={styles.contactText}>{phoneCode}{phone}</Text>
@@ -471,7 +470,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                   </View>
 
                   <View style={styles.otpSection}>
-                    <Text style={styles.otpLabel}>Enter verification code</Text>
+                    <Text style={[styles.otpLabel, isDarkMode && { color: '#94A3B8' }]}>Enter verification code</Text>
                     <OTPInput
                       otp={smsOtp}
                       otpRefs={smsOtpRefs}
@@ -488,7 +487,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                     
                     {!smsVerified && (
                       smsTimer > 0 ? (
-                        <Text style={styles.timerText}>
+                        <Text style={[styles.timerText, isDarkMode && { color: '#94A3B8' }]}>
                           Resend code in <Text style={styles.timerHighlight}>{formatTimer(smsTimer)}</Text>
                         </Text>
                       ) : (
@@ -527,7 +526,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
 
                     <View style={styles.securityNote}>
                       <Ionicons name="shield-checkmark-outline" size={14} color="#28a745" />
-                      <Text style={styles.securityNoteText}>Your information is secure and encrypted</Text>
+                      <Text style={[styles.securityNoteText, isDarkMode && { color: '#94A3B8' }]}>Your information is secure and encrypted</Text>
                     </View>
                   </View>
                 </ScrollView>

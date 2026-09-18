@@ -16,7 +16,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { OTPModal } from '../components/OTPModal';
+import type { VerificationStep } from '../components/signup-types';
+import { requestPhoneOtp, verifyPhoneOtp } from '@/src/api/contact-change-api';
 import {
     ActivityIndicator,
     Alert,
@@ -35,8 +38,10 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
 import { FORM_MAX_WIDTH, RFValue, isTablet } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 export default function LoginScreen() {
+  const { isDarkMode } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
@@ -48,6 +53,157 @@ export default function LoginScreen() {
   const [rememberMe, setRememberMe] = useState(false);
   const [appleAuthAvailable, setAppleAuthAvailable] = useState(false);
   const { mutateAsync } = useCreateAuthToken();
+
+  // 2FA Phone Verification State for Google / Apple Sign-in
+  const [verificationStep, setVerificationStep] = useState<VerificationStep>(null);
+  const [twoFactorPhone, setTwoFactorPhone] = useState('');
+  const [twoFactorEmail, setTwoFactorEmail] = useState('');
+  const [smsOtp, setSmsOtp] = useState(['', '', '', '', '', '']);
+  const [smsVerified, setSmsVerified] = useState(false);
+  const [smsTimer, setSmsTimer] = useState(57);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const emailOtpRefs = useRef<(TextInput | null)[]>([]);
+  const smsOtpRefs = useRef<(TextInput | null)[]>([]);
+
+  // Timer effect for 2FA SMS
+  useEffect(() => {
+    if (verificationStep === 'sms' && smsTimer > 0) {
+      const interval = setInterval(() => {
+        setSmsTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [verificationStep, smsTimer]);
+
+  // If user lands on login while authenticated but missing phone verification, trigger 2FA
+  useEffect(() => {
+    const authState = useAuthStore.getState();
+    if (authState.isAuthenticated && authState.token) {
+      if (authState.user?.isPhoneVerified === false || !authState.user?.phone) {
+        console.log('🔐 Mount: User is authenticated but phone is not verified - prompting 2FA');
+        if (authState.user?.email) setTwoFactorEmail(authState.user.email);
+        setVerificationStep('phone_entry');
+      }
+    }
+  }, []);
+
+  const handleSmsOtpChange = (value: string, index: number) => {
+    const newOtp = [...smsOtp];
+    newOtp[index] = value;
+    setSmsOtp(newOtp);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      smsOtpRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleSendPhoneOtp = async () => {
+    if (!twoFactorPhone || twoFactorPhone.trim().length < 8) {
+      Alert.alert('Invalid Mobile Number', 'Please enter a valid mobile phone number.');
+      return;
+    }
+    try {
+      setVerifyLoading(true);
+      const raw = twoFactorPhone.trim();
+      const fullPhone = raw.startsWith('+') ? raw : '+61' + (raw.startsWith('0') ? raw.slice(1) : raw);
+      console.log('📱 Sending SMS 2FA verification code to:', fullPhone);
+      await requestPhoneOtp(fullPhone);
+      setVerificationStep('sms');
+      setSmsTimer(57);
+      Alert.alert('Verification Code Sent', 'We sent a 6-digit verification code to ' + fullPhone);
+    } catch (err: any) {
+      console.error('Failed to send phone OTP:', err);
+      Alert.alert('SMS Error', err?.response?.data?.message || err?.message || 'Failed to send SMS verification code.');
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
+
+  const handleResendSms = async () => {
+    try {
+      const raw = twoFactorPhone.trim();
+      const fullPhone = raw.startsWith('+') ? raw : '+61' + (raw.startsWith('0') ? raw.slice(1) : raw);
+      await requestPhoneOtp(fullPhone);
+      setSmsTimer(57);
+      Alert.alert('Sent!', 'Verification code resent to your phone.');
+    } catch (err: any) {
+      Alert.alert('Error', err?.response?.data?.message || err?.message || 'Failed to resend SMS code.');
+    }
+  };
+
+  const handleVerifySms = async () => {
+    const otpCode = smsOtp.join('');
+    if (otpCode.length !== 6) {
+      Alert.alert('Error', 'Please enter the complete 6-digit code');
+      return;
+    }
+
+    try {
+      setVerifyLoading(true);
+      const raw = twoFactorPhone.trim();
+      const fullPhone = raw.startsWith('+') ? raw : '+61' + (raw.startsWith('0') ? raw.slice(1) : raw);
+      console.log('📱 Verifying phone OTP for 2FA login:', { fullPhone, otpCode });
+      const verifyRes = await verifyPhoneOtp(fullPhone, otpCode);
+      if (verifyRes.success || verifyRes.data) {
+        setSmsVerified(true);
+        console.log('🎉 2FA Phone verified successfully on login!');
+        setVerificationStep(null);
+
+        // Update auth store user with verified phone & isPhoneVerified
+        const currentUser = useAuthStore.getState().user;
+        const currentToken = useAuthStore.getState().token;
+        if (currentToken && currentUser) {
+          await useAuthStore.getState().setAuthData(currentToken, {
+            ...currentUser,
+            phone: fullPhone,
+            isPhoneVerified: true,
+          });
+        }
+
+        // Register FCM token
+        try {
+          await registerFCMToken();
+        } catch (fcmError) {
+          console.warn('⚠️ FCM registration after 2FA failed (non-critical):', fcmError);
+        }
+
+        // Clear caches and finalize login
+        clearCachesOnLogin();
+        await queryClient.clear();
+
+        const pendingActionType = checkPendingAction();
+        if (pendingActionType) {
+          await executePendingAction();
+        } else {
+          router.replace('/(tabs)' as any);
+        }
+
+        setTimeout(() => {
+          Alert.alert('Welcome to MyToDoo!', 'Your account has been secured with two-factor authentication.', [{ text: 'OK' }]);
+        }, 500);
+      } else {
+        Alert.alert('Error', verifyRes.message || 'Invalid SMS code.');
+      }
+    } catch (err: any) {
+      Alert.alert('Verification Failed', err?.response?.data?.message || err?.message || 'Invalid SMS code.');
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
+
+  const handleCloseVerification = async () => {
+    setVerificationStep(null);
+    setTwoFactorPhone('');
+    setSmsOtp(['', '', '', '', '', '']);
+    // Clear incomplete auth session so unverified user doesn't stay logged in
+    await useAuthStore.getState().clearAuth();
+    Alert.alert(
+      'Sign-In Cancelled',
+      'Two-factor phone verification is required to complete sign-in. Please sign in again when ready.',
+      [{ text: 'OK' }]
+    );
+  };
   const { mutateAsync: googleSignIn } = useGoogleSignIn();
   const { mutateAsync: appleSignIn } = useAppleSignIn();
   const clearCachesOnLogin = useClearCachesOnLogin();
@@ -207,6 +363,22 @@ export default function LoginScreen() {
         console.log('🔄 Profile and chat queries invalidated for user:', authState.user.id);
       }
       
+      // Check 2FA phone verification requirement
+      const needsPhone2FA = (result as any)?.requiresPhoneVerification || !result.user?.isPhoneVerified || !result.user?.phone;
+      console.log('🔍 Google login 2FA check:', {
+        needsPhone2FA,
+        requiresPhoneVerification: (result as any)?.requiresPhoneVerification,
+        isPhoneVerified: result.user?.isPhoneVerified,
+        phone: result.user?.phone,
+      });
+
+      if (needsPhone2FA) {
+        console.log('🔐 Google user requires 2FA phone verification - opening OTPModal');
+        if (result.user?.email) setTwoFactorEmail(result.user.email);
+        setVerificationStep('phone_entry');
+        return;
+      }
+
       // Check for pending actions after successful login
       const pendingActionType = checkPendingAction();
       if (pendingActionType) {
@@ -739,6 +911,22 @@ export default function LoginScreen() {
         console.warn('Pending signup ABN save failed (non-blocking)', abnError);
       }
 
+      // Check 2FA phone verification requirement
+      const needsPhone2FA = (result as any)?.requiresPhoneVerification || !result.user?.isPhoneVerified || !result.user?.phone;
+      console.log('🔍 Apple login 2FA check:', {
+        needsPhone2FA,
+        requiresPhoneVerification: (result as any)?.requiresPhoneVerification,
+        isPhoneVerified: result.user?.isPhoneVerified,
+        phone: result.user?.phone,
+      });
+
+      if (needsPhone2FA) {
+        console.log('🍎 Apple user requires 2FA phone verification - opening OTPModal');
+        if (result.user?.email) setTwoFactorEmail(result.user.email);
+        setVerificationStep('phone_entry');
+        return;
+      }
+
       // 6. Check for pending actions after successful login
       const hasPendingAction = await checkPendingAction();
       if (hasPendingAction) {
@@ -772,10 +960,10 @@ export default function LoginScreen() {
   // ========================================
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       {/* Cross icon in top right */}
       <TouchableOpacity
-        style={[styles.closeIcon, { top: insets.top + 8 }]}
+        style={[styles.closeIcon, { top: insets.top + 8 }, isDarkMode && { backgroundColor: '#1E293B' }]}
         onPress={() => {
           // Clear pending action if user cancels login
           if (pendingAction) {
@@ -787,11 +975,11 @@ export default function LoginScreen() {
         }}
         hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
       >
-        <Ionicons name="close" size={28} color="#333" />
+        <Ionicons name="close" size={28} color={isDarkMode ? '#F8FAFC' : '#333'} />
       </TouchableOpacity>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.innerContainer}
+        style={[styles.innerContainer, isDarkMode && { backgroundColor: '#0B1120' }]}
       >
         <ScrollView
           contentContainerStyle={[
@@ -810,8 +998,8 @@ export default function LoginScreen() {
               <MyToDooLogo width={50} height={50} />
             </View>
           </View>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to your account</Text>
+          <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Welcome Back</Text>
+          <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>Sign in to your account</Text>
           {pendingAction && (
             <View style={styles.pendingActionBanner}>
               <Ionicons name="information-circle" size={16} color="#1A2980" />
@@ -826,25 +1014,25 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.form}>
-          <Text style={styles.label}>Email</Text>
+          <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Email</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
             value={email}
             onChangeText={setEmail}
             placeholder="Enter your email"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={isDarkMode ? "#64748B" : "#9CA3AF"}
             keyboardType="email-address"
             autoCapitalize="none"
           />
 
-          <Text style={styles.label}>Password</Text>
-          <View style={styles.passwordContainer}>
+          <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Password</Text>
+          <View style={[styles.passwordContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             <TextInput
-              style={styles.passwordInput}
+              style={[styles.passwordInput, isDarkMode && { color: '#F8FAFC' }]}
               value={password}
               onChangeText={setPassword}
               placeholder="Enter your password"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={isDarkMode ? "#64748B" : "#9CA3AF"}
               secureTextEntry={!showPassword}
               textContentType="password"
               autoComplete="password"
@@ -889,11 +1077,11 @@ export default function LoginScreen() {
                 <Ionicons name="checkmark" size={16} color="#fff" />
               )}
             </View>
-            <Text style={styles.rememberMeText}>Remember Me</Text>
+            <Text style={[styles.rememberMeText, isDarkMode && { color: '#94A3B8' }]}>Remember Me</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
-            <Text style={styles.forgotPassword}>Forgot Password?</Text>
+            <Text style={[styles.forgotPassword, isDarkMode && { color: '#38BDF8' }]}>Forgot Password?</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
@@ -906,26 +1094,26 @@ export default function LoginScreen() {
 
           {/* Divider */}
           <View style={styles.dividerContainer}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>OR</Text>
-            <View style={styles.divider} />
+            <View style={[styles.divider, isDarkMode && { backgroundColor: '#334155' }]} />
+            <Text style={[styles.dividerText, isDarkMode && { color: '#64748B' }]}>OR</Text>
+            <View style={[styles.divider, isDarkMode && { backgroundColor: '#334155' }]} />
           </View>
 
           {/* Google Sign-In Button */}
           <TouchableOpacity 
-            style={styles.googleButton} 
+            style={[styles.googleButton, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]} 
             onPress={handleGoogleSignIn} 
             disabled={googleLoading || loading || appleLoading}
           >
             {googleLoading ? (
-              <ActivityIndicator color="#666" />
+              <ActivityIndicator color={isDarkMode ? "#38BDF8" : "#666"} />
             ) : (
               <>
                 <Image 
                   source={require('@/assets/icons/google.png')}
                   style={styles.googleIcon}
                 />
-                <Text style={styles.googleButtonText}>Continue with Google</Text>
+                <Text style={[styles.googleButtonText, isDarkMode && { color: '#F8FAFC' }]}>Continue with Google</Text>
               </>
             )}
           </TouchableOpacity>
@@ -950,7 +1138,7 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Don&apos;t have an account? </Text>
+          <Text style={[styles.footerText, isDarkMode && { color: '#94A3B8' }]}>Don&apos;t have an account? </Text>
           <TouchableOpacity onPress={() => router.replace('/(auth)/signup')}>
             <Text style={styles.registerText}>Sign Up</Text>
           </TouchableOpacity>
@@ -959,6 +1147,30 @@ export default function LoginScreen() {
           </TouchableWithoutFeedback>
         </ScrollView>
       </KeyboardAvoidingView>
+      <OTPModal
+        verificationStep={verificationStep}
+        email={twoFactorEmail}
+        phone={twoFactorPhone}
+        phoneCode="+61"
+        emailOtp={['', '', '', '', '', '']}
+        smsOtp={smsOtp}
+        emailVerified={true}
+        smsVerified={smsVerified}
+        emailTimer={0}
+        smsTimer={smsTimer}
+        verifyLoading={verifyLoading}
+        emailOtpRefs={emailOtpRefs}
+        smsOtpRefs={smsOtpRefs}
+        handleEmailOtpChange={() => {}}
+        handleSmsOtpChange={handleSmsOtpChange}
+        handleVerifyEmail={() => {}}
+        handleVerifySms={handleVerifySms}
+        handleResendEmail={() => {}}
+        handleResendSms={handleResendSms}
+        onPhoneChange={setTwoFactorPhone}
+        handleSendPhoneOtp={handleSendPhoneOtp}
+        onClose={handleCloseVerification}
+      />
     </SafeAreaView>
   );
 };

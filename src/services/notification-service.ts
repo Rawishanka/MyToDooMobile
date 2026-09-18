@@ -176,11 +176,25 @@ export const getFCMToken = async (): Promise<string | null> => {
     }
 
     // Request permissions first (iOS requires this)
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === "ios") {
       const { granted } = await requestNotificationPermissions();
       if (!granted) {
-        console.warn('⚠️ Notification permissions not granted');
+        console.warn("⚠️ Notification permissions not granted");
         return null;
+      }
+
+      // Explicitly register device with Apple APNs before requesting FCM token
+      try {
+        if (isNativeBuild && messaging) {
+          if (!messaging().isDeviceRegisteredForRemoteMessages) {
+            console.log("📱 Registering device for remote messages on iOS (APNs)...");
+            await messaging().registerDeviceForRemoteMessages();
+          }
+          const apnsToken = await messaging().getAPNSToken();
+          console.log("🍏 APNs Token obtained:", apnsToken ? apnsToken.substring(0, 16) + "..." : "null");
+        }
+      } catch (apnsErr) {
+        console.warn("⚠️ APNs remote registration warning:", apnsErr);
       }
     }
 
@@ -416,6 +430,15 @@ const handleNotificationDataRefresh = (notificationType: string, queryClient: an
         queryClient.invalidateQueries({ queryKey: ['offers'] });
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
         console.log('✅ Invalidated offers and tasks cache');
+        break;
+
+      case 'SERVICE_BOOKED':
+      case 'SERVICE_LISTING_BOOKED':
+        // Invalidate offers, tasks, and service listings
+        queryClient.invalidateQueries({ queryKey: ['offers'] });
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        queryClient.invalidateQueries({ queryKey: ['service-listings'] });
+        console.log('✅ Invalidated offers, tasks, and service listings cache');
         break;
 
       case 'OFFER_ACCEPTED':

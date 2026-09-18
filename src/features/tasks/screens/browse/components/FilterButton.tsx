@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface FilterButtonProps {
   filteredTasksCount: number;
@@ -8,12 +9,17 @@ interface FilterButtonProps {
 }
 
 export default function FilterButton({ filteredTasksCount, onPress }: FilterButtonProps) {
+  const { isDarkMode } = useTheme();
   return (
-    <TouchableOpacity style={styles.filterBtn} onPress={onPress} activeOpacity={0.75}>
-      <Ionicons name="options-outline" size={16} color="#1A2980" />
-      <Text style={styles.filterText}>Filter</Text>
-      <View style={styles.countBadge}>
-        <Text style={styles.countText}>{filteredTasksCount}</Text>
+    <TouchableOpacity 
+      style={[styles.filterBtn, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]} 
+      onPress={onPress} 
+      activeOpacity={0.75}
+    >
+      <Ionicons name="options-outline" size={16} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+      <Text style={[styles.filterText, isDarkMode && { color: '#F8FAFC' }]}>Filter</Text>
+      <View style={[styles.countBadge, isDarkMode && { backgroundColor: '#38BDF8' }]}>
+        <Text style={[styles.countText, isDarkMode && { color: '#0B1120' }]}>{filteredTasksCount}</Text>
       </View>
     </TouchableOpacity>
   );

@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface AskQuestionModalProps {
@@ -62,6 +63,7 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
   };
 
   const insets = useSafeAreaInsets();
+  const { isDarkMode } = useTheme();
 
   return (
     <Modal
@@ -84,18 +86,19 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
 
         <View style={[
           styles.modalContent,
+          isDarkMode && { backgroundColor: "#1E293B" },
           { paddingBottom: Math.max(insets.bottom, 16) },
           keyboardHeight > 0
             ? { maxHeight: SCREEN_HEIGHT - keyboardHeight - (Platform.OS === 'ios' ? insets.top + 20 : 40) }
             : { maxHeight: SCREEN_HEIGHT * 0.85 },
         ]}>
           {/* Handle bar */}
-          <View style={styles.handleBar} />
+          <View style={[styles.handleBar, isDarkMode && { backgroundColor: "#334155" }]} />
 
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Ask a Question</Text>
+            <Text style={[styles.modalTitle, isDarkMode && { color: "#38BDF8" }]}>Ask a Question</Text>
             <TouchableOpacity onPress={handleClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Ionicons name="close" size={24} color={BRAND_BLUE} />
+              <Ionicons name="close" size={24} color={isDarkMode ? "#F8FAFC" : BRAND_BLUE} />
             </TouchableOpacity>
           </View>
 
@@ -111,9 +114,9 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
             {/* Question Input */}
             <View style={styles.inputContainer}>
               <TextInput
-                style={styles.questionInput}
+                style={[styles.questionInput, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#334155", color: "#F8FAFC" }]}
                 placeholder="Type your question here..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
                 value={questionText}
                 onChangeText={(text) => onChangeText(text.slice(0, 500))}
                 multiline
@@ -127,7 +130,7 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
                   }, 300);
                 }}
               />
-              <Text style={styles.charCount}>{questionText.length}/500</Text>
+              <Text style={[styles.charCount, isDarkMode && { color: "#64748B" }]}>{questionText.length}/500</Text>
             </View>
 
             {/* AttachmentPicker */}
@@ -140,12 +143,12 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
             />
 
             {/* Guidelines */}
-            <View style={styles.guidelinesContainer}>
-              <Text style={styles.guidelinesTitle}>💡 Question Tips:</Text>
-              <Text style={styles.guideline}>• Be specific and clear in your question</Text>
-              <Text style={styles.guideline}>• Include images if they help explain your question</Text>
-              <Text style={styles.guideline}>• Attach relevant documents if needed</Text>
-              <Text style={styles.guideline}>• Ask about task details, requirements, or timeline</Text>
+            <View style={[styles.guidelinesContainer, isDarkMode && { backgroundColor: "#0F172A" }]}>
+              <Text style={[styles.guidelinesTitle, isDarkMode && { color: "#38BDF8" }]}>💡 Question Tips:</Text>
+              <Text style={[styles.guideline, isDarkMode && { color: "#94A3B8" }]}>• Be specific and clear in your question</Text>
+              <Text style={[styles.guideline, isDarkMode && { color: "#94A3B8" }]}>• Include images if they help explain your question</Text>
+              <Text style={[styles.guideline, isDarkMode && { color: "#94A3B8" }]}>• Attach relevant documents if needed</Text>
+              <Text style={[styles.guideline, isDarkMode && { color: "#94A3B8" }]}>• Ask about task details, requirements, or timeline</Text>
             </View>
           </ScrollView>
 

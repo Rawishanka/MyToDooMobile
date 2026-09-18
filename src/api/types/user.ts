@@ -17,6 +17,9 @@ export interface User {
   completedTasks?: number;
   isVerified?: boolean;
   verified?: boolean;
+  isEmailVerified?: boolean;
+  isPhoneVerified?: boolean;
+  requiresPhoneVerification?: boolean;
   role: string;
   verification?: {
     ratifyId?: {

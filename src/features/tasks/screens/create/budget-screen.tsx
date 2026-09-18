@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 import { BRAND_BLUE, BRAND_GREEN } from '@/src/shared/theme/brandColors';
 // BudgetScreen.tsx
 
@@ -19,6 +20,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BudgetScreen() {
+  const { isDarkMode } = useTheme();
   const navigation = useNavigation();
   const { myTask, updateMyTask } = useCreateTaskStore();
   const insets = useSafeAreaInsets();
@@ -155,15 +157,15 @@ export default function BudgetScreen() {
   const renderKey = (value: string | number) => (
     <TouchableOpacity
       key={value}
-      style={styles.key}
+      style={[styles.key, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
       onPress={() => handleKeyPress(value.toString())}
     >
       {value === 'delete' ? (
         <Ionicons name="backspace-outline" size={24} color="#002366" />
       ) : value === '.' ? (
-        <Text style={styles.keyText}>.</Text>
+        <Text style={[styles.keyText, isDarkMode && { color: '#F8FAFC' }]}>.</Text>
       ) : (
-        <Text style={styles.keyText}>{value}</Text>
+        <Text style={[styles.keyText, isDarkMode && { color: '#F8FAFC' }]}>{value}</Text>
       )}
     </TouchableOpacity>
   );
@@ -216,7 +218,7 @@ export default function BudgetScreen() {
   }
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} hitSlop={12}>
           <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
@@ -227,10 +229,10 @@ export default function BudgetScreen() {
         </Text>
       </View>
 
-      <View style={styles.container}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         {/* Budget Display */}
-        <TouchableOpacity style={styles.inputBox} onPress={handleBudgetFieldTap} activeOpacity={0.7}>
-          <Text style={styles.currencySymbol}>{currencyInfo.symbol}</Text>
+        <TouchableOpacity style={[styles.inputBox, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]} onPress={handleBudgetFieldTap} activeOpacity={0.7}>
+          <Text style={[styles.currencySymbol, isDarkMode && { color: '#38BDF8' }]}>{currencyInfo.symbol}</Text>
           <Text style={[
             styles.budgetText, 
             budget && budget !== '.' && (parseFloat(budget) < minimumBudget || parseFloat(budget) > maximumBudget) && parseFloat(budget) > 0 && styles.invalidBudgetText,

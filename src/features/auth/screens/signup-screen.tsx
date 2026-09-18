@@ -18,6 +18,7 @@ import { OTPModal } from '../components/OTPModal';
 import { SignupForm } from '../components/SignupForm';
 import { useSignup } from '../components/useSignup';
 import { FORM_MAX_WIDTH, RFValue, isTablet } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -26,6 +27,7 @@ WebBrowser.maybeCompleteAuthSession();
 WebBrowser.warmUpAsync();
 
 export default function SignUpScreen() {
+  const { isDarkMode } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const signup = useSignup();
@@ -74,7 +76,7 @@ export default function SignUpScreen() {
       {/* Scrollable Form Section */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.innerContainer}
+        style={[styles.innerContainer, isDarkMode && { backgroundColor: '#0B1120' }]}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <ScrollView 
@@ -132,7 +134,7 @@ export default function SignUpScreen() {
           />
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
+            <Text style={[styles.footerText, isDarkMode && { color: '#94A3B8' }]}>Already have an account? </Text>
             <TouchableOpacity 
               onPress={() => router.replace('/(auth)/login')}
               disabled={!!signup.verificationStep}

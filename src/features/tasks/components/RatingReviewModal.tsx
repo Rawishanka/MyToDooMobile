@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface RatingReviewModalProps {
   visible: boolean;
@@ -38,6 +39,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
   taskTitle,
   userRole,
 }) => {
+  const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
   const [rating, setRating] = useState(0);
@@ -246,9 +248,9 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
           style={styles.keyboardView}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+          <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 16) }, isDarkMode && { backgroundColor: '#1E293B' }]}>
             {/* Premium Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, isDarkMode && { backgroundColor: "#0F172A", borderBottomWidth: 1, borderBottomColor: "#334155" }]}>
               <View style={styles.headerLeft}>
                 <View style={styles.headerIconBadge}>
                   <Ionicons name="star" size={18} color="#FF7A00" />
@@ -273,16 +275,16 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
               keyboardDismissMode="interactive"
             >
               {/* Task Info */}
-              <View style={styles.taskInfo}>
-                <Text style={styles.taskLabel}>
+              <View style={[styles.taskInfo, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+                <Text style={[styles.taskLabel, isDarkMode && { color: "#94A3B8" }]}>
                   {userRole === 'tasker' ? 'Task Completed' : 'Rate Tasker'}
                 </Text>
-                <Text style={styles.taskTitle} numberOfLines={2}>{taskTitle}</Text>
+                <Text style={[styles.taskTitle, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={2}>{taskTitle}</Text>
               </View>
 
               {/* Star Rating */}
-              <View style={styles.ratingSection}>
-                <Text style={styles.sectionLabel}>Your Rating *</Text>
+              <View style={[styles.ratingSection, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#334155" }]}>
+                <Text style={[styles.sectionLabel, isDarkMode && { color: '#F8FAFC' }]}>Your Rating *</Text>
                 <View style={styles.starsContainer}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <TouchableOpacity
@@ -294,12 +296,12 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                       <Ionicons
                         name={star <= rating ? 'star' : 'star-outline'}
                         size={40}
-                        color={star <= rating ? '#FF7A00' : '#D1D5DB'}
+                        color={star <= rating ? '#FF7A00' : (isDarkMode ? '#475569' : '#D1D5DB')}
                       />
                     </TouchableOpacity>
                   ))}
                 </View>
-                <Text style={styles.ratingText}>
+                <Text style={[styles.ratingText, isDarkMode && { color: '#38BDF8' }]}>
                   {rating === 0 ? 'Tap to rate' : 
                    rating === 1 ? 'Poor' :
                    rating === 2 ? 'Fair' :
@@ -311,13 +313,13 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
 
               {/* Review Text */}
               <View style={styles.reviewSection}>
-                <Text style={styles.sectionLabel}>Your Review (Optional)</Text>
+                <Text style={[styles.sectionLabel, isDarkMode && { color: '#F8FAFC' }]}>Your Review (Optional)</Text>
                 <TextInput
-                  style={styles.reviewInput}
+                  style={[styles.reviewInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
                   multiline
                   numberOfLines={6}
                   placeholder="Share your experience..."
-                  placeholderTextColor="#999"
+                  placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
                   value={reviewText}
                   onChangeText={setReviewText}
                   onFocus={() => {
@@ -332,29 +334,29 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
 
               {/* Attachments */}
               <View style={styles.attachmentsSection}>
-                <Text style={styles.sectionLabel}>Attachments (Optional)</Text>
-                <Text style={styles.attachmentHint}>
+                <Text style={[styles.sectionLabel, isDarkMode && { color: '#F8FAFC' }]}>Attachments (Optional)</Text>
+                <Text style={[styles.attachmentHint, isDarkMode && { color: "#94A3B8" }]}>
                   Max 5 files, 10MB each. Images or documents (PDF, DOC, DOCX)
                 </Text>
 
                 {/* Attachment Buttons */}
                 <View style={styles.attachmentButtons}>
                   <TouchableOpacity
-                    style={styles.attachmentButton}
+                    style={[styles.attachmentButton, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#334155" }]}
                     onPress={pickImage}
                     disabled={isSubmitting || attachments.length >= 5}
                   >
-                    <Ionicons name="image-outline" size={24} color="#007AFF" />
-                    <Text style={styles.attachmentButtonText}>Add Photos</Text>
+                    <Ionicons name="image-outline" size={24} color={isDarkMode ? "#38BDF8" : "#007AFF"} />
+                    <Text style={[styles.attachmentButtonText, isDarkMode && { color: '#F8FAFC' }]}>Add Photos</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.attachmentButton}
+                    style={[styles.attachmentButton, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#334155" }]}
                     onPress={pickDocument}
                     disabled={isSubmitting || attachments.length >= 5}
                   >
-                    <Ionicons name="document-outline" size={24} color="#007AFF" />
-                    <Text style={styles.attachmentButtonText}>Add Documents</Text>
+                    <Ionicons name="document-outline" size={24} color={isDarkMode ? "#38BDF8" : "#007AFF"} />
+                    <Text style={[styles.attachmentButtonText, isDarkMode && { color: '#F8FAFC' }]}>Add Documents</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -391,11 +393,12 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
             </ScrollView>
 
             {/* Submit Button — fixed footer above keyboard */}
-            <View style={styles.footer}>
+            <View style={[styles.footer, isDarkMode && { backgroundColor: "#1E293B", borderTopColor: "#334155" }]}>
               <TouchableOpacity
                 style={[
                   styles.submitButton,
-                  (rating === 0 || isSubmitting) && styles.submitButtonDisabled
+                  isDarkMode && { backgroundColor: "#2563EB", shadowColor: "#2563EB" },
+                  (rating === 0 || isSubmitting) && [styles.submitButtonDisabled, isDarkMode && { backgroundColor: "#334155" }]
                 ]}
                 onPress={handleSubmit}
                 disabled={rating === 0 || isSubmitting}

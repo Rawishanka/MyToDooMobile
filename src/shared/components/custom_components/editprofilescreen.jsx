@@ -1,5 +1,6 @@
 // EditProfileScreen.tsx
 import { useGetCategoryNames } from '@/src/shared/hooks/useCategoriesApi';
+import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
@@ -37,6 +38,7 @@ const formatToE164 = (input) => {
 };
 
 const EditProfileScreen = ({ onBack, onSave, userData }) => {
+  const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   // Initialize from userData if available, otherwise use defaults
   const [firstName, setFirstName] = useState(userData?.firstName || '');
@@ -422,7 +424,7 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
       presentationStyle="fullScreen"
       statusBarTranslucent={true}
     >
-      <View style={styles.modalContainer}>
+      <View style={[styles.modalContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.modalHeader, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
           <TouchableOpacity 
             onPress={() => setShowPhotoSelectionScreen(false)}
@@ -430,7 +432,7 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
           >
             <Ionicons name="chevron-back" size={24} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.modalHeaderTitle}>Profile Photo</Text>
+          <Text style={[styles.modalHeaderTitle, isDarkMode && { color: '#F8FAFC' }]}>Profile Photo</Text>
           <View style={styles.placeholder} />
         </View>
 
@@ -479,23 +481,23 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
+      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : '#000'} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Profile</Text>
+        <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Edit Profile</Text>
         <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Info Banner */}
-        <View style={styles.infoBanner}>
+        <View style={[styles.infoBanner, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
           <Ionicons name="bulb-outline" size={20} color="#0052A2" />
           <View style={styles.infoBannerText}>
-            <Text style={styles.infoBannerTitle}>Make your profile shine!</Text>
-            <Text style={styles.infoBannerSubtext}>
+            <Text style={[styles.infoBannerTitle, isDarkMode && { color: '#F8FAFC' }]}>Make your profile shine!</Text>
+            <Text style={[styles.infoBannerSubtext, isDarkMode && { color: '#94A3B8' }]}>
               The information you add is visible to everyone.
             </Text>
           </View>
@@ -503,8 +505,8 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
 
         {/* Profile Picture Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Profile picture</Text>
-          <Text style={styles.sectionSubtext}>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Profile picture</Text>
+          <Text style={[styles.sectionSubtext, isDarkMode && { color: '#94A3B8' }]}>
             Show yourself clearly to let others know who they're connecting with.
           </Text>
           
@@ -534,20 +536,21 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
 
         {/* Bio Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Bio</Text>
-          <Text style={styles.sectionSubtext}>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Bio</Text>
+          <Text style={[styles.sectionSubtext, isDarkMode && { color: '#94A3B8' }]}>
             Introduce yourself to new customers.
           </Text>
           
           <TextInput
             style={[
               styles.bioInput,
-              bio.length > 300 && styles.bioInputError
+              bio.length > 300 && styles.bioInputError,
+              isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }
             ]}
             value={bio}
             onChangeText={(text) => setBio(text.slice(0, 300))}
             placeholder="A brief introduction of who you are and what you do on Mytodoo"
-            placeholderTextColor="#999"
+            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
             multiline
             numberOfLines={6}
             maxLength={300}
@@ -568,23 +571,23 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
 
         {/* Verifications Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Verifications</Text>
-          <Text style={styles.sectionSubtext}>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Verifications</Text>
+          <Text style={[styles.sectionSubtext, isDarkMode && { color: '#94A3B8' }]}>
             Build trust by adding verifications.
           </Text>
           
-          <View style={styles.verificationItem}>
+          <View style={[styles.verificationItem, isDarkMode && { backgroundColor: '#1E293B' }]}>
             <View style={styles.verificationIcon}>
               <Ionicons name="checkmark-circle" size={20} color="#28a745" />
             </View>
-            <Text style={styles.verificationText}>ID verified</Text>
+            <Text style={[styles.verificationText, isDarkMode && { color: '#F8FAFC' }]}>ID verified</Text>
           </View>
         </View>
 
         {/* Skills Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Skills</Text>
-          <Text style={styles.sectionSubtext}>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Skills</Text>
+          <Text style={[styles.sectionSubtext, isDarkMode && { color: '#94A3B8' }]}>
             Add skills relevant to your services.
           </Text>
           
@@ -612,30 +615,30 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
 
         {/* Personal Information Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>First name <Text style={styles.requiredAsterisk}>*</Text></Text>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>First name <Text style={styles.requiredAsterisk}>*</Text></Text>
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
             value={firstName}
             onChangeText={setFirstName}
             placeholder="Enter your first name"
-            placeholderTextColor="#999"
+            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Last name <Text style={styles.requiredAsterisk}>*</Text></Text>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Last name <Text style={styles.requiredAsterisk}>*</Text></Text>
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
             value={lastName}
             onChangeText={setLastName}
             placeholder="Enter your last name"
-            placeholderTextColor="#999"
+            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
           />
         </View>
 
         <View style={styles.section}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-            <Text style={styles.sectionTitle}>Phone Number</Text>
+            <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Phone Number</Text>
             <TouchableOpacity
               style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#EFF6FF", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: "#BFDBFE" }}
               activeOpacity={0.7}
@@ -668,7 +671,7 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
               editable={false}
               pointerEvents="none"
               placeholder="Phone number"
-              placeholderTextColor="#999"
+              placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
               keyboardType="phone-pad"
             />
           </TouchableOpacity>
@@ -679,31 +682,31 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
 
         {/* Location Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Country (Optional)</Text>
-          <Text style={styles.sectionSubtext}>Defaults to Australia if left blank</Text>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Country (Optional)</Text>
+          <Text style={[styles.sectionSubtext, isDarkMode && { color: '#94A3B8' }]}>Defaults to Australia if left blank</Text>
           <TextInput
             style={[styles.textInput, styles.readOnlyInput]}
             value={country}
             editable={false}
             placeholder="Australia"
-            placeholderTextColor="#999"
+            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Country Code (Optional)</Text>
-          <Text style={styles.sectionSubtext}>Defaults to AU if left blank (must be 2 characters)</Text>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Country Code (Optional)</Text>
+          <Text style={[styles.sectionSubtext, isDarkMode && { color: '#94A3B8' }]}>Defaults to AU if left blank (must be 2 characters)</Text>
           <TextInput
             style={[styles.textInput, styles.readOnlyInput]}
             value={countryCode}
             editable={false}
             placeholder="AU"
-            placeholderTextColor="#999"
+            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Suburb *</Text>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Suburb *</Text>
           <Text style={styles.helperText}>Search for your Australian suburb</Text>
           <LocationAutocomplete
             initialValue={suburb}
@@ -754,24 +757,24 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>State/Region (Optional)</Text>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>State/Region (Optional)</Text>
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
             value={region}
             onChangeText={setRegion}
             placeholder="e.g., VIC, NSW, QLD"
-            placeholderTextColor="#999"
+            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
           />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>City (Optional)</Text>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>City (Optional)</Text>
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
             value={city}
             onChangeText={setCity}
             placeholder="e.g., Melbourne, Sydney"
-            placeholderTextColor="#999"
+            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
           />
         </View>
 
@@ -792,7 +795,7 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
         onRequestClose={() => setShowPhotoModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalBottom}>
+          <View style={[styles.modalBottom, isDarkMode && { backgroundColor: '#1E293B' }]}>
             <TouchableOpacity style={styles.modalOption} onPress={handleTakePhoto}>
               <Text style={styles.modalOptionText}>Take photo</Text>
             </TouchableOpacity>
@@ -850,7 +853,7 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
                 value={newSkill}
                 onChangeText={setNewSkill}
                 placeholder="Type a skill..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
                 onSubmitEditing={handleAddSkill}
               />
               <TouchableOpacity 
@@ -920,19 +923,19 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           style={styles.phoneModalOverlay}
         >
-          <View style={styles.phoneModalCard}>
+          <View style={[styles.phoneModalCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
             <View style={{ alignItems: "center", marginBottom: 16 }}>
-              <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: "#EFF6FF", justifyContent: "center", alignItems: "center", marginBottom: 12 }}>
+              <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: isDarkMode ? "#0F172A" : "#EFF6FF", borderWidth: isDarkMode ? 1 : 0, borderColor: "#334155", justifyContent: "center", alignItems: "center", marginBottom: 12 }}>
                 <Ionicons
                   name={phoneStep === "input" ? "call-outline" : "shield-checkmark-outline"}
                   size={24}
-                  color="#003399"
+                  color={isDarkMode ? "#60A5FA" : "#003399"}
                 />
               </View>
-              <Text style={{ fontSize: 18, fontWeight: "800", color: "#0F172A", marginBottom: 6 }}>
+              <Text style={{ fontSize: 18, fontWeight: "800", color: isDarkMode ? "#F8FAFC" : "#0F172A", marginBottom: 6 }}>
                 {phoneStep === "input" ? "Update Phone Number" : "Verify SMS Code"}
               </Text>
-              <Text style={{ fontSize: 13, color: "#64748B", textAlign: "center", lineHeight: 18 }}>
+              <Text style={{ fontSize: 13, color: isDarkMode ? "#94A3B8" : "#64748B", textAlign: "center", lineHeight: 18 }}>
                 {phoneStep === "input"
                   ? "Enter your new phone number to receive a 6-digit verification code."
                   : "Enter the 6-digit verification code sent via SMS to " + newPhoneInput}
@@ -940,35 +943,45 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
             </View>
 
             {phoneError && (
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FEF2F2", borderRadius: 10, padding: 10, marginBottom: 14, borderWidth: 1, borderColor: "#FCA5A5" }}>
-                <Ionicons name="alert-circle" size={16} color="#DC2626" />
-                <Text style={{ flex: 1, fontSize: 12, color: "#DC2626", fontWeight: "500" }}>{phoneError}</Text>
+              <View style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                backgroundColor: isDarkMode ? "#450A0A" : "#FEF2F2",
+                borderRadius: 10,
+                padding: 10,
+                marginBottom: 14,
+                borderWidth: 1,
+                borderColor: isDarkMode ? "#7F1D1D" : "#FCA5A5",
+              }}>
+                <Ionicons name="alert-circle" size={16} color={isDarkMode ? "#F87171" : "#DC2626"} />
+                <Text style={{ flex: 1, fontSize: 12, color: isDarkMode ? "#FCA5A5" : "#DC2626", fontWeight: "500" }}>{phoneError}</Text>
               </View>
             )}
 
             {phoneStep === "input" ? (
               <View style={{ width: "100%" }}>
-                <Text style={{ fontSize: 12.5, fontWeight: "700", color: "#334155", marginBottom: 6 }}>New Phone Number</Text>
+                <Text style={{ fontSize: 12.5, fontWeight: "700", color: isDarkMode ? "#E2E8F0" : "#334155", marginBottom: 6 }}>New Phone Number</Text>
                 <TextInput
-                  style={{ backgroundColor: "#F8FAFC", borderWidth: 1.5, borderColor: "#CBD5E1", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, color: "#0F172A", fontWeight: "600" }}
+                  style={{ backgroundColor: isDarkMode ? "#0F172A" : "#F8FAFC", borderWidth: 1.5, borderColor: isDarkMode ? "#334155" : "#CBD5E1", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, color: isDarkMode ? "#F8FAFC" : "#0F172A", fontWeight: "600" }}
                   value={newPhoneInput}
                   onChangeText={setNewPhoneInput}
                   placeholder="+61 400 000 000"
-                  placeholderTextColor="#94A3B8"
+                  placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
                   keyboardType="phone-pad"
                   autoFocus={true}
                 />
-                <Text style={{ fontSize: 11.5, color: "#64748B", marginTop: 6, lineHeight: 16 }}>
+                <Text style={{ fontSize: 11.5, color: isDarkMode ? "#94A3B8" : "#64748B", marginTop: 6, lineHeight: 16 }}>
                   Include country code (e.g. +61 for Australia) or enter standard Australian mobile (04...).
                 </Text>
 
                 <View style={{ flexDirection: "row", gap: 10, marginTop: 18 }}>
                   <TouchableOpacity
-                    style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: "#F1F5F9", alignItems: "center", justifyContent: "center" }}
+                    style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: isDarkMode ? "#0F172A" : "#F1F5F9", borderWidth: isDarkMode ? 1 : 0, borderColor: "#334155", alignItems: "center", justifyContent: "center" }}
                     onPress={() => setShowPhoneModal(false)}
                     disabled={phoneLoading}
                   >
-                    <Text style={{ fontSize: 14, fontWeight: "600", color: "#64748B" }}>Cancel</Text>
+                    <Text style={{ fontSize: 14, fontWeight: "600", color: isDarkMode ? "#94A3B8" : "#64748B" }}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={{ flex: 1.6, paddingVertical: 12, borderRadius: 12, backgroundColor: "#003399", alignItems: "center", justifyContent: "center" }}
@@ -985,13 +998,13 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
               </View>
             ) : (
               <View style={{ width: "100%" }}>
-                <Text style={{ fontSize: 12.5, fontWeight: "700", color: "#334155", marginBottom: 6 }}>6-Digit Verification Code</Text>
+                <Text style={{ fontSize: 12.5, fontWeight: "700", color: isDarkMode ? "#E2E8F0" : "#334155", marginBottom: 6 }}>6-Digit Verification Code</Text>
                 <TextInput
-                  style={{ backgroundColor: "#F8FAFC", borderWidth: 2, borderColor: "#003399", borderRadius: 14, paddingVertical: 14, fontSize: 24, fontWeight: "800", color: "#0F172A", textAlign: "center", letterSpacing: 10 }}
+                  style={{ backgroundColor: isDarkMode ? "#0F172A" : "#F8FAFC", borderWidth: 2, borderColor: isDarkMode ? "#60A5FA" : "#003399", borderRadius: 14, paddingVertical: 14, fontSize: 24, fontWeight: "800", color: isDarkMode ? "#F8FAFC" : "#0F172A", textAlign: "center", letterSpacing: 10 }}
                   value={phoneOtpCode}
                   onChangeText={setPhoneOtpCode}
                   placeholder="000000"
-                  placeholderTextColor="#CBD5E1"
+                  placeholderTextColor={isDarkMode ? "#475569" : "#CBD5E1"}
                   keyboardType="number-pad"
                   maxLength={6}
                   autoFocus={true}
@@ -1007,18 +1020,18 @@ const EditProfileScreen = ({ onBack, onSave, userData }) => {
                       onPress={handleRequestPhoneOtp}
                       disabled={phoneLoading}
                     >
-                      <Text style={{ fontSize: 13, color: "#003399", fontWeight: "700" }}>Resend Code</Text>
+                      <Text style={{ fontSize: 13, color: isDarkMode ? "#60A5FA" : "#003399", fontWeight: "700" }}>Resend Code</Text>
                     </TouchableOpacity>
                   )}
                 </View>
 
                 <View style={{ flexDirection: "row", gap: 10, marginTop: 18 }}>
                   <TouchableOpacity
-                    style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: "#F1F5F9", alignItems: "center", justifyContent: "center" }}
+                    style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: isDarkMode ? "#0F172A" : "#F1F5F9", borderWidth: isDarkMode ? 1 : 0, borderColor: "#334155", alignItems: "center", justifyContent: "center" }}
                     onPress={() => setPhoneStep("input")}
                     disabled={phoneLoading}
                   >
-                    <Text style={{ fontSize: 14, fontWeight: "600", color: "#64748B" }}>Back</Text>
+                    <Text style={{ fontSize: 14, fontWeight: "600", color: isDarkMode ? "#94A3B8" : "#64748B" }}>Back</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={{ flex: 1.6, paddingVertical: 12, borderRadius: 12, backgroundColor: "#003399", alignItems: "center", justifyContent: "center" }}

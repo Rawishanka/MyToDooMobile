@@ -1,6 +1,7 @@
 // Tab navigation layout - uses Expo Router Tabs with custom FloatingTabBar
 import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
 import { useAuthStore } from '@/src/store/auth-task-store';
+import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Tabs } from 'expo-router';
@@ -38,6 +39,7 @@ const AUTH_ONLY_TABS = new Set(['browse', 'my-tasks', 'message']);
 // Floating animated tab bar
 // ─────────────────────────────────────────────────────────────────────────────
 function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
+  const { isDarkMode, colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { isAuthenticated, token } = useAuthStore();
   const showAuthTabs = isAuthenticated && !!token;
@@ -79,8 +81,17 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   if (keyboardVisible && Platform.OS === 'android') return null;
 
   return (
-    <View style={[tabStyles.wrapper, { paddingBottom: Math.max(insets.bottom, 10) }]}>
-      <View style={tabStyles.pill}>
+    <View style={[tabStyles.wrapper, { paddingBottom: Math.max(insets.bottom, 10) }, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <View style={[
+        tabStyles.pill,
+        isDarkMode && {
+          backgroundColor: '#1E293B',
+          borderWidth: 1,
+          borderColor: '#334155',
+          shadowColor: '#000',
+          shadowOpacity: 0.35,
+        },
+      ]}>
         {state.routes.map((route: any, index: number) => {
           const isFocused = state.index === index;
           const meta = TAB_META.find((tab) => tab.name === route.name);
@@ -120,7 +131,7 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
                     <Ionicons
                       name={isFocused ? meta.iconActive : meta.icon}
                       size={ICON_SIZE}
-                      color={isFocused ? '#fff' : '#888'}
+                      color={isFocused ? '#fff' : (isDarkMode ? '#94A3B8' : '#888')}
                     />
                     {totalUnreadCount > 0 && (
                       <View style={tabStyles.badge}>
@@ -134,12 +145,16 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
                   <Ionicons
                     name={isFocused ? meta.iconActive : meta.icon}
                     size={ICON_SIZE}
-                    color={isFocused ? '#fff' : '#888'}
+                    color={isFocused ? '#fff' : (isDarkMode ? '#94A3B8' : '#888')}
                   />
                 )}
               </View>
               <Text
-                style={[tabStyles.label, isFocused && tabStyles.labelActive]}
+                style={[
+                tabStyles.label,
+                isDarkMode && { color: '#94A3B8' },
+                isFocused && (isDarkMode ? { color: '#38BDF8', fontWeight: '700' } : tabStyles.labelActive),
+              ]}
                 numberOfLines={1}
                 adjustsFontSizeToFit
                 minimumFontScale={0.6}
@@ -159,10 +174,17 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
 // Tabs Layout (Expo Router)
 // ─────────────────────────────────────────────────────────────────────────────
 export default function TabsLayout() {
+  const { isDarkMode } = useTheme();
   return (
     <Tabs
       tabBar={(props) => <FloatingTabBar {...(props as any)} />}
-      screenOptions={{ headerShown: false }}
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: isDarkMode ? '#0B1120' : '#FFFFFF',
+          borderTopWidth: 0,
+        },
+      }}
     >
       <Tabs.Screen name="index" options={{ tabBarLabel: 'Post Task' }} />
       <Tabs.Screen name="browse" options={{ tabBarLabel: 'Find' }} />

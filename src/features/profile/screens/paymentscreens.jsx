@@ -2,12 +2,14 @@ import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState, useRef } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getAbnStatus } from '@/src/api/abn-api';
+import { useTheme } from '@/src/shared/theme';
 import TaskerAbnSection from '@/src/features/profile/components/TaskerAbnSection';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import PayoutAccountScreen from './payout-account-screen';
 import PayoutHistoryScreen from './payout-history-screen';
 
 const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false }) => {
+  const { isDarkMode } = useTheme();
   const user = useAuthStore((state) => state.user);
   const isTasker = !!user?.notifyNewTask;
   const [abnVerified, setAbnVerified] = useState(false);
@@ -27,18 +29,18 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false })
   }, [focusAbn]);
 
   return (
-  <View style={styles.container}>
-    <View style={styles.header}>
+  <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+    <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
       <TouchableOpacity 
         style={styles.backButton}
         onPress={onBackToAccount}
       >
-        <Ionicons name="chevron-back" size={24} color="#0052A2" />
+        <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : '#0052A2'} />
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>Payment options</Text>
+      <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Payment options</Text>
     </View>
     
-    <ScrollView ref={scrollRef} style={styles.content} contentContainerStyle={styles.contentContainer}>
+    <ScrollView ref={scrollRef} style={[styles.content, isDarkMode && { backgroundColor: '#0B1120' }]} contentContainerStyle={styles.contentContainer}>
       {isTasker && (
         <TaskerAbnSection
           variant="compact"
@@ -47,20 +49,28 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false })
       )}
 
       {isTasker && !abnVerified && (
-        <Text style={styles.abnGateNote}>
+        <Text style={[styles.abnGateNote, isDarkMode && { color: '#F59E0B' }]}>
           Verify your ABN above before setting up a payment account.
         </Text>
       )}
 
       <TouchableOpacity 
-        style={[styles.menuItem, isTasker && !abnVerified && styles.menuItemDisabled]}
+        style={[
+          styles.menuItem,
+          isDarkMode && { borderBottomColor: '#334155' },
+          isTasker && !abnVerified && styles.menuItemDisabled
+        ]}
         onPress={() => onNavigate('payoutAccount')}
         disabled={isTasker && !abnVerified}
       >
-        <Text style={[styles.menuText, isTasker && !abnVerified && styles.menuTextDisabled]}>
+        <Text style={[
+          styles.menuText,
+          isDarkMode && { color: '#F8FAFC' },
+          isTasker && !abnVerified && styles.menuTextDisabled
+        ]}>
           Setup Payout Account
         </Text>
-        <Ionicons name="chevron-forward" size={20} color={isTasker && !abnVerified ? '#ccc' : '#999'} />
+        <Ionicons name="chevron-forward" size={20} color={isTasker && !abnVerified ? '#64748B' : (isDarkMode ? '#94A3B8' : '#999')} />
       </TouchableOpacity>
     </ScrollView>
   </View>

@@ -6,6 +6,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { CountryData } from './signup-types';
 import { COUNTRIES } from './signup-types';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface CountryPickerProps {
   selectedCountry: CountryData;
@@ -22,43 +23,50 @@ export const CountryPicker: React.FC<CountryPickerProps> = ({
   onSelectCountry,
   hasError = false,
 }) => {
+  const { isDarkMode } = useTheme();
   return (
     <View>
       <TouchableOpacity 
-        style={[styles.dropdownContainer, hasError && styles.dropdownError]}
+        style={[styles.dropdownContainer, hasError && styles.dropdownError, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
         onPress={onTogglePicker}
         activeOpacity={0.7}
       >
         <View style={styles.dropdownLeft}>
-          <View style={styles.flagIconWrap}>
-            <Ionicons name="flag" size={16} color="#1A2980" />
+          <View style={[styles.flagIconWrap, isDarkMode && { backgroundColor: '#0F172A' }]}>
+            <Text style={{ fontSize: RFValue(18) }}>{selectedCountry.flag || '🇦🇺'}</Text>
           </View>
-          <Text style={styles.dropdownText}>{selectedCountry.name}</Text>
+          <Text style={[styles.dropdownText, isDarkMode && { color: '#F8FAFC' }]}>{selectedCountry.name}</Text>
         </View>
-        <Ionicons name={showPicker ? "chevron-up" : "chevron-down"} size={18} color="#1A2980" />
+        <Ionicons name={showPicker ? "chevron-up" : "chevron-down"} size={18} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
       </TouchableOpacity>
 
       {showPicker && (
-        <View style={styles.dropdownList}>
+        <View style={[styles.dropdownList, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
           {COUNTRIES.map((country) => (
             <TouchableOpacity
               key={country.code}
               style={[
                 styles.dropdownItem,
-                selectedCountry.code === country.code && styles.dropdownItemSelected
+                selectedCountry.code === country.code && styles.dropdownItemSelected,
+                isDarkMode && { borderBottomColor: '#334155' },
+                isDarkMode && selectedCountry.code === country.code && { backgroundColor: '#0F172A' },
               ]}
               onPress={() => onSelectCountry(country)}
             >
               <View style={styles.dropdownLeft}>
-                <View style={styles.flagIconWrap}>
-                  <Ionicons name="flag" size={15} color={selectedCountry.code === country.code ? '#1A2980' : '#666'} />
+                <View style={[styles.flagIconWrap, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                  <Text style={{ fontSize: RFValue(18) }}>{country.flag || '🇦🇺'}</Text>
                 </View>
-                <Text style={[styles.dropdownItemText, selectedCountry.code === country.code && styles.dropdownItemTextSelected]}>
+                <Text style={[
+                  styles.dropdownItemText, 
+                  selectedCountry.code === country.code && styles.dropdownItemTextSelected,
+                  isDarkMode && { color: selectedCountry.code === country.code ? '#38BDF8' : '#F8FAFC' }
+                ]}>
                   {country.name}
                 </Text>
               </View>
               {selectedCountry.code === country.code && (
-                <Ionicons name="checkmark-circle" size={20} color="#1A2980" />
+                <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
               )}
             </TouchableOpacity>
           ))}

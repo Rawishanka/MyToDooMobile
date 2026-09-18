@@ -1,14 +1,24 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, Platform } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+  Platform,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/src/shared/theme';
+import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function TaskAlerts({ onBack }) {
+  const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const [keywords, setKeywords] = useState(['']);
 
   const addKeyword = () => {
-    // Simple keyword addition - in a real app you might have a more sophisticated input system
     Alert.prompt(
       'Add Keyword',
       'Enter a keyword for task alerts',
@@ -21,7 +31,7 @@ export default function TaskAlerts({ onBack }) {
           text: 'Add',
           onPress: (keyword) => {
             if (keyword && keyword.trim()) {
-              setKeywords([...keywords.filter(k => k !== ''), keyword.trim()]);
+              setKeywords([...keywords.filter((k) => k !== ''), keyword.trim()]);
             }
           },
         },
@@ -36,42 +46,76 @@ export default function TaskAlerts({ onBack }) {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
+    <ScrollView
+      style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+    >
+      <View
+        style={[
+          styles.header,
+          { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 },
+          isDarkMode && { backgroundColor: '#0F172A', borderBottomColor: '#334155' },
+        ]}
+      >
+        <TouchableOpacity
+          onPress={onBack}
+          style={styles.backButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#0052A2'} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Task alerts</Text>
+        <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>
+          Task Alerts
+        </Text>
       </View>
 
-      <View style={styles.content}>
-        {/* Keyword Task Alerts Section */}
-        <Text style={styles.sectionTitle}>KEYWORD TASK ALERTS</Text>
-        
+      <View
+        style={[
+          styles.content,
+          isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
+        ]}
+      >
+        <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>
+          KEYWORD TASK ALERTS
+        </Text>
+
         <View style={styles.descriptionSection}>
-          <Text style={styles.description}>
-            Add your own keywords and get notified for matching tasks. It helps you to make offers early and stay ahead of competition.
+          <Text style={[styles.description, isDarkMode && { color: '#CBD5E1' }]}>
+            Add your own keywords and get notified for matching tasks. It helps you make offers early and stay ahead of the competition.
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.addButton} onPress={addKeyword}>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={addKeyword}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="add" size={18} color="#fff" style={{ marginRight: 4 }} />
           <Text style={styles.addButtonText}>Add keyword</Text>
         </TouchableOpacity>
 
-        {/* Keywords List */}
-        {keywords.filter(k => k !== '').length > 0 && (
+        {keywords.filter((k) => k !== '').length > 0 && (
           <View style={styles.keywordsContainer}>
-            {keywords.filter(k => k !== '').map((keyword, index) => (
-              <View key={index} style={styles.keywordTag}>
-                <Text style={styles.keywordText}>{keyword}</Text>
-                <TouchableOpacity onPress={() => removeKeyword(index)}>
-                  <Ionicons name="close" size={16} color="#666" />
-                </TouchableOpacity>
-              </View>
-            ))}
+            {keywords
+              .filter((k) => k !== '')
+              .map((keyword, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.keywordTag,
+                    isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' },
+                  ]}
+                >
+                  <Text style={[styles.keywordText, isDarkMode && { color: '#F8FAFC' }]}>
+                    {keyword}
+                  </Text>
+                  <TouchableOpacity onPress={() => removeKeyword(index)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                    <Ionicons name="close" size={16} color={isDarkMode ? '#94A3B8' : '#666'} />
+                  </TouchableOpacity>
+                </View>
+              ))}
           </View>
         )}
-
       </View>
     </ScrollView>
   );
@@ -95,47 +139,49 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: RFValue(17),
+    fontWeight: '700',
     color: '#003366',
     flex: 1,
     textAlign: 'center',
-    marginRight: 32, // To center the title accounting for back button
+    marginRight: 32,
   },
   content: {
     backgroundColor: '#fff',
     marginTop: 10,
     paddingHorizontal: 16,
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: RFValue(12),
     color: '#999',
-    marginTop: 25,
+    marginTop: 20,
     marginBottom: 10,
-    fontWeight: '500',
+    fontWeight: '600',
     letterSpacing: 0.5,
   },
   descriptionSection: {
-    paddingVertical: 10,
+    paddingVertical: 6,
   },
   description: {
-    fontSize: 14,
+    fontSize: RFValue(13),
     color: '#666',
     lineHeight: 20,
-    marginBottom: 20,
+    marginBottom: 18,
   },
   addButton: {
     backgroundColor: '#0052A2',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'flex-start',
     marginBottom: 20,
   },
   addButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: RFValue(13),
     fontWeight: '600',
   },
   keywordsContainer: {
@@ -152,37 +198,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginRight: 8,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e5e5e5',
   },
   keywordText: {
-    fontSize: 14,
+    fontSize: RFValue(13),
     color: '#333',
     marginRight: 6,
-  },
-  alertToggle: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  toggleText: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  enabledText: {
-    backgroundColor: '#3d7fc2ff',
-    color: '#fff',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
-    alignSelf: 'flex-start',
-    marginBottom: 20
-  },
-  disabledText: {
-    color: '#2351f8ff',
-    backgroundColor: '#ebf2f8ff',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
-    alignSelf: 'flex-start',
-    marginBottom: 20,
   },
 });

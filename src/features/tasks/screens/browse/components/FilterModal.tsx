@@ -16,6 +16,7 @@ import {
     View
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface FilterModalProps {
   visible: boolean;
@@ -65,6 +66,7 @@ export default function FilterModal({
   onUseCurrentLocation,
 }: FilterModalProps) {
   // Get geolocation-based currency
+  const { isDarkMode } = useTheme();
   const { countryInfo } = useLocationCountry();
   const currencySymbol = getCurrencySymbol(countryInfo?.currency || 'AUD');
   
@@ -169,7 +171,7 @@ export default function FilterModal({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View style={styles.filterModal}>
+      <View style={[styles.filterModal, isDarkMode && { backgroundColor: '#0B1120' }]}>
         {/* Header */}
         <View style={styles.filterHeader}>
           <TouchableOpacity onPress={onClose}>
@@ -183,10 +185,10 @@ export default function FilterModal({
 
         <ScrollView style={styles.filterContent}>
           {/* Category Filter */}
-          <View style={[styles.filterSection, { zIndex: categoryDropdownVisible ? 1000 : 1 }]}>
-            <Text style={styles.sectionTitle}>Categories</Text>
+          <View style={[styles.filterSection, { zIndex: categoryDropdownVisible ? 1000 : 1 }, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+            <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Categories</Text>
             <TouchableOpacity
-              style={styles.categorySelector}
+              style={[styles.categorySelector, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}
               onPress={() => {
                 setCategoryDropdownVisible(!categoryDropdownVisible);
                 if (!categoryDropdownVisible) {
@@ -195,7 +197,7 @@ export default function FilterModal({
               }}
               disabled={categoriesLoading}
             >
-              <Text style={styles.categorySelectorText}>
+              <Text style={[styles.categorySelectorText, isDarkMode && { color: '#F8FAFC' }]}>
                 {categoriesLoading ? 'Loading categories...' : selectedCategory}
               </Text>
               <MaterialCommunityIcons 
@@ -206,14 +208,14 @@ export default function FilterModal({
             </TouchableOpacity>
             
             {categoryDropdownVisible && !categoriesLoading && (
-              <View style={styles.categoryDropdown}>
+              <View style={[styles.categoryDropdown, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
                 {/* Search Input */}
-                <View style={styles.categorySearchContainer}>
+                <View style={[styles.categorySearchContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   <Ionicons name="search-outline" size={18} color="#999" style={styles.searchIcon} />
                   <TextInput
-                    style={styles.categorySearchInput}
+                    style={[styles.categorySearchInput, isDarkMode && { color: '#F8FAFC' }]}
                     placeholder="Search categories..."
-                    placeholderTextColor="#999"
+                    placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
                     value={categorySearchText}
                     onChangeText={setCategorySearchText}
                     autoFocus={false}
@@ -248,7 +250,8 @@ export default function FilterModal({
                         key={index}
                         style={[
                           styles.categoryOption,
-                          selectedCategory === cat && styles.categoryOptionSelected,
+                          isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' },
+                          selectedCategory === cat && (isDarkMode ? { backgroundColor: '#0F172A' } : styles.categoryOptionSelected),
                           index === filteredCategories.length - 1 && { borderBottomWidth: 0 }
                         ]}
                         onPress={() => {
@@ -259,12 +262,13 @@ export default function FilterModal({
                       >
                         <Text style={[
                           styles.categoryOptionText,
-                          selectedCategory === cat && styles.categoryOptionTextSelected
+                          isDarkMode && { color: '#F8FAFC' },
+                          selectedCategory === cat && (isDarkMode ? { color: '#38BDF8', fontWeight: '700' } : styles.categoryOptionTextSelected)
                         ]}>
                           {cat}
                         </Text>
                         {selectedCategory === cat && (
-                          <Ionicons name="checkmark-circle" size={20} color="#1A2980" />
+                          <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
                         )}
                       </TouchableOpacity>
                     ))
@@ -286,8 +290,8 @@ export default function FilterModal({
             )}
           </View>
 
-          <View style={[styles.filterSection, { zIndex: 900 }]}>
-            <Text style={styles.sectionTitle}>Search area</Text>
+          <View style={[styles.filterSection, { zIndex: 900 }, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+            <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Search area</Text>
             <LocationAutocomplete
               onSelect={(location: LocationData) => onSuburbSelect?.(location)}
               initialValue={suburb}
@@ -295,15 +299,15 @@ export default function FilterModal({
               country="AU"
             />
             <TouchableOpacity
-              style={styles.currentLocationButton}
+              style={[styles.currentLocationButton, isDarkMode && { backgroundColor: '#0F172A' }]}
               onPress={() => onUseCurrentLocation?.()}
             >
-              <Ionicons name="navigate-outline" size={16} color="#1A2980" />
-              <Text style={styles.currentLocationText}>Use current location</Text>
+              <Ionicons name="navigate-outline" size={16} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+              <Text style={[styles.currentLocationText, isDarkMode && { color: '#38BDF8' }]}>Use current location</Text>
             </TouchableOpacity>
-            <Text style={styles.radiusLabel}>Radius (km)</Text>
+            <Text style={[styles.radiusLabel, isDarkMode && { color: '#94A3B8' }]}>Radius (km)</Text>
             <TextInput
-              style={styles.radiusInput}
+              style={[styles.radiusInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
               value={localRadius}
               onChangeText={(text) => setLocalRadius(text.replace(/[^0-9]/g, ''))}
               onEndEditing={() => {
@@ -312,22 +316,22 @@ export default function FilterModal({
               }}
               keyboardType="number-pad"
               placeholder="100"
-              placeholderTextColor="#999"
+              placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
             />
           </View>
 
           {/* Price Range Filter */}
-          <View style={styles.filterSection}>
-            <Text style={styles.sectionTitle}>Price Range</Text>
+          <View style={[styles.filterSection, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+            <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Price Range</Text>
             <View style={styles.priceRangeDisplay}>
-              <View style={styles.priceBox}>
-                <Text style={styles.priceBoxLabel}>Min</Text>
-                <Text style={styles.priceBoxValue}>{currencySymbol}{priceRange[0].toLocaleString()}</Text>
+              <View style={[styles.priceBox, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+                <Text style={[styles.priceBoxLabel, isDarkMode && { color: '#94A3B8' }]}>Min</Text>
+                <Text style={[styles.priceBoxValue, isDarkMode && { color: '#38BDF8' }]}>{currencySymbol}{priceRange[0].toLocaleString()}</Text>
               </View>
               <Text style={styles.priceSeparator}>-</Text>
-              <View style={styles.priceBox}>
-                <Text style={styles.priceBoxLabel}>Max</Text>
-                <Text style={styles.priceBoxValue}>{currencySymbol}{priceRange[1].toLocaleString()}</Text>
+              <View style={[styles.priceBox, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+                <Text style={[styles.priceBoxLabel, isDarkMode && { color: '#94A3B8' }]}>Max</Text>
+                <Text style={[styles.priceBoxValue, isDarkMode && { color: '#38BDF8' }]}>{currencySymbol}{priceRange[1].toLocaleString()}</Text>
               </View>
             </View>
             <View style={styles.sliderContainer}>
@@ -378,9 +382,12 @@ export default function FilterModal({
         </ScrollView>
 
         {/* Bottom buttons */}
-        <View style={styles.filterFooter}>
-          <TouchableOpacity style={styles.resetButton} onPress={onResetFilters}>
-            <Text style={styles.resetButtonText}>Reset</Text>
+        <View style={[styles.filterFooter, isDarkMode && { backgroundColor: '#1E293B', borderTopColor: '#334155' }]}>
+          <TouchableOpacity 
+            style={[styles.resetButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#38BDF8' }]} 
+            onPress={onResetFilters}
+          >
+            <Text style={[styles.resetButtonText, isDarkMode && { color: '#38BDF8' }]}>Reset</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.applyButton} 

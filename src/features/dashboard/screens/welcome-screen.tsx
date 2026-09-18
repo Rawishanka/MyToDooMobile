@@ -21,6 +21,7 @@ import {
     Keyboard,
     Linking,
     ScrollView,
+    Share,
     StyleSheet,
     Text,
     TextInput,
@@ -30,6 +31,9 @@ import {
     useWindowDimensions
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/src/shared/theme';
+import { AppAlert } from '@/src/shared/components/AppAlert';
+import { useAuthStore } from '@/src/store/auth-task-store';
 
 interface CarouselCategoryItem {
   id: string;
@@ -72,6 +76,7 @@ const ImageCategory = ({
   onPress: (categoryName: string) => void;
   itemSize?: number;
 }) => {
+  const { isDarkMode } = useTheme();
   const squareSize = itemSize ?? (isTablet ? wp('18%') : wp('35%'));
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -95,7 +100,7 @@ const ImageCategory = ({
       activeOpacity={0.7}
       onPress={() => onPress(item.title)}
     >
-      <View style={[styles.imageContainer, { width: squareSize, height: squareSize }]}>
+      <View style={[styles.imageContainer, { width: squareSize, height: squareSize }, isDarkMode && { backgroundColor: '#1E293B' }]}>
         {!imageLoaded && !imageError && (
           <Animated.View style={[styles.imageSkeleton, { opacity: shimmer }]} />
         )}
@@ -123,12 +128,14 @@ const ImageCategory = ({
           />
         )}
       </View>
-      <Text style={styles.carouselLabel} numberOfLines={2}>{item.title}</Text>
+      <Text style={[styles.carouselLabel, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={2}>{item.title}</Text>
     </TouchableOpacity>
   );
 };
 
 export default function WelcomeScreen() {
+  const { isDarkMode } = useTheme();
+  const { isAuthenticated, token } = useAuthStore();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -150,6 +157,36 @@ export default function WelcomeScreen() {
   const [errorMessage, setErrorMessage] = useState('');
   const [socialMenuOpen, setSocialMenuOpen] = useState(false);
   const [socialMediaAccounts, setSocialMediaAccounts] = useState<SocialMediaAccount[]>([]);
+  const [isSocialMenuOpen, setIsSocialMenuOpen] = useState(false);
+  const socialAnimation = useRef(new Animated.Value(0)).current;
+
+  const toggleSocialMenu = () => {
+    if (isSocialMenuOpen) {
+      Animated.timing(socialAnimation, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => setIsSocialMenuOpen(false));
+    } else {
+      setIsSocialMenuOpen(true);
+      Animated.spring(socialAnimation, {
+        toValue: 1,
+        friction: 6,
+        tension: 45,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
+
+  const closeSocialMenu = () => {
+    if (isSocialMenuOpen) {
+      Animated.timing(socialAnimation, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start(() => setIsSocialMenuOpen(false));
+    }
+  };
   const { data: categories, isLoading: loadingCategories, error: categoriesError } = useGetCategories();
   const { data: carouselCategories, isLoading: loadingCarousel } = useGetCategoriesWithCarouselImages();
   const unreadCount = useMergedUnreadCount();
@@ -315,12 +352,12 @@ export default function WelcomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
+      <View style={[{ flex: 1, backgroundColor: '#f8f9fa' }, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{
             flexGrow: isTabletPortrait ? 0 : 1,
-            paddingBottom: isTabletPortrait ? 96 : 110,
+            paddingBottom: isTabletPortrait ? 120 : 140,
           }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -343,9 +380,9 @@ export default function WelcomeScreen() {
           </Text>
           
           <TextInput
-            style={styles.input}
+            style={[styles.input, isDarkMode && { backgroundColor: '#1E293B', color: '#F8FAFC', borderWidth: 1, borderColor: '#334155' }]}
             placeholder="In a few words what do you need"
-            placeholderTextColor="#999"
+            placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
             value={taskInput}
             onChangeText={(text) => {
               setTaskInput(text);
@@ -375,15 +412,26 @@ export default function WelcomeScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.offerServiceButton}
+            style={[styles.offerServiceButton, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}
             onPress={() => {
+              if (!isAuthenticated || !token) {
+                AppAlert.alert(
+                  'Login Required',
+                  'Please log in or sign up to offer your services on MyToDoo.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Log In', onPress: () => router.push('/(auth)/login' as any) },
+                  ]
+                );
+                return;
+              }
               setPendingAccountNavigation({ screen: 'create-service' });
               router.push('/(tabs)/account' as any);
             }}
             activeOpacity={0.85}
           >
-            <MaterialCommunityIcons name="briefcase-outline" size={18} color="#003399" />
-            <Text style={styles.offerServiceText}>Offer a service</Text>
+            <MaterialCommunityIcons name="briefcase-outline" size={18} color={isDarkMode ? '#38BDF8' : '#003399'} />
+            <Text style={[styles.offerServiceText, isDarkMode && { color: '#38BDF8' }]}>Offer a service</Text>
           </TouchableOpacity>
           
           
@@ -419,7 +467,7 @@ export default function WelcomeScreen() {
 
         {(loadingCarousel || carouselItems.length > 0) && (
           <>
-        <Text style={styles.sectionTitle}>Need something done?</Text>
+        <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Need something done?</Text>
 
         <View style={[styles.carouselContainer, isTabletPortrait && styles.carouselContainerTabletPortrait]}>
           {loadingCarousel ? (
@@ -506,58 +554,159 @@ export default function WelcomeScreen() {
         </View>
           </>
         )}
-        </ScrollView>
-      </View>
-
-      {/* Social Media Section - Fixed at Bottom */}
-      <View style={[styles.socialMediaSection, { bottom: fabBottomOffset }]}>
-        {/* Social Media Icons - Only show when menu is open */}
-        {socialMenuOpen && (
-          <View style={styles.socialIconsContainer}>
-            {socialMediaAccounts.map((account) => {
-              const platform = account.platform.toLowerCase();
-              const iconMap: Record<string, { icon: string; bg: string }> = {
-                whatsapp:  { icon: 'logo-whatsapp',  bg: '#25D366' },
-                facebook:  { icon: 'logo-facebook',  bg: '#1877F2' },
-                instagram: { icon: 'logo-instagram', bg: '#E1306C' },
-                linkedin:  { icon: 'logo-linkedin',  bg: '#0077B5' },
-                tiktok:    { icon: 'logo-tiktok',    bg: '#000000' },
-                twitter:   { icon: 'logo-twitter',   bg: '#1DA1F2' },
-                youtube:   { icon: 'logo-youtube',   bg: '#FF0000' },
-                pinterest: { icon: 'logo-pinterest', bg: '#E60023' },
-              };
-              const config = iconMap[platform] || { icon: 'globe-outline', bg: '#555' };
-              return (
-                <TouchableOpacity
-                  key={account._id}
-                  style={[styles.socialIconWrapper, { backgroundColor: config.bg }]}
-                  activeOpacity={0.8}
-                  onPress={() => Linking.openURL(account.profileUrl)}
-                >
-                  <Ionicons name={config.icon as any} size={22} color="#fff" />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
         
-        {/* Main FAB Button */}
-        <TouchableOpacity 
-          style={styles.fabButton}
-          activeOpacity={0.8}
-          onPress={() => setSocialMenuOpen(!socialMenuOpen)}
-        >
-          <Ionicons 
-            name={socialMenuOpen ? "close" : "share-social"} 
-            size={24} 
-            color="#fff" 
-          />
-        </TouchableOpacity>
+        </ScrollView>
       </View>
 
       </View>
       </TouchableWithoutFeedback>
 
+      {/* Backdrop overlay for outside dismissal */}
+      {isSocialMenuOpen && (
+        <TouchableWithoutFeedback onPress={closeSocialMenu}>
+          <Animated.View
+            style={[
+              styles.fabBackdrop,
+              {
+                opacity: socialAnimation.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 0.4],
+                }),
+              },
+            ]}
+          />
+        </TouchableWithoutFeedback>
+      )}
+
+      {/* 2026 Modern Floating Social Media Action Menu */}
+      {socialMediaAccounts.length > 0 && (
+        <View style={styles.floatingSocialContainer} pointerEvents="box-none">
+          {/* Expanded Action Menu Items */}
+          {isSocialMenuOpen && (
+            <Animated.View
+              style={[
+                styles.floatingMenuContent,
+                {
+                  opacity: socialAnimation,
+                  transform: [
+                    {
+                      translateY: socialAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [20, 0],
+                      }),
+                    },
+                    {
+                      scale: socialAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.85, 1],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            >
+              {/* Share App Item */}
+              <TouchableOpacity
+                style={[
+                  styles.socialMenuItem,
+                  isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }
+                ]}
+                activeOpacity={0.8}
+                onPress={async () => {
+                  closeSocialMenu();
+                  try {
+                    await Share.share({
+                      title: 'MyToDoo Australia',
+                      message: 'Check out MyToDoo - Post tasks or find local service experts across Australia! https://mytodoo.com',
+                    });
+                  } catch (e) {}
+                }}
+              >
+                <Text style={[styles.socialMenuLabel, isDarkMode && { color: '#38BDF8' }]}>Share App</Text>
+                <View style={[styles.socialMenuIconCircle, { backgroundColor: isDarkMode ? '#0369A1' : '#0052A2' }]}>
+                  <Ionicons name="share-social" size={17} color="#FFFFFF" />
+                </View>
+              </TouchableOpacity>
+
+              {/* Social Channels List */}
+              {socialMediaAccounts.map((account) => {
+                const platform = account.platform.toLowerCase();
+                const iconMap: Record<string, { icon: string; bg: string; name: string }> = {
+                  whatsapp:  { icon: 'logo-whatsapp',  bg: '#25D366', name: 'WhatsApp' },
+                  facebook:  { icon: 'logo-facebook',  bg: '#1877F2', name: 'Facebook' },
+                  instagram: { icon: 'logo-instagram', bg: '#E1306C', name: 'Instagram' },
+                  linkedin:  { icon: 'logo-linkedin',  bg: '#0077B5', name: 'LinkedIn' },
+                  tiktok:    { icon: 'logo-tiktok',    bg: '#000000', name: 'TikTok' },
+                  twitter:   { icon: 'logo-twitter',   bg: '#1DA1F2', name: 'X' },
+                  youtube:   { icon: 'logo-youtube',   bg: '#FF0000', name: 'YouTube' },
+                  pinterest: { icon: 'logo-pinterest', bg: '#E60023', name: 'Pinterest' },
+                };
+                const config = iconMap[platform] || { icon: 'globe-outline', bg: '#0052A2', name: account.platform };
+
+                return (
+                  <TouchableOpacity
+                    key={account._id}
+                    style={[
+                      styles.socialMenuItem,
+                      isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }
+                    ]}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      closeSocialMenu();
+                      Linking.openURL(account.profileUrl);
+                    }}
+                  >
+                    <Text style={[styles.socialMenuLabel, isDarkMode && { color: '#F8FAFC' }]}>
+                      {config.name}
+                    </Text>
+                    <View style={[styles.socialMenuIconCircle, { backgroundColor: config.bg }]}>
+                      <Ionicons name={config.icon as any} size={17} color="#FFFFFF" />
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </Animated.View>
+          )}
+
+          {/* Main Floating Trigger Button */}
+          <TouchableOpacity
+            style={[
+              styles.mainFabButton,
+              isDarkMode && {
+                backgroundColor: '#FF6A00',
+                borderColor: '#FFA24C',
+                borderWidth: 2,
+                shadowColor: '#FF6A00',
+                shadowOpacity: 0.6,
+                shadowRadius: 10,
+                elevation: 10,
+              },
+              isSocialMenuOpen && styles.mainFabButtonActive
+            ]}
+            activeOpacity={0.85}
+            onPress={toggleSocialMenu}
+          >
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    rotate: socialAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', '90deg'],
+                    }),
+                  },
+                ],
+              }}
+            >
+              <Ionicons
+                name={isSocialMenuOpen ? 'close' : 'share-social'}
+                size={isTablet ? 24 : 20}
+                color="#FFFFFF"
+              />
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
+      )}
       {/* Notification Modal */}
       <NotificationModal
         visible={showNotifications}
@@ -867,7 +1016,92 @@ const styles = StyleSheet.create({
     backgroundColor: '#003399',
     width: 18,
   },
-  // Social Media Section - Fixed at Bottom
+  // 2026 Community Card Styles
+  communityCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 20,
+    marginBottom: 40,
+    marginHorizontal: isTablet ? wp('2%') : 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  communityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 14,
+  },
+  communityIconBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: '#F0F9FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  communityTitle: {
+    fontSize: RFValue(15),
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  communitySubtitle: {
+    fontSize: RFValue(12),
+    color: '#64748B',
+    marginTop: 2,
+  },
+  socialChipsContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingVertical: 4,
+    marginBottom: 14,
+  },
+  socialChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 20,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  socialChipIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  socialChipText: {
+    fontSize: RFValue(12),
+    fontWeight: '600',
+    color: '#1E293B',
+  },
+  shareAppButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#F0F8FF',
+    borderRadius: 12,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+  },
+  shareAppText: {
+    fontSize: RFValue(13),
+    fontWeight: '700',
+    color: '#0052A2',
+  },
+  // Social Media Section - Legacy removed
   socialMediaSection: {
     position: 'absolute',
     right: isTablet ? wp('4%') : 14,
@@ -926,5 +1160,72 @@ const styles = StyleSheet.create({
   },
   tiktokBg: {
     backgroundColor: '#000000',
+  },
+  fabBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#000',
+    zIndex: 9998,
+  },
+  floatingSocialContainer: {
+    position: 'absolute',
+    right: isTablet ? wp('4%') : 18,
+    bottom: isTablet ? 18 : 10,
+    zIndex: 9999,
+    alignItems: 'flex-end',
+  },
+  floatingMenuContent: {
+    alignItems: 'flex-end',
+    marginBottom: 10,
+    gap: 8,
+  },
+  socialMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 6,
+    paddingLeft: 14,
+    paddingRight: 6,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 5,
+    gap: 8,
+  },
+  socialMenuLabel: {
+    fontSize: RFValue(13),
+    fontWeight: '600',
+    color: '#1E293B',
+  },
+  socialMenuIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mainFabButton: {
+    width: isTablet ? 48 : 42,
+    height: isTablet ? 48 : 42,
+    borderRadius: isTablet ? 24 : 21,
+    backgroundColor: '#0052A2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#0052A2',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  mainFabButtonActive: {
+    backgroundColor: '#EF4444',
+    shadowColor: '#EF4444',
   },
 });

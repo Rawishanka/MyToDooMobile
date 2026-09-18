@@ -14,12 +14,14 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface AccountInformationProps {
   onBack: () => void;
 }
 
 export default function AccountInformation({ onBack }: AccountInformationProps) {
+  const { isDarkMode } = useTheme();
   const [currentScreen, setCurrentScreen] = useState('main');
   const insets = useSafeAreaInsets();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -379,12 +381,12 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   // Check if user is not authenticated
   if (!isAuthenticated || !token) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#333" />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Account information</Text>
+          <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Account information</Text>
         </View>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={64} color="#dc3545" />
@@ -406,12 +408,12 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   // Loading state - show loading when fetching and no cached data
   if ((isLoading || isFetching) && !profileData) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#333" />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Account information</Text>
+          <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Account information</Text>
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#0052A2" />
@@ -424,12 +426,12 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   // Error state
   if (error) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#333" />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Account information</Text>
+          <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Account information</Text>
         </View>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={64} color="#dc3545" />
@@ -445,12 +447,12 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   // If still no data after all checks, show error
   if (!profileData) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#333" />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Account information</Text>
+          <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Account information</Text>
         </View>
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={64} color="#dc3545" />
@@ -466,18 +468,18 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   // Personal Details Screen
   if (currentScreen === 'personal-details') {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={goBackToMain} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#333" />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Update personal details</Text>
+          <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Update personal details</Text>
         </View>
         <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.label}>First Name</Text>
-          <View style={styles.inputContainer}>
+          <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>First Name</Text>
+          <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
             <TextInput
-              style={styles.inputText}
+              style={[styles.inputText, isDarkMode && { color: '#F8FAFC' }]}
               value={firstName}
               onChangeText={setFirstName}
               placeholder="Enter first name"
@@ -486,10 +488,10 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
           </View>
           <Text style={styles.charCount}>{firstName.length}/50</Text>
 
-          <Text style={styles.label}>Last Name</Text>
-          <View style={styles.inputContainer}>
+          <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Last Name</Text>
+          <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
             <TextInput
-              style={styles.inputText}
+              style={[styles.inputText, isDarkMode && { color: '#F8FAFC' }]}
               value={lastName}
               onChangeText={setLastName}
               placeholder="Enter last name"
@@ -498,8 +500,8 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
           </View>
           <Text style={styles.charCount}>{lastName.length}/50</Text>
 
-          <Text style={styles.label}>Email</Text>
-          <View style={styles.inputContainer}>
+          <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Email</Text>
+          <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
             <TextInput
               style={[styles.inputText, styles.disabledInput]}
               value={email}
@@ -511,8 +513,8 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
             <Text style={styles.changeContactLink}>Change email</Text>
           </TouchableOpacity>
 
-          <Text style={styles.label}>Phone Number</Text>
-          <View style={styles.inputContainer}>
+          <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Phone Number</Text>
+          <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
             <TextInput
               style={[styles.inputText, styles.disabledInput]}
               value={phone}
@@ -525,7 +527,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
             <Text style={styles.changeContactLink}>Change phone</Text>
           </TouchableOpacity>
 
-          <Text style={styles.label}>Location</Text>
+          <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Location</Text>
           <View style={styles.locationSection}>
             <LocationAutocomplete
               onSelect={handleLocationSelect}
@@ -535,8 +537,8 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
             />
           </View>
 
-          <Text style={styles.label}>Bio</Text>
-          <View style={styles.inputContainer}>
+          <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Bio</Text>
+          <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
             <TextInput
               style={[styles.inputText, styles.textArea]}
               value={bio}
@@ -573,12 +575,12 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   // Change Password Screen
   if (currentScreen === 'change-password') {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={goBackToMain} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#333" />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Change Password</Text>
+          <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Change Password</Text>
         </View>
         <View style={styles.passwordContent}>
           <View style={styles.lockIconContainer}>
@@ -589,12 +591,12 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
             </View>
           </View>
           
-          <Text style={styles.passwordText}>
+          <Text style={[styles.passwordText, isDarkMode && { color: '#F8FAFC' }]}>
             To change your password, tap the button below to receive an email with a password reset link.
           </Text>
-          <Text style={styles.passwordText}>This email will be sent to:</Text>
+          <Text style={[styles.passwordText, isDarkMode && { color: '#F8FAFC' }]}>This email will be sent to:</Text>
           
-          <Text style={styles.emailText}>{email}</Text>
+          <Text style={[styles.emailText, isDarkMode && { color: '#F8FAFC' }]}>{email}</Text>
           
           <TouchableOpacity style={styles.saveButton} onPress={handleSendPasswordResetEmail}>
             <Text style={styles.saveButtonText}>Send Reset Email</Text>
@@ -608,18 +610,18 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if (currentScreen === 'mobile-verification') {
     const phoneBusy = requestPhoneOtpMutation.isPending || verifyPhoneOtpMutation.isPending;
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={goBackToMain} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#333" />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Change phone</Text>
+          <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Change phone</Text>
         </View>
         <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.label}>New mobile number</Text>
-          <View style={styles.inputContainer}>
+          <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>New mobile number</Text>
+          <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
             <TextInput
-              style={styles.inputText}
+              style={[styles.inputText, isDarkMode && { color: '#F8FAFC' }]}
               value={newPhone}
               onChangeText={setNewPhone}
               placeholder="Enter phone number"
@@ -629,10 +631,10 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
           </View>
           {phoneOtpSent && (
             <>
-              <Text style={styles.label}>Verification code</Text>
-              <View style={styles.inputContainer}>
+              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Verification code</Text>
+              <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
                 <TextInput
-                  style={styles.inputText}
+                  style={[styles.inputText, isDarkMode && { color: '#F8FAFC' }]}
                   value={phoneOtp}
                   onChangeText={setPhoneOtp}
                   placeholder="Enter OTP"
@@ -673,18 +675,18 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if (currentScreen === 'email-verification') {
     const emailBusy = requestEmailOtpMutation.isPending || verifyEmailOtpMutation.isPending;
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={goBackToMain} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#333" />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Change email</Text>
+          <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Change email</Text>
         </View>
         <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={styles.label}>New email</Text>
-          <View style={styles.inputContainer}>
+          <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>New email</Text>
+          <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
             <TextInput
-              style={styles.inputText}
+              style={[styles.inputText, isDarkMode && { color: '#F8FAFC' }]}
               value={newEmail}
               onChangeText={setNewEmail}
               placeholder="Enter email address"
@@ -694,10 +696,10 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
           </View>
           {emailOtpSent && (
             <>
-              <Text style={styles.label}>Verification code</Text>
-              <View style={styles.inputContainer}>
+              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Verification code</Text>
+              <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
                 <TextInput
-                  style={styles.inputText}
+                  style={[styles.inputText, isDarkMode && { color: '#F8FAFC' }]}
                   value={emailOtp}
                   onChangeText={setEmailOtp}
                   placeholder="Enter OTP"
@@ -737,12 +739,12 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
 
   // Main Account Information Screen
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#333" />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Account information</Text>
+        <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Account information</Text>
       </View>
       
       <View style={styles.content}>
@@ -789,9 +791,9 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
           keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
           <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Are you sure you want to delete your account?</Text>
-            <Text style={styles.modalText}>
+          <View style={[styles.modalContent, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
+            <Text style={[styles.modalTitle, isDarkMode && { color: '#F8FAFC' }]}>Are you sure you want to delete your account?</Text>
+            <Text style={[styles.modalText, isDarkMode && { color: '#94A3B8' }]}>
               Account deletion is irreversible. You will not be able to restore your account after this step is performed, or use the same email address to create a new account. This process will take effect after 2-5 business days.
             </Text>
 
@@ -806,9 +808,9 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
             ) : (
               // Reason input
               <View style={styles.reasonContainer}>
-                <Text style={styles.reasonLabel}>Reason for deletion *</Text>
+                <Text style={[styles.reasonLabel, isDarkMode && { color: '#F8FAFC' }]}>Reason for deletion *</Text>
                 <TextInput
-                  style={styles.reasonInput}
+                  style={[styles.reasonInput, isDarkMode && { backgroundColor: '#0F172A', color: '#F8FAFC', borderColor: '#334155', borderWidth: 1 }]}
                   value={deleteReason}
                   onChangeText={setDeleteReason}
                   placeholder="Please tell us why you want to delete your account..."
@@ -824,11 +826,11 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
 
             <View style={styles.modalButtons}>
               <TouchableOpacity 
-                style={styles.cancelButton} 
+                style={[styles.cancelButton, isDarkMode && { backgroundColor: '#0F172A' }]} 
                 onPress={cancelDelete}
                 disabled={isDeleting}
               >
-                <Text style={styles.cancelButtonText}>No, cancel</Text>
+                <Text style={[styles.cancelButtonText, isDarkMode && { color: '#94A3B8' }]}>No, cancel</Text>
               </TouchableOpacity>
               {!existingDeleteRequest && (
                 <TouchableOpacity 
@@ -859,15 +861,18 @@ const MenuItem = ({ text, onPress, showArrow = true, textColor = "#333", disable
   textColor?: string;
   disabled?: boolean;
   subtitle?: string;
-}) => (
-  <TouchableOpacity style={[styles.menuItem, disabled && styles.menuItemDisabled]} onPress={!disabled ? onPress : undefined} disabled={disabled}>
-    <View style={{ flex: 1 }}>
-      <Text style={[styles.menuText, { color: disabled ? '#aaa' : textColor }]}>{text}</Text>
-      {subtitle && <Text style={styles.menuSubtitle}>{subtitle}</Text>}
-    </View>
-    {showArrow && !disabled && <Ionicons name="chevron-forward" size={18} color="#888" />}
-  </TouchableOpacity>
-);
+}) => {
+  const { isDarkMode } = useTheme();
+  return (
+    <TouchableOpacity style={[styles.menuItem, disabled && styles.menuItemDisabled, isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]} onPress={!disabled ? onPress : undefined} disabled={disabled}>
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.menuText, { color: disabled ? (isDarkMode ? '#64748B' : '#aaa') : (isDarkMode ? '#F8FAFC' : textColor) }]}>{text}</Text>
+        {subtitle && <Text style={styles.menuSubtitle}>{subtitle}</Text>}
+      </View>
+      {showArrow && !disabled && <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#94A3B8' : '#888'} />}
+    </TouchableOpacity>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

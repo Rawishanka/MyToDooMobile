@@ -1,5 +1,6 @@
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import React from 'react';
+import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface MakeOfferSectionProps {
@@ -8,6 +9,7 @@ interface MakeOfferSectionProps {
 }
 
 export const MakeOfferSection: React.FC<MakeOfferSectionProps> = ({ onMakeOffer, offerCount = 0 }) => {
+  const { isDarkMode } = useTheme();
   // Generate appropriate text based on offer count
   const getOfferText = () => {
     if (offerCount === 0) {
@@ -20,9 +22,9 @@ export const MakeOfferSection: React.FC<MakeOfferSectionProps> = ({ onMakeOffer,
   };
 
   return (
-    <View style={styles.makeOfferSection}>
-      <Text style={styles.makeOfferTitle}>Make an offer now</Text>
-      <Text style={styles.viewersText}>{getOfferText()}</Text>
+    <View style={[styles.makeOfferSection, isDarkMode && { backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155" }]}>
+      <Text style={[styles.makeOfferTitle, isDarkMode && { color: "#F8FAFC" }]}>Make an offer now</Text>
+      <Text style={[styles.viewersText, isDarkMode && { color: "#94A3B8" }]}>{getOfferText()}</Text>
 
       <TouchableOpacity style={styles.makeOfferButton} onPress={onMakeOffer}>
         <Text style={styles.makeOfferButtonText}>Make offer</Text>

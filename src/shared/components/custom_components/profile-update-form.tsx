@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 // components/custom_components/profile-update-form.tsx
 import { User } from '@/src/api/types/user';
 import { UserProfile } from '@/src/api/user-profile-api';
@@ -44,6 +45,7 @@ interface ProfileUpdateFormProps {
 }
 
 export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFormProps) {
+  const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const [firstName, setFirstName] = useState(userData?.firstName || '');
   const [lastName, setLastName] = useState(userData?.lastName || '');
@@ -660,19 +662,19 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.phoneModalOverlay}
         >
-          <View style={styles.phoneModalCard}>
+          <View style={[styles.phoneModalCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
             <View style={styles.phoneModalHeader}>
-              <View style={styles.phoneModalIconBg}>
+              <View style={[styles.phoneModalIconBg, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 }]}>
                 <Ionicons
                   name={phoneStep === 'input' ? 'call-outline' : 'shield-checkmark-outline'}
                   size={24}
-                  color="#003399"
+                  color={isDarkMode ? '#60A5FA' : '#003399'}
                 />
               </View>
-              <Text style={styles.phoneModalTitle}>
+              <Text style={[styles.phoneModalTitle, isDarkMode && { color: '#F8FAFC' }]}>
                 {phoneStep === 'input' ? 'Update Phone Number' : 'Verify SMS Code'}
               </Text>
-              <Text style={styles.phoneModalSubtitle}>
+              <Text style={[styles.phoneModalSubtitle, isDarkMode && { color: '#94A3B8' }]}>
                 {phoneStep === 'input'
                   ? 'Enter your new phone number to receive a 6-digit verification code.'
                   : `Enter the 6-digit verification code sent via SMS to ${newPhoneInput}.`}
@@ -680,17 +682,20 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
             </View>
 
             {phoneError && (
-              <View style={styles.phoneErrorBanner}>
-                <Ionicons name="alert-circle" size={16} color="#DC2626" />
-                <Text style={styles.phoneErrorBannerText}>{phoneError}</Text>
+              <View style={[
+                styles.phoneErrorBanner,
+                isDarkMode && { backgroundColor: '#450A0A', borderColor: '#7F1D1D' }
+              ]}>
+                <Ionicons name="alert-circle" size={16} color={isDarkMode ? "#F87171" : "#DC2626"} />
+                <Text style={[styles.phoneErrorBannerText, isDarkMode && { color: '#FCA5A5' }]}>{phoneError}</Text>
               </View>
             )}
 
             {phoneStep === 'input' ? (
               <View style={styles.phoneStepBody}>
-                <Text style={styles.phoneFieldLabel}>New Phone Number</Text>
+                <Text style={[styles.phoneFieldLabel, isDarkMode && { color: '#E2E8F0' }]}>New Phone Number</Text>
                 <TextInput
-                  style={styles.phoneModalInput}
+                  style={[styles.phoneModalInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
                   value={newPhoneInput}
                   onChangeText={setNewPhoneInput}
                   placeholder="+61 400 000 000"
@@ -704,11 +709,11 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
 
                 <View style={styles.phoneModalBtnRow}>
                   <TouchableOpacity
-                    style={styles.phoneModalCancelBtn}
+                    style={[styles.phoneModalCancelBtn, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 }]}
                     onPress={() => setShowPhoneModal(false)}
                     disabled={phoneLoading}
                   >
-                    <Text style={styles.phoneModalCancelBtnText}>Cancel</Text>
+                    <Text style={[styles.phoneModalCancelBtnText, isDarkMode && { color: '#94A3B8' }]}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.phoneModalSubmitBtn}
@@ -725,9 +730,9 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
               </View>
             ) : (
               <View style={styles.phoneStepBody}>
-                <Text style={styles.phoneFieldLabel}>6-Digit Verification Code</Text>
+                <Text style={[styles.phoneFieldLabel, isDarkMode && { color: '#E2E8F0' }]}>6-Digit Verification Code</Text>
                 <TextInput
-                  style={styles.phoneOtpInput}
+                  style={[styles.phoneOtpInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#60A5FA', color: '#F8FAFC' }]}
                   value={phoneOtpCode}
                   onChangeText={setPhoneOtpCode}
                   placeholder="000000"
@@ -754,11 +759,11 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
 
                 <View style={styles.phoneModalBtnRow}>
                   <TouchableOpacity
-                    style={styles.phoneModalCancelBtn}
+                    style={[styles.phoneModalCancelBtn, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 }]}
                     onPress={() => setPhoneStep('input')}
                     disabled={phoneLoading}
                   >
-                    <Text style={styles.phoneModalCancelBtnText}>Back</Text>
+                    <Text style={[styles.phoneModalCancelBtnText, isDarkMode && { color: '#94A3B8' }]}>Back</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.phoneModalSubmitBtn}

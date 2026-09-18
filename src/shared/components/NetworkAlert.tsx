@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -20,6 +21,7 @@ export const NetworkAlert: React.FC<NetworkAlertProps> = ({
   actionText = 'OK',
   onAction,
 }) => {
+  const { isDarkMode } = useTheme();
   const handleAction = () => {
     if (onAction) {
       onAction();
@@ -35,17 +37,17 @@ export const NetworkAlert: React.FC<NetworkAlertProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={styles.alertContainer}>
+        <View style={[styles.alertContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
           {/* Icon */}
           <View style={styles.iconContainer}>
             <Ionicons name="cloud-offline" size={48} color="#FF6B6B" />
           </View>
 
           {/* Title */}
-          <Text style={styles.title}>{title}</Text>
+          <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>{title}</Text>
 
           {/* Message */}
-          <Text style={styles.message}>{message}</Text>
+          <Text style={[styles.message, isDarkMode && { color: '#94A3B8' }]}>{message}</Text>
 
           {/* Actions */}
           <View style={styles.actions}>

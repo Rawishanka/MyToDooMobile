@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
@@ -24,18 +25,20 @@ export const DateOptionSelector: React.FC<DateOptionSelectorProps> = ({
   beforeDate,
   onOpenPicker,
 }) => {
+  const { isDarkMode } = useTheme();
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Date</Text>
+      <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Date</Text>
       {options.map((option) => (
         <View key={option.value}>
           <TouchableOpacity
-            style={styles.optionRow}
+            style={[styles.optionRow, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}
             onPress={() => onSelectOption(option.value)}
           >
-            <Text style={styles.optionText}>{option.label}</Text>
+            <Text style={[styles.optionText, isDarkMode && { color: '#F8FAFC' }]}>{option.label}</Text>
             <View style={[
               styles.radioOuter,
+              isDarkMode && { borderColor: '#475569' },
               selectedOption === option.value && styles.radioOuterSelected,
             ]}>
               {selectedOption === option.value && <View style={styles.radioInner} />}
@@ -48,7 +51,7 @@ export const DateOptionSelector: React.FC<DateOptionSelectorProps> = ({
               onPress={() => onOpenPicker('on_time')} 
               style={styles.dateSelector}
             >
-              <Text style={styles.dateText}>
+              <Text style={[styles.dateText, isDarkMode && { color: '#60A5FA' }]}>
                 📅 {onTimeDate ? onTimeDate.toDateString() : 'Select date'} (Tap to change)
               </Text>
             </TouchableOpacity>
@@ -60,7 +63,7 @@ export const DateOptionSelector: React.FC<DateOptionSelectorProps> = ({
               onPress={() => onOpenPicker('before')} 
               style={styles.dateSelector}
             >
-              <Text style={styles.dateText}>
+              <Text style={[styles.dateText, isDarkMode && { color: '#60A5FA' }]}>
                 📅 {beforeDate ? beforeDate.toDateString() : 'Select date'} (Tap to change)
               </Text>
             </TouchableOpacity>

@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 // ChatWindow using NEW task-based chat API
 
 import { uploadChatFile, uploadChatImage } from '@/src/api/cdn-api';
@@ -33,6 +34,7 @@ import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-g
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ChatMessage, Message } from './message-types';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { AppAlert } from '@/src/shared/components/AppAlert';
 
 // URL normalization helper for APK builds
 const normalizeMediaUrl = (url: string | null | undefined): string | null => {
@@ -88,9 +90,48 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [uploadProgressText, setUploadProgressText] = useState<string | null>(null);
+  const [messageReactions, setMessageReactions] = useState<Record<string, string>>({});
+
+  // Load persisted reactions for this task/chat
+  useEffect(() => {
+    if (visible) {
+      const storageKey = `chat_reactions_${taskId || message?.id || 'general'}`;
+      AsyncStorage.getItem(storageKey).then((val) => {
+        if (val) {
+          try {
+            setMessageReactions(JSON.parse(val));
+          } catch {}
+        }
+      }).catch(() => {});
+    }
+  }, [visible, taskId, message?.id]);
+
+  const handleSelectReaction = async (emoji: string) => {
+    if (!selectedMessageForAction) return;
+    const msgId = selectedMessageForAction.id;
+    const storageKey = `chat_reactions_${taskId || message?.id || 'general'}`;
+    const nextReactions = { ...messageReactions };
+
+    if (nextReactions[msgId] === emoji) {
+      delete nextReactions[msgId]; // toggle off
+    } else {
+      nextReactions[msgId] = emoji; // set new reaction
+    }
+
+    setMessageReactions(nextReactions);
+    setIsActionMenuVisible(false);
+    setSelectedMessageForAction(null);
+
+    try {
+      await AsyncStorage.setItem(storageKey, JSON.stringify(nextReactions));
+    } catch (e) {
+      console.warn('Failed to persist reaction', e);
+    }
+  };
 
   // Safe area insets for header (iOS notch) and input bar (Android nav bar)
   const insets = useSafeAreaInsets();
+  const { isDarkMode } = useTheme();
   const headerTopPadding = insets.top + 10;
   const inputBottomPadding = Platform.OS === 'android' && insets.bottom === 0 ? 16 : insets.bottom;
 
@@ -950,11 +991,11 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? headerTopPadding : 0}
       >
-        <View style={styles.chatContainer}>
-          <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        <View style={[styles.chatContainer, isDarkMode && { backgroundColor: "#0B1120" }]}>
+          <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
           
           {/* Chat Header */}
-          <View style={[styles.chatHeader, { paddingTop: headerTopPadding }]}>
+          <View style={[styles.chatHeader, { paddingTop: headerTopPadding }, isDarkMode && { backgroundColor: "#0B1120", borderBottomColor: "#334155" }]}>
             <TouchableOpacity
               onPress={onClose}
               style={styles.backButton}
@@ -962,7 +1003,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
               accessibilityRole="button"
               accessibilityLabel="Go back"
             >
-              <Ionicons name="chevron-back" size={24} color="#000" />
+              <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#000"} />
             </TouchableOpacity>
             
             <View style={styles.chatHeaderInfo}>
@@ -982,7 +1023,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                   </View>
                 )}
                 <View style={styles.chatHeaderText}>
-                  <Text style={styles.chatTitle} numberOfLines={1}>
+                  <Text style={[styles.chatTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>
                     {formatUserName(otherPerson.firstName, otherPerson.lastName)}
                   </Text>
                   {isLoadingMessages && (
@@ -997,7 +1038,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                   style={styles.chatAvatar} 
                 />
                 <View style={styles.chatHeaderText}>
-                  <Text style={styles.chatTitle} numberOfLines={1}>{message.title}</Text>
+                  <Text style={[styles.chatTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>{message.title}</Text>
                   {isLoadingMessages && (
                     <Text style={styles.chatStatus}>Loading...</Text>
                   )}
@@ -1026,7 +1067,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
               <View style={styles.emptyContainer}>
                 <Ionicons name="chatbubbles-outline" size={64} color="#E1E8ED" />
                 <Text style={styles.emptyTitle}>Start a conversation</Text>
-                <Text style={styles.emptySubtext}>Send a message to begin chatting about this task</Text>
+                <Text style={[styles.emptySubtext, isDarkMode && { color: "#94A3B8" }]}>Send a message to begin chatting about this task</Text>
               </View>
             )
           )}
@@ -1057,7 +1098,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                 delayLongPress={300}
                 style={[
                   styles.messageBubble,
-                  msg.sender === 'me' ? styles.myMessage : styles.otherMessage
+                  msg.sender === 'me' ? styles.myMessage : [styles.otherMessage, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]
                 ]}
               >
                 {msg.messageType === 'image' && msg.mediaUrl ? (
@@ -1083,7 +1124,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                     {msg.text && msg.text !== 'Photo' && (
                       <Text style={[
                         styles.messageText,
-                        msg.sender === 'me' ? styles.myMessageText : styles.otherMessageText,
+                        msg.sender === 'me' ? styles.myMessageText : [styles.otherMessageText, isDarkMode && { color: '#F8FAFC' }],
                         { marginTop: 8 }
                       ]}>
                         {msg.text}
@@ -1096,7 +1137,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                       <Ionicons name="document-attach" size={24} color={msg.sender === 'me' ? '#fff' : '#007AFF'} />
                       <Text style={[
                         styles.messageText,
-                        msg.sender === 'me' ? styles.myMessageText : styles.otherMessageText
+                        msg.sender === 'me' ? styles.myMessageText : [styles.otherMessageText, isDarkMode && { color: '#F8FAFC' }]
                       ]}>
                         {msg.text}
                       </Text>
@@ -1105,7 +1146,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                 ) : (
                   <Text style={[
                     styles.messageText,
-                    msg.sender === 'me' ? styles.myMessageText : styles.otherMessageText
+                    msg.sender === 'me' ? styles.myMessageText : [styles.otherMessageText, isDarkMode && { color: '#F8FAFC' }]
                   ]}>
                     {msg.text}
                   </Text>
@@ -1135,13 +1176,25 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                     </View>
                   )}
                 </View>
+                {messageReactions[msg.id] ? (
+                  <View
+                    style={[
+                      styles.reactionBadge,
+                      msg.sender === 'me' ? styles.myReactionBadge : styles.otherReactionBadge,
+                      isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }
+                    ]}
+                  >
+                    <Text style={styles.reactionBadgeText}>{messageReactions[msg.id]}</Text>
+                  </View>
+                ) : null}
               </TouchableOpacity>
             </View>
           )}
         />
 
         {/* Message Input */}
-        <View style={[styles.inputContainer, { paddingBottom: inputBottomPadding }]}>
+        <View style={[styles.inputContainer,
+            isDarkMode && { backgroundColor: "#0B1120", borderTopColor: "#334155" }, { paddingBottom: inputBottomPadding }]}>
           <View style={styles.inputWrapper}>
             <TouchableOpacity onPress={handleAttachment} style={styles.attachButton}>
               <Ionicons name="attach" size={22} color="#666" />
@@ -1149,7 +1202,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
             <TextInput
               style={styles.messageInput}
               placeholder="Type a message..."
-              placeholderTextColor="#999"
+              placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
               value={newMessage}
               onChangeText={setNewMessage}
               multiline
@@ -1228,23 +1281,27 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
               ) : (
                 <>
                   {/* Floating Emoji Reactions Bar (WhatsApp Style) */}
-                  <View style={styles.reactionsBar}>
-                    {['👍', '❤️', '😂', '😮', '😢', '🙏'].map((emoji, idx) => (
-                      <TouchableOpacity
-                        key={idx}
-                        style={styles.reactionBtn}
-                        onPress={() => setIsActionMenuVisible(false)}
-                      >
-                        <Text style={styles.reactionEmoji}>{emoji}</Text>
-                      </TouchableOpacity>
-                    ))}
+                  <View style={[styles.reactionsBar, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
+                    {['👍', '❤️', '😂', '😮', '😢', '🙏'].map((emoji, idx) => {
+                      const isSelected = selectedMessageForAction ? messageReactions[selectedMessageForAction.id] === emoji : false;
+                      return (
+                        <TouchableOpacity
+                          key={idx}
+                          style={[styles.reactionBtn, isSelected && styles.reactionBtnSelected]}
+                          onPress={() => handleSelectReaction(emoji)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.reactionEmoji}>{emoji}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
 
                   {/* Action Menu Card */}
-                  <View style={styles.actionMenuCard}>
+                  <View style={[styles.actionMenuCard, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
                     {selectedMessageForAction?.sender === 'me' && (
                       <TouchableOpacity
-                        style={styles.actionMenuItem}
+                        style={[styles.actionMenuItem, isDarkMode && { borderBottomColor: '#334155' }]}
                         onPress={handleDeleteSelectedMessage}
                       >
                         <Ionicons name="trash-outline" size={22} color="#FF3B30" />
@@ -1255,29 +1312,27 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                     )}
 
                     <TouchableOpacity
-                      style={styles.actionMenuItem}
+                      style={[styles.actionMenuItem, isDarkMode && { borderBottomColor: '#334155' }]}
                       onPress={() => {
                         setIsActionMenuVisible(false);
                         if (selectedMessageForAction) {
-                          Alert.alert(
+                          AppAlert.alert(
                             'Message Details',
-                            `Sent at: ${selectedMessageForAction.timestamp || 'Just now'}
-Type: ${selectedMessageForAction.messageType || 'text'}
-Status: ${selectedMessageForAction.isRead ? 'Read' : 'Delivered'}`
+                            `Sent at: ${selectedMessageForAction.timestamp || 'Just now'}\nType: ${selectedMessageForAction.messageType || 'text'}\nStatus: ${selectedMessageForAction.isRead ? 'Read' : 'Delivered'}`
                           );
                         }
                       }}
                     >
-                      <Ionicons name="information-circle-outline" size={22} color="#1E293B" />
-                      <Text style={styles.actionMenuText}>Info</Text>
+                      <Ionicons name="information-circle-outline" size={22} color={isDarkMode ? '#38BDF8' : '#1E293B'} />
+                      <Text style={[styles.actionMenuText, isDarkMode && { color: '#F8FAFC' }]}>Info</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                       style={[styles.actionMenuItem, { borderBottomWidth: 0 }]}
                       onPress={() => setIsActionMenuVisible(false)}
                     >
-                      <Ionicons name="close-circle-outline" size={22} color="#64748B" />
-                      <Text style={[styles.actionMenuText, { color: '#64748B' }]}>Cancel</Text>
+                      <Ionicons name="close-circle-outline" size={22} color={isDarkMode ? '#94A3B8' : '#64748B'} />
+                      <Text style={[styles.actionMenuText, isDarkMode && { color: '#94A3B8' }]}>Cancel</Text>
                     </TouchableOpacity>
                   </View>
                 </>
@@ -1626,6 +1681,35 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 8,
+  },
+  reactionBadge: {
+    position: 'absolute',
+    bottom: -10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.12,
+    shadowRadius: 3,
+    elevation: 3,
+    zIndex: 10,
+  },
+  myReactionBadge: {
+    right: 8,
+  },
+  otherReactionBadge: {
+    left: 8,
+  },
+  reactionBadgeText: {
+    fontSize: RFValue(13),
+  },
+  reactionBtnSelected: {
+    backgroundColor: 'rgba(0, 82, 162, 0.15)',
+    borderRadius: 16,
   },
   reactionBtn: {
     padding: 4,

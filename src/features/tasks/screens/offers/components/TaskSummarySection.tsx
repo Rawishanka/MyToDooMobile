@@ -2,6 +2,7 @@ import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { resolveTaskBudget } from '@/src/shared/utils/resolveTaskBudget';
 import React from 'react';
+import { useTheme } from '@/src/shared/theme';
 import { StyleSheet, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -19,6 +20,7 @@ interface TaskSummarySectionProps {
 }
 
 export const TaskSummarySection: React.FC<TaskSummarySectionProps> = ({ task }) => {
+  const { isDarkMode } = useTheme();
   // Use user's current location for currency display (auto geo-location)
   const { countryInfo, isInitialized } = useLocationCountry();
   const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
@@ -32,14 +34,14 @@ export const TaskSummarySection: React.FC<TaskSummarySectionProps> = ({ task }) 
     (!isInitialized ? 'Loading...' : 'Budget not specified')));
 
   return (
-    <View style={styles.taskSummary}>
-      <Text style={styles.taskTitle} numberOfLines={2}>
+    <View style={[styles.taskSummary, isDarkMode && { backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155" }]}>
+      <Text style={[styles.taskTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={2}>
         {task.title || 'Untitled Task'}
       </Text>
-      <Text style={styles.taskBudget}>
+      <Text style={[styles.taskBudget, isDarkMode && { color: "#38BDF8" }]}>
         Budget: {displayBudget}
       </Text>
-      <Text style={styles.taskLocation}>
+      <Text style={[styles.taskLocation, isDarkMode && { color: "#94A3B8" }]}>
         {task.location?.address || 'Location not specified'}
       </Text>
     </View>

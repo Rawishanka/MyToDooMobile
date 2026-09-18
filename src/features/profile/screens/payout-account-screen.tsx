@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 import { getAbnStatus, isAbnRequiredError, type TaskerAbnStatus } from '@/src/api/abn-api';
 import TaskerAbnSection from '@/src/features/profile/components/TaskerAbnSection';
 import {
@@ -21,6 +22,7 @@ import { WebView } from 'react-native-webview';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 const PayoutAccountScreen = ({ navigation }: any) => {
+  const { isDarkMode } = useTheme();
   const [showWebView, setShowWebView] = useState(false);
   const [onboardingUrl, setOnboardingUrl] = useState<string | null>(null);
   const [abnStatus, setAbnStatus] = useState<TaskerAbnStatus | null>(null);
@@ -258,8 +260,8 @@ const PayoutAccountScreen = ({ navigation }: any) => {
   // Show WebView if onboarding
   if (showWebView && onboardingUrl) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: "#0B1120", borderBottomColor: "#334155" }]}>
           <TouchableOpacity
             onPress={() => {
               setShowWebView(false);
@@ -289,12 +291,12 @@ const PayoutAccountScreen = ({ navigation }: any) => {
   // Loading state
   if (isLoading) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: "#0B1120", borderBottomColor: "#334155" }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#000" />
+            <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#F8FAFC" : "#000"} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Payout Account</Text>
+          <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]}>Payout Account</Text>
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#6200ee" />
@@ -305,13 +307,13 @@ const PayoutAccountScreen = ({ navigation }: any) => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, isDarkMode && { backgroundColor: "#0B1120", borderBottomColor: "#334155" }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#F8FAFC" : "#000"} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Payout Account</Text>
+        <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]}>Payout Account</Text>
       </View>
 
       <View style={styles.content}>
@@ -360,9 +362,9 @@ const PayoutAccountScreen = ({ navigation }: any) => {
         {hasAccount && accountStatus && (
           <View style={styles.accountContainer}>
             {/* Status Card */}
-            <View style={styles.statusCard}>
+            <View style={[styles.statusCard, isDarkMode && { backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155" }]}>
               <View style={styles.statusHeader}>
-                <Text style={styles.statusLabel}>Account Status</Text>
+                <Text style={[styles.statusLabel, isDarkMode && { color: "#F8FAFC" }]}>Account Status</Text>
                 <View
                   style={[
                     styles.statusBadge,
@@ -379,28 +381,28 @@ const PayoutAccountScreen = ({ navigation }: any) => {
               {accountStatus.detailsSubmitted && (
                 <View style={styles.detailRow}>
                   <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
-                  <Text style={styles.detailText}>Details Submitted</Text>
+                  <Text style={[styles.detailText, isDarkMode && { color: "#F8FAFC" }]}>Details Submitted</Text>
                 </View>
               )}
 
               {accountStatus.chargesEnabled && (
                 <View style={styles.detailRow}>
                   <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
-                  <Text style={styles.detailText}>Charges Enabled</Text>
+                  <Text style={[styles.detailText, isDarkMode && { color: "#F8FAFC" }]}>Charges Enabled</Text>
                 </View>
               )}
 
               {accountStatus.payoutsEnabled && (
                 <View style={styles.detailRow}>
                   <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
-                  <Text style={styles.detailText}>Payouts Enabled</Text>
+                  <Text style={[styles.detailText, isDarkMode && { color: "#F8FAFC" }]}>Payouts Enabled</Text>
                 </View>
               )}
 
               {/* Account ID */}
               {accountStatus.accountId && (
-                <View style={styles.accountIdContainer}>
-                  <Text style={styles.accountIdLabel}>Account ID</Text>
+                <View style={[styles.accountIdContainer, isDarkMode && { borderTopColor: "#334155" }]}>
+                  <Text style={[styles.accountIdLabel, isDarkMode && { color: "#94A3B8" }]}>Account ID</Text>
                   <Text style={styles.accountIdText}>{accountStatus.accountId}</Text>
                 </View>
               )}
@@ -447,7 +449,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
 
               {/* Refresh Status */}
               <TouchableOpacity
-                style={styles.secondaryButton}
+                style={[styles.secondaryButton, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#38BDF8" }]}
                 onPress={() => refetch()}
               >
                 <Ionicons name="refresh-outline" size={20} color="#6200ee" />
@@ -456,7 +458,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
 
               {/* Delete Account */}
               <TouchableOpacity
-                style={styles.dangerButton}
+                style={[styles.dangerButton, isDarkMode && { backgroundColor: "#1E293B" }]}
                 onPress={handleDeleteAccount}
                 disabled={deleteAccount.isPending}
               >
@@ -472,9 +474,9 @@ const PayoutAccountScreen = ({ navigation }: any) => {
             </View>
 
             {/* Payout Info */}
-            <View style={styles.payoutInfo}>
-              <Text style={styles.payoutInfoTitle}>Payout Timeline</Text>
-              <Text style={styles.payoutInfoText}>
+            <View style={[styles.payoutInfo, isDarkMode && { backgroundColor: "#0F172A", borderWidth: 1, borderColor: "#334155" }]}>
+              <Text style={[styles.payoutInfoTitle, isDarkMode && { color: "#38BDF8" }]}>Payout Timeline</Text>
+              <Text style={[styles.payoutInfoText, isDarkMode && { color: "#94A3B8" }]}>
                 Payouts are processed within 3-5 business days for Australian bank accounts.
               </Text>
             </View>

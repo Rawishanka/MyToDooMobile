@@ -2,6 +2,7 @@ import { formatNumber } from '@/src/shared/utils/currency';
 import * as PaymentAPI from '@/src/api/payment-api';
 import { BRAND_BLUE, BRAND_GREEN, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import React, { useEffect, useState } from 'react';
+import { useTheme } from '@/src/shared/theme';
 import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -39,6 +40,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
   onAmountFocus,
   onMessageFocus,
 }) => {
+  const { isDarkMode } = useTheme();
   const [feePreview, setFeePreview] = useState<FeePreview | null>(null);
   const [feeLoading, setFeeLoading] = useState(false);
 
@@ -98,42 +100,46 @@ export const OfferForm: React.FC<OfferFormProps> = ({
 
   return (
     <View style={styles.formContainer}>
-      <Text style={styles.sectionTitle}>Your Offer</Text>
+      <Text style={[styles.sectionTitle, isDarkMode && { color: "#F8FAFC" }]}>Your Offer</Text>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>
+        <Text style={[styles.inputLabel, isDarkMode && { color: "#F8FAFC" }]}>
           Offer Amount * {budget && `(Budget: ${currencySymbol}${formatNumber(budget, { forceDecimals: true })})`}
         </Text>
-        <View style={[styles.amountInputContainer, validationError ? styles.errorBorder : undefined]}>
-          <Text style={styles.currencySymbol}>{currencySymbol}</Text>
+        <View style={[
+          styles.amountInputContainer,
+          isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' },
+          validationError ? styles.errorBorder : undefined
+        ]}>
+          <Text style={[styles.currencySymbol, isDarkMode && { backgroundColor: "#1E293B", color: "#94A3B8" }]}>{currencySymbol}</Text>
           <TextInput
-            style={styles.amountInput}
+            style={[styles.amountInput, isDarkMode && { color: "#F8FAFC" }]}
             placeholder={budget ? budget.toString() : "Enter your offer amount"}
             keyboardType="decimal-pad"
             value={offerAmount}
             onChangeText={onAmountChange}
             onFocus={onAmountFocus}
-            placeholderTextColor="#999"
+            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
           />
         </View>
         {validationError ? (
           <Text style={styles.errorText}>{validationError}</Text>
         ) : (
-          <Text style={styles.inputHint}>
+          <Text style={[styles.inputHint, isDarkMode && { color: "#94A3B8" }]}>
             Enter amount up to the task budget ({currencySymbol}{budget ? formatNumber(budget, { forceDecimals: true }) : '0.00'})
           </Text>
         )}
         {(feeLoading || feePreview) && (
-          <View style={styles.feePreviewBox}>
+          <View style={[styles.feePreviewBox, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
             {feeLoading ? (
               <ActivityIndicator size="small" color={BRAND_ORANGE} />
             ) : (
               <>
-                <Text style={styles.feePreviewTitle}>As you type</Text>
+                <Text style={[styles.feePreviewTitle, isDarkMode && { color: "#38BDF8" }]}>As you type</Text>
                 {feePreview?.taskerCommission != null && (
                   <View style={styles.feeRow}>
-                    <Text style={styles.feePreviewLine}>Service fee</Text>
-                    <Text style={styles.feePreviewLine}>
+                    <Text style={[styles.feePreviewLine, isDarkMode && { color: "#94A3B8" }]}>Service fee</Text>
+                    <Text style={[styles.feePreviewLine, isDarkMode && { color: "#94A3B8" }]}>
                       −{currencySymbol}
                       {formatNumber(feePreview.taskerCommission, { forceDecimals: true })}
                     </Text>
@@ -141,7 +147,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                 )}
                 {feePreview?.taskerNetReceives != null && (
                   <View style={styles.feeRow}>
-                    <Text style={styles.feeReceiveLabel}>You'll receive</Text>
+                    <Text style={[styles.feeReceiveLabel, isDarkMode && { color: "#38BDF8" }]}>You'll receive</Text>
                     <Text style={styles.feeReceiveValue}>
                       {currencySymbol}
                       {formatNumber(feePreview.taskerNetReceives, { forceDecimals: true })}
@@ -149,7 +155,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                   </View>
                 )}
                 {feePreview?.posterServiceFee != null && (
-                  <Text style={styles.feePreviewHint}>
+                  <Text style={[styles.feePreviewHint, isDarkMode && { color: "#64748B" }]}>
                     The poster also pays a {currencySymbol}
                     {formatNumber(feePreview.posterServiceFee, { forceDecimals: true })} service fee
                   </Text>
@@ -161,22 +167,26 @@ export const OfferForm: React.FC<OfferFormProps> = ({
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Your Message *</Text>
+        <Text style={[styles.inputLabel, isDarkMode && { color: "#F8FAFC" }]}>Your Message *</Text>
         <TextInput
-          style={[styles.messageInput, messageError ? styles.errorBorder : undefined]}
+          style={[
+            styles.messageInput,
+            isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' },
+            messageError ? styles.errorBorder : undefined
+          ]}
           placeholder="Why are you the best person for this task?"
           multiline
           numberOfLines={5}
           value={message}
           onChangeText={onMessageChange}
           onFocus={onMessageFocus}
-          placeholderTextColor="#999"
+          placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
           textAlignVertical="top"
         />
         {messageError ? (
           <Text style={styles.errorText}>{messageError}</Text>
         ) : (
-          <Text style={styles.inputHint}>
+          <Text style={[styles.inputHint, isDarkMode && { color: "#94A3B8" }]}>
             Explain your relevant experience and approach (min. 10 characters)
           </Text>
         )}

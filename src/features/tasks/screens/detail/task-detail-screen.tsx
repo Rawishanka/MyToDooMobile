@@ -11,6 +11,7 @@ import { PayoutAccountRequiredModal } from '../offers/components';
 
 // Responsive utilities
 import { isTablet, wp } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 import {
   AskQuestionModal,
   DetailHeader,
@@ -27,6 +28,7 @@ import { TaskActionButtons } from './components/TaskActionButtons';
 import { useTaskDetail } from './hooks/useTaskDetail';
 
 export default function TaskDetailScreen() {
+  const { isDarkMode } = useTheme();
   const { taskId, fromUserRole, fromStatus, tab } = useLocalSearchParams<{ 
     taskId: string; 
     fromUserRole?: string; 
@@ -169,10 +171,10 @@ export default function TaskDetailScreen() {
   });
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <OfflineBanner />
-      <View style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : BRAND_BLUE} />
 
         <DetailHeader />
 
@@ -280,7 +282,7 @@ export default function TaskDetailScreen() {
       </View>
 
       {/* Bottom safe area for Android navigation bar */}
-      <View style={styles.bottomSafeArea} />
+      <View style={[styles.bottomSafeArea, isDarkMode && { backgroundColor: '#0B1120' }]} />
       
       <NetworkAlert
         visible={showNetworkAlert}

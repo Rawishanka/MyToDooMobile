@@ -18,6 +18,7 @@ import {
     RemovalLocationInputs,
 } from './components';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface LocationData {
     address: string;
@@ -38,6 +39,7 @@ interface Category {
 }
 
 const LocationScreen = () => {
+    const { isDarkMode } = useTheme();
     const [isRemoval, setIsRemoval] = useState(false);
     const [pickupCode, setPickupCode] = useState('');
     const [dropoffCode, setDropoffCode] = useState('');
@@ -202,8 +204,8 @@ const LocationScreen = () => {
                 nestedScrollEnabled={true}
             >
                 {/* Title */}
-                <Text style={styles.title}>Tell me more!</Text>
-                <Text style={styles.subtitle}>Where do you need it done?</Text>
+                <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Tell me more!</Text>
+                <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>Where do you need it done?</Text>
 
                 {/* Toggle for Moving */}
                 <MovingToggle value={isRemoval} onValueChange={setIsRemoval} />

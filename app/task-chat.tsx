@@ -42,6 +42,7 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 // URL normalization helper for APK builds
@@ -108,6 +109,7 @@ export default function TaskChatScreen() {
   const normalizedTaskerAvatar = normalizeRouteParam(params.taskerAvatar);
 
   const router = useRouter();
+  const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const headerTopPadding = insets.top + 10;
   const { user } = useAuthStore();
@@ -675,7 +677,7 @@ export default function TaskChatScreen() {
       <View
         style={[
           styles.messageContainer,
-          isMine ? styles.myMessage : styles.theirMessage,
+          isMine ? styles.myMessage : [styles.theirMessage, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }],
         ]}
       >
         {item.messageType === 'image' && normalizedMediaUrl ? (
@@ -705,7 +707,7 @@ export default function TaskChatScreen() {
             onPress={() => handleFileDownload(normalizedMediaUrl, messageContent || 'File')}
           >
             <MaterialIcons name="insert-drive-file" size={24} color="#007bff" />
-            <Text style={styles.fileName}>{messageContent || 'File'}</Text>
+            <Text style={[styles.fileName, isDarkMode && { color: "#38BDF8" }]}>{messageContent || 'File'}</Text>
           </TouchableOpacity>
         ) : (
           <Text style={[styles.messageText, isMine && styles.myMessageText]}>
@@ -774,7 +776,7 @@ export default function TaskChatScreen() {
                 </View>
               )}
               <View style={styles.headerTextContainer}>
-                <Text style={styles.headerTitle} numberOfLines={1}>
+                <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>
                   {(() => {
                     const fullName = formatUserName(otherPerson.firstName, otherPerson.lastName);
                     const displayName = fullName || (otherPerson as any).displayName || 'User';
@@ -785,7 +787,7 @@ export default function TaskChatScreen() {
               </View>
             </View>
           ) : (
-            <Text style={styles.headerTitle} numberOfLines={1}>
+            <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>
               {normalizedTaskTitle || 'Chat'}
             </Text>
           )}
@@ -811,9 +813,9 @@ export default function TaskChatScreen() {
           ListEmptyComponent={
             !messagesLoading ? (
               <View style={styles.emptyState}>
-                <MaterialIcons name="chat-bubble-outline" size={48} color="#ccc" />
-                <Text style={styles.emptyText}>Start a conversation</Text>
-                <Text style={styles.emptySubtext}>Send a message to begin chatting about this task</Text>
+                <MaterialIcons name="chat-bubble-outline" size={48} color={isDarkMode ? "#475569" : "#ccc"} />
+                <Text style={[styles.emptyText, isDarkMode && { color: "#F8FAFC" }]}>Start a conversation</Text>
+                <Text style={[styles.emptySubtext, isDarkMode && { color: "#94A3B8" }]}>Send a message to begin chatting about this task</Text>
               </View>
             ) : null
           }
@@ -824,6 +826,7 @@ export default function TaskChatScreen() {
         {/* Input Area - Fixed for APK edge-to-edge mode with Android nav buttons */}
         <View style={[
           styles.inputContainer, 
+          isDarkMode && { backgroundColor: '#0B1120', borderTopColor: '#334155' },
           { 
             paddingBottom: Platform.OS === 'android' 
               ? (insets.bottom > 0 ? insets.bottom + 10 : 50) // Add extra space for Android nav buttons in APK
@@ -841,12 +844,13 @@ export default function TaskChatScreen() {
             }}
             disabled={isUploading}
           >
-            <MaterialIcons name="attach-file" size={24} color="#666" />
+            <MaterialIcons name="attach-file" size={24} color={isDarkMode ? '#38BDF8' : '#666'} />
           </TouchableOpacity>
 
           <TextInput
-            style={styles.input}
+            style={[styles.input, isDarkMode && { backgroundColor: '#1E293B', color: '#F8FAFC', borderColor: '#334155', borderWidth: 1 }]}
             placeholder="Type a message..."
+            placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
             value={messageText}
             onChangeText={setMessageText}
             multiline
@@ -873,9 +877,9 @@ export default function TaskChatScreen() {
         {/* Upload Loading Overlay */}
         {isUploading && (
           <View style={styles.uploadOverlay}>
-            <View style={styles.uploadOverlayContent}>
+            <View style={[styles.uploadOverlayContent, isDarkMode && { backgroundColor: "#1E293B" }]}>
               <ActivityIndicator size="large" color="#007bff" />
-              <Text style={styles.uploadOverlayText}>Uploading...</Text>
+              <Text style={[styles.uploadOverlayText, isDarkMode && { color: "#F8FAFC" }]}>Uploading...</Text>
             </View>
           </View>
         )}

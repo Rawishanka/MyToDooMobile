@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 import React from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
@@ -9,20 +10,21 @@ interface TimeToggleProps {
 }
 
 export const TimeToggle: React.FC<TimeToggleProps> = ({ needSpecificTime, onToggle, disabled = false }) => {
+  const { isDarkMode } = useTheme();
   return (
-    <View style={[styles.toggleRow, disabled && styles.toggleRowDisabled]}>
-      <Text style={[styles.toggleText, disabled && styles.toggleTextDisabled]}>
+    <View style={[styles.toggleRow, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }, disabled && [styles.toggleRowDisabled, isDarkMode && { backgroundColor: '#0F172A' }]]}>
+      <Text style={[styles.toggleText, isDarkMode && { color: '#F8FAFC' }, disabled && [styles.toggleTextDisabled, isDarkMode && { color: '#64748B' }]]}>
         I need certain time of day
       </Text>
       <Switch
         value={needSpecificTime}
         onValueChange={disabled ? undefined : onToggle}
         trackColor={{ 
-          false: disabled ? '#F2F2F7' : '#E5E5EA', 
+          false: isDarkMode ? '#334155' : (disabled ? '#F2F2F7' : '#E5E5EA'), 
           true: disabled ? '#D1D1D6' : '#0057FF' 
         }}
         thumbColor={disabled ? '#8E8E93' : '#FFFFFF'}
-        ios_backgroundColor={disabled ? '#F2F2F7' : '#E5E5EA'}
+        ios_backgroundColor={isDarkMode ? '#334155' : (disabled ? '#F2F2F7' : '#E5E5EA')}
         disabled={disabled}
       />
     </View>

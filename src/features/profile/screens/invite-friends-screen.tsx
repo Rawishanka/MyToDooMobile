@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface InviteFriendsScreenProps {
@@ -21,6 +22,7 @@ interface InviteFriendsScreenProps {
 
 export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps) {
   const insets = useSafeAreaInsets();
+  const { isDarkMode } = useTheme();
   const { data, isLoading, error, refetch, isRefetching } = useGetMyReferral();
 
   const handleShare = useCallback(async () => {
@@ -40,13 +42,13 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
   }, [data]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 44 }]}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
-          <Ionicons name="chevron-back" size={24} color="#0F172A" />
+      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 44 }, isDarkMode && { backgroundColor: "#0B1120", borderBottomColor: "#334155" }]}>
+        <TouchableOpacity onPress={onBack} style={[styles.backButton, isDarkMode && { backgroundColor: "#1E293B" }]} activeOpacity={0.7}>
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#0F172A"} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Invite Friends</Text>
+        <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]}>Invite Friends</Text>
         <View style={{ width: 36 }} />
       </View>
 
@@ -89,9 +91,9 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
           </LinearGradient>
 
           {/* Referral Code Card */}
-          <View style={styles.codeCard}>
-            <Text style={styles.codeCardLabel}>YOUR REFERRAL CODE</Text>
-            <View style={styles.codePill}>
+          <View style={[styles.codeCard, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
+            <Text style={[styles.codeCardLabel, isDarkMode && { color: "#94A3B8" }]}>YOUR REFERRAL CODE</Text>
+            <View style={[styles.codePill, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#38BDF8" }]}>
               <Text style={styles.codeText} selectable>
                 {data?.code || '—'}
               </Text>
@@ -100,8 +102,8 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
             {data?.inviteUrl ? (
               <View style={styles.urlContainer}>
                 <Text style={styles.urlLabel}>INVITE LINK</Text>
-                <View style={styles.urlBox}>
-                  <Text style={styles.urlText} numberOfLines={1} ellipsizeMode="middle" selectable>
+                <View style={[styles.urlBox, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#334155" }]}>
+                  <Text style={[styles.urlText, isDarkMode && { color: "#94A3B8" }]} numberOfLines={1} ellipsizeMode="middle" selectable>
                     {data.inviteUrl}
                   </Text>
                 </View>
@@ -117,36 +119,36 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
 
           {/* Referral Stats */}
           <View style={styles.statsRow}>
-            <View style={styles.statCard}>
+            <View style={[styles.statCard, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
               <View style={[styles.statIconWrap, { backgroundColor: '#FEF3C7' }]}>
                 <Ionicons name="time-outline" size={18} color="#D97706" />
               </View>
-              <Text style={styles.statValue}>{data?.pending ?? 0}</Text>
-              <Text style={styles.statLabel}>Pending</Text>
+              <Text style={[styles.statValue, isDarkMode && { color: "#F8FAFC" }]}>{data?.pending ?? 0}</Text>
+              <Text style={[styles.statLabel, isDarkMode && { color: "#94A3B8" }]}>Pending</Text>
             </View>
-            <View style={styles.statCard}>
+            <View style={[styles.statCard, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
               <View style={[styles.statIconWrap, { backgroundColor: '#DCFCE7' }]}>
                 <Ionicons name="checkmark-circle-outline" size={18} color="#16A34A" />
               </View>
               <Text style={[styles.statValue, { color: '#16A34A' }]}>{data?.rewarded ?? 0}</Text>
-              <Text style={styles.statLabel}>Rewarded</Text>
+              <Text style={[styles.statLabel, isDarkMode && { color: "#94A3B8" }]}>Rewarded</Text>
             </View>
           </View>
 
           {/* How it works */}
-          <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>How it works</Text>
+          <View style={[styles.infoCard, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
+            <Text style={[styles.infoTitle, isDarkMode && { color: "#F8FAFC" }]}>How it works</Text>
             <View style={styles.infoStep}>
-              <View style={styles.stepNumber}><Text style={styles.stepNumberText}>1</Text></View>
-              <Text style={styles.stepText}>Share your unique link or code with your friends.</Text>
+              <View style={[styles.stepNumber, isDarkMode && { backgroundColor: "#0F172A" }]}><Text style={styles.stepNumberText}>1</Text></View>
+              <Text style={[styles.stepText, isDarkMode && { color: "#94A3B8" }]}>Share your unique link or code with your friends.</Text>
             </View>
             <View style={styles.infoStep}>
-              <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
-              <Text style={styles.stepText}>Friends sign up and verify their phone and email.</Text>
+              <View style={[styles.stepNumber, isDarkMode && { backgroundColor: "#0F172A" }]}><Text style={styles.stepNumberText}>2</Text></View>
+              <Text style={[styles.stepText, isDarkMode && { color: "#94A3B8" }]}>Friends sign up and verify their phone and email.</Text>
             </View>
             <View style={styles.infoStep}>
-              <View style={styles.stepNumber}><Text style={styles.stepNumberText}>3</Text></View>
-              <Text style={styles.stepText}>Both of you receive promo credits automatically!</Text>
+              <View style={[styles.stepNumber, isDarkMode && { backgroundColor: "#0F172A" }]}><Text style={styles.stepNumberText}>3</Text></View>
+              <Text style={[styles.stepText, isDarkMode && { color: "#94A3B8" }]}>Both of you receive promo credits automatically!</Text>
             </View>
           </View>
         </ScrollView>

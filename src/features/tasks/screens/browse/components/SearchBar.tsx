@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface SearchBarProps {
   visible: boolean;
@@ -11,6 +12,8 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ visible, searchText, onChangeText, onClose, onSubmit }: SearchBarProps) {
+  const { isDarkMode } = useTheme();
+
   if (!visible) return null;
 
   const handleClear = () => {
@@ -24,23 +27,30 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose, 
   };
 
   const handleTextChange = (text: string) => {
-    // Pass the text as-is, but trim leading/trailing spaces
-    // Don't convert case here - let the search logic handle normalization
     onChangeText(text);
   };
 
   return (
-    <View style={styles.searchContainer}>
+    <View style={[
+      styles.searchContainer,
+      isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }
+    ]}>
       <TouchableOpacity onPress={onClose} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#000" />
+        <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#000'} />
       </TouchableOpacity>
       
-      <View style={styles.searchInputContainer}>
-        <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+      <View style={[
+        styles.searchInputContainer,
+        isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }
+      ]}>
+        <Ionicons name="search" size={20} color={isDarkMode ? '#94A3B8' : '#666'} style={styles.searchIcon} />
         <TextInput
-          style={styles.searchBar}
+          style={[
+            styles.searchBar,
+            isDarkMode && { color: '#F8FAFC' }
+          ]}
           placeholder="Search by title, location, category..."
-          placeholderTextColor="#999"
+          placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
           value={searchText}
           onChangeText={handleTextChange}
           onSubmitEditing={handleSearch}
@@ -54,17 +64,20 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose, 
         {searchText.length > 0 && (
           <>
             <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
-              <Ionicons name="close-circle" size={20} color="#666" />
+              <Ionicons name="close-circle" size={20} color={isDarkMode ? '#94A3B8' : '#666'} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleSearch} style={styles.searchButton}>
-              <Ionicons name="search" size={20} color="#007AFF" />
+            <TouchableOpacity onPress={handleSearch} style={[styles.searchButton, isDarkMode && { backgroundColor: '#0F172A' }]}>
+              <Ionicons name="search" size={20} color={isDarkMode ? '#38BDF8' : '#007AFF'} />
             </TouchableOpacity>
           </>
         )}
       </View>
       
       {searchText.length > 0 && (
-        <Text style={styles.searchInfo}>
+        <Text style={[
+          styles.searchInfo,
+          isDarkMode && { color: '#94A3B8' }
+        ]}>
           Searching across all fields...
         </Text>
       )}

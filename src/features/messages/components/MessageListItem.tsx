@@ -2,6 +2,7 @@
 
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import React, { useCallback } from 'react';
+import { useTheme } from '@/src/shared/theme';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { Message } from './message-types';
 
@@ -11,6 +12,7 @@ interface MessageListItemProps {
 }
 
 const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onPress }) => {
+  const { isDarkMode } = useTheme();
   // Memoize the onPress handler to prevent unnecessary re-renders
   const handlePress = useCallback(() => {
     onPress(message);
@@ -25,7 +27,8 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
     <TouchableOpacity 
       style={[
         styles.messageItem,
-        (message.unreadCount && message.unreadCount > 0) ? styles.unreadItem : undefined
+        isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' },
+        (message.unreadCount && message.unreadCount > 0) ? (isDarkMode ? { backgroundColor: '#1E293B' } : styles.unreadItem) : undefined
       ]} 
       onPress={handlePress}
       activeOpacity={0.7}
@@ -52,19 +55,21 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
           <Text 
             style={[
               styles.messageTitle,
-              (message.unreadCount && message.unreadCount > 0) ? styles.unreadTitle : undefined
+              isDarkMode && { color: '#F8FAFC' },
+              (message.unreadCount && message.unreadCount > 0) ? (isDarkMode ? { color: '#38BDF8' } : styles.unreadTitle) : undefined
             ]} 
             numberOfLines={1}
           >
             {message.title}
           </Text>
-          <Text style={styles.messageDate}>{message.date}</Text>
+          <Text style={[styles.messageDate, isDarkMode && { color: '#94A3B8' }]}>{message.date}</Text>
         </View>
         
         <Text 
           style={[
             styles.messagePreview,
-            (message.unreadCount && message.unreadCount > 0) ? styles.unreadPreview : undefined
+            isDarkMode && { color: '#94A3B8' },
+            (message.unreadCount && message.unreadCount > 0) ? (isDarkMode ? { color: '#CBD5E1' } : styles.unreadPreview) : undefined
           ]} 
           numberOfLines={1}
         >

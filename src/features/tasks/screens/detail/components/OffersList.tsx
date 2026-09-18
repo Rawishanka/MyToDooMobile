@@ -17,6 +17,7 @@ import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
+import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -61,6 +62,7 @@ export const OffersList: React.FC<OffersListProps> = ({
   taskLocation
 }) => {
   const insets = useSafeAreaInsets();
+  const { isDarkMode } = useTheme();
   
   // Settled = accepted or completed (after pay→complete→release, status becomes completed)
   const hasAcceptedOffer = offers.some(
@@ -94,9 +96,9 @@ export const OffersList: React.FC<OffersListProps> = ({
   if (otherOffers.length === 0) {
     return (
       <View style={[styles.emptyState, { paddingBottom: Math.max(insets.bottom, 20), marginBottom: 100 }]}>
-        <Ionicons name="document-outline" size={48} color="#ccc" />
-        <Text style={styles.emptyStateText}>No other offers yet</Text>
-        <Text style={styles.emptyStateSubtext}>
+        <Ionicons name="document-outline" size={48} color={isDarkMode ? '#475569' : '#ccc'} />
+        <Text style={[styles.emptyStateText, isDarkMode && { color: '#F8FAFC' }]}>No other offers yet</Text>
+        <Text style={[styles.emptyStateSubtext, isDarkMode && { color: '#94A3B8' }]}>
           {offers.length > 0 ? 'Only your offer has been submitted.' : 'Be the first to make an offer!'}
         </Text>
       </View>
@@ -164,6 +166,7 @@ function getOfferStatusMeta(statusRaw: string) {
 // Component to display offer amount and status
 const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean; showStatus?: boolean }> = ({ offer, isTaskPoster, showStatus = true }) => {
   const { countryInfo } = useLocationCountry();
+  const { isDarkMode } = useTheme();
   const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
   
   const offerAmount = offer.offer?.amount || offer.amount || 0;
@@ -175,15 +178,15 @@ const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean; showStatu
       {/* Only show amount to task poster, hide from other taskers */}
       {isTaskPoster && (
         <View style={styles.offerAmountRow}>
-          <Ionicons name="cash-outline" size={16} color="#004aad" />
-          <Text style={styles.offerAmountText}>
+          <Ionicons name="cash-outline" size={16} color={isDarkMode ? '#38BDF8' : '#004aad'} />
+          <Text style={[styles.offerAmountText, isDarkMode && { color: '#38BDF8' }]}>
             {formatCurrency(offerAmount, currencyInfo)}
           </Text>
         </View>
       )}
       {/* Only show status badge if showStatus is true (hidden for other taskers' offers) */}
       {showStatus && (
-        <View style={[styles.offerStatusBadge, styles[meta.badgeStyle]]}>
+        <View style={[styles.offerStatusBadge, styles[meta.badgeStyle], isDarkMode && { backgroundColor: meta.color + '22' }]}>
           <Ionicons name={meta.icon} size={14} color={meta.color} />
           <Text style={[styles.offerStatusText, styles[meta.textStyle]]}>
             {meta.label}
@@ -205,6 +208,7 @@ interface OfferCardProps {
 }
 
 const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUserId, onAcceptOffer, hasAcceptedOffer, isTaskPoster }) => {
+  const { isDarkMode } = useTheme();
   const taskTitle = offer.taskId?.title || 'Task';
   
   // Extract user information
@@ -308,11 +312,11 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
         }
         
         return (
-          <View style={styles.offerCard}>
+          <View style={[styles.offerCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             {/* Task Title - Show which task this offer is for */}
-            <View style={styles.taskTitleContainer}>
-              <Ionicons name="briefcase-outline" size={14} color="#666" />
-              <Text style={styles.taskTitle} numberOfLines={1}>
+            <View style={[styles.taskTitleContainer, isDarkMode && { borderBottomColor: '#334155' }]}>
+              <Ionicons name="briefcase-outline" size={14} color={isDarkMode ? "#94A3B8" : "#666"} />
+              <Text style={[styles.taskTitle, isDarkMode && { color: "#94A3B8" }]} numberOfLines={1}>
                 {taskTitle}
               </Text>
             </View>
@@ -328,7 +332,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                 </View>
                 <View style={styles.offerUserInfo}>
                   <View style={styles.offerNameRow}>
-                    <Text style={styles.offerUserName}>
+                    <Text style={[styles.offerUserName, isDarkMode && { color: "#F8FAFC" }]}>
                       {userName}
                     </Text>
                   </View>
@@ -348,10 +352,10 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                       <>
                         <View style={styles.offerRatingContainer}>
                           <Ionicons name="star" size={14} color="#FFD700" />
-                          <Text style={styles.offerRatingText}>
+                          <Text style={[styles.offerRatingText, isDarkMode && { color: "#F8FAFC" }]}>
                             {Number(rating).toFixed(1)}
                           </Text>
-                          <Text style={styles.offerRatingCount}>
+                          <Text style={[styles.offerRatingCount, isDarkMode && { color: "#94A3B8" }]}>
                             ({totalReviews})
                           </Text>
                         </View>
@@ -367,22 +371,22 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                   </View>
 
                   {/* Tasks completed */}
-                  <Text style={styles.offerTasksText}>
+                  <Text style={[styles.offerTasksText, isDarkMode && { color: "#94A3B8" }]}>
                     {completedTasks} task{completedTasks !== 1 ? 's' : ''} completed
                   </Text>
 
                   {/* Message */}
-                  <View style={styles.offerMessageRow}>
-                    <Ionicons name="chatbubble-outline" size={13} color="#666" />
-                    <Text style={styles.offerMessage}>
+                  <View style={[styles.offerMessageRow, isDarkMode && { borderTopColor: '#334155' }]}>
+                    <Ionicons name="chatbubble-outline" size={13} color={isDarkMode ? "#94A3B8" : "#666"} />
+                    <Text style={[styles.offerMessage, isDarkMode && { color: "#E2E8F0" }]}>
                       {offer.offer?.message || offer.message || 'No message provided'}
                     </Text>
                   </View>
                   
                   {/* Time posted */}
                   <View style={styles.offerDateRow}>
-                    <Ionicons name="time-outline" size={12} color="#999" />
-                    <Text style={styles.offerDate}>
+                    <Ionicons name="time-outline" size={12} color={isDarkMode ? "#64748B" : "#999"} />
+                    <Text style={[styles.offerDate, isDarkMode && { color: "#64748B" }]}>
                       {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-GB', {
                         day: 'numeric',
                         month: 'short',

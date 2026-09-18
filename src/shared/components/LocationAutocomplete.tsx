@@ -1,4 +1,5 @@
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
+import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import * as Location from 'expo-location';
@@ -58,6 +59,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   country, // AUSTRALIA-ONLY: Always defaults to 'AU'
   onDropdownStateChange,
 }) => {
+  const { isDarkMode } = useTheme();
   // AUSTRALIA-ONLY APP: Always use Australia regardless of detection
   const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
   // Always use 'AU' for Australia-only app
@@ -465,6 +467,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         key={item.id}
         style={[
           styles.suggestionItem,
+          isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' },
           index === suggestions.length - 1 && styles.suggestionItemLast
         ]}
         onPress={() => {
@@ -478,16 +481,16 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           <Ionicons 
             name={isManual ? "create-outline" : "location-outline"} 
             size={20} 
-            color="#666" 
-            style={styles.suggestionIcon} 
+            color={isDarkMode ? '#38BDF8' : '#666'} 
+            style={[styles.suggestionIcon, isDarkMode && { color: '#38BDF8' }]} 
           />
           <View style={styles.suggestionTextContainer}>
-            <Text style={styles.suggestionMainText} numberOfLines={1}>{mainLocation}</Text>
+            <Text style={[styles.suggestionMainText, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={1}>{mainLocation}</Text>
             {subLocation && !isManual && (
-              <Text style={styles.suggestionSubText} numberOfLines={2}>{subLocation}</Text>
+              <Text style={[styles.suggestionSubText, isDarkMode && { color: '#94A3B8' }]} numberOfLines={2}>{subLocation}</Text>
             )}
             {isManual && (
-              <Text style={styles.manualEntryText}>Tap to enter manually</Text>
+              <Text style={[styles.manualEntryText, isDarkMode && { color: '#38BDF8' }]}>Tap to enter manually</Text>
             )}
           </View>
         </View>
@@ -534,14 +537,14 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       </TouchableOpacity>
 
       {/* Search Input */}
-      <View style={styles.inputContainer}>
-        <Ionicons name="search-outline" size={20} color="#999" style={styles.inputIcon} />
+      <View style={[styles.inputContainer, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
+        <Ionicons name="search-outline" size={20} color={isDarkMode ? "#38BDF8" : "#999"} style={[styles.inputIcon, isDarkMode && { color: "#38BDF8" }]} />
         <TextInput
-          style={styles.input}
+          style={[styles.input, isDarkMode && { color: "#F8FAFC" }]}
           value={query}
           onChangeText={handleInputChange}
           placeholder={dynamicPlaceholder}
-          placeholderTextColor="#999"
+          placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
           autoCorrect={false}
           autoCapitalize="words"
           returnKeyType="search"
@@ -573,7 +576,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
       {/* Dropdown Suggestions List */}
       {showSuggestions && suggestions.length > 0 && (
-        <View style={styles.dropdownContainer} pointerEvents="box-none">
+        <View style={[styles.dropdownContainer, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]} pointerEvents="box-none">
           <ScrollView
             keyboardShouldPersistTaps="always"
             showsVerticalScrollIndicator={true}
@@ -587,7 +590,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       )}
 
       {showSuggestions && error && (
-        <View style={styles.errorContainer}>
+        <View style={[styles.errorContainer, isDarkMode && { backgroundColor: "rgba(239, 68, 68, 0.15)" }]}>
           <Ionicons name="warning-outline" size={16} color="#FF6B6B" />
           <Text style={styles.errorText}>{error}</Text>
         </View>

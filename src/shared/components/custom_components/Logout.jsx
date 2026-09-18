@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 import { removeFCMToken } from '@/src/api/fcm-api';
 import { deleteFCMToken, getFCMToken } from '@/src/services/notification-service';
 import { useClearAllCaches } from '@/src/shared/utils/cache-utils';
@@ -17,6 +18,7 @@ import {
 } from 'react-native';
 
 export default function LogoutPopup({ onBack }) {
+  const { isDarkMode } = useTheme();
   const [showPopup, setShowPopup] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { clearAuth } = useAuthStore();
@@ -84,29 +86,32 @@ export default function LogoutPopup({ onBack }) {
       onRequestClose={handleCancel}
     >
       <Pressable style={styles.backdrop} onPress={handleCancel}>
-        <Pressable style={styles.card} onPress={(e) => e.stopPropagation()}>
+        <Pressable
+          style={[styles.card, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}
+          onPress={(e) => e.stopPropagation()}
+        >
           {/* Red/Coral Soft Icon Badge */}
-          <View style={styles.iconBadge}>
-            <Ionicons name="log-out-outline" size={32} color="#EF4444" />
+          <View style={[styles.iconBadge, isDarkMode && { backgroundColor: '#450A0A', borderColor: '#7F1D1D', borderWidth: 1 }]}>
+            <Ionicons name="log-out-outline" size={32} color={isDarkMode ? "#F87171" : "#EF4444"} />
           </View>
 
           {/* Heading */}
-          <Text style={styles.title}>Log Out of MyToDoo?</Text>
+          <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Log Out of MyToDoo?</Text>
 
           {/* Subtitle */}
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>
             Are you sure you want to log out? You will need to sign in again to access your tasks and messages.
           </Text>
 
           {/* 2026 Action Buttons */}
           <View style={styles.actions}>
             <TouchableOpacity
-              style={styles.cancelBtn}
+              style={[styles.cancelBtn, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 }]}
               onPress={handleCancel}
               disabled={isLoggingOut}
               activeOpacity={0.7}
             >
-              <Text style={styles.cancelBtnText}>Cancel</Text>
+              <Text style={[styles.cancelBtnText, isDarkMode && { color: '#94A3B8' }]}>Cancel</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

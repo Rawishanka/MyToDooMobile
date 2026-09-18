@@ -20,8 +20,10 @@ import {
   TimeToggle,
 } from './components';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 const TimeSelectScreen = () => {
+  const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const [selectedOption, setSelectedOption] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -152,9 +154,9 @@ const TimeSelectScreen = () => {
   const isFormValid = selectedOption !== '' && isBudgetValid;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="chevron-back" size={24} color="#333" />
+        <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
       </TouchableOpacity>
       
       <ScrollView 

@@ -21,11 +21,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 export default function PostTaskScreen() {
   const router = useRouter();
   const { myTask, resetTask } = useCreateTaskStore();
   const insets = useSafeAreaInsets();
+  const { isDarkMode } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
   
@@ -236,8 +238,8 @@ export default function PostTaskScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
       
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
@@ -250,56 +252,56 @@ export default function PostTaskScreen() {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Task Summary Card */}
-        <View style={styles.summaryCard}>
-          <Text style={styles.sectionTitle}>Task Summary</Text>
+        <View style={[styles.summaryCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Task Summary</Text>
           
           {/* Title */}
           <View style={styles.summaryItem}>
-            <Text style={styles.label}>Title</Text>
-            <Text style={styles.value}>{myTask.title || 'Not set'}</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#94A3B8' }]}>Title</Text>
+            <Text style={[styles.value, isDarkMode && { color: '#F8FAFC' }]}>{myTask.title || 'Not set'}</Text>
           </View>
 
           {/* Description */}
           <View style={styles.summaryItem}>
-            <Text style={styles.label}>Description</Text>
-            <Text style={styles.value} numberOfLines={3}>
+            <Text style={[styles.label, isDarkMode && { color: '#94A3B8' }]}>Description</Text>
+            <Text style={[styles.value, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={3}>
               {myTask.description || 'Not set'}
             </Text>
           </View>
 
           {/* Categories */}
           <View style={styles.summaryItem}>
-            <Text style={styles.label}>Categories</Text>
-            <Text style={styles.value}>{formatCategories()}</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#94A3B8' }]}>Categories</Text>
+            <Text style={[styles.value, isDarkMode && { color: '#F8FAFC' }]}>{formatCategories()}</Text>
           </View>
 
           {/* Location */}
           <View style={styles.summaryItem}>
-            <Text style={styles.label}>Location</Text>
-            <Text style={styles.value}>{myTask.description || 'Not set'}</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#94A3B8' }]}>Location</Text>
+            <Text style={[styles.value, isDarkMode && { color: '#F8FAFC' }]}>{myTask.description || 'Not set'}</Text>
           </View>
 
           {/* Budget */}
           <View style={styles.summaryItem}>
-            <Text style={styles.label}>Budget</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#94A3B8' }]}>Budget</Text>
             <Text style={[styles.value, styles.budgetValue]}>{formatBudget()}</Text>
           </View>
 
           {/* Date & Time */}
           <View style={styles.summaryItem}>
-            <Text style={styles.label}>Date Type</Text>
-            <Text style={styles.value}>Easy</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#94A3B8' }]}>Date Type</Text>
+            <Text style={[styles.value, isDarkMode && { color: '#F8FAFC' }]}>Easy</Text>
           </View>
 
           <View style={styles.summaryItem}>
-            <Text style={styles.label}>Time</Text>
-            <Text style={styles.value}>{myTask.time || 'Anytime'}</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#94A3B8' }]}>Time</Text>
+            <Text style={[styles.value, isDarkMode && { color: '#F8FAFC' }]}>{myTask.time || 'Anytime'}</Text>
           </View>
 
           {/* Images */}
           {(myTask.photos && myTask.photos.length > 0) && (
             <View style={styles.summaryItem}>
-              <Text style={styles.label}>Images ({myTask.photos.length})</Text>
+              <Text style={[styles.label, isDarkMode && { color: '#94A3B8' }]}>Images ({myTask.photos.length})</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageContainer}>
                 {myTask.photos.map((uri, index) => (
                   <Image 
@@ -323,7 +325,7 @@ export default function PostTaskScreen() {
       </ScrollView>
 
       {/* Action Buttons */}
-      <View style={styles.actionButtons}>
+      <View style={[styles.actionButtons, isDarkMode && { backgroundColor: '#0B1120', borderTopColor: '#1E293B' }]}>
         <TouchableOpacity 
           style={styles.editButton}
           onPress={() => router.push('/(welcome-screen)/title-screen')}

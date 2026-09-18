@@ -1,4 +1,4 @@
-import { cardStyles, colors } from '@/src/shared/theme';
+import { cardStyles, colors, useTheme } from '@/src/shared/theme';
 import { formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
 import { resolveTaskBudget } from '@/src/shared/utils/resolveTaskBudget';
 import { formatUserName, formatAvatarName } from '@/src/utils/formatUserName';
@@ -39,6 +39,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   showMapButton = true,
   variant = 'default',
 }) => {
+  const { isDarkMode } = useTheme();
   // Helper function to parse location if it's a string
   const parseLocation = (location: any) => {
     if (!location) return null;
@@ -259,7 +260,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   // Default variant (for browse/explore screens)
   return (
     <TouchableOpacity
-      style={[cardStyles.taskCard, styles.defaultCard]}
+      style={[cardStyles.taskCard, styles.defaultCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
       activeOpacity={0.75}
       onPress={() => onPress(task._id)}
     >
@@ -269,7 +270,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       <View style={styles.cardBody}>
         {/* Header row: Title + Price */}
         <View style={styles.cardHeaderRow}>
-          <Text style={styles.taskTitle} numberOfLines={2}>
+          <Text style={[styles.taskTitle, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={2}>
             {task.title}
           </Text>
           <View style={styles.priceBubble}>
@@ -288,7 +289,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 color="#0284C7"
               />
             </View>
-            <Text style={styles.taskRowText} numberOfLines={1}>
+            <Text style={[styles.taskRowText, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>
               {(() => {
                 const address = parsedLocation?.address || 'Location not specified';
                 if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
@@ -306,7 +307,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <View style={[styles.iconBadge, styles.dateIconBadge]}>
                 <Ionicons name="calendar" size={RFValue(11)} color="#10B981" />
               </View>
-              <Text style={[styles.taskRowText, styles.dateRowText]}>{dateDisplay}</Text>
+              <Text style={[styles.taskRowText, styles.dateRowText, isDarkMode && { color: '#94A3B8' }]}>{dateDisplay}</Text>
             </View>
           )}
 
@@ -315,7 +316,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             <View style={[styles.iconBadge, styles.timeIconBadge]}>
               <Ionicons name="time" size={RFValue(11)} color="#FF6B00" />
             </View>
-            <Text style={styles.taskRowText}>{getTimePreference()}</Text>
+            <Text style={[styles.taskRowText, isDarkMode && { color: '#94A3B8' }]}>{getTimePreference()}</Text>
           </View>
         </View>
 
@@ -391,7 +392,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               }}
               style={styles.userAvatar}
             />
-            <Text style={styles.posterName} numberOfLines={1}>
+            <Text style={[styles.posterName, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>
               {formatUserName(task.createdBy?.firstName, task.createdBy?.lastName)}
             </Text>
           </View>
@@ -409,58 +410,58 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 };
 
 const styles = StyleSheet.create({
-  // Default Card Styles - 2026 PREMIUM
+  // Default Card Styles - 2026 PREMIUM (COMPACT & SLEEK)
   defaultCard: {
     marginHorizontal: isTablet ? wp('-2%') : wp('4%'),
-    marginBottom: hp('1.5%'),
+    marginBottom: 10,
     position: 'relative',
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#1A2980',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: '#E2E8F0',
+    shadowColor: '#003399',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
     overflow: 'hidden',
     flexDirection: 'row',
   },
   accentStrip: {
-    width: 4.5,
-    backgroundColor: '#1A2980',
-    borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
+    width: 4,
+    backgroundColor: '#003399',
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
     flexShrink: 0,
   },
   cardBody: {
     flex: 1,
     paddingHorizontal: 14,
-    paddingVertical: 14,
+    paddingVertical: 10,
     paddingRight: wp('2%'),
   },
   cardHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    gap: 10,
-    marginBottom: hp('0.9%'),
+    gap: 8,
+    marginBottom: 5,
     paddingRight: 24, // Space for chevron
   },
   priceBubble: {
-    backgroundColor: '#F0F4FF',
+    backgroundColor: '#EFF6FF',
     borderWidth: 1,
-    borderColor: '#D8E2FD',
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4.5,
+    borderColor: '#DBEAFE',
+    borderRadius: 10,
+    paddingHorizontal: 9,
+    paddingVertical: 3.5,
     flexShrink: 0,
     alignSelf: 'flex-start',
   },
   priceText: {
-    fontSize: RFValue(isTablet ? 14 : 15),
+    fontSize: RFValue(isTablet ? 13.5 : 14.5),
     fontWeight: '800',
-    color: '#1A2980',
+    color: '#003399',
     letterSpacing: 0.2,
   },
 
@@ -544,27 +545,27 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
 
-  // Common Task Row Styles (Default) - RESPONSIVE
+  // Common Task Row Styles (Default) - COMPACT & 2026 SLEEK
   taskTitle: {
-    fontSize: RFValue(isTablet ? 13.5 : 15),
+    fontSize: RFValue(isTablet ? 13.5 : 14.5),
     fontWeight: '700',
     color: '#0F172A',
     flex: 1,
-    lineHeight: RFValue(isTablet ? 18 : 21),
+    lineHeight: RFValue(isTablet ? 17.5 : 19.5),
   },
   metaContainer: {
-    gap: hp('0.5%'),
-    marginBottom: hp('0.6%'),
+    gap: 3.5,
+    marginBottom: 4,
   },
   taskRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 7,
   },
   iconBadge: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
+    width: 20,
+    height: 20,
+    borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
     flexShrink: 0,
@@ -579,7 +580,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF7ED',
   },
   taskRowText: {
-    fontSize: RFValue(isTablet ? 11 : 12),
+    fontSize: RFValue(isTablet ? 10.5 : 11.5),
     color: '#475569',
     fontWeight: '500',
     flex: 1,
@@ -593,40 +594,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: hp('0.8%'),
-    marginTop: hp('0.2%'),
+    gap: 5,
+    marginBottom: 4,
+    marginTop: 2,
   },
   categoryTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4.5,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    paddingHorizontal: 8,
-    paddingVertical: 3.5,
-    borderRadius: 12,
+    paddingHorizontal: 7.5,
+    paddingVertical: 2.5,
+    borderRadius: 10,
   },
   categoryDot: {
-    width: 5,
-    height: 5,
+    width: 4.5,
+    height: 4.5,
     borderRadius: 2.5,
     backgroundColor: '#0284C7',
   },
   categoryText: {
-    fontSize: RFValue(9.5),
+    fontSize: RFValue(9),
     color: '#334155',
     fontWeight: '600',
   },
   moreCategoriesTag: {
     backgroundColor: '#F1F5F9',
-    paddingHorizontal: 6,
-    paddingVertical: 3.5,
-    borderRadius: 12,
+    paddingHorizontal: 5.5,
+    paddingVertical: 2.5,
+    borderRadius: 10,
   },
   moreCategoriesText: {
-    fontSize: RFValue(9),
+    fontSize: RFValue(8.5),
     color: '#64748B',
     fontWeight: '600',
   },
@@ -634,76 +635,76 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: hp('0.8%'),
-    paddingTop: hp('0.8%'),
+    marginTop: 5,
+    paddingTop: 6,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
   },
   offerChipActive: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4.5,
+    gap: 4,
     backgroundColor: '#FFF4ED',
     borderWidth: 1,
     borderColor: '#FFE2D1',
-    paddingHorizontal: 9,
-    paddingVertical: 4.5,
-    borderRadius: 16,
+    paddingHorizontal: 8.5,
+    paddingVertical: 3.5,
+    borderRadius: 12,
   },
   offerTextActive: {
-    fontSize: RFValue(isTablet ? 10 : 11),
+    fontSize: RFValue(isTablet ? 10 : 10.5),
     color: '#EA580C',
     fontWeight: '700',
   },
   firstOfferChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4.5,
+    gap: 4,
     backgroundColor: '#ECFDF5',
     borderWidth: 1,
     borderColor: '#D1FAE5',
-    paddingHorizontal: 9,
-    paddingVertical: 4.5,
-    borderRadius: 16,
+    paddingHorizontal: 8.5,
+    paddingVertical: 3.5,
+    borderRadius: 12,
   },
   firstOfferText: {
-    fontSize: RFValue(isTablet ? 10 : 11),
+    fontSize: RFValue(isTablet ? 10 : 10.5),
     color: '#059669',
     fontWeight: '600',
   },
   statusChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4.5,
+    gap: 4,
     borderWidth: 1,
-    paddingHorizontal: 9,
-    paddingVertical: 4.5,
-    borderRadius: 16,
+    paddingHorizontal: 8.5,
+    paddingVertical: 3.5,
+    borderRadius: 12,
   },
   statusChipText: {
-    fontSize: RFValue(isTablet ? 10 : 11),
+    fontSize: RFValue(isTablet ? 10 : 10.5),
     fontWeight: '700',
   },
   posterRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     flexShrink: 1,
   },
   userAvatar: {
-    width: isTablet ? 26 : 24,
-    height: isTablet ? 26 : 24,
-    borderRadius: isTablet ? 13 : 12,
+    width: isTablet ? 34 : 32,
+    height: isTablet ? 34 : 32,
+    borderRadius: isTablet ? 17 : 16,
     backgroundColor: '#EEF2FF',
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#CBD5E1',
   },
   posterName: {
-    fontSize: RFValue(isTablet ? 9.5 : 10.5),
-    color: '#475569',
+    fontSize: RFValue(isTablet ? 10.5 : 11.5),
+    color: '#334155',
     fontWeight: '600',
     flexShrink: 1,
-    maxWidth: isTablet ? 120 : 100,
+    maxWidth: isTablet ? 130 : 110,
   },
 
   // Map Button - RESPONSIVE
@@ -727,7 +728,7 @@ const styles = StyleSheet.create({
   // Navigation Indicator - RESPONSIVE
   navigationIndicator: {
     position: 'absolute',
-    top: 14,
+    top: 10,
     right: 12,
   },
   chevronCircle: {

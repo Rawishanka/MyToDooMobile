@@ -11,6 +11,7 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/src/shared/theme';
 import {
     ErrorState,
     LoadingState,
@@ -34,6 +35,7 @@ export default function MakeOfferScreen() {
   const task = taskData?.data;
 
   const insets = useSafeAreaInsets();
+  const { isDarkMode } = useTheme();
   const scrollRef = React.useRef<ScrollView>(null);
 
   const {
@@ -79,8 +81,8 @@ export default function MakeOfferScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
       
       <View style={{ flex: 1 }}>
         <OfferFormHeader />
@@ -123,7 +125,7 @@ export default function MakeOfferScreen() {
           )}
         </ScrollView>
 
-        <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+        <View style={[styles.buttonContainer, isDarkMode && { backgroundColor: "#0B1120", borderTopColor: "#334155" }, { paddingBottom: Math.max(insets.bottom, 20) }]}>
           <TouchableOpacity
             style={[
               styles.submitButton, 

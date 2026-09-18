@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface MyToDooWebViewProps {
   /**
@@ -62,6 +63,7 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
   requiresAuth = false,
   onBack
 }) => {
+  const { isDarkMode } = useTheme();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const { token: storeToken } = useAuthStore();
@@ -147,44 +149,44 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
   // Show loading spinner while fetching token for protected routes
   if (tokenLoading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-        <View style={styles.header}>
+      <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#ffffff"} />
+        <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#333" />
+            <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
+          <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>{title}</Text>
           <View style={styles.headerSpacer} />
         </View>
-        <View style={styles.loadingContainer}>
+        <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
           <ActivityIndicator size="large" color="#0052A2" />
-          <Text style={styles.loadingText}>Loading {title}...</Text>
+          <Text style={[styles.loadingText, isDarkMode && { color: "#94A3B8" }]}>Loading {title}...</Text>
         </View>
       </SafeAreaView>
     );
   }
   
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+    <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#ffffff"} />
       
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={handleBackPress}
         >
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
+        <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>{title}</Text>
         <View style={styles.headerSpacer} />
       </View>
       
       {/* Loading Indicator */}
       {loading && (
-        <View style={styles.loadingContainer}>
+        <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
           <ActivityIndicator size="large" color="#0052A2" />
-          <Text style={styles.loadingText}>Loading {title}...</Text>
+          <Text style={[styles.loadingText, isDarkMode && { color: "#94A3B8" }]}>Loading {title}...</Text>
         </View>
       )}
       

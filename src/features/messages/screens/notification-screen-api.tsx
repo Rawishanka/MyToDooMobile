@@ -34,6 +34,7 @@ import {
     View
 } from 'react-native';
 import { RFValue, isTablet, wp, hp } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface NotificationModalProps {
   visible: boolean;
@@ -86,6 +87,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
   onClose,
 }) => {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
   const [notifications, setNotifications] = useState<StoredNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -137,6 +139,10 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
           emitNotificationsChanged();
           setNotifications(merged.map(n => ({ ...n, isRead: true, readAt: n.readAt ?? new Date().toISOString() })));
           setUnreadCount(0);
+          try {
+            const Notifications = require('expo-notifications');
+            Notifications.setBadgeCountAsync(0);
+          } catch {}
         } catch {
           setNotifications(merged);
           setUnreadCount(unread);
@@ -179,7 +185,15 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
       setNotifications(prev =>
         prev.map(n => n.id === id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n)
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      setUnreadCount(prev => {
+        const next = Math.max(0, prev - 1);
+        try {
+          const Notifications = require('expo-notifications');
+          Notifications.setBadgeCountAsync(next);
+        } catch {}
+        return next;
+      });
+      emitNotificationsChanged();
     } catch (error) {
       console.error('❌ Error marking notification as read:', error);
     }
@@ -195,6 +209,10 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
       emitNotificationsChanged();
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true, readAt: new Date().toISOString() })));
       setUnreadCount(0);
+      try {
+        const Notifications = require('expo-notifications');
+        await Notifications.setBadgeCountAsync(0);
+      } catch {}
     } catch (error) {
       console.error('❌ Error marking all as read:', error);
     }
@@ -239,6 +257,10 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
               setNotifications([]);
               setUnreadCount(0);
               setTotalCount(0);
+              try {
+                const Notifications = require('expo-notifications');
+                await Notifications.setBadgeCountAsync(0);
+              } catch {}
             } catch (error) {
               console.error('❌ Error deleting all notifications:', error);
               AppAlert.alert('Error', 'Failed to delete notifications. Please try again.');
@@ -256,26 +278,26 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
       visible={visible}
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
 
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
           <TouchableOpacity onPress={onClose} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#000" />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : '#000'} />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
-            <Text style={styles.headerTitle}>Notifications</Text>
+            <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Notifications</Text>
             {totalCount > 0 && (
-              <View style={styles.headerBadge}>
-                <Text style={styles.headerBadgeText}>{totalCount}</Text>
+              <View style={[styles.headerBadge, isDarkMode && { backgroundColor: '#38BDF8' }]}>
+                <Text style={[styles.headerBadgeText, isDarkMode && { color: '#0F172A' }]}>{totalCount}</Text>
               </View>
             )}
           </View>
           <View style={styles.headerActions}>
             {unreadCount > 0 && (
               <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.headerActionBtn}>
-                <Ionicons name="checkmark-done" size={20} color="#003399" />
+                <Ionicons name="checkmark-done" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
               </TouchableOpacity>
             )}
             {totalCount > 0 && (
@@ -288,7 +310,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
 
         {/* Tabs — only show when there are notifications */}
         {totalCount > 0 && (
-          <View style={styles.tabContainer}>
+          <View style={[styles.tabContainer, isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]}>
             {[
               { key: 'all', label: `All (${totalCount})` },
               { key: 'unread', label: `Unread (${unreadCount})` },
@@ -296,10 +318,17 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
             ].map(tab => (
               <TouchableOpacity
                 key={tab.key}
-                style={[styles.tab, selectedTab === tab.key && styles.tabActive]}
+                style={[
+                  styles.tab,
+                  selectedTab === tab.key && [styles.tabActive, isDarkMode && { borderBottomColor: '#38BDF8' }]
+                ]}
                 onPress={() => setSelectedTab(tab.key as any)}
               >
-                <Text style={[styles.tabText, selectedTab === tab.key && styles.tabTextActive]}>
+                <Text style={[
+                  styles.tabText,
+                  isDarkMode && { color: '#94A3B8' },
+                  selectedTab === tab.key && [styles.tabTextActive, isDarkMode && { color: '#38BDF8' }]
+                ]}>
                   {tab.label}
                 </Text>
               </TouchableOpacity>

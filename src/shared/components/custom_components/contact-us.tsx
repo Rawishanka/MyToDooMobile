@@ -26,12 +26,14 @@ import {
 } from '@/src/api/help-support-api';
 import FAQScreen from '@/src/shared/components/custom_components/faq-screen';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 type ContactUsProps = { 
   onBack: () => void;
 };
 
 const ContactUs = ({ onBack }: ContactUsProps) => {
+  const { isDarkMode } = useTheme();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
@@ -384,7 +386,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
             {statusData && (
               <>
                 {/* Token */}
-                <View style={styles.statusSection}>
+                <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                   <View style={styles.statusSectionHeader}>
                     <Ionicons name="ticket-outline" size={18} color="#0052A2" />
                     <Text style={styles.statusSectionLabel}>Support Token</Text>
@@ -393,7 +395,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 </View>
 
                 {/* Status Badge */}
-                <View style={styles.statusSection}>
+                <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                   <View style={styles.statusSectionHeader}>
                     <Ionicons name="flag-outline" size={18} color="#0052A2" />
                     <Text style={styles.statusSectionLabel}>Status</Text>
@@ -407,7 +409,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 </View>
 
                 {/* Category */}
-                <View style={styles.statusSection}>
+                <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                   <View style={styles.statusSectionHeader}>
                     <Ionicons name="folder-outline" size={18} color="#0052A2" />
                     <Text style={styles.statusSectionLabel}>Category</Text>
@@ -416,7 +418,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 </View>
 
                 {/* Subject */}
-                <View style={styles.statusSection}>
+                <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                   <View style={styles.statusSectionHeader}>
                     <Ionicons name="text-outline" size={18} color="#0052A2" />
                     <Text style={styles.statusSectionLabel}>Subject</Text>
@@ -426,7 +428,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
                 {/* Your Message */}
                 {statusData.message && (
-                  <View style={styles.statusSection}>
+                  <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                     <View style={styles.statusSectionHeader}>
                       <Ionicons name="chatbubble-outline" size={18} color="#0052A2" />
                       <Text style={styles.statusSectionLabel}>Your Message</Text>
@@ -439,7 +441,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
                 {/* Admin Response */}
                 {statusData.adminResponse && (
-                  <View style={styles.statusSection}>
+                  <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                     <View style={styles.statusSectionHeader}>
                       <Ionicons name="chatbubbles" size={18} color="#28a745" />
                       <Text style={[styles.statusSectionLabel, { color: '#28a745' }]}>Support Response</Text>
@@ -456,7 +458,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 )}
 
                 {/* Dates */}
-                <View style={styles.statusSection}>
+                <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                   <View style={styles.statusSectionHeader}>
                     <Ionicons name="calendar-outline" size={18} color="#0052A2" />
                     <Text style={styles.statusSectionLabel}>Submitted</Text>
@@ -465,7 +467,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 </View>
 
                 {statusData.resolvedAt && (
-                  <View style={styles.statusSection}>
+                  <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                     <View style={styles.statusSectionHeader}>
                       <Ionicons name="checkmark-circle-outline" size={18} color="#28a745" />
                       <Text style={styles.statusSectionLabel}>Resolved</Text>
@@ -490,15 +492,15 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
       
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#333" />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>Contact Us</Text>
+        <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>Contact Us</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -514,21 +516,21 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
             keyboardShouldPersistTaps="handled"
           >
             {/* Quick Contact Methods */}
-            <View style={styles.quickContactSection}>
+            <View style={[styles.quickContactSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
               {contactMethods.map((method, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={styles.contactMethodCard}
+                  style={[styles.contactMethodCard, isDarkMode && { borderBottomColor: '#334155' }]}
                   onPress={method.action ? method.action : undefined}
                   disabled={!method.action}
                   activeOpacity={method.action ? 0.7 : 1}
                 >
-                  <View style={styles.contactMethodIcon}>
+                  <View style={[styles.contactMethodIcon, isDarkMode && { backgroundColor: '#0F172A' }]}>
                     <Ionicons name={method.icon as any} size={24} color="#0052A2" />
                   </View>
                   <View style={styles.contactMethodInfo}>
-                    <Text style={styles.contactMethodTitle}>{method.title}</Text>
-                    <Text style={styles.contactMethodValue}>{method.value}</Text>
+                    <Text style={[styles.contactMethodTitle, isDarkMode && { color: '#F8FAFC' }]}>{method.title}</Text>
+                    <Text style={[styles.contactMethodValue, isDarkMode && { color: '#38BDF8' }]}>{method.value}</Text>
                   </View>
                   {method.action && (
                     <Ionicons name="chevron-forward" size={20} color="#999" />
@@ -539,22 +541,22 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
             {/* Divider */}
             <View style={styles.dividerContainer}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>OR SEND US A MESSAGE</Text>
-              <View style={styles.dividerLine} />
+              <View style={[styles.dividerLine, isDarkMode && { backgroundColor: '#334155' }]} />
+              <Text style={[styles.dividerText, isDarkMode && { color: '#94A3B8' }]}>OR SEND US A MESSAGE</Text>
+              <View style={[styles.dividerLine, isDarkMode && { backgroundColor: '#334155' }]} />
             </View>
 
             {/* Contact Form */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Send Us a Message</Text>
+            <View style={[styles.formSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
+              <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Send Us a Message</Text>
               
               {/* Name Input */}
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Your Name *</Text>
-                <View style={styles.inputContainer}>
+                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Your Name *</Text>
+                <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   <Ionicons name="person-outline" size={20} color="#999" style={styles.inputIcon} />
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, isDarkMode && { color: '#F8FAFC' }]}
                     value={name}
                     onChangeText={(text) => {
                       // Allow only letters, spaces, hyphens and apostrophes
@@ -562,7 +564,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                       setName(cleaned);
                     }}
                     placeholder="Enter your full name"
-                    placeholderTextColor="#999"
+                    placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
                     autoCapitalize="words"
                     maxLength={80}
                   />
@@ -571,15 +573,15 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
               {/* Email Input */}
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Email Address *</Text>
-                <View style={styles.inputContainer}>
+                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Email Address *</Text>
+                <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   <Ionicons name="mail-outline" size={20} color="#999" style={styles.inputIcon} />
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, isDarkMode && { color: '#F8FAFC' }]}
                     value={email}
                     onChangeText={setEmail}
                     placeholder="your.email@example.com"
-                    placeholderTextColor="#999"
+                    placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
@@ -589,9 +591,9 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
               {/* Category Dropdown */}
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Category *</Text>
+                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Category *</Text>
                 <TouchableOpacity 
-                  style={styles.dropdownButton}
+                  style={[styles.dropdownButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}
                   onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
                   activeOpacity={0.7}
                 >
@@ -645,14 +647,14 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {/* Custom category input when "Other" is selected */}
                 {selectedCategory === 'Other' && (
                   <View style={styles.customCategoryContainer}>
-                    <View style={styles.inputContainer}>
+                    <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                       <Ionicons name="create-outline" size={20} color="#999" style={styles.inputIcon} />
                       <TextInput
-                        style={styles.input}
+                        style={[styles.input, isDarkMode && { color: '#F8FAFC' }]}
                         value={customCategory}
                         onChangeText={setCustomCategory}
                         placeholder="Please specify your category"
-                        placeholderTextColor="#999"
+                        placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
                         maxLength={100}
                         autoFocus
                       />
@@ -663,15 +665,15 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
               {/* Subject Input */}
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Subject *</Text>
-                <View style={styles.inputContainer}>
+                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Subject *</Text>
+                <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   <Ionicons name="text-outline" size={20} color="#999" style={styles.inputIcon} />
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, isDarkMode && { color: '#F8FAFC' }]}
                     value={subject}
                     onChangeText={setSubject}
                     placeholder="Brief description of your issue"
-                    placeholderTextColor="#999"
+                    placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
                     maxLength={200}
                   />
                 </View>
@@ -679,14 +681,14 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
               {/* Message Input */}
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Message *</Text>
-                <View style={[styles.inputContainer, styles.messageInputContainer]}>
+                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Message *</Text>
+                <View style={[styles.inputContainer, styles.messageInputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   <TextInput
-                    style={[styles.input, styles.messageInput]}
+                    style={[styles.input, styles.messageInput, isDarkMode && { color: '#F8FAFC' }]}
                     value={message}
                     onChangeText={(text) => setMessage(text.slice(0, 1000))}
                     placeholder="Please provide detailed information about your inquiry..."
-                    placeholderTextColor="#999"
+                    placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
                     multiline
                     numberOfLines={6}
                     textAlignVertical="top"
@@ -736,7 +738,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                     value={tokenInput}
                     onChangeText={setTokenInput}
                     placeholder="SUP-XXXXXX-XXXXXXXX"
-                    placeholderTextColor="#999"
+                    placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
                     autoCapitalize="characters"
                     autoCorrect={false}
                   />

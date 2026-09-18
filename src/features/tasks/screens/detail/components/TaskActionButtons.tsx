@@ -16,6 +16,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
+import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { AppAlert } from '@/src/shared/components/AppAlert';
 import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
@@ -34,6 +35,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
   onCancelTask,
 }) => {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -433,7 +435,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120", borderBottomColor: "#334155" }]}>
       {successToast ? (
         <View style={styles.successToast} pointerEvents="none">
           <Text style={styles.successToastText}>{successToast}</Text>
@@ -442,11 +444,11 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
       <View style={styles.buttonRow}>
         {/* Chat Button */}
         <TouchableOpacity 
-          style={styles.chatButton}
+          style={[styles.chatButton, isDarkMode && { backgroundColor: "#1E293B" }]}
           onPress={handleOpenChat}
           activeOpacity={0.7}
         >
-          <MaterialIcons name="chat" size={20} color="#007bff" />
+          <MaterialIcons name="chat" size={20} color={isDarkMode ? "#38BDF8" : "#007bff"} />
         </TouchableOpacity>
 
         {/* Release Payment Button - ONLY show for POSTER when task is pending_completion */}
@@ -512,9 +514,9 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
         onRequestClose={() => setShowCancelModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Request Cancellation</Text>
-            <Text style={styles.modalSubtitle}>
+          <View style={[styles.modalContent, isDarkMode && { backgroundColor: "#1E293B" }]}>
+            <Text style={[styles.modalTitle, isDarkMode && { color: "#F8FAFC" }]}>Request Cancellation</Text>
+            <Text style={[styles.modalSubtitle, isDarkMode && { color: "#94A3B8" }]}>
               Please select a reason for cancelling this task. The tasker will need to approve your request.
             </Text>
 
@@ -527,7 +529,8 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
                     key={reason._id}
                     style={[
                       styles.reasonItem,
-                      selectedCancelReason === reason._id && styles.reasonItemSelected
+                      isDarkMode && { borderColor: "#334155" },
+                      selectedCancelReason === reason._id && (isDarkMode ? { borderColor: "#38BDF8", backgroundColor: "#0F172A" } : styles.reasonItemSelected)
                     ]}
                     onPress={() => setSelectedCancelReason(reason._id)}
                     activeOpacity={0.7}
@@ -542,7 +545,8 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
                     </View>
                     <Text style={[
                       styles.reasonText,
-                      selectedCancelReason === reason._id && styles.reasonTextSelected
+                      isDarkMode && { color: "#E2E8F0" },
+                      selectedCancelReason === reason._id && (isDarkMode ? { color: "#38BDF8" } : styles.reasonTextSelected)
                     ]}>
                       {reason.reason}
                     </Text>
@@ -553,14 +557,14 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonCancel]}
+                style={[styles.modalButton, styles.modalButtonCancel, isDarkMode && { backgroundColor: "#334155" }]}
                 onPress={() => {
                   setShowCancelModal(false);
                   setSelectedCancelReason(null);
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={styles.modalButtonTextCancel}>Close</Text>
+                <Text style={[styles.modalButtonTextCancel, isDarkMode && { color: "#F8FAFC" }]}>Close</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[

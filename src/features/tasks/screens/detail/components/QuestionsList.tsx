@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
+import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { ActivityIndicator, Dimensions, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { formatUserName } from '@/src/utils/formatUserName';
 
@@ -125,6 +126,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
   hideAskButton = false, // Default to empty array
 }) => {
   const insets = useSafeAreaInsets();
+  const { isDarkMode } = useTheme();
   const currentUser = useAuthStore((state) => state.user);
   const [imageModalVisible, setImageModalVisible] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
@@ -389,7 +391,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
       <View style={styles.questionsHeader}>
         <View style={styles.questionsCount}>
           <Ionicons name="chatbubble-outline" size={16} color="#666" />
-          <Text style={styles.questionsCountText}>
+          <Text style={[styles.questionsCountText, isDarkMode && { color: "#94A3B8" }]}>
             Questions about this task ({questions.length})
           </Text>
         </View>
@@ -398,13 +400,13 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
       {isLoading ? (
         <View style={styles.loadingState}>
           <ActivityIndicator size="small" color="#4CAF50" />
-          <Text style={styles.loadingStateText}>Loading questions...</Text>
+          <Text style={[styles.loadingStateText, isDarkMode && { color: "#94A3B8" }]}>Loading questions...</Text>
         </View>
       ) : questions.length === 0 ? (
         <View style={styles.emptyState}>
-          <Ionicons name="help-circle-outline" size={48} color="#ccc" />
-          <Text style={styles.emptyStateText}>No questions yet</Text>
-          <Text style={styles.emptyStateSubtext}>Be the first to ask a question!</Text>
+          <Ionicons name="help-circle-outline" size={48} color={isDarkMode ? "#475569" : "#ccc"} />
+          <Text style={[styles.emptyStateText, isDarkMode && { color: "#F8FAFC" }]}>No questions yet</Text>
+          <Text style={[styles.emptyStateSubtext, isDarkMode && { color: "#94A3B8" }]}>Be the first to ask a question!</Text>
         </View>
       ) : (
         <FlatList
@@ -413,7 +415,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           keyExtractor={(item: any) => item._id}
           contentContainerStyle={{ paddingBottom: 16 }}
           renderItem={({ item: question }: { item: any }) => (
-            <View style={styles.questionCard}>
+            <View style={[styles.questionCard, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
               {/* DEBUG: Let's check what's in the question data */}
               {(() => {
                 if (__DEV__) {
@@ -439,7 +441,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                     style={styles.questionAvatar}
                   />
                   <View style={styles.questionUserInfo}>
-                    <Text style={styles.questionUserName}>
+                    <Text style={[styles.questionUserName, isDarkMode && { color: "#F8FAFC" }]}>
                       {question.isAnonymous
                         ? 'Anonymous User'
                         : (() => {
@@ -463,7 +465,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                             return 'Unknown User';
                           })()}
                     </Text>
-                    <Text style={styles.questionTime}>
+                    <Text style={[styles.questionTime, isDarkMode && { color: "#64748B" }]}>
                       {new Date(question.createdAt).toLocaleTimeString('en-US', {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -475,7 +477,9 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                 {/* Question Status Badge */}
                 <View style={[
                   styles.statusBadge, 
-                  hasValidAnswer(question) ? styles.statusAnswered : styles.statusPending
+                  hasValidAnswer(question) 
+                    ? (isDarkMode ? { backgroundColor: 'rgba(76, 175, 80, 0.2)' } : styles.statusAnswered) 
+                    : (isDarkMode ? { backgroundColor: 'rgba(255, 152, 0, 0.2)' } : styles.statusPending)
                 ]}>
                   <Text style={[
                     styles.statusText,
@@ -486,7 +490,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                 </View>
               </View>
 
-              <Text style={styles.questionText}>
+              <Text style={[styles.questionText, isDarkMode && { color: "#E2E8F0" }]}>
                 {getQuestionText(question)}
               </Text>
               
@@ -496,12 +500,12 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                 
                 if (attachments.length > 0) {
                   return (
-                    <View style={styles.attachmentsContainer}>
-                      <Text style={styles.attachmentsLabel}>📎 Attachments ({attachments.length}):</Text>
+                    <View style={[styles.attachmentsContainer, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#1E3A8A", borderLeftColor: "#38BDF8" }]}>
+                      <Text style={[styles.attachmentsLabel, isDarkMode && { color: "#38BDF8" }]}>📎 Attachments ({attachments.length}):</Text>
                       {attachments.map((attachment: any, index: number) => (
                         <TouchableOpacity 
                           key={attachment._id || index} 
-                          style={styles.attachmentItem}
+                          style={[styles.attachmentItem, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}
                           onPress={() => {
                             if (attachment.resourceType === 'image' && (attachment.url || attachment.secureUrl)) {
                               openImageViewer(attachment.secureUrl || attachment.url);
@@ -526,7 +530,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                             />
                           )}
                           
-                          <Text style={styles.attachmentName} numberOfLines={1}>
+                          <Text style={[styles.attachmentName, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>
                             {attachment.fileId?.split('/').pop() || 'Attachment'}
                           </Text>
                           {attachment.resourceType === 'image' && (
@@ -542,8 +546,8 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
 
               {/* Answer Section or Action Button */}
               {hasValidAnswer(question) ? (
-                <View style={styles.answerSection}>
-                  <Text style={styles.answerLabel}>
+                <View style={[styles.answerSection, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#166534", borderLeftColor: "#22C55E" }]}>
+                  <Text style={[styles.answerLabel, isDarkMode && { color: "#4ADE80" }]}>
                     Answer from {(() => {
                       const answerer = question.answeredBy || question.posterId;
                       if (!answerer) return 'poster';
@@ -555,7 +559,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                       return fullName !== 'Unknown User' ? fullName : (answerer.email?.split('@')[0] || answerer.username || 'poster');
                     })()}:
                   </Text>
-                  <Text style={styles.answerText}>
+                  <Text style={[styles.answerText, isDarkMode && { color: "#E2E8F0" }]}>
                     {getAnswerText(question)}
                   </Text>
                   
@@ -565,12 +569,12 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                     
                     if (attachments.length > 0) {
                       return (
-                        <View style={styles.answerAttachmentsContainer}>
+                        <View style={[styles.answerAttachmentsContainer, isDarkMode && { borderTopColor: "#166534" }]}>
                           <Text style={[styles.attachmentsLabel, { color: '#2E7D32' }]}>📎 Attachments ({attachments.length}):</Text>
                           {attachments.map((attachment: any, index: number) => (
                             <TouchableOpacity
                               key={attachment._id || index} 
-                              style={styles.answerAttachmentItem}
+                              style={[styles.answerAttachmentItem, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}
                               onPress={() => {
                                 if (attachment.resourceType === 'image' && (attachment.url || attachment.secureUrl)) {
                                   openImageViewer(attachment.secureUrl || attachment.url);
@@ -595,7 +599,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                                 />
                               )}
                               
-                              <Text style={styles.answerAttachmentName} numberOfLines={1}>
+                              <Text style={[styles.answerAttachmentName, isDarkMode && { color: "#4ADE80" }]} numberOfLines={1}>
                                 {attachment.fileId?.split('/').pop() || 'Attachment'}
                               </Text>
                               {attachment.resourceType === 'image' && (
@@ -610,7 +614,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                   })()}
                   
                   {question.answeredAt && (
-                    <Text style={styles.answerTime}>
+                    <Text style={[styles.answerTime, isDarkMode && { color: "#86EFAC" }]}>
                       Answered on {new Date(question.answeredAt).toLocaleDateString()}
                     </Text>
                   )}
@@ -638,8 +642,8 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                     );
                   } else {
                     return (
-                      <View style={styles.noAnswerYet}>
-                        <Text style={styles.noAnswerText}>Waiting for an answer...</Text>
+                      <View style={[styles.noAnswerYet, isDarkMode && { backgroundColor: "rgba(255, 152, 0, 0.1)", borderColor: "rgba(255, 152, 0, 0.3)" }]}>
+                        <Text style={[styles.noAnswerText, isDarkMode && { color: "#FDBA74" }]}>Waiting for an answer...</Text>
                       </View>
                     );
                   }
@@ -653,7 +657,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
       {/* Ask Question Button - Hidden when viewing assigned/completed tasks OR when user is the task creator */}
       {/* Task creator should NOT be able to post questions on their own task - only answer them */}
       {!hideAskButton && currentUserId !== taskCreatorId && (
-        <View style={[styles.askQuestionButtonContainer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <View style={[styles.askQuestionButtonContainer, isDarkMode && { backgroundColor: "#0B1120", borderTopColor: "#334155" }, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <TouchableOpacity 
             style={styles.askQuestionButton}
             onPress={onAskQuestion}

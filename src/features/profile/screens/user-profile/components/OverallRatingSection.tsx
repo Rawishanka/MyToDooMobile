@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface OverallRatingProps {
   averageRating: number | null | undefined;
@@ -24,6 +25,7 @@ export const OverallRatingSection: React.FC<OverallRatingProps> = ({
   completionRate = 0,
   totalTasks = 0,
 }) => {
+  const { isDarkMode } = useTheme();
   const getBarWidth = (count: number) => {
     if (totalReviews === 0) return 0;
     return (count / totalReviews) * 100;
@@ -38,39 +40,39 @@ export const OverallRatingSection: React.FC<OverallRatingProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
       {/* Overall Rating Display */}
       <View style={styles.overallSection}>
-        <Text style={styles.sectionTitle}>Overall rating</Text>
+        <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Overall rating</Text>
         <View style={styles.ratingMainContainer}>
-          <Text style={styles.ratingNumber}>
+          <Text style={[styles.ratingNumber, isDarkMode && { color: '#F8FAFC' }]}>
             {averageRating != null ? averageRating.toFixed(1) : '0.0'}
           </Text>
           <Ionicons name="star" size={32} color="#FFD700" style={styles.mainStar} />
         </View>
-        <Text style={styles.reviewCount}>{totalReviews} review{totalReviews !== 1 ? 's' : ''}</Text>
+        <Text style={[styles.reviewCount, isDarkMode && { color: '#94A3B8' }]}>{totalReviews} review{totalReviews !== 1 ? 's' : ''}</Text>
       </View>
 
       {/* Stats Cards */}
       <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
+        <View style={[styles.statCard, isDarkMode && { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' }]}>
           <Ionicons name="checkmark-circle" size={24} color="#28A745" />
-          <Text style={styles.statValue}>{completionRate || 0}%</Text>
-          <Text style={styles.statLabel}>Completion rate</Text>
-          <Text style={styles.statSubtext}>{totalTasks || 0} task{(totalTasks || 0) !== 1 ? 's' : ''} completed</Text>
+          <Text style={[styles.statValue, isDarkMode && { color: '#F8FAFC' }]}>{completionRate || 0}%</Text>
+          <Text style={[styles.statLabel, isDarkMode && { color: '#F8FAFC' }]}>Completion rate</Text>
+          <Text style={[styles.statSubtext, isDarkMode && { color: '#94A3B8' }]}>{totalTasks || 0} task{(totalTasks || 0) !== 1 ? 's' : ''} completed</Text>
         </View>
 
-        <View style={styles.statCard}>
-          <Ionicons name="chatbox" size={24} color="#007AFF" />
-          <Text style={styles.statValue}>{totalReviews}</Text>
-          <Text style={styles.statLabel}>review{totalReviews !== 1 ? 's' : ''}</Text>
-          <Text style={styles.statSubtext}>From completed tasks</Text>
+        <View style={[styles.statCard, isDarkMode && { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' }]}>
+          <Ionicons name="chatbox" size={24} color="#38BDF8" />
+          <Text style={[styles.statValue, isDarkMode && { color: '#F8FAFC' }]}>{totalReviews}</Text>
+          <Text style={[styles.statLabel, isDarkMode && { color: '#F8FAFC' }]}>review{totalReviews !== 1 ? 's' : ''}</Text>
+          <Text style={[styles.statSubtext, isDarkMode && { color: '#94A3B8' }]}>From completed tasks</Text>
         </View>
       </View>
 
       {/* Rating Breakdown */}
       <View style={styles.breakdownSection}>
-        <Text style={styles.breakdownTitle}>Rating Breakdown</Text>
+        <Text style={[styles.breakdownTitle, isDarkMode && { color: '#F8FAFC' }]}>Rating Breakdown</Text>
         
         {[5, 4, 3, 2, 1].map((starCount) => {
           const count = ratingDistribution[starCount.toString() as keyof typeof ratingDistribution] || 0;
@@ -83,12 +85,12 @@ export const OverallRatingSection: React.FC<OverallRatingProps> = ({
                   <Ionicons key={index} name="star" size={14} color="#FFD700" />
                 ))}
                 {Array.from({ length: 5 - starCount }).map((_, index) => (
-                  <Ionicons key={`empty-${index}`} name="star-outline" size={14} color="#E0E0E0" />
+                  <Ionicons key={`empty-${index}`} name="star-outline" size={14} color={isDarkMode ? '#334155' : '#E0E0E0'} />
                 ))}
               </View>
               
               <View style={styles.barContainer}>
-                <View style={styles.barBackground}>
+                <View style={[styles.barBackground, isDarkMode && { backgroundColor: '#334155' }]}>
                   <View 
                     style={[
                       styles.barFill, 
@@ -101,7 +103,7 @@ export const OverallRatingSection: React.FC<OverallRatingProps> = ({
                 </View>
               </View>
               
-              <Text style={styles.countText}>
+              <Text style={[styles.countText, isDarkMode && { color: '#94A3B8' }]}>
                 {count} ({percentage}%)
               </Text>
             </View>

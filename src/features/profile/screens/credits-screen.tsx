@@ -16,9 +16,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { router } from 'expo-router';
 import InviteFriendsScreen from './invite-friends-screen';
+import { useTheme } from '@/src/shared/theme';
 
 interface CreditsScreenProps {
   onBack: () => void;
+  onNavigateToInvite?: () => void;
 }
 
 function formatDate(value?: string | null) {
@@ -54,13 +56,12 @@ function formatReason(reason?: string | null, isCredit: boolean = true) {
   }
 }
 
-export default function CreditsScreen({ onBack }: CreditsScreenProps) {
+export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScreenProps) {
+  const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const [showInvite, setShowInvite] = React.useState(false);
 
-  if (showInvite) {
-    return <InviteFriendsScreen onBack={() => setShowInvite(false)} />;
-  }
+  // Unconditional hook calls at top-level (Fix React Rules of Hooks crash)
   const {
     data: balanceData,
     isLoading: balanceLoading,
@@ -75,14 +76,18 @@ export default function CreditsScreen({ onBack }: CreditsScreenProps) {
   } = useGetCreditsLedger(50);
   const { data: settings } = useGetCreditsSettings();
 
+  if (showInvite) {
+    return <InviteFriendsScreen onBack={() => setShowInvite(false)} />;
+  }
+
   const refreshing = balanceRefetching || ledgerRefetching;
   const balance = Number(balanceData?.balance ?? 0);
 
   const renderItem = ({ item }: { item: CreditLedgerEntry }) => {
     const isCredit = item.direction === 'credit';
     return (
-      <View style={styles.ledgerCard}>
-        <View style={[styles.iconCircle, isCredit ? styles.creditIconBg : styles.debitIconBg]}>
+      <View style={[styles.ledgerCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+        <View style={[styles.iconCircle, isCredit ? styles.creditIconBg : (isDarkMode ? { backgroundColor: '#0F172A' } : styles.debitIconBg)]}>
           <Ionicons
             name={isCredit ? 'gift-outline' : 'cart-outline'}
             size={20}
@@ -90,9 +95,9 @@ export default function CreditsScreen({ onBack }: CreditsScreenProps) {
           />
         </View>
         <View style={styles.ledgerBody}>
-          <Text style={styles.ledgerReason}>{formatReason(item.reason, isCredit)}</Text>
+          <Text style={[styles.ledgerReason, isDarkMode && { color: '#F8FAFC' }]}>{formatReason(item.reason, isCredit)}</Text>
           <View style={styles.metaRow}>
-            <Text style={styles.ledgerDate}>{formatDate(item.createdAt)}</Text>
+            <Text style={[styles.ledgerDate, isDarkMode && { color: '#94A3B8' }]}>{formatDate(item.createdAt)}</Text>
             {item.expiresAt && (
               <View style={styles.expiryBadge}>
                 <Text style={styles.expiryText}>Expires {formatDate(item.expiresAt)}</Text>
@@ -110,13 +115,13 @@ export default function CreditsScreen({ onBack }: CreditsScreenProps) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       {/* 2026 Modern Top Navigation */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 46 }]}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
-          <Ionicons name="arrow-back" size={22} color="#0F172A" />
+      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 46 }, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
+        <TouchableOpacity onPress={onBack} style={[styles.backButton, isDarkMode && { backgroundColor: '#1E293B' }]} activeOpacity={0.7}>
+          <Ionicons name="arrow-back" size={22} color={isDarkMode ? '#F8FAFC' : '#0F172A'} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Credits & Rewards</Text>
+        <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>My Credits & Rewards</Text>
         <TouchableOpacity
           style={styles.headerRightBtn}
           onPress={() => onBack()}
@@ -180,7 +185,11 @@ export default function CreditsScreen({ onBack }: CreditsScreenProps) {
                   style={styles.cardActionBtn}
                   activeOpacity={0.85}
                   onPress={() => {
-                    setShowInvite(true);
+                    if (onNavigateToInvite) {
+                      onNavigateToInvite();
+                    } else {
+                      setShowInvite(true);
+                    }
                   }}
                 >
                   <View style={styles.actionBtnContent}>
@@ -193,8 +202,8 @@ export default function CreditsScreen({ onBack }: CreditsScreenProps) {
 
               {/* Transaction Section Header */}
               <View style={styles.sectionTitleRow}>
-                <Text style={styles.sectionTitle}>Credit History</Text>
-                <Text style={styles.sectionSubtitle}>
+                <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Credit History</Text>
+                <Text style={[styles.sectionSubtitle, isDarkMode && { color: '#94A3B8' }]}>
                   {ledger.length} {ledger.length === 1 ? 'activity' : 'activities'}
                 </Text>
               </View>
@@ -202,11 +211,11 @@ export default function CreditsScreen({ onBack }: CreditsScreenProps) {
           }
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
-              <View style={styles.emptyIconCircle}>
-                <Ionicons name="wallet-outline" size={36} color="#94A3B8" />
+              <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                <Ionicons name="wallet-outline" size={36} color={isDarkMode ? '#38BDF8' : '#94A3B8'} />
               </View>
-              <Text style={styles.emptyTitle}>No credit activity yet</Text>
-              <Text style={styles.emptySubtitle}>
+              <Text style={[styles.emptyTitle, isDarkMode && { color: '#F8FAFC' }]}>No credit activity yet</Text>
+              <Text style={[styles.emptySubtitle, isDarkMode && { color: '#94A3B8' }]}>
                 Invite friends or complete eligible promotional actions to earn rewards!
               </Text>
             </View>

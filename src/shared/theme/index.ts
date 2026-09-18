@@ -50,9 +50,6 @@ export const theme = {
 
 export type Theme = typeof theme;
 
-// Helper hook for using theme in components
-import { useMemo } from 'react';
-
-export const useTheme = () => {
-  return useMemo(() => theme, []);
-};
+// Export dynamic theme system
+export { ThemeProvider, useTheme, useThemeColors, lightColors, darkColors } from './ThemeContext';
+export type { ThemeColors, ThemeContextValue } from './ThemeContext';

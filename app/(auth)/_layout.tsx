@@ -1,9 +1,11 @@
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useTheme } from '@/src/shared/theme';
 
 const queryClient = new QueryClient();
 
 export default function AuthLayout() {
+  const { isDarkMode } = useTheme();
   return (
     <QueryClientProvider client={queryClient}>
       <Stack 
@@ -12,7 +14,7 @@ export default function AuthLayout() {
           presentation: 'modal',
           animation: 'slide_from_bottom',
           contentStyle: {
-            backgroundColor: '#ffffff',
+            backgroundColor: isDarkMode ? '#0B1120' : '#ffffff',
           },
         }}
       >

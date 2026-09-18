@@ -55,6 +55,11 @@ export default function WelcomeScreen() {
       const hasLoggedInBefore = await AsyncStorage.getItem('hasLoggedInBefore');
 
       if (currentAuthState.isAuthenticated && currentAuthState.token) {
+        if (currentAuthState.user?.isPhoneVerified === false || !currentAuthState.user?.phone) {
+          console.log('⚠️ User logged in but phone is not verified - redirecting to login for 2FA');
+          router.replace('/(auth)/login' as any);
+          return;
+        }
         router.replace('/(tabs)' as any);
         return;
       }

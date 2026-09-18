@@ -23,7 +23,7 @@ import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { AppAlert } from '@/src/shared/components/AppAlert';
-import { ActivityIndicator, Image, Linking, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Linking, Modal, Platform, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import rating components
@@ -44,8 +44,10 @@ import PaymentScreensApp from './paymentscreens';
 import TaskAlerts from './taskalerts';
 import { RFValue, TAB_BAR_CLEARANCE } from '@/src/shared/utils/responsive';
 import { consumePendingAccountNavigation } from '@/src/shared/utils/pending-account-navigation';
+import { useTheme } from '@/src/shared/theme';
 
 export default function AccountScreen() {
+  const { isDarkMode, toggleDarkMode, colors: themeColors } = useTheme();
   const { screen: screenParam, focus: focusParam } = useLocalSearchParams<{
     screen?: string;
     focus?: string;
@@ -755,7 +757,12 @@ export default function AccountScreen() {
   }
 
   if (currentScreen === 'credits') {
-    return <CreditsScreen onBack={navigateToAccount} />;
+    return (
+      <CreditsScreen
+        onBack={navigateToAccount}
+        onNavigateToInvite={navigateToInviteFriends}
+      />
+    );
   }
 
   if (currentScreen === 'invite-friends') {
@@ -841,7 +848,7 @@ export default function AccountScreen() {
   return (
     <ScrollView 
       ref={scrollViewRef}
-      style={styles.container}
+      style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}
       contentContainerStyle={{ paddingBottom: TAB_BAR_CLEARANCE }}
       showsVerticalScrollIndicator={false}
     >
@@ -895,10 +902,10 @@ export default function AccountScreen() {
           </View>
         </TouchableOpacity>
 
-        <Text style={styles.name}>
+        <Text style={[styles.name, isDarkMode && { color: '#F8FAFC' }]}>
           {formatUserName(userData?.firstName, userData?.lastName)}
         </Text>
-        <Text style={styles.location}>
+        <Text style={[styles.location, isDarkMode && { color: '#94A3B8' }]}>
           {(() => {
             if (!userData?.location) return 'Location not set';
             
@@ -1051,17 +1058,17 @@ export default function AccountScreen() {
         };
         
         return (
-          <View style={styles.skillsSection}>
-            <Text style={styles.skillsSectionTitle}>Skills</Text>
+          <View style={[styles.skillsSection, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
+            <Text style={[styles.skillsSectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Skills</Text>
             
             {/* What are you good at? */}
             {typedSkills.goodAt && typedSkills.goodAt.length > 0 && (
               <View style={styles.skillCategory}>
-                <Text style={styles.skillCategoryTitle}>What are you good at?</Text>
+                <Text style={[styles.skillCategoryTitle, isDarkMode && { color: '#94A3B8' }]}>What are you good at?</Text>
                 <View style={styles.skillTagsContainer}>
                   {typedSkills.goodAt.map((skill, index) => (
-                    <View key={index} style={styles.skillTagDisplay}>
-                      <Text style={styles.skillTagDisplayText}>{skill}</Text>
+                    <View key={index} style={[styles.skillTagDisplay, isDarkMode && { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' }]}>
+                      <Text style={[styles.skillTagDisplayText, isDarkMode && { color: '#38BDF8' }]}>{skill}</Text>
                     </View>
                   ))}
                 </View>
@@ -1071,11 +1078,11 @@ export default function AccountScreen() {
             {/* How do you get around? */}
             {typedSkills.transport && typedSkills.transport.length > 0 && (
               <View style={styles.skillCategory}>
-                <Text style={styles.skillCategoryTitle}>How do you get around?</Text>
+                <Text style={[styles.skillCategoryTitle, isDarkMode && { color: '#94A3B8' }]}>How do you get around?</Text>
                 <View style={styles.skillTagsContainer}>
                   {typedSkills.transport.map((trans, index) => (
-                    <View key={index} style={styles.skillTagDisplay}>
-                      <Text style={styles.skillTagDisplayText}>{trans}</Text>
+                    <View key={index} style={[styles.skillTagDisplay, isDarkMode && { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' }]}>
+                      <Text style={[styles.skillTagDisplayText, isDarkMode && { color: '#38BDF8' }]}>{trans}</Text>
                     </View>
                   ))}
                 </View>
@@ -1085,11 +1092,11 @@ export default function AccountScreen() {
             {/* Languages */}
             {typedSkills.languages && typedSkills.languages.length > 0 && (
               <View style={styles.skillCategory}>
-                <Text style={styles.skillCategoryTitle}>Languages</Text>
+                <Text style={[styles.skillCategoryTitle, isDarkMode && { color: '#94A3B8' }]}>Languages</Text>
                 <View style={styles.skillTagsContainer}>
                   {typedSkills.languages.map((lang, index) => (
-                    <View key={index} style={styles.skillTagDisplay}>
-                      <Text style={styles.skillTagDisplayText}>{lang}</Text>
+                    <View key={index} style={[styles.skillTagDisplay, isDarkMode && { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' }]}>
+                      <Text style={[styles.skillTagDisplayText, isDarkMode && { color: '#38BDF8' }]}>{lang}</Text>
                     </View>
                   ))}
                 </View>
@@ -1099,11 +1106,11 @@ export default function AccountScreen() {
             {/* Qualifications */}
             {typedSkills.qualifications && typedSkills.qualifications.length > 0 && (
               <View style={styles.skillCategory}>
-                <Text style={styles.skillCategoryTitle}>Qualifications</Text>
+                <Text style={[styles.skillCategoryTitle, isDarkMode && { color: '#94A3B8' }]}>Qualifications</Text>
                 <View style={styles.skillTagsContainer}>
                   {typedSkills.qualifications.map((qual, index) => (
-                    <View key={index} style={styles.skillTagDisplay}>
-                      <Text style={styles.skillTagDisplayText}>{qual}</Text>
+                    <View key={index} style={[styles.skillTagDisplay, isDarkMode && { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' }]}>
+                      <Text style={[styles.skillTagDisplayText, isDarkMode && { color: '#38BDF8' }]}>{qual}</Text>
                     </View>
                   ))}
                 </View>
@@ -1113,11 +1120,11 @@ export default function AccountScreen() {
             {/* Work Experience */}
             {typedSkills.experience && typedSkills.experience.length > 0 && (
               <View style={styles.skillCategory}>
-                <Text style={styles.skillCategoryTitle}>Work Experience</Text>
+                <Text style={[styles.skillCategoryTitle, isDarkMode && { color: '#94A3B8' }]}>Work Experience</Text>
                 <View style={styles.skillTagsContainer}>
                   {typedSkills.experience.map((exp, index) => (
-                    <View key={index} style={styles.skillTagDisplay}>
-                      <Text style={styles.skillTagDisplayText}>{exp}</Text>
+                    <View key={index} style={[styles.skillTagDisplay, isDarkMode && { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' }]}>
+                      <Text style={[styles.skillTagDisplayText, isDarkMode && { color: '#38BDF8' }]}>{exp}</Text>
                     </View>
                   ))}
                 </View>
@@ -1206,8 +1213,8 @@ export default function AccountScreen() {
       )}
 
       {/* Settings List */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>PROFILE</Text>
+      <View style={[styles.card, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', shadowColor: '#000', shadowOpacity: 0.3 }]}>
+        <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>PROFILE</Text>
         <MenuItem 
           icon={<Ionicons name="person-outline" size={20} color="#1A2980" />}
           text="Edit Profile"
@@ -1218,15 +1225,15 @@ export default function AccountScreen() {
           disabled={false}
         />
         
-        <Text style={styles.sectionTitle}>ACCOUNT SETTINGS</Text>
+        <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>ACCOUNT SETTINGS</Text>
         
         {/* Stripe Connect Account Status Card */}
         {stripeAccountStatus && !isLoadingStripe && (
-          <View style={styles.stripeAccountCard}>
+          <View style={[styles.stripeAccountCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             <View style={styles.stripeAccountHeader}>
               <View style={styles.stripeAccountTitleRow}>
-                <MaterialIcons name="account-balance" size={20} color="#1A2980" />
-                <Text style={styles.stripeAccountTitle}>Payment Account</Text>
+                <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+                <Text style={[styles.stripeAccountTitle, isDarkMode && { color: '#F8FAFC' }]}>Payment Account</Text>
               </View>
               <View style={[
                 styles.statusBadge,
@@ -1254,15 +1261,15 @@ export default function AccountScreen() {
                 onPress={() => setShowBankAccountModal(true)}
                 activeOpacity={0.7}
               >
-                <View style={styles.bankAccountItem}>
-                  <View style={styles.bankIconContainer}>
-                    <MaterialIcons name="account-balance" size={20} color="#1A2980" />
+                <View style={[styles.bankAccountItem, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+                  <View style={[styles.bankIconContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                    <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
                   </View>
                   <View style={styles.bankAccountInfo}>
-                    <Text style={styles.bankAccountLabel}>
+                    <Text style={[styles.bankAccountLabel, isDarkMode && { color: '#F8FAFC' }]}>
                       {stripeAccountStatus.bankAccount.bankName || 'Bank Account'}
                     </Text>
-                    <Text style={styles.bankAccountNumber}>
+                    <Text style={[styles.bankAccountNumber, isDarkMode && { color: '#94A3B8' }]}>
                       BSB {stripeAccountStatus.bankAccount.routingNumber} • **** {stripeAccountStatus.bankAccount.last4}
                     </Text>
                   </View>
@@ -1273,38 +1280,38 @@ export default function AccountScreen() {
             
             <View style={styles.stripeAccountDetails}>
               <View style={styles.stripeAccountRow}>
-                <Text style={styles.stripeAccountLabel}>Account ID:</Text>
-                <Text style={styles.stripeAccountValue}>
+                <Text style={[styles.stripeAccountLabel, isDarkMode && { color: '#94A3B8' }]}>Account ID:</Text>
+                <Text style={[styles.stripeAccountValue, isDarkMode && { color: '#F8FAFC' }]}>
                   {stripeAccountStatus.accountId?.slice(-6) || 'N/A'}
                 </Text>
               </View>
               
               <View style={styles.stripeAccountCapabilities}>
-                <View style={styles.capabilityBadge}>
+                <View style={[styles.capabilityBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   {stripeAccountStatus.chargesEnabled ? (
                     <Ionicons name="checkmark-circle" size={14} color="#28a745" />
                   ) : (
                     <Ionicons name="close-circle" size={14} color="#dc3545" />
                   )}
-                  <Text style={styles.capabilityText}>Charges</Text>
+                  <Text style={[styles.capabilityText, isDarkMode && { color: '#F8FAFC' }]}>Charges</Text>
                 </View>
                 
-                <View style={styles.capabilityBadge}>
+                <View style={[styles.capabilityBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   {stripeAccountStatus.payoutsEnabled ? (
                     <Ionicons name="checkmark-circle" size={14} color="#28a745" />
                   ) : (
                     <Ionicons name="close-circle" size={14} color="#dc3545" />
                   )}
-                  <Text style={styles.capabilityText}>Payouts</Text>
+                  <Text style={[styles.capabilityText, isDarkMode && { color: '#F8FAFC' }]}>Payouts</Text>
                 </View>
                 
-                <View style={styles.capabilityBadge}>
+                <View style={[styles.capabilityBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   {stripeAccountStatus.detailsSubmitted ? (
                     <Ionicons name="checkmark-circle" size={14} color="#28a745" />
                   ) : (
                     <Ionicons name="close-circle" size={14} color="#dc3545" />
                   )}
-                  <Text style={styles.capabilityText}>Details</Text>
+                  <Text style={[styles.capabilityText, isDarkMode && { color: '#F8FAFC' }]}>Details</Text>
                 </View>
               </View>
             </View>
@@ -1312,7 +1319,7 @@ export default function AccountScreen() {
         )}
         
         {/* Modern 2026 Pending Reviews Accordion */}
-        <View style={styles.pendingReviewsContainer}>
+        <View style={[styles.pendingReviewsContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
           <TouchableOpacity
             style={styles.pendingReviewsHeader}
             activeOpacity={0.8}
@@ -1327,19 +1334,19 @@ export default function AccountScreen() {
               }
             }}
           >
-            <View style={styles.pendingReviewsIconWrap}>
+            <View style={[styles.pendingReviewsIconWrap, isDarkMode && { backgroundColor: 'rgba(234, 88, 12, 0.2)' }]}>
               <Ionicons name="star" size={18} color="#EA580C" />
             </View>
             <View style={styles.pendingReviewsTextCol}>
               <View style={styles.pendingReviewsTitleRow}>
-                <Text style={styles.pendingReviewsTitle}>Pending reviews</Text>
+                <Text style={[styles.pendingReviewsTitle, isDarkMode && { color: '#F8FAFC' }]}>Pending reviews</Text>
                 {pendingReviewCount > 0 && (
                   <View style={styles.pendingReviewsBadge}>
                     <Text style={styles.pendingReviewsBadgeText}>{pendingReviewCount}</Text>
                   </View>
                 )}
               </View>
-              <Text style={styles.pendingReviewsSubtext}>
+              <Text style={[styles.pendingReviewsSubtext, isDarkMode && { color: '#94A3B8' }]}>
                 {pendingReviewCount > 0
                   ? `${pendingReviewCount} task${pendingReviewCount === 1 ? "" : "s"} waiting for your review`
                   : "No reviews waiting"}
@@ -1360,14 +1367,14 @@ export default function AccountScreen() {
 
           {/* Expanded Preview Cards (Top 4) */}
           {isPendingReviewsExpanded && pendingReviewCount > 0 && (
-            <View style={styles.expandedReviewsContent}>
+            <View style={[styles.expandedReviewsContent, isDarkMode && { backgroundColor: '#0F172A', borderTopColor: '#334155' }]}>
               {pendingReviewTasks.slice(0, 4).map((task: any) => (
-                <View key={task._id || task.id} style={styles.reviewTaskItem}>
+                <View key={task._id || task.id} style={[styles.reviewTaskItem, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
                   <View style={styles.reviewTaskInfo}>
-                    <Text style={styles.reviewTaskTitle} numberOfLines={1}>
+                    <Text style={[styles.reviewTaskTitle, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={1}>
                       {task.title}
                     </Text>
-                    <Text style={styles.reviewTaskMeta}>
+                    <Text style={[styles.reviewTaskMeta, isDarkMode && { color: '#94A3B8' }]}>
                       ${task.budget || task.price || 0} AUD · Completed
                     </Text>
                   </View>
@@ -1385,7 +1392,7 @@ export default function AccountScreen() {
 
               {pendingReviewCount > 4 && (
                 <TouchableOpacity
-                  style={styles.seeAllReviewsBtn}
+                  style={[styles.seeAllReviewsBtn, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}
                   activeOpacity={0.85}
                   onPress={() => {
                     router.push({
@@ -1394,7 +1401,7 @@ export default function AccountScreen() {
                     });
                   }}
                 >
-                  <Text style={styles.seeAllReviewsBtnText}>
+                  <Text style={[styles.seeAllReviewsBtnText, isDarkMode && { color: '#38BDF8' }]}>
                     See All {pendingReviewCount} Pending Reviews →
                   </Text>
                 </TouchableOpacity>
@@ -1451,7 +1458,27 @@ export default function AccountScreen() {
           subtext={undefined}        
         />
 
-        <Text style={styles.sectionTitle}>NOTIFICATION SETTINGS</Text>
+        <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>APP PREFERENCES</Text>
+        <View style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }]}>
+          <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
+            <Ionicons name={isDarkMode ? "moon" : "moon-outline"} size={20} color={isDarkMode ? "#38BDF8" : "#1A2980"} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }]}>Dark Mode</Text>
+            <Text style={[styles.subtext, isDarkMode && { color: '#94A3B8' }]}>
+              {isDarkMode ? 'Dark theme enabled' : 'Light theme enabled'}
+            </Text>
+          </View>
+          <Switch
+            value={isDarkMode}
+            onValueChange={toggleDarkMode}
+            trackColor={{ false: '#D1D5DB', true: '#4CAF50' }}
+            thumbColor="#FFFFFF"
+            ios_backgroundColor="#D1D5DB"
+          />
+        </View>
+
+        <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>NOTIFICATION SETTINGS</Text>
         <MenuItem 
           icon={<Ionicons name="notifications-outline" size={20} color="#1A2980" />}
           text="Tasker Preferences" 
@@ -1459,7 +1486,7 @@ export default function AccountScreen() {
           onPress={navigateToNotifications}        
         />
 
-        <Text style={styles.sectionTitle}>HELP AND SUPPORT</Text>
+        <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>HELP AND SUPPORT</Text>
         <MenuItem 
           icon={<Ionicons name="help-circle-outline" size={20} color="#1A2980" />}
           text="Frequently asked questions" 
@@ -1474,7 +1501,7 @@ export default function AccountScreen() {
           onPress={navigateToContactUs}        
         />
 
-        <Text style={styles.sectionTitle}>LEGAL & SAFETY</Text>
+        <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>LEGAL & SAFETY</Text>
         <MenuItem 
           icon={<Ionicons name="shield-outline" size={20} color="#1A2980" />}
           text="Insurance protection" 
@@ -1494,7 +1521,7 @@ export default function AccountScreen() {
           onPress={navigateToTermsConditions}        
         />
         
-        <Text style={styles.sectionTitle}>ACCOUNT</Text>
+        <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>ACCOUNT</Text>
         <MenuItem 
           icon={<Ionicons name="log-out-outline" size={20} color="#1A2980" />}
           text="Logout" 
@@ -1678,18 +1705,18 @@ export default function AccountScreen() {
         onRequestClose={() => setShowBankAccountModal(false)}
       >
         <View style={[styles.modalOverlay, { justifyContent: 'flex-end', padding: 0, paddingHorizontal: 0 }]}>
-          <View style={styles.bankDetailsModalContent}>
+          <View style={[styles.bankDetailsModalContent, isDarkMode && { backgroundColor: '#1E293B' }]}>
             {/* Header */}
-            <View style={styles.bankDetailsHeader}>
+            <View style={[styles.bankDetailsHeader, isDarkMode && { borderBottomColor: '#334155' }]}>
               <View style={styles.bankDetailsHeaderLeft}>
-                <View style={styles.bankDetailsIconLarge}>
-                  <MaterialIcons name="account-balance" size={32} color="#1A2980" />
+                <View style={[styles.bankDetailsIconLarge, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                  <MaterialIcons name="account-balance" size={32} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.bankDetailsTitle} numberOfLines={1}>
+                  <Text style={[styles.bankDetailsTitle, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={1}>
                     {stripeAccountStatus?.bankAccount?.bankName || 'Bank Account'}
                   </Text>
-                  <Text style={styles.bankDetailsSubtitle}>Payment Account Details</Text>
+                  <Text style={[styles.bankDetailsSubtitle, isDarkMode && { color: '#94A3B8' }]}>Payment Account Details</Text>
                 </View>
               </View>
               <TouchableOpacity 
@@ -1697,7 +1724,7 @@ export default function AccountScreen() {
                 style={styles.bankDetailsCloseButton}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Ionicons name="close" size={24} color="#666" />
+                <Ionicons name="close" size={24} color={isDarkMode ? '#F8FAFC' : '#666'} />
               </TouchableOpacity>
             </View>
 
@@ -1711,56 +1738,56 @@ export default function AccountScreen() {
               {stripeAccountStatus?.bankAccount && (
                 <View style={styles.bankDetailsBody}>
                   <View style={styles.bankDetailsRow}>
-                    <Text style={styles.bankDetailsLabel}>Account Type</Text>
-                    <Text style={styles.bankDetailsValue}>
+                    <Text style={[styles.bankDetailsLabel, isDarkMode && { color: "#94A3B8" }]}>Account Type</Text>
+                    <Text style={[styles.bankDetailsValue, isDarkMode && { color: "#F8FAFC" }]}>
                       {stripeAccountStatus.bankAccount.accountHolderType || 'Individual'}
                     </Text>
                   </View>
 
-                  <View style={styles.bankDetailsDivider} />
+                  <View style={[styles.bankDetailsDivider, isDarkMode && { backgroundColor: "#334155" }]} />
 
                   <View style={styles.bankDetailsRow}>
-                    <Text style={styles.bankDetailsLabel}>Bank Name</Text>
-                    <Text style={styles.bankDetailsValue}>
+                    <Text style={[styles.bankDetailsLabel, isDarkMode && { color: "#94A3B8" }]}>Bank Name</Text>
+                    <Text style={[styles.bankDetailsValue, isDarkMode && { color: "#F8FAFC" }]}>
                       {stripeAccountStatus.bankAccount.bankName}
                     </Text>
                   </View>
 
                   <View style={styles.bankDetailsRow}>
-                    <Text style={styles.bankDetailsLabel}>BSB (Routing Number)</Text>
-                    <Text style={styles.bankDetailsValueMono}>
+                    <Text style={[styles.bankDetailsLabel, isDarkMode && { color: "#94A3B8" }]}>BSB (Routing Number)</Text>
+                    <Text style={[styles.bankDetailsValueMono, isDarkMode && { color: "#F8FAFC" }]}>
                       {stripeAccountStatus.bankAccount.routingNumber}
                     </Text>
                   </View>
 
                   <View style={styles.bankDetailsRow}>
-                    <Text style={styles.bankDetailsLabel}>Account Number</Text>
-                    <Text style={styles.bankDetailsValueMono}>
+                    <Text style={[styles.bankDetailsLabel, isDarkMode && { color: "#94A3B8" }]}>Account Number</Text>
+                    <Text style={[styles.bankDetailsValueMono, isDarkMode && { color: "#F8FAFC" }]}>
                       •••• •••• {stripeAccountStatus.bankAccount.last4}
                     </Text>
                   </View>
 
-                  <View style={styles.bankDetailsDivider} />
+                  <View style={[styles.bankDetailsDivider, isDarkMode && { backgroundColor: "#334155" }]} />
 
                   <View style={styles.bankDetailsRow}>
-                    <Text style={styles.bankDetailsLabel}>Currency</Text>
-                    <Text style={styles.bankDetailsValue}>
+                    <Text style={[styles.bankDetailsLabel, isDarkMode && { color: "#94A3B8" }]}>Currency</Text>
+                    <Text style={[styles.bankDetailsValue, isDarkMode && { color: "#F8FAFC" }]}>
                       {stripeAccountStatus.bankAccount.currency?.toUpperCase() || 'AUD'}
                     </Text>
                   </View>
 
                   <View style={styles.bankDetailsRow}>
-                    <Text style={styles.bankDetailsLabel}>Country</Text>
-                    <Text style={styles.bankDetailsValue}>
+                    <Text style={[styles.bankDetailsLabel, isDarkMode && { color: "#94A3B8" }]}>Country</Text>
+                    <Text style={[styles.bankDetailsValue, isDarkMode && { color: "#F8FAFC" }]}>
                       {stripeAccountStatus.bankAccount.country === 'AU' ? '🇦🇺 Australia' : stripeAccountStatus.bankAccount.country}
                     </Text>
                   </View>
 
-                  <View style={styles.bankDetailsDivider} />
+                  <View style={[styles.bankDetailsDivider, isDarkMode && { backgroundColor: "#334155" }]} />
 
                   <View style={styles.bankDetailsInfoBox}>
                     <Ionicons name="information-circle-outline" size={20} color="#1A2980" />
-                    <Text style={styles.bankDetailsInfoText}>
+                    <Text style={[styles.bankDetailsInfoText, isDarkMode && { color: "#94A3B8" }]}>
                       This is your payout account. Payments will be transferred to this bank account.
                     </Text>
                   </View>
@@ -1769,7 +1796,7 @@ export default function AccountScreen() {
             </ScrollView>
 
             {/* Footer Buttons — Fixed at bottom */}
-            <View style={styles.bankDetailsFooter}>
+            <View style={[styles.bankDetailsFooter, isDarkMode && { borderTopColor: "#334155", backgroundColor: "#1E293B" }]}>
               <TouchableOpacity
                 style={[styles.bankDetailsButton, { backgroundColor: '#1A2980' }, isUpdatingBank && { opacity: 0.7 }]}
                 onPress={handleUpdateBankAccount}
@@ -1839,29 +1866,39 @@ type MenuItemProps = {
   badge?: number;
 };
 
-const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disabled, badge }) => (
-  <TouchableOpacity 
-    style={[styles.menuItem, disabled && styles.menuItemDisabled]} 
-    onPress={onPress}
-    disabled={disabled && !onPress}
-  >
-    <View style={styles.iconWrapper}>{icon}</View>
-    <View style={{ flex: 1 }}>
-      <Text style={[styles.menuText, disabled && styles.menuTextDisabled]}>{text}</Text>
-      {subtext && <Text style={[styles.subtext, disabled && styles.subtextDisabled]}>{subtext}</Text>}
-    </View>
-    {badge && badge > 0 ? (
-      <View style={styles.pendingReviewBadge}>
-        <Text style={styles.pendingReviewBadgeText}>{badge > 99 ? '99+' : badge}</Text>
+const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disabled, badge }) => {
+  const { isDarkMode } = useTheme();
+  return (
+    <TouchableOpacity 
+      style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }, disabled && styles.menuItemDisabled]} 
+      onPress={onPress}
+      disabled={disabled && !onPress}
+      activeOpacity={0.7}
+    >
+      <View style={styles.iconWrapper}>
+        {React.isValidElement(icon)
+          ? React.cloneElement(icon as React.ReactElement<any>, {
+              color: isDarkMode ? '#38BDF8' : (icon.props as any).color || '#1A2980',
+            })
+          : icon}
       </View>
-    ) : null}
-    {disabled ? (
-      <Ionicons name="lock-closed" size={18} color="#999" />
-    ) : (
-      <Ionicons name="chevron-forward" size={18} color="#888" />
-    )}
-  </TouchableOpacity>
-);
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }, disabled && styles.menuTextDisabled]}>{text}</Text>
+        {subtext && <Text style={[styles.subtext, isDarkMode && { color: '#94A3B8' }, disabled && styles.subtextDisabled]}>{subtext}</Text>}
+      </View>
+      {badge && badge > 0 ? (
+        <View style={styles.pendingReviewBadge}>
+          <Text style={styles.pendingReviewBadgeText}>{badge > 99 ? '99+' : badge}</Text>
+        </View>
+      ) : null}
+      {disabled ? (
+        <Ionicons name="lock-closed" size={18} color={isDarkMode ? '#64748B' : '#999'} />
+      ) : (
+        <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#64748B' : '#888'} />
+      )}
+    </TouchableOpacity>
+  );
+};
 
 
 const styles = StyleSheet.create({

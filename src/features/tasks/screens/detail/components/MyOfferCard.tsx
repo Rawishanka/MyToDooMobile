@@ -3,6 +3,7 @@ import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface MyOfferCardProps {
@@ -13,6 +14,7 @@ interface MyOfferCardProps {
 }
 
 export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, onAcceptOffer, taskLocation }) => {
+  const { isDarkMode } = useTheme();
   // Use user's current location for currency display (auto geo-location)
   const { countryInfo } = useLocationCountry();
   const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
@@ -32,10 +34,10 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
   const isViewingOthersOffer = isTaskPoster;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#38BDF8" }]}>
+      <View style={[styles.header, isDarkMode && { borderBottomColor: "#334155" }]}>
         <Ionicons name="document-text" size={20} color="#004aad" />
-        <Text style={styles.headerText}>
+        <Text style={[styles.headerText, isDarkMode && { color: "#38BDF8" }]}>
           {isViewingOthersOffer ? 'Offer' : 'Your Offer'}
         </Text>
         {status === 'completed' && (
@@ -60,22 +62,22 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
 
       <View style={styles.content}>
         {/* Offer Amount */}
-        <View style={styles.amountContainer}>
-          <Text style={styles.amountLabel}>
+        <View style={[styles.amountContainer, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#38BDF8" }]}>
+          <Text style={[styles.amountLabel, isDarkMode && { color: "#94A3B8" }]}>
             {isViewingOthersOffer ? 'Offer Amount:' : 'Your Offer Amount:'}
           </Text>
-          <Text style={styles.amount}>
+          <Text style={[styles.amount, isDarkMode && { color: "#38BDF8" }]}>
             {formatCurrency(offerAmount, currencyInfo)}
           </Text>
         </View>
 
         {/* Message */}
         {offerMessage && (
-          <View style={styles.messageContainer}>
-            <Text style={styles.messageLabel}>
+          <View style={[styles.messageContainer, isDarkMode && { backgroundColor: "#0F172A" }]}>
+            <Text style={[styles.messageLabel, isDarkMode && { color: "#94A3B8" }]}>
               {isViewingOthersOffer ? 'Message:' : 'Your Message:'}
             </Text>
-            <Text style={styles.message}>{offerMessage}</Text>
+            <Text style={[styles.message, isDarkMode && { color: "#F8FAFC" }]}>{offerMessage}</Text>
           </View>
         )}
 
@@ -90,9 +92,9 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
         )}
 
         {/* Status Info */}
-        <View style={styles.infoContainer}>
+        <View style={[styles.infoContainer, isDarkMode && { backgroundColor: "#0F172A" }]}>
           <Ionicons name="information-circle-outline" size={16} color="#666" />
-          <Text style={styles.infoText}>
+          <Text style={[styles.infoText, isDarkMode && { color: "#94A3B8" }]}>
             {status === 'completed'
               ? isViewingOthersOffer
                 ? 'This task has been completed successfully.'

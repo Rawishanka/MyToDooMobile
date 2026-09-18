@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface SortModalProps {
   visible: boolean;
@@ -35,6 +36,7 @@ export default function SortModal({
   onSortChange,
   sortOptions,
 }: SortModalProps) {
+  const { isDarkMode } = useTheme();
   return (
     <Modal
       visible={visible}
@@ -48,25 +50,25 @@ export default function SortModal({
         activeOpacity={1}
         onPress={onClose}
       >
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, isDarkMode && { backgroundColor: '#1E293B' }]}>
           {/* Handle bar */}
-          <View style={styles.handle} />
+          <View style={[styles.handle, isDarkMode && { backgroundColor: '#334155' }]} />
 
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerLeft}>
-              <View style={styles.headerIconWrap}>
+              <View style={[styles.headerIconWrap, isDarkMode && { backgroundColor: '#0F172A' }]}>
                 <Ionicons name="funnel-outline" size={18} color="#1A2980" />
               </View>
-              <Text style={styles.headerTitle}>Sort By</Text>
+              <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Sort By</Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <TouchableOpacity onPress={onClose} style={[styles.closeBtn, isDarkMode && { backgroundColor: '#0F172A' }]}>
               <Ionicons name="close" size={20} color="#6B7280" />
             </TouchableOpacity>
           </View>
 
           {/* Divider */}
-          <View style={styles.divider} />
+          <View style={[styles.divider, isDarkMode && { backgroundColor: '#334155' }]} />
 
           {/* Options */}
           <ScrollView
@@ -80,21 +82,33 @@ export default function SortModal({
               return (
                 <TouchableOpacity
                   key={index}
-                  style={[styles.option, isActive && styles.optionActive]}
+                  style={[
+                    styles.option,
+                    isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' },
+                    isActive && (isDarkMode ? { backgroundColor: '#1E3A8A', borderColor: '#38BDF8' } : styles.optionActive)
+                  ]}
                   activeOpacity={0.7}
                   onPress={() => {
                     onSortChange(index);
                     onClose();
                   }}
                 >
-                  <View style={[styles.optionIconWrap, isActive && styles.optionIconWrapActive]}>
+                  <View style={[
+                    styles.optionIconWrap,
+                    isDarkMode && { backgroundColor: '#1E293B' },
+                    isActive && styles.optionIconWrapActive
+                  ]}>
                     <Ionicons
                       name={iconName as any}
                       size={18}
-                      color={isActive ? '#fff' : '#6B7280'}
+                      color={isActive ? '#fff' : (isDarkMode ? '#94A3B8' : '#6B7280')}
                     />
                   </View>
-                  <Text style={[styles.optionText, isActive && styles.optionTextActive]}>
+                  <Text style={[
+                    styles.optionText,
+                    isDarkMode && { color: '#CBD5E1' },
+                    isActive && (isDarkMode ? { color: '#F8FAFC', fontWeight: 'bold' } : styles.optionTextActive)
+                  ]}>
                     {option}
                   </Text>
                   {isActive && (

@@ -27,6 +27,7 @@ import { useAuthStore } from '@/src/store/auth-task-store';
 
 // Responsive utilities
 import { hp, isTablet, RFValue, TAB_BAR_CLEARANCE, wp } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface TabScreenProps {
   tasks: Task[];
@@ -41,6 +42,7 @@ interface TabScreenProps {
 
 // Tab screen components
 const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string }> = React.memo(({ tasks, isLoading, onRefresh, status, userRole, offersMap, promptReviewTaskId, onTaskMarkedComplete, oppositeReviewCount, onSwitchRole }) => {
+  const { isDarkMode } = useTheme();
   
   const getEmptyMessage = () => {
     switch (status) {
@@ -104,7 +106,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
   }
 
   return (
-    <View style={styles.tabContent}>
+    <View style={[styles.tabContent, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <FlatList
         data={tasks}
         keyExtractor={(item) => item._id}
@@ -170,7 +172,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             </View>
           ) : (
             <View style={styles.emptyListContent}>
-              <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
+              <Text style={[styles.emptyText, isDarkMode && { color: '#94A3B8' }]}>{getEmptyMessage()}</Text>
               <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
                 <Text style={styles.refreshButtonText}>Refresh</Text>
               </TouchableOpacity>
@@ -206,6 +208,7 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
   onTaskMarkedComplete?: (taskId: string) => void;
   onSwitchRole?: () => void;
 }) {
+  const { isDarkMode } = useTheme();
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
 
@@ -263,7 +266,7 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
   return (
     <>
       {/* Tab Bar */}
-      <View style={topTabStyles.tabBarContainer}>
+      <View style={[topTabStyles.tabBarContainer, isDarkMode && { backgroundColor: '#0F172A', borderBottomColor: '#334155' }]}>
         <ScrollView
           ref={scrollRef}
           horizontal
@@ -277,7 +280,11 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
               onPress={() => setActiveIndex(index)}
               activeOpacity={0.7}
             >
-              <Text style={[topTabStyles.tabLabel, index === activeIndex && topTabStyles.tabLabelActive]}>
+              <Text style={[
+                topTabStyles.tabLabel,
+                isDarkMode && { color: '#94A3B8' },
+                index === activeIndex && topTabStyles.tabLabelActive
+              ]}>
                 {tab.label}
               </Text>
             </TouchableOpacity>
@@ -335,6 +342,7 @@ const topTabStyles = StyleSheet.create({
 });
 
 export default function MyTasksScreen() {
+  const { isDarkMode } = useTheme();
   const [searchVisible, setSearchVisible] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [userRole, setUserRole] = useState<'Tasker' | 'Poster'>('Poster'); // set from isTasker on open
@@ -783,7 +791,7 @@ export default function MyTasksScreen() {
       });
       
       const completedTasks = sortByCreatedDate(filterBySearch(
-        taskerAssignedTasks.filter((task: Task) => task.status === 'completed')
+        taskerAssignedTasks.filter((task: Task) => task.status === 'completed' && !isReviewRequired(task))
       ));
 
       const reviewRequiredTasks = sortByCreatedDate(filterBySearch(
@@ -938,7 +946,7 @@ export default function MyTasksScreen() {
       filterBySearch(
         allTasks.filter((task: Task) => {
           const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
-          return isUsersTask && task.status === 'completed';
+          return isUsersTask && task.status === 'completed' && !isReviewRequired(task);
         })
       )
     );
@@ -1134,7 +1142,7 @@ export default function MyTasksScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <StatusBar barStyle="light-content" translucent backgroundColor="#1A2980" />
 
       <MyTasksHeader
@@ -1167,28 +1175,34 @@ export default function MyTasksScreen() {
       )}
 
       {/* Role Selector */}
-      <View style={styles.roleSelectorContainer}>
+      <View style={[styles.roleSelectorContainer, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
         <TouchableOpacity
-          style={[styles.roleButton, userRole === 'Tasker' && styles.activeRole]}
+          style={[
+            styles.roleButton,
+            isDarkMode && { backgroundColor: '#1E293B' },
+            userRole === 'Tasker' && (isDarkMode ? { backgroundColor: '#2563EB' } : styles.activeRole)
+          ]}
           onPress={() => {
             setIsRoleSwitching(true);
             setUserRole('Tasker');
-            // FIX: Allow Tab.Navigator to initialize before enabling interactions
             setTimeout(() => setIsRoleSwitching(false), 150);
           }}
         >
-          <Text style={[styles.roleText, userRole === 'Tasker' && styles.activeRoleText]}>Tasker</Text>
+          <Text style={[styles.roleText, isDarkMode && { color: '#94A3B8' }, userRole === 'Tasker' && (isDarkMode ? { color: '#FFF', fontWeight: 'bold' } : styles.activeRoleText)]}>Tasker</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.roleButton, userRole === 'Poster' && styles.activeRole]}
+          style={[
+            styles.roleButton,
+            isDarkMode && { backgroundColor: '#1E293B' },
+            userRole === 'Poster' && (isDarkMode ? { backgroundColor: '#2563EB' } : styles.activeRole)
+          ]}
           onPress={() => {
             setIsRoleSwitching(true);
             setUserRole('Poster');
-            // FIX: Allow Tab.Navigator to initialize before enabling interactions
             setTimeout(() => setIsRoleSwitching(false), 150);
           }}
         >
-          <Text style={[styles.roleText, userRole === 'Poster' && styles.activeRoleText]}>Poster</Text>
+          <Text style={[styles.roleText, isDarkMode && { color: '#94A3B8' }, userRole === 'Poster' && (isDarkMode ? { color: '#FFF', fontWeight: 'bold' } : styles.activeRoleText)]}>Poster</Text>
         </TouchableOpacity>
       </View>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '@/src/shared/theme';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,34 +10,35 @@ interface TabsSectionProps {
 }
 
 export const TabsSection: React.FC<TabsSectionProps> = ({ activeTab, onTabChange }) => {
+  const { isDarkMode } = useTheme();
   return (
-    <View style={styles.tabsContainer}>
+    <View style={[styles.tabsContainer, isDarkMode && { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' }]}>
       <TouchableOpacity
-        style={[styles.tabBtn, activeTab === 'offers' && styles.activeTabBtn]}
+        style={[styles.tabBtn, activeTab === 'offers' && styles.activeTabBtn, isDarkMode && activeTab === 'offers' && { backgroundColor: '#1E293B' }]}
         onPress={() => onTabChange('offers')}
         activeOpacity={0.85}
       >
         <Ionicons
           name="pricetag-outline"
           size={16}
-          color={activeTab === 'offers' ? '#003399' : '#64748B'}
+          color={activeTab === 'offers' ? (isDarkMode ? '#38BDF8' : '#003399') : (isDarkMode ? '#94A3B8' : '#64748B')}
         />
-        <Text style={[styles.tabText, activeTab === 'offers' && styles.activeTabText]}>
+        <Text style={[styles.tabText, isDarkMode && { color: '#94A3B8' }, activeTab === 'offers' && (isDarkMode ? { color: '#38BDF8', fontWeight: '700' } : styles.activeTabText)]}>
           Offers
         </Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.tabBtn, activeTab === 'questions' && styles.activeTabBtn]}
+        style={[styles.tabBtn, activeTab === 'questions' && styles.activeTabBtn, isDarkMode && activeTab === 'questions' && { backgroundColor: '#1E293B' }]}
         onPress={() => onTabChange('questions')}
         activeOpacity={0.85}
       >
         <Ionicons
           name="chatbubbles-outline"
           size={16}
-          color={activeTab === 'questions' ? '#003399' : '#64748B'}
+          color={activeTab === 'questions' ? (isDarkMode ? '#38BDF8' : '#003399') : (isDarkMode ? '#94A3B8' : '#64748B')}
         />
-        <Text style={[styles.tabText, activeTab === 'questions' && styles.activeTabText]}>
+        <Text style={[styles.tabText, isDarkMode && { color: '#94A3B8' }, activeTab === 'questions' && (isDarkMode ? { color: '#38BDF8', fontWeight: '700' } : styles.activeTabText)]}>
           Questions
         </Text>
       </TouchableOpacity>

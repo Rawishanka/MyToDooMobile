@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { useAnswerTaskQuestion } from '@/src/shared/hooks/useTaskApi';
 import { moderateContent } from '@/src/shared/utils/contentModeration';
@@ -46,6 +47,7 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
   taskId,
   onAnswerSubmitted,
 }) => {
+  const { isDarkMode } = useTheme();
   const [answer, setAnswer] = useState('');
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const answerQuestionMutation = useAnswerTaskQuestion();
@@ -165,31 +167,31 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-      <View style={styles.container}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Answer Question</Text>
+        <View style={[styles.header, isDarkMode && { borderBottomColor: "#334155" }]}>
+          <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]}>Answer Question</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#000" />
+            <Ionicons name="close" size={24} color={isDarkMode ? "#F8FAFC" : "#000"} />
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" removeClippedSubviews={false}>
           {/* Original Question */}
           <View style={styles.questionContainer}>
-            <Text style={styles.sectionTitle}>❓ Question from {getAskedByName()}</Text>
-            <View style={styles.questionCard}>
-              <Text style={styles.questionText}>{getQuestionText()}</Text>
+            <Text style={[styles.sectionTitle, isDarkMode && { color: "#F8FAFC" }]}>❓ Question from {getAskedByName()}</Text>
+            <View style={[styles.questionCard, isDarkMode && { backgroundColor: "#1E293B", borderLeftColor: "#38BDF8" }]}>
+              <Text style={[styles.questionText, isDarkMode && { color: "#E2E8F0" }]}>{getQuestionText()}</Text>
             </View>
           </View>
 
           {/* Answer Input */}
           <View style={styles.answerContainer}>
-            <Text style={styles.sectionTitle}>✍️ Your Answer</Text>
+            <Text style={[styles.sectionTitle, isDarkMode && { color: "#F8FAFC" }]}>✍️ Your Answer</Text>
             <TextInput
-              style={styles.answerInput}
+              style={[styles.answerInput, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155", color: "#F8FAFC" }]}
               placeholder="Type your answer here..."
-              placeholderTextColor="#999"
+              placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
               value={answer}
               onChangeText={setAnswer}
               multiline
@@ -198,7 +200,7 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
               textAlignVertical="top"
               scrollEnabled
             />
-            <Text style={styles.characterCount}>
+            <Text style={[styles.characterCount, isDarkMode && { color: "#64748B" }]}>
               {answer.length}/1000 characters
             </Text>
           </View>
@@ -213,19 +215,19 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
           />
 
           {/* Answer Tips */}
-          <View style={styles.tipsContainer}>
-            <Text style={styles.tipsTitle}>💡 Tips for a good answer:</Text>
-            <Text style={styles.tipText}>• Be specific and clear in your response</Text>
-            <Text style={styles.tipText}>• Include relevant details or instructions</Text>
-            <Text style={styles.tipText}>• Attach images or documents to help explain</Text>
-            <Text style={styles.tipText}>• Mention any materials or tools needed</Text>
-            <Text style={styles.tipText}>• Provide timeline or schedule information</Text>
-            <Text style={styles.tipText}>• Be helpful and professional</Text>
+          <View style={[styles.tipsContainer, isDarkMode && { backgroundColor: "#1E293B" }]}>
+            <Text style={[styles.tipsTitle, isDarkMode && { color: "#38BDF8" }]}>💡 Tips for a good answer:</Text>
+            <Text style={[styles.tipText, isDarkMode && { color: "#94A3B8" }]}>• Be specific and clear in your response</Text>
+            <Text style={[styles.tipText, isDarkMode && { color: "#94A3B8" }]}>• Include relevant details or instructions</Text>
+            <Text style={[styles.tipText, isDarkMode && { color: "#94A3B8" }]}>• Attach images or documents to help explain</Text>
+            <Text style={[styles.tipText, isDarkMode && { color: "#94A3B8" }]}>• Mention any materials or tools needed</Text>
+            <Text style={[styles.tipText, isDarkMode && { color: "#94A3B8" }]}>• Provide timeline or schedule information</Text>
+            <Text style={[styles.tipText, isDarkMode && { color: "#94A3B8" }]}>• Be helpful and professional</Text>
           </View>
         </ScrollView>
 
         {/* Submit Button */}
-        <View style={styles.footer}>
+        <View style={[styles.footer, isDarkMode && { borderTopColor: "#334155" }]}>
           <TouchableOpacity
             style={[
               styles.submitButton,

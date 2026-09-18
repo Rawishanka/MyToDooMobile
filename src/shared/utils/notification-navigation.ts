@@ -455,6 +455,23 @@ export function getNotificationNavigationTarget(
       if (taskId) return taskDetailTarget(taskId);
       return myTasksTarget();
 
+    case 'SERVICE_BOOKED':
+    case 'SERVICE_LISTING_BOOKED': {
+      const role = getUserRole(notification);
+      const normalizedRole =
+        role?.toLowerCase() === 'tasker' ? 'Tasker' : 'Poster';
+      if (taskId) {
+        return taskDetailTarget(taskId, {
+          fromUserRole: normalizedRole,
+          fromStatus: 'offers',
+        });
+      }
+      return myTasksTarget({
+        role: normalizedRole,
+        tab: normalizedRole === 'Poster' ? 'posted' : 'offers',
+      });
+    }
+
     case 'QUESTION_ASKED':
     case 'QUESTION_ANSWERED':
       if (taskId) return questionTaskDetailTarget(taskId);

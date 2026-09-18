@@ -399,12 +399,23 @@ export function useApiFunctions() {
         throw new Error('No user data received from server');
       }
       
+      const enrichedUser = {
+        ...user,
+        isPhoneVerified: response.data.user?.isPhoneVerified ?? response.data.isPhoneVerified ?? false,
+        phone: response.data.user?.phone ?? null,
+      };
+
       console.log("✅ Calling setAuthData with validated data...");
-      await setAuthData(token, user);
+      await setAuthData(token, enrichedUser);
       setStoredToken(token);
       
       console.log("✅ Returning data to React Query...");
-      return { token, user };
+      return { 
+        token, 
+        user: enrichedUser, 
+        isNewUser: response.data.isNewUser,
+        requiresPhoneVerification: response.data.requiresPhoneVerification ?? (!enrichedUser.isPhoneVerified || !enrichedUser.phone),
+      };
     } catch (error: any) {
       // 🔍 ENHANCED ERROR LOGGING for debugging
       console.error("❌ Firebase Google Sign-In API call failed:");
@@ -493,12 +504,23 @@ export function useApiFunctions() {
         throw new Error('No user data received from server');
       }
       
+      const enrichedUser = {
+        ...user,
+        isPhoneVerified: response.data.user?.isPhoneVerified ?? response.data.isPhoneVerified ?? false,
+        phone: response.data.user?.phone ?? null,
+      };
+
       console.log("✅ Calling setAuthData with validated data...");
-      await setAuthData(token, user);
+      await setAuthData(token, enrichedUser);
       setStoredToken(token);
       
       console.log("✅ Returning data to React Query...");
-      return { token, user, isNewUser: response.data.isNewUser };
+      return { 
+        token, 
+        user: enrichedUser, 
+        isNewUser: response.data.isNewUser,
+        requiresPhoneVerification: response.data.requiresPhoneVerification ?? (!enrichedUser.isPhoneVerified || !enrichedUser.phone),
+      };
     } catch (error: any) {
       // 🔍 ENHANCED ERROR LOGGING for debugging
       console.error("❌ Apple Sign-In API call failed:");

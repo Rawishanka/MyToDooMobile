@@ -25,6 +25,7 @@ import { LocationInput } from './LocationInput';
 import type { CountryData, LocationData } from './signup-types';
 import { formatAbnInput } from '@/src/shared/utils/abnValidation';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface ValidationErrors {
   firstName?: string;
@@ -135,6 +136,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
   setAbnInput,
   scrollViewRef,
 }) => {
+  const { isDarkMode } = useTheme();
   const router = useRouter();
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -535,12 +537,12 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       {/* Name Row */}
       <View style={styles.nameRow}>
         <View style={styles.nameField}>
-          <Text style={styles.label}>
+          <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
             First Name <Text style={styles.required}>*</Text>
           </Text>
           <TextInput
             ref={firstNameRef}
-            style={[styles.input, touched.firstName && errors.firstName && styles.inputError]}
+            style={[styles.input, touched.firstName && errors.firstName && styles.inputError, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
             value={firstName}
             onChangeText={(text) => {
               // Limit to 50 characters
@@ -560,7 +562,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             }}
             onBlur={() => handleBlur('firstName')}
             placeholder="Enter first name"
-            placeholderTextColor="#999"
+            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
             autoCapitalize="words"
             maxLength={50}
             returnKeyType="next"
@@ -572,12 +574,12 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         </View>
         
         <View style={styles.nameField}>
-          <Text style={styles.label}>
+          <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
             Last Name <Text style={styles.required}>*</Text>
           </Text>
           <TextInput
             ref={lastNameRef}
-            style={[styles.input, touched.lastName && errors.lastName && styles.inputError]}
+            style={[styles.input, touched.lastName && errors.lastName && styles.inputError, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
             value={lastName}
             onChangeText={(text) => {
               // Limit to 50 characters
@@ -597,7 +599,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             }}
             onBlur={() => handleBlur('lastName')}
             placeholder="Enter last name"
-            placeholderTextColor="#999"
+            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
             autoCapitalize="words"
             maxLength={50}
             returnKeyType="next"
@@ -610,12 +612,12 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       </View>
 
       {/* Email */}
-      <Text style={styles.label}>
+      <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
         Email <Text style={styles.required}>*</Text>
       </Text>
       <TextInput
         ref={emailRef}
-        style={[styles.input, touched.email && errors.email && styles.inputError]}
+        style={[styles.input, touched.email && errors.email && styles.inputError, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
         value={email}
         onChangeText={(text) => {
           setEmail(text);
@@ -632,7 +634,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         }}
         onBlur={() => handleBlur('email')}
         placeholder="Enter your email"
-        placeholderTextColor="#999"
+        placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
         keyboardType="email-address"
         autoCapitalize="none"
         returnKeyType="next"
@@ -643,19 +645,19 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       )}
 
       {/* Country Display - Australia Only (No dropdown) */}
-      <Text style={styles.label}>Country</Text>
-      <View style={styles.countryDisplayContainer}>
-        <View style={styles.countryFlagWrap}>
-          <Ionicons name="flag" size={15} color="#1A2980" />
+      <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Country</Text>
+      <View style={[styles.countryDisplayContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+        <View style={[styles.countryFlagWrap, isDarkMode && { backgroundColor: '#0F172A' }]}>
+          <Text style={{ fontSize: RFValue(18) }}>{selectedCountry.flag || '🇦🇺'}</Text>
         </View>
-        <Text style={styles.countryDisplayText}>
+        <Text style={[styles.countryDisplayText, isDarkMode && { color: '#F8FAFC' }]}>
           {selectedCountry.name}
         </Text>
-        <Ionicons name="lock-closed-outline" size={14} color="#9CA3AF" style={{ marginLeft: 'auto' }} />
+        <Ionicons name="lock-closed-outline" size={14} color={isDarkMode ? '#64748B' : '#9CA3AF'} style={{ marginLeft: 'auto' }} />
       </View>
 
       {/* Location Input - Australian Suburbs */}
-      <Text style={styles.label}>
+      <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
         Suburb/Location <Text style={styles.required}>*</Text>
       </Text>
       <LocationInput
@@ -678,7 +680,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       )}
 
       {/* Date of Birth */}
-      <Text style={styles.label}>
+      <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
         Date of Birth <Text style={styles.required}>*</Text>
       </Text>
       <DatePickerInput
@@ -693,16 +695,16 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       )}
 
       {/* Mobile Number */}
-      <Text style={styles.label}>
+      <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
         Mobile Number <Text style={styles.required}>*</Text>
       </Text>
       <View style={[styles.phoneContainer, touched.phone && errors.phone && styles.inputError]}>
-        <View style={styles.phonePrefix}>
-          <Text style={styles.phonePrefixText}>{selectedCountry.phoneCode}</Text>
+        <View style={[styles.phonePrefix, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+          <Text style={[styles.phonePrefixText, isDarkMode && { color: '#38BDF8' }]}>{selectedCountry.phoneCode}</Text>
         </View>
         <TextInput
           ref={phoneRef}
-          style={styles.phoneInput}
+          style={[styles.phoneInput, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
           value={phone}
           onChangeText={(text) => {
             setPhone(text);
@@ -719,7 +721,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           }}
           onBlur={() => handleBlur('phone')}
           placeholder="Mobile number"
-          placeholderTextColor="#999"
+          placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
           keyboardType="phone-pad"
           returnKeyType="next"
           onSubmitEditing={() => passwordRef.current?.focus()}
@@ -730,13 +732,13 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       )}
 
       {/* Password */}
-      <Text style={styles.label}>
+      <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
         Password <Text style={styles.required}>*</Text>
       </Text>
-      <View style={[styles.passwordContainer, touched.password && errors.password && styles.inputError]}>
+      <View style={[styles.passwordContainer, touched.password && errors.password && styles.inputError, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <TextInput
           ref={passwordRef}
-          style={styles.passwordInput}
+          style={[styles.passwordInput, isDarkMode && { color: '#F8FAFC' }]}
           value={password}
           onChangeText={(text) => {
             setPassword(text);
@@ -753,7 +755,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           }}
           onBlur={() => handleBlur('password')}
           placeholder="Create a password"
-          placeholderTextColor="#999"
+          placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
           secureTextEntry={!showPassword}
           textContentType="newPassword"
           autoComplete="password-new"
@@ -778,13 +780,13 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       )}
 
       {/* Confirm Password */}
-      <Text style={styles.label}>
+      <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
         Confirm Password <Text style={styles.required}>*</Text>
       </Text>
-      <View style={[styles.passwordContainer, touched.confirmPassword && errors.confirmPassword && styles.inputError]}>
+      <View style={[styles.passwordContainer, touched.confirmPassword && errors.confirmPassword && styles.inputError, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <TextInput
           ref={confirmPasswordRef}
-          style={styles.passwordInput}
+          style={[styles.passwordInput, isDarkMode && { color: '#F8FAFC' }]}
           value={confirmPassword}
           onChangeText={(text) => {
             setConfirmPassword(text);
@@ -801,7 +803,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           }}
           onBlur={() => handleBlur('confirmPassword')}
           placeholder="Confirm your password"
-          placeholderTextColor="#999"
+          placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
           secureTextEntry={!showConfirmPassword}
           textContentType="newPassword"
           autoComplete="password-new"
@@ -825,9 +827,9 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       )}
 
       {/* Tasker Preferences */}
-      <View style={styles.taskerSection}>
-        <Text style={styles.taskerSectionTitle}>Tasker Preferences</Text>
-        <Text style={styles.taskerSectionSubtitle}>Register as a tasker to get notified when new tasks are posted.</Text>
+      <View style={[styles.taskerSection, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+        <Text style={[styles.taskerSectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Tasker Preferences</Text>
+        <Text style={[styles.taskerSectionSubtitle, isDarkMode && { color: '#94A3B8' }]}>Register as a tasker to get notified when new tasks are posted.</Text>
 
         {/* Register as a Tasker */}
         <TouchableOpacity
@@ -843,8 +845,8 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             {notifyNewTask && <Ionicons name="checkmark" size={14} color="#fff" />}
           </View>
           <View style={styles.taskerCheckContent}>
-            <Text style={styles.taskerCheckLabel}>Register as a Tasker</Text>
-            <Text style={styles.taskerCheckDesc}>Get notified when new tasks are posted on the platform.</Text>
+            <Text style={[styles.taskerCheckLabel, isDarkMode && { color: '#F8FAFC' }]}>Register as a Tasker</Text>
+            <Text style={[styles.taskerCheckDesc, isDarkMode && { color: '#94A3B8' }]}>Get notified when new tasks are posted on the platform.</Text>
           </View>
         </TouchableOpacity>
 
@@ -858,25 +860,25 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             {notifySkillMatch && notifyNewTask && <Ionicons name="checkmark" size={14} color="#fff" />}
           </View>
           <View style={styles.taskerCheckContent}>
-            <Text style={[styles.taskerCheckLabel, !notifyNewTask && styles.taskerCheckLabelDisabled]}>Only notify me of tasks in my skillset</Text>
-            <Text style={[styles.taskerCheckDesc, !notifyNewTask && styles.taskerCheckLabelDisabled]}>Filter notifications to tasks that match your skills only.</Text>
+            <Text style={[styles.taskerCheckLabel, !notifyNewTask && styles.taskerCheckLabelDisabled, isDarkMode && { color: '#F8FAFC' }]}>Only notify me of tasks in my skillset</Text>
+            <Text style={[styles.taskerCheckDesc, !notifyNewTask && styles.taskerCheckLabelDisabled, isDarkMode && { color: '#94A3B8' }]}>Filter notifications to tasks that match your skills only.</Text>
           </View>
         </TouchableOpacity>
 
         {notifyNewTask && (
           <View style={styles.abnFieldContainer}>
-            <Text style={styles.abnLabel}>Australian Business Number (ABN) (optional)</Text>
+            <Text style={[styles.abnLabel, isDarkMode && { color: '#F8FAFC' }]}>Australian Business Number (ABN) (optional)</Text>
             <TextInput
-              style={styles.abnInput}
+              style={[styles.abnInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
               value={abnInput}
               onChangeText={(text) => setAbnInput(formatAbnInput(text))}
               placeholder="XX XXX XXX XXX"
-              placeholderTextColor="#999"
+              placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
               keyboardType="number-pad"
               maxLength={14}
               autoCorrect={false}
             />
-            <Text style={styles.abnHelper}>
+            <Text style={[styles.abnHelper, isDarkMode && { color: '#94A3B8' }]}>
               You can skip this and add your ABN later. Required before payout setup.
             </Text>
           </View>
@@ -896,17 +898,17 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           </View>
         </TouchableOpacity>
         <View style={styles.termsTextContainer}>
-          <Text style={styles.termsText}>
+          <Text style={[styles.termsText, isDarkMode && { color: '#94A3B8' }]}>
             By creating an account, you agree to the{' '}
           </Text>
           <TouchableOpacity onPress={() => setShowTermsWebView(true)}>
             <Text style={styles.termsLink}>MyToDoo Terms & Conditions</Text>
           </TouchableOpacity>
-          <Text style={styles.termsText}> and </Text>
+          <Text style={[styles.termsText, isDarkMode && { color: '#94A3B8' }]}> and </Text>
           <TouchableOpacity onPress={() => setShowPrivacyWebView(true)}>
             <Text style={styles.termsLink}>Privacy Policy</Text>
           </TouchableOpacity>
-          <Text style={styles.termsText}>.</Text>
+          <Text style={[styles.termsText, isDarkMode && { color: '#94A3B8' }]}>.</Text>
         </View>
       </View>
 
@@ -943,14 +945,14 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       {handleGoogleSignIn && (
         <>
           <View style={styles.dividerContainer}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>OR</Text>
-            <View style={styles.divider} />
+            <View style={[styles.divider, isDarkMode && { backgroundColor: '#334155' }]} />
+            <Text style={[styles.dividerText, isDarkMode && { color: '#64748B' }]}>OR</Text>
+            <View style={[styles.divider, isDarkMode && { backgroundColor: '#334155' }]} />
           </View>
 
           {/* Google Sign-In Button */}
           <TouchableOpacity 
-            style={styles.googleButton} 
+            style={[styles.googleButton, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]} 
             onPress={handleGoogleSignIn} 
             disabled={googleLoading || loading || appleLoading}
           >
@@ -962,7 +964,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
                   source={require('@/assets/icons/google.png')}
                   style={styles.googleIcon}
                 />
-                <Text style={styles.googleButtonText}>Continue with Google</Text>
+                <Text style={[styles.googleButtonText, isDarkMode && { color: '#F8FAFC' }]}>Continue with Google</Text>
               </>
             )}
           </TouchableOpacity>

@@ -35,6 +35,7 @@ import {
     TimeToggle,
 } from './components';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 // Helper function to copy image to persistent storage
 const copyImageToPersistentStorage = async (sourceUri: string): Promise<string> => {
@@ -84,6 +85,7 @@ export default function CreateTaskScreen() {
   const resetTask = useCreateTaskStore(state => state.resetTask);
   const myTask = useCreateTaskStore(state => state.myTask);
   const insets = useSafeAreaInsets();
+  const { isDarkMode } = useTheme();
 
   // Refs for sections
   const scrollViewRef = useRef<ScrollView>(null);
@@ -844,21 +846,25 @@ Please remove phone numbers and addresses from the image.`,
               <TouchableOpacity
                 key={`upload-${rowIndex}-${itemIndex}`}
                 onPress={showImagePickerOptions}
-                style={[styles.uploadBox, (isProcessing || isOCRProcessing) && styles.uploadBoxDisabled]}
+                style={[
+                  styles.uploadBox,
+                  isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                  (isProcessing || isOCRProcessing) && [styles.uploadBoxDisabled, isDarkMode && { backgroundColor: '#0F172A' }]
+                ]}
                 activeOpacity={0.7}
                 disabled={isProcessing || isOCRProcessing}
               >
                 {isProcessing || isOCRProcessing ? (
                   <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color="#467FFF" />
+                    <ActivityIndicator size="small" color={isDarkMode ? "#60A5FA" : "#467FFF"} />
                     {isOCRProcessing && (
-                      <Text style={styles.loadingText}>Checking image...</Text>
+                      <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Checking image...</Text>
                     )}
                   </View>
                 ) : (
                   <>
-                    <Ionicons name="camera" size={24} color="#467FFF" />
-                    <Ionicons name="add" size={16} color="#467FFF" style={styles.addIcon} />
+                    <Ionicons name="camera" size={24} color={isDarkMode ? "#60A5FA" : "#467FFF"} />
+                    <Ionicons name="add" size={16} color={isDarkMode ? "#60A5FA" : "#467FFF"} style={[styles.addIcon, isDarkMode && { backgroundColor: '#1E293B' }]} />
                   </>
                 )}
               </TouchableOpacity>
@@ -1015,8 +1021,8 @@ Please remove phone numbers and addresses from the image.`,
   };
 
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.container}>
+    <View style={[styles.wrapper, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         {/* Fixed Header */}
         <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => {
@@ -1088,13 +1094,14 @@ Please remove phone numbers and addresses from the image.`,
         <View ref={section1Ref} style={styles.section}>
           {/* Category Selection */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>
+            <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
               Category <Text style={styles.required}>*</Text>
             </Text>
             <TouchableOpacity
               style={[
                 styles.categorySelector,
-                showCategoryDropdown && styles.categorySelectorActive,
+                isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                showCategoryDropdown && [styles.categorySelectorActive, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#0057FF' }],
                 touched.category && !selectedCategory && styles.inputError
               ]}
               activeOpacity={0.7}
@@ -1115,7 +1122,7 @@ Please remove phone numbers and addresses from the image.`,
                   color={selectedCategory ? "#0057FF" : "#94A3B8"} 
                   style={styles.fieldIcon} 
                 />
-                <Text style={[styles.categorySelectorText, !selectedCategory && styles.placeholder]}>
+                <Text style={[styles.categorySelectorText, isDarkMode && { color: '#F8FAFC' }, !selectedCategory && [styles.placeholder, isDarkMode && { color: '#64748B' }]]}>
                   {selectedCategory || 'Select a category'}
                 </Text>
               </View>
@@ -1140,15 +1147,15 @@ Please remove phone numbers and addresses from the image.`,
                     setCategorySearchQuery('');
                   }}
                 />
-                <View style={styles.categoryDropdown}>
-                  <View style={styles.searchContainer}>
+                <View style={[styles.categoryDropdown, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+                  <View style={[styles.searchContainer, isDarkMode && { borderBottomColor: '#334155' }]}>
                     <Ionicons name="search" size={18} color="#94A3B8" />
                     <TextInput
-                      style={styles.searchInput}
+                      style={[styles.searchInput, isDarkMode && { color: '#F8FAFC' }]}
                       placeholder="Search categories..."
                       value={categorySearchQuery}
                       onChangeText={setCategorySearchQuery}
-                      placeholderTextColor="#94A3B8"
+                      placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
                     />
                   </View>
 
@@ -1167,7 +1174,7 @@ Please remove phone numbers and addresses from the image.`,
                     categories.map(category => (
                       <TouchableOpacity
                         key={category}
-                        style={[styles.categoryItem, selectedCategory === category && styles.categoryItemSelected]}
+                        style={[styles.categoryItem, isDarkMode && { borderBottomColor: '#334155' }, selectedCategory === category && (isDarkMode ? { backgroundColor: '#334155' } : styles.categoryItemSelected)]}
                         onPress={() => {
                           setSelectedCategory(category);
                           categoryWasAutoSuggested.current = false; // User manually selected — do not override
@@ -1180,6 +1187,7 @@ Please remove phone numbers and addresses from the image.`,
                         <Text
                           style={[
                             styles.categoryItemText,
+                            isDarkMode && { color: '#F8FAFC' },
                             selectedCategory === category && styles.categoryItemTextSelected,
                           ]}
                         >
@@ -1197,16 +1205,17 @@ Please remove phone numbers and addresses from the image.`,
 
           {/* Title Input */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>
+            <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
               Title <Text style={styles.required}>*</Text>
             </Text>
             <View style={[
               styles.inputWrapper,
-              isTitleFocused && styles.inputWrapperFocused,
+              isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' },
+              isTitleFocused && [styles.inputWrapperFocused, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#0057FF' }],
               titleError ? styles.inputError : null
             ]}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, isDarkMode && { color: '#F8FAFC' }]}
                 placeholder="e.g. Move my couch"
                 value={title}
                 onChangeText={handleTitleChange}
@@ -1215,7 +1224,7 @@ Please remove phone numbers and addresses from the image.`,
                   setIsTitleFocused(false);
                   handleTitleBlur();
                 }}
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
                 maxLength={200}
               />
             </View>
@@ -1224,8 +1233,8 @@ Please remove phone numbers and addresses from the image.`,
                 <Ionicons name="information-circle-outline" size={13} color="#94A3B8" />
                 <Text style={styles.helperText}>Only letters, spaces, and basic punctuation</Text>
               </View>
-              <View style={styles.charCountBadge}>
-                <Text style={styles.charCountText}>{titleLength}/200</Text>
+              <View style={[styles.charCountBadge, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                <Text style={[styles.charCountText, isDarkMode && { color: '#94A3B8' }]}>{titleLength}/200</Text>
               </View>
             </View>
             {titleError ? (
@@ -1235,16 +1244,17 @@ Please remove phone numbers and addresses from the image.`,
 
           {/* Description Input */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>
+            <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
               Description <Text style={styles.required}>*</Text>
             </Text>
             <View style={[
               styles.textAreaWrapper,
-              isDescriptionFocused && styles.inputWrapperFocused,
+              isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' },
+              isDescriptionFocused && [styles.inputWrapperFocused, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#0057FF' }],
               (touched.description && (descriptionError || (descriptionLength > 0 && descriptionLength < 20))) ? styles.inputError : null
             ]}>
               <TextInput
-                style={styles.textArea}
+                style={[styles.textArea, isDarkMode && { color: '#F8FAFC' }]}
                 multiline
                 placeholder="Give a detailed description of your task..."
                 value={description}
@@ -1254,7 +1264,7 @@ Please remove phone numbers and addresses from the image.`,
                   setIsDescriptionFocused(false);
                   handleDescriptionBlur();
                 }}
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
                 textAlignVertical="top"
                 numberOfLines={4}
                 maxLength={1000}
@@ -1265,8 +1275,8 @@ Please remove phone numbers and addresses from the image.`,
                 <Ionicons name="information-circle-outline" size={13} color="#94A3B8" />
                 <Text style={styles.helperText}>Min 20 characters required</Text>
               </View>
-              <View style={styles.charCountBadge}>
-                <Text style={styles.charCountText}>{descriptionLength}/1000</Text>
+              <View style={[styles.charCountBadge, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                <Text style={[styles.charCountText, isDarkMode && { color: '#94A3B8' }]}>{descriptionLength}/1000</Text>
               </View>
             </View>
             {touched.description && descriptionError ? (
@@ -1283,8 +1293,8 @@ Please remove phone numbers and addresses from the image.`,
 
         {/* SECTION 2: PHOTOS & LOCATION */}
         <View ref={section2Ref} style={styles.section}>
-          <Text style={styles.sectionTitle}>Photos & Location</Text>
-          <Text style={styles.sectionSubtitle}>Help taskers understand what needs doing ({images.length}/{MAX_TASK_PHOTOS} photos)</Text>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Photos & Location</Text>
+          <Text style={[styles.sectionSubtitle, isDarkMode && { color: '#94A3B8' }]}>Help taskers understand what needs doing ({images.length}/{MAX_TASK_PHOTOS} photos)</Text>
 
           <View style={styles.imageSection}>
             {renderGridItems()}
@@ -1292,10 +1302,10 @@ Please remove phone numbers and addresses from the image.`,
 
           {/* Location */}
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>
+            <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
               Location <Text style={styles.required}>*</Text>
             </Text>
-            <Text style={styles.locationSubtitle}>
+            <Text style={[styles.locationSubtitle, isDarkMode && { color: '#94A3B8' }]}>
               Where do you need this done? Type and select from suggestions.
             </Text>
 
@@ -1323,9 +1333,9 @@ Please remove phone numbers and addresses from the image.`,
             )}
 
             {selectedLocation && (
-              <View style={styles.selectedLocationContainer}>
+              <View style={[styles.selectedLocationContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
                 <Ionicons name="location" size={20} color="#0057FF" />
-                <Text style={styles.selectedLocationText} numberOfLines={2}>
+                <Text style={[styles.selectedLocationText, isDarkMode && { color: '#60A5FA' }]} numberOfLines={2}>
                   {selectedLocation.address}
                 </Text>
                 <TouchableOpacity
@@ -1358,10 +1368,10 @@ Please remove phone numbers and addresses from the image.`,
 
         {/* SECTION 3: TIME */}
         <View ref={section3Ref} style={styles.section}>
-          <Text style={styles.sectionTitle}>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>
             When <Text style={styles.required}>*</Text>
           </Text>
-          <Text style={styles.sectionSubtitle}>When do you need this done?</Text>
+          <Text style={[styles.sectionSubtitle, isDarkMode && { color: '#94A3B8' }]}>When do you need this done?</Text>
 
           {/* Date/Time Options */}
           <DateOptionSelector
@@ -1420,6 +1430,7 @@ Please remove phone numbers and addresses from the image.`,
         <TouchableOpacity
           style={[
             styles.continueButton, 
+            isDarkMode && !isFormValid && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 },
             isFormValid && styles.continueButtonEnabled,
             { bottom: Math.max(insets.bottom, 20) }
           ]}
@@ -1431,7 +1442,7 @@ Please remove phone numbers and addresses from the image.`,
             handleContinue();
           }}
         >
-          <Text style={styles.continueText}>Continue</Text>
+          <Text style={[styles.continueText, isDarkMode && !isFormValid && { color: '#64748B' }]}>Continue</Text>
         </TouchableOpacity>
       )}
 
@@ -1439,7 +1450,7 @@ Please remove phone numbers and addresses from the image.`,
       </View>
 
       {/* Bottom safe area for Android navigation bar */}
-      <View style={styles.bottomSafeArea} />
+      <View style={[styles.bottomSafeArea, isDarkMode && { backgroundColor: '#0B1120' }]} />
     </View>
   );
 }

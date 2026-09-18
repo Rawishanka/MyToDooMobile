@@ -1,3 +1,4 @@
+import { useTheme } from '@/src/shared/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import {
@@ -21,6 +22,7 @@ export default function PayoutAccountRequiredModal({
   visible, 
   onClose 
 }: PayoutAccountRequiredModalProps) {
+  const { isDarkMode } = useTheme();
   const router = useRouter();
 
   console.log('🔔 [PayoutAccountRequiredModal] Render:', { visible });
@@ -43,41 +45,41 @@ export default function PayoutAccountRequiredModal({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
           {/* Icon */}
           <View style={styles.iconContainer}>
             <MaterialIcons name="account-balance-wallet" size={56} color="#007bff" />
           </View>
 
           {/* Title */}
-          <Text style={styles.title}>Setup Payout Account Required</Text>
+          <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Setup Payout Account Required</Text>
 
           {/* Description */}
-          <Text style={styles.description}>
+          <Text style={[styles.description, isDarkMode && { color: '#94A3B8' }]}>
             Before making an offer, you need to add your bank account details to receive payments securely.
           </Text>
 
           {/* Steps */}
-          <View style={styles.stepsContainer}>
+          <View style={[styles.stepsContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 }]}>
             <View style={styles.stepRow}>
               <View style={styles.stepNumber}>
                 <Text style={styles.stepNumberText}>1</Text>
               </View>
-              <Text style={styles.stepText}>Verify your ABN in Payment Options</Text>
+              <Text style={[styles.stepText, isDarkMode && { color: '#F8FAFC' }]}>Verify your ABN in Payment Options</Text>
             </View>
 
             <View style={styles.stepRow}>
               <View style={styles.stepNumber}>
                 <Text style={styles.stepNumberText}>2</Text>
               </View>
-              <Text style={styles.stepText}>Tap "Setup Payout Account"</Text>
+              <Text style={[styles.stepText, isDarkMode && { color: '#F8FAFC' }]}>Tap "Setup Payout Account"</Text>
             </View>
 
             <View style={styles.stepRow}>
               <View style={styles.stepNumber}>
                 <Text style={styles.stepNumberText}>3</Text>
               </View>
-              <Text style={styles.stepText}>Add your bank details via Stripe</Text>
+              <Text style={[styles.stepText, isDarkMode && { color: '#F8FAFC' }]}>Add your bank details via Stripe</Text>
             </View>
           </View>
 
@@ -93,11 +95,11 @@ export default function PayoutAccountRequiredModal({
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={styles.secondaryButton}
+              style={[styles.secondaryButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}
               onPress={onClose}
               activeOpacity={0.7}
             >
-              <Text style={styles.secondaryButtonText}>Cancel</Text>
+              <Text style={[styles.secondaryButtonText, isDarkMode && { color: '#94A3B8' }]}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>

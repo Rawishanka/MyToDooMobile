@@ -11,6 +11,7 @@ import { ActivityIndicator, Alert, Dimensions, Image, Modal, ScrollView, StyleSh
 // Responsive utilities
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import TaskMapModal from './TaskMapModal';
+import { useTheme } from '@/src/shared/theme';
 
 interface TaskInfoCardProps {
   task: Task;
@@ -25,6 +26,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   getTimeDisplay,
   refetch, // Added refetch prop
 }) => {
+  const { isDarkMode } = useTheme();
   
   // Helper: Format date for display
   const formatTaskDate = (date: string | undefined) => {
@@ -739,7 +741,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   };
 
   return (
-    <View style={styles.taskCard}>
+    <View style={[styles.taskCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
       {/* User Avatar */}
       <View style={styles.avatarContainer}>
         <View style={styles.avatar}>
@@ -776,12 +778,12 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       </View>
 
       {/* Task Title */}
-      <Text style={styles.taskTitle}>{task.title}</Text>
+      <Text style={[styles.taskTitle, isDarkMode && { color: '#F8FAFC' }]}>{task.title}</Text>
 
       {/* Poster Info */}
       <View style={styles.posterInfo}>
-        <Ionicons name="person-outline" size={16} color="#666" />
-        <Text style={styles.posterName}>
+        <Ionicons name="person-outline" size={16} color={isDarkMode ? '#94A3B8' : '#666'} />
+        <Text style={[styles.posterName, isDarkMode && { color: '#94A3B8' }]}>
           {formatUserName(task.createdBy?.firstName, task.createdBy?.lastName)}
         </Text>
       </View>
@@ -789,8 +791,8 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {/* Task Creation Date */}
       {task.createdAt && (
         <View style={styles.dateRow}>
-          <Ionicons name="calendar-outline" size={16} color="#666" />
-          <Text style={styles.dateText}>
+          <Ionicons name="calendar-outline" size={16} color={isDarkMode ? '#64748B' : '#666'} />
+          <Text style={[styles.dateText, isDarkMode && { color: '#64748B' }]}>
             Posted {new Date(task.createdAt).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
@@ -802,8 +804,8 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
       {/* Location */}
       <View style={styles.detailRow}>
-        <Ionicons name={getLocationIcon()} size={16} color="#666" />
-        <Text style={styles.detailText}>
+        <Ionicons name={getLocationIcon()} size={16} color={isDarkMode ? '#94A3B8' : '#666'} />
+        <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
           {(() => {
             const address = parsedLocation?.address || 'Location not specified';
             // Clean up any JSON remnants from address
@@ -832,9 +834,9 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
           setMapModalVisible(true);
         };
         return (
-          <TouchableOpacity style={styles.viewOnMapButton} onPress={handleViewOnMap} activeOpacity={0.7}>
-            <Ionicons name="map-outline" size={14} color="#003399" />
-            <Text style={styles.viewOnMapText}>View on Map</Text>
+          <TouchableOpacity style={[styles.viewOnMapButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 }]} onPress={handleViewOnMap} activeOpacity={0.7}>
+            <Ionicons name="map-outline" size={14} color={isDarkMode ? '#38BDF8' : '#003399'} />
+            <Text style={[styles.viewOnMapText, isDarkMode && { color: '#38BDF8' }]}>View on Map</Text>
           </TouchableOpacity>
         );
       })()}
@@ -842,8 +844,8 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {/* Date */}
       {dateDisplay && (
         <View style={styles.detailRow}>
-          <Ionicons name="calendar-outline" size={16} color="#666" />
-          <Text style={styles.detailText}>
+          <Ionicons name="calendar-outline" size={16} color={isDarkMode ? '#94A3B8' : '#666'} />
+          <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
             {dateDisplay}
           </Text>
         </View>
@@ -851,19 +853,19 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
       {/* Timing */}
       <View style={styles.detailRow}>
-        <Ionicons name="time-outline" size={16} color="#666" />
-        <Text style={styles.detailText}>
+        <Ionicons name="time-outline" size={16} color={isDarkMode ? '#94A3B8' : '#666'} />
+        <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
           {getTimeDisplay().replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
         </Text>
       </View>
 
       {/* Modern 2026 Budget Card */}
-      <View style={styles.budgetCard}>
-        <View style={styles.budgetIconCircle}>
-          <Ionicons name="wallet-outline" size={24} color="#003399" />
+      <View style={[styles.budgetCard, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+        <View style={[styles.budgetIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+          <Ionicons name="wallet-outline" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
         </View>
         <View style={styles.budgetInfoCol}>
-          <Text style={styles.budgetAmountText}>
+          <Text style={[styles.budgetAmountText, isDarkMode && { color: '#38BDF8' }]}>
             {(() => {
               const budget = resolveTaskBudget(task);
               const taskCurrency = task.currency || 'AUD';
@@ -872,23 +874,23 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
               return budget ? formatCurrency(budget, currencyInfo) : `${symbol}0.00`;
             })()}
           </Text>
-          <Text style={styles.budgetSublabel}>TASK BUDGET</Text>
+          <Text style={[styles.budgetSublabel, isDarkMode && { color: '#94A3B8' }]}>TASK BUDGET</Text>
         </View>
-        <View style={styles.budgetStatusPill}>
-          <Text style={styles.budgetStatusText}>ESTIMATED</Text>
+        <View style={[styles.budgetStatusPill, isDarkMode && { backgroundColor: '#1E293B' }]}>
+          <Text style={[styles.budgetStatusText, isDarkMode && { color: '#38BDF8' }]}>ESTIMATED</Text>
         </View>
       </View>
 
       {/* Category Badge */}
       {task.categories && task.categories.length > 0 && (
-        <View style={styles.categoryBadge}>
-          <Ionicons name="pricetag-outline" size={13} color="#003399" />
-          <Text style={styles.categoryText}>{task.categories[0]}</Text>
+        <View style={[styles.categoryBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+          <Ionicons name="pricetag-outline" size={13} color={isDarkMode ? '#38BDF8' : '#003399'} />
+          <Text style={[styles.categoryText, isDarkMode && { color: '#38BDF8' }]}>{task.categories[0]}</Text>
         </View>
       )}
 
       {/* Description */}
-      {task.details && <Text style={styles.description}>{task.details}</Text>}
+      {task.details && <Text style={[styles.description, isDarkMode && { color: '#CBD5E1' }]}>{task.details}</Text>}
 
       {/* Image Gallery */}
       {renderImageGallery()}

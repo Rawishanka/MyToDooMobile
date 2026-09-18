@@ -11,12 +11,14 @@ import {
     View,
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface PayoutHistoryScreenProps {
   onNavigate: (screen: string) => void;
 }
 
 const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate }) => {
+  const { isDarkMode } = useTheme();
   const { data: payoutData, isLoading, error, refetch } = useGetPayoutHistory(20);
 
   // Format currency
@@ -72,10 +74,10 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
 
   // Render payout item
   const renderPayoutItem = ({ item }: any) => (
-    <View style={styles.payoutItem}>
+    <View style={[styles.payoutItem, isDarkMode && { backgroundColor: '#1E293B', shadowOpacity: 0.3 }]}>
       <View style={styles.payoutHeader}>
         <View style={styles.payoutInfo}>
-          <Text style={styles.payoutAmount}>
+          <Text style={[styles.payoutAmount, isDarkMode && { color: '#F8FAFC' }]}>
             {formatCurrency(item.amount, item.currency)}
           </Text>
           <Text style={styles.payoutDate}>{formatDate(item.created)}</Text>
@@ -88,7 +90,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
       </View>
 
       {item.description && (
-        <Text style={styles.payoutDescription}>{item.description}</Text>
+        <Text style={[styles.payoutDescription, isDarkMode && { color: '#CBD5E1' }]}>{item.description}</Text>
       )}
 
       {item.arrivalDate && (
@@ -105,12 +107,12 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
   // Loading state
   if (isLoading) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: '#0F172A', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={() => onNavigate('paymentOptions')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#000" />
+            <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#38BDF8" : "#000"} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Payout History</Text>
+          <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]}>Payout History</Text>
         </View>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#6200ee" />
@@ -193,7 +195,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
         onRefresh={refetch}
       />
 
-      <View style={styles.loadMoreContainer}>
+      <View style={[styles.loadMoreContainer, isDarkMode && { backgroundColor: '#0F172A', borderTopColor: '#334155' }]}>
         <Text style={styles.loadMoreText}>
           Showing {payoutData.payouts.length} of {payoutData.count} payouts
         </Text>

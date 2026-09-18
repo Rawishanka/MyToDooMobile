@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import type { StoredNotification } from '@/src/services/notification-storage';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 function normalizeNotificationType(item: StoredNotification): string {
   const raw =
@@ -46,6 +47,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
   onDelete,
   onNotificationPress,
 }) => {
+  const { isDarkMode } = useTheme();
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -122,7 +124,8 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
       <TouchableOpacity
         style={[
           styles.notificationItem,
-          !item.isRead && styles.unreadNotification,
+          isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
+          !item.isRead && [styles.unreadNotification, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#38BDF8' }],
         ]}
         onPress={() => {
           if (!item.isRead) {
@@ -138,13 +141,17 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
           </View>
 
           <View style={styles.textContainer}>
-            <Text style={[styles.title, !item.isRead && styles.unreadText]}>
+            <Text style={[
+              styles.title,
+              isDarkMode && { color: '#F8FAFC' },
+              !item.isRead && [styles.unreadText, isDarkMode && { color: '#38BDF8' }]
+            ]}>
               {item.title}
             </Text>
-            <Text style={styles.body} numberOfLines={2}>
+            <Text style={[styles.body, isDarkMode && { color: '#94A3B8' }]} numberOfLines={2}>
               {item.body}
             </Text>
-            <Text style={styles.time}>{formatTime(item.createdAt)}</Text>
+            <Text style={[styles.time, isDarkMode && { color: '#64748B' }]}>{formatTime(item.createdAt)}</Text>
           </View>
 
           <View style={styles.actionsContainer}>
@@ -168,9 +175,9 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="notifications-outline" size={64} color="#ccc" />
-      <Text style={styles.emptyText}>No Notifications</Text>
-      <Text style={styles.emptySubtext}>
+      <Ionicons name="notifications-outline" size={64} color={isDarkMode ? '#334155' : '#ccc'} />
+      <Text style={[styles.emptyText, isDarkMode && { color: '#F8FAFC' }]}>No Notifications</Text>
+      <Text style={[styles.emptySubtext, isDarkMode && { color: '#94A3B8' }]}>
         You'll see notifications here when you receive messages, offers, or task updates
       </Text>
     </View>
