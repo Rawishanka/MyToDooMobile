@@ -2,16 +2,18 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface LoadingStateProps {
   message?: string;
 }
 
 export function LoadingState({ message = 'Loading tasks...' }: LoadingStateProps) {
+  const { isDarkMode } = useTheme();
   return (
-    <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#007bff" />
-      <Text style={styles.loadingText}>{message}</Text>
+    <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#007bff'} />
+      <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>{message}</Text>
     </View>
   );
 }
@@ -23,11 +25,12 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ searchText, selectedFilter, onRefresh }: EmptyStateProps) {
+  const { isDarkMode } = useTheme();
   return (
-    <View style={styles.emptyContainer}>
-      <Ionicons name="document-outline" size={64} color="#ccc" />
-      <Text style={styles.emptyTitle}>No tasks found</Text>
-      <Text style={styles.emptySubtitle}>
+    <View style={[styles.emptyContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <Ionicons name="document-outline" size={64} color={isDarkMode ? '#475569' : '#ccc'} />
+      <Text style={[styles.emptyTitle, isDarkMode && { color: '#F8FAFC' }]}>No tasks found</Text>
+      <Text style={[styles.emptySubtitle, isDarkMode && { color: '#94A3B8' }]}>
         {searchText
           ? `No tasks match "${searchText}"`
           : `You don't have any ${selectedFilter.toLowerCase()} yet`}

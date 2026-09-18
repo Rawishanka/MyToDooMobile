@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 export interface TaskCardSkeletonProps {
   delay?: number;
@@ -9,8 +10,10 @@ export interface TaskCardSkeletonProps {
 /**
  * 2026 High-Performance Shimmer Skeleton Task Card
  * Matches the exact layout, geometry, and rounded edges of MyToDoo TaskCard
+ * Fully supports Dark Mode with no white flashes.
  */
 export const TaskCardSkeleton: React.FC<TaskCardSkeletonProps> = ({ delay = 0 }) => {
+  const { isDarkMode } = useTheme();
   const shimmerOpacity = useRef(new Animated.Value(0.35)).current;
 
   useEffect(() => {
@@ -19,13 +22,13 @@ export const TaskCardSkeleton: React.FC<TaskCardSkeletonProps> = ({ delay = 0 })
       animation = Animated.loop(
         Animated.sequence([
           Animated.timing(shimmerOpacity, {
-            toValue: 0.9,
+            toValue: isDarkMode ? 0.75 : 0.9,
             duration: 750,
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
           Animated.timing(shimmerOpacity, {
-            toValue: 0.35,
+            toValue: isDarkMode ? 0.25 : 0.35,
             duration: 750,
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
@@ -39,56 +42,87 @@ export const TaskCardSkeleton: React.FC<TaskCardSkeletonProps> = ({ delay = 0 })
       clearTimeout(timeout);
       if (animation) animation.stop();
     };
-  }, [delay]);
+  }, [delay, isDarkMode]);
+
+  const lineColorLong = isDarkMode ? '#334155' : '#E2E8F0';
+  const lineColorShort = isDarkMode ? '#1E293B' : '#EDF2F7';
+  const pillBg = isDarkMode ? '#1E293B' : '#F1F5F9';
+  const dotBg = isDarkMode ? '#334155' : undefined;
 
   return (
-    <View style={styles.card}>
+    <View style={[
+      styles.card,
+      isDarkMode && {
+        backgroundColor: '#1E293B',
+        borderColor: '#334155',
+        shadowColor: '#000000',
+      }
+    ]}>
       {/* Left accent stripe */}
-      <Animated.View style={[styles.accentStripe, { opacity: shimmerOpacity }]} />
+      <Animated.View style={[
+        styles.accentStripe,
+        isDarkMode && { backgroundColor: '#38BDF8' },
+        { opacity: shimmerOpacity }
+      ]} />
 
       <View style={styles.cardBody}>
         {/* Title + Price Row */}
         <View style={styles.headerRow}>
           <View style={styles.titleColumn}>
-            <Animated.View style={[styles.titleLineLong, { opacity: shimmerOpacity }]} />
-            <Animated.View style={[styles.titleLineShort, { opacity: shimmerOpacity }]} />
+            <Animated.View style={[styles.titleLineLong, { backgroundColor: lineColorLong, opacity: shimmerOpacity }]} />
+            <Animated.View style={[styles.titleLineShort, { backgroundColor: lineColorShort, opacity: shimmerOpacity }]} />
           </View>
-          <Animated.View style={[styles.priceBadge, { opacity: shimmerOpacity }]} />
+          <Animated.View style={[
+            styles.priceBadge,
+            isDarkMode && { backgroundColor: '#0F172A', borderColor: '#38BDF8', borderWidth: 1 },
+            { opacity: shimmerOpacity }
+          ]} />
         </View>
 
         {/* Metadata Rows (Location, Date, Time) */}
         <View style={styles.metaContainer}>
           {/* Location row */}
           <View style={styles.metaRow}>
-            <Animated.View style={[styles.iconDot, styles.locDot, { opacity: shimmerOpacity }]} />
-            <Animated.View style={[styles.metaTextLine, { width: '42%', opacity: shimmerOpacity }]} />
+            <Animated.View style={[styles.iconDot, styles.locDot, dotBg ? { backgroundColor: dotBg } : null, { opacity: shimmerOpacity }]} />
+            <Animated.View style={[styles.metaTextLine, { width: '42%', backgroundColor: lineColorLong, opacity: shimmerOpacity }]} />
           </View>
 
           {/* Date row */}
           <View style={styles.metaRow}>
-            <Animated.View style={[styles.iconDot, styles.dateDot, { opacity: shimmerOpacity }]} />
-            <Animated.View style={[styles.metaTextLine, { width: '32%', opacity: shimmerOpacity }]} />
+            <Animated.View style={[styles.iconDot, styles.dateDot, dotBg ? { backgroundColor: dotBg } : null, { opacity: shimmerOpacity }]} />
+            <Animated.View style={[styles.metaTextLine, { width: '32%', backgroundColor: lineColorLong, opacity: shimmerOpacity }]} />
           </View>
 
           {/* Time row */}
           <View style={styles.metaRow}>
-            <Animated.View style={[styles.iconDot, styles.timeDot, { opacity: shimmerOpacity }]} />
-            <Animated.View style={[styles.metaTextLine, { width: '25%', opacity: shimmerOpacity }]} />
+            <Animated.View style={[styles.iconDot, styles.timeDot, dotBg ? { backgroundColor: dotBg } : null, { opacity: shimmerOpacity }]} />
+            <Animated.View style={[styles.metaTextLine, { width: '25%', backgroundColor: lineColorLong, opacity: shimmerOpacity }]} />
           </View>
         </View>
 
         {/* Category tags row */}
         <View style={styles.tagsRow}>
-          <Animated.View style={[styles.tagPill, { width: 95, opacity: shimmerOpacity }]} />
-          <Animated.View style={[styles.tagPill, { width: 75, opacity: shimmerOpacity }]} />
+          <Animated.View style={[styles.tagPill, { width: 95, backgroundColor: pillBg, opacity: shimmerOpacity }]} />
+          <Animated.View style={[styles.tagPill, { width: 75, backgroundColor: pillBg, opacity: shimmerOpacity }]} />
         </View>
 
         {/* Footer: Offers tag + User Avatar placeholder */}
-        <View style={styles.footerRow}>
-          <Animated.View style={[styles.offerPill, { opacity: shimmerOpacity }]} />
+        <View style={[styles.footerRow, isDarkMode && { borderTopColor: '#334155' }]}>
+          <Animated.View style={[
+            styles.offerPill,
+            isDarkMode && { backgroundColor: '#0F172A' },
+            { opacity: shimmerOpacity }
+          ]} />
           <View style={styles.userSection}>
-            <Animated.View style={[styles.avatarCircle, { opacity: shimmerOpacity }]} />
-            <Animated.View style={[styles.userNameLine, { opacity: shimmerOpacity }]} />
+            <Animated.View style={[
+              styles.avatarCircle,
+              isDarkMode && { backgroundColor: '#38BDF8' },
+              { opacity: shimmerOpacity }
+            ]} />
+            <Animated.View style={[
+              styles.userNameLine,
+              { backgroundColor: lineColorLong, opacity: shimmerOpacity }
+            ]} />
           </View>
         </View>
       </View>

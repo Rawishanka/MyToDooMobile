@@ -99,7 +99,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
   // FIX: Don't show empty state while loading - prevents layout shifts
   if (isLoading && tasks.length === 0) {
     return (
-      <View style={styles.tabContent}>
+      <View style={[styles.tabContent, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <LoadingState />
       </View>
     );

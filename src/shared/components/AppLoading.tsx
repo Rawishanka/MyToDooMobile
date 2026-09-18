@@ -1,6 +1,7 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import AnimatedLoading from './AnimatedLoading';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 interface AppLoadingProps {
   message?: string;
@@ -15,11 +16,12 @@ export default function AppLoading({
   variant = 'default',
   size = 'medium'
 }: AppLoadingProps) {
+  const { isDarkMode } = useTheme();
   
   if (variant === 'minimal') {
     return (
       <View style={styles.minimalContainer}>
-        <ActivityIndicator size={size === 'small' ? 'small' : 'large'} color="#004aad" />
+        <ActivityIndicator size={size === 'small' ? 'small' : 'large'} color={isDarkMode ? '#38BDF8' : '#004aad'} />
       </View>
     );
   }
@@ -38,10 +40,10 @@ export default function AppLoading({
   }
 
   return (
-    <View style={styles.container}>
-      <AnimatedLoading size={size} color="#004aad" />
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <AnimatedLoading size={size} color={isDarkMode ? '#38BDF8' : '#004aad'} />
       {showMessage && (
-        <Text style={styles.message}>{message}</Text>
+        <Text style={[styles.message, isDarkMode && { color: '#94A3B8' }]}>{message}</Text>
       )}
     </View>
   );

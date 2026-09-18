@@ -17,8 +17,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 export default function AnswerQuestionScreen() {
+  const { isDarkMode } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { taskId, questionId } = useLocalSearchParams<{ 
@@ -130,7 +132,7 @@ export default function AnswerQuestionScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <ActivityIndicator size="large" color="#007bff" />
         <Text style={styles.loadingText}>Loading question details...</Text>
       </View>
@@ -139,7 +141,7 @@ export default function AnswerQuestionScreen() {
 
   if (!task || !question) {
     return (
-      <View style={styles.errorContainer}>
+      <View style={[styles.errorContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
         <Text style={styles.errorTitle}>Question Not Found</Text>
         <Text style={styles.errorSubtitle}>Could not load question details.</Text>

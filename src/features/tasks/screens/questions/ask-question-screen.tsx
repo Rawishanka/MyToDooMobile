@@ -22,8 +22,10 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppAlert } from '@/src/shared/components/AppAlert';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
 export default function AskQuestionScreen() {
+  const { isDarkMode } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
@@ -125,7 +127,7 @@ export default function AskQuestionScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <ActivityIndicator size="large" color="#007bff" />
         <Text style={styles.loadingText}>Loading task details...</Text>
       </View>
@@ -134,7 +136,7 @@ export default function AskQuestionScreen() {
 
   if (!task) {
     return (
-      <View style={styles.errorContainer}>
+      <View style={[styles.errorContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
         <Text style={styles.errorTitle}>Task Not Found</Text>
         <Text style={styles.errorSubtitle}>Could not load task details.</Text>

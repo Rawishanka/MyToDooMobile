@@ -3,13 +3,17 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useTheme } from '@/src/shared/theme';
 
-export const LoadingState: React.FC = () => (
-  <View style={styles.loadingContainer}>
-    <ActivityIndicator size="large" color="#4CAF50" />
-    <Text style={styles.loadingText}>Loading task details...</Text>
-  </View>
-);
+export const LoadingState: React.FC = () => {
+  const { isDarkMode } = useTheme();
+  return (
+    <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#4CAF50'} />
+      <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading task details...</Text>
+    </View>
+  );
+};
 
 interface ErrorStateProps {
   onRetry: () => void;
@@ -17,22 +21,23 @@ interface ErrorStateProps {
 
 export const ErrorState: React.FC<ErrorStateProps> = ({ onRetry }) => {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
 
   return (
-    <View style={styles.errorContainer}>
+    <View style={[styles.errorContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
-      <Text style={styles.errorTitle}>Failed to load task</Text>
-      <Text style={styles.errorSubtitle}>
+      <Text style={[styles.errorTitle, isDarkMode && { color: '#F8FAFC' }]}>Failed to load task</Text>
+      <Text style={[styles.errorSubtitle, isDarkMode && { color: '#94A3B8' }]}>
         Could not load task details. Please check your connection and try again.
       </Text>
       <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
         <Text style={styles.retryButtonText}>Try Again</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={styles.backButton}
+        style={[styles.backButton, isDarkMode && { borderColor: '#334155', borderWidth: 1, borderRadius: 8 }]}
         onPress={() => router.back()}
       >
-        <Text style={styles.backButtonText}>Go Back</Text>
+        <Text style={[styles.backButtonText, isDarkMode && { color: '#38BDF8' }]}>Go Back</Text>
       </TouchableOpacity>
     </View>
   );
