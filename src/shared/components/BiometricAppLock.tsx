@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   AppState,
   AppStateStatus,
-  Platform,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,66 +32,87 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
   const [biometricType, setBiometricType] = useState<BiometricTypeLabel>('Face ID');
   const [authError, setAuthError] = useState<string | null>(null);
 
-  const appState = useRef<AppStateStatus>(AppState.currentState);
+  // Guards against infinite loops
   const isAuthenticatingRef = useRef<boolean>(false);
+  const lastBackgroundTimeRef = useRef<number>(0);
+  const hasCheckedInitialLaunchRef = useRef<boolean>(false);
 
-  // Initial check on mount
+  // 1. Initial Launch Check (run once when token is present)
   useEffect(() => {
-    checkAndPromptLock();
-  }, [token]);
-
-  // Listen to background/foreground app state transitions
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
-        // App came to foreground
-        checkAndPromptLock();
-      }
-      appState.current = nextAppState;
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, [token]);
-
-  const checkAndPromptLock = async () => {
-    // Only lock if user is authenticated and has biometric lock enabled
     if (!token) {
       setIsLocked(false);
       return;
     }
 
-    try {
-      const isEnabled = await isBiometricLoginEnabled();
-      if (!isEnabled) {
+    if (hasCheckedInitialLaunchRef.current) return;
+    hasCheckedInitialLaunchRef.current = true;
+
+    (async () => {
+      try {
+        const enabled = await isBiometricLoginEnabled();
+        if (!enabled) {
+          setIsLocked(false);
+          return;
+        }
+
+        const cap = await getBiometricCapability();
+        if (!cap.hasHardware || !cap.isEnrolled) {
+          setIsLocked(false);
+          return;
+        }
+
+        setBiometricType(cap.biometricTypeLabel);
+        setIsLocked(true);
+        // Prompt once on launch
+        promptBiometricAuth(cap.biometricTypeLabel);
+      } catch (err) {
+        console.warn('⚠️ [BiometricAppLock] Initial check error:', err);
         setIsLocked(false);
+      }
+    })();
+  }, [token]);
+
+  // 2. Listen STRICTLY to real background transitions (NOT 'inactive')
+  useEffect(() => {
+    const handleAppStateChange = async (nextState: AppStateStatus) => {
+      // If currently authenticating (e.g. native Face ID modal is displayed),
+      // iOS temporarily sets state to 'inactive'. NEVER treat this as leaving the app!
+      if (isAuthenticatingRef.current) {
         return;
       }
 
-      const capability = await getBiometricCapability();
-      if (!capability.hasHardware || !capability.isEnrolled) {
-        setIsLocked(false);
-        return;
+      if (nextState === 'background') {
+        // App was truly sent to background (home screen or other app)
+        lastBackgroundTimeRef.current = Date.now();
+      } else if (nextState === 'active') {
+        const timeInBackground = Date.now() - lastBackgroundTimeRef.current;
+        
+        // Only lock if app was genuinely in background for > 3 seconds
+        // and user has biometric lock enabled
+        if (lastBackgroundTimeRef.current > 0 && timeInBackground > 3000) {
+          if (!token) return;
+
+          const enabled = await isBiometricLoginEnabled();
+          if (enabled) {
+            setIsLocked(true);
+            setAuthError(null);
+            promptBiometricAuth(biometricType);
+          }
+        }
+        lastBackgroundTimeRef.current = 0;
       }
+    };
 
-      setBiometricType(capability.biometricTypeLabel);
-      setIsLocked(true);
-      setAuthError(null);
+    const sub = AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      sub.remove();
+    };
+  }, [token, biometricType]);
 
-      // Automatically trigger biometric challenge
-      triggerBiometricAuth(capability.biometricTypeLabel);
-    } catch (error) {
-      console.warn('⚠️ [BiometricAppLock] Error evaluating lock status:', error);
-      setIsLocked(false);
-    }
-  };
-
-  const triggerBiometricAuth = async (label: string = biometricType) => {
+  const promptBiometricAuth = async (label: string = biometricType) => {
+    // Prevent duplicate or parallel authentication dialogs
     if (isAuthenticatingRef.current) return;
+
     isAuthenticatingRef.current = true;
     setIsChecking(true);
     setAuthError(null);
@@ -103,18 +123,23 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
         setIsLocked(false);
         setAuthError(null);
       } else {
-        setAuthError(result.error || `Authentication failed. Please try again.`);
+        // Stop and wait for user to click button - do NOT auto-retry in a loop!
+        setAuthError(result.error || 'Authentication failed. Tap the button below to try again.');
       }
-    } catch (error: any) {
-      setAuthError(error?.message || 'Authentication error');
+    } catch (err: any) {
+      setAuthError(err?.message || 'Biometric authentication error');
     } finally {
       setIsChecking(false);
-      isAuthenticatingRef.current = false;
+      // Brief cooldown before releasing lock to prevent event bounce
+      setTimeout(() => {
+        isAuthenticatingRef.current = false;
+      }, 500);
     }
   };
 
   const handleSignOut = () => {
     setIsLocked(false);
+    isAuthenticatingRef.current = false;
     clearAuth();
   };
 
@@ -124,7 +149,6 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      {/* Background Dimmed Content */}
       <View style={styles.contentBox}>
         {/* Biometric Shield Ring */}
         <View style={[styles.iconRing, isDarkMode && { backgroundColor: 'rgba(56, 189, 248, 0.12)' }]}>
@@ -139,7 +163,7 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
           MyToDoo is Protected
         </Text>
         <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>
-          {biometricType} authentication is required to access your account.
+          {biometricType} is required to access your account.
         </Text>
 
         {authError ? (
@@ -151,7 +175,7 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
 
         <TouchableOpacity
           style={styles.unlockBtn}
-          onPress={() => triggerBiometricAuth(biometricType)}
+          onPress={() => promptBiometricAuth(biometricType)}
           disabled={isChecking}
           activeOpacity={0.8}
         >
@@ -235,6 +259,7 @@ const styles = StyleSheet.create({
     color: '#EF4444',
     fontSize: RFValue(12),
     fontWeight: '500',
+    flexShrink: 1,
   },
   unlockBtn: {
     flexDirection: 'row',
