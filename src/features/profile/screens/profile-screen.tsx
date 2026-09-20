@@ -1478,11 +1478,11 @@ export default function AccountScreen() {
           subtext={undefined}        
         />
         <MenuItem
-          icon={<MaterialIcons name="verified-user" size={20} color={userData?.isVerified ? "#10B981" : "#0EA5E9"} />}
+          icon={<MaterialIcons name="verified-user" size={20} color={userData?.verification?.faceMatch?.status === "verified" ? "#10B981" : "#0EA5E9"} />}
           text="ID Verification (AI Face Match)"
           onPress={navigateToIDVerification}
           subtext={
-            userData?.isVerified
+            userData?.verification?.faceMatch?.status === "verified"
               ? "ID & 3-Point Face Biometrics Verified"
               : "Verify government ID and 3-point live face scan"
           }
@@ -1491,7 +1491,7 @@ export default function AccountScreen() {
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>APP PREFERENCES</Text>
         {biometricSupported && (
           <View style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }]}>
-            <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
+            <View style={styles.iconWrapper}>
               <Ionicons
                 name={biometricTypeLabel === 'Face ID' ? 'scan-outline' : 'finger-print-outline'}
                 size={20}
@@ -1518,7 +1518,7 @@ export default function AccountScreen() {
           </View>
         )}
         <View style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }]}>
-          <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
+          <View style={styles.iconWrapper}>
             <Ionicons name={isDarkMode ? "moon" : "moon-outline"} size={20} color={isDarkMode ? "#38BDF8" : "#1A2980"} />
           </View>
           <View style={{ flex: 1 }}>

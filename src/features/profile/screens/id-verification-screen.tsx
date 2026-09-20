@@ -43,10 +43,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
   
   const [similarityResult, setSimilarityResult] = useState<number>(0.92);
 
-  const isAlreadyVerified =
-    statusData?.isVerified ||
-    userData?.isVerified ||
-    userData?.verification?.faceMatch?.status === 'verified';
+  const isAlreadyVerified = statusData?.faceMatch?.status === 'verified' || userData?.verification?.faceMatch?.status === 'verified';
 
   // Pick Document Photo
   const handlePickDocument = async (useCamera = true) => {
@@ -191,8 +188,23 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
               </View>
             </View>
 
-            <TouchableOpacity style={styles.doneButton} onPress={onBack}>
-              <Text style={styles.doneButtonText}>Back to Account</Text>
+            <TouchableOpacity
+              style={[styles.startVerifyBtn, { marginTop: 12, width: "100%", backgroundColor: "#0EA5E9" }]}
+              onPress={() => {
+                setDocumentImage(null);
+                setFrontSelfie(null);
+                setLeftSelfie(null);
+                setRightSelfie(null);
+                setScanStage(1);
+                setStep("document");
+              }}
+            >
+              <Ionicons name="camera-reverse-outline" size={20} color="#fff" />
+              <Text style={styles.startVerifyBtnText}>Test / Re-verify 3-Point Face Scan</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.doneButton, { marginTop: 10, width: "100%", backgroundColor: "transparent", borderWidth: 1, borderColor: isDarkMode ? "#334155" : "#CBD5E1" }]} onPress={onBack}>
+              <Text style={[styles.doneButtonText, { color: isDarkMode ? "#F8FAFC" : "#64748B" }]}>Back to Account</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

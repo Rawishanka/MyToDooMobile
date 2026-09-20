@@ -13,6 +13,7 @@ import { AppAlertHost } from '@/src/shared/components/AppAlert';
 import { DeepLinkHandler } from '@/src/shared/components/DeepLinkHandler';
 import { NotificationNavigationHandler } from '@/src/shared/components/NotificationNavigationHandler';
 import { EnhancedOfflineBanner } from '@/src/shared/components/EnhancedOfflineBanner';
+import { BiometricAppLock } from '@/src/shared/components/BiometricAppLock';
 import { NotificationPermissionPrompt } from '@/src/shared/components/NotificationPermissionPrompt';
 import ProfessionalSplashScreen from '@/src/shared/components/ProfessionalSplashScreen';
 import { useColorScheme } from '@/src/shared/hooks/useColorScheme';
@@ -250,6 +251,9 @@ function RootNavigationContent({
       
       {/* 🌐 Offline Sync Banner - Shows on ALL screens when offline/syncing */}
       <EnhancedOfflineBanner />
+      
+      {/* 🛡️ Biometric App Lock - Protects the app when Face ID is enabled */}
+      <BiometricAppLock />
       
       {/* Notification Permission Prompt - Shows after splash */}
       {showNotificationPrompt && (
