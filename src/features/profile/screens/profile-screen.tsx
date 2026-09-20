@@ -45,6 +45,8 @@ import TaskAlerts from './taskalerts';
 import { RFValue, TAB_BAR_CLEARANCE } from '@/src/shared/utils/responsive';
 import { consumePendingAccountNavigation } from '@/src/shared/utils/pending-account-navigation';
 import { useTheme } from '@/src/shared/theme';
+import type { BiometricTypeLabel } from "@/src/shared/utils/biometric-auth";
+import { getBiometricCapability, isBiometricLoginEnabled, setBiometricLoginEnabled, authenticateWithBiometrics } from '@/src/shared/utils/biometric-auth';
 
 export default function AccountScreen() {
   const { isDarkMode, toggleDarkMode, colors: themeColors } = useTheme();
@@ -55,6 +57,34 @@ export default function AccountScreen() {
     taskId?: string;
   }>();
   const [currentScreen, setCurrentScreen] = useState('account');
+  const [biometricSupported, setBiometricSupported] = useState(false);
+  const [biometricTypeLabel, setBiometricTypeLabel] = useState<BiometricTypeLabel>("Biometrics");
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    getBiometricCapability().then(cap => {
+      if (isMounted) {
+        setBiometricSupported(cap.hasHardware && cap.isEnrolled);
+        setBiometricTypeLabel(cap.biometricTypeLabel);
+      }
+    });
+    isBiometricLoginEnabled().then(enabled => {
+      if (isMounted) setBiometricEnabled(enabled);
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleToggleBiometrics = async (newVal: boolean) => {
+    if (newVal) {
+      const authResult = await authenticateWithBiometrics('Verify your ' + biometricTypeLabel + ' to enable fast login');
+      if (!authResult.success) {
+        return;
+      }
+    }
+    setBiometricEnabled(newVal);
+    await setBiometricLoginEnabled(newVal);
+  };
   const [isPendingReviewsExpanded, setIsPendingReviewsExpanded] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const ratingSectionOffsetRef = useRef(0);
@@ -692,17 +722,7 @@ export default function AccountScreen() {
   };
 
   const navigateToIDVerification = () => {
-    // Check ID verification access status
-    if (idVerificationStatus === 'locked') {
-      // Show request modal if locked
-      setShowIdRequestModal(true);
-    } else if (idVerificationStatus === 'pending') {
-      // Show pending modal if already requested
-      setShowIdPendingModal(true);
-    } else {
-      // Only allow ID verification if approved
-      setCurrentScreen('id-verification');
-    }
+    setCurrentScreen('id-verification');
   };
 
   const handleSendIdVerificationRequest = async () => {
@@ -1457,8 +1477,46 @@ export default function AccountScreen() {
           onPress={navigateToAccountInfo} 
           subtext={undefined}        
         />
+        <MenuItem
+          icon={<MaterialIcons name="verified-user" size={20} color={userData?.isVerified ? "#10B981" : "#0EA5E9"} />}
+          text="ID Verification (AI Face Match)"
+          onPress={navigateToIDVerification}
+          subtext={
+            userData?.isVerified
+              ? "ID & 3-Point Face Biometrics Verified"
+              : "Verify government ID and 3-point live face scan"
+          }
+        />
 
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>APP PREFERENCES</Text>
+        {biometricSupported && (
+          <View style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }]}>
+            <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
+              <Ionicons
+                name={biometricTypeLabel === 'Face ID' ? 'scan-outline' : 'finger-print-outline'}
+                size={20}
+                color={isDarkMode ? "#38BDF8" : "#1A2980"}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }]}>
+                {biometricTypeLabel} Login
+              </Text>
+              <Text style={[styles.subtext, isDarkMode && { color: '#94A3B8' }]}>
+                {biometricEnabled
+                  ? 'Quick sign-in with ' + biometricTypeLabel + ' enabled'
+                  : 'Enable ' + biometricTypeLabel + ' for fast, secure login'}
+              </Text>
+            </View>
+            <Switch
+              value={biometricEnabled}
+              onValueChange={handleToggleBiometrics}
+              trackColor={{ false: '#D1D5DB', true: '#4CAF50' }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#D1D5DB"
+            />
+          </View>
+        )}
         <View style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }]}>
           <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
             <Ionicons name={isDarkMode ? "moon" : "moon-outline"} size={20} color={isDarkMode ? "#38BDF8" : "#1A2980"} />

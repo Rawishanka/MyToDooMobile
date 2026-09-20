@@ -1432,6 +1432,8 @@ PODS:
     - ExpoModulesCore
   - ExpoLinking (56.0.0-canary-20260417-141204f):
     - ExpoModulesCore
+  - ExpoLocalAuthentication (56.0.0-canary-20260417-141204f):
+    - ExpoModulesCore
   - ExpoLocation (56.0.0-canary-20260417-141204f):
     - ExpoModulesCore
   - ExpoLogBox (56.0.0-canary-20260417-141204f):
@@ -4257,6 +4259,7 @@ DEPENDENCIES:
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - ExpoLinearGradient (from `../node_modules/expo-linear-gradient/ios`)
   - ExpoLinking (from `../node_modules/expo-linking/ios`)
+  - ExpoLocalAuthentication (from `../node_modules/expo-local-authentication/ios`)
   - ExpoLocation (from `../node_modules/expo-location/ios`)
   - "ExpoLogBox (from `../node_modules/@expo/log-box`)"
   - ExpoMediaLibrary (from `../node_modules/expo-media-library/ios`)
@@ -4490,6 +4493,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-linear-gradient/ios"
   ExpoLinking:
     :path: "../node_modules/expo-linking/ios"
+  ExpoLocalAuthentication:
+    :path: "../node_modules/expo-local-authentication/ios"
   ExpoLocation:
     :path: "../node_modules/expo-location/ios"
   ExpoLogBox:
@@ -4752,6 +4757,7 @@ SPEC CHECKSUMS:
   ExpoKeepAwake: c43b567de73a5747f991bc726f3ed869d822b9e4
   ExpoLinearGradient: 08edcdf04143706b383930043a0359795e1566bb
   ExpoLinking: f6f65951175e43051d241d3ad48c893a064b59a6
+  ExpoLocalAuthentication: 1d89264cb56943847e77fddfdfe367dcf9821edc
   ExpoLocation: 530230f26b2f5ef9fe740cb39ca40e82a5017265
   ExpoLogBox: 9de2130bbb29bb83c79e0f0c1b78a75a1e7fad09
   ExpoMediaLibrary: 4ea3bda072fbab3dc5df4fec1f2a790a05052e31

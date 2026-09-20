@@ -1,3 +1,4 @@
+import type { BiometricTypeLabel } from "@/src/shared/utils/biometric-auth";
 import { flushPendingSignupAbn } from '@/src/api/abn-api';
 import { flushPendingReferralCode } from '@/src/api/referral-api';
 import { auth } from '@/src/config/firebase';
@@ -16,6 +17,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import {
+  getBiometricCapability,
+  authenticateWithBiometrics,
+  isBiometricLoginEnabled,
+  getBiometricCredentials,
+  saveBiometricCredentials
+} from '@/src/shared/utils/biometric-auth';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { OTPModal } from '../components/OTPModal';
 import type { VerificationStep } from '../components/signup-types';
@@ -51,6 +59,9 @@ export default function LoginScreen() {
   const [appleLoading, setAppleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [canUseBiometrics, setCanUseBiometrics] = useState(false);
+  const [biometricTypeLabel, setBiometricTypeLabel] = useState<BiometricTypeLabel>("Biometrics");
+  const [biometricLoading, setBiometricLoading] = useState(false);
   const [appleAuthAvailable, setAppleAuthAvailable] = useState(false);
   const { mutateAsync } = useCreateAuthToken();
 
@@ -222,6 +233,7 @@ export default function LoginScreen() {
   // Load saved credentials on mount
   useEffect(() => {
     loadSavedCredentials();
+    checkBiometricAvailability();
     checkAppleAuthAvailability();
   }, []);
 
@@ -500,6 +512,53 @@ export default function LoginScreen() {
     }
   };
 
+  
+  const checkBiometricAvailability = async () => {
+    try {
+      const [capability, isEnabled, creds] = await Promise.all([
+        getBiometricCapability(),
+        isBiometricLoginEnabled(),
+        getBiometricCredentials(),
+      ]);
+      setBiometricTypeLabel(capability.biometricTypeLabel);
+      setCanUseBiometrics(capability.hasHardware && capability.isEnrolled && isEnabled && !!creds);
+    } catch (err) {
+      console.warn('Biometric check error:', err);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    try {
+      setBiometricLoading(true);
+      const authResult = await authenticateWithBiometrics('Log in to MyToDoo with ' + biometricTypeLabel);
+      if (!authResult.success) {
+        setBiometricLoading(false);
+        return;
+      }
+      const creds = await getBiometricCredentials();
+      if (!creds || !creds.email || !creds.password) {
+        Alert.alert('Biometrics', 'No stored biometric credentials found. Please log in with password first.');
+        setBiometricLoading(false);
+        return;
+      }
+      setEmail(creds.email);
+      setPassword(creds.password);
+      clearCachesOnLogin();
+      await queryClient.clear();
+      await mutateAsync({ username: creds.email.toLowerCase().trim(), password: creds.password.trim() });
+      await queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
+      await queryClient.invalidateQueries({ queryKey: ['chats'] });
+      try {
+        await registerFCMToken();
+      } catch (_) {}
+    } catch (err: any) {
+      console.error('Biometric login failed:', err);
+      Alert.alert('Login Failed', err?.message || 'Biometric login failed. Please enter your password.');
+    } finally {
+      setBiometricLoading(false);
+    }
+  };
+
   const handleLogin = async () => {
     // Comprehensive input validation
     const trimmedEmail = email?.trim() || '';
@@ -569,6 +628,7 @@ export default function LoginScreen() {
       if (rememberMe) {
         console.log('💾 Remember Me is checked, saving credentials...');
         await saveCredentials(trimmedEmail, trimmedPassword);
+        await saveBiometricCredentials(trimmedEmail, trimmedPassword);
       } else {
         console.log('🗑️ Remember Me is unchecked, clearing saved credentials...');
         await clearSavedCredentials();
@@ -1084,13 +1144,40 @@ export default function LoginScreen() {
             <Text style={[styles.forgotPassword, isDarkMode && { color: '#38BDF8' }]}>Forgot Password?</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
+          <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading || biometricLoading}>
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
               <Text style={styles.loginButtonText}>Login</Text>
             )}
           </TouchableOpacity>
+
+          {canUseBiometrics && (
+            <TouchableOpacity
+              style={[
+                styles.biometricButton,
+                isDarkMode && { backgroundColor: '#1E293B', borderColor: '#38BDF8' }
+              ]}
+              onPress={handleBiometricLogin}
+              disabled={loading || biometricLoading}
+              activeOpacity={0.8}
+            >
+              {biometricLoading ? (
+                <ActivityIndicator color="#0EA5E9" size="small" />
+              ) : (
+                <View style={styles.biometricButtonContent}>
+                  <Ionicons
+                    name={biometricTypeLabel === 'Face ID' ? 'scan-outline' : 'finger-print-outline'}
+                    size={20}
+                    color={isDarkMode ? '#38BDF8' : '#0EA5E9'}
+                  />
+                  <Text style={[styles.biometricButtonText, isDarkMode && { color: '#38BDF8' }]}>
+                    Log in with {biometricTypeLabel}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
 
           {/* Divider */}
           <View style={styles.dividerContainer}>
@@ -1297,6 +1384,27 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginBottom: 16,
     fontSize: RFValue(14),
+  },
+  biometricButton: {
+    backgroundColor: 'rgba(14, 165, 233, 0.08)',
+    borderWidth: 1.5,
+    borderColor: '#0EA5E9',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  biometricButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  biometricButtonText: {
+    color: '#0EA5E9',
+    fontSize: 16,
+    fontWeight: '700',
   },
   loginButton: {
     backgroundColor: '#FF914D',
