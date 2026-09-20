@@ -255,6 +255,13 @@ fi
 echo ""
 echo "   ✅ Archive created: $ARCHIVE_PATH"
 
+# Copy to Xcode Organizer default location
+XCODE_ARCHIVES_DIR="$HOME/Library/Developer/Xcode/Archives/$(date +%Y-%m-%d)"
+mkdir -p "$XCODE_ARCHIVES_DIR"
+cp -R "$ARCHIVE_PATH" "$XCODE_ARCHIVES_DIR/" 2>/dev/null || true
+echo "   ✅ Copied to Xcode Organizer: $XCODE_ARCHIVES_DIR/$(basename "$ARCHIVE_PATH")"
+open "$ARCHIVE_PATH" 2>/dev/null || true
+
 # ---- Step 7: Create ExportOptions.plist ----
 echo ""
 echo "📋 Step 7: Creating ExportOptions.plist..."
