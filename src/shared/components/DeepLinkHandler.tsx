@@ -106,7 +106,7 @@ export function DeepLinkHandler() {
         const taskId = path?.replace('task/', '') || hostname;
         if (taskId) {
           console.log('✅ Navigating to task:', taskId);
-          router.push(`/task-detail?id=${taskId}` as any);
+          router.push({ pathname: "/task-detail", params: { taskId } } as any);
         }
       }
     } catch (error) {

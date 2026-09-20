@@ -11,6 +11,7 @@ import { ThemeProvider as AppThemeProvider, useTheme as useAppTheme } from '@/sr
 import { AuthProvider } from '@/src/shared/AuthProvider';
 import { AppAlertHost } from '@/src/shared/components/AppAlert';
 import { DeepLinkHandler } from '@/src/shared/components/DeepLinkHandler';
+import { NotificationNavigationHandler } from '@/src/shared/components/NotificationNavigationHandler';
 import { EnhancedOfflineBanner } from '@/src/shared/components/EnhancedOfflineBanner';
 import { NotificationPermissionPrompt } from '@/src/shared/components/NotificationPermissionPrompt';
 import ProfessionalSplashScreen from '@/src/shared/components/ProfessionalSplashScreen';
@@ -222,6 +223,7 @@ function RootNavigationContent({
   return (
     <ThemeProvider value={navigationTheme}>
       <DeepLinkHandler />
+      <NotificationNavigationHandler />
       <Stack screenOptions={{
         headerShown: false,
         contentStyle: {

@@ -1,3 +1,7 @@
+import {
+  setPendingNotificationTarget,
+  canNavigateToTarget,
+} from "./pending-notification-navigation";
 import type { Router } from 'expo-router';
 import type { StoredNotification } from '@/src/services/notification-storage';
 import {
@@ -56,6 +60,9 @@ function getTaskId(notification: StoredNotification): string | undefined {
   return (
     asString(data.taskId) ||
     asString(data.task_id) ||
+    asString(data.id) ||
+    asString(data.task?._id) ||
+    asString(data.task?.id) ||
     (resourceType === 'TASK' ? asString(data.resourceId) : undefined)
   );
 }
@@ -78,6 +85,8 @@ function getChatId(notification: StoredNotification): string | undefined {
   return (
     asString(data.chatId) ||
     asString(data.chat_id) ||
+    asString(data.chat?._id) ||
+    asString(data.chat?.id) ||
     ((resourceType === 'CHAT' || resourceType === 'MESSAGE') ? asString(data.resourceId) : undefined)
   );
 }
@@ -323,7 +332,7 @@ function isOfferRejectedNotification(notification: StoredNotification): boolean 
 function isOfferMadeNotification(notification: StoredNotification): boolean {
   const eventType = getEventType(notification);
   return (
-    ['OFFER_MADE', 'NEW_OFFER'].includes(eventType) ||
+    ['OFFER_MADE', 'NEW_OFFER', 'OFFER_CREATED'].includes(eventType) ||
     textIncludes(notification, 'new offer', 'submitted an offer', 'made an offer')
   );
 }
@@ -366,17 +375,21 @@ function completedTaskTarget(
 ): NotificationNavigationTarget {
   const role = getUserRole(notification);
   const isPoster = role?.toLowerCase() === 'poster';
+  const eventType = getEventType(notification);
+  const isPendingCompletion =
+    eventType === 'TASK_PENDING_COMPLETION' ||
+    textIncludes(notification, 'pending completion', 'release payment');
 
   if (taskId) {
     return taskDetailTarget(taskId, {
       fromUserRole: isPoster ? 'Poster' : 'Tasker',
-      fromStatus: 'completed',
+      fromStatus: isPendingCompletion ? 'pending_completion' : 'completed',
     });
   }
 
   return myTasksTarget({
     role: isPoster ? 'Poster' : 'Tasker',
-    tab: 'completed',
+    tab: isPendingCompletion ? 'pending_completion' : 'completed',
   });
 }
 
@@ -442,6 +455,50 @@ export function getNotificationNavigationTarget(
   if (isQuestionNotification(notification)) {
     if (taskId) return questionTaskDetailTarget(taskId);
     return myTasksTarget();
+  }
+
+  // Cancellation notifications
+  if (
+    [
+      'TASK_CANCELLATION_REQUESTED',
+      'TASK_CANCELLATION_ACCEPTED',
+      'TASK_CANCELLATION_REJECTED',
+      'TASK_CANCELLATION_RESOLVED',
+      'TASK_CANCELLED',
+    ].includes(eventType) ||
+    textIncludes(notification, 'cancellation', 'cancelled')
+  ) {
+    if (taskId) return taskDetailTarget(taskId, { fromStatus: 'cancelled' });
+    return myTasksTarget({ tab: 'cancelled' });
+  }
+
+  // Payout notifications
+  if (
+    [
+      'PAYOUT_PROFILE_REQUIRED',
+      'PAYOUT_BANK_LANDED',
+      'PAYOUT_STILL_PENDING',
+      'PAYOUT_FAILED',
+      'PAYOUT_REQUIRED',
+    ].includes(eventType) ||
+    textIncludes(notification, 'payout', 'bank account')
+  ) {
+    return profilePaymentTarget('payout');
+  }
+
+  // Credit / Referral notifications
+  if (eventType === 'CREDIT' || textIncludes(notification, 'credit received', 'credits')) {
+    setPendingAccountNavigation({ screen: 'credits' });
+    return {
+      pathname: '/(tabs)/account',
+      params: { screen: 'credits', ts: String(Date.now()) },
+    };
+  }
+
+  // Unserviced warning notifications
+  if (eventType === 'TASK_UNSERVICED_WARNING' || textIncludes(notification, 'unserviced')) {
+    if (taskId) return taskDetailTarget(taskId);
+    return myTasksTarget({ role: 'Poster', tab: 'posted' });
   }
 
   switch (eventType) {
@@ -576,7 +633,15 @@ export function navigateFromNotification(
     }
   }
 
+  setPendingNotificationTarget(target);
+
+  if (!canNavigateToTarget(target)) {
+    console.log('⏳ [NotificationNavigation] Debounced duplicate navigation for:', target);
+    return true;
+  }
+
   try {
+    console.log('🚀 [NotificationNavigation] Navigating to:', target);
     router.push({
       pathname: target.pathname as any,
       params: target.params,

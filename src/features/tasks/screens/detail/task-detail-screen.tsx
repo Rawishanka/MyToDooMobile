@@ -29,12 +29,15 @@ import { useTaskDetail } from './hooks/useTaskDetail';
 
 export default function TaskDetailScreen() {
   const { isDarkMode } = useTheme();
-  const { taskId, fromUserRole, fromStatus, tab } = useLocalSearchParams<{ 
-    taskId: string; 
+  const params = useLocalSearchParams<{ 
+    taskId?: string; 
+    id?: string;
     fromUserRole?: string; 
     fromStatus?: string;
     tab?: string | string[];
   }>();
+  const taskId = (params.taskId || params.id || "") as string;
+  const { fromUserRole, fromStatus, tab } = params;
   const scrollViewRef = useRef<ScrollView>(null);
   const tabsSectionRef = useRef<View>(null);
   
