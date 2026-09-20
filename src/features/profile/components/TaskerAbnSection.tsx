@@ -101,9 +101,15 @@ export default function TaskerAbnSection({
           </View>
         </View>
         <Text style={[styles.maskedAbn, isDarkMode && { color: '#F8FAFC' }]}>{status.abnMasked || `********${status.abnLast3 || ''}`}</Text>
+        {(status.businessName || status.entityName) && (
+          <Text style={[styles.metaText, { fontWeight: '600', color: isDarkMode ? '#38BDF8' : '#0052A2', marginTop: 2 }]}>
+            {status.businessName || status.entityName}
+          </Text>
+        )}
         {status.abnVerifiedAt && (
           <Text style={styles.metaText}>
-            Verified {new Date(status.abnVerifiedAt).toLocaleDateString('en-AU')} (manual validation)
+            Verified {new Date(status.abnVerifiedAt).toLocaleDateString('en-AU')}{' '}
+            {status.verificationMethod === 'abr_api' ? '(ABR Verified)' : '(manual validation)'}
           </Text>
         )}
         {allowUpdate && (

@@ -7,6 +7,8 @@ export interface TaskerAbnStatus {
   abnVerified: boolean;
   abnVerifiedAt: string | null;
   verificationMethod: 'manual' | 'abr_api' | null;
+  entityName?: string | null;
+  businessName?: string | null;
   isTasker: boolean;
 }
 
