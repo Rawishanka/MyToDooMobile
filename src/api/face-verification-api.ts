@@ -29,7 +29,7 @@ export async function submitFaceVerification(
   payload: FaceVerificationRequest
 ): Promise<FaceVerificationResponse> {
   const response = await api.post<FaceVerificationResponse>(
-    "/v1/users/verify-face-id",
+    "/users/verify-face-id",
     payload
   );
   return response.data;
@@ -40,6 +40,6 @@ export async function getVerificationStatus(): Promise<{
   isVerified: boolean;
   faceMatch?: any;
 }> {
-  const response = await api.get("/v1/users/verification-status");
+  const response = await api.get("/users/verification-status");
   return response.data;
 }
