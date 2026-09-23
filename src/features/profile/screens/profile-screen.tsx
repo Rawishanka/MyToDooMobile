@@ -759,6 +759,7 @@ export default function AccountScreen() {
       onBack={navigateToAccount} 
       onSave={undefined}
       userData={userData}
+      onNavigateToIDVerification={navigateToIDVerification}
     />;
   }
 
@@ -768,6 +769,7 @@ export default function AccountScreen() {
       onBack={navigateToAccount} 
       onSave={undefined}
       userData={userData}
+      onNavigateToIDVerification={navigateToIDVerification}
     />;
   }
 
@@ -2771,7 +2773,7 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
   reviewNowBtn: {
-    backgroundColor: "#003399",
+    backgroundColor: "#1A2980",
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 10,
@@ -2789,7 +2791,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   seeAllReviewsBtnText: {
-    color: "#003399",
+    color: "#1A2980",
     fontSize: RFValue(13),
     fontWeight: "700",
   },

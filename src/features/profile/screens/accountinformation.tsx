@@ -416,7 +416,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
           <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Account information</Text>
         </View>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0052A2" />
+          <ActivityIndicator size="large" color="#1A2980" />
           <Text style={styles.loadingText}>Loading account information...</Text>
         </View>
       </View>
@@ -931,7 +931,7 @@ const styles = StyleSheet.create({
   },
   changeContactLink: {
     fontSize: RFValue(14),
-    color: '#0052A2',
+    color: '#1A2980',
     fontWeight: '600',
     marginBottom: 8,
     marginHorizontal: 20,
@@ -965,7 +965,7 @@ const styles = StyleSheet.create({
   },
   webOnlyUrl: {
     fontSize: RFValue(14),
-    color: '#0052A2',
+    color: '#1A2980',
     fontWeight: '600',
     marginBottom: 32,
   },
@@ -1013,7 +1013,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   saveButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     borderRadius: 8,
     paddingVertical: 14,
     paddingHorizontal: 24,
@@ -1105,7 +1105,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   saveMobileButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     borderRadius: 8,
     paddingVertical: 14,
     paddingHorizontal: 24,
@@ -1239,7 +1239,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,

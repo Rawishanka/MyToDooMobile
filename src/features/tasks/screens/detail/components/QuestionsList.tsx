@@ -166,7 +166,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
     }
     
     // Fallback to generated avatar with consistent styling
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=0052A2&color=fff&size=80`;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=1A2980&color=fff&size=80`;
   };
   
   // Helper function to get question attachments from API response

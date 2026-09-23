@@ -9,6 +9,7 @@ import { validateContactContent } from '@/src/shared/utils/contactModeration';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { formatUserName } from '@/src/utils/formatUserName';
+import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
@@ -138,16 +139,16 @@ export default function ServiceListingDetailScreen({
         ]}
       >
         <TouchableOpacity onPress={onBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#0052A2'} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDarkMode ? '#F8FAFC' : '#003366' }]}>
+        <Text style={[styles.headerTitle, { color: isDarkMode ? '#F8FAFC' : BRAND_BLUE }]}>
           Service Details
         </Text>
       </View>
 
       {isLoading && !listing ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#0052A2'} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
         </View>
       ) : !listing ? (
         <View style={styles.loadingWrap}>
@@ -166,7 +167,7 @@ export default function ServiceListingDetailScreen({
             </Text>
             
             <View style={styles.priceRow}>
-              <Text style={[styles.price, { color: isDarkMode ? '#38BDF8' : '#0052A2' }]}>
+              <Text style={[styles.price, { color: isDarkMode ? '#38BDF8' : BRAND_BLUE }]}>
                 ${Number(listing.price).toFixed(0)}
               </Text>
               <Text style={[styles.currency, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>
@@ -335,7 +336,7 @@ const styles = StyleSheet.create({
   textArea: { minHeight: 90 },
   bookButton: {
     marginTop: 20,
-    backgroundColor: '#0052A2',
+    backgroundColor: BRAND_ORANGE,
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',

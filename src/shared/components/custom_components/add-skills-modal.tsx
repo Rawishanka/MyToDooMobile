@@ -82,7 +82,7 @@ const AnimatedSkillTag = ({
     <Animated.View style={[styles.skillTag, { transform: [{ scale }], opacity }]}>
       <Text style={styles.skillTagText}>{skill}</Text>
       <TouchableOpacity onPress={handleRemove} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-        <Ionicons name="close" size={14} color="#0052A2" />
+        <Ionicons name="close" size={14} color="#1A2980" />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -261,7 +261,7 @@ export default function AddSkillsModal({
                   <Ionicons
                     name="add"
                     size={24}
-                    color={inputText.trim() ? '#0052A2' : '#ccc'}
+                    color={inputText.trim() ? '#1A2980' : '#ccc'}
                   />
                 </TouchableOpacity>
               </View>
@@ -317,7 +317,7 @@ export default function AddSkillsModal({
 
                 {categoriesLoading ? (
                   <View style={styles.loadingRow}>
-                    <ActivityIndicator size="small" color="#0052A2" />
+                    <ActivityIndicator size="small" color="#1A2980" />
                     <Text style={styles.loadingText}>Loading categories...</Text>
                   </View>
                 ) : filteredSuggestions.length === 0 && !inputText.trim() ? (
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   saveText: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#0052A2',
+    color: '#1A2980',
     textAlign: 'right',
   },
 
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     borderWidth: 1.5,
-    borderColor: '#0052A2',
+    borderColor: '#1A2980',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#0052A2',
+    borderColor: '#1A2980',
     borderRadius: 20,
     paddingVertical: 7,
     paddingHorizontal: 14,
@@ -503,7 +503,7 @@ const styles = StyleSheet.create({
   },
   skillTagText: {
     fontSize: RFValue(14),
-    color: '#0052A2',
+    color: '#1A2980',
     fontWeight: '500',
   },
 
@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
   },
   suggestedChipPlus: {
     fontSize: RFValue(14),
-    color: '#0052A2',
+    color: '#1A2980',
     fontWeight: '700',
   },
 

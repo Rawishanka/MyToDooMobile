@@ -229,7 +229,7 @@ export default function CreateServiceScreen({
         ]}
       >
         <TouchableOpacity onPress={handleBack} style={styles.backButton} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#0052A2'} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Offer a Service</Text>
       </View>
@@ -270,7 +270,7 @@ export default function CreateServiceScreen({
                 style={[
                   styles.categorySelectorBox,
                   isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
-                  categoryDropdownOpen && { borderColor: isDarkMode ? '#38BDF8' : '#0052A2' },
+                  categoryDropdownOpen && { borderColor: isDarkMode ? '#38BDF8' : '#1A2980' },
                   errors.category ? styles.inputError : null,
                 ]}
                 onPress={() => {
@@ -283,7 +283,7 @@ export default function CreateServiceScreen({
                   <Ionicons
                     name="grid-outline"
                     size={18}
-                    color={selectedCategory ? (isDarkMode ? '#38BDF8' : '#0052A2') : '#94A3B8'}
+                    color={selectedCategory ? (isDarkMode ? '#38BDF8' : '#1A2980') : '#94A3B8'}
                     style={{ marginRight: 10 }}
                   />
                   <Text
@@ -364,13 +364,13 @@ export default function CreateServiceScreen({
                               style={[
                                 styles.categoryDropdownItemText,
                                 isDarkMode && { color: '#F8FAFC' },
-                                isSelected && { color: isDarkMode ? '#38BDF8' : '#0052A2', fontWeight: '700' },
+                                isSelected && { color: isDarkMode ? '#38BDF8' : '#1A2980', fontWeight: '700' },
                               ]}
                             >
                               {catName}
                             </Text>
                             {isSelected && (
-                              <Ionicons name="checkmark-circle" size={18} color={isDarkMode ? '#38BDF8' : '#0052A2'} />
+                              <Ionicons name="checkmark-circle" size={18} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
                             )}
                           </TouchableOpacity>
                         );
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#003366',
+    color: '#1A2980',
     marginLeft: 10,
   },
   content: { padding: 16, paddingBottom: 60 },
@@ -618,7 +618,7 @@ const styles = StyleSheet.create({
   selectedCategoryBadge: {
     fontSize: RFValue(12),
     fontWeight: '600',
-    color: '#0052A2',
+    color: '#1A2980',
   },
   input: {
     backgroundColor: '#fff',
@@ -721,11 +721,11 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: 26,
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
-    shadowColor: '#0052A2',
+    shadowColor: '#1A2980',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,

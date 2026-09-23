@@ -22,6 +22,7 @@ import {
 } from './components';
 import { useOfferSubmission } from './hooks/useOfferSubmission';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 
 export default function MakeOfferScreen() {
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#f0f0f0',
   },
   submitButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',

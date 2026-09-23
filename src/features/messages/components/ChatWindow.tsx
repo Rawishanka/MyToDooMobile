@@ -1,4 +1,5 @@
 import { useTheme } from '@/src/shared/theme';
+import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
 // ChatWindow using NEW task-based chat API
 
 import { uploadChatFile, uploadChatImage } from '@/src/api/cdn-api';
@@ -995,7 +996,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
           <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
           
           {/* Chat Header */}
-          <View style={[styles.chatHeader, { paddingTop: headerTopPadding }, isDarkMode && { backgroundColor: "#0B1120", borderBottomColor: "#334155" }]}>
+          <View style={[styles.chatHeader, { paddingTop: headerTopPadding }]}>
             <TouchableOpacity
               onPress={onClose}
               style={styles.backButton}
@@ -1003,16 +1004,16 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
               accessibilityRole="button"
               accessibilityLabel="Go back"
             >
-              <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#000"} />
+              <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
             </TouchableOpacity>
-            
+
             <View style={styles.chatHeaderInfo}>
             {otherPerson ? (
               <>
                 {otherPerson.avatar ? (
-                  <Image 
-                    source={{ uri: otherPerson.avatar }} 
-                    style={styles.chatAvatar} 
+                  <Image
+                    source={{ uri: otherPerson.avatar }}
+                    style={styles.chatAvatar}
                   />
                 ) : (
                   <View style={styles.chatAvatarFallback}>
@@ -1023,7 +1024,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                   </View>
                 )}
                 <View style={styles.chatHeaderText}>
-                  <Text style={[styles.chatTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>
+                  <Text style={[styles.chatTitle, { color: "#FFFFFF" }]} numberOfLines={1}>
                     {formatUserName(otherPerson.firstName, otherPerson.lastName)}
                   </Text>
                   {isLoadingMessages && (
@@ -1033,12 +1034,12 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
               </>
             ) : (
               <>
-                <Image 
-                  source={{ uri: message.avatar || 'https://randomuser.me/api/portraits/men/1.jpg' }} 
-                  style={styles.chatAvatar} 
+                <Image
+                  source={{ uri: message.avatar || 'https://randomuser.me/api/portraits/men/1.jpg' }}
+                  style={styles.chatAvatar}
                 />
                 <View style={styles.chatHeaderText}>
-                  <Text style={[styles.chatTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>{message.title}</Text>
+                  <Text style={[styles.chatTitle, { color: "#FFFFFF" }]} numberOfLines={1}>{message.title}</Text>
                   {isLoadingMessages && (
                     <Text style={styles.chatStatus}>Loading...</Text>
                   )}
@@ -1060,7 +1061,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
           ListEmptyComponent={() => (
             isLoadingMessages ? (
               <View style={styles.emptyContainer}>
-                <ActivityIndicator size="large" color="#007AFF" />
+                <ActivityIndicator size="large" color={BRAND_BLUE} />
                 <Text style={styles.loadingText}>Loading messages...</Text>
               </View>
             ) : (
@@ -1134,7 +1135,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                 ) : msg.messageType === 'file' && msg.mediaUrl ? (
                   <TouchableOpacity onPress={() => handleFileDownload(normalizeMediaUrl(msg.mediaUrl), msg.text || 'File')}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <Ionicons name="document-attach" size={24} color={msg.sender === 'me' ? '#fff' : '#007AFF'} />
+                      <Ionicons name="document-attach" size={24} color={msg.sender === 'me' ? '#fff' : BRAND_BLUE} />
                       <Text style={[
                         styles.messageText,
                         msg.sender === 'me' ? styles.myMessageText : [styles.otherMessageText, isDarkMode && { color: '#F8FAFC' }]
@@ -1213,7 +1214,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
               style={[styles.sendButton, isLoading && styles.sendButtonDisabled]}
               disabled={isLoading}
             >
-              <Ionicons name="send" size={20} color={isLoading ? "#ccc" : "#007AFF"} />
+              <Ionicons name="send" size={20} color={isLoading ? "#ccc" : BRAND_BLUE} />
             </TouchableOpacity>
           </View>
         </View>
@@ -1222,7 +1223,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         {isUploading && (
           <View style={styles.uploadOverlay}>
             <View style={styles.uploadOverlayContent}>
-              <Ionicons name="cloud-upload" size={48} color="#007AFF" />
+              <Ionicons name="cloud-upload" size={48} color={BRAND_BLUE} />
               <Text style={styles.uploadOverlayText}>{uploadProgressText || 'Uploading...'}</Text>
             </View>
           </View>
@@ -1390,9 +1391,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingBottom: 10,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
+    backgroundColor: BRAND_BLUE,
+    borderBottomWidth: 0,
   },
   backButton: {
     padding: 8,
@@ -1418,7 +1418,7 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     marginRight: 10,
-    backgroundColor: '#007AFF',
+    backgroundColor: BRAND_BLUE,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1473,7 +1473,7 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     marginRight: 8,
-    backgroundColor: '#007AFF',
+    backgroundColor: BRAND_BLUE,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1489,7 +1489,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   myMessage: {
-    backgroundColor: '#007AFF',
+    backgroundColor: BRAND_BLUE,
   },
   otherMessage: {
     backgroundColor: '#E9ECEF',

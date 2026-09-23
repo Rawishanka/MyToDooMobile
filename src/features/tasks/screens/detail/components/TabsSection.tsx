@@ -21,7 +21,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({ activeTab, onTabChange
         <Ionicons
           name="pricetag-outline"
           size={16}
-          color={activeTab === 'offers' ? (isDarkMode ? '#38BDF8' : '#003399') : (isDarkMode ? '#94A3B8' : '#64748B')}
+          color={activeTab === 'offers' ? (isDarkMode ? '#38BDF8' : '#1A2980') : (isDarkMode ? '#94A3B8' : '#64748B')}
         />
         <Text style={[styles.tabText, isDarkMode && { color: '#94A3B8' }, activeTab === 'offers' && (isDarkMode ? { color: '#38BDF8', fontWeight: '700' } : styles.activeTabText)]}>
           Offers
@@ -36,7 +36,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({ activeTab, onTabChange
         <Ionicons
           name="chatbubbles-outline"
           size={16}
-          color={activeTab === 'questions' ? (isDarkMode ? '#38BDF8' : '#003399') : (isDarkMode ? '#94A3B8' : '#64748B')}
+          color={activeTab === 'questions' ? (isDarkMode ? '#38BDF8' : '#1A2980') : (isDarkMode ? '#94A3B8' : '#64748B')}
         />
         <Text style={[styles.tabText, isDarkMode && { color: '#94A3B8' }, activeTab === 'questions' && (isDarkMode ? { color: '#38BDF8', fontWeight: '700' } : styles.activeTabText)]}>
           Questions
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   activeTabText: {
-    color: '#003399',
+    color: '#1A2980',
     fontWeight: '700',
   },
 });

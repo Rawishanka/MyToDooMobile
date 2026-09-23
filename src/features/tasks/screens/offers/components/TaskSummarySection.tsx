@@ -5,6 +5,7 @@ import React from 'react';
 import { useTheme } from '@/src/shared/theme';
 import { StyleSheet, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
 
 interface TaskSummarySectionProps {
   task: {
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
   taskBudget: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#007bff',
+    color: BRAND_BLUE,
     marginBottom: 4,
   },
   taskLocation: {

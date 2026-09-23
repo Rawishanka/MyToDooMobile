@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    shadowColor: '#003399',
+    shadowColor: '#1A2980',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -429,7 +429,7 @@ const styles = StyleSheet.create({
   },
   accentStrip: {
     width: 4,
-    backgroundColor: '#003399',
+    backgroundColor: '#1A2980',
     borderTopLeftRadius: 16,
     borderBottomLeftRadius: 16,
     flexShrink: 0,
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: RFValue(isTablet ? 13.5 : 14.5),
     fontWeight: '800',
-    color: '#003399',
+    color: '#1A2980',
     letterSpacing: 0.2,
   },
 

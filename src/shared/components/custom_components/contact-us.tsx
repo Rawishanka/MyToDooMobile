@@ -245,7 +245,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
       case 'pending':
         return '#FFA500';
       case 'in-progress':
-        return '#0052A2';
+        return '#1A2980';
       case 'resolved':
         return '#28a745';
       case 'closed':
@@ -319,7 +319,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
           {/* Support Token Card */}
           <View style={styles.tokenCard}>
             <View style={styles.tokenHeader}>
-              <Ionicons name="ticket-outline" size={20} color="#0052A2" />
+              <Ionicons name="ticket-outline" size={20} color="#1A2980" />
               <Text style={styles.tokenLabel}>Support Token</Text>
             </View>
             <Text style={styles.tokenValue}>{supportToken}</Text>
@@ -388,7 +388,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {/* Token */}
                 <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                   <View style={styles.statusSectionHeader}>
-                    <Ionicons name="ticket-outline" size={18} color="#0052A2" />
+                    <Ionicons name="ticket-outline" size={18} color="#1A2980" />
                     <Text style={styles.statusSectionLabel}>Support Token</Text>
                   </View>
                   <Text style={styles.statusTokenValue}>{statusData.supportToken}</Text>
@@ -397,7 +397,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {/* Status Badge */}
                 <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                   <View style={styles.statusSectionHeader}>
-                    <Ionicons name="flag-outline" size={18} color="#0052A2" />
+                    <Ionicons name="flag-outline" size={18} color="#1A2980" />
                     <Text style={styles.statusSectionLabel}>Status</Text>
                   </View>
                   <View style={[styles.statusBadge, { backgroundColor: getStatusColor(statusData.status) + '20' }]}>
@@ -411,7 +411,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {/* Category */}
                 <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                   <View style={styles.statusSectionHeader}>
-                    <Ionicons name="folder-outline" size={18} color="#0052A2" />
+                    <Ionicons name="folder-outline" size={18} color="#1A2980" />
                     <Text style={styles.statusSectionLabel}>Category</Text>
                   </View>
                   <Text style={styles.statusValue}>{statusData.category}</Text>
@@ -420,7 +420,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {/* Subject */}
                 <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                   <View style={styles.statusSectionHeader}>
-                    <Ionicons name="text-outline" size={18} color="#0052A2" />
+                    <Ionicons name="text-outline" size={18} color="#1A2980" />
                     <Text style={styles.statusSectionLabel}>Subject</Text>
                   </View>
                   <Text style={styles.statusValue}>{statusData.subject}</Text>
@@ -430,7 +430,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {statusData.message && (
                   <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                     <View style={styles.statusSectionHeader}>
-                      <Ionicons name="chatbubble-outline" size={18} color="#0052A2" />
+                      <Ionicons name="chatbubble-outline" size={18} color="#1A2980" />
                       <Text style={styles.statusSectionLabel}>Your Message</Text>
                     </View>
                     <View style={styles.messageBox}>
@@ -460,7 +460,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {/* Dates */}
                 <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
                   <View style={styles.statusSectionHeader}>
-                    <Ionicons name="calendar-outline" size={18} color="#0052A2" />
+                    <Ionicons name="calendar-outline" size={18} color="#1A2980" />
                     <Text style={styles.statusSectionLabel}>Submitted</Text>
                   </View>
                   <Text style={styles.statusValue}>{formatDate(statusData.createdAt)}</Text>
@@ -526,7 +526,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                   activeOpacity={method.action ? 0.7 : 1}
                 >
                   <View style={[styles.contactMethodIcon, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                    <Ionicons name={method.icon as any} size={24} color="#0052A2" />
+                    <Ionicons name={method.icon as any} size={24} color="#1A2980" />
                   </View>
                   <View style={styles.contactMethodInfo}>
                     <Text style={[styles.contactMethodTitle, isDarkMode && { color: '#F8FAFC' }]}>{method.title}</Text>
@@ -619,7 +619,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                   <View style={styles.dropdownMenu}>
                     {loadingCategories ? (
                       <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="small" color="#0052A2" />
+                        <ActivityIndicator size="small" color="#1A2980" />
                         <Text style={styles.loadingText}>Loading categories...</Text>
                       </View>
                     ) : (
@@ -632,11 +632,11 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                           <Ionicons 
                             name={(categoryIcons[category] || 'help-circle-outline') as any} 
                             size={20} 
-                            color="#0052A2" 
+                            color="#1A2980" 
                           />
                           <Text style={styles.dropdownItemText}>{category}</Text>
                           {selectedCategory === category && (
-                            <Ionicons name="checkmark" size={20} color="#0052A2" />
+                            <Ionicons name="checkmark" size={20} color="#1A2980" />
                           )}
                         </TouchableOpacity>
                       ))
@@ -716,7 +716,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
               {/* Info Note */}
               <View style={styles.infoBox}>
-                <Ionicons name="information-circle" size={20} color="#0052A2" />
+                <Ionicons name="information-circle" size={20} color="#1A2980" />
                 <Text style={styles.infoText}>
                   We typically respond within 24 hours during business days
                 </Text>
@@ -764,9 +764,9 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 Check out our FAQ section for instant solutions to common questions
               </Text>
               <TouchableOpacity style={styles.faqButton} onPress={() => setShowFAQ(true)}>
-                <Ionicons name="help-circle-outline" size={20} color="#0052A2" />
+                <Ionicons name="help-circle-outline" size={20} color="#1A2980" />
                 <Text style={styles.faqButtonText}>View FAQ</Text>
-                <Ionicons name="chevron-forward" size={20} color="#0052A2" />
+                <Ionicons name="chevron-forward" size={20} color="#1A2980" />
               </TouchableOpacity>
             </View>
 
@@ -862,7 +862,7 @@ const styles = StyleSheet.create({
   },
   contactMethodValue: {
     fontSize: RFValue(13),
-    color: '#0052A2',
+    color: '#1A2980',
     fontWeight: '500',
   },
   dividerContainer: {
@@ -1009,11 +1009,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     paddingVertical: 16,
     borderRadius: 12,
     marginTop: 8,
-    shadowColor: '#0052A2',
+    shadowColor: '#1A2980',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -1041,7 +1041,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: '#0052A2',
+    color: '#1A2980',
     marginLeft: 10,
     lineHeight: 18,
   },
@@ -1087,7 +1087,7 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   checkButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     width: 50,
     height: 50,
     borderRadius: 10,
@@ -1127,12 +1127,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#0052A2',
+    borderColor: '#1A2980',
   },
   faqButtonText: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#0052A2',
+    color: '#1A2980',
     marginLeft: 8,
     marginRight: 8,
   },
@@ -1182,7 +1182,7 @@ const styles = StyleSheet.create({
     padding: 16,
     width: '100%',
     borderLeftWidth: 4,
-    borderLeftColor: '#0052A2',
+    borderLeftColor: '#1A2980',
     marginBottom: 16,
   },
   tokenHeader: {
@@ -1193,7 +1193,7 @@ const styles = StyleSheet.create({
   tokenLabel: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#0052A2',
+    color: '#1A2980',
     marginLeft: 8,
   },
   tokenValue: {
@@ -1238,7 +1238,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   doneButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     paddingVertical: 14,
     paddingHorizontal: 40,
     borderRadius: 10,
@@ -1291,7 +1291,7 @@ const styles = StyleSheet.create({
   statusSectionLabel: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#0052A2',
+    color: '#1A2980',
     marginLeft: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -1356,7 +1356,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   statusCloseButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     marginHorizontal: 20,
     marginVertical: 16,
     paddingVertical: 14,

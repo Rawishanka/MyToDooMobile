@@ -361,7 +361,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                   setShowPhoneModal(true);
                 }}
               >
-                <Ionicons name="create-outline" size={13} color="#003399" />
+                <Ionicons name="create-outline" size={13} color="#1A2980" />
                 <Text style={styles.changePhoneBadgeText}>Change</Text>
               </TouchableOpacity>
             </View>
@@ -434,11 +434,11 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
               onPress={() => setShowSkillsModal(true)}
               activeOpacity={0.75}
             >
-              <Ionicons name="add-circle-outline" size={18} color="#0052A2" />
+              <Ionicons name="add-circle-outline" size={18} color="#1A2980" />
               <Text style={styles.openSkillsBtnText}>
                 {goodAt.length === 0 ? 'Add Skills' : `Edit Skills (${goodAt.length})`}
               </Text>
-              <Ionicons name="chevron-forward" size={16} color="#0052A2" style={{ marginLeft: 'auto' }} />
+              <Ionicons name="chevron-forward" size={16} color="#1A2980" style={{ marginLeft: 'auto' }} />
             </TouchableOpacity>
 
             {/* Add Skills Modal */}
@@ -604,7 +604,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                   setNotifyNewTask(val);
                   if (!val) setNotifySkillMatch(false);
                 }}
-                trackColor={{ false: '#ddd', true: '#0052A2' }}
+                trackColor={{ false: '#ddd', true: '#1A2980' }}
                 thumbColor={notifyNewTask ? '#fff' : '#f4f3f4'}
               />
             </View>
@@ -621,7 +621,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                 value={notifySkillMatch && notifyNewTask}
                 onValueChange={(val) => { if (notifyNewTask) setNotifySkillMatch(val); }}
                 disabled={!notifyNewTask}
-                trackColor={{ false: '#ddd', true: '#0052A2' }}
+                trackColor={{ false: '#ddd', true: '#1A2980' }}
                 thumbColor={(notifySkillMatch && notifyNewTask) ? '#fff' : '#f4f3f4'}
               />
             </View>
@@ -668,7 +668,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                 <Ionicons
                   name={phoneStep === 'input' ? 'call-outline' : 'shield-checkmark-outline'}
                   size={24}
-                  color={isDarkMode ? '#60A5FA' : '#003399'}
+                  color={isDarkMode ? '#60A5FA' : '#1A2980'}
                 />
               </View>
               <Text style={[styles.phoneModalTitle, isDarkMode && { color: '#F8FAFC' }]}>
@@ -871,7 +871,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#f0f0f0',
   },
   saveButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -947,7 +947,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -992,7 +992,7 @@ const styles = StyleSheet.create({
     color: '#856404',
   },
   backToProfileButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     paddingVertical: 14,
     paddingHorizontal: 32,
     borderRadius: 8,
@@ -1032,7 +1032,7 @@ const styles = StyleSheet.create({
   },
   skillTagText: {
     fontSize: RFValue(14),
-    color: '#0052A2',
+    color: '#1A2980',
   },
   // "Add Skills" / "Edit Skills" tap row for goodAt
   openSkillsBtn: {
@@ -1040,7 +1040,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     borderWidth: 1.5,
-    borderColor: '#0052A2',
+    borderColor: '#1A2980',
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 14,
@@ -1049,7 +1049,7 @@ const styles = StyleSheet.create({
   },
   openSkillsBtnText: {
     fontSize: RFValue(15),
-    color: '#0052A2',
+    color: '#1A2980',
     fontWeight: '600',
   },
   addSkillContainer: {
@@ -1067,7 +1067,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   addButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
@@ -1093,8 +1093,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
   },
   transportOptionSelected: {
-    backgroundColor: '#0052A2',
-    borderColor: '#0052A2',
+    backgroundColor: '#1A2980',
+    borderColor: '#1A2980',
   },
   transportOptionText: {
     fontSize: RFValue(14),
@@ -1174,7 +1174,7 @@ const styles = StyleSheet.create({
   changePhoneBadgeText: {
     fontSize: RFValue(11.5),
     fontWeight: "700",
-    color: "#003399",
+    color: "#1A2980",
   },
   phoneSecurityHint: {
     fontSize: RFValue(11.5),
@@ -1266,7 +1266,7 @@ const styles = StyleSheet.create({
   phoneOtpInput: {
     backgroundColor: "#F8FAFC",
     borderWidth: 2,
-    borderColor: "#003399",
+    borderColor: "#1A2980",
     borderRadius: 14,
     paddingVertical: 14,
     fontSize: RFValue(24),
@@ -1292,7 +1292,7 @@ const styles = StyleSheet.create({
   },
   phoneResendActionText: {
     fontSize: RFValue(13),
-    color: "#003399",
+    color: "#1A2980",
     fontWeight: "700",
   },
   phoneModalBtnRow: {
@@ -1317,7 +1317,7 @@ const styles = StyleSheet.create({
     flex: 1.6,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: "#003399",
+    backgroundColor: "#1A2980",
     alignItems: "center",
     justifyContent: "center",
   },

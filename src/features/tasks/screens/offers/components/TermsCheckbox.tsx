@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   termsLink: {
-    color: '#0052A2',
+    color: '#1A2980',
     textDecorationLine: 'underline',
   },
 });

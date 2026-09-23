@@ -1180,7 +1180,7 @@ export default function MyTasksScreen() {
           style={[
             styles.roleButton,
             isDarkMode && { backgroundColor: '#1E293B' },
-            userRole === 'Tasker' && (isDarkMode ? { backgroundColor: '#2563EB' } : styles.activeRole)
+            userRole === 'Tasker' && (isDarkMode ? { backgroundColor: '#1A2980' } : styles.activeRole)
           ]}
           onPress={() => {
             setIsRoleSwitching(true);
@@ -1194,7 +1194,7 @@ export default function MyTasksScreen() {
           style={[
             styles.roleButton,
             isDarkMode && { backgroundColor: '#1E293B' },
-            userRole === 'Poster' && (isDarkMode ? { backgroundColor: '#2563EB' } : styles.activeRole)
+            userRole === 'Poster' && (isDarkMode ? { backgroundColor: '#1A2980' } : styles.activeRole)
           ]}
           onPress={() => {
             setIsRoleSwitching(true);

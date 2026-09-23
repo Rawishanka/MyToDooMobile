@@ -115,7 +115,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={onBackToAccount}>
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
+          <Ionicons name="chevron-back" size={24} color="#1A2980" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Service Fee Configuration</Text>
       </View>
@@ -123,7 +123,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
       <ScrollView style={styles.content}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#0052A2" />
+            <ActivityIndicator size="large" color="#1A2980" />
             <Text style={styles.loadingText}>Loading configuration...</Text>
           </View>
         ) : error && (error as any)?.message?.includes('Admin access required') ? (
@@ -152,7 +152,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
           <>
             {/* Info Box */}
             <View style={styles.infoBox}>
-              <Ionicons name="information-circle-outline" size={20} color="#0052A2" />
+              <Ionicons name="information-circle-outline" size={20} color="#1A2980" />
               <Text style={styles.infoText}>
                 Configure the service fee settings that apply to all transactions on the platform.
               </Text>
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: '#0052A2',
+    color: '#1A2980',
     marginLeft: 8,
     lineHeight: 18,
   },
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   configValue: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#0052A2',
+    color: '#1A2980',
   },
   formGroup: {
     marginBottom: 16,
@@ -450,7 +450,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   saveButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
   },
   saveButtonText: {
     color: '#FFF',

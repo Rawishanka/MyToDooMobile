@@ -672,8 +672,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   roleToggleButtonActive: {
-    backgroundColor: '#0052A2',
-    shadowColor: '#0052A2',
+    backgroundColor: '#1A2980',
+    shadowColor: '#1A2980',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 6,

@@ -522,7 +522,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
 
             <ScrollView style={styles.reasonsList} showsVerticalScrollIndicator={false}>
               {loadingReasons ? (
-                <ActivityIndicator size="large" color="#0052A2" style={{ marginTop: 20 }} />
+                <ActivityIndicator size="large" color="#1A2980" style={{ marginTop: 20 }} />
               ) : (
                 cancellationReasons.map((reason: any) => (
                   <TouchableOpacity
@@ -747,7 +747,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   reasonItemSelected: {
-    borderColor: '#0052A2',
+    borderColor: '#1A2980',
     backgroundColor: '#E6F2FF',
   },
   radioButton: {
@@ -761,13 +761,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   radioButtonSelected: {
-    borderColor: '#0052A2',
+    borderColor: '#1A2980',
   },
   radioButtonInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
   },
   reasonText: {
     flex: 1,
@@ -775,7 +775,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   reasonTextSelected: {
-    color: '#0052A2',
+    color: '#1A2980',
     fontWeight: '500',
   },
   modalButtons: {

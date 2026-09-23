@@ -62,7 +62,7 @@ export default function TaskAlerts({ onBack }) {
           style={styles.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#0052A2'} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>
           Task Alerts
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#003366',
+    color: '#1A2980',
     flex: 1,
     textAlign: 'center',
     marginRight: 32,
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   addButton: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,

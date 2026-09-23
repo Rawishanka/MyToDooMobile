@@ -140,9 +140,9 @@ export default function PaymentReceiptScreen() {
             accessibilityLabel="Share receipt PDF"
           >
             {isSharing ? (
-              <ActivityIndicator size="small" color="#0052A2" />
+              <ActivityIndicator size="small" color="#1A2980" />
             ) : (
-              <Ionicons name="share-outline" size={22} color="#0052A2" />
+              <Ionicons name="share-outline" size={22} color="#1A2980" />
             )}
           </TouchableOpacity>
         ) : (
@@ -152,7 +152,7 @@ export default function PaymentReceiptScreen() {
 
       {loadState === 'loading' && (
         <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color="#0052A2" />
+          <ActivityIndicator size="large" color="#1A2980" />
           <Text style={styles.loadingText}>Loading receipt PDF...</Text>
         </View>
       )}
@@ -176,7 +176,7 @@ export default function PaymentReceiptScreen() {
           startInLoadingState
           renderLoading={() => (
             <View style={styles.webViewLoading}>
-              <ActivityIndicator size="large" color="#0052A2" />
+              <ActivityIndicator size="large" color="#1A2980" />
             </View>
           )}
           allowFileAccess
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 20,
-    backgroundColor: '#0052A2',
+    backgroundColor: '#1A2980',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

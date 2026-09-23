@@ -764,7 +764,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                 } else {
                   // Fallback to generated avatar
                   console.log('⚠️ Using generated avatar for:', firstName, lastName);
-                  return `https://ui-avatars.com/api/?name=${formatAvatarName(firstName, lastName)}&background=0052A2&color=fff&size=120`;
+                  return `https://ui-avatars.com/api/?name=${formatAvatarName(firstName, lastName)}&background=1A2980&color=fff&size=120`;
                 }
               })()
             }}
@@ -835,7 +835,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         };
         return (
           <TouchableOpacity style={[styles.viewOnMapButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 }]} onPress={handleViewOnMap} activeOpacity={0.7}>
-            <Ionicons name="map-outline" size={14} color={isDarkMode ? '#38BDF8' : '#003399'} />
+            <Ionicons name="map-outline" size={14} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
             <Text style={[styles.viewOnMapText, isDarkMode && { color: '#38BDF8' }]}>View on Map</Text>
           </TouchableOpacity>
         );
@@ -862,7 +862,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {/* Modern 2026 Budget Card */}
       <View style={[styles.budgetCard, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
         <View style={[styles.budgetIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-          <Ionicons name="wallet-outline" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
+          <Ionicons name="wallet-outline" size={24} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
         </View>
         <View style={styles.budgetInfoCol}>
           <Text style={[styles.budgetAmountText, isDarkMode && { color: '#38BDF8' }]}>
@@ -884,7 +884,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {/* Category Badge */}
       {task.categories && task.categories.length > 0 && (
         <View style={[styles.categoryBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
-          <Ionicons name="pricetag-outline" size={13} color={isDarkMode ? '#38BDF8' : '#003399'} />
+          <Ionicons name="pricetag-outline" size={13} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
           <Text style={[styles.categoryText, isDarkMode && { color: '#38BDF8' }]}>{task.categories[0]}</Text>
         </View>
       )}
@@ -958,7 +958,7 @@ const styles = StyleSheet.create({
   budgetSublabel: {
     fontSize: RFValue(10.5),
     fontWeight: '700',
-    color: '#003399',
+    color: '#1A2980',
     letterSpacing: 0.8,
     marginTop: 2,
   },
@@ -971,7 +971,7 @@ const styles = StyleSheet.create({
   budgetStatusText: {
     fontSize: RFValue(10),
     fontWeight: '700',
-    color: '#003399',
+    color: '#1A2980',
     letterSpacing: 0.5,
   },
   categoryBadge: {
@@ -990,7 +990,7 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: RFValue(12),
     fontWeight: '700',
-    color: '#003399',
+    color: '#1A2980',
   },
   avatarContainer: {
     alignItems: 'center',
@@ -1075,7 +1075,7 @@ const styles = StyleSheet.create({
   },
   viewOnMapText: {
     fontSize: RFValue(isTablet ? 11 : 12),
-    color: '#003399',
+    color: '#1A2980',
     fontWeight: '600',
   },
   budgetRow: {

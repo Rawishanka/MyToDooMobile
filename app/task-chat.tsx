@@ -43,6 +43,7 @@ import {
 import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/shared/theme';
+import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 // URL normalization helper for APK builds
@@ -706,7 +707,7 @@ export default function TaskChatScreen() {
             style={styles.fileMessage}
             onPress={() => handleFileDownload(normalizedMediaUrl, messageContent || 'File')}
           >
-            <MaterialIcons name="insert-drive-file" size={24} color="#007bff" />
+            <MaterialIcons name="insert-drive-file" size={24} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
             <Text style={[styles.fileName, isDarkMode && { color: "#38BDF8" }]}>{messageContent || 'File'}</Text>
           </TouchableOpacity>
         ) : (
@@ -726,18 +727,18 @@ export default function TaskChatScreen() {
 
   if ((chatLoading && normalizedChatIdParam && !chat) || (createChatMutation.isPending && !normalizedChatIdParam)) {
     return (
-      <GestureHandlerRootView style={styles.container}>
-        <View style={[styles.headerSafeArea, { paddingTop: headerTopPadding }]}>
+      <GestureHandlerRootView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <View style={[styles.headerSafeArea, { paddingTop: headerTopPadding, backgroundColor: BRAND_BLUE, borderBottomWidth: 0 }]}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-              <MaterialIcons name="arrow-back" size={24} color="#000" />
+              <MaterialIcons name="arrow-back" size={24} color="#FFFFFF" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Loading chat...</Text>
+            <Text style={[styles.headerTitle, { color: '#FFFFFF' }]}>Loading chat...</Text>
           </View>
         </View>
         <View style={[{ flex: 1 }, styles.centerContent]}>
-          <ActivityIndicator size="large" color="#007bff" />
-          <Text style={styles.loadingText}>Loading chat...</Text>
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+          <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading chat...</Text>
         </View>
       </GestureHandlerRootView>
     );
@@ -750,19 +751,19 @@ export default function TaskChatScreen() {
         activeOffsetX={[-10, 10000]}
         failOffsetY={[-20, 20]}
       >
-        <View style={styles.container}>
+        <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
           <KeyboardAvoidingView
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             keyboardVerticalOffset={0}
           >
             {/* Header with safe area */}
-            <View style={[styles.headerSafeArea, { paddingTop: headerTopPadding }]}>
+            <View style={[styles.headerSafeArea, { paddingTop: headerTopPadding, backgroundColor: BRAND_BLUE, borderBottomWidth: 0 }]}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-              <MaterialIcons name="arrow-back" size={24} color="#000" />
+              <MaterialIcons name="arrow-back" size={24} color="#FFFFFF" />
             </TouchableOpacity>
-          
+
           {otherPerson ? (
             <View style={styles.headerInfo}>
               {otherPerson.avatar ? (
@@ -776,7 +777,7 @@ export default function TaskChatScreen() {
                 </View>
               )}
               <View style={styles.headerTextContainer}>
-                <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>
+                <Text style={[styles.headerTitle, { color: '#FFFFFF' }]} numberOfLines={1}>
                   {(() => {
                     const fullName = formatUserName(otherPerson.firstName, otherPerson.lastName);
                     const displayName = fullName || (otherPerson as any).displayName || 'User';
@@ -787,7 +788,7 @@ export default function TaskChatScreen() {
               </View>
             </View>
           ) : (
-            <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>
+            <Text style={[styles.headerTitle, { color: '#FFFFFF' }]} numberOfLines={1}>
               {normalizedTaskTitle || 'Chat'}
             </Text>
           )}
@@ -805,8 +806,8 @@ export default function TaskChatScreen() {
           ListHeaderComponent={
             messagesLoading ? (
               <View style={styles.loadingHeader}>
-                <ActivityIndicator size="small" color="#007bff" />
-                <Text style={styles.loadingHeaderText}>Loading messages...</Text>
+                <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+                <Text style={[styles.loadingHeaderText, isDarkMode && { color: '#94A3B8' }]}>Loading messages...</Text>
               </View>
             ) : null
           }
@@ -860,6 +861,7 @@ export default function TaskChatScreen() {
           <TouchableOpacity
             style={[
               styles.sendButton,
+              isDarkMode && { backgroundColor: '#38BDF8' },
               (!messageText.trim() || sendMessageMutation.isPending || isUploading) &&
                 styles.sendButtonDisabled,
             ]}
@@ -878,7 +880,7 @@ export default function TaskChatScreen() {
         {isUploading && (
           <View style={styles.uploadOverlay}>
             <View style={[styles.uploadOverlayContent, isDarkMode && { backgroundColor: "#1E293B" }]}>
-              <ActivityIndicator size="large" color="#007bff" />
+              <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
               <Text style={[styles.uploadOverlayText, isDarkMode && { color: "#F8FAFC" }]}>Uploading...</Text>
             </View>
           </View>
@@ -972,7 +974,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#007bff',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -1030,7 +1032,7 @@ const styles = StyleSheet.create({
   },
   myMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#007bff',
+    backgroundColor: BRAND_BLUE,
   },
   theirMessage: {
     alignSelf: 'flex-start',
@@ -1066,7 +1068,7 @@ const styles = StyleSheet.create({
   },
   fileName: {
     fontSize: RFValue(14),
-    color: '#007bff',
+    color: BRAND_BLUE,
     textDecorationLine: 'underline',
   },
   emptyState: {
@@ -1114,7 +1116,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#007bff',
+    backgroundColor: BRAND_BLUE,
     justifyContent: 'center',
     alignItems: 'center',
   },

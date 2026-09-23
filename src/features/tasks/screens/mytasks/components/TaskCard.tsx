@@ -1594,7 +1594,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 const lastName = displayUser.lastName || '';
                 const profileUri = displayUser.avatar || 
                                  displayUser.profilePicture ||
-                                 `https://ui-avatars.com/api/?name=${formatAvatarName(firstName, lastName)}&background=0052A2&color=fff&size=80`;
+                                 `https://ui-avatars.com/api/?name=${formatAvatarName(firstName, lastName)}&background=1A2980&color=fff&size=80`;
                 
                 return (
                   <Image
@@ -2551,7 +2551,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
                 const lastName = offerUser?.lastName || '';
                 const profileUri = (offerUser as any)?.avatar || 
                                  (offerUser as any)?.profilePicture ||
-                                 `https://ui-avatars.com/api/?name=${formatAvatarName(firstName, lastName)}&background=0052A2&color=fff&size=80`;
+                                 `https://ui-avatars.com/api/?name=${formatAvatarName(firstName, lastName)}&background=1A2980&color=fff&size=80`;
                 
                 return (
                 <View style={styles.offerItem}>

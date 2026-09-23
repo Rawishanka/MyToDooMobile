@@ -19,6 +19,7 @@ import {
 import type { StoredNotification } from '@/src/services/notification-storage';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
 
 function normalizeNotificationType(item: StoredNotification): string {
   const raw =
@@ -95,7 +96,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
     switch (rawType) {
       case 'task_offer':
       case 'offer_made':
-        return '#007bff';
+        return BRAND_BLUE;
       case 'message':
       case 'chat_message':
         return '#28a745';
@@ -185,9 +186,9 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
 
   if (loading && notifications.length === 0) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007bff" />
-        <Text style={styles.loadingText}>Loading notifications...</Text>
+      <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+        <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading notifications...</Text>
       </View>
     );
   }
@@ -240,7 +241,7 @@ const styles = StyleSheet.create({
   },
   unreadNotification: {
     backgroundColor: '#f8f9fa',
-    borderColor: '#007bff',
+    borderColor: BRAND_BLUE,
   },
   notificationContent: {
     flexDirection: 'row',
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#007bff',
+    backgroundColor: BRAND_BLUE,
   },
   deleteButton: {
     padding: 4,

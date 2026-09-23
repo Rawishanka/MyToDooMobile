@@ -557,7 +557,7 @@ export default function BrowseTasksScreen() {
             <Ionicons
               name={browseMode === 'tasks' ? 'layers' : 'layers-outline'}
               size={RFValue(15)}
-              color={browseMode === 'tasks' ? '#0F2B66' : 'rgba(255,255,255,0.75)'}
+              color={browseMode === 'tasks' ? '#1A2980' : 'rgba(255,255,255,0.75)'}
               style={styles.segmentedIcon}
             />
             <Text
@@ -583,7 +583,7 @@ export default function BrowseTasksScreen() {
             <Ionicons
               name={browseMode === 'services' ? 'sparkles' : 'sparkles-outline'}
               size={RFValue(15)}
-              color={browseMode === 'services' ? '#0F2B66' : 'rgba(255,255,255,0.75)'}
+              color={browseMode === 'services' ? '#1A2980' : 'rgba(255,255,255,0.75)'}
               style={styles.segmentedIcon}
             />
             <Text
@@ -975,7 +975,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   segmentedTextActive: {
-    color: '#0F2B66',
+    color: '#1A2980',
     fontWeight: '800',
     letterSpacing: 0.2,
   },

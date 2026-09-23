@@ -2,6 +2,7 @@
 // Loads notification history from the backend (GET /notifications) AND local FCM storage
 // Supports mark-as-read, mark-all-as-read, delete, delete-all
 import { AppAlert } from '@/src/shared/components/AppAlert';
+import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
 import {
     deleteAllNotifications,
     deleteNotification,
@@ -297,7 +298,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
           <View style={styles.headerActions}>
             {unreadCount > 0 && (
               <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.headerActionBtn}>
-                <Ionicons name="checkmark-done" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                <Ionicons name="checkmark-done" size={20} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
               </TouchableOpacity>
             )}
             {totalCount > 0 && (
@@ -404,7 +405,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   headerBadge: {
-    backgroundColor: '#003399',
+    backgroundColor: BRAND_BLUE,
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -439,7 +440,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   tabActive: {
-    borderBottomColor: '#003399',
+    borderBottomColor: BRAND_BLUE,
   },
   tabText: {
     fontSize: RFValue(isTablet ? 13 : 14),
@@ -447,7 +448,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   tabTextActive: {
-    color: '#003399',
+    color: BRAND_BLUE,
     fontWeight: '600',
   },
   listContainer: {

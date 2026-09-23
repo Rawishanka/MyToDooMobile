@@ -35,7 +35,7 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false })
         style={styles.backButton}
         onPress={onBackToAccount}
       >
-        <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : '#0052A2'} />
+        <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : '#1A2980'} />
       </TouchableOpacity>
       <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Payment options</Text>
     </View>
@@ -87,7 +87,7 @@ const PaymentHistoryScreen = ({ onNavigate }) => {
           style={styles.backButton}
           onPress={() => onNavigate('paymentOptions')}
         >
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
+          <Ionicons name="chevron-back" size={24} color="#1A2980" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Payment history</Text>
       </View>
@@ -128,9 +128,9 @@ const PaymentHistoryScreen = ({ onNavigate }) => {
             <View style={styles.filterContainer}>
               <View style={styles.filterRow}>
                 <TouchableOpacity style={styles.filterButton}>
-                  <Feather name="calendar" size={16} color="#0052A2" />
+                  <Feather name="calendar" size={16} color="#1A2980" />
                   <Text style={styles.filterText}>All time</Text>
-                  <Ionicons name="chevron-down" size={16} color="#0052A2" />
+                  <Ionicons name="chevron-down" size={16} color="#1A2980" />
                 </TouchableOpacity>
                 <View style={styles.spacer} />
                 <Text style={styles.filterLabel}>Cancellation Fees</Text>
@@ -189,9 +189,9 @@ const PaymentHistoryScreen = ({ onNavigate }) => {
             <View style={styles.filterContainer}>
               <View style={styles.filterRow}>
                 <TouchableOpacity style={styles.filterButton}>
-                  <Feather name="calendar" size={16} color="#0052A2" />
+                  <Feather name="calendar" size={16} color="#1A2980" />
                   <Text style={styles.filterText}>All time</Text>
-                  <Ionicons name="chevron-down" size={16} color="#0052A2" />
+                  <Ionicons name="chevron-down" size={16} color="#1A2980" />
                 </TouchableOpacity>
                 <View style={styles.spacer} />
                 <Text style={styles.filterLabel}>Cancellation Fees</Text>
@@ -222,7 +222,7 @@ const PaymentMethodsScreen = ({ onNavigate }) => {
           style={styles.backButton}
           onPress={() => onNavigate('paymentOptions')}
         >
-          <Ionicons name="chevron-back" size={24} color="#0052A2" />
+          <Ionicons name="chevron-back" size={24} color="#1A2980" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit payment methods</Text>
       </View>
@@ -249,7 +249,7 @@ const PaymentMethodsScreen = ({ onNavigate }) => {
       <ScrollView style={styles.content}>
         {activeTab === 'make' ? (
           <TouchableOpacity style={styles.addPaymentMethod}>
-            <Ionicons name="add-circle-outline" size={24} color="#0052A2" />
+            <Ionicons name="add-circle-outline" size={24} color="#1A2980" />
             <Text style={styles.addPaymentText}>Add credit card</Text>
             <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#0052A2',
+    color: '#1A2980',
   },
   content: {
     flex: 1,
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   linkText: {
-    color: '#0052A2',
+    color: '#1A2980',
     textDecorationLine: 'underline',
   },
   filterContainer: {
@@ -443,11 +443,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#0052A2',
+    borderColor: '#1A2980',
     borderRadius: 6,
   },
   filterText: {
-    color: '#0052A2',
+    color: '#1A2980',
     marginLeft: 6,
     marginRight: 6,
     fontSize: 14,
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
   earningsAmount: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#0052A2',
+    color: '#1A2980',
   },
   downloadButton: {
     flexDirection: 'row',
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
   addPaymentText: {
     flex: 1,
     fontSize: 16,
-    color: '#0052A2',
+    color: '#1A2980',
     marginLeft: 12,
   },
   paymentMethodItem: {
@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
   },
   navText: {
     fontSize: 10,
-    color: '#0052A2',
+    color: '#1A2980',
     marginTop: 2,
   },
 });
