@@ -557,7 +557,7 @@ export default function BrowseTasksScreen() {
             <Ionicons
               name={browseMode === 'tasks' ? 'layers' : 'layers-outline'}
               size={RFValue(15)}
-              color={browseMode === 'tasks' ? '#1A2980' : 'rgba(255,255,255,0.75)'}
+              color={browseMode === 'tasks' ? '#003399' : 'rgba(255,255,255,0.75)'}
               style={styles.segmentedIcon}
             />
             <Text
@@ -583,7 +583,7 @@ export default function BrowseTasksScreen() {
             <Ionicons
               name={browseMode === 'services' ? 'sparkles' : 'sparkles-outline'}
               size={RFValue(15)}
-              color={browseMode === 'services' ? '#1A2980' : 'rgba(255,255,255,0.75)'}
+              color={browseMode === 'services' ? '#003399' : 'rgba(255,255,255,0.75)'}
               style={styles.segmentedIcon}
             />
             <Text
@@ -843,7 +843,7 @@ export default function BrowseTasksScreen() {
               ListFooterComponent={() => 
                 isLoadingMore ? (
                   <View style={{ padding: 20, alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color="#1A2980" />
+                    <ActivityIndicator size="large" color="#003399" />
                     <Text style={styles.loadingText}>Loading more tasks...</Text>
                   </View>
                 ) : null
@@ -912,7 +912,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   header: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     flexDirection: 'row',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('3%'),
     paddingTop: hp('6%'),
@@ -935,7 +935,7 @@ const styles = StyleSheet.create({
     gap: wp('2%'),
   },
   segmentedContainer: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     paddingBottom: hp('1.2%'),
     paddingTop: hp('0.4%'),
@@ -975,7 +975,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   segmentedTextActive: {
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '800',
     letterSpacing: 0.2,
   },
@@ -987,7 +987,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
     overflow: 'hidden',
     flexDirection: 'row',
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -1127,11 +1127,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 3,
@@ -1152,7 +1152,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -2,
     right: -2,
-    backgroundColor: '#FF7A00',
+    backgroundColor: '#ff6b35',
     borderRadius: 10,
     minWidth: isTablet ? 20 : 18,
     height: isTablet ? 20 : 18,
@@ -1227,7 +1227,7 @@ const styles = StyleSheet.create({
     marginTop: hp('2%'),
     paddingHorizontal: wp('5%'),
     paddingVertical: hp('1.2%'),
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     borderRadius: 8,
   },
   clearSearchText: {
@@ -1255,7 +1255,7 @@ const styles = StyleSheet.create({
     marginBottom: hp('2%'),
   },
   retryButton: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     padding: 12,
     borderRadius: 8,
   },
@@ -1274,7 +1274,7 @@ const styles = StyleSheet.create({
   },
   locationIndicatorText: {
     fontSize: RFValue(11),
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '500',
   },
 });

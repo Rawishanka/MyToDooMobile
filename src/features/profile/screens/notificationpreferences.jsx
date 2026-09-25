@@ -63,14 +63,14 @@ export default function NotificationPreferences({ onBack, userData }) {
           style={styles.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>
           Tasker Preferences
         </Text>
         <TouchableOpacity onPress={handleSave} disabled={saving} style={styles.saveBtn}>
           {saving ? (
-            <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+            <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#003399'} />
           ) : (
             <Text style={[styles.saveText, isDarkMode && { color: '#38BDF8' }]}>Save</Text>
           )}
@@ -87,7 +87,7 @@ export default function NotificationPreferences({ onBack, userData }) {
         <Ionicons
           name="information-circle-outline"
           size={18}
-          color={isDarkMode ? '#38BDF8' : '#1A2980'}
+          color={isDarkMode ? '#38BDF8' : '#003399'}
         />
         <Text style={[styles.infoText, isDarkMode && { color: '#94A3B8' }]}>
           Control how you get notified about new tasks on the platform.
@@ -121,7 +121,7 @@ export default function NotificationPreferences({ onBack, userData }) {
               setNotifyNewTask(val);
               if (!val) setNotifySkillMatch(false);
             }}
-            trackColor={{ false: isDarkMode ? '#475569' : '#ccc', true: '#1A2980' }}
+            trackColor={{ false: isDarkMode ? '#475569' : '#ccc', true: '#003399' }}
             thumbColor="#fff"
           />
         </View>
@@ -160,7 +160,7 @@ export default function NotificationPreferences({ onBack, userData }) {
               if (notifyNewTask) setNotifySkillMatch(val);
             }}
             disabled={!notifyNewTask}
-            trackColor={{ false: isDarkMode ? '#475569' : '#ccc', true: '#1A2980' }}
+            trackColor={{ false: isDarkMode ? '#475569' : '#ccc', true: '#003399' }}
             thumbColor="#fff"
           />
         </View>
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#1A2980',
+    color: '#003399',
     flex: 1,
     textAlign: 'center',
   },
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   },
   saveText: {
     fontSize: RFValue(15),
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '600',
   },
   infoBanner: {
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: '#1A2980',
+    color: '#003399',
     lineHeight: 18,
   },
   section: {
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     color: '#aaa',
   },
   saveButton: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     marginHorizontal: 16,
     borderRadius: 12,
     paddingVertical: 15,

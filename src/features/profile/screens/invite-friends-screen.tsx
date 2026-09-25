@@ -75,7 +75,7 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
         >
           {/* 2026 Hero Banner */}
           <LinearGradient
-            colors={['#1A2980', '#26D0CE']}
+            colors={['#003399', '#26D0CE']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.heroCard}
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 22,
     marginBottom: 16,
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,
     shadowRadius: 14,
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   codeText: {
     fontSize: RFValue(26),
     fontWeight: '800',
-    color: '#1A2980',
+    color: '#003399',
     letterSpacing: 2,
   },
   urlContainer: {

@@ -180,15 +180,15 @@ const MessageScreen: React.FC = () => {
             const firstName = otherUser.firstName || '';
             const lastName = otherUser.lastName || '';
             const name = formatAvatarName(firstName, lastName);
-            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1A2980&color=fff&size=100&bold=true&rounded=true`;
+            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=003399&color=fff&size=100&bold=true&rounded=true`;
           } else if (posterId?.firstName || taskerId?.firstName) {
             const participant = posterId?._id !== chat.currentUserId ? posterId : taskerId;
             const firstName = participant?.firstName || '';
             const lastName = participant?.lastName || '';
             const name = formatAvatarName(firstName, lastName);
-            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1A2980&color=fff&size=100&bold=true&rounded=true`;
+            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=003399&color=fff&size=100&bold=true&rounded=true`;
           } else {
-            avatarUrl = 'https://ui-avatars.com/api/?name=User&background=1A2980&color=fff&size=100';
+            avatarUrl = 'https://ui-avatars.com/api/?name=User&background=003399&color=fff&size=100';
           }
         }
         
@@ -312,7 +312,7 @@ const MessageScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <StatusBar barStyle="light-content" backgroundColor="#1A2980" />
+      <StatusBar barStyle="light-content" backgroundColor="#003399" />
       
       {/* Offline Banner */}
       <OfflineBanner />
@@ -345,7 +345,7 @@ const MessageScreen: React.FC = () => {
       {/* Messages List */}
       {isLoadingChats ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading chats...</Text>
         </View>
       ) : (
@@ -364,8 +364,8 @@ const MessageScreen: React.FC = () => {
             <RefreshControl
               refreshing={isLoadingChats}
               onRefresh={handleRefresh}
-              colors={['#1A2980']}
-              tintColor="#1A2980"
+              colors={['#003399']}
+              tintColor="#003399"
             />
           }
           ListEmptyComponent={() => (
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     paddingTop: isTablet ? hp('6%') : hp('6.5%'),
     paddingBottom: isTablet ? hp('2%') : hp('2%'),
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
   },
   headerTitle: {
     fontSize: RFValue(isTablet ? 18 : 22),
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0,
-    backgroundColor: '#FF7A00',
+    backgroundColor: '#ff6b35',
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     marginTop: isTablet ? hp('2%') : hp('2%'),
     paddingHorizontal: isTablet ? wp('5%') : wp('5%'),
     paddingVertical: isTablet ? hp('1.5%') : hp('1.2%'),
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     borderRadius: isTablet ? 10 : 8,
   },
   retryButtonText: {

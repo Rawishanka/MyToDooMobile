@@ -329,7 +329,7 @@ const topTabStyles = StyleSheet.create({
     alignItems: isTablet ? 'center' : undefined,
   },
   tabItemActive: {
-    borderBottomColor: '#FF7A00',
+    borderBottomColor: '#ff6b35',
   },
   tabLabel: {
     fontSize: isTablet ? 18 : 13,
@@ -337,7 +337,7 @@ const topTabStyles = StyleSheet.create({
     color: '#6B7280',
   },
   tabLabelActive: {
-    color: '#FF7A00',
+    color: '#ff6b35',
   },
 });
 
@@ -1143,7 +1143,7 @@ export default function MyTasksScreen() {
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="#1A2980" />
+      <StatusBar barStyle="light-content" translucent backgroundColor="#003399" />
 
       <MyTasksHeader
         notificationCount={notificationCount}
@@ -1180,7 +1180,7 @@ export default function MyTasksScreen() {
           style={[
             styles.roleButton,
             isDarkMode && { backgroundColor: '#1E293B' },
-            userRole === 'Tasker' && (isDarkMode ? { backgroundColor: '#1A2980' } : styles.activeRole)
+            userRole === 'Tasker' && (isDarkMode ? { backgroundColor: '#003399' } : styles.activeRole)
           ]}
           onPress={() => {
             setIsRoleSwitching(true);
@@ -1194,7 +1194,7 @@ export default function MyTasksScreen() {
           style={[
             styles.roleButton,
             isDarkMode && { backgroundColor: '#1E293B' },
-            userRole === 'Poster' && (isDarkMode ? { backgroundColor: '#1A2980' } : styles.activeRole)
+            userRole === 'Poster' && (isDarkMode ? { backgroundColor: '#003399' } : styles.activeRole)
           ]}
           onPress={() => {
             setIsRoleSwitching(true);
@@ -1286,7 +1286,7 @@ const styles = StyleSheet.create({
   refreshButton: {
     paddingHorizontal: wp('5%'),
     paddingVertical: hp('1.2%'),
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     borderRadius: 20,
   },
   refreshButtonText: {
@@ -1370,7 +1370,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4F6FB',
   },
   activeRole: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
   },
   roleText: {
     fontSize: RFValue(12),
@@ -1389,7 +1389,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEF2FF',
     borderBottomWidth: 1,
     borderBottomColor: '#E8ECF4',
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 2,
@@ -1397,7 +1397,7 @@ const styles = StyleSheet.create({
   },
   searchResultsText: {
     fontSize: RFValue(isTablet ? 14 : 12),
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '600',
     flex: 1,
     letterSpacing: 0.2,
@@ -1417,7 +1417,7 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#1A2980',
+    borderBottomColor: '#003399',
   },
   tabText: {
     fontSize: RFValue(isTablet ? 16 : 12),
@@ -1425,7 +1425,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   activeTabText: {
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '600',
   },
   completionToast: {

@@ -1062,7 +1062,7 @@ export default function LoginScreen() {
           <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>Sign in to your account</Text>
           {pendingAction && (
             <View style={styles.pendingActionBanner}>
-              <Ionicons name="information-circle" size={16} color="#1A2980" />
+              <Ionicons name="information-circle" size={16} color="#003399" />
               <Text style={styles.pendingActionText}>
                 {pendingAction.type === 'post-task' ? 
                   'Complete your login to post your task' :
@@ -1292,7 +1292,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   logoBackground: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     borderRadius: 16,
     padding: 12,
     alignItems: 'center',
@@ -1372,15 +1372,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   checkboxChecked: {
-    backgroundColor: '#1A2980',
-    borderColor: '#1A2980',
+    backgroundColor: '#003399',
+    borderColor: '#003399',
   },
   rememberMeText: {
     fontSize: RFValue(14),
     color: '#333',
   },
   forgotPassword: {
-    color: '#1A2980',
+    color: '#003399',
     textAlign: 'right',
     marginBottom: 16,
     fontSize: RFValue(14),
@@ -1484,7 +1484,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   registerText: {
-    color: '#FF7A00',
+    color: '#ff6b35',
     fontWeight: 'bold',
   },
   closeIcon: {
@@ -1507,7 +1507,7 @@ const styles = StyleSheet.create({
   },
   pendingActionText: {
     flex: 1,
-    color: '#1A2980',
+    color: '#003399',
     fontSize: RFValue(13),
     fontWeight: '500',
   },

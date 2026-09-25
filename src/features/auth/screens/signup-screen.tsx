@@ -181,14 +181,14 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
   },
   container: {
     flex: 1,
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
   },
   bottomSafeArea: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     height: Platform.OS === 'android' ? 48 : 0, // Cover Android navigation bar area
   },
   fixedHeader: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     paddingHorizontal: 24,
     paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : 8,
     paddingBottom: 16,
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(14),
   },
   registerText: {
-    color: '#FF7A00',
+    color: '#ff6b35',
     fontWeight: '600',
     fontSize: RFValue(14),
   },

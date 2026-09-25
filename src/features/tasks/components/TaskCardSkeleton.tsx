@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     borderColor: '#EBF0F5',
     flexDirection: 'row',
     overflow: 'hidden',
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.04,
     shadowRadius: 10,

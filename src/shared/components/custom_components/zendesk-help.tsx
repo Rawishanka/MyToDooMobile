@@ -40,7 +40,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#1A2980" />
+            <Ionicons name="close" size={24} color="#003399" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Help & Support</Text>
           <View style={styles.placeholder} />
@@ -49,7 +49,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
         {/* Loading Indicator */}
         {loading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#1A2980" />
+            <ActivityIndicator size="large" color="#003399" />
             <Text style={styles.loadingText}>Loading Help Center...</Text>
           </View>
         )}
@@ -74,7 +74,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
           // Show loading view
           renderLoading={() => (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#1A2980" />
+              <ActivityIndicator size="large" color="#003399" />
             </View>
           )}
         />
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#1A2980',
+    color: '#003399',
   },
   placeholder: {
     width: 32,

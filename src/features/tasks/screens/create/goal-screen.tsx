@@ -30,7 +30,7 @@ export default function GoalSelectionScreen() {
         onPress={() => setSelectedGoal('getThingsDone')}
       >
         <View style={styles.iconCircle}>
-          <AntDesign name="profile" size={22} color="#FF7A00" />
+          <AntDesign name="profile" size={22} color="#ff6b35" />
         </View>
         <View>
           <Text style={styles.cardTitle}>Get MyToDoo tasks completed</Text>
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   cardSelected: {
-    borderColor: '#FF7A00',
+    borderColor: '#ff6b35',
   },
   iconCircle: {
     width: 40,

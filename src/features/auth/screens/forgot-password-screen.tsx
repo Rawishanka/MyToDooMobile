@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   logoBackground: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     borderRadius: 16,
     padding: 12,
     alignItems: 'center',

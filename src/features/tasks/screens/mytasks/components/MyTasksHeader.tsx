@@ -38,7 +38,7 @@ export default function MyTasksHeader({
           onPress={() => router.push('/payment-summary' as any)}
           style={styles.iconButton}
         >
-          <Ionicons name="card-outline" size={isTablet ? 26 : 20} color="#FF7A00" />
+          <Ionicons name="card-outline" size={isTablet ? 26 : 20} color="#ff6b35" />
         </TouchableOpacity>
         
         {/* Notification Button */}
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingBottom: hp('1.5%'),
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
   },
   headerSpacer: {
     flex: 1,
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: '#FF7A00',
+    backgroundColor: '#ff6b35',
     borderRadius: 10,
     minWidth: 20,
     height: 20,

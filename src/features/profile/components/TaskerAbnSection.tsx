@@ -82,7 +82,7 @@ export default function TaskerAbnSection({
   if (loading) {
     return (
       <View style={[styles.card, variant === 'compact' && styles.cardCompact, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
-        <ActivityIndicator color="#1A2980" />
+        <ActivityIndicator color="#003399" />
         <Text style={styles.loadingText}>Loading ABN status...</Text>
       </View>
     );
@@ -102,7 +102,7 @@ export default function TaskerAbnSection({
         </View>
         <Text style={[styles.maskedAbn, isDarkMode && { color: '#F8FAFC' }]}>{status.abnMasked || `********${status.abnLast3 || ''}`}</Text>
         {(status.businessName || status.entityName) && (
-          <Text style={[styles.metaText, { fontWeight: '600', color: isDarkMode ? '#38BDF8' : '#1A2980', marginTop: 2 }]}>
+          <Text style={[styles.metaText, { fontWeight: '600', color: isDarkMode ? '#38BDF8' : '#003399', marginTop: 2 }]}>
             {status.businessName || status.entityName}
           </Text>
         )}
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryButton: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   linkButtonText: {
-    color: '#1A2980',
+    color: '#003399',
     fontSize: RFValue(13),
     fontWeight: '600',
   },

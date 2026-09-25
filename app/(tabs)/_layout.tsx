@@ -23,7 +23,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const isSmallDevice = SCREEN_WIDTH < 375;
 const CIRCLE_SIZE = isSmallDevice ? 42 : 46;
 const ICON_SIZE = isSmallDevice ? 20 : 22;
-const BRAND_BLUE = '#1A2980';
+const BRAND_BLUE = '#003399';
 
 const TAB_META = [
   { name: 'index', label: 'Post Task', icon: 'rocket-outline' as const, iconActive: 'rocket' as const },

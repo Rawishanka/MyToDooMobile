@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   termLink: {
-    color: '#1A2980',
+    color: '#003399',
     textDecorationLine: 'underline' as const,
   },
   emptyContainer: {

@@ -453,7 +453,7 @@ export default function AccountScreen() {
     console.log("⏳ Loading profile data...");
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1A2980" />
+        <ActivityIndicator size="large" color="#003399" />
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
@@ -548,7 +548,7 @@ export default function AccountScreen() {
   if (isLoadingProfile && !userData && isAuthenticated && token) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1A2980" />
+        <ActivityIndicator size="large" color="#003399" />
         <Text style={styles.loadingText}>Loading profile...</Text>
       </View>
     );
@@ -567,7 +567,7 @@ export default function AccountScreen() {
       console.log("⏳ Auth error detected - waiting for auto-logout redirect...");
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1A2980" />
+          <ActivityIndicator size="large" color="#003399" />
           <Text style={styles.loadingText}>Signing out...</Text>
         </View>
       );
@@ -890,7 +890,7 @@ export default function AccountScreen() {
               source={{ 
                 uri: selectedImageUri || // Show selected image first (highest priority)
                      (!avatarLoadFailed && (userData?.avatar || userData?.profilePicture)) || // Only try S3 if not failed
-                     `https://ui-avatars.com/api/?name=${formatAvatarName(userData?.firstName, userData?.lastName)}&background=1A2980&color=fff&size=120`
+                     `https://ui-avatars.com/api/?name=${formatAvatarName(userData?.firstName, userData?.lastName)}&background=003399&color=fff&size=120`
               }}
               style={styles.profileImage}
               onError={(error) => {
@@ -1166,7 +1166,7 @@ export default function AccountScreen() {
         >
           {ratingLoading && !ratingData ? (
             <View style={styles.ratingLoadingContainer}>
-              <ActivityIndicator size="small" color="#1A2980" />
+              <ActivityIndicator size="small" color="#003399" />
               <Text style={styles.ratingLoadingText}>Loading ratings...</Text>
             </View>
           ) : ratingData ? (
@@ -1238,7 +1238,7 @@ export default function AccountScreen() {
       <View style={[styles.card, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', shadowColor: '#000', shadowOpacity: 0.3 }]}>
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>PROFILE</Text>
         <MenuItem 
-          icon={<Ionicons name="person-outline" size={20} color="#1A2980" />}
+          icon={<Ionicons name="person-outline" size={20} color="#003399" />}
           text="Edit Profile"
           onPress={navigateToProfileUpdate} 
           subtext={editAccessStatus === 'pending' 
@@ -1254,7 +1254,7 @@ export default function AccountScreen() {
           <View style={[styles.stripeAccountCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             <View style={styles.stripeAccountHeader}>
               <View style={styles.stripeAccountTitleRow}>
-                <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+                <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
                 <Text style={[styles.stripeAccountTitle, isDarkMode && { color: '#F8FAFC' }]}>Payment Account</Text>
               </View>
               <View style={[
@@ -1285,7 +1285,7 @@ export default function AccountScreen() {
               >
                 <View style={[styles.bankAccountItem, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   <View style={[styles.bankIconContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                    <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+                    <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
                   </View>
                   <View style={styles.bankAccountInfo}>
                     <Text style={[styles.bankAccountLabel, isDarkMode && { color: '#F8FAFC' }]}>
@@ -1432,7 +1432,7 @@ export default function AccountScreen() {
           )}
         </View>
         <MenuItem 
-          icon={<MaterialIcons name="payment" size={20} color="#1A2980" />}
+          icon={<MaterialIcons name="payment" size={20} color="#003399" />}
           text="Payment options"
           onPress={navigateToPayment} 
           subtext={stripeAccountStatus?.status === 'active' 
@@ -1442,7 +1442,7 @@ export default function AccountScreen() {
             : 'Connect your bank account'}        
         />
         <MenuItem
-          icon={<Ionicons name="wallet-outline" size={20} color="#1A2980" />}
+          icon={<Ionicons name="wallet-outline" size={20} color="#003399" />}
           text="Credits"
           onPress={navigateToCredits}
           subtext={
@@ -1452,7 +1452,7 @@ export default function AccountScreen() {
           }
         />
         <MenuItem
-          icon={<Ionicons name="people-outline" size={20} color="#1A2980" />}
+          icon={<Ionicons name="people-outline" size={20} color="#003399" />}
           text="Invite friends"
           onPress={navigateToInviteFriends}
           subtext={
@@ -1462,19 +1462,19 @@ export default function AccountScreen() {
           }
         />
         <MenuItem
-          icon={<Ionicons name="construct-outline" size={20} color="#1A2980" />}
+          icon={<Ionicons name="construct-outline" size={20} color="#003399" />}
           text="My services"
           onPress={navigateToMyServices}
           subtext="Manage service offerings you list"
         />
         <MenuItem
-          icon={<Ionicons name="add-circle-outline" size={20} color="#1A2980" />}
+          icon={<Ionicons name="add-circle-outline" size={20} color="#003399" />}
           text="Create service"
           onPress={navigateToCreateService}
           subtext="Offer a service near you (ABN required)"
         />
         <MenuItem 
-          icon={<Feather name="lock" size={20} color="#1A2980" />}
+          icon={<Feather name="lock" size={20} color="#003399" />}
           text="Account Information"
           onPress={navigateToAccountInfo} 
           subtext={undefined}        
@@ -1497,7 +1497,7 @@ export default function AccountScreen() {
               <Ionicons
                 name={biometricTypeLabel === 'Face ID' ? 'scan-outline' : 'finger-print-outline'}
                 size={20}
-                color={isDarkMode ? "#38BDF8" : "#1A2980"}
+                color={isDarkMode ? "#38BDF8" : "#003399"}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -1521,7 +1521,7 @@ export default function AccountScreen() {
         )}
         <View style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }]}>
           <View style={styles.iconWrapper}>
-            <Ionicons name={isDarkMode ? "moon" : "moon-outline"} size={20} color={isDarkMode ? "#38BDF8" : "#1A2980"} />
+            <Ionicons name={isDarkMode ? "moon" : "moon-outline"} size={20} color={isDarkMode ? "#38BDF8" : "#003399"} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }]}>Dark Mode</Text>
@@ -1540,7 +1540,7 @@ export default function AccountScreen() {
 
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>NOTIFICATION SETTINGS</Text>
         <MenuItem 
-          icon={<Ionicons name="notifications-outline" size={20} color="#1A2980" />}
+          icon={<Ionicons name="notifications-outline" size={20} color="#003399" />}
           text="Tasker Preferences" 
           subtext="Manage task notification settings" 
           onPress={navigateToNotifications}        
@@ -1548,14 +1548,14 @@ export default function AccountScreen() {
 
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>HELP AND SUPPORT</Text>
         <MenuItem 
-          icon={<Ionicons name="help-circle-outline" size={20} color="#1A2980" />}
+          icon={<Ionicons name="help-circle-outline" size={20} color="#003399" />}
           text="Frequently asked questions" 
           subtext={undefined} 
           onPress={navigateToFAQ}        
         />
 
         <MenuItem 
-          icon={<Ionicons name="mail-outline" size={20} color="#1A2980" />}
+          icon={<Ionicons name="mail-outline" size={20} color="#003399" />}
           text="Contact us" 
           subtext={undefined} 
           onPress={navigateToContactUs}        
@@ -1563,19 +1563,19 @@ export default function AccountScreen() {
 
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>LEGAL & SAFETY</Text>
         <MenuItem 
-          icon={<Ionicons name="shield-outline" size={20} color="#1A2980" />}
+          icon={<Ionicons name="shield-outline" size={20} color="#003399" />}
           text="Insurance protection" 
           subtext="Learn about coverage and terms" 
           onPress={navigateToInsuranceProtection}        
         />
         <MenuItem 
-          icon={<Ionicons name="document-text-outline" size={20} color="#1A2980" />}
+          icon={<Ionicons name="document-text-outline" size={20} color="#003399" />}
           text="Privacy policy" 
           subtext="How we handle your data" 
           onPress={navigateToPrivacyPolicy}        
         />
         <MenuItem 
-          icon={<Ionicons name="shield-checkmark-outline" size={20} color="#1A2980" />}
+          icon={<Ionicons name="shield-checkmark-outline" size={20} color="#003399" />}
           text="Terms & conditions" 
           subtext="Platform usage agreement" 
           onPress={navigateToTermsConditions}        
@@ -1583,7 +1583,7 @@ export default function AccountScreen() {
         
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>ACCOUNT</Text>
         <MenuItem 
-          icon={<Ionicons name="log-out-outline" size={20} color="#1A2980" />}
+          icon={<Ionicons name="log-out-outline" size={20} color="#003399" />}
           text="Logout" 
           subtext={undefined} 
           onPress={navigateToLogoutScreen}
@@ -1730,7 +1730,7 @@ export default function AccountScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.pendingIconContainer}>
-              <Ionicons name="shield-checkmark" size={48} color="#1A2980" />
+              <Ionicons name="shield-checkmark" size={48} color="#003399" />
             </View>
             
             <Text style={styles.modalTitle}>Verification Request Sent!</Text>
@@ -1770,7 +1770,7 @@ export default function AccountScreen() {
             <View style={[styles.bankDetailsHeader, isDarkMode && { borderBottomColor: '#334155' }]}>
               <View style={styles.bankDetailsHeaderLeft}>
                 <View style={[styles.bankDetailsIconLarge, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                  <MaterialIcons name="account-balance" size={32} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+                  <MaterialIcons name="account-balance" size={32} color={isDarkMode ? '#38BDF8' : '#003399'} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.bankDetailsTitle, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={1}>
@@ -1846,7 +1846,7 @@ export default function AccountScreen() {
                   <View style={[styles.bankDetailsDivider, isDarkMode && { backgroundColor: "#334155" }]} />
 
                   <View style={styles.bankDetailsInfoBox}>
-                    <Ionicons name="information-circle-outline" size={20} color="#1A2980" />
+                    <Ionicons name="information-circle-outline" size={20} color="#003399" />
                     <Text style={[styles.bankDetailsInfoText, isDarkMode && { color: "#94A3B8" }]}>
                       This is your payout account. Payments will be transferred to this bank account.
                     </Text>
@@ -1858,7 +1858,7 @@ export default function AccountScreen() {
             {/* Footer Buttons — Fixed at bottom */}
             <View style={[styles.bankDetailsFooter, isDarkMode && { borderTopColor: "#334155", backgroundColor: "#1E293B" }]}>
               <TouchableOpacity
-                style={[styles.bankDetailsButton, { backgroundColor: '#1A2980' }, isUpdatingBank && { opacity: 0.7 }]}
+                style={[styles.bankDetailsButton, { backgroundColor: '#003399' }, isUpdatingBank && { opacity: 0.7 }]}
                 onPress={handleUpdateBankAccount}
                 disabled={isUpdatingBank}
               >
@@ -1938,7 +1938,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disab
       <View style={styles.iconWrapper}>
         {React.isValidElement(icon)
           ? React.cloneElement(icon as React.ReactElement<any>, {
-              color: isDarkMode ? '#38BDF8' : (icon.props as any).color || '#1A2980',
+              color: isDarkMode ? '#38BDF8' : (icon.props as any).color || '#003399',
             })
           : icon}
       </View>
@@ -2000,7 +2000,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -2011,7 +2011,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   header: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     alignItems: 'center',
     paddingBottom: 30,
     borderBottomLeftRadius: 20,
@@ -2030,7 +2030,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 12,
     right: 0,
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -2400,7 +2400,7 @@ const styles = StyleSheet.create({
   bankDetailsInfoText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: '#1A2980',
+    color: '#003399',
     lineHeight: 18,
   },
   bankDetailsFooter: {
@@ -2428,7 +2428,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: RFValue(12),
-    color: '#1A2980',
+    color: '#003399',
     marginTop: 25,
     marginBottom: 10,
     fontWeight: '700',
@@ -2437,7 +2437,7 @@ const styles = StyleSheet.create({
     minWidth: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#FF7A00',
+    backgroundColor: '#ff6b35',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 6,
@@ -2463,7 +2463,7 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: RFValue(15),
     fontWeight: '500',
-    color: '#1A2980',
+    color: '#003399',
   },
   subtext: {
     fontSize: RFValue(13),
@@ -2510,7 +2510,7 @@ const styles = StyleSheet.create({
   },
   modalSubMessage: {
     fontSize: RFValue(14),
-    color: '#1A2980',
+    color: '#003399',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -2535,7 +2535,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     alignItems: 'center',
   },
   modalSendText: {
@@ -2580,7 +2580,7 @@ const styles = StyleSheet.create({
   },
   skillTagDisplayText: {
     fontSize: RFValue(14),
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '500',
   },
   pendingBadge: {
@@ -2592,7 +2592,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginVertical: 20,
     borderWidth: 1,
-    borderColor: '#1A2980',
+    borderColor: '#003399',
   },
   pendingDot: {
     width: 8,
@@ -2612,12 +2612,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#1A2980',
+    borderColor: '#003399',
     marginBottom: 12,
   },
   backToProfileText: {
     fontSize: RFValue(16),
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '600',
   },
   modalFooterText: {
@@ -2659,7 +2659,7 @@ const styles = StyleSheet.create({
   },
   navText: {
     fontSize: RFValue(10),
-    color: '#1A2980',
+    color: '#003399',
     marginTop: 2,
   },
   profileBadgeVerified: {
@@ -2773,7 +2773,7 @@ const styles = StyleSheet.create({
     color: "#64748B",
   },
   reviewNowBtn: {
-    backgroundColor: "#1A2980",
+    backgroundColor: "#003399",
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 10,
@@ -2791,7 +2791,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   seeAllReviewsBtnText: {
-    color: "#1A2980",
+    color: "#003399",
     fontSize: RFValue(13),
     fontWeight: "700",
   },

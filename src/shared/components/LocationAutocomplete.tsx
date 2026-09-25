@@ -609,13 +609,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 18,
     marginBottom: 12,
     gap: 8,
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
@@ -653,7 +653,7 @@ const styles = StyleSheet.create({
   },
   inputIcon: {
     marginRight: 10,
-    color: '#1A2980',
+    color: '#003399',
   },
   input: {
     flex: 1,
@@ -712,7 +712,7 @@ const styles = StyleSheet.create({
   suggestionIcon: {
     marginRight: 12,
     marginTop: 2,
-    color: '#1A2980',
+    color: '#003399',
     flexShrink: 0,
   },
   suggestionTextContainer: {
@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
   },
   manualEntryText: {
     fontSize: RFValue(13),
-    color: '#1A2980',
+    color: '#003399',
     fontStyle: 'italic',
   },
   errorContainer: {

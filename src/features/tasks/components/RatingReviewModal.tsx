@@ -253,7 +253,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
             <View style={[styles.header, isDarkMode && { backgroundColor: "#0F172A", borderBottomWidth: 1, borderBottomColor: "#334155" }]}>
               <View style={styles.headerLeft}>
                 <View style={styles.headerIconBadge}>
-                  <Ionicons name="star" size={18} color="#FF7A00" />
+                  <Ionicons name="star" size={18} color="#ff6b35" />
                 </View>
                 <Text style={styles.headerTitle}>Rate &amp; Review</Text>
               </View>
@@ -296,7 +296,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                       <Ionicons
                         name={star <= rating ? 'star' : 'star-outline'}
                         size={40}
-                        color={star <= rating ? '#FF7A00' : (isDarkMode ? '#475569' : '#D1D5DB')}
+                        color={star <= rating ? '#ff6b35' : (isDarkMode ? '#475569' : '#D1D5DB')}
                       />
                     </TouchableOpacity>
                   ))}
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 18,
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
   },
@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E8ECF4',
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: RFValue(15),
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '700',
     letterSpacing: 0.3,
   },
@@ -600,7 +600,7 @@ const styles = StyleSheet.create({
   attachmentButtonText: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#1A2980',
+    color: '#003399',
   },
   attachmentsList: {
     flexDirection: 'row',
@@ -653,11 +653,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFBFF',
   },
   submitButton: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,

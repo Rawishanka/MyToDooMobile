@@ -4,12 +4,12 @@
  */
 export const colors = {
   // Primary Brand Colors
-  primary: '#1A2980', // Deep royal blue — main brand color
+  primary: '#003399', // Deep royal blue — main brand color
   primaryLight: '#26D0CE',
   primaryDark: '#0D1B2A',
   
   // Secondary/Accent Colors
-  accent: '#FF7A00', // Orange — Call-to-action buttons
+  accent: '#ff6b35', // Orange — Call-to-action buttons
   accentLight: '#FFA040',
   accentDark: '#E56D00',
   
@@ -51,14 +51,14 @@ export const colors = {
   inputBackground: '#FFFFFF',
   inputBorder: '#E8ECF4',
   inputPlaceholder: '#9CA3AF',
-  inputFocus: '#1A2980',
+  inputFocus: '#003399',
   
   // Card Colors
   cardBackground: '#FFFFFF',
   cardBorder: '#E8ECF4',
   
   // Task Status Colors
-  taskOpen: '#1A2980',
+  taskOpen: '#003399',
   taskInProgress: '#F59E0B',
   taskCompleted: '#00A651',
   taskCancelled: '#EF4444',

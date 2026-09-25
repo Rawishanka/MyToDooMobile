@@ -495,7 +495,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Info Banner */}
         <View style={[styles.infoBanner, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
-          <Ionicons name="bulb-outline" size={20} color="#1A2980" />
+          <Ionicons name="bulb-outline" size={20} color="#003399" />
           <View style={styles.infoBannerText}>
             <Text style={[styles.infoBannerTitle, isDarkMode && { color: '#F8FAFC' }]}>Make your profile shine!</Text>
             <Text style={[styles.infoBannerSubtext, isDarkMode && { color: '#94A3B8' }]}>
@@ -641,7 +641,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                     onPress={() => handleRemoveSkill(skill)}
                     style={styles.removeSkillButton}
                   >
-                    <Ionicons name="close" size={16} color="#1A2980" />
+                    <Ionicons name="close" size={16} color="#003399" />
                   </TouchableOpacity>
                 </View>
               ))}
@@ -649,7 +649,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
           )}
           
           <TouchableOpacity style={styles.addSkillsButton} onPress={handleAddSkills}>
-            <Ionicons name="add-circle-outline" size={20} color="#1A2980" />
+            <Ionicons name="add-circle-outline" size={20} color="#003399" />
             <Text style={styles.addSkillsText}>Add skills</Text>
           </TouchableOpacity>
         </View>
@@ -692,8 +692,8 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                 setShowPhoneModal(true);
               }}
             >
-              <Ionicons name="create-outline" size={14} color="#1A2980" />
-              <Text style={{ fontSize: 12, fontWeight: "700", color: "#1A2980" }}>Change</Text>
+              <Ionicons name="create-outline" size={14} color="#003399" />
+              <Text style={{ fontSize: 12, fontWeight: "700", color: "#003399" }}>Change</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity
@@ -902,7 +902,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                 onPress={handleAddSkill}
                 disabled={!newSkill.trim()}
               >
-                <Ionicons name="add" size={24} color={newSkill.trim() ? "#1A2980" : "#ccc"} />
+                <Ionicons name="add" size={24} color={newSkill.trim() ? "#003399" : "#ccc"} />
               </TouchableOpacity>
             </View>
 
@@ -917,7 +917,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                         onPress={() => handleRemoveSkill(skill)}
                         style={styles.removeSkillButton}
                       >
-                        <Ionicons name="close" size={16} color="#1A2980" />
+                        <Ionicons name="close" size={16} color="#003399" />
                       </TouchableOpacity>
                     </View>
                   ))}
@@ -928,7 +928,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
             <View style={styles.suggestedSkillsSection}>
               <Text style={styles.suggestedSkillsTitle}>Suggested Skills</Text>
               {categoriesLoading ? (
-                <ActivityIndicator size="small" color="#1A2980" style={{ marginTop: 8 }} />
+                <ActivityIndicator size="small" color="#003399" style={{ marginTop: 8 }} />
               ) : (
                 <View style={styles.skillsContainer}>
                   {categoryNames.filter(cat => !skills.includes(cat) && (newSkill.trim() === '' || cat.toLowerCase().includes(newSkill.toLowerCase()))).map((skill) => (
@@ -938,7 +938,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                       onPress={() => setSkills([...skills, skill])}
                     >
                       <Text style={styles.suggestedSkillText}>{skill}</Text>
-                      <Ionicons name="add" size={16} color="#1A2980" />
+                      <Ionicons name="add" size={16} color="#003399" />
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -970,7 +970,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                 <Ionicons
                   name={phoneStep === "input" ? "call-outline" : "shield-checkmark-outline"}
                   size={24}
-                  color={isDarkMode ? "#60A5FA" : "#1A2980"}
+                  color={isDarkMode ? "#60A5FA" : "#003399"}
                 />
               </View>
               <Text style={{ fontSize: 18, fontWeight: "800", color: isDarkMode ? "#F8FAFC" : "#0F172A", marginBottom: 6 }}>
@@ -1025,7 +1025,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                     <Text style={{ fontSize: 14, fontWeight: "600", color: isDarkMode ? "#94A3B8" : "#64748B" }}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={{ flex: 1.6, paddingVertical: 12, borderRadius: 12, backgroundColor: "#1A2980", alignItems: "center", justifyContent: "center" }}
+                    style={{ flex: 1.6, paddingVertical: 12, borderRadius: 12, backgroundColor: "#003399", alignItems: "center", justifyContent: "center" }}
                     onPress={handleRequestPhoneOtp}
                     disabled={phoneLoading}
                   >
@@ -1041,7 +1041,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
               <View style={{ width: "100%" }}>
                 <Text style={{ fontSize: 12.5, fontWeight: "700", color: isDarkMode ? "#E2E8F0" : "#334155", marginBottom: 6 }}>6-Digit Verification Code</Text>
                 <TextInput
-                  style={{ backgroundColor: isDarkMode ? "#0F172A" : "#F8FAFC", borderWidth: 2, borderColor: isDarkMode ? "#60A5FA" : "#1A2980", borderRadius: 14, paddingVertical: 14, fontSize: 24, fontWeight: "800", color: isDarkMode ? "#F8FAFC" : "#0F172A", textAlign: "center", letterSpacing: 10 }}
+                  style={{ backgroundColor: isDarkMode ? "#0F172A" : "#F8FAFC", borderWidth: 2, borderColor: isDarkMode ? "#60A5FA" : "#003399", borderRadius: 14, paddingVertical: 14, fontSize: 24, fontWeight: "800", color: isDarkMode ? "#F8FAFC" : "#0F172A", textAlign: "center", letterSpacing: 10 }}
                   value={phoneOtpCode}
                   onChangeText={setPhoneOtpCode}
                   placeholder="000000"
@@ -1061,7 +1061,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                       onPress={handleRequestPhoneOtp}
                       disabled={phoneLoading}
                     >
-                      <Text style={{ fontSize: 13, color: isDarkMode ? "#60A5FA" : "#1A2980", fontWeight: "700" }}>Resend Code</Text>
+                      <Text style={{ fontSize: 13, color: isDarkMode ? "#60A5FA" : "#003399", fontWeight: "700" }}>Resend Code</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -1075,7 +1075,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                     <Text style={{ fontSize: 14, fontWeight: "600", color: isDarkMode ? "#94A3B8" : "#64748B" }}>Back</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={{ flex: 1.6, paddingVertical: 12, borderRadius: 12, backgroundColor: "#1A2980", alignItems: "center", justifyContent: "center" }}
+                    style={{ flex: 1.6, paddingVertical: 12, borderRadius: 12, backgroundColor: "#003399", alignItems: "center", justifyContent: "center" }}
                     onPress={handleVerifyPhoneOtp}
                     disabled={phoneLoading}
                   >
@@ -1204,7 +1204,7 @@ const styles = StyleSheet.create({
   },
   changePhotoText: {
     fontSize: 16,
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '500',
   },
   bioInput: {
@@ -1269,7 +1269,7 @@ const styles = StyleSheet.create({
   },
   addSkillsText: {
     fontSize: 16,
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '500',
     marginLeft: 8,
   },
@@ -1309,7 +1309,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   saveButton: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     marginHorizontal: 16,
     paddingVertical: 16,
     borderRadius: 25,
@@ -1341,7 +1341,7 @@ const styles = StyleSheet.create({
   },
   modalOptionText: {
     fontSize: 18,
-    color: '#1A2980',
+    color: '#003399',
   },
   modalDivider: {
     height: 1,
@@ -1463,11 +1463,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#1A2980',
+    borderColor: '#003399',
   },
   skillText: {
     fontSize: 14,
-    color: '#1A2980',
+    color: '#003399',
     marginRight: 4,
   },
   removeSkillButton: {
@@ -1498,7 +1498,7 @@ const styles = StyleSheet.create({
   },
   saveSkillsText: {
     fontSize: 16,
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '600',
   },
   skillsModalContent: {
@@ -1534,7 +1534,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#1A2980',
+    borderColor: '#003399',
   },
   addedSkillsSection: {
     marginBottom: 32,

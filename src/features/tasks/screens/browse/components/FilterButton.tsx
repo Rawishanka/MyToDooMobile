@@ -16,7 +16,7 @@ export default function FilterButton({ filteredTasksCount, onPress }: FilterButt
       onPress={onPress} 
       activeOpacity={0.75}
     >
-      <Ionicons name="options-outline" size={16} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+      <Ionicons name="options-outline" size={16} color={isDarkMode ? '#38BDF8' : '#003399'} />
       <Text style={[styles.filterText, isDarkMode && { color: '#F8FAFC' }]}>Filter</Text>
       <View style={[styles.countBadge, isDarkMode && { backgroundColor: '#38BDF8' }]}>
         <Text style={[styles.countText, isDarkMode && { color: '#0B1120' }]}>{filteredTasksCount}</Text>
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     gap: 6,
     borderWidth: 1.5,
     borderColor: '#E0E7FF',
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
@@ -45,11 +45,11 @@ const styles = StyleSheet.create({
   filterText: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#1A2980',
+    color: '#003399',
     letterSpacing: 0.2,
   },
   countBadge: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     borderRadius: 10,
     minWidth: 20,
     height: 20,

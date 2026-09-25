@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   arrowButton: {
-    backgroundColor: '#FF7A00',
+    backgroundColor: '#ff6b35',
     padding: 14,
     borderRadius: 50,
   },

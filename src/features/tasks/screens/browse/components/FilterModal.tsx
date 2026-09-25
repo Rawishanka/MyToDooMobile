@@ -268,7 +268,7 @@ export default function FilterModal({
                           {cat}
                         </Text>
                         {selectedCategory === cat && (
-                          <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+                          <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
                         )}
                       </TouchableOpacity>
                     ))
@@ -302,7 +302,7 @@ export default function FilterModal({
               style={[styles.currentLocationButton, isDarkMode && { backgroundColor: '#0F172A' }]}
               onPress={() => onUseCurrentLocation?.()}
             >
-              <Ionicons name="navigate-outline" size={16} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+              <Ionicons name="navigate-outline" size={16} color={isDarkMode ? '#38BDF8' : '#003399'} />
               <Text style={[styles.currentLocationText, isDarkMode && { color: '#38BDF8' }]}>Use current location</Text>
             </TouchableOpacity>
             <Text style={[styles.radiusLabel, isDarkMode && { color: '#94A3B8' }]}>Radius (km)</Text>
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 14,
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
   },
   filterTitle: {
     fontSize: RFValue(18),
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   resetText: {
-    color: '#FF7A00',
+    color: '#ff6b35',
     fontSize: RFValue(14),
     fontWeight: '700',
   },
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     padding: 18,
     borderWidth: 1,
     borderColor: '#E8ECF4',
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(12),
     fontWeight: '800',
-    color: '#1A2980',
+    color: '#003399',
     marginBottom: 14,
     letterSpacing: 0.8,
     textTransform: 'uppercase' as const,
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   currentLocationText: {
-    color: '#1A2980',
+    color: '#003399',
     fontSize: RFValue(14),
     fontWeight: '600',
   },
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
     maxHeight: 300,
     borderWidth: 1,
     borderColor: '#E8ECF4',
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   categoryOptionTextSelected: {
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '700',
   },
   noResultsContainer: {
@@ -596,8 +596,8 @@ const styles = StyleSheet.create({
     borderColor: '#E8ECF4',
   },
   taskTypeBtnActive: {
-    backgroundColor: '#1A2980',
-    borderColor: '#1A2980',
+    backgroundColor: '#003399',
+    borderColor: '#003399',
   },
   taskTypeBtnText: {
     fontSize: RFValue(14),
@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
   },
   priceBoxValue: {
     fontSize: RFValue(18),
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '800',
   },
   priceSeparator: {
@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
   },
   sliderFill: {
     height: 6,
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     borderRadius: 3,
     position: 'absolute',
   },
@@ -669,9 +669,9 @@ const styles = StyleSheet.create({
     top: -10,
     marginLeft: -13,
     borderWidth: 3,
-    borderColor: '#1A2980',
+    borderColor: '#003399',
     elevation: 4,
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -681,12 +681,12 @@ const styles = StyleSheet.create({
   sliderThumbActive: {
     transform: [{ scale: 1.2 }],
     elevation: 8,
-    borderColor: '#FF7A00',
+    borderColor: '#ff6b35',
   },
   thumbInner: {
     width: 8,
     height: 8,
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     borderRadius: 4,
   },
   sliderLabels: {
@@ -735,11 +735,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F4F6FB',
     borderWidth: 2,
-    borderColor: '#1A2980',
+    borderColor: '#003399',
   },
   resetButtonText: {
     fontSize: RFValue(15),
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '700',
   },
   applyButton: {
@@ -747,8 +747,8 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 14,
     alignItems: 'center',
-    backgroundColor: '#FF7A00',
-    shadowColor: '#FF7A00',
+    backgroundColor: '#ff6b35',
+    shadowColor: '#ff6b35',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

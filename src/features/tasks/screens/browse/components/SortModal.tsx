@@ -58,7 +58,7 @@ export default function SortModal({
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <View style={[styles.headerIconWrap, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                <Ionicons name="funnel-outline" size={18} color="#1A2980" />
+                <Ionicons name="funnel-outline" size={18} color="#003399" />
               </View>
               <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Sort By</Text>
             </View>
@@ -113,7 +113,7 @@ export default function SortModal({
                   </Text>
                   {isActive && (
                     <View style={styles.checkWrap}>
-                      <Ionicons name="checkmark-circle" size={22} color="#FF7A00" />
+                      <Ionicons name="checkmark-circle" size={22} color="#ff6b35" />
                     </View>
                   )}
                 </TouchableOpacity>
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
     maxHeight: '75%',
     paddingBottom: 32,
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.12,
     shadowRadius: 20,
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   optionIconWrapActive: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
   },
   optionText: {
     flex: 1,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   optionTextActive: {
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '700',
   },
   checkWrap: {

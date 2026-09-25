@@ -37,7 +37,7 @@ export const CountryPicker: React.FC<CountryPickerProps> = ({
           </View>
           <Text style={[styles.dropdownText, isDarkMode && { color: '#F8FAFC' }]}>{selectedCountry.name}</Text>
         </View>
-        <Ionicons name={showPicker ? "chevron-up" : "chevron-down"} size={18} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+        <Ionicons name={showPicker ? "chevron-up" : "chevron-down"} size={18} color={isDarkMode ? '#38BDF8' : '#003399'} />
       </TouchableOpacity>
 
       {showPicker && (
@@ -66,7 +66,7 @@ export const CountryPicker: React.FC<CountryPickerProps> = ({
                 </Text>
               </View>
               {selectedCountry.code === country.code && (
-                <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+                <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
               )}
             </TouchableOpacity>
           ))}
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     maxHeight: 200,
     overflow: 'scroll',
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   dropdownItemTextSelected: {
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '700',
   },
 });

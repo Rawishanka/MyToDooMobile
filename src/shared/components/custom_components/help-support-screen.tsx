@@ -123,7 +123,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
         {/* Header */}
         <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#1A2980" />
+            <Ionicons name="close" size={24} color="#003399" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Frequently Asked Questions</Text>
           <View style={styles.placeholder} />
@@ -131,7 +131,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
 
         {/* Info Banner */}
         <View style={styles.infoBanner}>
-          <Ionicons name="information-circle" size={60} color="#1A2980" style={styles.infoIcon} />
+          <Ionicons name="information-circle" size={60} color="#003399" style={styles.infoIcon} />
           <Text style={styles.infoTitle}>How can we help you?</Text>
           <Text style={styles.infoSubtitle}>
             Browse through our frequently asked questions to find answers to common queries about MyToDoo.
@@ -159,7 +159,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
           {/* Loading State */}
           {loading && (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#1A2980" />
+              <ActivityIndicator size="large" color="#003399" />
               <Text style={styles.loadingText}>Loading help articles...</Text>
             </View>
           )}
@@ -183,7 +183,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
                 onPress={() => toggleCategory(category.id)}
               >
                 <View style={styles.categoryTitleContainer}>
-                  <Ionicons name={category.icon as any} size={24} color="#1A2980" />
+                  <Ionicons name={category.icon as any} size={24} color="#003399" />
                   <Text style={styles.categoryTitle}>{category.title}</Text>
                   <Text style={styles.questionCount}>({category.questions.length} questions)</Text>
                 </View>
@@ -206,7 +206,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
                         <Ionicons
                           name={expandedQuestion === item.id ? "chevron-up" : "chevron-down"}
                           size={20}
-                          color="#1A2980"
+                          color="#003399"
                         />
                       </TouchableOpacity>
 
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#1A2980',
+    color: '#003399',
   },
   placeholder: {
     width: 32,
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
   questionText: {
     flex: 1,
     fontSize: RFValue(15),
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '500',
   },
   answerContainer: {
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
   contactButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
   },
   contactEmail: {
     fontSize: RFValue(14),
-    color: '#1A2980',
+    color: '#003399',
     fontWeight: '500',
   },
 });

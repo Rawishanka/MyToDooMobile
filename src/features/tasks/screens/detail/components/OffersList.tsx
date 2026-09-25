@@ -253,7 +253,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
         } else {
           // Fallback to generated avatar
           const name = formatAvatarName(firstName, lastName);
-          avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1A2980&color=fff&size=100`;
+          avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=003399&color=fff&size=100`;
         }
         
         // 🔥 USE REAL DATA FROM RATING STATS API
@@ -612,13 +612,13 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   acceptOfferButton: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     paddingVertical: 13,
     paddingHorizontal: 20,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.22,
     shadowRadius: 5,

@@ -70,17 +70,17 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>My services</Text>
         <TouchableOpacity onPress={onCreate} style={styles.createButton}>
-          <Ionicons name="add" size={22} color={isDarkMode ? '#38BDF8' : '#1A2980'} />
+          <Ionicons name="add" size={22} color={isDarkMode ? '#38BDF8' : '#003399'} />
         </TouchableOpacity>
       </View>
 
       {isLoading && data.length === 0 ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color="#1A2980" />
+          <ActivityIndicator size="large" color="#003399" />
         </View>
       ) : (
         <FlatList
@@ -89,7 +89,7 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#1A2980" />
+            <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#003399" />
           }
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#1A2980',
+    color: '#003399',
     marginLeft: 8,
   },
   createButton: { padding: 4 },
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   emptyWrap: { paddingVertical: 48, alignItems: 'center' },
   emptyText: { color: '#888', fontSize: RFValue(14), marginBottom: 16 },
   emptyCta: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,

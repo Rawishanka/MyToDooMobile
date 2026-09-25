@@ -154,7 +154,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#1A2980'} />
+            <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>ID Verification</Text>
           <View style={{ width: 40 }} />
@@ -257,7 +257,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={() => setStep('document')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#1A2980'} />
+            <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>3-Point Face Scan</Text>
           <View style={{ width: 40 }} />
@@ -322,7 +322,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={() => setStep('overview')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#1A2980'} />
+            <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Upload Government ID</Text>
           <View style={{ width: 40 }} />
@@ -353,7 +353,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
                 <Ionicons
                   name={type === 'passport' ? 'airplane-outline' : 'card-outline'}
                   size={20}
-                  color={selectedDocType === type ? '#fff' : isDarkMode ? '#94A3B8' : '#1A2980'}
+                  color={selectedDocType === type ? '#fff' : isDarkMode ? '#94A3B8' : '#003399'}
                 />
                 <Text style={[styles.docTypeBtnText, selectedDocType === type && { color: '#fff' }, isDarkMode && selectedDocType !== type && { color: '#94A3B8' }]}>
                   {type === 'driver_license' ? 'Driver Licence' : type === 'passport' ? 'Passport' : 'Photo ID'}
@@ -413,7 +413,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <View style={[styles.header, isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#1A2980'} />
+          <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>ID Verification</Text>
         <View style={{ width: 40 }} />

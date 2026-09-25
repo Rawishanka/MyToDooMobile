@@ -133,7 +133,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
 
       {(balanceLoading || ledgerLoading) && !balanceData ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color="#1A2980" />
+          <ActivityIndicator size="large" color="#003399" />
         </View>
       ) : (
         <FlatList
@@ -149,7 +149,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
                 refetchBalance();
                 refetchLedger();
               }}
-              tintColor="#1A2980"
+              tintColor="#003399"
             />
           }
           ListHeaderComponent={
@@ -264,11 +264,11 @@ const styles = StyleSheet.create({
 
   // Hero Card
   heroCard: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
     borderRadius: 22,
     padding: 22,
     marginBottom: 24,
-    shadowColor: '#1A2980',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.28,
     shadowRadius: 18,

@@ -1839,7 +1839,7 @@ const darkStyles = StyleSheet.create({
     borderBottomColor: '#334155',
   },
   categoryItemSelected: {
-    backgroundColor: '#1A2980',
+    backgroundColor: '#003399',
   },
   categoryItemTextSelected: {
     color: '#38BDF8',
@@ -1860,8 +1860,8 @@ const darkStyles = StyleSheet.create({
     borderColor: '#334155',
   },
   radioOuterSelected: {
-    borderColor: '#1A2980',
-    backgroundColor: '#1A2980',
+    borderColor: '#003399',
+    backgroundColor: '#003399',
   },
   toggleRowDisabled: {
     opacity: 0.5,
