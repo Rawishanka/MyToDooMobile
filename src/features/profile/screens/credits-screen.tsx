@@ -17,7 +17,6 @@ import { RFValue } from '@/src/shared/utils/responsive';
 import { router } from 'expo-router';
 import InviteFriendsScreen from './invite-friends-screen';
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 
 interface CreditsScreenProps {
   onBack: () => void;
@@ -92,7 +91,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
           <Ionicons
             name={isCredit ? 'gift-outline' : 'cart-outline'}
             size={20}
-            color={isCredit ? '#10B981' : (isDarkMode ? '#64748B' : CARD_TEXT_MUTED)}
+            color={isCredit ? '#10B981' : '#64748B'}
           />
         </View>
         <View style={styles.ledgerBody}>
@@ -120,7 +119,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
       {/* 2026 Modern Top Navigation */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 46 }, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
         <TouchableOpacity onPress={onBack} style={[styles.backButton, isDarkMode && { backgroundColor: '#1E293B' }]} activeOpacity={0.7}>
-          <Ionicons name="arrow-back" size={22} color={isDarkMode ? '#F8FAFC' : CARD_TEXT} />
+          <Ionicons name="arrow-back" size={22} color={isDarkMode ? '#F8FAFC' : '#0F172A'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>My Credits & Rewards</Text>
         <TouchableOpacity
@@ -128,7 +127,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
           onPress={() => onBack()}
           activeOpacity={0.7}
         >
-          <Ionicons name="help-circle-outline" size={22} color={isDarkMode ? "#64748B" : CARD_TEXT} />
+          <Ionicons name="help-circle-outline" size={22} color="#64748B" />
         </TouchableOpacity>
       </View>
 
@@ -233,24 +232,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
+    borderBottomColor: '#E2E8F0',
   },
   backButton: {
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: '#0F172A',
   },
   headerRightBtn: {
     width: 38,
@@ -384,12 +383,12 @@ const styles = StyleSheet.create({
   ledgerCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CARD_BG,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 14,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: '#E2E8F0',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
@@ -408,13 +407,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#ECFDF5',
   },
   debitIconBg: {
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: '#F1F5F9',
   },
   ledgerBody: { flex: 1 },
   ledgerReason: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#0F172A',
     marginBottom: 4,
   },
   metaRow: {
@@ -425,7 +424,7 @@ const styles = StyleSheet.create({
   },
   ledgerDate: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#64748B',
   },
   expiryBadge: {
     backgroundColor: '#FEF3C7',
@@ -445,8 +444,8 @@ const styles = StyleSheet.create({
     fontSize: RFValue(16),
     fontWeight: '800',
   },
-  creditText: { color: '#4ADE80' },
-  debitText: { color: CARD_TEXT_MUTED },
+  creditText: { color: '#059669' },
+  debitText: { color: '#64748B' },
 
   // Empty Wrap
   emptyWrap: {

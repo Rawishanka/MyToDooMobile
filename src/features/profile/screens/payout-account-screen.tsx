@@ -1,5 +1,4 @@
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 import { getAbnStatus, isAbnRequiredError, type TaskerAbnStatus } from '@/src/api/abn-api';
 import TaskerAbnSection from '@/src/features/profile/components/TaskerAbnSection';
 import {
@@ -270,7 +269,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
             }}
             style={styles.backButton}
           >
-            <Ionicons name="close" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+            <Ionicons name="close" size={24} color="#000" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Setup Payout Account</Text>
         </View>
@@ -295,7 +294,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
       <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: "#0B1120", borderBottomColor: "#334155" }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+            <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#F8FAFC" : "#000"} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]}>Payout Account</Text>
         </View>
@@ -312,7 +311,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
       {/* Header */}
       <View style={[styles.header, isDarkMode && { backgroundColor: "#0B1120", borderBottomColor: "#334155" }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+          <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#F8FAFC" : "#000"} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]}>Payout Account</Text>
       </View>
@@ -381,21 +380,21 @@ const PayoutAccountScreen = ({ navigation }: any) => {
               {/* Account Details */}
               {accountStatus.detailsSubmitted && (
                 <View style={styles.detailRow}>
-                  <Ionicons name="checkmark-circle" size={20} color="#4ADE80" />
+                  <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
                   <Text style={[styles.detailText, isDarkMode && { color: "#F8FAFC" }]}>Details Submitted</Text>
                 </View>
               )}
 
               {accountStatus.chargesEnabled && (
                 <View style={styles.detailRow}>
-                  <Ionicons name="checkmark-circle" size={20} color="#4ADE80" />
+                  <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
                   <Text style={[styles.detailText, isDarkMode && { color: "#F8FAFC" }]}>Charges Enabled</Text>
                 </View>
               )}
 
               {accountStatus.payoutsEnabled && (
                 <View style={styles.detailRow}>
-                  <Ionicons name="checkmark-circle" size={20} color="#4ADE80" />
+                  <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
                   <Text style={[styles.detailText, isDarkMode && { color: "#F8FAFC" }]}>Payouts Enabled</Text>
                 </View>
               )}
@@ -498,9 +497,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
+    borderBottomColor: '#e0e0e0',
     paddingTop: Platform.OS === 'ios' ? 50 : 12,
   },
   backButton: {
@@ -510,7 +509,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(18),
     fontWeight: '600',
     marginLeft: 12,
-    color: CARD_TEXT,
+    color: '#000',
   },
   content: {
     flex: 1,
@@ -556,7 +555,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: BRAND_ORANGE,
+    backgroundColor: '#6200ee',
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -594,7 +593,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statusCard: {
-    backgroundColor: CARD_BG,
+    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
@@ -613,7 +612,7 @@ const styles = StyleSheet.create({
   statusLabel: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#000',
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -633,22 +632,22 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: RFValue(14),
-    color: CARD_TEXT,
+    color: '#333',
   },
   accountIdContainer: {
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: CARD_DIVIDER,
+    borderTopColor: '#e0e0e0',
   },
   accountIdLabel: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#666',
     marginBottom: 4,
   },
   accountIdText: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#999',
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
   infoBox: {
@@ -714,7 +713,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   payoutInfo: {
-    backgroundColor: CARD_BG,
+    backgroundColor: '#e0f2fe',
     padding: 16,
     borderRadius: 8,
     marginTop: 16,
@@ -722,12 +721,12 @@ const styles = StyleSheet.create({
   payoutInfoTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#075985',
     marginBottom: 4,
   },
   payoutInfoText: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#0c4a6e',
     lineHeight: 16,
   },
 });

@@ -16,7 +16,6 @@ import {
     View
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 
 interface ServiceFeeConfigScreenProps {
   onBackToAccount: () => void;
@@ -116,7 +115,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={onBackToAccount}>
-          <Ionicons name="chevron-back" size={24} color={CARD_TEXT} />
+          <Ionicons name="chevron-back" size={24} color="#003399" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Service Fee Configuration</Text>
       </View>
@@ -153,7 +152,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
           <>
             {/* Info Box */}
             <View style={styles.infoBox}>
-              <Ionicons name="information-circle-outline" size={20} color={CARD_TEXT} />
+              <Ionicons name="information-circle-outline" size={20} color="#003399" />
               <Text style={styles.infoText}>
                 Configure the service fee settings that apply to all transactions on the platform.
               </Text>
@@ -297,9 +296,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: '#FFF',
     borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
+    borderBottomColor: '#E0E0E0',
   },
   backButton: {
     marginRight: 12,
@@ -308,7 +307,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#333',
   },
   content: {
     flex: 1,
@@ -358,7 +357,7 @@ const styles = StyleSheet.create({
   },
   infoBox: {
     flexDirection: 'row',
-    backgroundColor: CARD_BG,
+    backgroundColor: '#E3F2FD',
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
@@ -367,12 +366,12 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: CARD_TEXT,
+    color: '#003399',
     marginLeft: 8,
     lineHeight: 18,
   },
   section: {
-    backgroundColor: CARD_BG,
+    backgroundColor: '#FFF',
     padding: 16,
     borderRadius: 8,
     marginBottom: 16,
@@ -380,15 +379,15 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#333',
     marginBottom: 12,
   },
   currentConfigBox: {
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: '#F9F9F9',
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: '#E0E0E0',
   },
   configRow: {
     flexDirection: 'row',
@@ -397,12 +396,12 @@ const styles = StyleSheet.create({
   },
   configLabel: {
     fontSize: RFValue(14),
-    color: CARD_TEXT_MUTED,
+    color: '#666',
   },
   configValue: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#003399',
   },
   formGroup: {
     marginBottom: 16,
@@ -410,7 +409,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#333',
     marginBottom: 8,
   },
   input: {
@@ -425,7 +424,7 @@ const styles = StyleSheet.create({
   },
   helperText: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#999',
     marginTop: 4,
   },
   buttonContainer: {
@@ -451,7 +450,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   saveButton: {
-    backgroundColor: BRAND_ORANGE,
+    backgroundColor: '#003399',
   },
   saveButtonText: {
     color: '#FFF',
@@ -462,11 +461,11 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   currencyBox: {
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: '#F9F9F9',
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: '#E0E0E0',
     marginBottom: 8,
   },
   currencyRow: {
@@ -476,12 +475,12 @@ const styles = StyleSheet.create({
   },
   currencyLabel: {
     fontSize: RFValue(13),
-    color: CARD_TEXT_MUTED,
+    color: '#666',
     fontWeight: '600',
   },
   currencyValue: {
     fontSize: RFValue(13),
-    color: CARD_TEXT,
+    color: '#333',
   },
 });
 

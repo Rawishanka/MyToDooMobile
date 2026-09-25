@@ -7,7 +7,6 @@ import {
 import { formatAbnInput, validateAbn } from '@/src/shared/utils/abnValidation';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -83,7 +82,7 @@ export default function TaskerAbnSection({
   if (loading) {
     return (
       <View style={[styles.card, variant === 'compact' && styles.cardCompact, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
-        <ActivityIndicator color={isDarkMode ? "#38BDF8" : CARD_TEXT} />
+        <ActivityIndicator color="#003399" />
         <Text style={styles.loadingText}>Loading ABN status...</Text>
       </View>
     );
@@ -103,7 +102,7 @@ export default function TaskerAbnSection({
         </View>
         <Text style={[styles.maskedAbn, isDarkMode && { color: '#F8FAFC' }]}>{status.abnMasked || `********${status.abnLast3 || ''}`}</Text>
         {(status.businessName || status.entityName) && (
-          <Text style={[styles.metaText, { fontWeight: '600', color: isDarkMode ? '#38BDF8' : CARD_TEXT, marginTop: 2 }]}>
+          <Text style={[styles.metaText, { fontWeight: '600', color: isDarkMode ? '#38BDF8' : '#003399', marginTop: 2 }]}>
             {status.businessName || status.entityName}
           </Text>
         )}
@@ -159,12 +158,12 @@ export default function TaskerAbnSection({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: CARD_BG,
+    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: '#e5e7eb',
   },
   cardCompact: {
     marginBottom: 12,
@@ -173,18 +172,18 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 8,
     fontSize: RFValue(13),
-    color: CARD_TEXT_MUTED,
+    color: '#666',
     textAlign: 'center',
   },
   title: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#111827',
     marginBottom: 6,
   },
   description: {
     fontSize: RFValue(13),
-    color: CARD_TEXT_MUTED,
+    color: '#6b7280',
     lineHeight: RFValue(18),
     marginBottom: 12,
   },
@@ -200,7 +199,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryButton: {
-    backgroundColor: BRAND_ORANGE,
+    backgroundColor: '#003399',
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
@@ -214,7 +213,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   errorText: {
-    color: '#FCA5A5',
+    color: '#dc2626',
     fontSize: RFValue(12),
     marginBottom: 8,
   },
@@ -241,20 +240,20 @@ const styles = StyleSheet.create({
   maskedAbn: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: '#111827',
     letterSpacing: 1,
     marginBottom: 4,
   },
   metaText: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#6b7280',
   },
   linkButton: {
     marginTop: 10,
     alignSelf: 'flex-start',
   },
   linkButtonText: {
-    color: CARD_TEXT,
+    color: '#003399',
     fontSize: RFValue(13),
     fontWeight: '600',
   },

@@ -25,7 +25,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     bundleIdentifier: IS_UAT ? 'com.unexo.mytodoomobile' : 'com.mytodoo.mytodoolive',
     supportsTablet: true,
-    buildNumber: "108",
+    buildNumber: "109",
     googleServicesFile: IS_UAT
       ? './GoogleService-Info-UAT.plist'
       : './GoogleService-Info.plist',
@@ -42,6 +42,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       NSPhotoLibraryAddUsageDescription: 'Allow MyToDoo to save photos to your library.',
       NSLocationWhenInUseUsageDescription: 'Allow MyToDoo to use your location to show nearby tasks and provide location-based services.',
       NSLocationAlwaysUsageDescription: 'Allow MyToDoo to access your location to show nearby tasks.',
+      NSFaceIDUsageDescription: 'Allow MyToDoo to use Face ID to unlock the app and sign you in securely.',
       NSMicrophoneUsageDescription: 'Required for video recording features.',
       UIBackgroundModes: ['remote-notification', 'fetch'],
       ITSAppUsesNonExemptEncryption: false,

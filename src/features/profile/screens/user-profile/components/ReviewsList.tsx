@@ -6,7 +6,6 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 
 interface Review {
   _id: string;
@@ -89,7 +88,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
         key={index}
         name={index < rating ? "star" : "star-outline"}
         size={16}
-        color={index < rating ? "#FFD700" : (isDarkMode ? "#E0E0E0" : CARD_DIVIDER)}
+        color={index < rating ? "#FFD700" : "#E0E0E0"}
       />
     ));
   };
@@ -153,7 +152,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
               <Text style={styles.reviewDate}>{formatDate(review.createdAt)}</Text>
             </View>
           </View>
-          <Ionicons name="lock-closed-outline" size={18} color="#FBBF24" />
+          <Ionicons name="lock-closed-outline" size={18} color="#856404" />
         </View>
         <View style={styles.lockedBanner}>
           <Text style={styles.lockedBannerText}>
@@ -193,7 +192,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
       {/* Task Reference */}
       {review.task && (
         <View style={styles.taskReference}>
-          <Ionicons name="briefcase-outline" size={14} color={isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED} />
+          <Ionicons name="briefcase-outline" size={14} color={isDarkMode ? '#94A3B8' : '#666'} />
           <Text style={[styles.taskTitle, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>{taskTitle}</Text>
         </View>
       )}
@@ -227,7 +226,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
                   />
                 ) : (
                   <View style={styles.attachmentFile}>
-                    <Ionicons name="document-outline" size={32} color={isDarkMode ? "#007AFF" : CARD_TEXT} />
+                    <Ionicons name="document-outline" size={32} color="#007AFF" />
                     <Text style={styles.attachmentFileName} numberOfLines={1}>
                       {attachment.format || 'file'}
                     </Text>
@@ -341,7 +340,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Ionicons name="chatbox-outline" size={48} color={isDarkMode ? "#CCC" : CARD_TEXT_MUTED} />
+      <Ionicons name="chatbox-outline" size={48} color="#CCC" />
       <Text style={styles.emptyStateTitle}>No reviews yet</Text>
       <Text style={styles.emptyStateSubtext}>
         {activeRole === 'tasker' 
@@ -359,7 +358,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
       <View style={styles.footer}>
         {isLoading && (
           <>
-            <ActivityIndicator size="small" color={isDarkMode ? "#007AFF" : CARD_TEXT} />
+            <ActivityIndicator size="small" color="#007AFF" />
             <Text style={styles.loadingText}>Loading reviews...</Text>
           </>
         )}
@@ -396,7 +395,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
           <Ionicons
             name="hammer"
             size={18}
-            color={activeRole === 'tasker' ? '#FFF' : (isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED)}
+            color={activeRole === 'tasker' ? '#FFF' : (isDarkMode ? '#94A3B8' : '#64748B')}
           />
           <Text
             style={[
@@ -424,7 +423,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
           <Ionicons
             name="briefcase"
             size={18}
-            color={activeRole === 'poster' ? '#FFF' : (isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED)}
+            color={activeRole === 'poster' ? '#FFF' : (isDarkMode ? '#94A3B8' : '#64748B')}
           />
           <Text
             style={[
@@ -471,7 +470,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: CARD_BG,
+    backgroundColor: '#ffffff',
     borderRadius: 12,
     marginBottom: 16,
     shadowColor: '#000',
@@ -488,12 +487,12 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
+    borderBottomColor: '#F0F0F0',
   },
   sectionTitle: {
     fontSize: RFValue(20),
     fontWeight: 'bold',
-    color: CARD_TEXT,
+    color: '#333',
   },
   reviewCount: {
     fontSize: RFValue(16),
@@ -509,7 +508,7 @@ const styles = StyleSheet.create({
   reviewItem: {
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
+    borderBottomColor: '#F0F0F0',
   },
   reviewHeader: {
     flexDirection: 'row',
@@ -526,7 +525,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: BRAND_ORANGE,
+    backgroundColor: '#007AFF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -547,14 +546,14 @@ const styles = StyleSheet.create({
   reviewerName: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#333',
     marginRight: 6,
   },
   categoryBadge: {
     fontSize: RFValue(11),
     fontWeight: '600',
-    color: CARD_TEXT,
-    backgroundColor: CARD_CHIP_BG,
+    color: '#1d4ed8',
+    backgroundColor: '#dbeafe',
     overflow: 'hidden',
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -579,7 +578,7 @@ const styles = StyleSheet.create({
   },
   reviewDate: {
     fontSize: RFValue(14),
-    color: CARD_TEXT_MUTED,
+    color: '#666',
   },
   starsContainer: {
     flexDirection: 'row',
@@ -591,33 +590,33 @@ const styles = StyleSheet.create({
   },
   taskTitle: {
     fontSize: RFValue(14),
-    color: CARD_TEXT_MUTED,
+    color: '#666',
     fontStyle: 'italic',
     marginLeft: 6,
     flex: 1,
   },
   reviewComment: {
     fontSize: RFValue(16),
-    color: CARD_TEXT,
+    color: '#333',
     lineHeight: 22,
   },
   responseContainer: {
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: '#F8F9FA',
     padding: 12,
     borderRadius: 8,
     marginTop: 12,
     borderLeftWidth: 3,
-    borderLeftColor: BRAND_ORANGE,
+    borderLeftColor: '#007AFF',
   },
   responseLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#007AFF',
     marginBottom: 4,
   },
   responseText: {
     fontSize: RFValue(14),
-    color: CARD_TEXT_MUTED,
+    color: '#555',
     lineHeight: 20,
   },
   emptyState: {
@@ -628,13 +627,13 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: RFValue(20),
     fontWeight: 'bold',
-    color: CARD_TEXT,
+    color: '#666',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyStateSubtext: {
     fontSize: RFValue(16),
-    color: CARD_TEXT_MUTED,
+    color: '#999',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -644,11 +643,11 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(14),
-    color: CARD_TEXT_MUTED,
+    color: '#666',
   },
   loadMoreText: {
     fontSize: RFValue(14),
-    color: CARD_TEXT,
+    color: '#007AFF',
   },
   roleToggleContainer: {
     flexDirection: 'row',
@@ -656,10 +655,10 @@ const styles = StyleSheet.create({
     marginVertical: 12,
     padding: 4,
     borderRadius: 14,
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: '#F1F5F9',
     gap: 4,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: '#E2E8F0',
   },
   roleToggleButton: {
     flex: 1,
@@ -673,8 +672,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   roleToggleButtonActive: {
-    backgroundColor: BRAND_ORANGE,
-    shadowColor: '#000',
+    backgroundColor: '#003399',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
@@ -683,7 +682,7 @@ const styles = StyleSheet.create({
   roleToggleText: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: CARD_TEXT_MUTED,
+    color: '#666',
   },
   roleToggleTextActive: {
     color: '#FFF',
@@ -719,7 +718,7 @@ const styles = StyleSheet.create({
   attachmentsLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#333',
     marginBottom: 8,
   },
   attachmentsScroll: {
@@ -740,15 +739,15 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 8,
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: '#F0F8FF',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: '#E0E0E0',
   },
   attachmentFileName: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#666',
     marginTop: 4,
     textAlign: 'center',
   },

@@ -19,6 +19,8 @@ import {
   BiometricTypeLabel,
 } from '@/src/shared/utils/biometric-auth';
 
+const LOCK_AFTER_MS = 30 * 1000;
+
 interface BiometricAppLockProps {
   children?: React.ReactNode;
 }
@@ -56,7 +58,7 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
         }
 
         const cap = await getBiometricCapability();
-        if (!cap.hasHardware || !cap.isEnrolled) {
+        if (!cap.canAuthenticate) {
           setIsLocked(false);
           return;
         }
@@ -87,13 +89,14 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
       } else if (nextState === 'active') {
         const timeInBackground = Date.now() - lastBackgroundTimeRef.current;
         
-        // Only lock if app was genuinely in background for > 3 seconds
-        // and user has biometric lock enabled
-        if (lastBackgroundTimeRef.current > 0 && timeInBackground > 3000) {
+        // Only lock if the app was in the background longer than the grace period
+        // (quick app switches / screen glances should not ask for Face ID again)
+        if (lastBackgroundTimeRef.current > 0 && timeInBackground > LOCK_AFTER_MS) {
           if (!token) return;
 
           const enabled = await isBiometricLoginEnabled();
-          if (enabled) {
+          const cap = enabled ? await getBiometricCapability() : null;
+          if (enabled && cap?.canAuthenticate) {
             setIsLocked(true);
             setAuthError(null);
             promptBiometricAuth(biometricType);
@@ -118,7 +121,12 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
     setAuthError(null);
 
     try {
-      const result = await authenticateWithBiometrics(`Scan your ${label} to unlock MyToDoo`);
+      let result = await authenticateWithBiometrics(`Scan your ${label} to unlock MyToDoo`);
+      // iOS cancels the prompt if it is shown while the app is still becoming active - retry once.
+      if (!result.success && (result.code === 'app_cancel' || result.code === 'system_cancel')) {
+        await new Promise(r => setTimeout(r, 700));
+        result = await authenticateWithBiometrics(`Scan your ${label} to unlock MyToDoo`);
+      }
       if (result.success) {
         setIsLocked(false);
         setAuthError(null);

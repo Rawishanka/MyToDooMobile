@@ -13,7 +13,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUpdateUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 import { AppAlert } from '@/src/shared/components/AppAlert';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -64,14 +63,14 @@ export default function NotificationPreferences({ onBack, userData }) {
           style={styles.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>
           Tasker Preferences
         </Text>
         <TouchableOpacity onPress={handleSave} disabled={saving} style={styles.saveBtn}>
           {saving ? (
-            <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+            <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#003399'} />
           ) : (
             <Text style={[styles.saveText, isDarkMode && { color: '#38BDF8' }]}>Save</Text>
           )}
@@ -88,7 +87,7 @@ export default function NotificationPreferences({ onBack, userData }) {
         <Ionicons
           name="information-circle-outline"
           size={18}
-          color={isDarkMode ? '#38BDF8' : CARD_TEXT}
+          color={isDarkMode ? '#38BDF8' : '#003399'}
         />
         <Text style={[styles.infoText, isDarkMode && { color: '#94A3B8' }]}>
           Control how you get notified about new tasks on the platform.
@@ -122,7 +121,7 @@ export default function NotificationPreferences({ onBack, userData }) {
               setNotifyNewTask(val);
               if (!val) setNotifySkillMatch(false);
             }}
-            trackColor={{ false: isDarkMode ? '#475569' : '#ccc', true: isDarkMode ? '#003399' : BRAND_ORANGE }}
+            trackColor={{ false: isDarkMode ? '#475569' : '#ccc', true: '#003399' }}
             thumbColor="#fff"
           />
         </View>
@@ -161,7 +160,7 @@ export default function NotificationPreferences({ onBack, userData }) {
               if (notifyNewTask) setNotifySkillMatch(val);
             }}
             disabled={!notifyNewTask}
-            trackColor={{ false: isDarkMode ? '#475569' : '#ccc', true: isDarkMode ? '#003399' : BRAND_ORANGE }}
+            trackColor={{ false: isDarkMode ? '#475569' : '#ccc', true: '#003399' }}
             thumbColor="#fff"
           />
         </View>
@@ -192,11 +191,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
+    borderBottomColor: '#eee',
     justifyContent: 'space-between',
   },
   backButton: {
@@ -205,7 +204,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: '#003399',
     flex: 1,
     textAlign: 'center',
   },
@@ -215,28 +214,28 @@ const styles = StyleSheet.create({
   },
   saveText: {
     fontSize: RFValue(15),
-    color: CARD_TEXT,
+    color: '#003399',
     fontWeight: '600',
   },
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: CARD_BG,
+    backgroundColor: '#EEF4FF',
     margin: 16,
     padding: 12,
     borderRadius: 10,
     gap: 8,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: '#D0E4FF',
   },
   infoText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: CARD_TEXT,
+    color: '#003399',
     lineHeight: 18,
   },
   section: {
-    backgroundColor: CARD_BG,
+    backgroundColor: '#fff',
     marginHorizontal: 16,
     borderRadius: 12,
     overflow: 'hidden',
@@ -244,7 +243,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#999',
     fontWeight: '600',
     paddingHorizontal: 16,
     paddingTop: 16,
@@ -257,7 +256,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderTopWidth: 1,
-    borderTopColor: CARD_DIVIDER,
+    borderTopColor: '#f0f0f0',
     gap: 12,
   },
   rowDisabled: {
@@ -269,19 +268,19 @@ const styles = StyleSheet.create({
   rowLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#1a1a1a',
     marginBottom: 2,
   },
   rowDesc: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#666',
     lineHeight: 17,
   },
   labelDisabled: {
-    color: CARD_TEXT_MUTED,
+    color: '#aaa',
   },
   saveButton: {
-    backgroundColor: BRAND_ORANGE,
+    backgroundColor: '#003399',
     marginHorizontal: 16,
     borderRadius: 12,
     paddingVertical: 15,

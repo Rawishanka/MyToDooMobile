@@ -5,7 +5,6 @@ import React, { useCallback } from 'react';
 import { useTheme } from '@/src/shared/theme';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { Message } from './message-types';
-import { BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 
 interface MessageListItemProps {
   message: Message;
@@ -105,9 +104,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: isTablet ? hp('1.8%') : hp('1.7%'),
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    backgroundColor: CARD_BG,
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
+    borderBottomColor: '#f0f0f0',
     alignItems: 'center',
   },
   avatarContainer: {
@@ -118,7 +117,7 @@ const styles = StyleSheet.create({
     width: isTablet ? 56 : 50,
     height: isTablet ? 56 : 50,
     borderRadius: isTablet ? 28 : 25,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: '#F0F0F0',
   },
   unreadDot: {
     position: 'absolute',
@@ -127,9 +126,9 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: BRAND_ORANGE,
+    backgroundColor: '#007AFF',
     borderWidth: 2,
-    borderColor: CARD_BG,
+    borderColor: '#fff',
   },
   messageContent: {
     flex: 1,
@@ -143,33 +142,33 @@ const styles = StyleSheet.create({
   messageTitle: {
     fontSize: RFValue(isTablet ? 14 : 15),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#000',
     flex: 1,
     marginRight: isTablet ? wp('2%') : wp('2%'),
   },
   messageDate: {
     fontSize: RFValue(isTablet ? 10 : 13),
-    color: CARD_TEXT_MUTED,
+    color: '#8E8E93',
     flexShrink: 0,
   },
   messagePreview: {
     fontSize: RFValue(isTablet ? 10 : 14),
-    color: CARD_TEXT_MUTED,
+    color: '#8E8E93',
     lineHeight: isTablet ? RFValue(20) : 18,
   },
   unreadItem: {
-    backgroundColor: CARD_BG,
+    backgroundColor: '#F0F7FF',
   },
   unreadTitle: {
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: '#000',
   },
   unreadPreview: {
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#000',
   },
   unreadBadge: {
-    backgroundColor: BRAND_ORANGE,
+    backgroundColor: '#007AFF',
     borderRadius: isTablet ? 18 : 12,
     minWidth: isTablet ? 36 : 24,
     height: isTablet ? 36 : 24,

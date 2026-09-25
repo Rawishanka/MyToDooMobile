@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function TaskAlerts({ onBack }) {
@@ -63,7 +62,7 @@ export default function TaskAlerts({ onBack }) {
           style={styles.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>
           Task Alerts
@@ -111,7 +110,7 @@ export default function TaskAlerts({ onBack }) {
                     {keyword}
                   </Text>
                   <TouchableOpacity onPress={() => removeKeyword(index)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                    <Ionicons name="close" size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT} />
+                    <Ionicons name="close" size={16} color={isDarkMode ? '#94A3B8' : '#666'} />
                   </TouchableOpacity>
                 </View>
               ))}
@@ -130,11 +129,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
+    borderBottomColor: '#eee',
   },
   backButton: {
     padding: 4,
@@ -142,20 +141,20 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: '#003399',
     flex: 1,
     textAlign: 'center',
     marginRight: 32,
   },
   content: {
-    backgroundColor: CARD_BG,
+    backgroundColor: '#fff',
     marginTop: 10,
     paddingHorizontal: 16,
     paddingBottom: 24,
   },
   sectionTitle: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#999',
     marginTop: 20,
     marginBottom: 10,
     fontWeight: '600',
@@ -166,12 +165,12 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: RFValue(13),
-    color: CARD_TEXT_MUTED,
+    color: '#666',
     lineHeight: 20,
     marginBottom: 18,
   },
   addButton: {
-    backgroundColor: BRAND_ORANGE,
+    backgroundColor: '#003399',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
@@ -191,7 +190,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   keywordTag: {
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: '#f0f0f0',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
@@ -200,11 +199,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: '#e5e5e5',
   },
   keywordText: {
     fontSize: RFValue(13),
-    color: CARD_TEXT,
+    color: '#333',
     marginRight: 6,
   },
 });

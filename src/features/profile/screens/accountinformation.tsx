@@ -15,7 +15,6 @@ import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Scroll
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 
 interface AccountInformationProps {
   onBack: () => void;
@@ -385,7 +384,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Account information</Text>
         </View>
@@ -412,7 +411,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Account information</Text>
         </View>
@@ -430,7 +429,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Account information</Text>
         </View>
@@ -451,7 +450,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Account information</Text>
         </View>
@@ -472,7 +471,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={goBackToMain} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Update personal details</Text>
         </View>
@@ -579,7 +578,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={goBackToMain} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Change Password</Text>
         </View>
@@ -614,7 +613,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={goBackToMain} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Change phone</Text>
         </View>
@@ -679,7 +678,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={goBackToMain} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Change email</Text>
         </View>
@@ -743,7 +742,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Account information</Text>
       </View>
@@ -867,10 +866,10 @@ const MenuItem = ({ text, onPress, showArrow = true, textColor = "#333", disable
   return (
     <TouchableOpacity style={[styles.menuItem, disabled && styles.menuItemDisabled, isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]} onPress={!disabled ? onPress : undefined} disabled={disabled}>
       <View style={{ flex: 1 }}>
-        <Text style={[styles.menuText, { color: disabled ? (isDarkMode ? '#64748B' : CARD_TEXT_MUTED) : (isDarkMode ? '#F8FAFC' : CARD_TEXT) }]}>{text}</Text>
+        <Text style={[styles.menuText, { color: disabled ? (isDarkMode ? '#64748B' : '#aaa') : (isDarkMode ? '#F8FAFC' : textColor) }]}>{text}</Text>
         {subtitle && <Text style={styles.menuSubtitle}>{subtitle}</Text>}
       </View>
-      {showArrow && !disabled && <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED} />}
+      {showArrow && !disabled && <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#94A3B8' : '#888'} />}
     </TouchableOpacity>
   );
 };
@@ -883,12 +882,12 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical: 16,
     paddingTop: Platform.OS === 'ios' ? 60 : 16,
     borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
+    borderBottomColor: '#e0e0e0',
   },
   backButton: {
     marginRight: 16,
@@ -896,7 +895,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#333',
   },
   content: {
     flex: 1,
@@ -905,23 +904,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: CARD_BG,
+    backgroundColor: '#fff',
     paddingHorizontal: 20,
     paddingVertical: 18,
     borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
+    borderBottomColor: '#e0e0e0',
   },
   menuText: {
     fontSize: RFValue(16),
     fontWeight: '500',
   },
   menuItemDisabled: {
-    backgroundColor: CARD_BG,
+    backgroundColor: '#fafafa',
     opacity: 0.7,
   },
   menuSubtitle: {
     fontSize: RFValue(12),
-    color: '#FCA5A5',
+    color: '#dc3545',
     marginTop: 2,
   },
   webOnlyLabel: {
@@ -1014,7 +1013,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   saveButton: {
-    backgroundColor: BRAND_ORANGE,
+    backgroundColor: '#003399',
     borderRadius: 8,
     paddingVertical: 14,
     paddingHorizontal: 24,
@@ -1106,7 +1105,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   saveMobileButton: {
-    backgroundColor: BRAND_ORANGE,
+    backgroundColor: '#003399',
     borderRadius: 8,
     paddingVertical: 14,
     paddingHorizontal: 24,

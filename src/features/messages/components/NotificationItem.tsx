@@ -4,7 +4,6 @@ import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { NotificationItem as NotificationItemType } from './message-types';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { useTheme } from '@/src/shared/theme';
 
 interface NotificationItemProps {
@@ -40,8 +39,8 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'flex-start',
     borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
-    backgroundColor: CARD_BG,
+    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#fff',
   },
   avatar: {
     width: 40,
@@ -54,17 +53,17 @@ const styles = StyleSheet.create({
   },
   notificationText: {
     fontSize: RFValue(15),
-    color: CARD_TEXT,
+    color: '#000',
     lineHeight: 20,
     marginBottom: 4,
   },
   username: {
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#000',
   },
   timeText: {
     fontSize: RFValue(13),
-    color: CARD_TEXT_MUTED,
+    color: '#8e8e93',
     marginTop: 2,
   },
 });

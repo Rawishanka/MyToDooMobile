@@ -11,6 +11,8 @@ export type BiometricTypeLabel = "Face ID" | "Touch ID" | "Fingerprint" | "Face 
 
 export interface BiometricCapability {
   hasHardware: boolean;
+  /** true when the device has biometrics OR at least a device passcode to fall back to */
+  canAuthenticate?: boolean;
   isEnrolled: boolean;
   supportedTypes: LocalAuthentication.AuthenticationType[];
   biometricTypeLabel: BiometricTypeLabel;
@@ -32,6 +34,11 @@ export async function getBiometricCapability(): Promise<BiometricCapability> {
     }
 
     const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+    let hasPasscode = false;
+    try {
+      const level = await LocalAuthentication.getEnrolledLevelAsync();
+      hasPasscode = level !== LocalAuthentication.SecurityLevel.NONE;
+    } catch {}
     const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
 
     let biometricTypeLabel: BiometricTypeLabel = "Biometrics";
@@ -43,6 +50,7 @@ export async function getBiometricCapability(): Promise<BiometricCapability> {
 
     return {
       hasHardware,
+      canAuthenticate: isEnrolled || hasPasscode,
       isEnrolled,
       supportedTypes,
       biometricTypeLabel: biometricTypeLabel as any,
@@ -63,13 +71,15 @@ export async function getBiometricCapability(): Promise<BiometricCapability> {
  */
 export async function authenticateWithBiometrics(
   promptMessage = "Authenticate to access MyToDoo"
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; code?: string }> {
   try {
     const capability = await getBiometricCapability();
-    if (!capability.hasHardware || !capability.isEnrolled) {
-      return { success: false, error: "Biometric authentication is not available or enrolled on this device." };
+    if (!capability.canAuthenticate) {
+      return { success: false, error: "Set up Face ID / a device passcode in Settings to unlock the app." };
     }
 
+    // Do not hard-fail when biometrics are momentarily unavailable (Face ID permission, lockout):
+    // the system prompt falls back to the device passcode.
     const result = await LocalAuthentication.authenticateAsync({
       promptMessage,
       cancelLabel: "Cancel",
@@ -83,6 +93,7 @@ export async function authenticateWithBiometrics(
       return {
         success: false,
         error: result.error === "user_cancel" ? "User cancelled" : (result.error || "Authentication failed"),
+        code: result.error,
       };
     }
   } catch (error: any) {

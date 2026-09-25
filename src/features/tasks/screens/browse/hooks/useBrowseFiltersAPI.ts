@@ -340,6 +340,9 @@ export const useBrowseFiltersAPI = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  // Bumped by resetFilters so the list is rebuilt even when react-query hands back the very same
+  // (structurally shared) data for the default query and no other dependency changes.
+  const [resetNonce, setResetNonce] = useState(0);
   const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
   const [searchSuburb, setSearchSuburb] = useState('');
   // Applied search area. Coordinates are ONLY ever set by an explicit user action
@@ -676,7 +679,7 @@ export const useBrowseFiltersAPI = () => {
     };
 
     enhanceTasksWithOfferCounts();
-  }, [shouldUseFilterAPI, filterResponse?.data, searchResponse?.data, currentPage]);
+  }, [shouldUseFilterAPI, filterResponse?.data, searchResponse?.data, currentPage, resetNonce]);
 
   // Reset isProcessingData when API loading completes
   useEffect(() => {
@@ -864,6 +867,7 @@ export const useBrowseFiltersAPI = () => {
     setIsLoadingMore(false);
     lastProcessedPageRef.current = 0;
     lastProcessedDataHashRef.current = '';
+    setResetNonce(n => n + 1);
   };
 
 

@@ -5,7 +5,6 @@ import {
 } from '@/src/shared/hooks/useServiceListingApi';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -62,7 +61,7 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
         <Text style={[styles.status, isDarkMode && { color: '#64748B' }]}>Status: {item.status}</Text>
       </View>
       <TouchableOpacity onPress={() => confirmDelete(item)} style={styles.deleteButton}>
-        <Ionicons name="trash-outline" size={20} color={isDarkMode ? "#dc3545" : "#FCA5A5"} />
+        <Ionicons name="trash-outline" size={20} color="#dc3545" />
       </TouchableOpacity>
     </View>
   );
@@ -71,11 +70,11 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>My services</Text>
         <TouchableOpacity onPress={onCreate} style={styles.createButton}>
-          <Ionicons name="add" size={22} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+          <Ionicons name="add" size={22} color={isDarkMode ? '#38BDF8' : '#003399'} />
         </TouchableOpacity>
       </View>
 
@@ -111,25 +110,25 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
+    borderBottomColor: '#eee',
   },
   backButton: { padding: 4 },
   headerTitle: {
     flex: 1,
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#003399',
     marginLeft: 8,
   },
   createButton: { padding: 4 },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   listContent: { padding: 16, paddingBottom: 40 },
   card: {
-    backgroundColor: CARD_BG,
+    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 14,
     marginBottom: 10,
@@ -137,14 +136,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cardBody: { flex: 1 },
-  title: { fontSize: RFValue(15), fontWeight: '600', color: CARD_TEXT },
-  meta: { fontSize: RFValue(13), color: CARD_TEXT_MUTED, marginTop: 4 },
-  status: { fontSize: RFValue(12), color: CARD_TEXT_MUTED, marginTop: 4, textTransform: 'capitalize' },
+  title: { fontSize: RFValue(15), fontWeight: '600', color: '#222' },
+  meta: { fontSize: RFValue(13), color: '#666', marginTop: 4 },
+  status: { fontSize: RFValue(12), color: '#888', marginTop: 4, textTransform: 'capitalize' },
   deleteButton: { padding: 8 },
   emptyWrap: { paddingVertical: 48, alignItems: 'center' },
   emptyText: { color: '#888', fontSize: RFValue(14), marginBottom: 16 },
   emptyCta: {
-    backgroundColor: BRAND_ORANGE,
+    backgroundColor: '#003399',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,

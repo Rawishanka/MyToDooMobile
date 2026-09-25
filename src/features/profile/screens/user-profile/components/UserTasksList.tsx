@@ -3,7 +3,6 @@ import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/
 import React from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG, BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 
 interface Task {
   _id: string;
@@ -31,13 +30,13 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return '#4ADE80';
+        return '#28a745';
       case 'assigned':
-        return '#7DD3FC';
+        return '#007bff';
       case 'open':
-        return '#FBBF24';
+        return '#ffc107';
       default:
-        return CARD_TEXT_MUTED;
+        return '#6c757d';
     }
   };
 
@@ -100,7 +99,7 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
 
 const styles = StyleSheet.create({
   taskCard: {
-    backgroundColor: CARD_BG,
+    backgroundColor: '#fff',
     padding: 16,
     marginBottom: 12,
     borderRadius: 12,
@@ -121,12 +120,12 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#000',
     marginBottom: 8,
   },
   taskLocation: {
     fontSize: RFValue(14),
-    color: CARD_TEXT_MUTED,
+    color: '#666',
     marginBottom: 8,
   },
   taskMeta: {
@@ -141,7 +140,7 @@ const styles = StyleSheet.create({
   },
   taskDate: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#999',
   },
   taskPrice: {
     justifyContent: 'center',
@@ -150,7 +149,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: '#007bff',
   },
   emptyContainer: {
     padding: 40,
