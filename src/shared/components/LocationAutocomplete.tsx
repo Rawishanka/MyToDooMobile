@@ -43,6 +43,10 @@ interface LocationAutocompleteProps {
   style?: any;
   country?: string; // ISO country code - AUSTRALIA-ONLY APP: Always 'AU'
   onDropdownStateChange?: (isOpen: boolean) => void;
+  /** Called when the user clears the input with the X button. */
+  onClear?: () => void;
+  /** When false, a network failure does NOT offer a fake (Sydney-centred) manual entry. Default true. */
+  allowManualFallback?: boolean;
 }
 
 // Mapbox Access Token Configuration  
@@ -58,6 +62,8 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   style,
   country, // AUSTRALIA-ONLY: Always defaults to 'AU'
   onDropdownStateChange,
+  onClear,
+  allowManualFallback = true,
 }) => {
   const { isDarkMode } = useTheme();
   // AUSTRALIA-ONLY APP: Always use Australia regardless of detection
@@ -352,7 +358,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       }
       
       // Provide fallback manual input
-      setSuggestions([{
+      setSuggestions(!allowManualFallback ? [] : [{
         id: 'manual-fallback',
         place_name: `${searchQuery} (enter manually)`,
         center: [151.2093, -33.8688],
@@ -565,6 +571,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
               setShowSuggestions(false);
               onDropdownStateChange?.(false);
               setError(null);
+              onClear?.();
             }}
             style={styles.clearButton}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}

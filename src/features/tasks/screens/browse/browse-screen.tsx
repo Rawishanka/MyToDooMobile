@@ -19,6 +19,16 @@ import type { ServiceListing } from '@/src/api/service-listing-api';
 import { useGetCategoriesWithAll } from '@/src/shared/hooks/useCategoriesApi';
 import { useSearchServiceListings } from '@/src/shared/hooks/useServiceListingApi';
 import ServiceListingDetailScreen from './service-listing-detail-screen';
+import {
+  BRAND_ORANGE,
+  CARD_BG,
+  CARD_CHIP_BG,
+  CARD_DIVIDER,
+  CARD_PRICE_BG,
+  CARD_PRICE_TEXT,
+  CARD_TEXT,
+  CARD_TEXT_MUTED,
+} from '@/src/shared/theme/brandColors';
 
 // Components
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
@@ -181,7 +191,7 @@ export default function BrowseTasksScreen() {
     searchSuburb,
     setRadiusKm,
     setSearchLocation,
-    useCurrentSearchLocation,
+    clearSearchLocation,
     filteredAndSortedTasks,
     activeFiltersCount,
     resetFilters,
@@ -197,24 +207,17 @@ export default function BrowseTasksScreen() {
     userCountryCode,
     isDetectingCountry,
     searchCoords,
-    gpsCoords,
   } = useBrowseFiltersAPI();
 
-  // If user is outside Australia (or GPS is positive latitude/outside Australia) and hasn't searched a specific Australian suburb,
-  // do not restrict to a 30km radius around overseas GPS! Fetch all active Australian service listings.
-  const isGpsOutsideAustralia = gpsCoords?.lat != null && gpsCoords.lat > 0;
-  const isOutsideAustralia = (userCountryCode && userCountryCode !== 'AU') || isGpsOutsideAustralia;
-  const effectiveCoords = searchCoords
-    ? searchCoords
-    : isOutsideAustralia
-    ? undefined
-    : gpsCoords;
+  // Only an explicitly chosen search area (suburb autocomplete / "Use current location" button)
+  // is applied. No saved or automatic GPS location is ever injected.
+  const effectiveCoords = searchCoords ?? undefined;
 
   const serviceSearchParams = useMemo(
     () => ({
       lat: effectiveCoords?.lat,
       lng: effectiveCoords?.lng,
-      radiusKm: effectiveCoords ? (radiusKm || 50) : undefined,
+      radiusKm: effectiveCoords ? (radiusKm || 100) : undefined,
       q: searchText.trim() || undefined,
       category:
         selectedCategory && selectedCategory !== 'All Categories'
@@ -341,11 +344,13 @@ export default function BrowseTasksScreen() {
       <TouchableOpacity
         style={[
           styles.serviceCard,
-          isDarkMode && {
-            backgroundColor: '#1E293B',
-            borderColor: '#334155',
-            shadowColor: '#000000',
-          },
+          isDarkMode
+            ? {
+                backgroundColor: '#1E293B',
+                borderColor: '#334155',
+                shadowColor: '#000000',
+              }
+            : { backgroundColor: CARD_BG, borderColor: CARD_BG },
         ]}
         activeOpacity={0.82}
         onPress={() => {
@@ -363,7 +368,7 @@ export default function BrowseTasksScreen() {
             <View
               style={[
                 styles.serviceAvatar,
-                isDarkMode && { borderColor: '#7C2D12' },
+                isDarkMode ? { borderColor: '#7C2D12' } : { borderColor: CARD_TEXT },
               ]}
             >
               <Text style={styles.serviceAvatarText}>{initials}</Text>
@@ -374,7 +379,7 @@ export default function BrowseTasksScreen() {
               <Text
                 style={[
                   styles.serviceTitle,
-                  isDarkMode && { color: '#F8FAFC' },
+                  isDarkMode ? { color: '#F8FAFC' } : { color: CARD_TEXT },
                 ]}
                 numberOfLines={2}
               >
@@ -387,15 +392,15 @@ export default function BrowseTasksScreen() {
                   style={[
                     styles.serviceIconBadge,
                     styles.locationIconBadge,
-                    isDarkMode && { backgroundColor: '#0F172A' },
+                    isDarkMode ? { backgroundColor: '#0F172A' } : { backgroundColor: CARD_CHIP_BG },
                   ]}
                 >
-                  <Ionicons name="location-sharp" size={11} color="#0284C7" />
+                  <Ionicons name="location-sharp" size={11} color={isDarkMode ? '#0284C7' : CARD_TEXT} />
                 </View>
                 <Text
                   style={[
                     styles.serviceMeta,
-                    isDarkMode && { color: '#94A3B8' },
+                    isDarkMode ? { color: '#94A3B8' } : { color: CARD_TEXT_MUTED },
                   ]}
                   numberOfLines={1}
                 >
@@ -405,17 +410,19 @@ export default function BrowseTasksScreen() {
                   <View
                     style={[
                       styles.radiusBadge,
-                      isDarkMode && {
-                        backgroundColor: '#1E1B4B',
-                        borderColor: '#312E81',
-                      },
+                      isDarkMode
+                        ? {
+                            backgroundColor: '#1E1B4B',
+                            borderColor: '#312E81',
+                          }
+                        : { backgroundColor: CARD_CHIP_BG, borderColor: CARD_DIVIDER },
                     ]}
                   >
-                    <Ionicons name="navigate-outline" size={10} color="#818CF8" />
+                    <Ionicons name="navigate-outline" size={10} color={isDarkMode ? '#818CF8' : CARD_TEXT} />
                     <Text
                       style={[
                         styles.radiusText,
-                        isDarkMode && { color: '#A5B4FC' },
+                        isDarkMode ? { color: '#A5B4FC' } : { color: CARD_TEXT },
                       ]}
                     >
                       {item.radiusKm} km
@@ -429,7 +436,7 @@ export default function BrowseTasksScreen() {
                 <Text
                   style={[
                     styles.serviceDescription,
-                    isDarkMode && { color: '#CBD5E1' },
+                    isDarkMode ? { color: '#CBD5E1' } : { color: CARD_TEXT_MUTED },
                   ]}
                   numberOfLines={2}
                 >
@@ -443,22 +450,24 @@ export default function BrowseTasksScreen() {
           <View
             style={[
               styles.serviceCardBottom,
-              isDarkMode && { borderTopColor: '#334155' },
+              { borderTopColor: isDarkMode ? '#334155' : CARD_DIVIDER },
             ]}
           >
             <View
               style={[
                 styles.servicePriceBadge,
-                isDarkMode && {
-                  backgroundColor: '#064E3B',
-                  borderColor: '#047857',
-                },
+                isDarkMode
+                  ? {
+                      backgroundColor: '#064E3B',
+                      borderColor: '#047857',
+                    }
+                  : { backgroundColor: CARD_PRICE_BG, borderColor: CARD_PRICE_BG },
               ]}
             >
               <Text
                 style={[
                   styles.servicePriceLabel,
-                  isDarkMode && { color: '#A7F3D0' },
+                  isDarkMode ? { color: '#A7F3D0' } : { color: CARD_PRICE_TEXT },
                 ]}
               >
                 From
@@ -466,7 +475,7 @@ export default function BrowseTasksScreen() {
               <Text
                 style={[
                   styles.servicePrice,
-                  isDarkMode && { color: '#34D399' },
+                  isDarkMode ? { color: '#34D399' } : { color: CARD_PRICE_TEXT },
                 ]}
               >
                 ${Number(item.price).toFixed(0)}
@@ -474,14 +483,14 @@ export default function BrowseTasksScreen() {
               <Text
                 style={[
                   styles.serviceCurrency,
-                  isDarkMode && { color: '#A7F3D0' },
+                  isDarkMode ? { color: '#A7F3D0' } : { color: CARD_PRICE_TEXT },
                 ]}
               >
                 {item.currency || 'AUD'}
               </Text>
             </View>
 
-            <View style={styles.serviceActionBtn}>
+            <View style={[styles.serviceActionBtn, !isDarkMode && { backgroundColor: BRAND_ORANGE, shadowColor: BRAND_ORANGE }]}>
               <Text style={styles.serviceActionText}>View</Text>
               <Ionicons name="chevron-forward" size={13} color="#FFFFFF" />
             </View>
@@ -634,9 +643,7 @@ export default function BrowseTasksScreen() {
       {/* Filter & Sort Row */}
       <View style={[styles.filterSortRow, isDarkMode && { backgroundColor: '#0F172A', borderBottomColor: '#334155' }]}>
         <FilterButton 
-          filteredTasksCount={
-            browseMode === 'services' ? serviceListings.length : filteredAndSortedTasks.length
-          }
+          activeFiltersCount={activeFiltersCount}
           onPress={() => setFilterVisible(true)}
         />
         {browseMode === 'tasks' && viewMode === 'list' && (
@@ -876,7 +883,7 @@ export default function BrowseTasksScreen() {
         suburb={searchSuburb}
         onRadiusChange={setRadiusKm}
         onSuburbSelect={setSearchLocation}
-        onUseCurrentLocation={useCurrentSearchLocation}
+        onSuburbClear={clearSearchLocation}
       />
 
       {/* Sort Modal */}

@@ -2,7 +2,7 @@ import { LocationAutocomplete, type LocationData } from '@/src/shared/components
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { getCurrencySymbol, getMaxPriceForCurrency } from '@/src/shared/utils/currency';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
     Modal,
     PanResponder,
@@ -17,6 +17,8 @@ import {
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+
+const RADIUS_OPTIONS_KM = [25, 50, 100, 200] as const;
 
 interface FilterModalProps {
   visible: boolean;
@@ -39,7 +41,7 @@ interface FilterModalProps {
   suburb?: string;
   onRadiusChange?: (radiusKm: number) => void;
   onSuburbSelect?: (location: { address: string; coordinates: { lat: number; lng: number } }) => void;
-  onUseCurrentLocation?: () => void;
+  onSuburbClear?: () => void;
 }
 
 export default function FilterModal({
@@ -63,7 +65,7 @@ export default function FilterModal({
   suburb = '',
   onRadiusChange,
   onSuburbSelect,
-  onUseCurrentLocation,
+  onSuburbClear,
 }: FilterModalProps) {
   // Get geolocation-based currency
   const { isDarkMode } = useTheme();
@@ -74,11 +76,6 @@ export default function FilterModal({
   const [categorySearchText, setCategorySearchText] = useState('');
   const [sliderWidth, setSliderWidth] = useState(300);
   const [activeThumb, setActiveThumb] = useState<'min' | 'max' | null>(null);
-  const [localRadius, setLocalRadius] = useState(String(radiusKm));
-
-  useEffect(() => {
-    setLocalRadius(String(radiusKm));
-  }, [radiusKm]);
 
   const MIN_PRICE = 0;
   // Dynamic MAX_PRICE based on user's currency (e.g., 10000 for AUD, 3000000 for LKR)
@@ -292,32 +289,54 @@ export default function FilterModal({
 
           <View style={[styles.filterSection, { zIndex: 900 }, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Search area</Text>
+            {/* Suburb autocomplete (includes the single, optional "Use Current Location" button) */}
             <LocationAutocomplete
               onSelect={(location: LocationData) => onSuburbSelect?.(location)}
+              onClear={() => onSuburbClear?.()}
               initialValue={suburb}
               placeholder="Search suburb or city..."
               country="AU"
+              allowManualFallback={false}
             />
-            <TouchableOpacity
-              style={[styles.currentLocationButton, isDarkMode && { backgroundColor: '#0F172A' }]}
-              onPress={() => onUseCurrentLocation?.()}
-            >
-              <Ionicons name="navigate-outline" size={16} color={isDarkMode ? '#38BDF8' : '#003399'} />
-              <Text style={[styles.currentLocationText, isDarkMode && { color: '#38BDF8' }]}>Use current location</Text>
-            </TouchableOpacity>
-            <Text style={[styles.radiusLabel, isDarkMode && { color: '#94A3B8' }]}>Radius (km)</Text>
-            <TextInput
-              style={[styles.radiusInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
-              value={localRadius}
-              onChangeText={(text) => setLocalRadius(text.replace(/[^0-9]/g, ''))}
-              onEndEditing={() => {
-                const parsed = parseInt(localRadius, 10);
-                onRadiusChange?.(Number.isNaN(parsed) ? 100 : parsed);
-              }}
-              keyboardType="number-pad"
-              placeholder="100"
-              placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
-            />
+            <Text style={[styles.radiusLabel, isDarkMode && { color: '#94A3B8' }]}>
+              Radius{suburb ? ` around ${suburb}` : ''}
+            </Text>
+            <View style={styles.radiusChips}>
+              {RADIUS_OPTIONS_KM.map((km) => {
+                const selected = radiusKm === km;
+                return (
+                  <TouchableOpacity
+                    key={km}
+                    style={[
+                      styles.radiusChip,
+                      isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' },
+                      selected && styles.radiusChipSelected,
+                      selected && isDarkMode && { backgroundColor: '#003399', borderColor: '#38BDF8' },
+                    ]}
+                    onPress={() => onRadiusChange?.(km)}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    accessibilityLabel={`${km} kilometres`}
+                  >
+                    <Text
+                      style={[
+                        styles.radiusChipText,
+                        isDarkMode && { color: '#CBD5E1' },
+                        selected && styles.radiusChipTextSelected,
+                      ]}
+                    >
+                      {km} km
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            {!suburb && (
+              <Text style={[styles.radiusHint, isDarkMode && { color: '#64748B' }]}>
+                Select a suburb (or use your current location) to filter by distance.
+              </Text>
+            )}
           </View>
 
           {/* Price Range Filter */}
@@ -450,39 +469,43 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     textTransform: 'uppercase' as const,
   },
-  currentLocationButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 12,
-    marginBottom: 8,
-    gap: 6,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    backgroundColor: '#EEF2FF',
-    borderRadius: 10,
-  },
-  currentLocationText: {
-    color: '#003399',
-    fontSize: RFValue(14),
-    fontWeight: '600',
-  },
   radiusLabel: {
     fontSize: RFValue(12),
     color: '#6B7280',
-    marginTop: 8,
-    marginBottom: 6,
+    marginTop: 4,
+    marginBottom: 8,
     fontWeight: '600',
   },
-  radiusInput: {
+  radiusChips: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  radiusChip: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
     backgroundColor: '#F4F6FB',
     borderWidth: 1.5,
     borderColor: '#E8ECF4',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: RFValue(16),
+  },
+  radiusChipSelected: {
+    backgroundColor: '#003399',
+    borderColor: '#003399',
+  },
+  radiusChipText: {
+    fontSize: RFValue(14),
     color: '#1A1D2E',
     fontWeight: '600',
+  },
+  radiusChipTextSelected: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  radiusHint: {
+    marginTop: 10,
+    fontSize: RFValue(12),
+    color: '#6B7280',
   },
   categorySelector: {
     backgroundColor: '#F4F6FB',

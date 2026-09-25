@@ -4,11 +4,11 @@ import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 
 interface FilterButtonProps {
-  filteredTasksCount: number;
+  activeFiltersCount: number;
   onPress: () => void;
 }
 
-export default function FilterButton({ filteredTasksCount, onPress }: FilterButtonProps) {
+export default function FilterButton({ activeFiltersCount, onPress }: FilterButtonProps) {
   const { isDarkMode } = useTheme();
   return (
     <TouchableOpacity 
@@ -18,9 +18,11 @@ export default function FilterButton({ filteredTasksCount, onPress }: FilterButt
     >
       <Ionicons name="options-outline" size={16} color={isDarkMode ? '#38BDF8' : '#003399'} />
       <Text style={[styles.filterText, isDarkMode && { color: '#F8FAFC' }]}>Filter</Text>
-      <View style={[styles.countBadge, isDarkMode && { backgroundColor: '#38BDF8' }]}>
-        <Text style={[styles.countText, isDarkMode && { color: '#0B1120' }]}>{filteredTasksCount}</Text>
-      </View>
+      {activeFiltersCount > 0 && (
+        <View style={[styles.countBadge, isDarkMode && { backgroundColor: '#38BDF8' }]}>
+          <Text style={[styles.countText, isDarkMode && { color: '#0B1120' }]}>{activeFiltersCount}</Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 }

@@ -1,14 +1,12 @@
 ﻿import { TaskAPI } from '@/src/api/task-api';
 import { Task, TaskFilterParams, TaskSearchParams } from '@/src/api/types/tasks';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
-import { useGetSearchPrefs, useUpdateSearchPrefs } from '@/src/shared/hooks/useSearchPrefsApi';
 import { useFilterTasks, useSearchTasks } from '@/src/shared/hooks/useTaskApi';
-import { useAuthStore } from '@/src/store/auth-task-store';
 import { getMaxPriceForCurrency } from '@/src/shared/utils/currency';
-import * as Location from 'expo-location';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 const DEFAULT_RADIUS_KM = 100;
+const MAX_RADIUS_KM = 200;
 
 export interface FilterState {
   selectedCategory: string;
@@ -344,127 +342,50 @@ export const useBrowseFiltersAPI = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
   const [searchSuburb, setSearchSuburb] = useState('');
+  // Applied search area. Coordinates are ONLY ever set by an explicit user action
+  // (picking a suburb from autocomplete, or tapping "Use current location").
+  // We intentionally never hydrate from saved backend searchPrefs and never auto-fetch GPS,
+  // so Reset can guarantee that no lat/lng/radius is sent to the API.
   const [searchCoords, setSearchCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
 
-  const { isAuthenticated, token, user } = useAuthStore();
-  const { data: savedSearchPrefs } = useGetSearchPrefs();
-  const updateSearchPrefsMutation = useUpdateSearchPrefs();
-  const prefsHydratedRef = React.useRef(false);
-  
+  // Keep the "default" price range in sync if the currency (and thus MAX_PRICE) changes
+  // after country detection; otherwise the default range would look like an active filter.
+  const prevMaxPriceRef = React.useRef(MAX_PRICE);
+  useEffect(() => {
+    const prevMax = prevMaxPriceRef.current;
+    if (prevMax !== MAX_PRICE) {
+      setPriceRange(prev => (prev[0] === 0 && prev[1] === prevMax ? [0, MAX_PRICE] : prev));
+      prevMaxPriceRef.current = MAX_PRICE;
+    }
+  }, [MAX_PRICE]);
+
   // Add timeout safeguard to prevent infinite loading states
   const [forceShowResults, setForceShowResults] = useState(false);
   
   // Track the last processed page to prevent duplicate processing
   const lastProcessedPageRef = React.useRef<number>(0);
   const lastProcessedDataHashRef = React.useRef<string>('');
-  const isResettingRef = React.useRef<boolean>(false);
-
-  useEffect(() => {
-    prefsHydratedRef.current = false;
-  }, [user?._id]);
-
-  useEffect(() => {
-    if (!savedSearchPrefs || prefsHydratedRef.current) return;
-    prefsHydratedRef.current = true;
-    setRadiusKm(Number(savedSearchPrefs.radiusKm) || DEFAULT_RADIUS_KM);
-    if (savedSearchPrefs.suburb) setSearchSuburb(savedSearchPrefs.suburb);
-    if (typeof savedSearchPrefs.lat === 'number' && typeof savedSearchPrefs.lng === 'number') {
-      setSearchCoords({ lat: savedSearchPrefs.lat, lng: savedSearchPrefs.lng });
-    }
-  }, [savedSearchPrefs]);
-
-  useEffect(() => {
-    if (searchCoords) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted' || cancelled) return;
-        const loc = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
-        if (!cancelled) {
-          setGpsCoords({ lat: loc.coords.latitude, lng: loc.coords.longitude });
-        }
-      } catch {
-        // GPS is optional fallback for filter lat/lng
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [searchCoords]);
-
-  const persistSearchPrefs = useCallback((next: {
-    radiusKm?: number;
-    lat?: number;
-    lng?: number;
-    suburb?: string;
-  }) => {
-    if (!isAuthenticated || !token) return;
-    const nextRadius = next.radiusKm ?? radiusKm ?? DEFAULT_RADIUS_KM;
-    const nextLat = next.lat ?? searchCoords?.lat ?? gpsCoords?.lat;
-    const nextLng = next.lng ?? searchCoords?.lng ?? gpsCoords?.lng;
-    const nextSuburb = next.suburb ?? searchSuburb;
-    updateSearchPrefsMutation.mutate({
-      radiusKm: nextRadius,
-      lat: nextLat,
-      lng: nextLng,
-      suburb: nextSuburb,
-    });
-  }, [isAuthenticated, token, radiusKm, searchCoords, gpsCoords, searchSuburb, updateSearchPrefsMutation]);
 
   const handleSearchLocationChange = useCallback((location: { address: string; coordinates: { lat: number; lng: number } }) => {
     const suburb = location.address.split(',')[0]?.trim() || location.address;
     setSearchSuburb(suburb);
     setSearchCoords(location.coordinates);
-    persistSearchPrefs({
-      suburb,
-      lat: location.coordinates.lat,
-      lng: location.coordinates.lng,
-      radiusKm,
-    });
-  }, [persistSearchPrefs, radiusKm]);
+  }, []);
 
   const handleRadiusChange = useCallback((next: number) => {
-    const value = Number(next) || DEFAULT_RADIUS_KM;
+    const value = Math.min(MAX_RADIUS_KM, Number(next) || DEFAULT_RADIUS_KM);
     setRadiusKm(value);
-    persistSearchPrefs({ radiusKm: value });
-  }, [persistSearchPrefs]);
+  }, []);
 
-  const handleUseCurrentLocation = useCallback(async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return;
-      const loc = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-      const coords = { lat: loc.coords.latitude, lng: loc.coords.longitude };
-      let suburb = 'Current location';
-      try {
-        const geo = await Location.reverseGeocodeAsync({
-          latitude: coords.lat,
-          longitude: coords.lng,
-        });
-        if (geo[0]) {
-          suburb = [geo[0].city || geo[0].subregion || geo[0].district, geo[0].region]
-            .filter(Boolean)
-            .join(', ') || suburb;
-        }
-      } catch {
-        // Keep fallback suburb label
-      }
-      setSearchCoords(coords);
-      setGpsCoords(coords);
-      setSearchSuburb(suburb);
-      persistSearchPrefs({ lat: coords.lat, lng: coords.lng, suburb, radiusKm });
-    } catch {
-      // Current location is optional
-    }
-  }, [persistSearchPrefs, radiusKm]);
+  // Clears the chosen suburb/coordinates (user cleared the search box).
+  const handleClearSearchLocation = useCallback(() => {
+    setSearchSuburb('');
+    setSearchCoords(null);
+    setRadiusKm(DEFAULT_RADIUS_KM);
+  }, []);
 
-  const effectiveCoords = searchCoords || gpsCoords;
+  // Only an explicitly chosen area is ever used for filtering.
+  const effectiveCoords = searchCoords;
 
   // Log country detection status
   useEffect(() => {
@@ -592,6 +513,26 @@ export const useBrowseFiltersAPI = () => {
     error: filterError,
     refetch: filterRefetch,
   } = useFilterTasks(filterParams, shouldUseFilterAPI);
+
+  // Reset to page 1 when filters change (but not during pagination).
+  // NOTE: must be declared BEFORE the enhance effect below so that, when react-query serves cached
+  // data for the new filter key in the same commit, the clear runs first and the data set wins.
+  useEffect(() => {
+    // Skip reset if we're in the middle of paginating
+    if (isLoadingMore) {
+      console.log('⏭️ Skipping filter reset - pagination in progress');
+      return;
+    }
+    
+    console.log('🔄 Filter changed, resetting to page 1');
+    setCurrentPage(1);
+    setTasksWithOfferCounts([]);
+    setHasMore(true);
+    setIsLoadingMore(false);
+    // Reset tracking refs
+    lastProcessedPageRef.current = 0;
+    lastProcessedDataHashRef.current = '';
+  }, [selectedCategory, taskType, priceRange, selectedSort, debouncedSearchText, radiusKm, searchCoords]);
 
   // Enhance tasks with offer counts if missing
   useEffect(() => {
@@ -893,17 +834,17 @@ export const useBrowseFiltersAPI = () => {
     if (priceRange[0] !== 0 || priceRange[1] !== MAX_PRICE) count++;
     if (availableTasksOnly) count++;
     if (showTasksWithNoOffers) count++;
-    if (radiusKm !== DEFAULT_RADIUS_KM) count++;
-    if (searchSuburb) count++;
+    // Suburb counts as one filter; a non-default radius only counts when a suburb is set
+    if (searchSuburb && searchCoords) {
+      count++;
+      if (radiusKm !== DEFAULT_RADIUS_KM) count++;
+    }
     return count;
   };
 
   const resetFilters = () => {
     console.log('🔄 Resetting all filters to defaults (MAX_PRICE:', MAX_PRICE, ')');
-    
-    // Set flag to indicate we're resetting - prevents clearing tasks in useEffect
-    isResettingRef.current = true;
-    
+
     setSelectedCategory('All Categories');
     setTaskType('all');
     setPriceRange([0, MAX_PRICE]);
@@ -911,42 +852,20 @@ export const useBrowseFiltersAPI = () => {
     setShowTasksWithNoOffers(false);
     setSelectedSort(0);
     setSearchText('');
+    setDebouncedSearchText('');
+    // Clear the search area completely: no suburb, no coordinates, default radius.
+    // With no coordinates the API omits lat/lng/radius and the server returns all open tasks.
+    setSearchSuburb('');
+    setSearchCoords(null);
     setRadiusKm(DEFAULT_RADIUS_KM);
-    persistSearchPrefs({ radiusKm: DEFAULT_RADIUS_KM });
-    setCurrentPage(1);
-    // Don't clear tasks - let them reload from API with reset filters
-    // setTasksWithOfferCounts([]); // REMOVED: This was causing tasks to disappear
-    setHasMore(true);
-    
-    // Clear the flag after a short delay to allow state updates to propagate
-    setTimeout(() => {
-      isResettingRef.current = false;
-    }, 100);
-  };
-
-  // Reset to page 1 when filters change (but not during pagination)
-  useEffect(() => {
-    // Skip if we're resetting - let reset handle it
-    if (isResettingRef.current) {
-      console.log('⏭️ Skipping filter reset - reset operation in progress');
-      return;
-    }
-    
-    // Skip reset if we're in the middle of paginating
-    if (isLoadingMore) {
-      console.log('⏭️ Skipping filter reset - pagination in progress');
-      return;
-    }
-    
-    console.log('🔄 Filter changed, resetting to page 1');
     setCurrentPage(1);
     setTasksWithOfferCounts([]);
     setHasMore(true);
     setIsLoadingMore(false);
-    // Reset tracking refs
     lastProcessedPageRef.current = 0;
     lastProcessedDataHashRef.current = '';
-  }, [selectedCategory, taskType, priceRange, selectedSort, debouncedSearchText, radiusKm, searchCoords, gpsCoords]);
+  };
+
 
   const loadMore = useCallback(() => {
     // Prevent multiple simultaneous load attempts
@@ -988,7 +907,7 @@ export const useBrowseFiltersAPI = () => {
     searchSuburb,
     setRadiusKm: handleRadiusChange,
     setSearchLocation: handleSearchLocationChange,
-    useCurrentSearchLocation: handleUseCurrentLocation,
+    clearSearchLocation: handleClearSearchLocation,
     filteredAndSortedTasks,
     activeFiltersCount: getActiveFiltersCount(),
     resetFilters,
@@ -1006,6 +925,5 @@ export const useBrowseFiltersAPI = () => {
     userCountryCode: countryInfo?.countryCode || 'AU',
     isDetectingCountry,
     searchCoords,
-    gpsCoords,
   };
 };
