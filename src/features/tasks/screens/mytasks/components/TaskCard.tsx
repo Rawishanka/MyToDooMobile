@@ -1428,6 +1428,21 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       ? formatCurrency(resolvedBudget, { code: resolvedCurrency, symbol: getCurrencySymbol(resolvedCurrency) })
       : 'Budget not specified');
 
+  const footerOfferCount =
+    (task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0;
+  // Layout-only: statuses that render a full-width primary button stack the offers row above the buttons
+  const footerHasPrimaryAction =
+    (status === 'assigned' && userRole === 'Tasker' &&
+      isCurrentUserTasker && !posterHasRequestedCancellation && !hasPendingCancelRequestFromOther &&
+      task.status !== 'pending_admin_review' && task.status !== 'cancelled' && task.status !== 'rejected') ||
+    (status === 'accepted' &&
+      ((isCurrentUserTasker && userRole === 'Tasker' &&
+        task.status !== 'pending_admin_review' && task.status !== 'cancelled' && task.status !== 'rejected') ||
+        (userRole === 'Poster' && task.status === 'pending_completion'))) ||
+    (status === 'pending_payment' &&
+      (userRole === 'Tasker' || (userRole === 'Poster' && task.status === 'pending_completion')));
+  const showFooterDivider = footerOfferCount > 0 || !(status === 'cancelled' || status === 'overdue' || status === 'unserviced');
+
   const timePreference = getTimePreference();
 
   return (
@@ -1491,83 +1506,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       >
         <View style={styles.header}>
           <View style={styles.info}>
-            <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>{task.title}</Text>
-
-            {/* Time and Date Information */}
-            <View style={styles.metaRow}>
-              <View style={styles.metaIcon}>
-                <MaterialIcons
-                  name={timePreference.icon}
-                  size={14}
-                  color={CARD_TEXT}
-                />
-              </View>
-              <Text style={styles.timePreference}>{timePreference.label}</Text>
-            </View>
-
-            {/* Location Information */}
-            <View style={styles.metaRow}>
-              <View style={styles.metaIcon}>
-                <MaterialIcons
-                  name={getLocationIcon()}
-                  size={14}
-                  color={isMovingLocation() ? '#4ADE80' : CARD_TEXT}
-                />
-              </View>
-              {isMovingLocation() ? (
-                <Text style={styles.locationType}>Moving/Delivery</Text>
-              ) : null}
-              <Text style={[styles.locationText, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>
-                {formatLocation()}
-              </Text>
-            </View>
-
-            {/* Task Status and Date */}
-            <View style={styles.meta}>
-              <View style={styles.statusRow}>
-                <MaterialIcons
-                  name="circle"
-                  size={8}
-                  color={getStatusColor()}
-                  style={styles.statusDot}
-                />
-                <Text style={[styles.status, { color: getStatusColor() }]}>
-                  {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
-                </Text>
-              </View>
-              <Text style={[styles.date, isDarkMode && { color: '#94A3B8' }]}>
-                {getTaskDate()}
-              </Text>
-            </View>
-
-            {/* Category */}
-            {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
-              <View style={styles.categoryContainer}>
-                <Text style={styles.categoryLabel}>
-                  Category - {task.categories[0]}
-                </Text>
-                {task.categories.length > 1 && (
-                  <Text style={styles.moreCategoriesText}>
-                    +{task.categories.length - 1} more
-                  </Text>
-                )}
-              </View>
-            )}
-
-            {/* Offer Count Display - Same as Browse screen */}
-            <Text style={styles.offerCountText}>
-              {task.status === 'accepted' || task.status === 'completed' || 
-               task.status === 'assigned' || task.status === 'in_progress' || task.status === 'in-progress'
-                ? task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')
-                : (() => {
-                    // Count only non-rejected offers
-                    const nonRejectedOffers = task.offers?.filter((offer: any) => offer.status !== 'rejected') || [];
-                    const offerCount = nonRejectedOffers.length || task.offerCount || 0;
-                    return offerCount > 0
-                      ? `${offerCount} Offer${offerCount !== 1 ? 's' : ''}`
-                      : 'Make the first offer';
-                  })()}
-            </Text>
+            <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={2}>{task.title}</Text>
           </View>
 
           {/* Price and User Info */}
@@ -1620,6 +1559,85 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           </View>
         </View>
 
+        {/* Time + Location chips on ONE row */}
+        <View style={styles.chipRow}>
+          <View style={styles.metaRow}>
+            <View style={styles.metaIcon}>
+              <MaterialIcons
+                name={timePreference.icon}
+                size={14}
+                color={CARD_TEXT}
+              />
+            </View>
+            <Text style={styles.timePreference} numberOfLines={1}>{timePreference.label}</Text>
+          </View>
+
+          <View style={[styles.metaRow, styles.locationChip]}>
+            <View style={styles.metaIcon}>
+              <MaterialIcons
+                name={getLocationIcon()}
+                size={14}
+                color={isMovingLocation() ? '#4ADE80' : CARD_TEXT}
+              />
+            </View>
+            {isMovingLocation() ? (
+              <Text style={styles.locationType}>Moving/Delivery</Text>
+            ) : null}
+            <Text style={[styles.locationText, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>
+              {formatLocation()}
+            </Text>
+          </View>
+        </View>
+
+        {/* Status + Category + Offer count + Date on ONE line */}
+        <View style={styles.meta}>
+          <View style={styles.statusRow}>
+            <MaterialIcons
+              name="circle"
+              size={8}
+              color={getStatusColor()}
+              style={styles.statusDot}
+            />
+            <Text style={[styles.status, { color: getStatusColor() }]}>
+              {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
+            </Text>
+          </View>
+
+          {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
+            <View style={styles.categoryContainer}>
+              <View style={styles.categoryChip}>
+                <Text style={styles.categoryLabel} numberOfLines={1}>
+                  {task.categories[0]}
+                </Text>
+              </View>
+              {task.categories.length > 1 && (
+                <Text style={styles.moreCategoriesText}>
+                  +{task.categories.length - 1} more
+                </Text>
+              )}
+            </View>
+          )}
+
+          {/* Offer Count Display - Same as Browse screen */}
+          <Text style={styles.offerCountText}>
+            {task.status === 'accepted' || task.status === 'completed' || 
+             task.status === 'assigned' || task.status === 'in_progress' || task.status === 'in-progress'
+              ? task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')
+              : (() => {
+                  // Count only non-rejected offers
+                  const nonRejectedOffers = task.offers?.filter((offer: any) => offer.status !== 'rejected') || [];
+                  const offerCount = nonRejectedOffers.length || task.offerCount || 0;
+                  return offerCount > 0
+                    ? `${offerCount} Offer${offerCount !== 1 ? 's' : ''}`
+                    : 'Make the first offer';
+                })()}
+          </Text>
+
+          <Text style={[styles.date, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>
+            {getTaskDate()}
+          </Text>
+        </View>
+
         {/* Task Details */}
         {task.details && (
           <Text style={styles.description} numberOfLines={2}>
@@ -1627,41 +1645,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           </Text>
         )}
       </TouchableOpacity>
-
-      {/* Offers Section - Show offer count for all roles when offers exist */}
-      {(() => {
-        // Count only non-rejected offers
-        const nonRejectedOffers = task.offers?.filter((offer: any) => offer.status !== 'rejected') || [];
-        const offerCount = nonRejectedOffers.length || task.offerCount || 0;
-        return offerCount > 0;
-      })() && (
-        <View style={styles.offersSection}>
-          {userRole === 'Poster' ? (
-            <TouchableOpacity 
-              style={styles.offersButton}
-              onPress={handleViewOffers}
-            >
-              <View style={styles.offersInfo}>
-                <View style={styles.offersIconChip}><MaterialIcons name="local-offer" size={16} color={CARD_TEXT} /></View>
-                <Text style={styles.offersLabel}>
-                  Offers: {(task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0}
-                </Text>
-              </View>
-              <MaterialIcons name="chevron-right" size={22} color={CARD_TEXT_MUTED} />
-            </TouchableOpacity>
-          ) : (
-            /* For Taskers - just display offer count without interaction */
-            <View style={styles.offersButton}>
-              <View style={styles.offersInfo}>
-                <View style={styles.offersIconChip}><MaterialIcons name="local-offer" size={16} color={CARD_TEXT} /></View>
-                <Text style={styles.offersLabel}>
-                  Offers: {(task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0}
-                </Text>
-              </View>
-            </View>
-          )}
-        </View>
-      )}
 
       {status === 'unserviced' && userRole === 'Poster' && (
         <View style={styles.peerReviewLockBanner}>
@@ -1694,416 +1677,454 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         </TouchableOpacity>
       )}
 
-      {/* Action Buttons - Separate from Card Content */}
-      <View style={styles.actionButtons} pointerEvents="box-none">
-        {isCompletedTask && userRole === 'Tasker' ? (
-          // Completed / Review Required (Tasker): View Receipt button (Review handled by primary LeaveReview CTA)
-          <TouchableOpacity 
-            style={[
-              styles.actionButton,
-isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
-              styles.receiptButton,
-              isProcessing && styles.disabledButton
-            ]} 
-            activeOpacity={0.6}
-            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            onPress={handleViewReceipt}
-            disabled={isProcessing}
-          >
-            <MaterialIcons 
-              name="receipt" 
-              size={20} 
-              color={isProcessing ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
-            />
-          </TouchableOpacity>
-        ) : isCompletedTask && userRole === 'Poster' ? (
-          // Completed / Review Required (Poster): View Receipt button (Review handled by primary LeaveReview CTA)
-          <TouchableOpacity 
-            style={[
-              styles.actionButton,
-isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
-              styles.receiptButton,
-              isProcessing && styles.disabledButton
-            ]} 
-            activeOpacity={0.6}
-            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-            onPress={handleViewReceipt}
-            disabled={isProcessing}
-          >
-            <MaterialIcons 
-              name="receipt" 
-              size={20} 
-              color={isProcessing ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
-            />
-          </TouchableOpacity>
-        ) : status === 'cancelled' || status === 'overdue' ? (
-          // Cancelled tab or Overdue tab: No action buttons
-          null
-        ) : status === 'open' && userRole === 'Tasker' ? (
-          // Tasker Open Tasks: Delete Offer button + Delete Task button
-          posterHasRequestedCancellation ? null : (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: isTablet ? 12 : 8 }}>
-              {/* Delete Offer button - Taskers can only delete their own offer, not the task */}
-              {myOffer && (
-                <TouchableOpacity
-                  style={[
-                    styles.actionButton,
-isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
-                    styles.withdrawOfferBtn,
-                    (isProcessing || deleteOfferMutation.isPending) && styles.disabledButton
-                  ]}
-                  activeOpacity={0.7}
-                  hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-                  onPress={() => setShowDeleteOfferModal(true)}
-                  disabled={isProcessing || deleteOfferMutation.isPending}
-                >
-                  <Ionicons
-                    name="trash-outline"
-                    size={18}
-                    color={(isProcessing || deleteOfferMutation.isPending) ? 'rgba(252,165,165,0.4)' : '#FCA5A5'}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-          )
-        ) : status === 'assigned' && userRole === 'Tasker' ? (
-          // Tasker Todoo Tasks: Chat + Mark as Completed + Cancel
-          // Only taskers (assigned users) can mark tasks as complete
-          (() => {
-            // Hide cancel button if poster has requested cancellation OR task is pending_completion
-            const shouldHideCancelButton = posterHasRequestedCancellation || task.status === 'pending_completion';
-            
-            return (
-              <>
-                {/* Chat only available when task is in assigned (Todo) status */}
-                {['todo', 'assigned', 'in_progress', 'pending_completion'].includes(task.status) && (
-                  <TouchableOpacity 
-                    style={[styles.chatButton]}
-                    onPress={handleOpenChat}
-                    activeOpacity={0.7}
-                    delayPressIn={0}
-                  >
-                    <MaterialIcons 
-                      name="chat" 
-                      size={20} 
-                      color="#FFFFFF" 
-                    />
-                  </TouchableOpacity>
-                )}
-                
-                {/* Mark as Completed Button OR Pending Completion Badge - Only for Tasker */}
-                {/* Hidden when there is an active cancellation request (poster or tasker requested) */}
-                {/* Also hidden when task is under admin review, cancelled, or rejected */}
-                {isCurrentUserTasker && !posterHasRequestedCancellation && !hasPendingCancelRequestFromOther &&
-                  task.status !== 'pending_admin_review' && task.status !== 'cancelled' && task.status !== 'rejected' && (
-                  task.status === 'pending_completion' ? (
-                    // Task already marked complete - show waiting status badge instead of button
-                    <View style={styles.pendingCompletionBadge}>
-                      <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#FBBF24" />
-                      <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to accept</Text>
-                    </View>
-                  ) : (
-                    // Show Mark as Completed button
-                    <TouchableOpacity 
-                      style={[
-                        styles.completedButton,
-                        (isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) && styles.disabledButton
-                      ]}
-                      onPress={() => {
-                        console.log('🔥 Mark as Completed button touched!');
-                        if (!isProcessing && !completeTaskMutation.isPending && !completeTaskPaymentMutation.isPending) {
-                          handleMarkAsCompleted();
-                        }
-                      }}
-                      activeOpacity={0.7}
-                      delayPressIn={0}
-                      disabled={isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending}
-                    >
-                      {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-                          <Text style={styles.completedButtonText}>
-                            Completing...
-                          </Text>
-                        </View>
-                      ) : (
-                        <Text style={styles.completedButtonText}>
-                          Mark as Completed
-                        </Text>
-                      )}
-                    </TouchableOpacity>
-                  )
-                )}
-                
-                {!shouldHideCancelButton && (
-                  <TouchableOpacity 
-                    style={[
-                      styles.cancelButton,
-                      isProcessing && styles.disabledButton
-                    ]}
-                    activeOpacity={0.7}
-                    delayPressIn={0}
-                    onPress={() => {
-                      console.log('🔥 Cancel button (Todoo) touched!');
-                      if (!isProcessing) {
-                        handleCancelTask();
-                      }
-                    }}
-                    disabled={isProcessing}
-                  >
-                    <MaterialIcons 
-                      name="close" 
-                      size={20} 
-                      color={isProcessing ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
-                    />
-                  </TouchableOpacity>
-                )}
-              </>
-            );
-          })()
-        ) : status === 'accepted' ? (
-          // Accepted Offers tab: 
-          // - For TASKER (assigned to task): Show Chat + Mark as Completed + Cancel
-          // - For POSTER (task creator): Show Chat + (Release Payment if pending_completion) + Cancel
-          // Only the TASKER can mark task as complete; only the POSTER can release payment
-          <>
-            {/* Chat only available when task is in assigned (Todo) status */}
-            {['todo', 'assigned', 'in_progress', 'pending_completion'].includes(task.status) && (
+      {/* Footer: Offers affordance (left) + action buttons (right) on ONE row */}
+      <View style={[styles.footerRow, footerHasPrimaryAction && styles.footerRowStacked, !showFooterDivider && styles.footerRowNoDivider]} pointerEvents="box-none">
+        {/* Offers Section - Show offer count for all roles when offers exist */}
+        {(() => {
+          // Count only non-rejected offers
+          const nonRejectedOffers = task.offers?.filter((offer: any) => offer.status !== 'rejected') || [];
+          const offerCount = nonRejectedOffers.length || task.offerCount || 0;
+          return offerCount > 0;
+        })() && (
+          <View style={styles.offersSection}>
+            {userRole === 'Poster' ? (
               <TouchableOpacity 
-                style={[styles.chatButton]}
-                onPress={handleOpenChat}
-                activeOpacity={0.7}
-                delayPressIn={0}
+                style={styles.offersButton}
+                onPress={handleViewOffers}
               >
-                <MaterialIcons 
-                  name="chat" 
-                  size={20} 
-                  color="#FFFFFF" 
-                />
-              </TouchableOpacity>
-            )}
-
-            {/* Tasker: Mark as Completed button (only for tasker, not poster) */}
-            {/* Hidden when task is under admin review, cancelled, rejected, or already pending_completion */}
-            {isCurrentUserTasker && userRole === 'Tasker' &&
-              task.status !== 'pending_admin_review' && task.status !== 'cancelled' && task.status !== 'rejected' && (
-              task.status === 'pending_completion' ? (
-                <View style={styles.pendingCompletionBadge}>
-                  <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#FBBF24" />
-                  <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to accept</Text>
+                <View style={styles.offersInfo}>
+                  <View style={styles.offersIconChip}><MaterialIcons name="local-offer" size={16} color={CARD_TEXT} /></View>
+                  <Text style={styles.offersLabel}>
+                    Offers: {(task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0}
+                  </Text>
                 </View>
-              ) : (
-              <TouchableOpacity 
-                style={[
-                  styles.completedButton,
-                  (isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) && styles.disabledButton
-                ]}
-                onPress={() => {
-                  console.log('🔥 Mark as Completed button touched!');
-                  if (!isProcessing && !completeTaskMutation.isPending && !completeTaskPaymentMutation.isPending) {
-                    handleMarkAsCompleted();
-                  }
-                }}
-                activeOpacity={0.7}
-                delayPressIn={0}
-                disabled={isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending}
-              >
-                {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-                    <Text style={styles.completedButtonText}>Completing...</Text>
-                  </View>
-                ) : (
-                  <Text style={styles.completedButtonText}>Mark as Completed</Text>
-                )}
+                <MaterialIcons name="chevron-right" size={22} color={CARD_TEXT_MUTED} />
               </TouchableOpacity>
-              )
-            )}
-
-            {/* Poster: Release Payment button - only when tasker has marked task as pending_completion */}
-            {userRole === 'Poster' && task.status === 'pending_completion' && (
-              <TouchableOpacity
-                style={[
-                  styles.acceptCompletionButton,
-                  (isProcessing || confirmTaskCompletionMutation.isPending) && styles.disabledButton
-                ]}
-                onPress={() => {
-                  console.log('🔥 Release Payment button touched!');
-                  if (!isProcessing && !confirmTaskCompletionMutation.isPending) {
-                    handleConfirmCompletion();
-                  }
-                }}
-                activeOpacity={0.7}
-                delayPressIn={0}
-                disabled={isProcessing || confirmTaskCompletionMutation.isPending}
-              >
-                {(isProcessing || confirmTaskCompletionMutation.isPending) ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-                    <Text style={styles.acceptCompletionButtonText}>Releasing...</Text>
-                  </View>
-                ) : (
-                  <Text style={styles.acceptCompletionButtonText}>Release Payment</Text>
-                )}
-              </TouchableOpacity>
-            )}
-            
-            {/* Cancel button - hidden when poster requested cancellation OR task is pending_completion */}
-            {!posterHasRequestedCancellation && task.status !== 'pending_completion' && (
-              <TouchableOpacity 
-                style={[
-                  styles.cancelButton,
-                  isProcessing && styles.disabledButton
-                ]}
-                onPress={() => {
-                  console.log('🔥 Cancel button (Accepted) touched!');
-                  if (!isProcessing) {
-                    handleCancelTask();
-                  }
-                }}
-                activeOpacity={0.7}
-                delayPressIn={0}
-                disabled={isProcessing}
-              >
-                <MaterialIcons 
-                  name="close" 
-                  size={20} 
-                  color={isProcessing ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
-                />
-              </TouchableOpacity>
-            )}
-          </>
-        ) : status === 'pending_payment' ? (
-          // Pending Payments (Tasker) / Release Payment (Poster)
-          <>
-            {(task.status === 'assigned' || task.status === 'todo' || task.status === 'pending_completion') && (
-              <TouchableOpacity
-                style={[styles.chatButton]}
-                onPress={handleOpenChat}
-                activeOpacity={0.7}
-                delayPressIn={0}
-              >
-                <MaterialIcons name="chat" size={20} color="#FFFFFF" />
-              </TouchableOpacity>
-            )}
-
-            {userRole === 'Tasker' && (
-              <View style={styles.pendingCompletionBadge}>
-                <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#FBBF24" />
-                <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to release payment</Text>
+            ) : (
+              /* For Taskers - just display offer count without interaction */
+              <View style={styles.offersButton}>
+                <View style={styles.offersInfo}>
+                  <View style={styles.offersIconChip}><MaterialIcons name="local-offer" size={16} color={CARD_TEXT} /></View>
+                  <Text style={styles.offersLabel}>
+                    Offers: {(task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0}
+                  </Text>
+                </View>
               </View>
             )}
+          </View>
+        )}
 
-            {userRole === 'Poster' && task.status === 'pending_completion' && (
-              <TouchableOpacity
-                style={[
-                  styles.acceptCompletionButton,
-                  (isProcessing || confirmTaskCompletionMutation.isPending) && styles.disabledButton
-                ]}
-                onPress={() => {
-                  if (!isProcessing && !confirmTaskCompletionMutation.isPending) {
-                    handleConfirmCompletion();
-                  }
-                }}
-                activeOpacity={0.7}
-                delayPressIn={0}
-                disabled={isProcessing || confirmTaskCompletionMutation.isPending}
-              >
-                {(isProcessing || confirmTaskCompletionMutation.isPending) ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-                    <Text style={styles.acceptCompletionButtonText}>Releasing...</Text>
-                  </View>
-                ) : (
-                  <Text style={styles.acceptCompletionButtonText}>Release Payment</Text>
-                )}
-              </TouchableOpacity>
-            )}
-          </>
-        ) : (
-          // Posted tab or other tabs: Edit + Delete + Cancel (except Cancel for Poster in Posted tab)
-          <>
-            {/* Edit Button */}
+        {/* Action Buttons - Separate from Card Content */}
+        <View style={styles.actionButtons} pointerEvents="box-none">
+          {isCompletedTask && userRole === 'Tasker' ? (
+            // Completed / Review Required (Tasker): View Receipt button (Review handled by primary LeaveReview CTA)
             <TouchableOpacity 
               style={[
                 styles.actionButton,
-isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
-                (isProcessing || deleteTaskMutation.isPending) && styles.disabledButton
+  isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
+                styles.receiptButton,
+                isProcessing && styles.disabledButton
               ]} 
               activeOpacity={0.6}
               hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-              disabled={isProcessing || deleteTaskMutation.isPending}
-              onPress={() => {
-                console.log('🔥 Edit button touched!'); // Debug log
-                if (!isProcessing && !deleteTaskMutation.isPending) {
-                  withDebounce(() => {
-                    console.log('✏️ Edit button pressed for task:', task._id);
-                    console.log('   Task data:', task);
-                    // Always navigate to edit screen for edit button
-                    router.push({
-                      pathname: '/edit-task',
-                      params: {
-                        taskId: task._id,
-                        task: JSON.stringify(task)
-                      }
-                    } as any);
-                  });
-                }
-              }}
+              onPress={handleViewReceipt}
+              disabled={isProcessing}
             >
               <MaterialIcons 
-                name="edit" 
+                name="receipt" 
                 size={20} 
-                color={(isProcessing || deleteTaskMutation.isPending) ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
+                color={isProcessing ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
               />
             </TouchableOpacity>
-            
-            {/* Delete Button */}
+          ) : isCompletedTask && userRole === 'Poster' ? (
+            // Completed / Review Required (Poster): View Receipt button (Review handled by primary LeaveReview CTA)
             <TouchableOpacity 
               style={[
-                styles.actionButton, 
-                styles.deleteButton, 
-                (deleteTaskMutation.isPending || isProcessing) && styles.disabledButton
+                styles.actionButton,
+  isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
+                styles.receiptButton,
+                isProcessing && styles.disabledButton
               ]} 
               activeOpacity={0.6}
               hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-              onPress={handleDeleteTask}
-              disabled={deleteTaskMutation.isPending || isProcessing}
+              onPress={handleViewReceipt}
+              disabled={isProcessing}
             >
               <MaterialIcons 
-                name="delete" 
+                name="receipt" 
                 size={20} 
-                color={(deleteTaskMutation.isPending || isProcessing) ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
+                color={isProcessing ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
               />
             </TouchableOpacity>
+          ) : status === 'cancelled' || status === 'overdue' ? (
+            // Cancelled tab or Overdue tab: No action buttons
+            null
+          ) : status === 'open' && userRole === 'Tasker' ? (
+            // Tasker Open Tasks: Delete Offer button + Delete Task button
+            posterHasRequestedCancellation ? null : (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: isTablet ? 12 : 8 }}>
+                {/* Delete Offer button - Taskers can only delete their own offer, not the task */}
+                {myOffer && (
+                  <TouchableOpacity
+                    style={[
+                      styles.actionButton,
+  isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
+                      styles.withdrawOfferBtn,
+                      (isProcessing || deleteOfferMutation.isPending) && styles.disabledButton
+                    ]}
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                    onPress={() => setShowDeleteOfferModal(true)}
+                    disabled={isProcessing || deleteOfferMutation.isPending}
+                  >
+                    <Ionicons
+                      name="trash-outline"
+                      size={18}
+                      color={(isProcessing || deleteOfferMutation.isPending) ? 'rgba(252,165,165,0.4)' : '#FCA5A5'}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )
+          ) : status === 'assigned' && userRole === 'Tasker' ? (
+            // Tasker Todoo Tasks: Chat + Mark as Completed + Cancel
+            // Only taskers (assigned users) can mark tasks as complete
+            (() => {
+              // Hide cancel button if poster has requested cancellation OR task is pending_completion
+              const shouldHideCancelButton = posterHasRequestedCancellation || task.status === 'pending_completion';
             
-            {/* Cancel Button - Hidden for Poster role in Posted tab */}
-            {!(userRole === 'Poster' && !status) && (
+              return (
+                <>
+                  {/* Chat only available when task is in assigned (Todo) status */}
+                  {['todo', 'assigned', 'in_progress', 'pending_completion'].includes(task.status) && (
+                    <TouchableOpacity 
+                      style={[styles.chatButton]}
+                      onPress={handleOpenChat}
+                      activeOpacity={0.7}
+                      delayPressIn={0}
+                    >
+                      <MaterialIcons 
+                        name="chat" 
+                        size={20} 
+                        color="#FFFFFF" 
+                      />
+                    </TouchableOpacity>
+                  )}
+                
+                  {/* Mark as Completed Button OR Pending Completion Badge - Only for Tasker */}
+                  {/* Hidden when there is an active cancellation request (poster or tasker requested) */}
+                  {/* Also hidden when task is under admin review, cancelled, or rejected */}
+                  {isCurrentUserTasker && !posterHasRequestedCancellation && !hasPendingCancelRequestFromOther &&
+                    task.status !== 'pending_admin_review' && task.status !== 'cancelled' && task.status !== 'rejected' && (
+                    task.status === 'pending_completion' ? (
+                      // Task already marked complete - show waiting status badge instead of button
+                      <View style={styles.pendingCompletionBadge}>
+                        <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#FBBF24" />
+                        <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to accept</Text>
+                      </View>
+                    ) : (
+                      // Show Mark as Completed button
+                      <TouchableOpacity 
+                        style={[
+                          styles.completedButton,
+                          (isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) && styles.disabledButton
+                        ]}
+                        onPress={() => {
+                          console.log('🔥 Mark as Completed button touched!');
+                          if (!isProcessing && !completeTaskMutation.isPending && !completeTaskPaymentMutation.isPending) {
+                            handleMarkAsCompleted();
+                          }
+                        }}
+                        activeOpacity={0.7}
+                        delayPressIn={0}
+                        disabled={isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending}
+                      >
+                        {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                            <Text style={styles.completedButtonText}>
+                              Completing...
+                            </Text>
+                          </View>
+                        ) : (
+                          <Text style={styles.completedButtonText}>
+                            Mark as Completed
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                    )
+                  )}
+                
+                  {!shouldHideCancelButton && (
+                    <TouchableOpacity 
+                      style={[
+                        styles.cancelButton,
+                        isProcessing && styles.disabledButton
+                      ]}
+                      activeOpacity={0.7}
+                      delayPressIn={0}
+                      onPress={() => {
+                        console.log('🔥 Cancel button (Todoo) touched!');
+                        if (!isProcessing) {
+                          handleCancelTask();
+                        }
+                      }}
+                      disabled={isProcessing}
+                    >
+                      <MaterialIcons 
+                        name="close" 
+                        size={20} 
+                        color={isProcessing ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
+                      />
+                    </TouchableOpacity>
+                  )}
+                </>
+              );
+            })()
+          ) : status === 'accepted' ? (
+            // Accepted Offers tab: 
+            // - For TASKER (assigned to task): Show Chat + Mark as Completed + Cancel
+            // - For POSTER (task creator): Show Chat + (Release Payment if pending_completion) + Cancel
+            // Only the TASKER can mark task as complete; only the POSTER can release payment
+            <>
+              {/* Chat only available when task is in assigned (Todo) status */}
+              {['todo', 'assigned', 'in_progress', 'pending_completion'].includes(task.status) && (
+                <TouchableOpacity 
+                  style={[styles.chatButton]}
+                  onPress={handleOpenChat}
+                  activeOpacity={0.7}
+                  delayPressIn={0}
+                >
+                  <MaterialIcons 
+                    name="chat" 
+                    size={20} 
+                    color="#FFFFFF" 
+                  />
+                </TouchableOpacity>
+              )}
+
+              {/* Tasker: Mark as Completed button (only for tasker, not poster) */}
+              {/* Hidden when task is under admin review, cancelled, rejected, or already pending_completion */}
+              {isCurrentUserTasker && userRole === 'Tasker' &&
+                task.status !== 'pending_admin_review' && task.status !== 'cancelled' && task.status !== 'rejected' && (
+                task.status === 'pending_completion' ? (
+                  <View style={styles.pendingCompletionBadge}>
+                    <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#FBBF24" />
+                    <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to accept</Text>
+                  </View>
+                ) : (
+                <TouchableOpacity 
+                  style={[
+                    styles.completedButton,
+                    (isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) && styles.disabledButton
+                  ]}
+                  onPress={() => {
+                    console.log('🔥 Mark as Completed button touched!');
+                    if (!isProcessing && !completeTaskMutation.isPending && !completeTaskPaymentMutation.isPending) {
+                      handleMarkAsCompleted();
+                    }
+                  }}
+                  activeOpacity={0.7}
+                  delayPressIn={0}
+                  disabled={isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending}
+                >
+                  {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                      <Text style={styles.completedButtonText}>Completing...</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.completedButtonText}>Mark as Completed</Text>
+                  )}
+                </TouchableOpacity>
+                )
+              )}
+
+              {/* Poster: Release Payment button - only when tasker has marked task as pending_completion */}
+              {userRole === 'Poster' && task.status === 'pending_completion' && (
+                <TouchableOpacity
+                  style={[
+                    styles.acceptCompletionButton,
+                    (isProcessing || confirmTaskCompletionMutation.isPending) && styles.disabledButton
+                  ]}
+                  onPress={() => {
+                    console.log('🔥 Release Payment button touched!');
+                    if (!isProcessing && !confirmTaskCompletionMutation.isPending) {
+                      handleConfirmCompletion();
+                    }
+                  }}
+                  activeOpacity={0.7}
+                  delayPressIn={0}
+                  disabled={isProcessing || confirmTaskCompletionMutation.isPending}
+                >
+                  {(isProcessing || confirmTaskCompletionMutation.isPending) ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                      <Text style={styles.acceptCompletionButtonText}>Releasing...</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.acceptCompletionButtonText}>Release Payment</Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            
+              {/* Cancel button - hidden when poster requested cancellation OR task is pending_completion */}
+              {!posterHasRequestedCancellation && task.status !== 'pending_completion' && (
+                <TouchableOpacity 
+                  style={[
+                    styles.cancelButton,
+                    isProcessing && styles.disabledButton
+                  ]}
+                  onPress={() => {
+                    console.log('🔥 Cancel button (Accepted) touched!');
+                    if (!isProcessing) {
+                      handleCancelTask();
+                    }
+                  }}
+                  activeOpacity={0.7}
+                  delayPressIn={0}
+                  disabled={isProcessing}
+                >
+                  <MaterialIcons 
+                    name="close" 
+                    size={20} 
+                    color={isProcessing ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
+                  />
+                </TouchableOpacity>
+              )}
+            </>
+          ) : status === 'pending_payment' ? (
+            // Pending Payments (Tasker) / Release Payment (Poster)
+            <>
+              {(task.status === 'assigned' || task.status === 'todo' || task.status === 'pending_completion') && (
+                <TouchableOpacity
+                  style={[styles.chatButton]}
+                  onPress={handleOpenChat}
+                  activeOpacity={0.7}
+                  delayPressIn={0}
+                >
+                  <MaterialIcons name="chat" size={20} color="#FFFFFF" />
+                </TouchableOpacity>
+              )}
+
+              {userRole === 'Tasker' && (
+                <View style={styles.pendingCompletionBadge}>
+                  <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#FBBF24" />
+                  <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to release payment</Text>
+                </View>
+              )}
+
+              {userRole === 'Poster' && task.status === 'pending_completion' && (
+                <TouchableOpacity
+                  style={[
+                    styles.acceptCompletionButton,
+                    (isProcessing || confirmTaskCompletionMutation.isPending) && styles.disabledButton
+                  ]}
+                  onPress={() => {
+                    if (!isProcessing && !confirmTaskCompletionMutation.isPending) {
+                      handleConfirmCompletion();
+                    }
+                  }}
+                  activeOpacity={0.7}
+                  delayPressIn={0}
+                  disabled={isProcessing || confirmTaskCompletionMutation.isPending}
+                >
+                  {(isProcessing || confirmTaskCompletionMutation.isPending) ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                      <Text style={styles.acceptCompletionButtonText}>Releasing...</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.acceptCompletionButtonText}>Release Payment</Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            </>
+          ) : (
+            // Posted tab or other tabs: Edit + Delete + Cancel (except Cancel for Poster in Posted tab)
+            <>
+              {/* Edit Button */}
               <TouchableOpacity 
                 style={[
                   styles.actionButton,
-isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
-                  isProcessing && styles.disabledButton
+  isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
+                  (isProcessing || deleteTaskMutation.isPending) && styles.disabledButton
                 ]} 
                 activeOpacity={0.6}
                 hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-                onPress={handleCancelTask}
-                disabled={isProcessing}
+                disabled={isProcessing || deleteTaskMutation.isPending}
+                onPress={() => {
+                  console.log('🔥 Edit button touched!'); // Debug log
+                  if (!isProcessing && !deleteTaskMutation.isPending) {
+                    withDebounce(() => {
+                      console.log('✏️ Edit button pressed for task:', task._id);
+                      console.log('   Task data:', task);
+                      // Always navigate to edit screen for edit button
+                      router.push({
+                        pathname: '/edit-task',
+                        params: {
+                          taskId: task._id,
+                          task: JSON.stringify(task)
+                        }
+                      } as any);
+                    });
+                  }
+                }}
               >
                 <MaterialIcons 
-                  name="cancel" 
+                  name="edit" 
                   size={20} 
-                  color={isProcessing ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
+                  color={(isProcessing || deleteTaskMutation.isPending) ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
                 />
               </TouchableOpacity>
-            )}
-          </>
-        )} 
+            
+              {/* Delete Button */}
+              <TouchableOpacity 
+                style={[
+                  styles.actionButton, 
+                  styles.deleteButton, 
+                  (deleteTaskMutation.isPending || isProcessing) && styles.disabledButton
+                ]} 
+                activeOpacity={0.6}
+                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                onPress={handleDeleteTask}
+                disabled={deleteTaskMutation.isPending || isProcessing}
+              >
+                <MaterialIcons 
+                  name="delete" 
+                  size={20} 
+                  color={(deleteTaskMutation.isPending || isProcessing) ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
+                />
+              </TouchableOpacity>
+            
+              {/* Cancel Button - Hidden for Poster role in Posted tab */}
+              {!(userRole === 'Poster' && !status) && (
+                <TouchableOpacity 
+                  style={[
+                    styles.actionButton,
+  isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
+                    isProcessing && styles.disabledButton
+                  ]} 
+                  activeOpacity={0.6}
+                  hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                  onPress={handleCancelTask}
+                  disabled={isProcessing}
+                >
+                  <MaterialIcons 
+                    name="cancel" 
+                    size={20} 
+                    color={isProcessing ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
+                  />
+                </TouchableOpacity>
+              )}
+            </>
+          )} 
+        </View>
       </View>
 
       {/* Unserviced — poster can reopen */}
       {status === 'unserviced' && userRole === 'Poster' && (
-        <View style={styles.actionButtons} pointerEvents="box-none">
+        <View style={[styles.actionButtons, { marginTop: 8 }]} pointerEvents="box-none">
           <TouchableOpacity
             style={[
               styles.acceptCompletionButton,
@@ -2678,9 +2699,9 @@ const styles = StyleSheet.create({
   card: {
     marginHorizontal: isTablet ? 0 : 16,
     backgroundColor: CARD_BG,
-    padding: isTablet ? wp('2%') : 16,
+    padding: isTablet ? wp('2%') : 12,
     borderRadius: 20,
-    marginBottom: 16,
+    marginBottom: 12,
     position: 'relative',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.14)',
@@ -2698,16 +2719,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#dc3545',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 8,
     gap: 8,
   },
   cancelRequestBannerText: {
     flex: 1,
     color: '#fff',
-    fontSize: RFValue(14),
+    fontSize: RFValue(12),
     fontWeight: '600',
   },
   peerReviewLockBanner: {
@@ -2716,26 +2737,26 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(251,191,36,0.16)',
     borderWidth: 1,
     borderColor: 'rgba(251,191,36,0.4)',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 8,
     gap: 8,
   },
   peerReviewLockText: {
     flex: 1,
     color: '#FDE68A',
-    fontSize: RFValue(13),
+    fontSize: RFValue(12),
     fontWeight: '500',
   },
   ownCancelPendingBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#E67E22',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 8,
     gap: 8,
   },
   cardContent: {
@@ -2745,15 +2766,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: 14,
-    gap: 10,
+    marginTop: 0,
+    gap: 8,
     zIndex: 10,
     elevation: 10,
   },
   actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     backgroundColor: CARD_CHIP_BG,
     justifyContent: 'center',
     alignItems: 'center',
@@ -2763,9 +2784,9 @@ const styles = StyleSheet.create({
     opacity: 0.45,
   },
   chatButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     backgroundColor: CARD_CHIP_BG,
     justifyContent: 'center',
     alignItems: 'center',
@@ -2773,9 +2794,9 @@ const styles = StyleSheet.create({
   completedButton: {
     flex: 1,
     backgroundColor: BRAND_ORANGE,
-    height: 44,
+    height: 42,
     paddingHorizontal: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: BRAND_ORANGE,
@@ -2797,9 +2818,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(251,191,36,0.16)',
     borderWidth: 1,
     borderColor: 'rgba(251,191,36,0.45)',
-    minHeight: 44,
-    paddingHorizontal: 12,
-    borderRadius: 14,
+    minHeight: 42,
+    paddingHorizontal: 10,
+    borderRadius: 12,
     gap: 6,
   },
   pendingCompletionBadgeText: {
@@ -2811,9 +2832,9 @@ const styles = StyleSheet.create({
   acceptCompletionButton: {
     flex: 1,
     backgroundColor: '#00A651',
-    height: 44,
+    height: 42,
     paddingHorizontal: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -2823,9 +2844,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   cancelButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     backgroundColor: 'rgba(248,113,113,0.22)',
     borderWidth: 1.5,
     borderColor: 'rgba(252,165,165,0.55)',
@@ -2836,9 +2857,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     backgroundColor: 'rgba(248,113,113,0.16)',
     borderRadius: 12,
     borderWidth: 1,
@@ -2934,46 +2955,60 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
-    marginRight: isTablet ? wp('2%') : 12,
+    marginRight: 8,
   },
   title: {
-    fontSize: RFValue(isTablet ? 16 : 17),
+    fontSize: RFValue(16),
     fontWeight: '700',
-    marginBottom: 10,
     color: CARD_TEXT,
-    lineHeight: isTablet ? RFValue(22) : 23,
+    lineHeight: isTablet ? RFValue(21) : 21,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-    flexWrap: 'wrap',
-    gap: 4,
+    height: 26,
+    paddingRight: 10,
+    borderRadius: 13,
+    backgroundColor: CARD_CHIP_BG,
+    gap: 2,
+    flexShrink: 1,
+    maxWidth: '100%',
+  },
+  locationChip: {
+    flexShrink: 1,
   },
   metaIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 8,
-    backgroundColor: CARD_CHIP_BG,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 6,
+    marginLeft: 2,
+    marginRight: 2,
   },
   offersIconChip: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 9,
     backgroundColor: CARD_CHIP_BG,
     alignItems: 'center',
     justifyContent: 'center',
   },
   timePreference: {
-    fontSize: RFValue(13),
+    fontSize: RFValue(12),
+    flexShrink: 1,
     color: CARD_TEXT,
     fontWeight: '500',
   },
   locationType: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(12),
     color: '#4ADE80',
     fontWeight: '500',
     marginRight: 4,
@@ -2984,16 +3019,15 @@ const styles = StyleSheet.create({
     fontSize: RFValue(isTablet ? 12 : 12),
   },
   locationText: {
-    fontSize: RFValue(13),
+    fontSize: RFValue(12),
     color: CARD_TEXT_MUTED,
-    flex: 1,
     flexShrink: 1,
   },
   meta: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
     alignItems: 'center',
-    marginTop: 2,
+    marginBottom: 6,
     gap: 8,
   },
   statusRow: {
@@ -3012,63 +3046,65 @@ const styles = StyleSheet.create({
     fontSize: RFValue(12),
     color: CARD_TEXT_MUTED,
     flexShrink: 1,
+    marginLeft: 'auto',
   },
   offerCountText: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(11),
     color: '#FFFFFF',
     fontWeight: '600',
-    marginTop: 12,
-    alignSelf: 'flex-start',
     backgroundColor: BRAND_ORANGE,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   price: {
-    alignItems: 'flex-end',
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 0,
   },
   priceText: {
-    fontSize: RFValue(isTablet ? 14 : 16),
+    fontSize: RFValue(15),
     fontWeight: '700',
     color: CARD_PRICE_TEXT,
     backgroundColor: CARD_PRICE_BG,
     paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingVertical: 6,
     borderRadius: 14,
     overflow: 'hidden',
-    marginBottom: 10,
   },
   userAvatar: {
-    width: isTablet ? 44 : 32,
-    height: isTablet ? 44 : 32,
-    borderRadius: isTablet ? 22 : 16,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: CARD_CHIP_BG,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.6)',
   },
   description: {
-    fontSize: RFValue(isTablet ? 13 : 14),
+    fontSize: RFValue(13),
     color: CARD_TEXT_MUTED,
-    lineHeight: isTablet ? RFValue(18) : 21,
-    marginTop: 8,
+    lineHeight: 18,
+    marginTop: 2,
   },
   categoryContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: isTablet ? wp('1.5%') : 8,
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: CARD_DIVIDER,
+    flexShrink: 1,
+    gap: 6,
+  },
+  categoryChip: {
+    backgroundColor: CARD_CHIP_BG,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 12,
+    flexShrink: 1,
   },
   categoryLabel: {
-    fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    fontSize: RFValue(11),
+    color: CARD_TEXT,
     fontWeight: '600',
-    letterSpacing: 0.3,
-    lineHeight: 18,
   },
   categoryTag: {
     backgroundColor: CARD_CHIP_BG,
@@ -3128,19 +3164,19 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   radioButtonSelected: {
-    borderColor: '#2563eb',
+    borderColor: '#003399',
   },
   radioButtonInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#2563eb',
+    backgroundColor: '#003399',
   },
   reasonNumberSelected: {
-    color: '#1d4ed8',
+    color: '#003399',
   },
   reasonTextSelected: {
-    color: '#1d4ed8',
+    color: '#003399',
     fontWeight: '600',
   },
   posterCancelHeader: {
@@ -3182,7 +3218,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   warningLink: {
-    color: '#2563eb',
+    color: '#003399',
     textDecorationLine: 'underline',
     fontWeight: '500',
   },
@@ -3222,7 +3258,7 @@ const styles = StyleSheet.create({
   },
   reasonItemSelected: {
     backgroundColor: '#eff6ff',
-    borderColor: '#2563eb',
+    borderColor: '#003399',
     borderWidth: 2,
   },
   reasonNumber: {
@@ -3266,10 +3302,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 14,
+    marginTop: 8,
     backgroundColor: '#ff6b35',
-    borderRadius: 14,
-    height: 48,
+    borderRadius: 12,
+    height: 42,
     shadowColor: '#ff6b35',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.28,
@@ -3279,7 +3315,7 @@ const styles = StyleSheet.create({
   leaveReviewCtaText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: 14,
   },
   reviewButton: {
     backgroundColor: 'rgba(251,191,36,0.16)',
@@ -3430,17 +3466,38 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   // Offers section styles
-  offersSection: {
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: CARD_DIVIDER,
-    paddingTop: 12,
-    marginTop: 14,
+  },
+  footerRowStacked: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    flexWrap: 'nowrap',
+    gap: 8,
+  },
+  footerRowNoDivider: {
+    marginTop: 0,
+    paddingTop: 0,
+    borderTopWidth: 0,
+  },
+  offersSection: {
+    flexGrow: 1,
+    flexShrink: 1,
   },
   offersButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 2,
+    justifyContent: 'flex-start',
+    gap: 2,
+    minHeight: 36,
   },
   offersInfo: {
     flexDirection: 'row',
@@ -3450,7 +3507,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(14),
     fontWeight: '600',
     color: CARD_TEXT,
-    marginLeft: 10,
+    marginLeft: 8,
   },
   offersCount: {
     fontSize: RFValue(14),

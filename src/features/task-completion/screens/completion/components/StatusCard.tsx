@@ -9,7 +9,7 @@ import { RFValue } from '@/src/shared/utils/responsive';
 // Status colours from the hook are dark; lighten them so they stay readable on the blue card.
 const ON_BLUE_TINT: Record<string, string> = {
   '#28a745': '#4ADE80',
-  '#007bff': '#FFFFFF',
+  '#007bff': '#BFD4FF',
   '#dc3545': '#FCA5A5',
   '#6c757d': 'rgba(255,255,255,0.78)',
   '#ffc107': '#FBBF24',

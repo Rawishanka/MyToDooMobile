@@ -23,7 +23,8 @@ import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { AppAlert } from '@/src/shared/components/AppAlert';
-import { ActivityIndicator, Alert, Image, Linking, Modal, Platform, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Linking, Modal, Platform, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import rating components
@@ -530,7 +531,7 @@ export default function AccountScreen() {
     console.log("⏳ Loading profile data...");
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#003399" />
+        <ActivityIndicator size="large" color="#FFFFFF" />
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
@@ -625,7 +626,7 @@ export default function AccountScreen() {
   if (isLoadingProfile && !userData && isAuthenticated && token) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#003399" />
+        <ActivityIndicator size="large" color="#FFFFFF" />
         <Text style={styles.loadingText}>Loading profile...</Text>
       </View>
     );
@@ -644,7 +645,7 @@ export default function AccountScreen() {
       console.log("⏳ Auth error detected - waiting for auto-logout redirect...");
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#003399" />
+          <ActivityIndicator size="large" color="#FFFFFF" />
           <Text style={styles.loadingText}>Signing out...</Text>
         </View>
       );
@@ -653,7 +654,7 @@ export default function AccountScreen() {
     // For non-auth errors, show the error UI
     return (
       <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
+        <Ionicons name="alert-circle-outline" size={64} color="#FCA5A5" />
         <Text style={styles.errorTitle}>Failed to load profile</Text>
         <Text style={styles.errorSubtitle}>
           Could not load your profile. Please check your connection and try again.
@@ -945,9 +946,18 @@ export default function AccountScreen() {
 
   // Otherwise show account screen
   return (
+    <View style={[styles.root, isDarkMode && { backgroundColor: '#0B1120' }]}>
+    <StatusBar barStyle="light-content" />
+    {!isDarkMode && (
+      <LinearGradient
+        colors={['#003399', '#00287A']}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
+    )}
     <ScrollView 
       ref={scrollViewRef}
-      style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}
+      style={styles.container}
       contentContainerStyle={{ paddingBottom: TAB_BAR_CLEARANCE }}
       showsVerticalScrollIndicator={false}
     >
@@ -960,7 +970,7 @@ export default function AccountScreen() {
         actionText="OK"
       />
       {/* Header Section */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
+      <View style={[styles.header, isDarkMode && styles.headerDark, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={handleChangeAvatar} disabled={isUploadingAvatar}>
           <View>
             <Image
@@ -996,7 +1006,7 @@ export default function AccountScreen() {
               </View>
             )}
             <View style={styles.cameraIconContainer}>
-              <Ionicons name="camera" size={18} color="#fff" />
+              <Ionicons name="camera" size={16} color="#fff" />
             </View>
           </View>
         </TouchableOpacity>
@@ -1087,7 +1097,7 @@ export default function AccountScreen() {
                 <Ionicons
                   name={badge.on ? 'shield-checkmark' : 'shield-outline'}
                   size={13}
-                  color={badge.on ? '#34D399' : 'rgba(255,255,255,0.65)'}
+                  color={badge.on ? '#4ADE80' : 'rgba(255,255,255,0.65)'}
                 />
                 <Text
                   style={[
@@ -1113,7 +1123,7 @@ export default function AccountScreen() {
         {userData && (
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Ionicons name="star" size={16} color="#FFD700" />
+              <Ionicons name="star" size={16} color="#FBBF24" />
               <Text style={styles.statText}>
                 {(() => {
                   // Use ratingData (from /rating-stats API) as the source of truth
@@ -1243,7 +1253,7 @@ export default function AccountScreen() {
         >
           {ratingLoading && !ratingData ? (
             <View style={styles.ratingLoadingContainer}>
-              <ActivityIndicator size="small" color="#003399" />
+              <ActivityIndicator size="small" color="#FFFFFF" />
               <Text style={styles.ratingLoadingText}>Loading ratings...</Text>
             </View>
           ) : ratingData ? (
@@ -1296,14 +1306,14 @@ export default function AccountScreen() {
                 totalTasks={userData.completedTasks ?? 0}
               />
               <View style={styles.noRatingContainer}>
-                <Ionicons name="chatbox-outline" size={48} color="#ccc" />
+                <Ionicons name="chatbox-outline" size={48} color="rgba(255,255,255,0.5)" />
                 <Text style={styles.noRatingText}>No reviews yet</Text>
                 <Text style={styles.noRatingSubtext}>Complete tasks to receive reviews from clients</Text>
               </View>
             </>
           ) : (
             <View style={styles.noRatingContainer}>
-              <Ionicons name="star-outline" size={48} color="#ccc" />
+              <Ionicons name="star-outline" size={48} color="rgba(255,255,255,0.5)" />
               <Text style={styles.noRatingText}>No ratings yet</Text>
               <Text style={styles.noRatingSubtext}>Complete tasks to start building your reputation</Text>
             </View>
@@ -1331,7 +1341,7 @@ export default function AccountScreen() {
           <View style={[styles.stripeAccountCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             <View style={styles.stripeAccountHeader}>
               <View style={styles.stripeAccountTitleRow}>
-                <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
                 <Text style={[styles.stripeAccountTitle, isDarkMode && { color: '#F8FAFC' }]}>Payment Account</Text>
               </View>
               <View style={[
@@ -1362,7 +1372,7 @@ export default function AccountScreen() {
               >
                 <View style={[styles.bankAccountItem, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   <View style={[styles.bankIconContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                    <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                    <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
                   </View>
                   <View style={styles.bankAccountInfo}>
                     <Text style={[styles.bankAccountLabel, isDarkMode && { color: '#F8FAFC' }]}>
@@ -1372,7 +1382,7 @@ export default function AccountScreen() {
                       BSB {stripeAccountStatus.bankAccount.routingNumber} • **** {stripeAccountStatus.bankAccount.last4}
                     </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+                  <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.6)'} />
                 </View>
               </TouchableOpacity>
             )}
@@ -1388,27 +1398,27 @@ export default function AccountScreen() {
               <View style={styles.stripeAccountCapabilities}>
                 <View style={[styles.capabilityBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   {stripeAccountStatus.chargesEnabled ? (
-                    <Ionicons name="checkmark-circle" size={14} color="#28a745" />
+                    <Ionicons name="checkmark-circle" size={14} color="#4ADE80" />
                   ) : (
-                    <Ionicons name="close-circle" size={14} color="#dc3545" />
+                    <Ionicons name="close-circle" size={14} color="#FCA5A5" />
                   )}
                   <Text style={[styles.capabilityText, isDarkMode && { color: '#F8FAFC' }]}>Charges</Text>
                 </View>
                 
                 <View style={[styles.capabilityBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   {stripeAccountStatus.payoutsEnabled ? (
-                    <Ionicons name="checkmark-circle" size={14} color="#28a745" />
+                    <Ionicons name="checkmark-circle" size={14} color="#4ADE80" />
                   ) : (
-                    <Ionicons name="close-circle" size={14} color="#dc3545" />
+                    <Ionicons name="close-circle" size={14} color="#FCA5A5" />
                   )}
                   <Text style={[styles.capabilityText, isDarkMode && { color: '#F8FAFC' }]}>Payouts</Text>
                 </View>
                 
                 <View style={[styles.capabilityBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   {stripeAccountStatus.detailsSubmitted ? (
-                    <Ionicons name="checkmark-circle" size={14} color="#28a745" />
+                    <Ionicons name="checkmark-circle" size={14} color="#4ADE80" />
                   ) : (
-                    <Ionicons name="close-circle" size={14} color="#dc3545" />
+                    <Ionicons name="close-circle" size={14} color="#FCA5A5" />
                   )}
                   <Text style={[styles.capabilityText, isDarkMode && { color: '#F8FAFC' }]}>Details</Text>
                 </View>
@@ -1434,7 +1444,7 @@ export default function AccountScreen() {
             }}
           >
             <View style={[styles.pendingReviewsIconWrap, isDarkMode && { backgroundColor: 'rgba(234, 88, 12, 0.2)' }]}>
-              <Ionicons name="star" size={18} color="#EA580C" />
+              <Ionicons name="star" size={18} color={isDarkMode ? '#EA580C' : '#FBBF24'} />
             </View>
             <View style={styles.pendingReviewsTextCol}>
               <View style={styles.pendingReviewsTitleRow}>
@@ -1460,7 +1470,7 @@ export default function AccountScreen() {
                   : "chevron-down"
               }
               size={18}
-              color="#64748B"
+              color={isDarkMode ? '#64748B' : 'rgba(255,255,255,0.6)'}
             />
           </TouchableOpacity>
 
@@ -1574,7 +1584,7 @@ export default function AccountScreen() {
               <Ionicons
                 name={biometricTypeLabel === 'Face ID' ? 'scan-outline' : 'finger-print-outline'}
                 size={20}
-                color={isDarkMode ? "#38BDF8" : "#003399"}
+                color={isDarkMode ? "#38BDF8" : "#FFFFFF"}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -1590,15 +1600,15 @@ export default function AccountScreen() {
             <Switch
               value={biometricEnabled}
               onValueChange={handleToggleBiometrics}
-              trackColor={{ false: isDarkMode ? '#475569' : '#CBD5E1', true: '#ff6b35' }}
+              trackColor={{ false: isDarkMode ? '#475569' : 'rgba(255,255,255,0.3)', true: '#ff6b35' }}
               thumbColor="#FFFFFF"
-              ios_backgroundColor={isDarkMode ? '#475569' : '#CBD5E1'}
+              ios_backgroundColor={isDarkMode ? '#475569' : 'rgba(255,255,255,0.3)'}
             />
           </View>
         )}
         <View style={[styles.menuItem, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
           <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: 'rgba(56,189,248,0.14)' }]}>
-            <Ionicons name={isDarkMode ? "moon" : "moon-outline"} size={20} color={isDarkMode ? "#38BDF8" : "#003399"} />
+            <Ionicons name={isDarkMode ? "moon" : "moon-outline"} size={20} color={isDarkMode ? "#38BDF8" : "#FFFFFF"} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }]}>Dark Mode</Text>
@@ -1609,9 +1619,9 @@ export default function AccountScreen() {
           <Switch
             value={isDarkMode}
             onValueChange={toggleDarkMode}
-            trackColor={{ false: isDarkMode ? '#475569' : '#CBD5E1', true: '#ff6b35' }}
+            trackColor={{ false: isDarkMode ? '#475569' : 'rgba(255,255,255,0.3)', true: '#ff6b35' }}
             thumbColor="#FFFFFF"
-            ios_backgroundColor={isDarkMode ? '#475569' : '#CBD5E1'}
+            ios_backgroundColor={isDarkMode ? '#475569' : 'rgba(255,255,255,0.3)'}
           />
         </View>
 
@@ -1936,7 +1946,7 @@ export default function AccountScreen() {
             {/* Footer Buttons — Fixed at bottom */}
             <View style={[styles.bankDetailsFooter, isDarkMode && { borderTopColor: "#334155", backgroundColor: "#1E293B" }]}>
               <TouchableOpacity
-                style={[styles.bankDetailsButton, { backgroundColor: '#003399' }, isUpdatingBank && { opacity: 0.7 }]}
+                style={[styles.bankDetailsButton, { backgroundColor: '#ff6b35' }, isUpdatingBank && { opacity: 0.7 }]}
                 onPress={handleUpdateBankAccount}
                 disabled={isUpdatingBank}
               >
@@ -1992,6 +2002,7 @@ export default function AccountScreen() {
       )}
 
     </ScrollView>
+    </View>
   );
 }
 
@@ -2014,15 +2025,21 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disab
       disabled={disabled && !onPress}
       activeOpacity={0.7}
     >
-      <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: 'rgba(56,189,248,0.14)' }, danger && { backgroundColor: isDarkMode ? 'rgba(220,38,38,0.18)' : '#FEE2E2' }]}>
+      <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: 'rgba(56,189,248,0.14)' }, danger && { backgroundColor: isDarkMode ? 'rgba(220,38,38,0.18)' : 'rgba(252,165,165,0.18)' }]}>
         {React.isValidElement(icon)
           ? React.cloneElement(icon as React.ReactElement<any>, {
-              color: danger ? '#DC2626' : isDarkMode ? '#38BDF8' : (icon.props as any).color || '#003399',
+              color: danger
+                ? (isDarkMode ? '#DC2626' : '#FCA5A5')
+                : isDarkMode
+                ? '#38BDF8'
+                : (icon.props as any).color === '#16A34A'
+                ? '#4ADE80'
+                : '#FFFFFF',
             })
           : icon}
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }, danger && { color: isDarkMode ? '#F87171' : '#DC2626' }, disabled && styles.menuTextDisabled]}>{text}</Text>
+        <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }, danger && { color: isDarkMode ? '#F87171' : '#FCA5A5' }, disabled && styles.menuTextDisabled]}>{text}</Text>
         {subtext && <Text style={[styles.subtext, isDarkMode && { color: '#94A3B8' }, disabled && styles.subtextDisabled]}>{subtext}</Text>}
       </View>
       {badge && badge > 0 ? (
@@ -2031,71 +2048,93 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disab
         </View>
       ) : null}
       {disabled ? (
-        <Ionicons name="lock-closed" size={18} color="#64748B" />
+        <Ionicons name="lock-closed" size={18} color={isDarkMode ? '#64748B' : 'rgba(255,255,255,0.5)'} />
       ) : (
-        <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
+        <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.6)'} />
       )}
     </TouchableOpacity>
   );
 };
 
 
+const GLASS_BG = 'rgba(255,255,255,0.10)';
+const GLASS_BORDER = 'rgba(255,255,255,0.18)';
+const GLASS_SHADOW = {
+  shadowColor: '#00114D',
+  shadowOpacity: 0.25,
+  shadowRadius: 14,
+  shadowOffset: { width: 0, height: 6 },
+} as const;
+
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: '#003399',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: 'transparent',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: 'rgba(255,255,255,0.85)',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   errorTitle: {
     fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: '#003399',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#ff6b35',
+    paddingHorizontal: 28,
+    height: 52,
+    justifyContent: 'center',
+    borderRadius: 14,
+    shadowColor: '#ff6b35',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
   retryButtonText: {
     color: '#fff',
     fontSize: RFValue(16),
-    fontWeight: '600',
+    fontWeight: '700',
   },
   header: {
-    backgroundColor: '#003399',
+    backgroundColor: 'transparent',
     alignItems: 'center',
-    paddingBottom: 30,
+    paddingBottom: 24,
+    position: 'relative',
+  },
+  headerDark: {
+    backgroundColor: '#003399',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    position: 'relative',
+    paddingBottom: 30,
   },
   profileImage: {
     width: 120,
@@ -2109,13 +2148,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 12,
     right: 0,
-    backgroundColor: '#003399',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    backgroundColor: '#ff6b35',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
+    borderWidth: 2.5,
     borderColor: '#fff',
   },
   uploadingOverlay: {
@@ -2130,9 +2169,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   name: {
-    fontSize: RFValue(20),
+    fontSize: RFValue(22),
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '800',
   },
   badgeRow: {
     flexDirection: 'row',
@@ -2166,7 +2205,8 @@ const styles = StyleSheet.create({
   },
   location: {
     fontSize: RFValue(14),
-    color: '#fff',
+    color: 'rgba(255,255,255,0.75)',
+    marginTop: 2,
     marginBottom: 6,
   },
   bioHeaderText: {
@@ -2242,7 +2282,7 @@ const styles = StyleSheet.create({
   ratingLoadingText: {
     marginLeft: 12,
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
   },
   noRatingContainer: {
     alignItems: 'center',
@@ -2252,25 +2292,25 @@ const styles = StyleSheet.create({
   noRatingText: {
     fontSize: RFValue(18),
     fontWeight: 'bold',
-    color: '#64748B',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   noRatingSubtext: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 20,
   },
   // Stripe Connect Account Status Card
   stripeAccountCard: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+    backgroundColor: GLASS_BG,
+    borderRadius: 20,
     padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: GLASS_BORDER,
+    ...GLASS_SHADOW,
   },
   stripeAccountHeader: {
     flexDirection: 'row',
@@ -2285,8 +2325,8 @@ const styles = StyleSheet.create({
   },
   stripeAccountTitle: {
     fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   statusBadge: {
     paddingHorizontal: 10,
@@ -2294,26 +2334,26 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusBadgeActive: {
-    backgroundColor: '#d4edda',
+    backgroundColor: 'rgba(74,222,128,0.18)',
   },
   statusBadgePending: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: 'rgba(251,191,36,0.18)',
   },
   statusBadgeRestricted: {
-    backgroundColor: '#f8d7da',
+    backgroundColor: 'rgba(252,165,165,0.18)',
   },
   statusBadgeText: {
     fontSize: RFValue(12),
     fontWeight: '600',
   },
   statusBadgeTextActive: {
-    color: '#155724',
+    color: '#4ADE80',
   },
   statusBadgeTextPending: {
-    color: '#856404',
+    color: '#FBBF24',
   },
   statusBadgeTextRestricted: {
-    color: '#721c24',
+    color: '#FCA5A5',
   },
   stripeAccountDetails: {
     gap: 8,
@@ -2325,12 +2365,12 @@ const styles = StyleSheet.create({
   },
   stripeAccountLabel: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
   },
   stripeAccountValue: {
     fontSize: RFValue(14),
     fontWeight: '500',
-    color: '#000',
+    color: '#FFFFFF',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   bankAccountSection: {
@@ -2340,17 +2380,17 @@ const styles = StyleSheet.create({
   bankAccountItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: GLASS_BORDER,
   },
   bankIconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    backgroundColor: '#EEF2FF',
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -2361,12 +2401,12 @@ const styles = StyleSheet.create({
   bankAccountLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#000',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   bankAccountNumber: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   stripeAccountCapabilities: {
@@ -2380,14 +2420,14 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: GLASS_BORDER,
   },
   capabilityText: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: 'rgba(255,255,255,0.85)',
   },
   // Bank Account Details Modal
   bankDetailsModalContent: {
@@ -2502,12 +2542,12 @@ const styles = StyleSheet.create({
   },
   card: {
     paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingTop: 12,
     paddingBottom: 20,
   },
   sectionTitle: {
     fontSize: 12,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.7)',
     marginTop: 22,
     marginBottom: 10,
     marginLeft: 4,
@@ -2534,15 +2574,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 14,
     marginBottom: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: GLASS_BG,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    borderColor: GLASS_BORDER,
+    ...GLASS_SHADOW,
   },
   iconWrapper: {
     width: 38,
@@ -2551,26 +2587,26 @@ const styles = StyleSheet.create({
     marginRight: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
   },
   menuText: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
   },
   subtext: {
     fontSize: RFValue(13),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 2,
   },
   menuItemDisabled: {
     opacity: 0.6,
   },
   menuTextDisabled: {
-    color: '#94A3B8',
+    color: 'rgba(255,255,255,0.55)',
   },
   subtextDisabled: {
-    color: '#94A3B8',
+    color: 'rgba(255,255,255,0.45)',
   },
   modalOverlay: {
     flex: 1,
@@ -2643,14 +2679,19 @@ const styles = StyleSheet.create({
   },
   // Skills Section Styles
   skillsSection: {
-    backgroundColor: '#fff',
-    padding: 20,
+    backgroundColor: GLASS_BG,
+    borderWidth: 1,
+    borderColor: GLASS_BORDER,
+    borderRadius: 20,
+    padding: 16,
+    marginHorizontal: 20,
     marginTop: 12,
+    ...GLASS_SHADOW,
   },
   skillsSectionTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#000',
+    color: '#FFFFFF',
     marginBottom: 16,
   },
   skillCategory: {
@@ -2659,7 +2700,7 @@ const styles = StyleSheet.create({
   skillCategoryTitle: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#333',
+    color: 'rgba(255,255,255,0.75)',
     marginBottom: 10,
   },
   skillTagsContainer: {
@@ -2668,14 +2709,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   skillTagDisplay: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 16,
   },
   skillTagDisplayText: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   pendingBadge: {
@@ -2759,9 +2800,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   profileBadgeVerified: {
-    backgroundColor: "rgba(16, 185, 129, 0.22)",
+    backgroundColor: "rgba(74, 222, 128, 0.18)",
     borderWidth: 1,
-    borderColor: "rgba(52, 211, 153, 0.5)",
+    borderColor: "rgba(74, 222, 128, 0.5)",
   },
   profileBadgeUnverified: {
     backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -2777,18 +2818,13 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   pendingReviewsContainer: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    marginHorizontal: 16,
-    marginBottom: 10,
+    backgroundColor: GLASS_BG,
+    borderRadius: 20,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
+    borderColor: GLASS_BORDER,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    ...GLASS_SHADOW,
   },
   pendingReviewsHeader: {
     flexDirection: "row",
@@ -2800,7 +2836,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: "#FFF7ED",
+    backgroundColor: "rgba(251,191,36,0.16)",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -2816,7 +2852,7 @@ const styles = StyleSheet.create({
   pendingReviewsTitle: {
     fontSize: RFValue(15),
     fontWeight: "700",
-    color: "#0F172A",
+    color: "#FFFFFF",
   },
   pendingReviewsBadge: {
     backgroundColor: "#EA580C",
@@ -2831,28 +2867,28 @@ const styles = StyleSheet.create({
   },
   pendingReviewsSubtext: {
     fontSize: RFValue(12.5),
-    color: "#64748B",
+    color: "rgba(255,255,255,0.75)",
     marginTop: 2,
   },
   expandedReviewsContent: {
     borderTopWidth: 1,
-    borderTopColor: "#F1F5F9",
+    borderTopColor: "rgba(255,255,255,0.14)",
     paddingTop: 10,
     paddingHorizontal: 14,
     paddingBottom: 14,
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "rgba(0,17,77,0.25)",
   },
   reviewTaskItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderRadius: 14,
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
+    borderColor: "rgba(255,255,255,0.18)",
   },
   reviewTaskInfo: {
     flex: 1,
@@ -2861,15 +2897,15 @@ const styles = StyleSheet.create({
   reviewTaskTitle: {
     fontSize: RFValue(13.5),
     fontWeight: "600",
-    color: "#1E293B",
+    color: "#FFFFFF",
     marginBottom: 2,
   },
   reviewTaskMeta: {
     fontSize: RFValue(11.5),
-    color: "#64748B",
+    color: "rgba(255,255,255,0.75)",
   },
   reviewNowBtn: {
-    backgroundColor: "#003399",
+    backgroundColor: "#ff6b35",
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 10,
@@ -2882,12 +2918,12 @@ const styles = StyleSheet.create({
   seeAllReviewsBtn: {
     alignItems: "center",
     paddingVertical: 10,
-    backgroundColor: "#EFF6FF",
-    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.16)",
+    borderRadius: 12,
     marginTop: 4,
   },
   seeAllReviewsBtnText: {
-    color: "#003399",
+    color: "#FFFFFF",
     fontSize: RFValue(13),
     fontWeight: "700",
   },

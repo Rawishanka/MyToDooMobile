@@ -30,13 +30,13 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return '#16A34A';
+        return '#4ADE80';
       case 'assigned':
-        return '#003399';
+        return '#7DD3FC';
       case 'open':
-        return '#D97706';
+        return '#FBBF24';
       default:
-        return '#64748B';
+        return 'rgba(255,255,255,0.75)';
     }
   };
 
@@ -99,17 +99,16 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
 
 const styles = StyleSheet.create({
   taskCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 16,
     marginBottom: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 2,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
   },
   taskHeader: {
     flexDirection: 'row',
@@ -122,12 +121,12 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   taskLocation: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     marginBottom: 8,
   },
   taskMeta: {
@@ -142,7 +141,7 @@ const styles = StyleSheet.create({
   },
   taskDate: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   taskPrice: {
     justifyContent: 'center',
@@ -151,7 +150,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#003399',
+    color: '#FFFFFF',
   },
   emptyContainer: {
     padding: 40,
@@ -159,6 +158,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
 });

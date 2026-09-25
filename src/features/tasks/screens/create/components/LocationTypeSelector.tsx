@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { FLOW } from '../flowTheme';
 
 type LocationType = 'In-person' | 'Online' | 'Both';
 
@@ -31,7 +32,7 @@ export const LocationTypeSelector: React.FC<LocationTypeSelectorProps> = ({
             <Ionicons 
               name="person-outline" 
               size={28} 
-              color={selectedType === 'In-person' ? '#fff' : '#2c3e50'} 
+              color={selectedType === 'In-person' ? FLOW.blue : '#FFFFFF'} 
             />
           </View>
           <Text style={[
@@ -59,7 +60,7 @@ export const LocationTypeSelector: React.FC<LocationTypeSelectorProps> = ({
             <Ionicons 
               name="laptop-outline" 
               size={28} 
-              color={selectedType === 'Online' ? '#fff' : '#2c3e50'} 
+              color={selectedType === 'Online' ? FLOW.blue : '#FFFFFF'} 
             />
           </View>
           <Text style={[
@@ -97,15 +98,15 @@ export const LocationTypeSelector: React.FC<LocationTypeSelectorProps> = ({
 
 const styles = StyleSheet.create({
   sectionTitle: {
-    fontSize: RFValue(20),
+    fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginTop: 4,
     marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: RFValue(13),
-    color: '#666',
+    color: FLOW.textMuted,
     marginBottom: 16,
   },
   locationTypeContainer: {
@@ -115,19 +116,19 @@ const styles = StyleSheet.create({
   },
   locationTypeOption: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: FLOW.glassStrong,
     paddingVertical: 14,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 110,
-    borderWidth: 2,
-    borderColor: '#f8f9fa',
+    borderWidth: 1.5,
+    borderColor: FLOW.glassBorder,
   },
   locationTypeOptionSelected: {
-    backgroundColor: '#0057FF',
-    borderColor: '#0057FF',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#FFFFFF',
   },
   locationIcon: {
     marginBottom: 8,
@@ -135,43 +136,43 @@ const styles = StyleSheet.create({
   locationTypeTitle: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#2c3e50',
+    color: '#FFFFFF',
     marginBottom: 6,
     textAlign: 'center',
   },
   locationTypeTitleSelected: {
-    color: '#fff',
+    color: FLOW.blue,
   },
   locationTypeDescription: {
     fontSize: RFValue(11),
-    color: '#7f8c8d',
+    color: FLOW.textMuted,
     textAlign: 'center',
     lineHeight: 14,
     paddingHorizontal: 4,
   },
   locationTypeDescriptionSelected: {
-    color: '#e0e0e0',
+    color: '#475569',
   },
   locationTypeBothOption: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: FLOW.glassStrong,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 14,
     alignItems: 'center',
     marginBottom: 16,
-    borderWidth: 2,
-    borderColor: '#f8f9fa',
+    borderWidth: 1.5,
+    borderColor: FLOW.glassBorder,
   },
   locationTypeBothOptionSelected: {
-    backgroundColor: '#0057FF',
-    borderColor: '#0057FF',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#FFFFFF',
   },
   locationTypeBothText: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#2c3e50',
+    color: '#FFFFFF',
   },
   locationTypeBothTextSelected: {
-    color: '#fff',
+    color: FLOW.blue,
   },
 });

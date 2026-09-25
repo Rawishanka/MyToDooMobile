@@ -12,7 +12,7 @@ export function PaymentLoadingState({ message = 'Loading payment details...' }: 
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#007bff'} />
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>{message}</Text>
     </View>
   );
@@ -28,7 +28,7 @@ export function PaymentErrorState({ title, subtitle, onBack }: PaymentErrorState
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.errorContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
+      <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
       <Text style={[styles.errorTitle, isDarkMode && { color: '#F8FAFC' }]}>{title}</Text>
       <Text style={[styles.errorSubtitle, isDarkMode && { color: '#94A3B8' }]}>{subtitle}</Text>
       <TouchableOpacity style={styles.backButton} onPress={onBack}>
@@ -43,30 +43,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
   },
   errorTitle: {
     fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -75,8 +75,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#007bff',
+    color: '#003399',
     fontSize: RFValue(16),
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

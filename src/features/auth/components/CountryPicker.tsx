@@ -37,7 +37,7 @@ export const CountryPicker: React.FC<CountryPickerProps> = ({
           </View>
           <Text style={[styles.dropdownText, isDarkMode && { color: '#F8FAFC' }]}>{selectedCountry.name}</Text>
         </View>
-        <Ionicons name={showPicker ? "chevron-up" : "chevron-down"} size={18} color={isDarkMode ? '#38BDF8' : '#003399'} />
+        <Ionicons name={showPicker ? "chevron-up" : "chevron-down"} size={18} color={isDarkMode ? '#ff6b35' : '#003399'} />
       </TouchableOpacity>
 
       {showPicker && (
@@ -60,13 +60,13 @@ export const CountryPicker: React.FC<CountryPickerProps> = ({
                 <Text style={[
                   styles.dropdownItemText, 
                   selectedCountry.code === country.code && styles.dropdownItemTextSelected,
-                  isDarkMode && { color: selectedCountry.code === country.code ? '#38BDF8' : '#F8FAFC' }
+                  isDarkMode && { color: selectedCountry.code === country.code ? '#ff6b35' : '#F8FAFC' }
                 ]}>
                   {country.name}
                 </Text>
               </View>
               {selectedCountry.code === country.code && (
-                <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#ff6b35' : '#003399'} />
               )}
             </TouchableOpacity>
           ))}

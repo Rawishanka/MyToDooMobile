@@ -37,7 +37,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
       onRequestClose={onClose}
     >
       <View style={styles.container}>
-        <LightHeader title="Help & Support" onBack={onClose} backIcon="close" topPadding={Platform.OS === 'ios' ? 18 : 24} />
+        <LightHeader solid title="Help & Support" onBack={onClose} backIcon="close" topPadding={Platform.OS === 'ios' ? 18 : 24} />
 
         {/* Loading Indicator */}
         {loading && (

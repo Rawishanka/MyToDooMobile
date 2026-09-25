@@ -2,6 +2,7 @@ import { useTheme } from '@/src/shared/theme';
 import React from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { FLOW } from '../flowTheme';
 
 interface TimeToggleProps {
   needSpecificTime: boolean;
@@ -20,11 +21,11 @@ export const TimeToggle: React.FC<TimeToggleProps> = ({ needSpecificTime, onTogg
         value={needSpecificTime}
         onValueChange={disabled ? undefined : onToggle}
         trackColor={{ 
-          false: isDarkMode ? '#334155' : (disabled ? '#F2F2F7' : '#E5E5EA'), 
-          true: disabled ? '#D1D1D6' : '#0057FF' 
+          false: isDarkMode ? '#334155' : 'rgba(255,255,255,0.28)', 
+          true: disabled ? '#D1D1D6' : FLOW.orange 
         }}
         thumbColor={disabled ? '#8E8E93' : '#FFFFFF'}
-        ios_backgroundColor={isDarkMode ? '#334155' : (disabled ? '#F2F2F7' : '#E5E5EA')}
+        ios_backgroundColor={isDarkMode ? '#334155' : 'rgba(255,255,255,0.28)'}
         disabled={disabled}
       />
     </View>
@@ -38,20 +39,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    marginBottom: 20,
+    backgroundColor: FLOW.glassStrong,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
+    marginBottom: 16,
   },
   toggleText: {
     fontSize: RFValue(16),
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   toggleRowDisabled: {
     opacity: 0.5,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: FLOW.glass,
   },
   toggleTextDisabled: {
-    color: '#8E8E93',
+    color: 'rgba(255,255,255,0.75)',
   },
 });

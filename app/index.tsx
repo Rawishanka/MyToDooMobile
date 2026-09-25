@@ -1,5 +1,7 @@
 import FallingStars from '@/src/shared/components/FallingStars';
-import MyToDooBrandLogo, { MYTDOO_BRAND_BLUE } from '@/src/shared/components/MyToDooBrandLogo';
+import MyToDooBrandLogo from '@/src/shared/components/MyToDooBrandLogo';
+
+const MYTDOO_BRAND_BLUE = '#003399';
 import { RFValue, isTablet, wp } from '@/src/shared/utils/responsive';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +10,7 @@ import { Link, useRouter } from 'expo-router';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect, useMemo, useState } from 'react';
 import {
+  StatusBar,
   ActivityIndicator,
   ScrollView,
   StyleSheet,
@@ -294,6 +297,7 @@ export default function WelcomeScreen() {
       style={styles.container}
       edges={layout.isTabletPortrait ? ['top', 'left', 'right', 'bottom'] : ['top', 'left', 'right']}
     >
+      <StatusBar barStyle="light-content" />
       <FallingStars />
 
       {layout.isTabletPortrait ? (
@@ -384,7 +388,7 @@ const styles = StyleSheet.create({
   heroVideoWrapper: {
     borderRadius: isTablet ? 20 : 16,
     overflow: 'hidden',
-    backgroundColor: '#003380',
+    backgroundColor: '#00287A',
     position: 'relative',
     alignSelf: 'center',
   },
@@ -415,7 +419,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp('5%'),
   },
   buttonPrimary: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#ff6b35',
     paddingVertical: isTablet ? 14 : 12,
     paddingHorizontal: 24,
     width: '100%',
@@ -425,7 +429,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   buttonSecondary: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#003399',
     paddingVertical: isTablet ? 14 : 12,
     paddingHorizontal: 24,
     width: '100%',

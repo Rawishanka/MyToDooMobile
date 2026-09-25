@@ -3,18 +3,23 @@ import { Ionicons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 
 export default function GoalSelectionScreen() {
   const [selectedGoal, setSelectedGoal] = useState('');
 
   const isContinueEnabled = selectedGoal !== '';
+  const insets = useSafeAreaInsets();
   const { myTask, updateMyTask } = useCreateTaskStore();
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="chevron-back" size={24} color="#333" />
+      <StatusBar barStyle="light-content" backgroundColor={FLOW.blue} />
+      <FlowBackground isDarkMode={false} />
+      <TouchableOpacity style={[styles.backButton, { top: Math.max(insets.top, 20) + 6 }]} onPress={() => router.back()}>
+        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
       </TouchableOpacity>
 
       {/* Title and Subtitle */}
@@ -33,8 +38,8 @@ export default function GoalSelectionScreen() {
           <AntDesign name="profile" size={22} color="#ff6b35" />
         </View>
         <View>
-          <Text style={styles.cardTitle}>Get MyToDoo tasks completed</Text>
-          <Text style={styles.cardSubtitle}>Add, assign, done!</Text>
+          <Text style={[styles.cardTitle, selectedGoal === 'getThingsDone' && styles.cardTitleSelected]}>Get MyToDoo tasks completed</Text>
+          <Text style={[styles.cardSubtitle, selectedGoal === 'getThingsDone' && styles.cardSubtitleSelected]}>Add, assign, done!</Text>
         </View>
       </TouchableOpacity>
 
@@ -53,12 +58,13 @@ export default function GoalSelectionScreen() {
           />
         </View>
         <View>
-          <Text style={styles.cardTitle}>Provide Services</Text>
-          <Text style={styles.cardSubtitle}>Become a MyToDoo Hero!</Text>
+          <Text style={[styles.cardTitle, selectedGoal === 'earnMoney' && styles.cardTitleSelected]}>Provide Services</Text>
+          <Text style={[styles.cardSubtitle, selectedGoal === 'earnMoney' && styles.cardSubtitleSelected]}>Become a MyToDoo Hero!</Text>
         </View>
       </TouchableOpacity>
 
       {/* Continue button */}
+      <View style={[styles.actionBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
       <TouchableOpacity
         disabled={!isContinueEnabled}
         style={[
@@ -76,8 +82,9 @@ export default function GoalSelectionScreen() {
           }
         }}
       >
-        <Text style={styles.continueText}>Continue</Text>
+        <Text style={[styles.continueText, !isContinueEnabled && styles.continueTextDisabled]}>Continue</Text>
       </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -85,7 +92,7 @@ export default function GoalSelectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: FLOW.blue,
     paddingHorizontal: 20,
     paddingTop: 60,
   },
@@ -98,66 +105,86 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(22),
     fontWeight: '700',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginBottom: 5,
     marginTop: 40,
   },
   subtitle: {
     fontSize: RFValue(14),
-    color: '#8E8E93',
+    color: FLOW.textMuted,
     marginBottom: 30,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    borderWidth: 2,
-    borderColor: '#E5E5EA',
-    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: FLOW.glassBorder,
+    backgroundColor: FLOW.glass,
+    borderRadius: 20,
     marginBottom: 16,
     gap: 12,
   },
   cardSelected: {
     borderColor: '#ff6b35',
+    backgroundColor: '#FFFFFF',
   },
   iconCircle: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#ECECFF',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
   cardTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
+  },
+  cardTitleSelected: {
+    color: FLOW.blue,
   },
   cardSubtitle: {
     fontSize: RFValue(13),
-    color: '#8E8E93',
+    color: FLOW.textMuted,
+  },
+  cardSubtitleSelected: {
+    color: '#475569',
   },
   iconImage: {
     width: 80,
     height: 80,
     resizeMode: 'contain',
   },
-  continueButton: {
+  actionBar: {
     position: 'absolute',
-    left: 20,
-    right: 20,
-    bottom: 40,
-    backgroundColor: '#D1D1D6',
-    paddingVertical: 16,
-    borderRadius: 25,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    backgroundColor: FLOW.blueDeep,
+    borderTopWidth: 1,
+    borderTopColor: FLOW.line,
+  },
+  continueButton: {
+    backgroundColor: FLOW.disabledFill,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   continueEnabled: {
-    backgroundColor: '#0052CC', 
+    backgroundColor: FLOW.orange,
+    ...primaryShadow,
   },
   continueText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: RFValue(16),
+  },
+  continueTextDisabled: {
+    color: FLOW.disabledText,
   },
 });

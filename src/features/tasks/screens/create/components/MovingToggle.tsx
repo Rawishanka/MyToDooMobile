@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { FLOW } from '../flowTheme';
 
 interface MovingToggleProps {
   value: boolean;
@@ -11,16 +12,18 @@ export const MovingToggle: React.FC<MovingToggleProps> = ({ value, onValueChange
   return (
     <View style={styles.switchBox}>
       <Text style={styles.switchLabel}>Hey! are you moving?</Text>
-      <Switch value={value} onValueChange={onValueChange} />
+      <Switch value={value} onValueChange={onValueChange} trackColor={{ false: 'rgba(255,255,255,0.28)', true: FLOW.orange }} thumbColor="#FFFFFF" />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   switchBox: {
-    backgroundColor: '#F2F2F2',
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: FLOW.glassStrong,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
+    borderRadius: 14,
+    padding: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -28,6 +31,6 @@ const styles = StyleSheet.create({
   },
   switchLabel: {
     fontSize: RFValue(16),
-    color: '#333',
+    color: '#FFFFFF',
   },
 });

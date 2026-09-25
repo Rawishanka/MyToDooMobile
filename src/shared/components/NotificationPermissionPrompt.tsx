@@ -101,7 +101,7 @@ export const NotificationPermissionPrompt: React.FC<NotificationPermissionPrompt
       <View style={styles.overlay}>
         <View style={styles.container}>
           <View style={styles.iconContainer}>
-            <Ionicons name="notifications" size={60} color="#007AFF" />
+            <Ionicons name="notifications" size={60} color="#003399" />
           </View>
 
           <Text style={styles.title}>Stay Updated!</Text>
@@ -112,15 +112,15 @@ export const NotificationPermissionPrompt: React.FC<NotificationPermissionPrompt
 
           <View style={styles.features}>
             <View style={styles.feature}>
-              <Ionicons name="chatbubble" size={20} color="#34C759" />
+              <Ionicons name="chatbubble" size={20} color="#003399" />
               <Text style={styles.featureText}>New messages</Text>
             </View>
             <View style={styles.feature}>
-              <Ionicons name="cash" size={20} color="#FF9500" />
+              <Ionicons name="cash" size={20} color="#ff6b35" />
               <Text style={styles.featureText}>New offers</Text>
             </View>
             <View style={styles.feature}>
-              <Ionicons name="checkmark-circle" size={20} color="#007AFF" />
+              <Ionicons name="checkmark-circle" size={20} color="#003399" />
               <Text style={styles.featureText}>Task updates</Text>
             </View>
           </View>
@@ -175,13 +175,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(24),
     fontWeight: 'bold',
-    color: '#000',
+    color: '#003399',
     marginBottom: 12,
     textAlign: 'center',
   },
   message: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#475569',
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 22,
@@ -203,13 +203,15 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '100%',
+    minHeight: 50,
+    justifyContent: 'center',
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
     marginBottom: 12,
   },
   allowButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#ff6b35',
   },
   allowButtonText: {
     color: '#FFFFFF',
@@ -218,10 +220,12 @@ const styles = StyleSheet.create({
   },
   notNowButton: {
     backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#003399',
   },
   notNowButtonText: {
-    color: '#007AFF',
+    color: '#003399',
     fontSize: RFValue(16),
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });

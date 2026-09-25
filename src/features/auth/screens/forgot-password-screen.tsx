@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -81,6 +82,7 @@ export default function ForgotPasswordScreen() {
 
   return (
     <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <StatusBar barStyle="light-content" />
       {/* Sleek 2026 Back button */}
       <TouchableOpacity
         style={[styles.backButton, { top: insets.top + 10 }, isDarkMode && { backgroundColor: '#1E293B' }]}
@@ -88,7 +90,7 @@ export default function ForgotPasswordScreen() {
         hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
         activeOpacity={0.7}
       >
-        <Ionicons name="arrow-back" size={20} color={isDarkMode ? '#F8FAFC' : '#0F172A'} />
+        <Ionicons name="arrow-back" size={20} color="#fff" />
       </TouchableOpacity>
 
       <KeyboardAvoidingView
@@ -177,8 +179,8 @@ export default function ForgotPasswordScreen() {
                   onPress={() => router.back()}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="arrow-back-outline" size={17} color={isDarkMode ? "#F8FAFC" : "#0F172A"} style={styles.backIcon} />
-                  <Text style={[styles.backToLoginText, isDarkMode && { color: '#F8FAFC' }]}>Back to Login</Text>
+                  <Ionicons name="arrow-back-outline" size={17} color="#fff" style={styles.backIcon} />
+                  <Text style={styles.backToLoginText}>Back to Login</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -192,7 +194,7 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -223,9 +225,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255,255,255,0.18)',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: 'rgba(255,255,255,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -243,9 +245,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   logoBackground: {
-    backgroundColor: '#003399',
-    borderRadius: 16,
-    padding: 12,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+    borderRadius: 20,
+    padding: 14,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -258,13 +262,13 @@ const styles = StyleSheet.create({
     fontSize: RFValue(22),
     fontWeight: '700',
     marginBottom: 8,
-    color: '#0F172A',
+    color: '#fff',
     textAlign: 'center',
     letterSpacing: 0.2,
   },
   subtitle: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
     lineHeight: 21,
     paddingHorizontal: 12,
@@ -274,7 +278,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: RFValue(13),
-    color: '#334155',
+    color: '#fff',
     marginBottom: 8,
     fontWeight: '600',
   },
@@ -282,9 +286,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: 'transparent',
     borderRadius: 14,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#fff',
     paddingHorizontal: 14,
     marginBottom: 18,
   },
@@ -298,20 +302,21 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
   resetButton: {
-    backgroundColor: '#FF914D',
+    backgroundColor: '#ff6b35',
+    minHeight: 52,
     paddingVertical: 15,
-    borderRadius: 16,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    shadowColor: '#FF914D',
+    shadowColor: '#ff6b35',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 3,
   },
   resetButtonDisabled: {
-    backgroundColor: '#CBD5E1',
+    backgroundColor: 'rgba(255,255,255,0.22)',
     shadowOpacity: 0,
     elevation: 0,
   },
@@ -333,12 +338,12 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: 'rgba(255,255,255,0.3)',
   },
   dividerText: {
     marginHorizontal: 14,
     fontSize: RFValue(13),
-    color: '#94A3B8',
+    color: 'rgba(255,255,255,0.8)',
     fontWeight: '500',
   },
   backToLoginButton: {
@@ -346,16 +351,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    backgroundColor: '#FFFFFF',
+    minHeight: 52,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#fff',
   },
   backIcon: {
     marginRight: 8,
   },
   backToLoginText: {
-    color: '#0F172A',
+    color: '#fff',
     fontSize: RFValue(15),
     fontWeight: '600',
   },

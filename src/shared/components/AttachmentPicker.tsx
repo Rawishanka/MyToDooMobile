@@ -272,7 +272,7 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
         style={styles.removeButton}
         onPress={() => removeAttachment(item.id)}
       >
-        <Ionicons name="close-circle" size={20} color="#FF4D4F" />
+        <Ionicons name="close-circle" size={20} color="#DC2626" />
       </TouchableOpacity>
     </View>
   );
@@ -304,7 +304,7 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
             </>
           ) : (
             <>
-              <Ionicons name="attach" size={20} color="#007AFF" />
+              <Ionicons name="attach" size={20} color="#003399" />
               <Text style={styles.addButtonText}>
                 Attach {allowImages && allowDocuments ? 'Image or File' : allowImages ? 'Image' : 'File'}
                 {attachments.length > 0 && ` (${attachments.length}/${maxAttachments})`}
@@ -373,9 +373,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f0f8ff',
+    backgroundColor: '#EEF3FF',
     borderWidth: 1,
-    borderColor: '#007AFF',
+    borderColor: '#003399',
     borderStyle: 'dashed',
     borderRadius: 8,
     padding: 16,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     fontSize: RFValue(14),
-    color: '#007AFF',
+    color: '#003399',
     fontWeight: '500',
     marginLeft: 8,
   },

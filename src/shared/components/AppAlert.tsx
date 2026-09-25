@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   title: {
-    color: '#0F172A',
+    color: '#003399',
     fontSize: 20,
     fontWeight: '700',
     textAlign: 'center',
@@ -226,11 +226,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
   },
   buttonGhost: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#003399',
   },
   buttonDanger: {
     backgroundColor: '#DC2626',
@@ -242,7 +244,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   buttonGhostText: {
-    color: '#475569',
+    color: '#003399',
   },
   buttonPrimaryText: {
     color: '#FFFFFF',

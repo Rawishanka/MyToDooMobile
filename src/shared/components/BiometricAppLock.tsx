@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   AppState,
   AppStateStatus,
+  StatusBar,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -183,13 +184,14 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <StatusBar barStyle="light-content" />
       <View style={styles.contentBox}>
         {/* Biometric Shield Ring */}
-        <View style={[styles.iconRing, isDarkMode && { backgroundColor: 'rgba(56, 189, 248, 0.12)' }]}>
+        <View style={[styles.iconRing, isDarkMode && { backgroundColor: 'rgba(255, 107, 53, 0.14)' }]}>
           <Ionicons
             name={biometricType === 'Face ID' ? 'scan-circle-outline' : 'finger-print-outline'}
             size={80}
-            color={isDarkMode ? '#38BDF8' : '#0EA5E9'}
+            color={isDarkMode ? '#ff6b35' : '#fff'}
           />
         </View>
 
@@ -202,7 +204,7 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
 
         {authError ? (
           <View style={styles.errorBox}>
-            <Ionicons name="alert-circle-outline" size={18} color="#EF4444" />
+            <Ionicons name="alert-circle-outline" size={18} color="#FCA5A5" />
             <Text style={styles.errorText}>{authError}</Text>
           </View>
         ) : null}
@@ -244,7 +246,7 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
     zIndex: 999999,
     justifyContent: 'center',
     alignItems: 'center',
@@ -259,7 +261,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(14, 165, 233, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 28,
@@ -267,13 +269,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(22),
     fontWeight: '800',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: RFValue(13),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 28,
@@ -283,14 +285,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 8,
     marginBottom: 20,
   },
   errorText: {
-    color: '#EF4444',
+    color: '#FCA5A5',
     fontSize: RFValue(12),
     fontWeight: '500',
     flexShrink: 1,
@@ -300,13 +302,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: '#0EA5E9',
+    backgroundColor: '#ff6b35',
     width: '100%',
     paddingVertical: 16,
     borderRadius: 14,
-    shadowColor: '#0EA5E9',
+    shadowColor: '#ff6b35',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
     marginBottom: 16,
@@ -321,7 +323,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   signOutBtnText: {
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.85)',
     fontSize: RFValue(13),
     fontWeight: '600',
     textDecorationLine: 'underline',

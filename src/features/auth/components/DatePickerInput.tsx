@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
   },
   dateInputError: {
-    borderColor: '#FF3B30',
+    borderColor: '#DC2626',
     backgroundColor: '#FFF5F5',
   },
   dateIcon: {
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   },
   datePickerDoneText: {
     fontSize: RFValue(16),
-    color: '#007BFF',
+    color: '#003399',
     fontWeight: '600',
   },
 });

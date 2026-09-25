@@ -303,7 +303,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
-      <LightHeader title="Edit Profile" onBack={onBack} />
+      <LightHeader solid title="Edit Profile" onBack={onBack} />
       
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.contentWrapper}>

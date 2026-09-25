@@ -150,16 +150,16 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
   if (tokenLoading) {
     return (
       <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#ffffff"} />
+        <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : "#003399"} />
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
+            <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>{title}</Text>
+          <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-          <ActivityIndicator size="large" color="#0052A2" />
+          <ActivityIndicator size="large" color={isDarkMode ? "#ff6b35" : "#003399"} />
           <Text style={[styles.loadingText, isDarkMode && { color: "#94A3B8" }]}>Loading {title}...</Text>
         </View>
       </SafeAreaView>
@@ -168,7 +168,7 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
   
   return (
     <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#ffffff"} />
+      <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : "#003399"} />
       
       {/* Header */}
       <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
@@ -176,16 +176,16 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
           style={styles.backButton}
           onPress={handleBackPress}
         >
-          <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
+          <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>{title}</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
         <View style={styles.headerSpacer} />
       </View>
       
       {/* Loading Indicator */}
       {loading && (
         <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-          <ActivityIndicator size="large" color="#0052A2" />
+          <ActivityIndicator size="large" color={isDarkMode ? "#ff6b35" : "#003399"} />
           <Text style={[styles.loadingText, isDarkMode && { color: "#94A3B8" }]}>Loading {title}...</Text>
         </View>
       )}
@@ -230,7 +230,7 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#003399',
   },
   header: {
     flexDirection: 'row',
@@ -238,8 +238,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e4e8',
-    backgroundColor: '#ffffff',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: '#003399',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -247,19 +247,24 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   backButton: {
-    padding: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.18)',
     marginRight: 8,
   },
   headerTitle: {
     flex: 1,
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: '#fff',
     textAlign: 'center',
     marginHorizontal: 8,
   },
   headerSpacer: {
-    width: 40,
+    width: 44,
   },
   loadingContainer: {
     position: 'absolute',
@@ -273,7 +278,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#475569',
   },
   webview: {
     flex: 1,

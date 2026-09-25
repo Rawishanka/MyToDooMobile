@@ -7,10 +7,13 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    StatusBar,
     StyleSheet,
     Text,
-    TouchableOpacity
+    TouchableOpacity,
+    View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
     CategoryDropdown,
     LocationInputSection,
@@ -19,6 +22,7 @@ import {
 } from './components';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 
 interface LocationData {
     address: string;
@@ -40,6 +44,7 @@ interface Category {
 
 const LocationScreen = () => {
     const { isDarkMode } = useTheme();
+    const insets = useSafeAreaInsets();
     const [isRemoval, setIsRemoval] = useState(false);
     const [pickupCode, setPickupCode] = useState('');
     const [dropoffCode, setDropoffCode] = useState('');
@@ -187,12 +192,14 @@ const LocationScreen = () => {
 
     return (
         <KeyboardAvoidingView 
-            style={styles.container}
+            style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
+            <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
+            <FlowBackground isDarkMode={isDarkMode} />
             {/* Back Arrow */}
-            <TouchableOpacity style={styles.backArrow} onPress={() => router.back()}>
-                <Ionicons name="chevron-back" size={24} color="#1C1C1E" />
+            <TouchableOpacity style={[styles.backArrow, { top: Math.max(insets.top, 20) + 6 }]} onPress={() => router.back()}>
+                <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
             </TouchableOpacity>
 
             <ScrollView 
@@ -253,9 +260,11 @@ const LocationScreen = () => {
             </ScrollView>
 
             {/* Continue */}
-            <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-                <Text style={styles.continueText}>Continue</Text>
-            </TouchableOpacity>
+            <View style={[styles.actionBar, isDarkMode && { backgroundColor: '#0B1120', borderTopColor: '#1E293B' }, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+                <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+                    <Text style={styles.continueText}>Continue</Text>
+                </TouchableOpacity>
+            </View>
         </KeyboardAvoidingView>
     );
 };
@@ -265,7 +274,7 @@ export default LocationScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: FLOW.blue,
     },
     backArrow: {
         position: 'absolute',
@@ -286,25 +295,32 @@ const styles = StyleSheet.create({
     title: {
         fontSize: RFValue(22),
         fontWeight: '700',
-        color: '#1C1C1E',
+        color: '#FFFFFF',
         marginBottom: 5,
     },
     subtitle: {
         fontSize: RFValue(14),
-        color: '#666',
+        color: FLOW.textMuted,
         marginBottom: 20,
     },
+    actionBar: {
+        paddingHorizontal: 20,
+        paddingTop: 12,
+        backgroundColor: FLOW.blueDeep,
+        borderTopWidth: 1,
+        borderTopColor: FLOW.line,
+    },
     continueButton: {
-        marginHorizontal: 20,
-        marginVertical: 20,
-        backgroundColor: '#0057FF',
-        padding: 16,
-        borderRadius: 25,
+        backgroundColor: FLOW.orange,
+        height: 52,
+        borderRadius: 14,
         alignItems: 'center',
+        justifyContent: 'center',
+        ...primaryShadow,
     },
     continueText: {
         color: '#fff',
         fontSize: RFValue(16),
-        fontWeight: '600',
+        fontWeight: '700',
     },
 });

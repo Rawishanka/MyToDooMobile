@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUpdateUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 import { useTheme } from '@/src/shared/theme';
 import { AppAlert } from '@/src/shared/components/AppAlert';
-import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 export default function NotificationPreferences({ onBack, userData }) {
   const { isDarkMode } = useTheme();
@@ -43,10 +43,11 @@ export default function NotificationPreferences({ onBack, userData }) {
     }
   };
 
-  const trackOff = isDarkMode ? '#475569' : '#CBD5E1';
+  const trackOff = isDarkMode ? '#475569' : 'rgba(255,255,255,0.3)';
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <BlueBackdrop />
       <LightHeader
         title="Tasker Preferences"
         onBack={onBack}
@@ -155,7 +156,7 @@ export default function NotificationPreferences({ onBack, userData }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   scroll: { flex: 1 },
   saveBtn: {
@@ -170,28 +171,27 @@ const styles = StyleSheet.create({
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     marginBottom: 20,
     padding: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
   },
   infoText: {
     flex: 1,
     marginLeft: 12,
     fontSize: 13,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     lineHeight: 19,
   },
   sectionLabel: {
     fontSize: 12,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     fontWeight: '700',
     letterSpacing: 0.8,
     marginBottom: 10,
@@ -200,17 +200,16 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: 14,
     marginBottom: 14,
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
   },
   rowIcon: { marginRight: 12 },
   rowDisabled: {
@@ -224,12 +223,12 @@ const styles = StyleSheet.create({
   rowLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 2,
   },
   rowDesc: {
     fontSize: 12,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     lineHeight: 17,
   },
   saveButton: {

@@ -1,5 +1,6 @@
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE, BRAND_GREEN } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
+import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 // BudgetScreen.tsx
 
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
@@ -12,6 +13,7 @@ import { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Platform,
+    StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -161,7 +163,7 @@ export default function BudgetScreen() {
       onPress={() => handleKeyPress(value.toString())}
     >
       {value === 'delete' ? (
-        <Ionicons name="backspace-outline" size={24} color="#002366" />
+        <Ionicons name="backspace-outline" size={24} color="#FFFFFF" />
       ) : value === '.' ? (
         <Text style={[styles.keyText, isDarkMode && { color: '#F8FAFC' }]}>.</Text>
       ) : (
@@ -210,8 +212,10 @@ export default function BudgetScreen() {
   // Show loading state while location is being detected to prevent currency flicker
   if (!isInitialized || isDetecting) {
     return (
-      <View style={[styles.wrapper, styles.centerContent]}>
-        <ActivityIndicator size="large" color={BRAND_BLUE} />
+      <View style={[styles.wrapper, styles.centerContent, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
+        <FlowBackground isDarkMode={isDarkMode} />
+        <ActivityIndicator size="large" color="#FFFFFF" />
         <Text style={styles.loadingText}>Detecting your location...</Text>
       </View>
     );
@@ -219,7 +223,9 @@ export default function BudgetScreen() {
 
   return (
     <View style={[styles.wrapper, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
+      <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
+      <FlowBackground isDarkMode={isDarkMode} />
+      <View style={[styles.header, isDarkMode && { backgroundColor: BRAND_BLUE }, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} hitSlop={12}>
           <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -266,12 +272,14 @@ export default function BudgetScreen() {
           ))}
         </View>
 
-        {/* Post Task Button */}
+      </View>
+
+      {/* Post Task Button */}
+      <View style={[styles.actionBar, isDarkMode && { backgroundColor: '#0B1120', borderTopColor: '#1E293B' }, { paddingBottom: Math.max(insets.bottom, 16) }]}>
         <TouchableOpacity
           style={[
             styles.button, 
             !isBudgetValid && styles.buttonDisabled,
-            { marginBottom: Math.max(insets.bottom, 30) }
           ]}
           onPress={handleCreateTask}
           disabled={!isBudgetValid}
@@ -288,10 +296,10 @@ export default function BudgetScreen() {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: FLOW.blue,
   },
   header: {
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: 'transparent',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('6%'),
     paddingBottom: hp('2%'),
   },
@@ -315,49 +323,51 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: isTablet ? wp('12.5%') : wp('6%'),
     paddingTop: hp('2%'),
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     justifyContent: 'space-between',
     maxWidth: isTablet ? 900 : undefined,
     alignSelf: isTablet ? 'center' : 'auto',
     width: '100%',
   },
   inputBox: {
-    marginTop: hp('3%'),
-    height: isTablet ? hp('8%') : hp('6%'),
-    borderRadius: 8,
-    backgroundColor: '#f5f5f5',
+    marginTop: hp('2%'),
+    height: isTablet ? hp('12%') : hp('11%'),
+    borderRadius: 20,
+    backgroundColor: FLOW.glass,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
   },
   currencySymbol: {
-    fontSize: RFValue(isTablet ? 24 : 18),
-    fontWeight: '600',
-    color: '#002366',
+    fontSize: RFValue(isTablet ? 32 : 28),
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.8)',
     marginRight: wp('1.5%'),
   },
   budgetText: {
-    fontSize: RFValue(isTablet ? 24 : 18),
-    fontWeight: '600',
-    color: '#002366',
+    fontSize: RFValue(isTablet ? 40 : 36),
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
   placeholderText: {
-    color: '#999999',
+    color: 'rgba(255,255,255,0.55)',
     fontWeight: '400',
   },
   invalidBudgetText: {
-    color: '#FF3B30',
+    color: FLOW.error,
   },
   errorText: {
     fontSize: RFValue(13),
-    color: '#FF3B30',
+    color: FLOW.error,
     textAlign: 'center',
     marginTop: hp('1%'),
     fontWeight: '600',
   },
   validationText: {
     fontSize: RFValue(13),
-    color: '#FF3B30',
+    color: FLOW.error,
     textAlign: 'center',
     marginTop: hp('1%'),
     fontWeight: '500',
@@ -374,17 +384,18 @@ const styles = StyleSheet.create({
   key: {
     width: isTablet ? wp('10%') : wp('18%'),
     height: isTablet ? wp('10%') : wp('18%'),
-    backgroundColor: '#fff',
+    backgroundColor: FLOW.glassStrong,
     borderRadius: isTablet ? wp('5%') : wp('9%'),
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: isTablet ? wp('2%') : wp('2.5%'),
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: FLOW.glassBorder,
   },
   keyText: {
-    fontSize: RFValue(isTablet ? 24 : 20),
-    color: '#002366',
+    fontSize: RFValue(isTablet ? 26 : 22),
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   centerContent: {
     justifyContent: 'center',
@@ -393,26 +404,36 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: hp('2%'),
     fontSize: RFValue(16),
-    color: '#6e6e6e',
+    color: FLOW.textMuted,
     textAlign: 'center',
   },
+  actionBar: {
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('6%'),
+    paddingTop: 12,
+    backgroundColor: FLOW.blueDeep,
+    borderTopWidth: 1,
+    borderTopColor: FLOW.line,
+  },
   button: {
-    backgroundColor: BRAND_GREEN,
-    paddingVertical: hp('1.8%'),
-    borderRadius: 24,
+    backgroundColor: FLOW.orange,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
-    marginBottom: hp('3%'),
+    justifyContent: 'center',
+    ...primaryShadow,
   },
   buttonDisabled: {
-    backgroundColor: '#D1D1D6',
+    backgroundColor: FLOW.disabledFill,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: RFValue(14),
+    fontSize: RFValue(16),
     textTransform: 'capitalize',
   },
   buttonTextDisabled: {
-    color: '#8E8E93',
+    color: FLOW.disabledText,
   },
 });

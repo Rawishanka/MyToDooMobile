@@ -1,4 +1,4 @@
-import { BRAND_GREEN } from '@/src/shared/theme/brandColors';
+import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 import { CreateTaskRequest } from '@/src/api/types/tasks';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useStorageState } from '@/src/shared/hooks/useStorageState';
@@ -16,6 +16,7 @@ import {
     ActivityIndicator,
     Alert,
     ScrollView,
+    StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -41,7 +42,7 @@ const ListItem = React.memo(({ icon, text, value, onPress }: ListItemProps) => (
         {value && <Text style={styles.valueText}>{value}</Text>}
       </View>
     </View>
-    <Ionicons name="chevron-forward" size={20} color="#003366" strokeWidth={2} />
+    <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.6)" />
   </TouchableOpacity>
 ));
 ListItem.displayName = 'ListItem';
@@ -350,13 +351,16 @@ export default function DetailScreen() {
   };
 
   return (
+    <View style={styles.screen}>
+    <StatusBar barStyle="light-content" backgroundColor={FLOW.blue} />
+    <FlowBackground isDarkMode={false} />
     <View style={styles.container}>
       {/* API Debug Panel */}
       {/* <ApiDebugPanel /> */}
       
       {/* Back Arrow Button */}
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <Ionicons name="chevron-back" size={24} color="#000" />
+      <TouchableOpacity style={[styles.backBtn, { top: Math.max(insets.top, 20) + 6 }]} onPress={() => router.back()}>
+        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
       </TouchableOpacity>
 
       <Text style={styles.title}>Ready to get offers?</Text>
@@ -364,35 +368,35 @@ export default function DetailScreen() {
 
       <ScrollView contentContainerStyle={styles.list} removeClippedSubviews={false}>
         <ListItem
-          icon={<MaterialIcons name="drive-file-rename-outline" size={22} color="#003366" />}
+          icon={<MaterialIcons name="drive-file-rename-outline" size={22} color="#FFFFFF" />}
           text="Task Title"
           value={myTask.title || 'Move the car'}
           onPress={() => router.push('/(welcome-screen)/title-screen?section=title' as any)}
         />
         
         <ListItem
-          icon={<MaterialIcons name="event-available" size={22} color="#003366" />}
+          icon={<MaterialIcons name="event-available" size={22} color="#FFFFFF" />}
           text="When"
           value={getDateTimeText()}
           onPress={() => router.push('/(welcome-screen)/title-screen?section=when' as any)}
         />
         
         <ListItem
-          icon={<Ionicons name="location-outline" size={22} color="#003366" />}
+          icon={<Ionicons name="location-outline" size={22} color="#FFFFFF" />}
           text="Location"
           value={getLocationText()}
           onPress={() => router.push('/(welcome-screen)/title-screen?section=location' as any)}
         />
         
         <ListItem
-          icon={<MaterialIcons name="description" size={22} color="#003366" />}
+          icon={<MaterialIcons name="description" size={22} color="#FFFFFF" />}
           text="Description"
           value={myTask.description || 'Add task description'}
           onPress={() => router.push('/(welcome-screen)/title-screen?section=description' as any)}
         />
         
         <ListItem
-          icon={<MaterialIcons name="attach-money" size={22} color="#003366" />}
+          icon={<MaterialIcons name="attach-money" size={22} color="#FFFFFF" />}
           text="Budget"
           value={myTask.budget > 0 ? `${currencyInfo.symbol}${myTask.budget}` : 'Set budget'}
           onPress={() => router.push('/(welcome-screen)/budget-screen' as any)}
@@ -407,11 +411,11 @@ export default function DetailScreen() {
         <Text style={styles.debugText}>🔧 Debug: Force Fresh Login</Text>
       </TouchableOpacity> */}
 
+      <View style={[styles.actionBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
       <TouchableOpacity 
         style={[
           styles.continueBtn, 
           postTaskMutation.isPending && styles.continueButtonDisabled,
-          { marginBottom: Math.max(insets.bottom, 30) }
         ]} 
         onPress={handlePostTask}
         disabled={postTaskMutation.isPending}
@@ -425,14 +429,20 @@ export default function DetailScreen() {
           <Text style={styles.continueText}>Post Task</Text>
         )}
       </TouchableOpacity>
+      </View>
+    </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: FLOW.blue,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('5%'),
     paddingTop: 60,
     maxWidth: isTablet ? 900 : undefined,
@@ -448,28 +458,31 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(isTablet ? 24 : 20),
     fontWeight: 'bold',
-    color: '#0B1A33',
+    color: '#FFFFFF',
     marginBottom: hp('0.6%'),
     marginTop: hp('5%'),
     textAlign: 'center',
   },
   subtitle: {
-    color: '#667085',
+    color: FLOW.textMuted,
     marginBottom: hp('2.5%'),
     textAlign: 'center',
     fontSize: RFValue(isTablet ? 14 : 13),
   },
   list: {
-    paddingBottom: hp('2.5%'),
+    paddingBottom: 24,
   },
   item: {
-    paddingVertical: isTablet ? hp('2%') : hp('1.8%'),
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#ccc',
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    backgroundColor: FLOW.glass,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
+    borderRadius: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: hp('1.5%'),
+    marginBottom: 12,
   },
   itemLeft: {
     flexDirection: 'row',
@@ -477,34 +490,48 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   iconContainer: {
-    width: isTablet ? 28 : 24,
-    height: isTablet ? 28 : 24,
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: FLOW.glassStrong,
     justifyContent: 'center',
     alignItems: 'center',
   },
   textContainer: {
-    marginLeft: wp('4%'),
+    marginLeft: 12,
+    marginRight: 8,
     flex: 1,
   },
   itemText: {
     fontSize: RFValue(isTablet ? 16 : 14),
-    color: '#003366',
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   valueText: {
     fontSize: RFValue(isTablet ? 14 : 12),
-    color: '#667085',
+    color: FLOW.textMuted,
     marginTop: hp('0.3%'),
   },
+  actionBar: {
+    marginHorizontal: isTablet ? -wp('12.5%') : -wp('5%'),
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('5%'),
+    paddingTop: 12,
+    backgroundColor: FLOW.blueDeep,
+    borderTopWidth: 1,
+    borderTopColor: FLOW.line,
+  },
   continueBtn: {
-    backgroundColor: BRAND_GREEN,
-    paddingVertical: hp('1.8%'),
-    borderRadius: 30,
-    marginBottom: hp('3%'),
+    backgroundColor: FLOW.orange,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    ...primaryShadow,
   },
   continueButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: FLOW.disabledFill,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   postingContainer: {
     flexDirection: 'row',
@@ -512,8 +539,8 @@ const styles = StyleSheet.create({
   },
   continueText: {
     color: '#fff',
-    fontWeight: '600',
-    fontSize: RFValue(14),
+    fontWeight: '700',
+    fontSize: RFValue(16),
   },
   debugBtn: {
     backgroundColor: '#ff6b35',

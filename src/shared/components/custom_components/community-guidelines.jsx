@@ -29,6 +29,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
   const renderHeader = (title, showBack = true) => (
     <LightHeader
+      solid
       title={title}
       onBack={showBack ? () => setCurrentView('main') : onClose}
     />

@@ -49,6 +49,7 @@ export default function SignUpScreen() {
 
   return (
     <View style={styles.wrapper}>
+      <StatusBar barStyle="light-content" />
       <SafeAreaView style={styles.container}>
         {/* Fixed Header Section */}
         <View style={styles.fixedHeader}>

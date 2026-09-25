@@ -41,6 +41,8 @@ interface LocationAutocompleteProps {
   initialValue?: string;
   placeholder?: string;
   style?: any;
+  /** Optional extra style for the "Use Current Location" button (visual only; default none). */
+  buttonStyle?: any;
   country?: string; // ISO country code - AUSTRALIA-ONLY APP: Always 'AU'
   onDropdownStateChange?: (isOpen: boolean) => void;
   /** Called when the user clears the input with the X button. */
@@ -60,6 +62,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   initialValue = "",
   placeholder = "Search for suburb or city...",
   style,
+  buttonStyle,
   country, // AUSTRALIA-ONLY: Always defaults to 'AU'
   onDropdownStateChange,
   onClear,
@@ -522,7 +525,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       {/* Use Current Location Button */}
       <TouchableOpacity
         onPress={getCurrentLocation}
-        style={getLocationButtonStyle()}
+        style={[getLocationButtonStyle(), buttonStyle]}
         disabled={detectingLocation || isDetectingCountry}
       >
         {detectingLocation ? (

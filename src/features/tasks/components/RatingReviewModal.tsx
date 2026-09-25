@@ -398,7 +398,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
               <TouchableOpacity
                 style={[
                   styles.submitButton,
-                  isDarkMode && { backgroundColor: "#2563EB", shadowColor: "#2563EB" },
+                  isDarkMode && { backgroundColor: "#003399", shadowColor: "#003399" },
                   (rating === 0 || isSubmitting) && [styles.submitButtonDisabled, isDarkMode && { backgroundColor: "#334155" }]
                 ]}
                 onPress={handleSubmit}

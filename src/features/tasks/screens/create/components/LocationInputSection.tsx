@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useRef } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { FLOW } from '../flowTheme';
 
 interface LocationData {
   address: string;
@@ -60,12 +61,13 @@ export const LocationInputSection: React.FC<LocationInputSectionProps> = ({
         onSelect={onLocationSelect}
         placeholder="Search for suburb, city or address..."
         style={styles.locationAutocomplete}
+        buttonStyle={styles.locateButtonOutline}
         onDropdownStateChange={handleDropdownStateChange}
         onFocus={() => handleDropdownStateChange(true)}
       />
       {selectedLocation && (
         <View style={styles.selectedLocationContainer}>
-          <Ionicons name="location" size={16} color="#0057FF" />
+          <Ionicons name="location" size={16} color="#FFFFFF" />
           <Text style={styles.selectedLocationText}>
             {selectedLocation.address}
           </Text>
@@ -83,25 +85,30 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: RFValue(14),
-    color: '#555',
+    fontWeight: '600',
+    color: '#FFFFFF',
     marginBottom: 6,
     marginTop: 10,
   },
   locationAutocomplete: {
     marginBottom: 10,
   },
+  locateButtonOutline: {
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.6)',
+  },
   selectedLocationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F8FF',
-    borderRadius: 8,
+    backgroundColor: FLOW.glassStrong,
+    borderRadius: 14,
     padding: 12,
     marginBottom: 10,
   },
   selectedLocationText: {
     marginLeft: 8,
     fontSize: RFValue(14),
-    color: '#0057FF',
+    color: '#FFFFFF',
     flex: 1,
   },
 });

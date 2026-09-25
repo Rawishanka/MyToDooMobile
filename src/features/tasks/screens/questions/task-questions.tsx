@@ -104,19 +104,19 @@ export default function TaskQuestionsScreen() {
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor="#003399" />
       
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Questions & Answers</Text>
         <TouchableOpacity 
           style={styles.addIcon}
           onPress={() => setShowAddQuestion(true)}
         >
-          <Ionicons name="add-circle-outline" size={24} color="#007bff" />
+          <Ionicons name="add" size={22} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
 
@@ -168,14 +168,14 @@ export default function TaskQuestionsScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Ask a Question</Text>
               <TouchableOpacity onPress={() => setShowAddQuestion(false)}>
-                <Ionicons name="close" size={24} color="#666" />
+                <Ionicons name="close" size={24} color="#64748B" />
               </TouchableOpacity>
             </View>
             
             <TextInput
               style={styles.questionInput}
               placeholder="What would you like to know about this task?"
-              placeholderTextColor="#999"
+              placeholderTextColor="#94A3B8"
               value={newQuestion}
               onChangeText={setNewQuestion}
               multiline={true}
@@ -219,7 +219,7 @@ export default function TaskQuestionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F4F6FB',
   },
   loadingContainer: {
     flex: 1,
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
   },
   errorContainer: {
     flex: 1,
@@ -240,26 +240,26 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '600',
-    color: '#333',
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#ff6b35',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
     marginBottom: 12,
   },
   retryButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#007bff',
+    color: '#003399',
     fontSize: RFValue(16),
     fontWeight: '600',
   },
@@ -277,29 +277,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingBottom: 15,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingBottom: 14,
+    backgroundColor: '#003399',
   },
   backIcon: {
-    padding: 5,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   addIcon: {
-    padding: 5,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#ff6b35',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
     paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingTop: 4,
+    paddingBottom: 18,
+    marginBottom: 16,
   },
   statItem: {
     flex: 1,
@@ -307,15 +315,15 @@ const styles = StyleSheet.create({
   },
   statNumber: {
     fontSize: RFValue(20),
-    fontWeight: '700',
-    color: '#007bff',
+    fontWeight: '800',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: 'rgba(255,255,255,0.78)',
     textTransform: 'uppercase',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   emptyContainer: {
     flex: 1,
@@ -326,25 +334,25 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: RFValue(20),
     fontWeight: '600',
-    color: '#333',
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
   },
   askButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#ff6b35',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
   },
   askButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },
@@ -381,11 +389,11 @@ const styles = StyleSheet.create({
   },
   questionDate: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: '#64748B',
   },
   questionText: {
     fontSize: RFValue(16),
-    color: '#333',
+    color: '#0F172A',
     lineHeight: 22,
   },
   answerSection: {
@@ -408,11 +416,11 @@ const styles = StyleSheet.create({
   },
   answerDate: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: '#64748B',
   },
   answerText: {
     fontSize: RFValue(15),
-    color: '#333',
+    color: '#0F172A',
     lineHeight: 20,
   },
   pendingAnswer: {
@@ -438,8 +446,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: 20,
     width: '100%',
     maxHeight: '80%',
@@ -452,14 +460,16 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: '700',
+    color: '#0F172A',
   },
   questionInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
+    borderColor: '#CBD5E1',
+    borderRadius: 14,
     padding: 12,
+    color: '#0F172A',
+    backgroundColor: '#FFFFFF',
     fontSize: RFValue(16),
     height: 120,
     textAlignVertical: 'top',
@@ -471,7 +481,7 @@ const styles = StyleSheet.create({
   },
   characterText: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: '#64748B',
   },
   modalActions: {
     flexDirection: 'row',
@@ -480,25 +490,27 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#ddd',
-    paddingVertical: 12,
-    borderRadius: 8,
+    borderColor: '#CBD5E1',
+    height: 48,
+    justifyContent: 'center',
+    borderRadius: 14,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#666',
+    color: '#64748B',
     fontSize: RFValue(16),
     fontWeight: '600',
   },
   submitButton: {
     flex: 1,
-    backgroundColor: '#007bff',
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#ff6b35',
+    height: 48,
+    justifyContent: 'center',
+    borderRadius: 14,
     alignItems: 'center',
   },
   submitButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },

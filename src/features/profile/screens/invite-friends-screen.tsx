@@ -13,7 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { BlueBackdrop, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 interface InviteFriendsScreenProps {
   onBack: () => void;
@@ -42,17 +42,18 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
+      <BlueBackdrop />
       <LightHeader title="Invite Friends" onBack={onBack} />
 
       {isLoading && !data ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading referral details...</Text>
         </View>
       ) : error && !data ? (
         <View style={styles.loadingWrap}>
           <View style={styles.errorIconWrap}>
-            <Ionicons name="alert-circle-outline" size={38} color="#DC2626" />
+            <Ionicons name="alert-circle-outline" size={38} color={isDarkMode ? '#DC2626' : '#FCA5A5'} />
           </View>
           <Text style={[styles.errorText, isDarkMode && { color: '#94A3B8' }]}>Could not load your invite link.</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => refetch()} activeOpacity={0.85}>
@@ -68,7 +69,7 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
           {/* Hero */}
           <View style={[styles.heroCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             <View style={styles.heroBadge}>
-              <Ionicons name="gift" size={14} color="#D97706" />
+              <Ionicons name="gift" size={14} color="#FBBF24" />
               <Text style={styles.heroBadgeText}>PROMO REWARDS</Text>
             </View>
             <Text style={[styles.heroTitle, isDarkMode && { color: '#F8FAFC' }]}>Invite Friends & Earn Credits</Text>
@@ -107,17 +108,17 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
           {/* Referral Stats */}
           <View style={styles.statsRow}>
             <View style={[styles.statCard, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
-              <View style={[styles.statIconWrap, { backgroundColor: '#FEF3C7' }]}>
-                <Ionicons name="time-outline" size={18} color="#D97706" />
+              <View style={[styles.statIconWrap, { backgroundColor: 'rgba(251,191,36,0.18)' }]}>
+                <Ionicons name="time-outline" size={18} color="#FBBF24" />
               </View>
               <Text style={[styles.statValue, isDarkMode && { color: "#F8FAFC" }]}>{data?.pending ?? 0}</Text>
               <Text style={[styles.statLabel, isDarkMode && { color: "#94A3B8" }]}>Pending</Text>
             </View>
             <View style={[styles.statCard, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
-              <View style={[styles.statIconWrap, { backgroundColor: '#DCFCE7' }]}>
-                <Ionicons name="checkmark-circle-outline" size={18} color="#16A34A" />
+              <View style={[styles.statIconWrap, { backgroundColor: 'rgba(74,222,128,0.18)' }]}>
+                <Ionicons name="checkmark-circle-outline" size={18} color="#4ADE80" />
               </View>
-              <Text style={[styles.statValue, { color: '#16A34A' }]}>{data?.rewarded ?? 0}</Text>
+              <Text style={[styles.statValue, { color: '#4ADE80' }]}>{data?.rewarded ?? 0}</Text>
               <Text style={[styles.statLabel, isDarkMode && { color: "#94A3B8" }]}>Rewarded</Text>
             </View>
           </View>
@@ -147,7 +148,7 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   loadingWrap: {
     flex: 1,
@@ -158,13 +159,13 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.85)',
   },
   errorIconWrap: {
     marginBottom: 12,
   },
   errorText: {
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.85)',
     marginBottom: 16,
     fontSize: RFValue(14),
     textAlign: 'center',
@@ -188,31 +189,30 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   heroCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: 20,
     marginBottom: 14,
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
   },
   heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     alignSelf: 'flex-start',
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(251,191,36,0.18)',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
     marginBottom: 12,
   },
   heroBadgeText: {
-    color: '#B45309',
+    color: '#FBBF24',
     fontSize: RFValue(11),
     fontWeight: '700',
     letterSpacing: 0.6,
@@ -220,50 +220,49 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: RFValue(21),
     fontWeight: '800',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 8,
     lineHeight: 28,
   },
   heroSubtitle: {
     fontSize: RFValue(13),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     lineHeight: 19,
   },
   codeCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     padding: 20,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 2,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
     alignItems: 'center',
   },
   codeCardLabel: {
     fontSize: RFValue(11),
     fontWeight: '700',
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.7)',
     letterSpacing: 0.8,
     marginBottom: 12,
   },
   codePill: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255,255,255,0.14)',
     borderRadius: 14,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: '#94A3B8',
+    borderColor: 'rgba(255,255,255,0.55)',
     marginBottom: 16,
   },
   codeText: {
     fontSize: RFValue(26),
     fontWeight: '800',
-    color: '#003399',
+    color: '#FFFFFF',
     letterSpacing: 2,
   },
   urlContainer: {
@@ -273,21 +272,21 @@ const styles = StyleSheet.create({
   urlLabel: {
     fontSize: RFValue(11),
     fontWeight: '700',
-    color: '#94A3B8',
+    color: 'rgba(255,255,255,0.7)',
     letterSpacing: 0.6,
     marginBottom: 6,
   },
   urlBox: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255,255,255,0.14)',
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   urlText: {
     fontSize: RFValue(12),
-    color: '#475569',
+    color: 'rgba(255,255,255,0.9)',
   },
   shareButton: {
     width: '100%',
@@ -316,17 +315,17 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     padding: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 2,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+
   },
   statIconWrap: {
     width: 36,
@@ -339,30 +338,30 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: RFValue(20),
     fontWeight: '800',
-    color: '#0F172A',
+    color: '#FFFFFF',
   },
   statLabel: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 2,
     fontWeight: '500',
   },
   infoCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 2,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+
   },
   infoTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 14,
   },
   infoStep: {
@@ -375,19 +374,19 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepNumberText: {
     fontSize: RFValue(11),
     fontWeight: '700',
-    color: '#003399',
+    color: '#FFFFFF',
   },
   stepText: {
     flex: 1,
     fontSize: 13,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.8)',
     lineHeight: 19,
   },
 });

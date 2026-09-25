@@ -978,7 +978,7 @@ const styles = StyleSheet.create({
   },
   taskContextText: {
     fontSize: RFValue(12),
-    color: '#007AFF',
+    color: '#003399',
     marginLeft: 4,
     fontWeight: '500',
   },

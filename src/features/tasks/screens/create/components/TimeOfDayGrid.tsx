@@ -2,6 +2,7 @@ import { useTheme } from '@/src/shared/theme';
 import React from 'react';
 import { Image, ImageSourcePropType, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { FLOW } from '../flowTheme';
 
 interface TimeBlock {
   label: string;
@@ -37,8 +38,8 @@ export const TimeOfDayGrid: React.FC<TimeOfDayGridProps> = ({
           <View style={styles.iconContainer}>
             <Image source={block.icon} style={styles.timeIcon} />
           </View>
-          <Text style={[styles.gridTitle, isDarkMode && { color: '#F8FAFC' }]}>{block.label}</Text>
-          <Text style={[styles.gridDescription, isDarkMode && { color: '#94A3B8' }]}>{block.description}</Text>
+          <Text style={[styles.gridTitle, selectedTimeBlock === block.value && styles.gridTitleSelected, isDarkMode && { color: '#F8FAFC' }]}>{block.label}</Text>
+          <Text style={[styles.gridDescription, selectedTimeBlock === block.value && styles.gridDescriptionSelected, isDarkMode && { color: '#94A3B8' }]}>{block.description}</Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -54,20 +55,25 @@ const styles = StyleSheet.create({
   },
   gridItem: {
     width: '48%',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: FLOW.glassStrong,
     padding: 15,
-    borderRadius: 12,
+    borderRadius: 14,
     marginVertical: 6,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: FLOW.glassBorder,
     alignItems: 'center',
   },
   gridItemSelected: {
     borderColor: '#FF6A00',
-    backgroundColor: '#FFF4E6',
+    backgroundColor: '#FFFFFF',
   },
   iconContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
     marginBottom: 8,
   },
   timeIcon: {
@@ -80,10 +86,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 2,
+    color: '#FFFFFF',
+  },
+  gridTitleSelected: {
+    color: FLOW.blue,
   },
   gridDescription: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: FLOW.textMuted,
     textAlign: 'center',
+  },
+  gridDescriptionSelected: {
+    color: '#475569',
   },
 });

@@ -57,7 +57,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
       <Text style={styles.label}>Category</Text>
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color="#0057FF" />
+          <ActivityIndicator size="small" color="#FFFFFF" />
           <Text style={styles.loadingText}>Loading categories from database...</Text>
         </View>
       ) : hasError ? (
@@ -74,7 +74,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
           </Text>
           <Ionicons name="chevron-down" 
             size={20} 
-            color="#666" 
+            color="#003399" 
             style={{
               transform: [{ rotate: showDropdown ? '180deg' : '0deg' }]
             }}
@@ -166,7 +166,8 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
 const styles = StyleSheet.create({
   label: {
     fontSize: RFValue(14),
-    color: '#555',
+    fontWeight: '600',
+    color: '#FFFFFF',
     marginBottom: 6,
     marginTop: 10,
   },
@@ -174,21 +175,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#F2F2F2',
-    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderRadius: 14,
     marginBottom: 10,
   },
   loadingText: {
     marginLeft: 8,
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#FFFFFF',
   },
   errorContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#FFE6E6',
-    borderRadius: 8,
+    borderRadius: 14,
     padding: 16,
     marginBottom: 10,
   },
@@ -212,17 +213,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F2F2F2',
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     padding: 16,
     marginBottom: 10,
   },
   dropdownText: {
     fontSize: RFValue(16),
-    color: '#000',
+    color: '#0F172A',
   },
   placeholderText: {
-    color: '#aaa',
+    color: '#94A3B8',
   },
   dropdownOverlay: {
     position: 'absolute',
@@ -250,7 +251,7 @@ const styles = StyleSheet.create({
   },
   dropdownList: {
     backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E1E1E1',
     maxHeight: 250,
@@ -267,8 +268,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F9F9F9',
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#E1E1E1',
     paddingHorizontal: 12,
@@ -310,7 +311,7 @@ const styles = StyleSheet.create({
   selectedDropdownItem: {
     backgroundColor: '#F0F8FF',
     borderLeftWidth: 3,
-    borderLeftColor: '#0057FF',
+    borderLeftColor: '#ff6b35',
   },
   dropdownItemText: {
     fontSize: RFValue(15),

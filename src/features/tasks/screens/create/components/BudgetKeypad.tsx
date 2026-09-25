@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { FLOW } from '../flowTheme';
 
 interface BudgetKeypadProps {
   budget: string;
@@ -17,7 +18,7 @@ export const BudgetKeypad: React.FC<BudgetKeypadProps> = ({ budget, onKeyPress }
       onPress={() => onKeyPress(value.toString())}
     >
       {value === 'delete' ? (
-        <Ionicons name="backspace-outline" size={24} color="#002366" />
+        <Ionicons name="backspace-outline" size={24} color="#FFFFFF" />
       ) : (
         <Text style={styles.keyText}>{value}</Text>
       )}
@@ -74,42 +75,44 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#1C1C1E',
-    marginBottom: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 6,
   },
   sectionSubtitle: {
     fontSize: RFValue(14),
-    color: '#8E8E93',
+    color: FLOW.textMuted,
     marginBottom: 16,
   },
   inputBox: {
     marginTop: 10,
-    height: 50,
-    borderRadius: 8,
-    backgroundColor: '#f5f5f5',
+    height: 84,
+    borderRadius: 20,
+    backgroundColor: FLOW.glass,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
     marginBottom: 10,
   },
   currencySymbol: {
-    fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#002366',
+    fontSize: RFValue(28),
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.8)',
     marginRight: 5,
   },
   budgetText: {
-    fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#002366',
+    fontSize: RFValue(34),
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
   invalidBudgetText: {
-    color: '#FF3B30',
+    color: FLOW.error,
   },
   validationText: {
     fontSize: RFValue(14),
-    color: '#FF3B30',
+    color: FLOW.error,
     textAlign: 'center',
     marginTop: 4,
     marginBottom: 8,
@@ -128,16 +131,17 @@ const styles = StyleSheet.create({
   key: {
     width: 70,
     height: 70,
-    backgroundColor: '#fff',
+    backgroundColor: FLOW.glassStrong,
     borderRadius: 35,
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 10,
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: FLOW.glassBorder,
   },
   keyText: {
-    fontSize: RFValue(22),
-    color: '#002366',
+    fontSize: RFValue(24),
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });

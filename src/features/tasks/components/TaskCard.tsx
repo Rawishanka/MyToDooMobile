@@ -304,7 +304,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         {/* Metadata with Logo-inspired colored badges */}
         <View style={styles.metaContainer}>
           {/* Location */}
-          <View style={styles.taskRow}>
+          <View style={[styles.taskRow, styles.locationRow, !isDarkMode && styles.rowChipLight]}>
             <View style={[styles.iconBadge, styles.locationIconBadge, !isDarkMode && styles.iconBadgeLight]}>
               <Ionicons
                 name={(locationInfo.icon === 'car-outline' ? 'car' : 'location-sharp') as any}
@@ -326,20 +326,20 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
           {/* Date Display - Show when specific date is set */}
           {dateDisplay && (
-            <View style={styles.taskRow}>
+            <View style={[styles.taskRow, !isDarkMode && styles.rowChipLight]}>
               <View style={[styles.iconBadge, styles.dateIconBadge, !isDarkMode && styles.iconBadgeLight]}>
                 <Ionicons name="calendar" size={14} color={isDarkMode ? '#10B981' : CARD_TEXT} />
               </View>
-              <Text style={[styles.taskRowText, styles.dateRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextWhite]}>{dateDisplay}</Text>
+              <Text numberOfLines={1} style={[styles.taskRowText, styles.dateRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextWhite]}>{dateDisplay}</Text>
             </View>
           )}
 
           {/* Time / Flexibility */}
-          <View style={styles.taskRow}>
+          <View style={[styles.taskRow, !isDarkMode && styles.rowChipLight]}>
             <View style={[styles.iconBadge, styles.timeIconBadge, !isDarkMode && styles.iconBadgeLight]}>
               <Ionicons name="time" size={14} color={isDarkMode ? '#FF6B00' : CARD_TEXT} />
             </View>
-            <Text style={[styles.taskRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextMuted]}>{getTimePreference()}</Text>
+            <Text numberOfLines={1} style={[styles.taskRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextMuted]}>{getTimePreference()}</Text>
           </View>
         </View>
 
@@ -449,7 +449,8 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_PRICE_BG,
     borderColor: CARD_PRICE_BG,
   },
-  iconBadgeLight: { backgroundColor: CARD_CHIP_BG },
+  iconBadgeLight: { backgroundColor: 'transparent' },
+  rowChipLight: { backgroundColor: CARD_CHIP_BG },
   categoryTagLight: {
     backgroundColor: CARD_CHIP_BG,
     borderColor: CARD_DIVIDER,
@@ -466,7 +467,7 @@ const styles = StyleSheet.create({
   // Default Card Styles - 2026 PREMIUM (COMPACT & SLEEK)
   defaultCard: {
     marginHorizontal: isTablet ? wp('-2%') : wp('4%'),
-    marginBottom: 16,
+    marginBottom: 12,
     position: 'relative',
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -487,24 +488,24 @@ const styles = StyleSheet.create({
   },
   cardBody: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
   cardHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    gap: 10,
-    marginBottom: 10,
-    paddingRight: 30, // Space for chevron
+    gap: 8,
+    marginBottom: 8,
+    paddingRight: 28, // Space for chevron
   },
   priceBubble: {
     backgroundColor: '#EFF6FF',
     borderWidth: 1,
     borderColor: '#DBEAFE',
     borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     flexShrink: 0,
     alignSelf: 'flex-start',
   },
@@ -608,18 +609,30 @@ const styles = StyleSheet.create({
     lineHeight: RFValue(isTablet ? 19 : 21),
   },
   metaContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: 8,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   taskRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 5,
+    height: 26,
+    paddingRight: 10,
+    borderRadius: 13,
+    backgroundColor: 'rgba(148,163,184,0.12)',
+    flexShrink: 1,
+    maxWidth: '100%',
+  },
+  locationRow: {
+    flexShrink: 1,
   },
   iconBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 9,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     flexShrink: 0,
@@ -634,10 +647,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF7ED',
   },
   taskRowText: {
-    fontSize: RFValue(isTablet ? 12 : 13),
+    fontSize: RFValue(isTablet ? 12 : 12.5),
     color: '#475569',
     fontWeight: '500',
-    flex: 1,
     flexShrink: 1,
   },
   dateRowText: {
@@ -649,7 +661,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   categoryTag: {
     flexDirection: 'row',
@@ -658,9 +670,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 14,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 12,
   },
   categoryDot: {
     width: 5,
@@ -688,8 +700,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 2,
-    paddingTop: 12,
+    marginTop: 0,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
   },
@@ -745,9 +757,9 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   userAvatar: {
-    width: isTablet ? 36 : 34,
-    height: isTablet ? 36 : 34,
-    borderRadius: isTablet ? 18 : 17,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: '#EEF2FF',
     borderWidth: 1.5,
     borderColor: '#CBD5E1',
@@ -781,8 +793,8 @@ const styles = StyleSheet.create({
   // Navigation Indicator - RESPONSIVE
   navigationIndicator: {
     position: 'absolute',
-    top: 14,
-    right: 14,
+    top: 12,
+    right: 10,
   },
   chevronCircle: {
     width: 26,

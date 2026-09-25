@@ -82,25 +82,10 @@ export const TaskCardSkeleton: React.FC<TaskCardSkeletonProps> = ({ delay = 0 })
           ]} />
         </View>
 
-        {/* Metadata Rows (Location, Date, Time) */}
+        {/* Metadata chips (location, time) on one row */}
         <View style={styles.metaContainer}>
-          {/* Location row */}
-          <View style={styles.metaRow}>
-            <Animated.View style={[styles.iconDot, styles.locDot, dotBg ? { backgroundColor: dotBg } : null, { opacity: shimmerOpacity }]} />
-            <Animated.View style={[styles.metaTextLine, { width: '42%', backgroundColor: lineColorLong, opacity: shimmerOpacity }]} />
-          </View>
-
-          {/* Date row */}
-          <View style={styles.metaRow}>
-            <Animated.View style={[styles.iconDot, styles.dateDot, dotBg ? { backgroundColor: dotBg } : null, { opacity: shimmerOpacity }]} />
-            <Animated.View style={[styles.metaTextLine, { width: '32%', backgroundColor: lineColorLong, opacity: shimmerOpacity }]} />
-          </View>
-
-          {/* Time row */}
-          <View style={styles.metaRow}>
-            <Animated.View style={[styles.iconDot, styles.timeDot, dotBg ? { backgroundColor: dotBg } : null, { opacity: shimmerOpacity }]} />
-            <Animated.View style={[styles.metaTextLine, { width: '25%', backgroundColor: lineColorLong, opacity: shimmerOpacity }]} />
-          </View>
+          <Animated.View style={[styles.metaChip, { width: 110, backgroundColor: pillBg, opacity: shimmerOpacity }]} />
+          <Animated.View style={[styles.metaChip, { width: 80, backgroundColor: pillBg, opacity: shimmerOpacity }]} />
         </View>
 
         {/* Category tags row */}
@@ -153,7 +138,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     marginHorizontal: isTablet ? 0 : wp('4%'),
-    marginBottom: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#EBF0F5',
     flexDirection: 'row',
@@ -172,19 +157,19 @@ const styles = StyleSheet.create({
   },
   cardBody: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   titleColumn: {
     flex: 1,
     marginRight: 12,
-    gap: 6,
+    gap: 5,
   },
   titleLineLong: {
     height: 16,
@@ -199,54 +184,36 @@ const styles = StyleSheet.create({
     width: '55%',
   },
   priceBadge: {
-    width: 68,
-    height: 28,
+    width: 64,
+    height: 26,
     borderRadius: 14,
     backgroundColor: '#EBF3FE',
   },
   metaContainer: {
-    marginBottom: 12,
-    gap: 8,
-  },
-  metaRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
   },
-  iconDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 9,
-  },
-  locDot: {
-    backgroundColor: '#E0F2FE',
-  },
-  dateDot: {
-    backgroundColor: '#D1FAE5',
-  },
-  timeDot: {
-    backgroundColor: '#FFEDD5',
-  },
-  metaTextLine: {
-    height: 11,
-    borderRadius: 4,
-    backgroundColor: '#E2E8F0',
+  metaChip: {
+    height: 26,
+    borderRadius: 13,
   },
   tagsRow: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   tagPill: {
-    height: 26,
-    borderRadius: 14,
+    height: 22,
+    borderRadius: 12,
     backgroundColor: '#F1F5F9',
   },
   footerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 12,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#F8FAFC',
   },
@@ -262,9 +229,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   avatarCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: '#1E3A8A',
   },
   userNameLine: {

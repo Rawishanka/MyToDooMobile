@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   postTaskButton: {
-    backgroundColor: '#1a237e',
+    backgroundColor: '#ff6b35',
     marginHorizontal: 20,
     paddingVertical: 14,
     borderRadius: 25,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(28),
     fontWeight: '700',
-    color: '#1a237e',
+    color: '#003399',
     marginBottom: 20,
   },
   taskDetailRow: {
@@ -257,13 +257,13 @@ const styles = StyleSheet.create({
   },
   menuOptionText: {
     fontSize: RFValue(16),
-    color: '#007AFF',
+    color: '#003399',
     textAlign: 'center',
     fontWeight: '400',
   },
   cancelOptionText: {
     fontSize: RFValue(16),
-    color: '#007AFF',
+    color: '#003399',
     textAlign: 'center',
     fontWeight: '400',
   },

@@ -19,18 +19,13 @@ export const TipsSection: React.FC = () => {
 
 const styles = StyleSheet.create({
   tipsContainer: {
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 16,
     marginTop: 0,
     marginBottom: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   tipsTitle: {
     fontSize: 15,

@@ -1,4 +1,5 @@
-import { BRAND_BLUE, BRAND_GREEN } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
+import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 import { CreateTaskRequest } from '@/src/api/types/tasks';
 import { useCreateTask, usePostTaskDirect, usePostTaskWithImages } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
@@ -223,8 +224,10 @@ export default function PostTaskScreen() {
 
   if (isSubmitting) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007bff" />
+      <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
+        <FlowBackground isDarkMode={isDarkMode} />
+        <ActivityIndicator size="large" color="#FFFFFF" />
         <Text style={styles.loadingText}>
           {uploadProgress || 'Posting your task...'}
         </Text>
@@ -239,10 +242,11 @@ export default function PostTaskScreen() {
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
+      <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : FLOW.blue} />
+      <FlowBackground isDarkMode={isDarkMode} />
       
       {/* Header */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
+      <View style={[styles.header, isDarkMode && { backgroundColor: BRAND_BLUE }, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -250,7 +254,7 @@ export default function PostTaskScreen() {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
         {/* Task Summary Card */}
         <View style={[styles.summaryCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Task Summary</Text>
@@ -317,7 +321,7 @@ export default function PostTaskScreen() {
 
         {/* Info Box */}
         <View style={styles.infoBox}>
-          <Ionicons name="information-circle" size={20} color="#007bff" />
+          <Ionicons name="information-circle" size={20} color="#FFFFFF" />
           <Text style={styles.infoText}>
             Once posted, your task will be visible to all users. You'll receive notifications when users make offers.
           </Text>
@@ -325,12 +329,12 @@ export default function PostTaskScreen() {
       </ScrollView>
 
       {/* Action Buttons */}
-      <View style={[styles.actionButtons, isDarkMode && { backgroundColor: '#0B1120', borderTopColor: '#1E293B' }]}>
+      <View style={[styles.actionButtons, isDarkMode && { backgroundColor: '#0B1120', borderTopColor: '#1E293B' }, { paddingBottom: Math.max(insets.bottom, 16) }]}>
         <TouchableOpacity 
           style={styles.editButton}
           onPress={() => router.push('/(welcome-screen)/title-screen')}
         >
-          <Ionicons name="create-outline" size={20} color="#007bff" />
+          <Ionicons name="create-outline" size={20} color="#FFFFFF" />
           <Text style={styles.editButtonText}>Edit Task</Text>
         </TouchableOpacity>
         
@@ -353,23 +357,23 @@ export default function PostTaskScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: FLOW.blue,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: FLOW.blue,
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#FFFFFF',
   },
   subLoadingText: {
     marginTop: 8,
     fontSize: RFValue(14),
-    color: '#999',
+    color: FLOW.textMuted,
     textAlign: 'center',
     paddingHorizontal: 20,
   },
@@ -379,7 +383,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 15,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: 'transparent',
     borderBottomWidth: 0,
     borderBottomColor: 'transparent',
   },
@@ -396,23 +400,23 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
+  },
+  contentInner: {
+    paddingBottom: 24,
   },
   summaryCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: FLOW.glass,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
+    borderRadius: 20,
+    padding: 16,
+    marginTop: 8,
   },
   sectionTitle: {
-    fontSize: RFValue(20),
+    fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#000',
+    color: '#FFFFFF',
     marginBottom: 16,
   },
   summaryItem: {
@@ -421,18 +425,18 @@ const styles = StyleSheet.create({
   label: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#666',
+    color: FLOW.textMuted,
     marginBottom: 4,
   },
   value: {
     fontSize: RFValue(16),
-    color: '#000',
+    color: '#FFFFFF',
     lineHeight: 22,
   },
   budgetValue: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#007bff',
+    color: '#FFFFFF',
   },
   imageContainer: {
     marginTop: 8,
@@ -440,32 +444,34 @@ const styles = StyleSheet.create({
   taskImage: {
     width: 80,
     height: 80,
-    borderRadius: 8,
+    borderRadius: 14,
     marginRight: 12,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: FLOW.glassStrong,
   },
   infoBox: {
     flexDirection: 'row',
-    backgroundColor: '#e3f2fd',
-    borderRadius: 8,
+    backgroundColor: FLOW.glass,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
+    borderRadius: 20,
     padding: 16,
-    marginTop: 20,
+    marginTop: 14,
     marginBottom: 20,
   },
   infoText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: '#1976d2',
+    color: FLOW.textMuted,
     marginLeft: 8,
     lineHeight: 20,
   },
   actionButtons: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    backgroundColor: FLOW.blueDeep,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: FLOW.line,
     gap: 12,
   },
   editButton: {
@@ -473,14 +479,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#007bff',
+    height: 52,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
     gap: 6,
   },
   editButtonText: {
-    color: '#007bff',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },
@@ -489,18 +495,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 8,
-    backgroundColor: BRAND_GREEN,
+    height: 52,
+    borderRadius: 14,
+    backgroundColor: FLOW.orange,
     gap: 6,
+    ...primaryShadow,
   },
   postButtonDisabled: {
-    backgroundColor: '#ccc',
-    opacity: 0.6,
+    backgroundColor: FLOW.disabledFill,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   postButtonText: {
     color: '#fff',
     fontSize: RFValue(16),
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

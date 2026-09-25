@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -18,6 +19,8 @@ import {
 } from 'react-native';
 import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Category {
   _id: string;
@@ -37,6 +40,7 @@ export default function TitleInputScreen() {
   const [categorySearchQuery, setCategorySearchQuery] = useState('');
   
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { myTask, updateMyTask, resetTask } = useCreateTaskStore();
 
   // Fetch categories
@@ -140,8 +144,10 @@ export default function TitleInputScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <StatusBar barStyle="light-content" backgroundColor={FLOW.blue} />
+      <FlowBackground isDarkMode={false} />
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => {
+      <TouchableOpacity style={[styles.backButton, { top: Math.max(insets.top, 20) + 6 }]} onPress={() => {
         // Check if user has entered any data (local state or store)
         const hasLocalData = title.trim() || description.trim() || selectedCategory;
         const hasStoreData = myTask.title || myTask.description || ('category' in myTask && myTask.category);
@@ -180,7 +186,7 @@ export default function TitleInputScreen() {
           router.back();
         }
       }}>
-        <Ionicons name="chevron-back" size={24} color="#333" />
+        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
       </TouchableOpacity>
 
       <ScrollView 
@@ -203,7 +209,7 @@ export default function TitleInputScreen() {
             <Text style={[styles.categorySelectorText, !selectedCategory && styles.placeholder]}>
               {selectedCategory || 'Select a category'}
             </Text>
-            <Ionicons name="chevron-down" size={20} color="#666" />
+            <Ionicons name="chevron-down" size={20} color={FLOW.blue} />
           </TouchableOpacity>
 
           {/* Category Dropdown */}
@@ -309,16 +315,18 @@ export default function TitleInputScreen() {
       </ScrollView>
 
       {/* Continue Button */}
-      <TouchableOpacity
-        style={[
-          styles.continueButton,
-          isFormValid && styles.continueButtonEnabled,
-        ]}
-        disabled={!isFormValid}
-        onPress={handleContinue}
-      >
-        <Text style={styles.continueText}>Continue</Text>
-      </TouchableOpacity>
+      <View style={[styles.actionBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <TouchableOpacity
+          style={[
+            styles.continueButton,
+            isFormValid && styles.continueButtonEnabled,
+          ]}
+          disabled={!isFormValid}
+          onPress={handleContinue}
+        >
+          <Text style={[styles.continueText, !isFormValid && styles.continueTextDisabled]}>Continue</Text>
+        </TouchableOpacity>
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -326,7 +334,7 @@ export default function TitleInputScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: FLOW.blue,
   },
   backButton: {
     position: 'absolute',
@@ -340,33 +348,33 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
     paddingTop: 100,
-    paddingBottom: 100,
+    paddingBottom: 130,
   },
   title: {
     fontSize: RFValue(22),
     fontWeight: '700',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginBottom: 5,
   },
   subtitle: {
     fontSize: RFValue(14),
-    color: '#8E8E93',
+    color: FLOW.textMuted,
     marginBottom: 30,
   },
   fieldContainer: {
     marginBottom: 24,
   },
   label: {
-    fontSize: RFValue(16),
+    fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   categorySelector: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#FFFFFF',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -375,15 +383,15 @@ const styles = StyleSheet.create({
   },
   categorySelectorText: {
     fontSize: RFValue(16),
-    color: '#000',
+    color: FLOW.ink,
   },
   placeholder: {
-    color: '#999',
+    color: FLOW.placeholder,
   },
   categoryDropdown: {
     marginTop: 8,
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E5E5EA',
     maxHeight: 300,
@@ -446,59 +454,71 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   input: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#FFFFFF',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     fontSize: RFValue(16),
-    color: '#000',
-    borderWidth: 1,
+    color: FLOW.ink,
+    borderWidth: 1.5,
     borderColor: 'transparent',
   },
   inputError: {
-    borderColor: '#FF3B30',
+    borderColor: FLOW.error,
   },
   validationText: {
     fontSize: RFValue(12),
-    color: '#FF3B30',
+    color: FLOW.error,
     marginTop: 4,
   },
   textArea: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#FFFFFF',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     fontSize: RFValue(16),
-    color: '#000',
+    color: FLOW.ink,
     height: 120,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: 'transparent',
   },
-  continueButton: {
+  actionBar: {
     position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: '#D1D1D6',
-    paddingVertical: 16,
-    borderRadius: 25,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    backgroundColor: FLOW.blueDeep,
+    borderTopWidth: 1,
+    borderTopColor: FLOW.line,
+  },
+  continueButton: {
+    backgroundColor: FLOW.disabledFill,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   continueButtonEnabled: {
-    backgroundColor: '#0057FF',
+    backgroundColor: FLOW.orange,
+    ...primaryShadow,
   },
   continueText: {
     color: '#fff',
     fontSize: RFValue(16),
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  continueTextDisabled: {
+    color: FLOW.disabledText,
   },
   characterCount: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: FLOW.textMuted,
     textAlign: 'right',
     marginTop: 4,
   },
   required: {
-    color: '#EF4444',
+    color: FLOW.required,
   },
 });

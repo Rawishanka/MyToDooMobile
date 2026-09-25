@@ -133,7 +133,7 @@ export default function AnswerQuestionScreen() {
   if (isLoading) {
     return (
       <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <ActivityIndicator size="large" color="#007bff" />
+        <ActivityIndicator size="large" color="#003399" />
         <Text style={styles.loadingText}>Loading question details...</Text>
       </View>
     );
@@ -142,7 +142,7 @@ export default function AnswerQuestionScreen() {
   if (!task || !question) {
     return (
       <View style={[styles.errorContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
+        <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
         <Text style={styles.errorTitle}>Question Not Found</Text>
         <Text style={styles.errorSubtitle}>Could not load question details.</Text>
         <TouchableOpacity 
@@ -157,12 +157,12 @@ export default function AnswerQuestionScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor="#003399" />
       
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Answer Question</Text>
         <View style={styles.placeholder} />
@@ -206,7 +206,7 @@ export default function AnswerQuestionScreen() {
               multiline
               numberOfLines={6}
               textAlignVertical="top"
-              placeholderTextColor="#999"
+              placeholderTextColor="#94A3B8"
               maxLength={1000}
               scrollEnabled
             />
@@ -254,10 +254,10 @@ export default function AnswerQuestionScreen() {
           disabled={isSubmitting || !canSubmitAnswer}
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
             <>
-              <Ionicons name="chatbubble" size={20} color="#fff" />
+              <Ionicons name="chatbubble" size={20} color="#FFFFFF" />
               <Text style={styles.submitButtonText}>Post Answer</Text>
             </>
           )}
@@ -270,34 +270,36 @@ export default function AnswerQuestionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F4F6FB',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
+    backgroundColor: '#F4F6FB',
   },
   errorTitle: {
     fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -306,60 +308,71 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#007bff',
+    color: '#003399',
     fontSize: RFValue(16),
-    fontWeight: '600',
+    fontWeight: '700',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingBottom: 15,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingBottom: 14,
+    backgroundColor: '#003399',
   },
   backIcon: {
-    padding: 5,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   placeholder: {
-    width: 34,
+    width: 36,
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
   },
   taskSummary: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+    backgroundColor: '#003399',
+    borderRadius: 20,
     padding: 16,
     marginTop: 20,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   taskTitle: {
     fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   taskLocation: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.78)',
   },
   questionContainer: {
     marginTop: 24,
   },
   questionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#003399',
+    borderRadius: 20,
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   questionHeader: {
     flexDirection: 'row',
@@ -370,15 +383,15 @@ const styles = StyleSheet.create({
   questionAsker: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#495057',
+    color: '#FFFFFF',
   },
   questionDate: {
     fontSize: RFValue(12),
-    color: '#6c757d',
+    color: 'rgba(255,255,255,0.78)',
   },
   questionText: {
     fontSize: RFValue(16),
-    color: '#000',
+    color: '#FFFFFF',
     lineHeight: 22,
   },
   formContainer: {
@@ -387,7 +400,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#000',
+    color: '#0F172A',
     marginBottom: 20,
   },
   inputContainer: {
@@ -395,19 +408,19 @@ const styles = StyleSheet.create({
   },
   answerInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
+    borderColor: '#CBD5E1',
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: RFValue(16),
-    color: '#000',
+    color: '#0F172A',
     minHeight: 120,
     maxHeight: 200,
     backgroundColor: '#fff',
   },
   characterCount: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'right',
     marginTop: 4,
   },
@@ -416,8 +429,8 @@ const styles = StyleSheet.create({
   },
   tipsTitle: {
     fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 12,
   },
   tipItem: {
@@ -427,43 +440,45 @@ const styles = StyleSheet.create({
   },
   tipBullet: {
     fontSize: RFValue(14),
-    color: '#495057',
+    color: '#003399',
     marginRight: 8,
     marginTop: 2,
   },
   tipText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: '#495057',
+    color: '#334155',
     lineHeight: 20,
   },
   guidelinesContainer: {
-    backgroundColor: '#e8f5e8',
-    borderRadius: 8,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,51,153,0.18)',
+    borderRadius: 16,
     padding: 16,
   },
   guidelinesTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#2e7d32',
+    color: '#003399',
     marginBottom: 8,
   },
   guideline: {
     fontSize: RFValue(12),
-    color: '#2e7d32',
+    color: '#003399',
     marginBottom: 4,
   },
   buttonContainer: {
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#CBD5E1',
   },
   submitButton: {
-    backgroundColor: '#28a745',
-    paddingVertical: 16,
-    borderRadius: 8,
+    backgroundColor: '#ff6b35',
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -473,8 +488,8 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   submitButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

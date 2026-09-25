@@ -10,13 +10,15 @@ interface EmptyQuestionsStateProps {
 export default function EmptyQuestionsState({ onAskQuestion }: EmptyQuestionsStateProps) {
   return (
     <View style={styles.emptyContainer}>
-      <Ionicons name="help-circle-outline" size={64} color="#ccc" />
+      <View style={styles.iconChip}>
+        <Ionicons name="help-circle-outline" size={40} color="#003399" />
+      </View>
       <Text style={styles.emptyTitle}>No questions yet</Text>
       <Text style={styles.emptySubtitle}>
         Be the first to ask a question about this task!
       </Text>
       <TouchableOpacity style={styles.askButton} onPress={onAskQuestion}>
-        <Ionicons name="chatbubble-ellipses-outline" size={18} color="#fff" />
+        <Ionicons name="chatbubble-ellipses-outline" size={18} color="#FFFFFF" />
         <Text style={styles.askButtonText}>Ask a Question</Text>
       </TouchableOpacity>
     </View>
@@ -30,16 +32,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 40,
   },
+  iconChip: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: '#E3EAF8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emptyTitle: {
     fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -47,14 +57,14 @@ const styles = StyleSheet.create({
   askButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#007bff',
+    backgroundColor: '#ff6b35',
     paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    height: 48,
+    borderRadius: 14,
     gap: 8,
   },
   askButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },

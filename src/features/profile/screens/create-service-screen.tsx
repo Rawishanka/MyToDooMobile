@@ -7,7 +7,7 @@ import { validateContactContent } from '@/src/shared/utils/contactModeration';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -61,6 +61,12 @@ export default function CreateServiceScreen({
 
   // Field errors
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Visual-only: which text input currently shows the orange focus ring
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const focusProps = (name: string) => ({
+    onFocus: () => setFocusedField(name),
+    onBlur: () => setFocusedField((cur) => (cur === name ? null : cur)),
+  });
 
   const handleBack = () => {
     Keyboard.dismiss();
@@ -222,6 +228,7 @@ export default function CreateServiceScreen({
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 20 : 0}
     >
+      <BlueBackdrop />
       <LightHeader title="Offer a Service" onBack={handleBack} />
 
       <ScrollView
@@ -246,7 +253,7 @@ export default function CreateServiceScreen({
             <View style={[styles.formCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             {/* Category Picker */}
             <View style={styles.labelRow}>
-              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Category *</Text>
+              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Category <Text style={styles.required}>*</Text></Text>
               {selectedCategory ? (
                 <Text style={[styles.selectedCategoryBadge, isDarkMode && { color: '#38BDF8' }]}>
                   ✓ {selectedCategory}
@@ -261,7 +268,7 @@ export default function CreateServiceScreen({
                 style={[
                   styles.categorySelectorBox,
                   isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
-                  categoryDropdownOpen && { borderColor: isDarkMode ? '#38BDF8' : '#003399' },
+                  categoryDropdownOpen && { borderColor: '#ff6b35' },
                   errors.category ? styles.inputError : null,
                 ]}
                 onPress={() => {
@@ -291,7 +298,7 @@ export default function CreateServiceScreen({
                 <Ionicons
                   name={categoryDropdownOpen ? 'chevron-up' : 'chevron-down'}
                   size={18}
-                  color={isDarkMode ? '#94A3B8' : '#64748B'}
+                  color={isDarkMode ? '#94A3B8' : '#003399'}
                 />
               </TouchableOpacity>
 
@@ -376,7 +383,7 @@ export default function CreateServiceScreen({
 
             {/* Title */}
             <View style={[styles.labelRow, { marginTop: 14 }]}>
-              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Service Title *</Text>
+              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Service Title <Text style={styles.required}>*</Text></Text>
               <Text
                 style={[
                   styles.charCounter,
@@ -395,8 +402,10 @@ export default function CreateServiceScreen({
               style={[
                 styles.input,
                 isDarkMode && { backgroundColor: '#1E293B', color: '#F8FAFC', borderColor: '#334155' },
+                focusedField === 'title' && styles.inputFocused,
                 errors.title ? styles.inputError : null,
               ]}
+              {...focusProps('title')}
               value={title}
               onChangeText={(t) => {
                 setTitle(t);
@@ -410,7 +419,7 @@ export default function CreateServiceScreen({
 
             {/* Description */}
             <View style={[styles.labelRow, { marginTop: 14 }]}>
-              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Description *</Text>
+              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Description <Text style={styles.required}>*</Text></Text>
               <Text
                 style={[
                   styles.charCounter,
@@ -430,8 +439,10 @@ export default function CreateServiceScreen({
                 styles.input,
                 styles.textArea,
                 isDarkMode && { backgroundColor: '#1E293B', color: '#F8FAFC', borderColor: '#334155' },
+                focusedField === 'description' && styles.inputFocused,
                 errors.description ? styles.inputError : null,
               ]}
+              {...focusProps('description')}
               value={description}
               onChangeText={(t) => {
                 setDescription(t);
@@ -448,14 +459,16 @@ export default function CreateServiceScreen({
             {/* Price & Radius Row */}
             <View style={[styles.row, { marginTop: 14 }]}>
               <View style={{ flex: 1, marginRight: 10 }}>
-                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Price (AUD) *</Text>
+                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Price (AUD) <Text style={styles.required}>*</Text></Text>
                 <Text style={[styles.helperText, isDarkMode && { color: '#94A3B8' }]}>Fixed package price</Text>
                 <TextInput
                   style={[
                     styles.input,
                     isDarkMode && { backgroundColor: '#1E293B', color: '#F8FAFC', borderColor: '#334155' },
+                    focusedField === 'price' && styles.inputFocused,
                     errors.price ? styles.inputError : null,
                   ]}
+                  {...focusProps('price')}
                   value={price}
                   onChangeText={(t) => {
                     setPrice(t);
@@ -475,8 +488,10 @@ export default function CreateServiceScreen({
                   style={[
                     styles.input,
                     isDarkMode && { backgroundColor: '#1E293B', color: '#F8FAFC', borderColor: '#334155' },
+                    focusedField === 'radius' && styles.inputFocused,
                     errors.radius ? styles.inputError : null,
                   ]}
+                  {...focusProps('radius')}
                   value={radiusKm}
                   onChangeText={(t) => {
                     setRadiusKm(t);
@@ -492,7 +507,7 @@ export default function CreateServiceScreen({
             </View>
 
             {/* Location */}
-            <Text style={[styles.label, { marginTop: 14 }, isDarkMode && { color: '#F8FAFC' }]}>Suburb / Service Area *</Text>
+            <Text style={[styles.label, { marginTop: 14 }, isDarkMode && { color: '#F8FAFC' }]}>Suburb / Service Area <Text style={styles.required}>*</Text></Text>
             <Text style={[styles.helperText, isDarkMode && { color: '#94A3B8' }]}>Base suburb where you provide this service</Text>
             <View style={{ zIndex: 1000, elevation: 1000, marginTop: 4 }}>
               <LocationAutocomplete
@@ -513,7 +528,7 @@ export default function CreateServiceScreen({
             {errors.suburb ? <Text style={styles.errorText}>{errors.suburb}</Text> : null}
             {suburb ? (
               <View style={styles.selectedLocBadge}>
-                <Ionicons name="location" size={14} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                <Ionicons name="location" size={14} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
                 <Text style={[styles.selectedLocation, isDarkMode && { color: '#38BDF8' }]} numberOfLines={1}>{suburb}</Text>
               </View>
             ) : null}
@@ -541,45 +556,45 @@ export default function CreateServiceScreen({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F4F6FB' },
+  container: { flex: 1, backgroundColor: '#003399' },
   content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 60 },
   formCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: 16,
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
   },
+  required: { color: '#FCA5A5' },
+  inputFocused: { borderColor: '#ff6b35' },
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.18)',
     gap: 12,
     marginBottom: 14,
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
   },
   infoBannerTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 3,
   },
   infoBannerSub: {
     fontSize: 12,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     lineHeight: 17,
   },
   labelRow: {
@@ -588,50 +603,50 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   label: {
-    fontSize: RFValue(13),
+    fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#334155',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   charCounter: {
     fontSize: RFValue(11),
-    color: '#94A3B8',
+    color: 'rgba(255,255,255,0.65)',
     fontWeight: '500',
   },
   charCounterWarning: {
-    color: '#D97706',
+    color: '#FBBF24',
     fontWeight: '600',
   },
   charCounterSuccess: {
-    color: '#16A34A',
+    color: '#4ADE80',
     fontWeight: '600',
   },
   helperText: {
-    fontSize: RFValue(11),
-    color: '#64748B',
+    fontSize: RFValue(11.5),
+    color: 'rgba(255,255,255,0.75)',
     marginBottom: 6,
   },
   selectedCategoryBadge: {
     fontSize: RFValue(12),
     fontWeight: '600',
-    color: '#003399',
+    color: '#4ADE80',
   },
   input: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderWidth: 1.5,
+    borderColor: 'transparent',
     paddingHorizontal: 14,
     paddingVertical: 13,
     fontSize: RFValue(14),
     color: '#0F172A',
   },
   inputError: {
-    borderColor: '#DC2626',
+    borderColor: '#F87171',
     borderWidth: 1.5,
   },
   errorText: {
-    color: '#DC2626',
+    color: '#FCA5A5',
     fontSize: RFValue(12),
     marginTop: 4,
     marginLeft: 2,
@@ -639,10 +654,10 @@ const styles = StyleSheet.create({
   textArea: { minHeight: 100 },
   row: { flexDirection: 'row' },
   categorySelectorBox: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderWidth: 1.5,
+    borderColor: 'transparent',
     paddingHorizontal: 14,
     paddingVertical: 13,
     flexDirection: 'row',
@@ -713,7 +728,7 @@ const styles = StyleSheet.create({
   },
   selectedLocation: {
     flexShrink: 1,
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: RFValue(12),
     fontWeight: '600',
   },

@@ -216,7 +216,7 @@ export default function OnboardingCarousel() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#004aad',
+    backgroundColor: '#003399',
     padding: 20,
     justifyContent: 'space-between',
   },
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   signupText: {
-    color: '#004aad',
+    color: '#003399',
     fontWeight: '600',
     textAlign: 'center',
   },

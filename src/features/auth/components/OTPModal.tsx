@@ -130,7 +130,7 @@ const OTPInput: React.FC<OTPInputProps> = ({ otp, otpRefs, onOtpChange, disabled
             digit && styles.otpBoxFilled,
             disabled && styles.otpBoxDisabled,
             isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' },
-            isDarkMode && digit && { borderColor: '#38BDF8', backgroundColor: '#1E293B' },
+            isDarkMode && digit && { borderColor: '#ff6b35', backgroundColor: '#1E293B' },
           ]}
           value={digit}
           onChangeText={(value) => handleChange(value, index)}
@@ -231,7 +231,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                   
                   <View style={styles.modalHeader}>
                     <View style={[styles.iconCircle, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                      <Ionicons name="mail-outline" size={36} color="#007BFF" />
+                      <Ionicons name="mail-outline" size={36} color="#003399" />
                     </View>
                     <Text style={[styles.modalTitle, isDarkMode && { color: '#F8FAFC' }]}>Verify Your Email</Text>
                     <Text style={[styles.modalSubtitle, isDarkMode && { color: '#94A3B8' }]}>
@@ -340,7 +340,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                   
                     <View style={styles.modalHeader}>
                       <View style={[styles.iconCircle, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                        <Ionicons name="shield-checkmark" size={36} color="#007BFF" />
+                        <Ionicons name="shield-checkmark" size={36} color="#003399" />
                       </View>
                       <Text style={[styles.modalTitle, isDarkMode && { color: '#F8FAFC' }]}>Two-Factor Authentication</Text>
                       <Text style={[styles.modalSubtitle, isDarkMode && { color: '#94A3B8' }]}>
@@ -443,7 +443,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                   
                   <View style={styles.modalHeader}>
                     <View style={[styles.iconCircle, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                      <Ionicons name="phone-portrait-outline" size={36} color="#007BFF" />
+                      <Ionicons name="phone-portrait-outline" size={36} color="#003399" />
                     </View>
                     <Text style={[styles.modalTitle, isDarkMode && { color: '#F8FAFC' }]}>Verify Your Phone</Text>
                     <Text style={[styles.modalSubtitle, isDarkMode && { color: '#94A3B8' }]}>
@@ -590,7 +590,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#E8F4FD',
+    backgroundColor: '#EEF3FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: RFValue(22),
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: '#003399',
     marginBottom: 6,
   },
   modalSubtitle: {
@@ -609,7 +609,7 @@ const styles = StyleSheet.create({
   contactText: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#007BFF',
+    color: '#003399',
   },
   progressContainer: {
     flexDirection: 'row',
@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   progressDotActive: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#003399',
   },
   progressDotComplete: {
     backgroundColor: '#28a745',
@@ -663,7 +663,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   progressLabelActive: {
-    color: '#007BFF',
+    color: '#003399',
     fontWeight: '600',
   },
   progressLabelComplete: {
@@ -695,11 +695,11 @@ const styles = StyleSheet.create({
     fontSize: RFValue(20),
     fontWeight: '700',
     color: '#1a1a1a',
-    backgroundColor: '#fafafa',
+    backgroundColor: '#fff',
   },
   otpBoxFilled: {
-    borderColor: '#007BFF',
-    backgroundColor: '#E8F4FD',
+    borderColor: '#003399',
+    backgroundColor: '#EEF3FF',
   },
   otpBoxDisabled: {
     backgroundColor: '#f0f0f0',
@@ -711,7 +711,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   timerHighlight: {
-    color: '#007BFF',
+    color: '#003399',
     fontWeight: '600',
   },
   resendInlineButton: {
@@ -726,7 +726,7 @@ const styles = StyleSheet.create({
   },
   resendInlineLink: {
     fontSize: RFValue(13),
-    color: '#007BFF',
+    color: '#003399',
     fontWeight: '600',
   },
   successBadge: {
@@ -746,17 +746,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   verifyButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#ff6b35',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 52,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     gap: 8,
     marginBottom: 12,
   },
   verifyButtonDisabled: {
-    backgroundColor: '#B0C4DE',
+    backgroundColor: '#CBD5E1',
   },
   verifiedButton: {
     backgroundColor: '#28a745',

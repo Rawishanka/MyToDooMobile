@@ -13,6 +13,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -22,6 +23,8 @@ import {
 // ✅ NEW: Use OCR API for sensitive data detection
 import { OCRAPI } from '@/src/api/ocr-api';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 
 const MAX_TASK_PHOTOS = 5;
 
@@ -55,6 +58,7 @@ interface LocationData {
 }
 
 export default function SnapPhotoScreen() {
+  const insets = useSafeAreaInsets();
   const [images, setImages] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [validatingImages, setValidatingImages] = useState<Set<string>>(new Set()); // Track which images are being validated
@@ -330,15 +334,15 @@ export default function SnapPhotoScreen() {
               >
                 {(isProcessing || validatingImages.size > 0) ? (
                   <View style={styles.uploadingContainer}>
-                    <ActivityIndicator size="small" color="#467FFF" />
+                    <ActivityIndicator size="small" color="#FFFFFF" />
                     <Text style={styles.uploadingText}>
                       {validatingImages.size > 0 ? 'Validating...' : 'Processing...'}
                     </Text>
                   </View>
                 ) : (
                   <>
-                    <Ionicons name="camera" size={24} color="#467FFF" />
-                    <Ionicons name="add" size={16} color="#467FFF" style={styles.addIcon} />
+                    <Ionicons name="camera" size={24} color="#FFFFFF" />
+                    <Ionicons name="add" size={16} color="#FFFFFF" style={styles.addIcon} />
                   </>
                 )}
               </TouchableOpacity>
@@ -383,8 +387,10 @@ export default function SnapPhotoScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <Ionicons name="chevron-back" size={24} color="#000" />
+      <StatusBar barStyle="light-content" backgroundColor={FLOW.blue} />
+      <FlowBackground isDarkMode={false} />
+      <TouchableOpacity style={[styles.backBtn, { top: Math.max(insets.top, 20) + 6 }]} onPress={() => router.back()}>
+        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
       </TouchableOpacity>
 
       <ScrollView 
@@ -416,7 +422,7 @@ export default function SnapPhotoScreen() {
           
           {selectedLocation && (
             <View style={styles.selectedLocationContainer}>
-              <Ionicons name="location" size={20} color="#0057FF" />
+              <Ionicons name="location" size={20} color="#FFFFFF" />
               <Text style={styles.selectedLocationText} numberOfLines={2}>
                 {selectedLocation.address}
               </Text>
@@ -425,18 +431,20 @@ export default function SnapPhotoScreen() {
         </View>
       </ScrollView>
 
-      <TouchableOpacity 
-        onPress={handleContinue} 
-        style={[
-          styles.continueButton,
-          selectedLocation && styles.continueButtonEnabled
-        ]}
-        disabled={!selectedLocation}
-      >
-        <Text style={styles.continueText}>
-          Continue
-        </Text>
-      </TouchableOpacity>
+      <View style={[styles.actionBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <TouchableOpacity 
+          onPress={handleContinue} 
+          style={[
+            styles.continueButton,
+            selectedLocation && styles.continueButtonEnabled
+          ]}
+          disabled={!selectedLocation}
+        >
+          <Text style={[styles.continueText, !selectedLocation && styles.continueTextDisabled]}>
+            Continue
+          </Text>
+        </TouchableOpacity>
+      </View>
 
     </KeyboardAvoidingView>
   );
@@ -445,7 +453,7 @@ export default function SnapPhotoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: FLOW.blue,
   },
   backBtn: {
     position: 'absolute',
@@ -459,15 +467,15 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 100,
-    paddingBottom: 100,
+    paddingBottom: 130,
   },
   title: {
     fontSize: RFValue(22),
     fontWeight: 'bold',
-    color: '#0B1A33',
+    color: '#FFFFFF',
   },
   subtitle: {
-    color: '#667085',
+    color: FLOW.textMuted,
     fontSize: RFValue(14),
     marginTop: 5,
     marginBottom: 20,
@@ -491,7 +499,9 @@ const styles = StyleSheet.create({
   uploadedImage: {
     width: 70,
     height: 70,
-    borderRadius: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
   },
   deleteBtn: {
     position: 'absolute',
@@ -516,25 +526,25 @@ const styles = StyleSheet.create({
   uploadBox: {
     width: 70,
     height: 70,
-    backgroundColor: '#F2F4F7',
-    borderRadius: 10,
+    backgroundColor: FLOW.glass,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
-    borderWidth: 2,
-    borderColor: '#E4E7EC',
+    borderWidth: 1.5,
+    borderColor: FLOW.dashed,
     borderStyle: 'dashed',
     position: 'relative',
   },
   uploadBoxDisabled: {
     opacity: 0.5,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: FLOW.glass,
   },
   addIcon: {
     position: 'absolute',
     bottom: 5,
     right: 5,
-    backgroundColor: '#F2F4F7',
+    backgroundColor: FLOW.orange,
     borderRadius: 8,
   },
   emptySlot: {
@@ -546,46 +556,58 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#1C1C1E',
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginBottom: 5,
   },
   sectionSubtitle: {
     fontSize: RFValue(14),
-    color: '#8E8E93',
+    color: FLOW.textMuted,
     marginBottom: 15,
   },
   selectedLocationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F5FF',
+    backgroundColor: FLOW.glassStrong,
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 14,
     marginTop: 10,
   },
   selectedLocationText: {
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(14),
-    color: '#0057FF',
+    color: '#FFFFFF',
+  },
+  actionBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    backgroundColor: FLOW.blueDeep,
+    borderTopWidth: 1,
+    borderTopColor: FLOW.line,
   },
   continueButton: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: '#D1D1D6',
-    paddingVertical: 16,
-    borderRadius: 25,
+    backgroundColor: FLOW.disabledFill,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   continueButtonEnabled: {
-    backgroundColor: '#0057FF',
+    backgroundColor: FLOW.orange,
+    ...primaryShadow,
   },
   continueText: {
     color: '#fff',
     fontSize: RFValue(16),
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  continueTextDisabled: {
+    color: FLOW.disabledText,
   },
   // NEW: Loading and validation styles
   uploadingContainer: {
@@ -595,7 +617,7 @@ const styles = StyleSheet.create({
   },
   uploadingText: {
     fontSize: RFValue(9),
-    color: '#467FFF',
+    color: '#FFFFFF',
     fontWeight: '600',
     marginTop: 2,
   },

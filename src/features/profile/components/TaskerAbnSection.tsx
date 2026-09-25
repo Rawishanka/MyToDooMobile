@@ -82,7 +82,7 @@ export default function TaskerAbnSection({
   if (loading) {
     return (
       <View style={[styles.card, variant === 'compact' && styles.cardCompact, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
-        <ActivityIndicator color={isDarkMode ? '#38BDF8' : '#003399'} />
+        <ActivityIndicator color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading ABN status...</Text>
       </View>
     );
@@ -96,13 +96,13 @@ export default function TaskerAbnSection({
         <View style={styles.verifiedHeader}>
           <Text style={[styles.title, styles.titleFlex, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={2}>Australian Business Number (ABN)</Text>
           <View style={styles.verifiedBadge}>
-            <Ionicons name="checkmark-circle" size={14} color="#16A34A" />
+            <Ionicons name="checkmark-circle" size={14} color="#4ADE80" />
             <Text style={styles.verifiedBadgeText}>Verified</Text>
           </View>
         </View>
         <Text style={[styles.maskedAbn, isDarkMode && { color: '#F8FAFC' }]}>{status.abnMasked || `********${status.abnLast3 || ''}`}</Text>
         {(status.businessName || status.entityName) && (
-          <Text style={[styles.metaText, { fontWeight: '600', color: isDarkMode ? '#38BDF8' : '#003399', marginTop: 2 }]}>
+          <Text style={[styles.metaText, { fontWeight: '600', color: isDarkMode ? '#38BDF8' : '#FFFFFF', marginTop: 2 }]}>
             {status.businessName || status.entityName}
           </Text>
         )}
@@ -159,17 +159,16 @@ export default function TaskerAbnSection({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
   },
   cardCompact: {
     marginBottom: 14,
@@ -178,13 +177,13 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 8,
     fontSize: RFValue(13),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
   },
   title: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 6,
   },
   titleFlex: {
@@ -194,19 +193,19 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 13,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     lineHeight: 19,
     marginBottom: 14,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderWidth: 1.5,
+    borderColor: 'transparent',
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 48,
     fontSize: 15,
     color: '#0F172A',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     marginBottom: 12,
   },
   primaryButton: {
@@ -230,7 +229,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   errorText: {
-    color: '#DC2626',
+    color: '#FCA5A5',
     fontSize: 12,
     marginBottom: 8,
   },
@@ -244,33 +243,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#DCFCE7',
+    backgroundColor: 'rgba(74,222,128,0.18)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   verifiedBadgeText: {
-    color: '#16A34A',
+    color: '#4ADE80',
     fontSize: 11,
     fontWeight: '700',
   },
   maskedAbn: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#003399',
+    color: '#FFFFFF',
     letterSpacing: 1,
     marginBottom: 4,
   },
   metaText: {
     fontSize: 12,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   linkButton: {
     marginTop: 10,
     alignSelf: 'flex-start',
   },
   linkButtonText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '600',
   },

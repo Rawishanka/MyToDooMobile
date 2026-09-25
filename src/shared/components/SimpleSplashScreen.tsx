@@ -1,5 +1,5 @@
 import MyToDooSvgLogoBox from '@/src/shared/components/MyToDooSvgLogoBox';
-import { MYTDOO_BRAND_BLUE } from '@/src/shared/components/MyToDooBrandLogo';
+const MYTDOO_BRAND_BLUE = '#003399';
 import { useEffect, useRef } from 'react';
 import {
   Animated,

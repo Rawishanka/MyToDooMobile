@@ -700,7 +700,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       </Text>
       <View style={[styles.phoneContainer, touched.phone && errors.phone && styles.inputError]}>
         <View style={[styles.phonePrefix, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
-          <Text style={[styles.phonePrefixText, isDarkMode && { color: '#38BDF8' }]}>{selectedCountry.phoneCode}</Text>
+          <Text style={[styles.phonePrefixText, isDarkMode && { color: '#FFD2BF' }]}>{selectedCountry.phoneCode}</Text>
         </View>
         <TextInput
           ref={phoneRef}
@@ -1012,7 +1012,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   required: {
-    color: '#FF3B30',
+    color: '#DC2626',
     fontSize: RFValue(14),
   },
   input: {
@@ -1027,11 +1027,11 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
   inputError: {
-    borderColor: '#FF3B30',
+    borderColor: '#DC2626',
     borderWidth: 1.5,
   },
   errorText: {
-    color: '#FF3B30',
+    color: '#DC2626',
     fontSize: RFValue(12),
     marginTop: 4,
     marginBottom: 12,
@@ -1045,7 +1045,7 @@ const styles = StyleSheet.create({
   phonePrefix: {
     borderWidth: 1.5,
     borderColor: '#E0E0E0',
-    borderRadius: 10,
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     backgroundColor: '#F1F5F9',
@@ -1086,12 +1086,14 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   signUpButton: {
-    backgroundColor: '#FF914D',
-    borderRadius: 16,
+    backgroundColor: '#ff6b35',
+    borderRadius: 14,
+    minHeight: 52,
+    justifyContent: 'center',
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 24,
-    shadowColor: '#FF914D',
+    shadowColor: '#ff6b35',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 12,
@@ -1131,8 +1133,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#FF914D',
-    borderColor: '#FF914D',
+    backgroundColor: '#ff6b35',
+    borderColor: '#ff6b35',
   },
   termsTextContainer: {
     flex: 1,
@@ -1147,7 +1149,7 @@ const styles = StyleSheet.create({
   },
   termsLink: {
     fontSize: RFValue(14),
-    color: '#0057FF',
+    color: '#003399',
     fontWeight: '600',
     lineHeight: 20,
   },
@@ -1244,17 +1246,17 @@ const styles = StyleSheet.create({
   },
   // Tasker Preferences Section
   taskerSection: {
-    backgroundColor: '#F0F6FF',
+    backgroundColor: '#EEF3FF',
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#D0E4FF',
+    borderColor: '#C7D6F5',
   },
   taskerSectionTitle: {
     fontSize: RFValue(15),
     fontWeight: '700',
-    color: '#0052A2',
+    color: '#003399',
     marginBottom: 4,
   },
   taskerSectionSubtitle: {
@@ -1277,7 +1279,7 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: '#0052A2',
+    borderColor: '#003399',
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1285,8 +1287,8 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   taskerCheckboxChecked: {
-    backgroundColor: '#0052A2',
-    borderColor: '#0052A2',
+    backgroundColor: '#003399',
+    borderColor: '#003399',
   },
   taskerCheckboxDisabled: {
     borderColor: '#bbb',

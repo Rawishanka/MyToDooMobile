@@ -37,6 +37,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    StatusBar,
     StyleSheet,
     Text,
     TextInput,
@@ -1076,6 +1077,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <StatusBar barStyle="light-content" />
       {/* Cross icon in top right */}
       <TouchableOpacity
         style={[styles.closeIcon, { top: insets.top + 8 }, isDarkMode && { backgroundColor: '#1E293B' }]}
@@ -1090,7 +1092,7 @@ export default function LoginScreen() {
         }}
         hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
       >
-        <Ionicons name="close" size={28} color={isDarkMode ? '#F8FAFC' : '#333'} />
+        <Ionicons name="close" size={28} color="#fff" />
       </TouchableOpacity>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -1161,7 +1163,7 @@ export default function LoginScreen() {
               <Ionicons 
                 name={showPassword ? 'eye-off-outline' : 'eye-outline'} 
                 size={22} 
-                color="#666" 
+                color="#64748B" 
               />
             </TouchableOpacity>
           </View>
@@ -1196,7 +1198,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')}>
-            <Text style={[styles.forgotPassword, isDarkMode && { color: '#38BDF8' }]}>Forgot Password?</Text>
+            <Text style={[styles.forgotPassword, isDarkMode && { color: '#ff6b35' }]}>Forgot Password?</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.loginButton} onPress={() => handleLogin()} disabled={loading || biometricLoading}>
@@ -1211,22 +1213,22 @@ export default function LoginScreen() {
             <TouchableOpacity
               style={[
                 styles.biometricButton,
-                isDarkMode && { backgroundColor: '#1E293B', borderColor: '#38BDF8' }
+                isDarkMode && { backgroundColor: '#1E293B', borderColor: '#ff6b35' }
               ]}
               onPress={handleBiometricLogin}
               disabled={loading || biometricLoading}
               activeOpacity={0.8}
             >
               {biometricLoading ? (
-                <ActivityIndicator color="#0EA5E9" size="small" />
+                <ActivityIndicator color="#fff" size="small" />
               ) : (
                 <View style={styles.biometricButtonContent}>
                   <Ionicons
                     name={biometricTypeLabel === 'Face ID' ? 'scan-outline' : 'finger-print-outline'}
                     size={20}
-                    color={isDarkMode ? '#38BDF8' : '#0EA5E9'}
+                    color="#fff"
                   />
-                  <Text style={[styles.biometricButtonText, isDarkMode && { color: '#38BDF8' }]}>
+                  <Text style={styles.biometricButtonText}>
                     Log in with {biometricTypeLabel}
                   </Text>
                 </View>
@@ -1248,14 +1250,14 @@ export default function LoginScreen() {
             disabled={googleLoading || loading || appleLoading}
           >
             {googleLoading ? (
-              <ActivityIndicator color={isDarkMode ? "#38BDF8" : "#666"} />
+              <ActivityIndicator color="#fff" />
             ) : (
               <>
                 <Image 
                   source={require('@/assets/icons/google.png')}
                   style={styles.googleIcon}
                 />
-                <Text style={[styles.googleButtonText, isDarkMode && { color: '#F8FAFC' }]}>Continue with Google</Text>
+                <Text style={styles.googleButtonText}>Continue with Google</Text>
               </>
             )}
           </TouchableOpacity>
@@ -1320,7 +1322,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   innerContainer: {
     flex: 1,
@@ -1347,9 +1349,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   logoBackground: {
-    backgroundColor: '#003399',
-    borderRadius: 16,
-    padding: 12,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+    borderRadius: 20,
+    padding: 14,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -1362,40 +1366,41 @@ const styles = StyleSheet.create({
     fontSize: RFValue(24),
     fontWeight: '800',
     marginBottom: 6,
-    color: '#1A1D2E',
+    color: '#fff',
   },
   subtitle: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.8)',
   },
   form: {
     marginBottom: 16,
   },
   label: {
     fontSize: RFValue(14),
-    color: '#333',
+    fontWeight: '600',
+    color: '#fff',
     marginBottom: 6,
   },
   input: {
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: 'transparent',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 13,
     marginBottom: 14,
     color: '#0F172A',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#fff',
     fontSize: RFValue(15),
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: 'transparent',
     borderRadius: 14,
     marginBottom: 14,
     paddingRight: 8,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#fff',
   },
   passwordInput: {
     flex: 1,
@@ -1419,32 +1424,34 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
-    borderColor: '#E8ECF4',
-    borderRadius: 4,
+    borderColor: 'rgba(255,255,255,0.6)',
+    borderRadius: 5,
     marginRight: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
   checkboxChecked: {
-    backgroundColor: '#003399',
-    borderColor: '#003399',
+    backgroundColor: '#ff6b35',
+    borderColor: '#ff6b35',
   },
   rememberMeText: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: '#fff',
   },
   forgotPassword: {
-    color: '#003399',
+    color: '#fff',
+    textDecorationLine: 'underline',
     textAlign: 'right',
     marginBottom: 16,
     fontSize: RFValue(14),
   },
   biometricButton: {
-    backgroundColor: 'rgba(14, 165, 233, 0.08)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderWidth: 1.5,
-    borderColor: '#0EA5E9',
-    borderRadius: 8,
+    borderColor: '#fff',
+    borderRadius: 14,
+    minHeight: 52,
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1457,20 +1464,22 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   biometricButtonText: {
-    color: '#0EA5E9',
+    color: '#fff',
     fontSize: 16,
     fontWeight: '700',
   },
   loginButton: {
-    backgroundColor: '#FF914D',
+    backgroundColor: '#ff6b35',
+    minHeight: 52,
     paddingVertical: 14,
-    borderRadius: 16,
+    borderRadius: 14,
     alignItems: 'center',
-    shadowColor: '#FF914D',
+    justifyContent: 'center',
+    shadowColor: '#ff6b35',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 4,
   },
   loginButtonText: {
     color: '#fff',
@@ -1485,11 +1494,11 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: 'rgba(255,255,255,0.3)',
   },
   dividerText: {
     marginHorizontal: 10,
-    color: '#666',
+    color: 'rgba(255,255,255,0.8)',
     fontSize: RFValue(14),
     fontWeight: '500',
   },
@@ -1497,12 +1506,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    minHeight: 52,
     paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E8ECF4',
-    marginBottom: 8,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#fff',
+    marginBottom: 10,
   },
   googleIcon: {
     width: 20,
@@ -1510,7 +1520,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   googleButtonText: {
-    color: '#333',
+    color: '#fff',
     fontWeight: '600',
     fontSize: RFValue(15),
   },
@@ -1518,9 +1528,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#000',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1.5,
+    borderColor: '#fff',
+    minHeight: 52,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     marginBottom: 8,
   },
   appleIcon: {
@@ -1536,17 +1549,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   footerText: {
-    color: '#666',
+    color: 'rgba(255,255,255,0.8)',
   },
   registerText: {
-    color: '#ff6b35',
+    color: '#FFD2BF',
     fontWeight: 'bold',
+    textDecorationLine: 'underline',
   },
   closeIcon: {
     position: 'absolute',
     right: 18,
     zIndex: 10,
-    backgroundColor: 'rgba(255,255,255,0.7)',
+    backgroundColor: 'rgba(255,255,255,0.18)',
     borderRadius: 16,
     padding: 4,
   },

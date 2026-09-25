@@ -108,7 +108,7 @@ export default function PaymentStatusScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F4F6FB',
   },
   header: {
     flexDirection: 'row',

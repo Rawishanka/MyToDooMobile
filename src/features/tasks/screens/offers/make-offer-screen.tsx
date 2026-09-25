@@ -1,5 +1,6 @@
 import { useGetTaskById } from '@/src/shared/hooks/useTaskApi';
 import { useLocalSearchParams } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
     ActivityIndicator,
@@ -84,6 +85,13 @@ export default function MakeOfferScreen() {
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
       <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : BRAND_BLUE} />
+      {!isDarkMode && (
+        <LinearGradient
+          pointerEvents="none"
+          colors={[BRAND_BLUE, '#00287A']}
+          style={StyleSheet.absoluteFill}
+        />
+      )}
       
       <View style={{ flex: 1 }}>
         <OfferFormHeader />
@@ -136,7 +144,7 @@ export default function MakeOfferScreen() {
             disabled={isSubmitting || userHasExistingOffer || isLoadingOffers || !!validationError}
           >
             {isSubmitting || isLoadingOffers ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <Text style={styles.submitButtonText}>
                 {userHasExistingOffer 
@@ -157,28 +165,23 @@ export default function MakeOfferScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
   },
   content: {
     flex: 1,
     paddingHorizontal: 16,
   },
   warningContainer: {
-    backgroundColor: '#FFF3CD',
+    backgroundColor: 'rgba(251,191,36,0.18)',
     borderWidth: 1,
-    borderColor: '#FFC107',
+    borderColor: 'rgba(251,191,36,0.55)',
     borderRadius: 14,
     padding: 16,
     marginTop: 0,
     marginBottom: 16,
-    shadowColor: '#FFC107',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   warningText: {
-    color: '#856404',
+    color: '#FEF3C7',
     fontSize: RFValue(15),
     textAlign: 'center',
     fontWeight: '600',
@@ -187,9 +190,9 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingHorizontal: 16,
     paddingTop: 14,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#CBD5E1',
+    borderTopColor: 'rgba(255,255,255,0.25)',
   },
   submitButton: {
     backgroundColor: BRAND_ORANGE,
@@ -204,13 +207,13 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   disabledButton: {
-    backgroundColor: '#cccccc',
-    opacity: 0.6,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    opacity: 0.8,
     shadowOpacity: 0,
     elevation: 0,
   },
   submitButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
   },

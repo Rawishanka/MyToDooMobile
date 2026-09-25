@@ -15,7 +15,7 @@ import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Scroll
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 interface AccountInformationProps {
   onBack: () => void;
@@ -383,9 +383,10 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if (!isAuthenticated || !token) {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <BlueBackdrop />
         <LightHeader title="Account information" onBack={onBack} />
         <View style={styles.errorContainer}>
-          <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}><Ionicons name="alert-circle-outline" size={40} color="#DC2626" /></View>
+          <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}><Ionicons name="alert-circle-outline" size={40} color={isDarkMode ? '#DC2626' : '#FCA5A5'} /></View>
           <Text style={[styles.errorText, isDarkMode && { color: '#94A3B8' }]}>Please log in to view account information</Text>
           <TouchableOpacity 
             style={styles.retryButton} 
@@ -405,9 +406,10 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if ((isLoading || isFetching) && !profileData) {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <BlueBackdrop />
         <LightHeader title="Account information" onBack={onBack} />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading account information...</Text>
         </View>
       </View>
@@ -418,9 +420,10 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if (error) {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <BlueBackdrop />
         <LightHeader title="Account information" onBack={onBack} />
         <View style={styles.errorContainer}>
-          <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}><Ionicons name="alert-circle-outline" size={40} color="#DC2626" /></View>
+          <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}><Ionicons name="alert-circle-outline" size={40} color={isDarkMode ? '#DC2626' : '#FCA5A5'} /></View>
           <Text style={[styles.errorText, isDarkMode && { color: '#94A3B8' }]}>Failed to load account information</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
             <Text style={styles.retryButtonText}>Retry</Text>
@@ -434,9 +437,10 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if (!profileData) {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <BlueBackdrop />
         <LightHeader title="Account information" onBack={onBack} />
         <View style={styles.errorContainer}>
-          <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}><Ionicons name="alert-circle-outline" size={40} color="#DC2626" /></View>
+          <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}><Ionicons name="alert-circle-outline" size={40} color={isDarkMode ? '#DC2626' : '#FCA5A5'} /></View>
           <Text style={[styles.errorText, isDarkMode && { color: '#94A3B8' }]}>No account data available</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
             <Text style={styles.retryButtonText}>Retry</Text>
@@ -450,6 +454,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if (currentScreen === 'personal-details') {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <BlueBackdrop />
         <LightHeader title="Update personal details" onBack={goBackToMain} />
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={[styles.formCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
@@ -554,11 +559,12 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if (currentScreen === 'change-password') {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <BlueBackdrop />
         <LightHeader title="Change Password" onBack={goBackToMain} />
         <View style={styles.passwordContent}>
           <View style={styles.lockIconContainer}>
             <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-              <Ionicons name="lock-closed-outline" size={40} color={isDarkMode ? '#38BDF8' : '#003399'} />
+              <Ionicons name="lock-closed-outline" size={40} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
             </View>
           </View>
           
@@ -582,6 +588,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
     const phoneBusy = requestPhoneOtpMutation.isPending || verifyPhoneOtpMutation.isPending;
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <BlueBackdrop />
         <LightHeader title="Change phone" onBack={goBackToMain} />
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={[styles.formCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
@@ -644,6 +651,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
     const emailBusy = requestEmailOtpMutation.isPending || verifyEmailOtpMutation.isPending;
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <BlueBackdrop />
         <LightHeader title="Change email" onBack={goBackToMain} />
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={[styles.formCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
@@ -705,6 +713,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   // Main Account Information Screen
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        <BlueBackdrop />
       <LightHeader title="Account information" onBack={onBack} />
       
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -740,7 +749,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
           text="Delete my account" 
           onPress={handleDeleteAccount}
           showArrow={false}
-          textColor="#DC2626"
+          textColor="#FCA5A5"
         />
       </ScrollView>
 
@@ -820,7 +829,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   );
 }
 
-const MenuItem = ({ text, onPress, showArrow = true, textColor = "#0F172A", disabled = false, subtitle, icon, tone = 'blue' }: {
+const MenuItem = ({ text, onPress, showArrow = true, textColor = "#FFFFFF", disabled = false, subtitle, icon, tone = 'blue' }: {
   text: string;
   onPress: () => void;
   showArrow?: boolean;
@@ -841,14 +850,14 @@ const MenuItem = ({ text, onPress, showArrow = true, textColor = "#0F172A", disa
       {icon ? <IconChip name={icon} tone={tone} style={{ marginRight: 12 }} /> : null}
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text
-          style={[styles.menuText, { color: disabled ? (isDarkMode ? '#64748B' : '#94A3B8') : (isDarkMode ? (tone === 'red' ? '#F87171' : '#F8FAFC') : textColor) }]}
+          style={[styles.menuText, { color: disabled ? (isDarkMode ? '#64748B' : 'rgba(255,255,255,0.55)') : (isDarkMode ? (tone === 'red' ? '#F87171' : '#F8FAFC') : textColor) }]}
           numberOfLines={1}
         >
           {text}
         </Text>
         {subtitle && <Text style={[styles.menuSubtitle, isDarkMode && { color: '#94A3B8' }]}>{subtitle}</Text>}
       </View>
-      {showArrow && !disabled && <Ionicons name="chevron-forward" size={18} color="#94A3B8" />}
+      {showArrow && !disabled && <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.6)'} />}
     </TouchableOpacity>
   );
 };
@@ -856,7 +865,7 @@ const MenuItem = ({ text, onPress, showArrow = true, textColor = "#0F172A", disa
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   content: {
     flex: 1,
@@ -867,41 +876,39 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   formCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.18)',
     paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 20,
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
   },
   stateCircle: {
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 14,
     marginBottom: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
   },
   menuText: {
     fontSize: 16,
@@ -912,7 +919,7 @@ const styles = StyleSheet.create({
   },
   menuSubtitle: {
     fontSize: 12,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 2,
   },
   webOnlyLabel: {
@@ -922,7 +929,8 @@ const styles = StyleSheet.create({
   },
   changeContactLink: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: '#FFFFFF',
+    textDecorationLine: 'underline',
     fontWeight: '600',
     marginBottom: 8,
   },
@@ -959,9 +967,9 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   label: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#334155',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
@@ -972,16 +980,16 @@ const styles = StyleSheet.create({
   },
   charCount: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.7)',
     textAlign: 'right',
     marginBottom: 4,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E8ECF4',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: 'transparent',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -993,7 +1001,7 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
   disabledInput: {
-    color: '#94A3B8',
+    color: '#64748B',
   },
   textArea: {
     minHeight: 100,
@@ -1065,7 +1073,7 @@ const styles = StyleSheet.create({
   },
   passwordText: {
     fontSize: RFValue(16),
-    color: '#334155',
+    color: 'rgba(255,255,255,0.85)',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 16,
@@ -1073,7 +1081,7 @@ const styles = StyleSheet.create({
   emailText: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -1082,9 +1090,9 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   removeButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: '#003399',
+    borderColor: '#FFFFFF',
     borderRadius: 14,
     height: 52,
     paddingHorizontal: 24,
@@ -1092,7 +1100,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   removeButtonText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -1223,7 +1231,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.85)',
   },
   errorContainer: {
     flex: 1,
@@ -1235,7 +1243,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 24,
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.85)',
     textAlign: 'center',
   },
   retryButton: {

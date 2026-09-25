@@ -15,7 +15,7 @@ import { RFValue } from '@/src/shared/utils/responsive';
 import { router } from 'expo-router';
 import InviteFriendsScreen from './invite-friends-screen';
 import { useTheme } from '@/src/shared/theme';
-import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 interface CreditsScreenProps {
   onBack: () => void;
@@ -89,7 +89,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
           <Ionicons
             name={isCredit ? 'gift-outline' : 'cart-outline'}
             size={19}
-            color={isCredit ? '#16A34A' : '#003399'}
+            color={isCredit ? (isDarkMode ? '#16A34A' : '#4ADE80') : (isDarkMode ? '#38BDF8' : '#FFFFFF')}
           />
         </View>
         <View style={styles.ledgerBody}>
@@ -114,6 +114,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <BlueBackdrop />
       <LightHeader
         title="My Credits & Rewards"
         onBack={onBack}
@@ -126,7 +127,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
 
       {(balanceLoading || ledgerLoading) && !balanceData ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         </View>
       ) : (
         <FlatList
@@ -142,7 +143,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
                 refetchBalance();
                 refetchLedger();
               }}
-              tintColor={isDarkMode ? '#38BDF8' : '#003399'}
+              tintColor={isDarkMode ? '#38BDF8' : '#FFFFFF'}
             />
           }
           ListHeaderComponent={
@@ -151,7 +152,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
               <View style={[styles.heroCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
                 <View style={styles.cardHeaderRow}>
                   <View style={styles.cardTagPill}>
-                    <Ionicons name="sparkles" size={13} color="#D97706" />
+                    <Ionicons name="sparkles" size={13} color="#FBBF24" />
                     <Text style={styles.cardTagText}>PROMO BALANCE</Text>
                   </View>
                   <IconChip name="wallet-outline" size={40} />
@@ -204,7 +205,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
               <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                <Ionicons name="wallet-outline" size={36} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                <Ionicons name="wallet-outline" size={36} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
               </View>
               <Text style={[styles.emptyTitle, isDarkMode && { color: '#F8FAFC' }]}>No credit activity yet</Text>
               <Text style={[styles.emptySubtitle, isDarkMode && { color: '#94A3B8' }]}>
@@ -219,12 +220,14 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F4F6FB' },
+  container: { flex: 1, backgroundColor: '#003399' },
   headerRightBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -234,17 +237,16 @@ const styles = StyleSheet.create({
 
   // Hero Card
   heroCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: 20,
     marginBottom: 24,
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -256,13 +258,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(251,191,36,0.18)',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
   },
   cardTagText: {
-    color: '#B45309',
+    color: '#FBBF24',
     fontSize: RFValue(11),
     fontWeight: '700',
     letterSpacing: 0.6,
@@ -273,32 +275,32 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   currencySymbol: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: RFValue(24),
     fontWeight: '700',
     marginRight: 4,
   },
   balanceValue: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: RFValue(42),
     fontWeight: '800',
     letterSpacing: -1,
   },
   creditsUnitText: {
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     fontSize: RFValue(14),
     fontWeight: '600',
     marginLeft: 8,
   },
   balanceHint: {
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     fontSize: RFValue(12.5),
     lineHeight: 18,
     marginBottom: 14,
   },
   cardDivider: {
     height: 1,
-    backgroundColor: '#E8ECF4',
+    backgroundColor: 'rgba(255,255,255,0.18)',
     marginBottom: 12,
   },
   cardActionBtn: {
@@ -337,11 +339,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
   },
   sectionSubtitle: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     fontWeight: '500',
   },
 
@@ -349,17 +351,16 @@ const styles = StyleSheet.create({
   ledgerCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     padding: 14,
-    marginBottom: 12,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 2,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
   },
   iconCircle: {
     width: 38,
@@ -370,16 +371,16 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   creditIconBg: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: 'rgba(74,222,128,0.18)',
   },
   debitIconBg: {
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
   },
   ledgerBody: { flex: 1, minWidth: 0 },
   ledgerReason: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   metaRow: {
@@ -390,10 +391,10 @@ const styles = StyleSheet.create({
   },
   ledgerDate: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   expiryBadge: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(251,191,36,0.18)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -401,7 +402,7 @@ const styles = StyleSheet.create({
   expiryText: {
     fontSize: RFValue(10.5),
     fontWeight: '600',
-    color: '#B45309',
+    color: '#FBBF24',
   },
   amountWrap: {
     paddingLeft: 8,
@@ -410,8 +411,8 @@ const styles = StyleSheet.create({
     fontSize: RFValue(16),
     fontWeight: '800',
   },
-  creditText: { color: '#16A34A' },
-  debitText: { color: '#64748B' },
+  creditText: { color: '#4ADE80' },
+  debitText: { color: 'rgba(255,255,255,0.75)' },
 
   // Empty Wrap
   emptyWrap: {
@@ -423,7 +424,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.14)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 14,
@@ -431,12 +432,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 6,
   },
   emptySubtitle: {
     fontSize: RFValue(13),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 19,
   },

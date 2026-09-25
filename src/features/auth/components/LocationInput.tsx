@@ -37,7 +37,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
       />
       {selectedLocation && (
         <View style={styles.selectedLocationContainer}>
-          <Ionicons name="location" size={16} color="#0057FF" />
+          <Ionicons name="location" size={16} color="#003399" />
           <Text style={styles.selectedLocationText}>
             {selectedLocation.address}
           </Text>
@@ -45,7 +45,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
             onPress={() => onLocationSelect(null as any)}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="close-circle" size={20} color="#0057FF" />
+            <Ionicons name="close-circle" size={20} color="#003399" />
           </TouchableOpacity>
         </View>
       )}
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   selectedLocationText: {
     fontSize: RFValue(13),
-    color: '#0057FF',
+    color: '#003399',
     flex: 1,
   },
 });

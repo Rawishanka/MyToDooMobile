@@ -95,7 +95,7 @@ export default function PublicQuestionsScreen() {
         <View style={styles.questionHeader}>
           <View style={styles.userInfo}>
             <View style={styles.avatar}>
-              <Ionicons name="person" size={16} color="#666" />
+              <Ionicons name="person" size={16} color="#FFFFFF" />
             </View>
             <Text style={styles.userName}>
               {formatUserName(question.askedBy?.firstName, question.askedBy?.lastName)}
@@ -144,7 +144,7 @@ export default function PublicQuestionsScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color="#003399" />
         <Text style={styles.loadingText}>Loading public questions...</Text>
       </View>
     );
@@ -153,7 +153,7 @@ export default function PublicQuestionsScreen() {
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
+        <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
         <Text style={styles.errorTitle}>Failed to Load Questions</Text>
         <Text style={styles.errorSubtitle}>Please check your connection and try again.</Text>
         <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
@@ -165,12 +165,12 @@ export default function PublicQuestionsScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor="#003399" />
       
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 12 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Public Q&A</Text>
         <View style={styles.headerRight}>
@@ -181,17 +181,17 @@ export default function PublicQuestionsScreen() {
       {/* Search and Filter */}
       <View style={styles.searchSection}>
         <View style={styles.searchContainer}>
-          <Ionicons name="search-outline" size={20} color="#666" />
+          <Ionicons name="search-outline" size={20} color="#64748B" />
           <TextInput
             style={styles.searchInput}
             placeholder="Search questions..."
-            placeholderTextColor="#999"
+            placeholderTextColor="#94A3B8"
             value={searchText}
             onChangeText={setSearchText}
           />
           {searchText.length > 0 && (
             <TouchableOpacity onPress={() => setSearchText('')}>
-              <Ionicons name="close-circle" size={20} color="#999" />
+              <Ionicons name="close-circle" size={20} color="#94A3B8" />
             </TouchableOpacity>
           )}
         </View>
@@ -224,7 +224,9 @@ export default function PublicQuestionsScreen() {
       {/* Questions List */}
       {filteredQuestions.length === 0 ? (
         <View style={styles.emptyState}>
-          <Ionicons name="help-circle-outline" size={64} color="#ccc" />
+          <View style={styles.emptyIconChip}>
+            <Ionicons name="help-circle-outline" size={40} color="#003399" />
+          </View>
           <Text style={styles.emptyStateTitle}>
             {searchText || filterCategory !== 'all' ? 'No matching questions' : 'No questions yet'}
           </Text>
@@ -253,141 +255,144 @@ export default function PublicQuestionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F4F6FB',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
+    backgroundColor: '#F4F6FB',
   },
   errorTitle: {
     fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0F172A',
     marginTop: 16,
   },
   errorSubtitle: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     marginTop: 8,
   },
   retryButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#ff6b35',
+    paddingHorizontal: 28,
+    height: 48,
+    justifyContent: 'center',
+    borderRadius: 14,
     marginTop: 16,
   },
   retryButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingBottom: 12,
+    backgroundColor: '#003399',
   },
   backButton: {
-    padding: 8,
-    marginLeft: -8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   headerRight: {
-    padding: 8,
+    minWidth: 36,
+    alignItems: 'flex-end',
   },
   questionCount: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: 'rgba(255,255,255,0.78)',
   },
   searchSection: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingBottom: 16,
+    backgroundColor: '#003399',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
     marginBottom: 12,
   },
   searchInput: {
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(16),
-    color: '#333',
+    color: '#0F172A',
   },
   categoryFilter: {
     flexGrow: 0,
   },
   categoryChip: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 16,
     marginRight: 8,
   },
   categoryChipActive: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FFFFFF',
   },
   categoryChipText: {
     fontSize: RFValue(12),
-    fontWeight: '500',
-    color: '#666',
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   categoryChipTextActive: {
-    color: '#fff',
+    color: '#003399',
   },
   questionsList: {
     padding: 16,
   },
   questionCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#003399',
+    borderRadius: 20,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
     overflow: 'hidden',
   },
   taskContext: {
-    backgroundColor: '#f8f9fa',
-    padding: 12,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    padding: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: 'rgba(255,255,255,0.22)',
   },
   taskTitle: {
     fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   taskMeta: {
@@ -398,20 +403,20 @@ const styles = StyleSheet.create({
   },
   taskCategory: {
     fontSize: RFValue(12),
-    color: '#007AFF',
-    fontWeight: '500',
+    color: '#BFD4FF',
+    fontWeight: '600',
   },
   taskBudget: {
     fontSize: RFValue(12),
-    color: '#666',
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   taskLocation: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: 'rgba(255,255,255,0.78)',
   },
   questionSection: {
-    padding: 12,
+    padding: 14,
   },
   questionHeader: {
     flexDirection: 'row',
@@ -425,74 +430,74 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   avatar: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#f0f0f0',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
   },
   userName: {
     fontSize: RFValue(12),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginRight: 8,
   },
   timestamp: {
     fontSize: RFValue(11),
-    color: '#666',
+    color: 'rgba(255,255,255,0.78)',
   },
   statusBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: 10,
   },
   statusAnswered: {
-    backgroundColor: '#E8F5E8',
+    backgroundColor: 'rgba(74,222,128,0.2)',
   },
   statusPending: {
-    backgroundColor: '#FFF3E0',
+    backgroundColor: 'rgba(251,191,36,0.2)',
   },
   statusText: {
     fontSize: RFValue(10),
-    fontWeight: '600',
+    fontWeight: '700',
     textTransform: 'uppercase',
   },
   statusAnsweredText: {
-    color: '#4CAF50',
+    color: '#86EFAC',
   },
   statusPendingText: {
-    color: '#FF9800',
+    color: '#FCD34D',
   },
   questionText: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: '#FFFFFF',
     lineHeight: 20,
   },
   answerSection: {
-    backgroundColor: '#f8f9fa',
-    margin: 12,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    margin: 14,
     marginTop: 0,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     borderLeftWidth: 3,
-    borderLeftColor: '#4CAF50',
+    borderLeftColor: '#4ADE80',
   },
   answerLabel: {
     fontSize: RFValue(12),
-    fontWeight: '600',
-    color: '#4CAF50',
+    fontWeight: '700',
+    color: '#86EFAC',
     marginBottom: 4,
   },
   answerText: {
     fontSize: RFValue(13),
-    color: '#333',
+    color: '#FFFFFF',
     lineHeight: 18,
   },
   answerTime: {
     fontSize: RFValue(10),
-    color: '#666',
+    color: 'rgba(255,255,255,0.78)',
     marginTop: 4,
     fontStyle: 'italic',
   },
@@ -502,16 +507,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 40,
   },
+  emptyIconChip: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: '#E3EAF8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emptyStateTitle: {
     fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#999',
+    fontWeight: '700',
+    color: '#0F172A',
     marginTop: 16,
     textAlign: 'center',
   },
   emptyStateSubtitle: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
     marginTop: 8,
     textAlign: 'center',
   },

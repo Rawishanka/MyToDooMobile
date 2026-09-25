@@ -1,6 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TaskerDashboard({ onBack }) {
@@ -27,11 +27,13 @@ export default function TaskerDashboard({ onBack }) {
 
   return (
     <ScrollView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#003399" />
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#003366" />
+          <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Tasker Dashboard</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
       <View style={styles.content}>
@@ -41,7 +43,7 @@ export default function TaskerDashboard({ onBack }) {
           <View style={styles.tierCard}>
             <View style={styles.tierIconContainer}>
               <View style={styles.bronzeBadge}>
-                <MaterialCommunityIcons name="medal" size={24} color="#CD7F32" />
+                <MaterialCommunityIcons name="medal" size={24} color="#F0A868" />
               </View>
             </View>
             <View style={styles.tierInfo}>
@@ -60,8 +62,8 @@ export default function TaskerDashboard({ onBack }) {
           <View style={styles.tierCard}>
             <View style={styles.tierIconContainer}>
               <View style={styles.silverBadge}>
-                <MaterialCommunityIcons name="trophy" size={24} color="#C0C0C0" />
-                <Ionicons name="lock-closed" size={12} color="#666" style={styles.lockIcon} />
+                <MaterialCommunityIcons name="trophy" size={24} color="#E2E8F0" />
+                <Ionicons name="lock-closed" size={12} color="#003399" style={styles.lockIcon} />
               </View>
             </View>
             <View style={styles.tierInfo}>
@@ -120,7 +122,7 @@ export default function TaskerDashboard({ onBack }) {
 
         {/* How Tiers Work Link */}
         <TouchableOpacity style={styles.infoLink}>
-          <Ionicons name="help-circle-outline" size={20} color="#0052A2" />
+          <Ionicons name="help-circle-outline" size={20} color="#FFFFFF" />
           <Text style={styles.infoLinkText}>How do tiers work?</Text>
         </TouchableOpacity>
       </View>
@@ -131,41 +133,56 @@ export default function TaskerDashboard({ onBack }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F4F6FB',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    justifyContent: 'space-between',
+    backgroundColor: '#003399',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    paddingBottom: 14,
   },
   backButton: {
-    padding: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
+    flex: 1,
     fontSize: 18,
-    fontWeight: '600',
-    color: '#003366',
-    marginLeft: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  headerSpacer: {
+    width: 36,
   },
   content: {
-    backgroundColor: '#fff',
-    marginTop: 10,
+    marginTop: 16,
     paddingHorizontal: 16,
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   section: {
-    paddingVertical: 20,
+    backgroundColor: '#003399',
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 16,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   sectionTitle: {
     fontSize: 12,
-    color: '#999',
-    fontWeight: '500',
-    letterSpacing: 0.5,
-    marginBottom: 15,
+    color: 'rgba(255,255,255,0.78)',
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    marginBottom: 14,
   },
   tierCard: {
     flexDirection: 'row',
@@ -178,28 +195,28 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#FFF8E1',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#CD7F32',
+    borderColor: '#F0A868',
   },
   silverBadge: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#C0C0C0',
+    borderColor: '#E2E8F0',
     position: 'relative',
   },
   lockIcon: {
     position: 'absolute',
     bottom: -2,
     right: -2,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     padding: 1,
   },
@@ -208,26 +225,33 @@ const styles = StyleSheet.create({
   },
   tierName: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#003366',
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   tierDescription: {
     fontSize: 14,
-    color: '#666',
+    color: 'rgba(255,255,255,0.78)',
   },
   divider: {
-    height: 1,
-    backgroundColor: '#eee',
+    height: 0,
     marginVertical: 0,
   },
   earningsSection: {
-    paddingVertical: 30,
+    backgroundColor: '#003399',
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 16,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   earningsTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#003366',
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginBottom: 16,
   },
   earningsContent: {
@@ -235,18 +259,18 @@ const styles = StyleSheet.create({
   },
   earningsDescription: {
     fontSize: 14,
-    color: '#666',
+    color: 'rgba(255,255,255,0.78)',
     marginBottom: 16,
     lineHeight: 20,
   },
   highlightAmount: {
-    fontWeight: '600',
-    color: '#003366',
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   currentEarnings: {
     fontSize: 32,
-    fontWeight: '300',
-    color: '#003366',
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginBottom: 24,
   },
   progressContainer: {
@@ -255,15 +279,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, // Add margin to both ends
   },
   progressBar: {
-    height: 8, // Increased thickness from 4 to 8
-    backgroundColor: '#E0E0E0',
-    borderRadius: 4, // Updated border radius to match new height
+    height: 8,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 4,
     marginBottom: 20,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#0052A2',
-    borderRadius: 4, // Updated border radius to match new height
+    backgroundColor: '#ff6b35',
+    borderRadius: 4,
   },
   markersContainer: {
     position: 'relative',
@@ -278,26 +302,29 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: 'rgba(255,255,255,0.35)',
     marginBottom: 4,
   },
   activeMarker: {
-    backgroundColor: '#0052A2',
+    backgroundColor: '#ff6b35',
   },
   markerText: {
     fontSize: 11,
-    color: '#666',
-    fontWeight: '500',
+    color: 'rgba(255,255,255,0.78)',
+    fontWeight: '600',
   },
   infoLink: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    justifyContent: 'center',
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#ff6b35',
   },
   infoLinkText: {
     fontSize: 15,
-    color: '#0052A2',
+    color: '#FFFFFF',
     marginLeft: 8,
-    fontWeight: '500',
+    fontWeight: '700',
   },
 });

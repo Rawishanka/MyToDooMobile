@@ -7,6 +7,7 @@ import {
   Modal,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -21,6 +22,7 @@ import {
 } from './components';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 
 const TimeSelectScreen = () => {
   const { isDarkMode } = useTheme();
@@ -155,8 +157,10 @@ const TimeSelectScreen = () => {
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
+      <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
+      <FlowBackground isDarkMode={isDarkMode} />
+      <TouchableOpacity style={[styles.backButton, { top: Math.max(insets.top, 20) + 6 }]} onPress={() => router.back()}>
+        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
       </TouchableOpacity>
       
       <ScrollView 
@@ -200,6 +204,7 @@ const TimeSelectScreen = () => {
       </ScrollView>
 
       {/* Continue Button */}
+      <View style={[styles.actionBar, isDarkMode && { backgroundColor: '#0B1120', borderTopColor: '#1E293B' }, { paddingBottom: Math.max(insets.bottom, 16) }]}>
       <TouchableOpacity
         style={[styles.continueButton, !isFormValid && styles.continueButtonDisabled]}
         disabled={!isFormValid}
@@ -215,8 +220,9 @@ const TimeSelectScreen = () => {
           router.push('/detail-screen');
         }}
       >
-        <Text style={styles.continueText}>Continue</Text>
+        <Text style={[styles.continueText, !isFormValid && styles.continueTextDisabled]}>Continue</Text>
       </TouchableOpacity>
+      </View>
 
       {/* ── Date Picker ── iOS: proper Modal bottom-sheet / Android: default */}
       {Platform.OS === 'ios' ? (
@@ -283,7 +289,7 @@ export default TimeSelectScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: FLOW.blue,
   },
   scrollContainer: {
     flex: 1,
@@ -291,7 +297,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 120,
+    paddingBottom: 150,
   },
   backButton: {
     position: 'absolute',
@@ -303,31 +309,45 @@ const styles = StyleSheet.create({
     fontSize: RFValue(24),
     fontWeight: '700',
     marginBottom: 4,
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginTop: 36,
   },
   subtitle: {
     fontSize: RFValue(14),
-    color: '#8E8E93',
+    color: FLOW.textMuted,
     marginBottom: 24,
   },
-  continueButton: {
+  actionBar: {
     position: 'absolute',
-    left: 20,
-    right: 20,
-    bottom: 40,
-    backgroundColor: '#0057FF',
-    padding: 16,
-    borderRadius: 25,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    backgroundColor: FLOW.blueDeep,
+    borderTopWidth: 1,
+    borderTopColor: FLOW.line,
+  },
+  continueButton: {
+    backgroundColor: FLOW.orange,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    ...primaryShadow,
   },
   continueButtonDisabled: {
-    backgroundColor: '#D1D1D6',
+    backgroundColor: FLOW.disabledFill,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   continueText: {
     color: '#fff',
     fontSize: RFValue(16),
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  continueTextDisabled: {
+    color: FLOW.disabledText,
   },
 
   // ── iOS Date Picker Modal bottom-sheet ──

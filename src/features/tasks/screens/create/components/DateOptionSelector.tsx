@@ -2,6 +2,7 @@ import { useTheme } from '@/src/shared/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { FLOW } from '../flowTheme';
 
 interface DateOption {
   label: string;
@@ -32,7 +33,7 @@ export const DateOptionSelector: React.FC<DateOptionSelectorProps> = ({
       {options.map((option) => (
         <View key={option.value}>
           <TouchableOpacity
-            style={[styles.optionRow, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}
+            style={[styles.optionRow, selectedOption === option.value && styles.optionRowSelected, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}
             onPress={() => onSelectOption(option.value)}
           >
             <Text style={[styles.optionText, isDarkMode && { color: '#F8FAFC' }]}>{option.label}</Text>
@@ -76,12 +77,12 @@ export const DateOptionSelector: React.FC<DateOptionSelectorProps> = ({
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: 30,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginBottom: 12,
   },
   optionRow: {
@@ -90,13 +91,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
+    backgroundColor: FLOW.glassStrong,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
     marginBottom: 12,
+  },
+  optionRowSelected: {
+    borderColor: 'rgba(255,255,255,0.7)',
   },
   optionText: {
     fontSize: RFValue(16),
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   radioOuter: {
@@ -104,13 +110,13 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#E5E5EA',
+    borderColor: 'rgba(255,255,255,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   radioOuterSelected: {
-    borderColor: '#0057FF',
-    backgroundColor: '#0057FF',
+    borderColor: FLOW.orange,
+    backgroundColor: FLOW.orange,
   },
   radioInner: {
     width: 8,
@@ -123,7 +129,7 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
   },
   dateText: {
-    color: '#0057FF',
+    color: '#FFFFFF',
     fontSize: RFValue(14),
     fontWeight: '500',
   },

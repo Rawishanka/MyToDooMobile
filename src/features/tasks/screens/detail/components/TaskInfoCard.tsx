@@ -1061,7 +1061,7 @@ const styles = StyleSheet.create({
     marginRight: wp('2%'),
   },
   newBadge: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#ff6b35',
     paddingHorizontal: wp('2%'),
     paddingVertical: hp('0.3%'),
     borderRadius: 4,
@@ -1134,7 +1134,7 @@ const styles = StyleSheet.create({
   },
   category: {
     fontSize: RFValue(11),
-    color: '#007bff',
+    color: '#003399',
     backgroundColor: '#e3f2fd',
     paddingHorizontal: wp('3%'),
     paddingVertical: hp('0.8%'),

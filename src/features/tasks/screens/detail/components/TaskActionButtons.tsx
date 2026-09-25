@@ -648,7 +648,7 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_PRICE_BG,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#007bff',
+    shadowColor: '#001A66',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,

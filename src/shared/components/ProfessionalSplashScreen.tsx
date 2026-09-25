@@ -104,7 +104,7 @@ export default function ProfessionalSplashScreen({
   return (
     <View style={styles.container}>
       <StatusBar 
-        backgroundColor="#004aad" 
+        backgroundColor="#003399" 
         barStyle="light-content" 
         hidden={Platform.OS === 'ios'}
       />
@@ -160,7 +160,7 @@ export default function ProfessionalSplashScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#004aad',
+    backgroundColor: '#003399',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 74, 173, 0.95)',
+    backgroundColor: 'rgba(0, 51, 153, 0.95)',
   },
   floatingElement1: {
     position: 'absolute',

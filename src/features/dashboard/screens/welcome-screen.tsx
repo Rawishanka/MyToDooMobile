@@ -623,7 +623,7 @@ export default function WelcomeScreen() {
                 }}
               >
                 <Text style={[styles.socialMenuLabel, isDarkMode && { color: '#38BDF8' }]}>Share App</Text>
-                <View style={[styles.socialMenuIconCircle, { backgroundColor: isDarkMode ? '#0369A1' : '#0052A2' }]}>
+                <View style={[styles.socialMenuIconCircle, { backgroundColor: isDarkMode ? '#0369A1' : '#003399' }]}>
                   <Ionicons name="share-social" size={17} color="#FFFFFF" />
                 </View>
               </TouchableOpacity>
@@ -641,7 +641,7 @@ export default function WelcomeScreen() {
                   youtube:   { icon: 'logo-youtube',   bg: '#FF0000', name: 'YouTube' },
                   pinterest: { icon: 'logo-pinterest', bg: '#E60023', name: 'Pinterest' },
                 };
-                const config = iconMap[platform] || { icon: 'globe-outline', bg: '#0052A2', name: account.platform };
+                const config = iconMap[platform] || { icon: 'globe-outline', bg: '#003399', name: account.platform };
 
                 return (
                   <TouchableOpacity
@@ -1099,7 +1099,7 @@ const styles = StyleSheet.create({
   shareAppText: {
     fontSize: RFValue(13),
     fontWeight: '700',
-    color: '#0052A2',
+    color: '#003399',
   },
   // Social Media Section - Legacy removed
   socialMediaSection: {
@@ -1215,10 +1215,10 @@ const styles = StyleSheet.create({
     width: isTablet ? 48 : 42,
     height: isTablet ? 48 : 42,
     borderRadius: isTablet ? 24 : 21,
-    backgroundColor: '#0052A2',
+    backgroundColor: '#003399',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#0052A2',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 8,

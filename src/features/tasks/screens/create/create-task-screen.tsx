@@ -18,6 +18,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    StatusBar,
     StyleSheet,
     Text,
     TextInput,
@@ -36,6 +37,7 @@ import {
 } from './components';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 
 // Helper function to copy image to persistent storage
 const copyImageToPersistentStorage = async (sourceUri: string): Promise<string> => {
@@ -856,15 +858,15 @@ Please remove phone numbers and addresses from the image.`,
               >
                 {isProcessing || isOCRProcessing ? (
                   <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color={isDarkMode ? "#60A5FA" : "#467FFF"} />
+                    <ActivityIndicator size="small" color={isDarkMode ? "#60A5FA" : "#FFFFFF"} />
                     {isOCRProcessing && (
                       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Checking image...</Text>
                     )}
                   </View>
                 ) : (
                   <>
-                    <Ionicons name="camera" size={24} color={isDarkMode ? "#60A5FA" : "#467FFF"} />
-                    <Ionicons name="add" size={16} color={isDarkMode ? "#60A5FA" : "#467FFF"} style={[styles.addIcon, isDarkMode && { backgroundColor: '#1E293B' }]} />
+                    <Ionicons name="camera" size={24} color={isDarkMode ? "#60A5FA" : "#FFFFFF"} />
+                    <Ionicons name="add" size={16} color={isDarkMode ? "#60A5FA" : "#FFFFFF"} style={[styles.addIcon, isDarkMode && { backgroundColor: '#1E293B' }]} />
                   </>
                 )}
               </TouchableOpacity>
@@ -1022,9 +1024,13 @@ Please remove phone numbers and addresses from the image.`,
 
   return (
     <View style={[styles.wrapper, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
+      <FlowBackground isDarkMode={isDarkMode} />
+      {/* Bottom safe area for Android navigation bar (drawn first so the action bar sits above it) */}
+      <View style={[styles.bottomSafeArea, isDarkMode && { backgroundColor: '#0B1120' }]} />
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         {/* Fixed Header */}
-        <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: BRAND_BLUE }, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => {
           // Check if user has entered any data (local state or store)
           const hasLocalData = title.trim() || description.trim() || images.length > 0 || selectedCategory || selectedLocation || selectedOption;
@@ -1129,7 +1135,7 @@ Please remove phone numbers and addresses from the image.`,
               <Ionicons 
                 name={showCategoryDropdown ? "chevron-up" : "chevron-down"} 
                 size={20} 
-                color="#64748B" 
+                color={isDarkMode ? '#64748B' : FLOW.blue} 
               />
             </TouchableOpacity>
             {touched.category && !selectedCategory && (
@@ -1230,7 +1236,7 @@ Please remove phone numbers and addresses from the image.`,
             </View>
             <View style={styles.fieldMetaRow}>
               <View style={styles.helperRow}>
-                <Ionicons name="information-circle-outline" size={13} color="#94A3B8" />
+                <Ionicons name="information-circle-outline" size={13} color={isDarkMode ? '#94A3B8' : FLOW.textMuted} />
                 <Text style={styles.helperText}>Only letters, spaces, and basic punctuation</Text>
               </View>
               <View style={[styles.charCountBadge, isDarkMode && { backgroundColor: '#1E293B' }]}>
@@ -1238,7 +1244,7 @@ Please remove phone numbers and addresses from the image.`,
               </View>
             </View>
             {titleError ? (
-              <Text style={styles.errorText}>{titleError}</Text>
+              <Text style={styles.fieldError}>{titleError}</Text>
             ) : null}
           </View>
 
@@ -1272,7 +1278,7 @@ Please remove phone numbers and addresses from the image.`,
             </View>
             <View style={styles.fieldMetaRow}>
               <View style={styles.helperRow}>
-                <Ionicons name="information-circle-outline" size={13} color="#94A3B8" />
+                <Ionicons name="information-circle-outline" size={13} color={isDarkMode ? '#94A3B8' : FLOW.textMuted} />
                 <Text style={styles.helperText}>Min 20 characters required</Text>
               </View>
               <View style={[styles.charCountBadge, isDarkMode && { backgroundColor: '#1E293B' }]}>
@@ -1280,10 +1286,10 @@ Please remove phone numbers and addresses from the image.`,
               </View>
             </View>
             {touched.description && descriptionError ? (
-              <Text style={styles.errorText}>{descriptionError}</Text>
+              <Text style={styles.fieldError}>{descriptionError}</Text>
             ) : null}
             {touched.description && !descriptionError && descriptionLength > 0 && descriptionLength < 20 ? (
-              <Text style={styles.errorText}>Minimum 20 characters required</Text>
+              <Text style={styles.fieldError}>Minimum 20 characters required</Text>
             ) : null}
           </View>
         </View>
@@ -1319,6 +1325,7 @@ Please remove phone numbers and addresses from the image.`,
               }}
               onFocus={handleLocationFocus}
               placeholder="Enter address or suburb"
+              buttonStyle={isDarkMode ? undefined : styles.locateButtonOutline}
               initialValue={selectedLocation?.address}
               onDropdownStateChange={(isOpen) => {
                 console.log('📍 Dropdown state changed:', isOpen);
@@ -1334,7 +1341,7 @@ Please remove phone numbers and addresses from the image.`,
 
             {selectedLocation && (
               <View style={[styles.selectedLocationContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                <Ionicons name="location" size={20} color="#0057FF" />
+                <Ionicons name="location" size={20} color={isDarkMode ? '#0057FF' : '#FFFFFF'} />
                 <Text style={[styles.selectedLocationText, isDarkMode && { color: '#60A5FA' }]} numberOfLines={2}>
                   {selectedLocation.address}
                 </Text>
@@ -1346,7 +1353,7 @@ Please remove phone numbers and addresses from the image.`,
                   }}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Ionicons name="close-circle" size={20} color="#999" />
+                  <Ionicons name="close-circle" size={20} color={isDarkMode ? '#999' : 'rgba(255,255,255,0.75)'} />
                 </TouchableOpacity>
               </View>
             )}
@@ -1427,30 +1434,34 @@ Please remove phone numbers and addresses from the image.`,
 
       {/* Continue Button - Outside KeyboardAvoidingView, Hidden when keyboard is visible */}
       {!isKeyboardVisible && (
-        <TouchableOpacity
+        <View
           style={[
-            styles.continueButton, 
-            isDarkMode && !isFormValid && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 },
-            isFormValid && styles.continueButtonEnabled,
-            { bottom: Math.max(insets.bottom, 20) }
+            styles.actionBar,
+            isDarkMode && { backgroundColor: '#0B1120', borderTopColor: '#1E293B' },
+            { paddingBottom: Math.max(insets.bottom, 16) },
           ]}
-          disabled={!isFormValid}
-          onPress={() => {
-            console.log('🔘 Continue button PRESSED!');
-            console.log('   Button disabled:', !isFormValid);
-            console.log('   isFormValid:', isFormValid);
-            handleContinue();
-          }}
         >
-          <Text style={[styles.continueText, isDarkMode && !isFormValid && { color: '#64748B' }]}>Continue</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.continueButton,
+              isDarkMode && !isFormValid && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 },
+              isFormValid && styles.continueButtonEnabled,
+            ]}
+            disabled={!isFormValid}
+            onPress={() => {
+              console.log('🔘 Continue button PRESSED!');
+              console.log('   Button disabled:', !isFormValid);
+              console.log('   isFormValid:', isFormValid);
+              handleContinue();
+            }}
+          >
+            <Text style={[styles.continueText, !isFormValid && styles.continueTextDisabled, isDarkMode && !isFormValid && { color: '#64748B' }]}>Continue</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       {/* Percentage Validation Modal - REMOVED */}
       </View>
-
-      {/* Bottom safe area for Android navigation bar */}
-      <View style={[styles.bottomSafeArea, isDarkMode && { backgroundColor: '#0B1120' }]} />
     </View>
   );
 }
@@ -1459,16 +1470,16 @@ Please remove phone numbers and addresses from the image.`,
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: FLOW.blue,
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
   },
   header: {
-    paddingBottom: 20,
+    paddingBottom: 16,
     paddingHorizontal: 20,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: 'transparent',
     borderBottomWidth: 0,
     borderBottomColor: 'transparent',
   },
@@ -1494,41 +1505,45 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 120,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 150,
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 14,
+    padding: 16,
+    borderRadius: 20,
+    backgroundColor: FLOW.glass,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
   },
   sectionTitle: {
-    fontSize: RFValue(22),
+    fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#1C1C1E',
-    marginBottom: 5,
+    color: '#FFFFFF',
+    marginBottom: 4,
   },
   sectionSubtitle: {
-    fontSize: RFValue(14),
-    color: '#8E8E93',
-    marginBottom: 20,
+    fontSize: RFValue(13),
+    color: FLOW.textMuted,
+    marginBottom: 16,
   },
   divider: {
-    height: 1,
-    backgroundColor: '#E5E5EA',
-    marginVertical: 24,
+    height: 0,
+    marginVertical: 0,
   },
   fieldContainer: {
-    marginBottom: 20,
+    marginBottom: 18,
   },
   label: {
-    fontSize: RFValue(16),
+    fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   required: {
-    color: '#FF3B30',
-    fontSize: RFValue(16),
+    color: FLOW.required,
+    fontSize: RFValue(14),
   },
   charCount: {
     fontSize: RFValue(12),
@@ -1538,17 +1553,17 @@ const styles = StyleSheet.create({
   },
   helperText: {
     fontSize: RFValue(12),
-    color: '#8E8E93',
+    color: FLOW.textMuted,
     marginTop: 4,
     fontStyle: 'italic',
   },
   locationSubtitle: {
     fontSize: RFValue(13),
-    color: '#8E8E93',
+    color: FLOW.textMuted,
     marginBottom: 10,
   },
   categorySelector: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 14,
@@ -1556,10 +1571,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: 'transparent',
   },
   categorySelectorActive: {
-    borderColor: '#0057FF',
+    borderColor: FLOW.orange,
     backgroundColor: '#FFFFFF',
   },
   categoryLeftContent: {
@@ -1629,6 +1644,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: RFValue(12),
   },
+  fieldError: {
+    color: FLOW.error,
+    marginTop: 6,
+    fontSize: RFValue(12),
+    fontWeight: '500',
+  },
   noResultsText: {
     color: '#94A3B8',
     padding: 20,
@@ -1656,23 +1677,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   inputWrapper: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: 'transparent',
     overflow: 'hidden',
   },
   textAreaWrapper: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: 'transparent',
     overflow: 'hidden',
   },
   inputWrapperFocused: {
-    borderColor: '#0057FF',
+    borderColor: FLOW.orange,
     backgroundColor: '#FFFFFF',
-    shadowColor: '#0057FF',
+    shadowColor: FLOW.orange,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -1686,12 +1707,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   inputError: {
-    borderColor: '#EF4444',
+    borderColor: FLOW.error,
     backgroundColor: '#FFF8F8',
   },
   validationText: {
     fontSize: RFValue(12),
-    color: '#EF4444',
+    color: FLOW.error,
     marginTop: 6,
     fontWeight: '500',
   },
@@ -1717,7 +1738,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   charCountBadge: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: FLOW.glassStrong,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
@@ -1725,9 +1746,9 @@ const styles = StyleSheet.create({
   charCountText: {
     fontSize: RFValue(11),
     fontWeight: '600',
-    color: '#64748B',
+    color: FLOW.textMuted,
   },
-    imageSection: {
+  imageSection: {
     marginBottom: 20,
   },
   imageRow: {
@@ -1743,7 +1764,9 @@ const styles = StyleSheet.create({
   uploadedImage: {
     width: 70,
     height: 70,
-    borderRadius: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
   },
   deleteBtn: {
     position: 'absolute',
@@ -1762,19 +1785,19 @@ const styles = StyleSheet.create({
   uploadBox: {
     width: 70,
     height: 70,
-    backgroundColor: '#F2F4F7',
-    borderRadius: 10,
+    backgroundColor: FLOW.glass,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
-    borderWidth: 2,
-    borderColor: '#E4E7EC',
+    borderWidth: 1.5,
+    borderColor: FLOW.dashed,
     borderStyle: 'dashed',
     position: 'relative',
   },
   uploadBoxDisabled: {
     opacity: 0.5,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: FLOW.glass,
   },
   loadingContainer: {
     justifyContent: 'center',
@@ -1783,7 +1806,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(10),
-    color: '#467FFF',
+    color: '#FFFFFF',
     marginTop: 4,
     textAlign: 'center',
   },
@@ -1791,7 +1814,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 5,
     right: 5,
-    backgroundColor: '#F2F4F7',
+    backgroundColor: FLOW.orange,
     borderRadius: 8,
   },
   emptySlot: {
@@ -1801,46 +1824,51 @@ const styles = StyleSheet.create({
   selectedLocationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F5FF',
+    backgroundColor: FLOW.glassStrong,
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 14,
     marginTop: 10,
   },
   selectedLocationText: {
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(14),
-    color: '#0057FF',
+    color: '#FFFFFF',
+  },
+  actionBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    backgroundColor: FLOW.blueDeep,
+    borderTopWidth: 1,
+    borderTopColor: FLOW.line,
+  },
+  locateButtonOutline: {
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.6)',
   },
   continueButton: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: '#E2E8F0',
-    height: 54,
-    borderRadius: 16,
+    backgroundColor: FLOW.disabledFill,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
   continueButtonEnabled: {
     backgroundColor: BRAND_ORANGE,
-    shadowColor: BRAND_ORANGE,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 5,
+    ...primaryShadow,
   },
   continueText: {
     color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '700',
     letterSpacing: 0.4,
+  },
+  continueTextDisabled: {
+    color: FLOW.disabledText,
   },
   // Validation text styles
   validationTextContainer: {
@@ -1894,6 +1922,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: Platform.OS === 'android' ? 48 : 0,
-    backgroundColor: '#fff',
+    backgroundColor: FLOW.blueDeep,
   },
 });

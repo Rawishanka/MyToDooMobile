@@ -355,7 +355,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4285f4" />
+        <ActivityIndicator size="large" color="#003399" />
         <Text style={styles.loadingText}>Preparing secure payment...</Text>
       </View>
     </View>
@@ -470,20 +470,20 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#4285f4',
+    color: '#003399',
   },
   backendDataInfo: {
     marginTop: 12,
     padding: 12,
-    backgroundColor: '#f0f9ff',
+    backgroundColor: '#EEF3FF',
     borderRadius: 8,
     borderLeftWidth: 3,
-    borderLeftColor: '#4285f4',
+    borderLeftColor: '#003399',
   },
   backendDataLabel: {
     fontSize: RFValue(12),
     fontWeight: '600',
-    color: '#4285f4',
+    color: '#003399',
     marginBottom: 4,
   },
   backendDataText: {
@@ -525,8 +525,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   checkboxChecked: {
-    backgroundColor: '#4285f4',
-    borderColor: '#4285f4',
+    backgroundColor: '#ff6b35',
+    borderColor: '#ff6b35',
   },
   checkboxText: {
     flex: 1,
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   linkText: {
-    color: '#4285f4',
+    color: '#003399',
     textDecorationLine: 'underline',
   },
   securityInfo: {
@@ -555,12 +555,12 @@ const styles = StyleSheet.create({
   payButton: {
     backgroundColor: '#9CA3AF',
     paddingVertical: 16,
-    borderRadius: 8,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   payButtonActive: {
-    backgroundColor: '#4285f4',
+    backgroundColor: '#ff6b35',
   },
   payButtonDisabled: {
     backgroundColor: '#9CA3AF',
@@ -585,14 +585,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#4285f4',
+    borderColor: '#003399',
     backgroundColor: 'transparent',
   },
   retryIcon: {
     marginRight: 8,
   },
   retryButtonText: {
-    color: '#4285f4',
+    color: '#003399',
     fontSize: RFValue(14),
     fontWeight: '600',
   },

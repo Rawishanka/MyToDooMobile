@@ -40,7 +40,7 @@ export const NetworkAlert: React.FC<NetworkAlertProps> = ({
         <View style={[styles.alertContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
           {/* Icon */}
           <View style={styles.iconContainer}>
-            <Ionicons name="cloud-offline" size={48} color="#FF6B6B" />
+            <Ionicons name="cloud-offline" size={48} color="#DC2626" />
           </View>
 
           {/* Title */}
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   alertContainer: {
     backgroundColor: '#fff',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 24,
     width: '100%',
     maxWidth: 400,
@@ -95,13 +95,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#333',
+    color: '#003399',
     marginBottom: 12,
     textAlign: 'center',
   },
   message: {
     fontSize: RFValue(15),
-    color: '#666',
+    color: '#475569',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -110,10 +110,12 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   actionButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#ff6b35',
+    minHeight: 48,
+    justifyContent: 'center',
     paddingVertical: 14,
     paddingHorizontal: 32,
-    borderRadius: 8,
+    borderRadius: 14,
     alignItems: 'center',
   },
   actionButtonText: {

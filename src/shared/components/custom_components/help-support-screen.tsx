@@ -120,7 +120,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
       onRequestClose={onClose}
     >
       <View style={styles.container}>
-        <LightHeader title="Frequently Asked Questions" onBack={onClose} backIcon="close" topPadding={Platform.OS === 'ios' ? 18 : 24} />
+        <LightHeader solid title="Frequently Asked Questions" onBack={onClose} backIcon="close" topPadding={Platform.OS === 'ios' ? 18 : 24} />
 
         {/* Info Banner */}
         <View style={styles.infoBanner}>

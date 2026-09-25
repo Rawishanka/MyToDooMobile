@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   editHeaderTitle: {
     fontSize: RFValue(24),
     fontWeight: '700',
-    color: '#1a237e',
+    color: '#003399',
     textAlign: 'center',
     flex: 1,
   },
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   dateOptionSelected: {
-    backgroundColor: '#1a237e',
+    backgroundColor: '#003399',
   },
   dateOptionText: {
     fontSize: RFValue(16),
@@ -273,8 +273,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#1a237e',
-    borderColor: '#1a237e',
+    backgroundColor: '#003399',
+    borderColor: '#003399',
   },
   checkboxLabel: {
     fontSize: RFValue(14),
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     minHeight: 120,
   },
   locationOptionSelected: {
-    backgroundColor: '#1a237e',
+    backgroundColor: '#003399',
   },
   locationIcon: {
     marginBottom: 8,
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   submitButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#ff6b35',
     paddingVertical: 14,
     borderRadius: 25,
     marginTop: 20,
