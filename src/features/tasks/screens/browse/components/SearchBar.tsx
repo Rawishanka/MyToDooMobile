@@ -36,7 +36,7 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose, 
       isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }
     ]}>
       <TouchableOpacity onPress={onClose} style={[styles.backButton, isDarkMode && { backgroundColor: '#1E293B' }]} activeOpacity={0.75}>
-        <Ionicons name="arrow-back" size={20} color={isDarkMode ? '#F8FAFC' : '#003399'} />
+        <Ionicons name="arrow-back" size={20} color={isDarkMode ? '#F8FAFC' : '#FFFFFF'} />
       </TouchableOpacity>
       
       <View style={[
@@ -87,18 +87,18 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose, 
 
 const styles = StyleSheet.create({
   searchContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8ECF4',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   backButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -106,10 +106,10 @@ const styles = StyleSheet.create({
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#DCE3F5',
+    borderColor: 'transparent',
     paddingHorizontal: 14,
     height: 48,
   },
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   },
   searchInfo: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 10,
     marginLeft: 4,
   },

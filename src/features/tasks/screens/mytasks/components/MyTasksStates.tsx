@@ -12,7 +12,7 @@ export function LoadingState({ message = 'Loading tasks...' }: LoadingStateProps
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>{message}</Text>
     </View>
   );
@@ -29,7 +29,7 @@ export function EmptyState({ searchText, selectedFilter, onRefresh }: EmptyState
   return (
     <View style={[styles.emptyContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <View style={[styles.emptyCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-        <Ionicons name="document-text-outline" size={44} color={isDarkMode ? '#94A3B8' : '#003399'} />
+        <Ionicons name="document-text-outline" size={44} color={isDarkMode ? '#94A3B8' : '#FFFFFF'} />
       </View>
       <Text style={[styles.emptyTitle, isDarkMode && { color: '#F8FAFC' }]}>No tasks found</Text>
       <Text style={[styles.emptySubtitle, isDarkMode && { color: '#94A3B8' }]}>
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
   },
   emptyContainer: {
     flex: 1,
@@ -67,20 +67,20 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: '#FFFFFF',
     marginTop: 20,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#5B6472',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,

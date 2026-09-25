@@ -20,7 +20,7 @@ export default function SortButton({ onPress }: SortButtonProps) {
         <Ionicons name="swap-vertical-outline" size={14} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
       </View>
       <Text style={[styles.sortText, isDarkMode && { color: '#F8FAFC' }]}>Sort</Text>
-      <Ionicons name="chevron-down" size={14} color={isDarkMode ? '#94A3B8' : '#003399'} />
+      <Ionicons name="chevron-down" size={14} color={isDarkMode ? '#94A3B8' : '#FFFFFF'} />
     </TouchableOpacity>
   );
 }
@@ -29,32 +29,32 @@ const styles = StyleSheet.create({
   sortBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.14)',
     paddingLeft: 6,
     paddingRight: 12,
     height: 40,
     borderRadius: 20,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#DCE3F5',
+    borderColor: 'rgba(255,255,255,0.22)',
     shadowColor: '#001A66',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 0,
   },
   iconChip: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#003399',
+    backgroundColor: 'rgba(255,255,255,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   sortText: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#003399',
+    color: '#FFFFFF',
     letterSpacing: 0.2,
   },
 });

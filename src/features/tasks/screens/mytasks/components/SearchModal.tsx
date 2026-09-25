@@ -25,7 +25,7 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose }
       isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }
     ]}>
       <TouchableOpacity onPress={onClose} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={isTablet ? 34 : 24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
+        <Ionicons name="arrow-back" size={isTablet ? 34 : 24} color={isDarkMode ? '#F8FAFC' : '#FFFFFF'} />
       </TouchableOpacity>
       
       <View style={[
@@ -70,23 +70,18 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose }
 
 const styles = StyleSheet.create({
   searchContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     paddingTop: isTablet ? hp('1.5%') : hp('1.2%'),
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 3,
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   backButton: {
     marginBottom: isTablet ? hp('1.2%') : hp('1%'),
     padding: 4,
     borderRadius: 12,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     width: isTablet ? 40 : 36,
     height: isTablet ? 40 : 36,
     justifyContent: 'center',
@@ -95,12 +90,12 @@ const styles = StyleSheet.create({
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     paddingHorizontal: 14,
     height: isTablet ? 52 : 48,
     borderWidth: 1.5,
-    borderColor: '#DCE3F2',
+    borderColor: 'transparent',
   },
   searchIcon: {
     marginRight: 10,
@@ -120,7 +115,7 @@ const styles = StyleSheet.create({
   },
   searchInfo: {
     fontSize: RFValue(isTablet ? 12 : 12),
-    color: '#666',
+    color: 'rgba(255,255,255,0.85)',
     marginTop: 8,
     marginLeft: 6,
     fontStyle: 'italic',

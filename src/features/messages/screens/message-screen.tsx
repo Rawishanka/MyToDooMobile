@@ -37,6 +37,7 @@ import { useMergedUnreadCount } from '@/src/shared/hooks/useNotifications';
 import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
 import NotificationModal from './notification-screen-api';
 import { useTheme } from '@/src/shared/theme';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 
 const MessageScreen: React.FC = () => {
   const { isDarkMode } = useTheme();
@@ -313,6 +314,7 @@ const MessageScreen: React.FC = () => {
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <StatusBar barStyle="light-content" backgroundColor="#003399" />
+      <BlueBackdrop />
       
       {/* Offline Banner */}
       <OfflineBanner />
@@ -346,7 +348,7 @@ const MessageScreen: React.FC = () => {
       {/* Messages List */}
       {isLoadingChats ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading chats...</Text>
         </View>
       ) : (
@@ -366,7 +368,7 @@ const MessageScreen: React.FC = () => {
               refreshing={isLoadingChats}
               onRefresh={handleRefresh}
               colors={['#003399']}
-              tintColor="#003399"
+              tintColor={isDarkMode ? '#38BDF8' : '#FFFFFF'}
             />
           }
           ListEmptyComponent={() => (
@@ -375,7 +377,7 @@ const MessageScreen: React.FC = () => {
                 <Ionicons
                   name={chatError ? 'cloud-offline-outline' : 'chatbubbles-outline'}
                   size={40}
-                  color={isDarkMode ? '#38BDF8' : '#003399'}
+                  color={isDarkMode ? '#38BDF8' : '#FFFFFF'}
                 />
               </View>
               <Text style={[styles.emptyText, isDarkMode && { color: '#F8FAFC' }]}>
@@ -427,7 +429,7 @@ const MessageScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   header: {
     flexDirection: 'row',
@@ -436,7 +438,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     paddingTop: isTablet ? hp('6%') : hp('6.5%'),
     paddingBottom: isTablet ? hp('2%') : hp('2%'),
-    backgroundColor: '#003399',
+    backgroundColor: 'transparent',
   },
   headerTitle: {
     fontSize: RFValue(isTablet ? 18 : 22),
@@ -484,7 +486,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(isTablet ? 18 : 16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 12,
   },
   emptyContainer: {
@@ -497,20 +499,20 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginTop: 16,
     textAlign: 'center',
   },
   emptySubText: {
     fontSize: 14,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 6,
     textAlign: 'center',
     paddingHorizontal: 32,

@@ -28,7 +28,8 @@ import { useAuthStore } from '@/src/store/auth-task-store';
 // Responsive utilities
 import { hp, isTablet, RFValue, TAB_BAR_CLEARANCE, wp } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
+import { BRAND_ORANGE, CARD_CHIP_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 
 interface TabScreenProps {
   tasks: Task[];
@@ -174,7 +175,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
           ) : (
             <View style={styles.emptyListContent}>
               <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                <Ionicons name="document-text-outline" size={40} color={isDarkMode ? '#94A3B8' : '#003399'} />
+                <Ionicons name="document-text-outline" size={40} color={isDarkMode ? '#94A3B8' : '#FFFFFF'} />
               </View>
               <Text style={[styles.emptyText, isDarkMode && { color: '#94A3B8' }]}>{getEmptyMessage()}</Text>
               <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
@@ -335,9 +336,9 @@ const topTabStyles = StyleSheet.create({
     height: isTablet ? 42 : 36,
     justifyContent: 'center',
     borderRadius: 18,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderWidth: 1,
-    borderColor: '#DCE3F2',
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   tabItemActive: {
     backgroundColor: '#ff6b35',
@@ -351,7 +352,7 @@ const topTabStyles = StyleSheet.create({
   tabLabel: {
     fontSize: isTablet ? 16 : 13,
     fontWeight: '600',
-    color: '#4B5563',
+    color: 'rgba(255,255,255,0.85)',
   },
   tabLabelActive: {
     color: '#FFFFFF',
@@ -1162,6 +1163,7 @@ export default function MyTasksScreen() {
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <StatusBar barStyle="light-content" translucent backgroundColor="#003399" />
+      <BlueBackdrop />
 
       <MyTasksHeader
         notificationCount={notificationCount}
@@ -1187,7 +1189,7 @@ export default function MyTasksScreen() {
             setSearchText('');
             setSearchVisible(false);
           }}>
-            <Ionicons name="close-circle" size={22} color="#003399" />
+            <Ionicons name="close-circle" size={22} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       )}
@@ -1275,11 +1277,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 0,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   tabContent: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: 'transparent',
     width: '100%',
     alignSelf: 'center',
   },
@@ -1299,14 +1301,14 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
   },
   emptyText: {
     fontSize: RFValue(isTablet ? 16 : 14),
-    color: '#5B6472',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 21,
@@ -1329,13 +1331,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   smartReviewCard: {
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
     marginHorizontal: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: 'rgba(255,255,255,0.18)',
     shadowColor: '#001A66',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,
@@ -1393,7 +1395,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 16,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: 'transparent',
   },
   roleButton: {
     flex: 1,
@@ -1402,14 +1404,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderWidth: 1,
-    borderColor: '#DCE3F2',
+    borderColor: 'rgba(255,255,255,0.20)',
     marginHorizontal: 4,
   },
   activeRole: {
-    backgroundColor: '#003399',
-    borderColor: '#003399',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#FFFFFF',
     shadowColor: '#001A66',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -1419,10 +1421,10 @@ const styles = StyleSheet.create({
   roleText: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#4B5563',
+    color: 'rgba(255,255,255,0.85)',
   },
   activeRoleText: {
-    color: '#fff',
+    color: '#003399',
     fontWeight: '700',
   },
   searchResultsInfo: {
@@ -1431,13 +1433,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     paddingVertical: 12,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderBottomWidth: 1,
-    borderBottomColor: '#DCE3F2',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   searchResultsText: {
     fontSize: RFValue(isTablet ? 14 : 12),
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '600',
     flex: 1,
     letterSpacing: 0.2,

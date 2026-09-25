@@ -7,6 +7,7 @@ import {
     FlatList,
     Linking,
     Platform,
+    StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -21,7 +22,6 @@ import { useSearchServiceListings } from '@/src/shared/hooks/useServiceListingAp
 import ServiceListingDetailScreen from './service-listing-detail-screen';
 import {
   BRAND_ORANGE,
-  CARD_BG,
   CARD_CHIP_BG,
   CARD_DIVIDER,
   CARD_PRICE_BG,
@@ -55,6 +55,7 @@ import { useBrowseFiltersAPI } from './hooks/useBrowseFiltersAPI';
 // Responsive utilities
 import { hp, isTablet, RFValue, TAB_BAR_CLEARANCE, wp } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 
 export default function BrowseTasksScreen() {
   const { isDarkMode } = useTheme();
@@ -515,6 +516,8 @@ export default function BrowseTasksScreen() {
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <StatusBar barStyle="light-content" />
+      <BlueBackdrop />
       {/* Offline Banner */}
       <OfflineBanner />
       
@@ -636,7 +639,7 @@ export default function BrowseTasksScreen() {
             setSearchText('');
             setSearchVisible(false);
           }}>
-            <Ionicons name="close-circle" size={22} color={isDarkMode ? '#94A3B8' : '#003399'} />
+            <Ionicons name="close-circle" size={22} color={isDarkMode ? '#94A3B8' : '#FFFFFF'} />
           </TouchableOpacity>
         </View>
       )}
@@ -865,7 +868,7 @@ export default function BrowseTasksScreen() {
               ListFooterComponent={() => 
                 isLoadingMore ? (
                   <View style={{ padding: 20, alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
+                    <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
                     <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading more tasks...</Text>
                   </View>
                 ) : null
@@ -930,11 +933,11 @@ export default function BrowseTasksScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
     paddingTop: 0,
   },
   header: {
-    backgroundColor: '#003399',
+    backgroundColor: 'transparent',
     flexDirection: 'row',
     paddingHorizontal: isTablet ? wp('12.5%') : 16,
     paddingTop: hp('6%'),
@@ -967,14 +970,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   segmentedContainer: {
-    backgroundColor: '#003399',
+    backgroundColor: 'transparent',
     paddingHorizontal: isTablet ? wp('12.5%') : 16,
     paddingBottom: 14,
     paddingTop: 4,
   },
   segmentedTrack: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(5, 18, 55, 0.45)',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 30,
     padding: 4,
     borderWidth: 1,
@@ -1028,14 +1031,14 @@ const styles = StyleSheet.create({
     borderColor: '#E8ECF4',
   },
   serviceCardBlue: {
-    backgroundColor: CARD_BG,
-    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   stateIconCircle: {
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: '#003399',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
@@ -1216,13 +1219,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: isTablet ? wp('12.5%') : 16,
     paddingVertical: 12,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderBottomWidth: 1,
-    borderBottomColor: '#E8ECF4',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   searchResultsText: {
     fontSize: RFValue(13),
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '600',
     flex: 1,
   },
@@ -1233,7 +1236,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: isTablet ? wp('12.5%') : 16,
     paddingTop: 16,
     paddingBottom: 12,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: 'transparent',
   },
   mapContainer: {
     flex: 1,
@@ -1255,20 +1258,20 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: RFValue(18),
-    color: '#0F172A',
+    color: '#FFFFFF',
     textAlign: 'center',
     fontWeight: '700',
   },
   emptySubtext: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 21,
     marginTop: 8,
   },
   loadingText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     marginTop: hp('1%'),
   },
@@ -1298,13 +1301,13 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: RFValue(18),
-    color: '#DC2626',
+    color: '#FCA5A5',
     fontWeight: '700',
     textAlign: 'center',
   },
   errorSubtext: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 21,
     marginTop: 8,
@@ -1333,12 +1336,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: hp('0.8%'),
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     gap: wp('1%'),
   },
   locationIndicatorText: {
     fontSize: RFValue(11),
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '500',
   },
 });

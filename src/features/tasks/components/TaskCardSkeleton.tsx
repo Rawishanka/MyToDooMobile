@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_DIVIDER } from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE, CARD_CHIP_BG, CARD_DIVIDER } from '@/src/shared/theme/brandColors';
 
 export interface TaskCardSkeletonProps {
   delay?: number;
@@ -59,7 +59,7 @@ export const TaskCardSkeleton: React.FC<TaskCardSkeletonProps> = ({ delay = 0 })
             borderColor: '#334155',
             shadowColor: '#000000',
           }
-        : { backgroundColor: CARD_BG, borderColor: 'rgba(255,255,255,0.14)', shadowColor: '#001A66', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.18, shadowRadius: 12, elevation: 4 },
+        : { backgroundColor: 'rgba(255,255,255,0.10)', borderColor: 'rgba(255,255,255,0.18)', shadowColor: '#001A66', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.18, shadowRadius: 12, elevation: 4 },
     ]}>
       {/* Left accent stripe */}
       <Animated.View style={[

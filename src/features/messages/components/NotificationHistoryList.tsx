@@ -118,7 +118,15 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
 
   const renderNotification = ({ item }: { item: StoredNotification }) => {
     const iconName = getNotificationIcon(item);
-    const iconColor = getNotificationColor(item);
+    const baseIconColor = getNotificationColor(item);
+    // Light mode sits on the blue page: use light tints so icons stay readable
+    const iconColor = isDarkMode
+      ? baseIconColor
+      : baseIconColor === BRAND_BLUE
+        ? '#FFFFFF'
+        : baseIconColor === '#16A34A'
+          ? '#4ADE80'
+          : '#FBBF24';
 
     return (
       <TouchableOpacity
@@ -136,7 +144,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
         activeOpacity={0.7}
       >
         <View style={styles.notificationContent}>
-          <View style={[styles.iconContainer, { backgroundColor: iconColor === BRAND_BLUE ? 'rgba(0,51,153,0.08)' : iconColor + '1F' }]}>
+          <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? (iconColor === BRAND_BLUE ? 'rgba(0,51,153,0.08)' : iconColor + '1F') : (iconColor === '#FFFFFF' ? 'rgba(255,255,255,0.16)' : iconColor + '2E') }]}>
             <Ionicons name={iconName as any} size={19} color={isDarkMode && iconColor === BRAND_BLUE ? '#38BDF8' : iconColor} />
           </View>
 
@@ -165,7 +173,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
               style={styles.deleteButton}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="trash-outline" size={18} color="#DC2626" />
+              <Ionicons name="trash-outline" size={18} color={isDarkMode ? '#DC2626' : '#FCA5A5'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -176,7 +184,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-        <Ionicons name="notifications-outline" size={40} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+        <Ionicons name="notifications-outline" size={40} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
       </View>
       <Text style={[styles.emptyText, isDarkMode && { color: '#F8FAFC' }]}>No Notifications</Text>
       <Text style={[styles.emptySubtext, isDarkMode && { color: '#94A3B8' }]}>
@@ -188,7 +196,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
   if (loading && notifications.length === 0) {
     return (
       <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+        <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading notifications...</Text>
       </View>
     );
@@ -201,7 +209,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
       keyExtractor={(item) => item.id}
       ListEmptyComponent={renderEmpty}
       refreshControl={
-        <RefreshControl refreshing={loading} onRefresh={onRefresh} colors={['#003399']} tintColor={isDarkMode ? '#38BDF8' : '#003399'} />
+        <RefreshControl refreshing={loading} onRefresh={onRefresh} colors={['#003399']} tintColor={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
       }
       contentContainerStyle={
         notifications.length === 0 ? styles.emptyListContainer : styles.listContainer
@@ -230,25 +238,25 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 15,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   notificationItem: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     marginHorizontal: 16,
     marginBottom: 12,
     borderRadius: 20,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOpacity: 0.2,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
   },
   unreadNotification: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E8ECF4',
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderColor: 'rgba(255,255,255,0.18)',
     borderLeftWidth: 3,
     borderLeftColor: '#ff6b35',
   },
@@ -272,22 +280,22 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   unreadText: {
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
   },
   body: {
     fontSize: 13,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.78)',
     marginBottom: 6,
     lineHeight: 19,
   },
   time: {
     fontSize: 12,
-    color: '#94A3B8',
+    color: 'rgba(255,255,255,0.6)',
   },
   actionsContainer: {
     flexDirection: 'column',
@@ -317,20 +325,20 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 6,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 20,
   },

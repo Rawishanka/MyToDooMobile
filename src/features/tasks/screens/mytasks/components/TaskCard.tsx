@@ -41,7 +41,6 @@ import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 import {
   BRAND_ORANGE,
-  CARD_BG,
   CARD_CHIP_BG,
   CARD_DIVIDER,
   CARD_PRICE_BG,
@@ -2698,13 +2697,13 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: isTablet ? 0 : 16,
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: isTablet ? wp('2%') : 12,
     borderRadius: 20,
     marginBottom: 12,
     position: 'relative',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: 'rgba(255,255,255,0.18)',
     shadowColor: '#001A66',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,

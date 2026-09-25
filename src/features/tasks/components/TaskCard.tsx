@@ -16,7 +16,6 @@ import {
 import { Task } from '@/src/api/types/tasks';
 import {
     BRAND_ORANGE,
-    CARD_BG,
     CARD_CHIP_BG,
     CARD_DIVIDER,
     CARD_PRICE_BG,
@@ -435,8 +434,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 const styles = StyleSheet.create({
   // Light-mode blue card helpers (dark mode keeps its own surfaces)
   blueCard: {
-    backgroundColor: CARD_BG,
-    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderColor: 'rgba(255,255,255,0.18)',
     shadowColor: '#001A66',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,

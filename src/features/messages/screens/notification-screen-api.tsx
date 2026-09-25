@@ -35,6 +35,7 @@ import {
 } from 'react-native';
 import { isTablet, wp } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 
 interface NotificationModalProps {
   visible: boolean;
@@ -280,6 +281,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
     >
       <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : "#003399"} />
+        <BlueBackdrop />
 
         {/* Header */}
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
@@ -385,7 +387,7 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
@@ -393,7 +395,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: isTablet ? wp('6%') : 16,
     paddingVertical: 12,
-    backgroundColor: '#003399',
+    backgroundColor: 'transparent',
   },
   backButton: {
     width: 40,
@@ -455,16 +457,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 19,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(255,255,255,0.20)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
   tabActive: {
-    backgroundColor: '#003399',
-    borderColor: '#003399',
+    backgroundColor: '#ff6b35',
+    borderColor: '#ff6b35',
   },
   tabText: {
     fontSize: 13,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.85)',
     fontWeight: '600',
   },
   tabTextActive: {
