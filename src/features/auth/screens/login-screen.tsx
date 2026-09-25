@@ -15,14 +15,15 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQueryClient } from '@tanstack/react-query';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import {
   getBiometricCapability,
   authenticateWithBiometrics,
   isBiometricLoginEnabled,
   getBiometricCredentials,
-  saveBiometricCredentials
+  saveBiometricCredentials,
+  clearBiometricCredentials,
 } from '@/src/shared/utils/biometric-auth';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { OTPModal } from '../components/OTPModal';
@@ -233,9 +234,16 @@ export default function LoginScreen() {
   // Load saved credentials on mount
   useEffect(() => {
     loadSavedCredentials();
-    checkBiometricAvailability();
     checkAppleAuthAvailability();
   }, []);
+
+  // Re-evaluate the Face ID button whenever the screen gains focus (e.g. right after logout,
+  // or after the user toggled Face ID in Account) - a mount-only check goes stale.
+  useFocusEffect(
+    useCallback(() => {
+      checkBiometricAvailability();
+    }, [])
+  );
 
   const checkAppleAuthAvailability = async () => {
     if (Platform.OS === 'ios') {
@@ -520,10 +528,28 @@ export default function LoginScreen() {
         isBiometricLoginEnabled(),
         getBiometricCredentials(),
       ]);
+      // Keychain items survive an app delete/reinstall but AsyncStorage (the enabled flag) does not.
+      // Credentials without an enabled flag are orphaned - remove them.
+      if (!isEnabled && creds) {
+        console.log('[Biometric] login: orphaned Keychain credentials without enabled flag - clearing');
+        await clearBiometricCredentials();
+      }
+      // canAuthenticate (biometrics OR passcode) - same rule as the Account toggle; requiring
+      // isEnrolled alone hid the button whenever iOS reported no enrolled biometrics.
+      const show = !!capability.canAuthenticate && isEnabled && !!creds;
+      console.log('[Biometric] login button check:', JSON.stringify({
+        hasHardware: capability.hasHardware,
+        isEnrolled: capability.isEnrolled,
+        canAuthenticate: capability.canAuthenticate,
+        enabled: isEnabled,
+        hasCredentials: !!creds,
+        show,
+      }));
       setBiometricTypeLabel(capability.biometricTypeLabel);
-      setCanUseBiometrics(capability.hasHardware && capability.isEnrolled && isEnabled && !!creds);
+      setCanUseBiometrics(show);
     } catch (err) {
-      console.warn('Biometric check error:', err);
+      console.warn('[Biometric] login button check error:', err);
+      setCanUseBiometrics(false);
     }
   };
 
@@ -532,37 +558,39 @@ export default function LoginScreen() {
       setBiometricLoading(true);
       const authResult = await authenticateWithBiometrics('Log in to MyToDoo with ' + biometricTypeLabel);
       if (!authResult.success) {
-        setBiometricLoading(false);
+        console.log('[Biometric] login: prompt not successful:', authResult.code);
+        if (!authResult.cancelled) {
+          Alert.alert(biometricTypeLabel + ' Failed', authResult.error || 'Authentication failed. Please try again or use your password.');
+        }
         return;
       }
       const creds = await getBiometricCredentials();
+      console.log('[Biometric] login: credentials present after scan:', !!creds);
       if (!creds || !creds.email || !creds.password) {
-        Alert.alert('Biometrics', 'No stored biometric credentials found. Please log in with password first.');
-        setBiometricLoading(false);
+        setCanUseBiometrics(false);
+        Alert.alert(
+          biometricTypeLabel + ' Login',
+          'No saved credentials were found on this device. Log in with your password once and ' + biometricTypeLabel + ' sign-in will be set up again.'
+        );
         return;
       }
       setEmail(creds.email);
       setPassword(creds.password);
-      clearCachesOnLogin();
-      await queryClient.clear();
-      await mutateAsync({ username: creds.email.toLowerCase().trim(), password: creds.password.trim() });
-      await queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.all });
-      await queryClient.invalidateQueries({ queryKey: ['chats'] });
-      try {
-        await registerFCMToken();
-      } catch (_) {}
+      // Shared login path (navigation, pending task/action, FCM, cache clearing, error alerts)
+      await handleLogin({ email: creds.email, password: creds.password, viaBiometric: true });
     } catch (err: any) {
-      console.error('Biometric login failed:', err);
+      console.log('[Biometric] login failed:', err?.message);
       Alert.alert('Login Failed', err?.message || 'Biometric login failed. Please enter your password.');
     } finally {
       setBiometricLoading(false);
     }
   };
 
-  const handleLogin = async () => {
+  const handleLogin = async (biometricOverride?: { email: string; password: string; viaBiometric: true }) => {
+    const viaBiometric = !!biometricOverride && biometricOverride.viaBiometric === true;
     // Comprehensive input validation
-    const trimmedEmail = email?.trim() || '';
-    const trimmedPassword = password?.trim() || '';
+    const trimmedEmail = (viaBiometric ? biometricOverride!.email : email)?.trim() || '';
+    const trimmedPassword = (viaBiometric ? biometricOverride!.password : password)?.trim() || '';
 
     // Check for empty fields
     if (!trimmedEmail && !trimmedPassword) {
@@ -624,11 +652,24 @@ export default function LoginScreen() {
       // Use trimmed values for login
       await mutateAsync({ username: trimmedEmail.toLowerCase(), password: trimmedPassword });
       
+      // Keep the Face ID Keychain credentials in sync whenever Face ID is enabled - independent of
+      // the Remember Me checkbox (previously they were only saved when Remember Me was ticked,
+      // so Face ID login had nothing to sign in with) and refreshed after a password change.
+      try {
+        if (await isBiometricLoginEnabled()) {
+          console.log('[Biometric] password login ok - refreshing Keychain credentials');
+          await saveBiometricCredentials(trimmedEmail, trimmedPassword);
+        }
+      } catch (bioErr) {
+        console.warn('[Biometric] could not refresh Keychain credentials:', bioErr);
+      }
+
       // Save or clear credentials based on Remember Me checkbox
-      if (rememberMe) {
+      if (viaBiometric) {
+        // Face ID sign-in must not change the Remember Me preference
+      } else if (rememberMe) {
         console.log('💾 Remember Me is checked, saving credentials...');
         await saveCredentials(trimmedEmail, trimmedPassword);
-        await saveBiometricCredentials(trimmedEmail, trimmedPassword);
       } else {
         console.log('🗑️ Remember Me is unchecked, clearing saved credentials...');
         await clearSavedCredentials();
@@ -713,7 +754,21 @@ export default function LoginScreen() {
       
       // Get error message from backend if available
       const backendMessage = error?.response?.data?.message || error?.response?.data?.error;
-      
+
+      // Face ID sign-in was rejected by the server: the stored password is stale (changed/reset).
+      // Clear it and explain, instead of leaving a button that fails forever.
+      if (viaBiometric && (error?.response?.status === 400 || error?.response?.status === 401)) {
+        console.log('[Biometric] stored credentials rejected by server - clearing');
+        await clearBiometricCredentials();
+        setCanUseBiometrics(false);
+        Alert.alert(
+          'Saved Login Out of Date',
+          'Your saved password is no longer valid (it may have been changed). Please log in with your password once - Face ID sign-in will be set up again automatically.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
       // Show user-friendly error messages based on status code and error details
       if (error?.response?.status === 400 || error?.response?.status === 401) {
         // Check if it's specifically about invalid email format
@@ -1144,7 +1199,7 @@ export default function LoginScreen() {
             <Text style={[styles.forgotPassword, isDarkMode && { color: '#38BDF8' }]}>Forgot Password?</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading || biometricLoading}>
+          <TouchableOpacity style={styles.loginButton} onPress={() => handleLogin()} disabled={loading || biometricLoading}>
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (

@@ -1,5 +1,6 @@
 // context/AuthProvider.tsx
 import { useStorageState } from '@/src/shared/hooks/useStorageState';
+import { clearSessionRestored, markSessionRestored } from '@/src/shared/utils/biometric-auth';
 import { getRememberMeCredentials, tryRememberMeRenew } from '@/src/shared/utils/auth-utils';
 import { getTokenExpiresIn, isTokenExpired } from '@/src/shared/utils/jwt-utils';
 import { useAuthStore } from '@/src/store/auth-task-store';
@@ -106,10 +107,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const liveToken = token || storedToken;
       if (!liveToken || isTokenExpired(liveToken, 300)) {
         console.log('🔄 Remember Me: token missing/expired — silent renew');
+        markSessionRestored(); // cold-start restore => Face ID shield must protect it
         const ok = await tryRememberMeRenew();
         if (ok) {
           const next = useAuthStore.getState().token;
           if (next) setStoredToken(next);
+        } else {
+          clearSessionRestored(); // nothing was restored - a later manual login must not be locked
         }
         return;
       }
@@ -119,6 +123,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           const storedUser = await AsyncStorage.getItem('user');
           const remaining = getTokenExpiresIn(storedToken) ?? undefined;
           const user = storedUser ? JSON.parse(storedUser) : null;
+          markSessionRestored(); // cold-start restore => Face ID shield must protect it
           await useAuthStore.getState().setAuthData(storedToken, user, remaining);
           console.log('✅ Auth state restored from valid JWT');
         } catch (error) {

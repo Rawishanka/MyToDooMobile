@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
@@ -16,10 +17,13 @@ import {
   isBiometricLoginEnabled,
   getBiometricCapability,
   authenticateWithBiometrics,
+  isBiometricPromptActive,
+  consumeSessionRestored,
   BiometricTypeLabel,
 } from '@/src/shared/utils/biometric-auth';
 
-const LOCK_AFTER_MS = 30 * 1000;
+// QA guide: backgrounding the app for more than ~3 seconds must show the shield.
+const LOCK_AFTER_MS = 3 * 1000;
 
 interface BiometricAppLockProps {
   children?: React.ReactNode;
@@ -28,6 +32,7 @@ interface BiometricAppLockProps {
 export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) => {
   const { token, clearAuth } = useAuthStore();
   const { isDarkMode } = useTheme();
+  const router = useRouter();
 
   const [isLocked, setIsLocked] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
@@ -37,38 +42,44 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
   // Guards against infinite loops
   const isAuthenticatingRef = useRef<boolean>(false);
   const lastBackgroundTimeRef = useRef<number>(0);
-  const hasCheckedInitialLaunchRef = useRef<boolean>(false);
+  const hadTokenRef = useRef<boolean>(false);
 
-  // 1. Initial Launch Check (run once when token is present)
+  // 1. Cold-start lock. Only a session that was RESTORED from storage is locked. A session the
+  //    user just created by logging in (password / Face ID / Google / Apple) already proved who
+  //    they are - locking it would show a second, pointless Face ID prompt right after login.
   useEffect(() => {
+    const restored = consumeSessionRestored();
+    const hadToken = hadTokenRef.current;
+    hadTokenRef.current = !!token;
+
     if (!token) {
       setIsLocked(false);
+      setAuthError(null);
       return;
     }
+    if (hadToken) return; // token refresh mid-session, not a new session
 
-    if (hasCheckedInitialLaunchRef.current) return;
-    hasCheckedInitialLaunchRef.current = true;
+    console.log('[Biometric] lock: session appeared, restoredFromStorage =', restored);
+    if (!restored) return;
 
     (async () => {
       try {
         const enabled = await isBiometricLoginEnabled();
-        if (!enabled) {
-          setIsLocked(false);
-          return;
-        }
+        console.log('[Biometric] lock: enabled flag =', enabled);
+        if (!enabled) return;
 
         const cap = await getBiometricCapability();
         if (!cap.canAuthenticate) {
-          setIsLocked(false);
+          console.log('[Biometric] lock: device cannot authenticate - not locking');
           return;
         }
 
         setBiometricType(cap.biometricTypeLabel);
         setIsLocked(true);
-        // Prompt once on launch
-        promptBiometricAuth(cap.biometricTypeLabel);
+        // Let the UI settle: iOS cancels the prompt (app_cancel) if shown while still becoming active
+        setTimeout(() => promptBiometricAuth(cap.biometricTypeLabel), 400);
       } catch (err) {
-        console.warn('⚠️ [BiometricAppLock] Initial check error:', err);
+        console.warn('[Biometric] lock: initial check error:', err);
         setIsLocked(false);
       }
     })();
@@ -77,32 +88,32 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
   // 2. Listen STRICTLY to real background transitions (NOT 'inactive')
   useEffect(() => {
     const handleAppStateChange = async (nextState: AppStateStatus) => {
-      // If currently authenticating (e.g. native Face ID modal is displayed),
-      // iOS temporarily sets state to 'inactive'. NEVER treat this as leaving the app!
-      if (isAuthenticatingRef.current) {
+      // The native Face ID sheet (and Alert.prompt) temporarily sets state to 'inactive'/'active'.
+      // NEVER treat that as leaving the app - neither our own prompt nor another screen's.
+      if (isAuthenticatingRef.current || isBiometricPromptActive()) {
         return;
       }
 
       if (nextState === 'background') {
-        // App was truly sent to background (home screen or other app)
         lastBackgroundTimeRef.current = Date.now();
       } else if (nextState === 'active') {
         const timeInBackground = Date.now() - lastBackgroundTimeRef.current;
-        
-        // Only lock if the app was in the background longer than the grace period
-        // (quick app switches / screen glances should not ask for Face ID again)
-        if (lastBackgroundTimeRef.current > 0 && timeInBackground > LOCK_AFTER_MS) {
+        const wasBackgrounded = lastBackgroundTimeRef.current > 0;
+        lastBackgroundTimeRef.current = 0;
+
+        if (wasBackgrounded && timeInBackground > LOCK_AFTER_MS) {
           if (!token) return;
 
           const enabled = await isBiometricLoginEnabled();
           const cap = enabled ? await getBiometricCapability() : null;
+          console.log('[Biometric] resume after', timeInBackground, 'ms; enabled =', enabled, 'canAuthenticate =', cap?.canAuthenticate);
           if (enabled && cap?.canAuthenticate) {
+            setBiometricType(cap.biometricTypeLabel);
             setIsLocked(true);
             setAuthError(null);
-            promptBiometricAuth(biometricType);
+            setTimeout(() => promptBiometricAuth(cap.biometricTypeLabel), 400);
           }
         }
-        lastBackgroundTimeRef.current = 0;
       }
     };
 
@@ -110,7 +121,7 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
     return () => {
       sub.remove();
     };
-  }, [token, biometricType]);
+  }, [token]);
 
   const promptBiometricAuth = async (label: string = biometricType) => {
     // Prevent duplicate or parallel authentication dialogs
@@ -121,15 +132,21 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
     setAuthError(null);
 
     try {
-      let result = await authenticateWithBiometrics(`Scan your ${label} to unlock MyToDoo`);
+      const message = `Scan your ${label} to unlock MyToDoo`;
+      let result = await authenticateWithBiometrics(message);
       // iOS cancels the prompt if it is shown while the app is still becoming active - retry once.
       if (!result.success && (result.code === 'app_cancel' || result.code === 'system_cancel')) {
+        console.log('[Biometric] lock: prompt auto-cancelled by system, retrying once');
         await new Promise(r => setTimeout(r, 700));
-        result = await authenticateWithBiometrics(`Scan your ${label} to unlock MyToDoo`);
+        result = await authenticateWithBiometrics(message);
       }
+      console.log('[Biometric] lock: prompt outcome', JSON.stringify(result));
       if (result.success) {
         setIsLocked(false);
         setAuthError(null);
+      } else if (result.cancelled) {
+        // Cancel is not an error and must not log the user out. Keep the shield, wait for a tap.
+        setAuthError(`Tap "Unlock with ${label}" to continue.`);
       } else {
         // Stop and wait for user to click button - do NOT auto-retry in a loop!
         setAuthError(result.error || 'Authentication failed. Tap the button below to try again.');
@@ -145,10 +162,19 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
     }
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    // Design: an explicit log out keeps Face ID enabled + its Keychain credentials, so the
+    // login screen still offers "Log in with Face ID" (per QA guide). Disabling is done in
+    // Account > App Preferences.
+    console.log('[Biometric] lock: user chose Log Out');
     setIsLocked(false);
     isAuthenticatingRef.current = false;
-    clearAuth();
+    try {
+      useAuthStore.getState().disableAuth();
+      await clearAuth();
+    } finally {
+      router.replace('/(auth)/login' as any);
+    }
   };
 
   if (!isLocked) {
