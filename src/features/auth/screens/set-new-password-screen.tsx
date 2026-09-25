@@ -9,7 +9,6 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    StatusBar,
     StyleSheet,
     Text,
     TextInput,
@@ -197,13 +196,12 @@ export default function SetNewPasswordScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="light-content" />
       <TouchableOpacity
         style={[styles.backButton, { top: insets.top + 8 }]}
         onPress={() => router.back()}
         hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
       >
-        <Ionicons name="arrow-back" size={28} color="#fff" />
+        <Ionicons name="arrow-back" size={28} color="#333" />
       </TouchableOpacity>
 
       <KeyboardAvoidingView
@@ -222,7 +220,7 @@ export default function SetNewPasswordScreen() {
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={[styles.contentWrapper, isTablet && styles.contentWrapperTablet]}>
         <View style={styles.header}>
-          <Ionicons name="key-outline" size={64} color="#fff" style={styles.keyIcon} />
+          <Ionicons name="key-outline" size={64} color="#007BFF" style={styles.keyIcon} />
           <Text style={styles.title}>Set New Password</Text>
           <Text style={styles.subtitle}>
             Create a strong password for your account.
@@ -236,7 +234,7 @@ export default function SetNewPasswordScreen() {
             value={email}
             onChangeText={setEmail}
             placeholder="Enter your email"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
             editable={!emailParam} // If email comes from URL, make it read-only
@@ -249,7 +247,7 @@ export default function SetNewPasswordScreen() {
               value={password}
               onChangeText={setPassword}
               placeholder="Enter new password"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor="#999"
               secureTextEntry={!showPassword}
               autoCapitalize="none"
             />
@@ -261,7 +259,7 @@ export default function SetNewPasswordScreen() {
               <Ionicons
                 name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                 size={22}
-                color="#64748B"
+                color="#666"
               />
             </TouchableOpacity>
           </View>
@@ -273,7 +271,7 @@ export default function SetNewPasswordScreen() {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder="Confirm new password"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor="#999"
               secureTextEntry={!showConfirmPassword}
               autoCapitalize="none"
             />
@@ -285,7 +283,7 @@ export default function SetNewPasswordScreen() {
               <Ionicons
                 name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
                 size={22}
-                color="#64748B"
+                color="#666"
               />
             </TouchableOpacity>
           </View>
@@ -297,7 +295,7 @@ export default function SetNewPasswordScreen() {
               <Ionicons
                 name={password.length >= 8 ? 'checkmark-circle' : 'ellipse-outline'}
                 size={16}
-                color={password.length >= 8 ? '#86EFAC' : 'rgba(255,255,255,0.6)'}
+                color={password.length >= 8 ? '#28a745' : '#999'}
               />
               <Text style={[styles.requirementText, password.length >= 8 && styles.requirementMet]}>
                 At least 8 characters
@@ -307,7 +305,7 @@ export default function SetNewPasswordScreen() {
               <Ionicons
                 name={/[A-Z]/.test(password) ? 'checkmark-circle' : 'ellipse-outline'}
                 size={16}
-                color={/[A-Z]/.test(password) ? '#86EFAC' : 'rgba(255,255,255,0.6)'}
+                color={/[A-Z]/.test(password) ? '#28a745' : '#999'}
               />
               <Text style={[styles.requirementText, /[A-Z]/.test(password) && styles.requirementMet]}>
                 One uppercase letter
@@ -317,7 +315,7 @@ export default function SetNewPasswordScreen() {
               <Ionicons
                 name={/[a-z]/.test(password) ? 'checkmark-circle' : 'ellipse-outline'}
                 size={16}
-                color={/[a-z]/.test(password) ? '#86EFAC' : 'rgba(255,255,255,0.6)'}
+                color={/[a-z]/.test(password) ? '#28a745' : '#999'}
               />
               <Text style={[styles.requirementText, /[a-z]/.test(password) && styles.requirementMet]}>
                 One lowercase letter
@@ -327,7 +325,7 @@ export default function SetNewPasswordScreen() {
               <Ionicons
                 name={/[0-9]/.test(password) ? 'checkmark-circle' : 'ellipse-outline'}
                 size={16}
-                color={/[0-9]/.test(password) ? '#86EFAC' : 'rgba(255,255,255,0.6)'}
+                color={/[0-9]/.test(password) ? '#28a745' : '#999'}
               />
               <Text style={[styles.requirementText, /[0-9]/.test(password) && styles.requirementMet]}>
                 One number
@@ -358,7 +356,7 @@ export default function SetNewPasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#003399',
+    backgroundColor: '#fff',
   },
   innerContainer: {
     flex: 1,
@@ -379,7 +377,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 18,
     zIndex: 10,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.7)',
     borderRadius: 16,
     padding: 4,
   },
@@ -394,12 +392,12 @@ const styles = StyleSheet.create({
     fontSize: RFValue(28),
     fontWeight: 'bold',
     marginBottom: 12,
-    color: '#fff',
+    color: '#333',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: RFValue(15),
-    color: 'rgba(255,255,255,0.8)',
+    color: '#666',
     textAlign: 'center',
     lineHeight: 22,
     paddingHorizontal: 20,
@@ -409,36 +407,32 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: RFValue(14),
-    color: '#fff',
+    color: '#333',
     marginBottom: 8,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   input: {
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-    borderRadius: 14,
-    backgroundColor: '#fff',
-    color: '#0F172A',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
     paddingHorizontal: 16,
-    paddingVertical: 13,
+    paddingVertical: 12,
     fontSize: RFValue(16),
     marginBottom: 16,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-    borderRadius: 14,
-    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
     marginBottom: 16,
     paddingRight: 8,
   },
   passwordInput: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingVertical: 13,
-    color: '#0F172A',
+    paddingVertical: 12,
     fontSize: RFValue(16),
   },
   passwordToggle: {
@@ -447,17 +441,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   requirementsContainer: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: '#f8f9fa',
     padding: 16,
-    borderRadius: 20,
+    borderRadius: 8,
     marginBottom: 24,
   },
   requirementsTitle: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#fff',
+    color: '#333',
     marginBottom: 10,
   },
   requirement: {
@@ -467,30 +459,21 @@ const styles = StyleSheet.create({
   },
   requirementText: {
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.7)',
+    color: '#999',
     marginLeft: 8,
   },
   requirementMet: {
-    color: '#86EFAC',
+    color: '#28a745',
     fontWeight: '500',
   },
   resetButton: {
-    backgroundColor: '#ff6b35',
-    minHeight: 52,
+    backgroundColor: '#007BFF',
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 8,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#ff6b35',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
   resetButtonDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.22)',
-    shadowOpacity: 0,
-    elevation: 0,
+    backgroundColor: '#99c9ff',
   },
   resetButtonText: {
     color: '#fff',
