@@ -1,6 +1,5 @@
 // Search Bar Component
 
-import { HS } from '@/src/shared/theme/homeStyle';
 import { isTablet, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
@@ -24,12 +23,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <View style={[styles.searchContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <View style={[styles.searchBox, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
-        <Ionicons name="search" size={20} color={isDarkMode ? '#94A3B8' : HS.blue} style={styles.searchIcon} />
+        <Ionicons name="search" size={20} color={isDarkMode ? '#94A3B8' : '#003399'} style={styles.searchIcon} />
         
         <TextInput
           style={[styles.searchInput, isDarkMode && { color: '#F8FAFC' }]}
           placeholder={placeholder}
-          placeholderTextColor={isDarkMode ? '#64748B' : HS.placeholder}
+          placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
           value={searchQuery}
           onChangeText={setSearchQuery}
           autoCapitalize="none"
@@ -51,7 +50,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: isTablet ? wp('12.5%') : 16,
     paddingTop: 14,
     paddingBottom: 12,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   searchBox: {
     flexDirection: 'row',
@@ -59,11 +58,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: HS.inputBorder,
+    borderColor: '#E8ECF4',
     paddingHorizontal: 16,
     height: 48,
-    shadowColor: HS.blue,
-    shadowOpacity: 0.08,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
@@ -74,7 +73,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    color: HS.navy,
+    color: '#0F172A',
     paddingVertical: 0,
   },
   clearButton: {

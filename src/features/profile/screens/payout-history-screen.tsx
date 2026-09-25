@@ -10,9 +10,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { BlueBackdrop, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import { useTheme } from '@/src/shared/theme';
-import { HS } from '@/src/shared/theme/homeStyle';
 
 interface PayoutHistoryScreenProps {
   onNavigate: (screen: string) => void;
@@ -76,7 +75,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
   const pageBg = isDarkMode && { backgroundColor: '#0B1120' };
   const mutedText = isDarkMode && { color: '#94A3B8' };
   const titleText = isDarkMode && { color: '#F8FAFC' };
-  const accent = isDarkMode ? '#38BDF8' : HS.blue;
+  const accent = isDarkMode ? '#38BDF8' : '#FFFFFF';
 
   const refreshBtn = (
     <TouchableOpacity onPress={() => refetch()} style={styles.refreshButton} activeOpacity={0.7}>
@@ -120,6 +119,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
   if (isLoading) {
     return (
       <View style={[styles.container, pageBg]}>
+      <BlueBackdrop />
         <LightHeader title="Payout History" onBack={() => onNavigate('paymentOptions')} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={accent} />
@@ -133,6 +133,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
   if (error?.status === 404 || !payoutData) {
     return (
       <View style={[styles.container, pageBg]}>
+      <BlueBackdrop />
         <LightHeader title="Payout History" onBack={() => onNavigate('paymentOptions')} />
         <View style={styles.emptyState}>
           <View style={[styles.emptyCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
@@ -159,6 +160,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
   if (payoutData.payouts.length === 0) {
     return (
       <View style={[styles.container, pageBg]}>
+      <BlueBackdrop />
         <LightHeader title="Payout History" onBack={() => onNavigate('paymentOptions')} right={refreshBtn} />
         <View style={styles.emptyState}>
           <View style={[styles.emptyCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
@@ -175,6 +177,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
 
   return (
     <View style={[styles.container, pageBg]}>
+      <BlueBackdrop />
       <LightHeader title="Payout History" onBack={() => onNavigate('paymentOptions')} right={refreshBtn} />
 
       <FlatList
@@ -183,7 +186,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
         keyExtractor={(item) => item.payoutId}
         contentContainerStyle={styles.listContainer}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={isDarkMode ? '#38BDF8' : HS.blue} />
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         }
       />
 
@@ -199,7 +202,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#003399',
   },
   refreshButton: {
     width: 40,
@@ -217,7 +220,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
   },
   emptyState: {
     flex: 1,
@@ -229,7 +232,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -237,11 +240,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     marginTop: 20,
-    color: HS.navy,
+    color: '#FFFFFF',
   },
   emptyDescription: {
     fontSize: 14,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     marginTop: 8,
     lineHeight: 20,
@@ -273,17 +276,16 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   payoutItem: {
-    backgroundColor: HS.card,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: 16,
     marginBottom: 14,
-    shadowColor: HS.blue,
+    shadowColor: '#00114D',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
   },
   payoutHeader: {
     flexDirection: 'row',
@@ -299,12 +301,12 @@ const styles = StyleSheet.create({
   payoutAmount: {
     fontSize: 20,
     fontWeight: '800',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   payoutDate: {
     fontSize: 13,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -318,7 +320,7 @@ const styles = StyleSheet.create({
   },
   payoutDescription: {
     fontSize: 14,
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 8,
     lineHeight: 20,
   },
@@ -330,19 +332,19 @@ const styles = StyleSheet.create({
   },
   arrivalText: {
     fontSize: 12,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
   },
   loadMoreContainer: {
     padding: 16,
     paddingBottom: 24,
     alignItems: 'center',
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderTopWidth: 1,
     borderTopColor: '#E8ECF4',
   },
   loadMoreText: {
     fontSize: 12,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
   },
 });
 

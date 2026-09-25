@@ -13,8 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
-import { HS } from '@/src/shared/theme/homeStyle';
+import { BlueBackdrop, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 interface InviteFriendsScreenProps {
   onBack: () => void;
@@ -43,17 +42,18 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
+      <BlueBackdrop />
       <LightHeader title="Invite Friends" onBack={onBack} />
 
       {isLoading && !data ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading referral details...</Text>
         </View>
       ) : error && !data ? (
         <View style={styles.loadingWrap}>
-          <View style={[styles.errorIconWrap, isDarkMode && { backgroundColor: 'transparent' }]}>
-            <Ionicons name="alert-circle-outline" size={38} color={isDarkMode ? '#DC2626' : HS.redText} />
+          <View style={styles.errorIconWrap}>
+            <Ionicons name="alert-circle-outline" size={38} color={isDarkMode ? '#DC2626' : '#FCA5A5'} />
           </View>
           <Text style={[styles.errorText, isDarkMode && { color: '#94A3B8' }]}>Could not load your invite link.</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => refetch()} activeOpacity={0.85}>
@@ -108,17 +108,17 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
           {/* Referral Stats */}
           <View style={styles.statsRow}>
             <View style={[styles.statCard, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
-              <View style={[styles.statIconWrap, { backgroundColor: isDarkMode ? 'rgba(251,191,36,0.18)' : HS.amberBg }]}>
-                <Ionicons name="time-outline" size={18} color={isDarkMode ? '#FBBF24' : HS.amberText} />
+              <View style={[styles.statIconWrap, { backgroundColor: 'rgba(251,191,36,0.18)' }]}>
+                <Ionicons name="time-outline" size={18} color="#FBBF24" />
               </View>
               <Text style={[styles.statValue, isDarkMode && { color: "#F8FAFC" }]}>{data?.pending ?? 0}</Text>
               <Text style={[styles.statLabel, isDarkMode && { color: "#94A3B8" }]}>Pending</Text>
             </View>
             <View style={[styles.statCard, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
-              <View style={[styles.statIconWrap, { backgroundColor: isDarkMode ? 'rgba(74,222,128,0.18)' : HS.greenBg }]}>
-                <Ionicons name="checkmark-circle-outline" size={18} color={isDarkMode ? '#4ADE80' : HS.greenText} />
+              <View style={[styles.statIconWrap, { backgroundColor: 'rgba(74,222,128,0.18)' }]}>
+                <Ionicons name="checkmark-circle-outline" size={18} color="#4ADE80" />
               </View>
-              <Text style={[styles.statValue, { color: isDarkMode ? '#4ADE80' : HS.greenText }]}>{data?.rewarded ?? 0}</Text>
+              <Text style={[styles.statValue, { color: '#4ADE80' }]}>{data?.rewarded ?? 0}</Text>
               <Text style={[styles.statLabel, isDarkMode && { color: "#94A3B8" }]}>Rewarded</Text>
             </View>
           </View>
@@ -148,7 +148,7 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#003399',
   },
   loadingWrap: {
     flex: 1,
@@ -159,19 +159,13 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.85)',
   },
   errorIconWrap: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: HS.tint,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 12,
   },
   errorText: {
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.85)',
     marginBottom: 16,
     fontSize: RFValue(14),
     textAlign: 'center',
@@ -195,17 +189,16 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   heroCard: {
-    backgroundColor: HS.blue,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: HS.blueDeep,
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: 20,
     marginBottom: 14,
-    shadowColor: HS.blue,
-    shadowOpacity: 0.18,
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
   },
   heroBadge: {
     flexDirection: 'row',
@@ -237,40 +230,39 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
   codeCard: {
-    backgroundColor: HS.card,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     padding: 20,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
-    shadowColor: HS.blue,
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
     alignItems: 'center',
   },
   codeCardLabel: {
     fontSize: RFValue(11),
     fontWeight: '700',
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.7)',
     letterSpacing: 0.8,
     marginBottom: 12,
   },
   codePill: {
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.14)',
     borderRadius: 14,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: HS.blue,
+    borderColor: 'rgba(255,255,255,0.55)',
     marginBottom: 16,
   },
   codeText: {
     fontSize: RFValue(26),
     fontWeight: '800',
-    color: HS.blue,
+    color: '#FFFFFF',
     letterSpacing: 2,
   },
   urlContainer: {
@@ -280,21 +272,21 @@ const styles = StyleSheet.create({
   urlLabel: {
     fontSize: RFValue(11),
     fontWeight: '700',
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.7)',
     letterSpacing: 0.6,
     marginBottom: 6,
   },
   urlBox: {
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.14)',
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   urlText: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.9)',
   },
   shareButton: {
     width: '100%',
@@ -323,16 +315,15 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: HS.card,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     padding: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: HS.cardBorder,
-    shadowColor: HS.blue,
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
 
   },
@@ -347,31 +338,30 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: RFValue(20),
     fontWeight: '800',
-    color: HS.navy,
+    color: '#FFFFFF',
   },
   statLabel: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 2,
     fontWeight: '500',
   },
   infoCard: {
-    backgroundColor: HS.card,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     padding: 18,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
-    shadowColor: HS.blue,
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
 
   },
   infoTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 14,
   },
   infoStep: {
@@ -384,7 +374,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: HS.blue,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -396,7 +386,7 @@ const styles = StyleSheet.create({
   stepText: {
     flex: 1,
     fontSize: 13,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.8)',
     lineHeight: 19,
   },
 });

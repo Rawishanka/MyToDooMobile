@@ -9,8 +9,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
-import { HS } from '@/src/shared/theme/homeStyle';
+import { BRAND_ORANGE, CARD_BG, CARD_TEXT } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PayoutAccountRequiredModalProps {
@@ -135,7 +134,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: HS.tint,
+    backgroundColor: '#E3F2FD',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -143,13 +142,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(22),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0D1B2A',
     textAlign: 'center',
     marginBottom: 12,
   },
   description: {
     fontSize: RFValue(15),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -157,9 +156,7 @@ const styles = StyleSheet.create({
   },
   stepsContainer: {
     width: '100%',
-    backgroundColor: HS.tint,
-    borderWidth: 1,
-    borderColor: HS.tintBorder,
+    backgroundColor: CARD_BG,
     borderRadius: 14,
     padding: 16,
     marginBottom: 24,
@@ -186,7 +183,7 @@ const styles = StyleSheet.create({
   stepText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: HS.navy,
+    color: CARD_TEXT,
     fontWeight: '500',
   },
   buttonsContainer: {
@@ -217,11 +214,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: HS.blue,
+    borderColor: '#CBD5E1',
     backgroundColor: '#fff',
   },
   secondaryButtonText: {
-    color: HS.blue,
+    color: '#475569',
     fontSize: RFValue(16),
     fontWeight: '600',
     textAlign: 'center',

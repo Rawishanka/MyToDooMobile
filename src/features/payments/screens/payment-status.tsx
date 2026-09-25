@@ -24,7 +24,6 @@ import {
 
 // Hooks
 import { usePaymentStatus } from './status/hooks';
-import { HS } from '@/src/shared/theme/homeStyle';
 import { BRAND_BLUE, CARD_TEXT } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -109,7 +108,7 @@ export default function PaymentStatusScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   header: {
     flexDirection: 'row',

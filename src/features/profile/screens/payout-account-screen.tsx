@@ -20,8 +20,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
-import { HS } from '@/src/shared/theme/homeStyle';
+import { BlueBackdrop, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 const PayoutAccountScreen = ({ navigation }: any) => {
   const { isDarkMode } = useTheme();
@@ -263,6 +262,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
   if (showWebView && onboardingUrl) {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
+      <BlueBackdrop />
         <LightHeader
           title="Setup Payout Account"
           backIcon="close"
@@ -290,9 +290,10 @@ const PayoutAccountScreen = ({ navigation }: any) => {
   if (isLoading) {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
+      <BlueBackdrop />
         <LightHeader title="Payout Account" onBack={() => navigation.goBack()} />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading account status...</Text>
         </View>
       </View>
@@ -301,6 +302,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
+      <BlueBackdrop />
       {/* Header */}
       <LightHeader title="Payout Account" onBack={() => navigation.goBack()} />
 
@@ -311,7 +313,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
 
         {!loadingAbn && !abnVerified && (
           <View style={styles.abnGateCard}>
-            <Ionicons name="information-circle-outline" size={20} color={isDarkMode ? "#FBBF24" : HS.amberText} />
+            <Ionicons name="information-circle-outline" size={20} color="#FBBF24" />
             <Text style={styles.abnGateText}>
               Verify your ABN above before setting up payouts.
             </Text>
@@ -322,7 +324,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
         {accountNotFound && (
           <View style={styles.emptyState}>
             <View style={[styles.emptyCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-              <Ionicons name="wallet-outline" size={40} color={isDarkMode ? '#38BDF8' : HS.blue} />
+              <Ionicons name="wallet-outline" size={40} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
             </View>
             <Text style={[styles.emptyTitle, isDarkMode && { color: '#F8FAFC' }]}>No Payout Account</Text>
             <Text style={[styles.emptyDescription, isDarkMode && { color: '#94A3B8' }]}>
@@ -370,21 +372,21 @@ const PayoutAccountScreen = ({ navigation }: any) => {
               {/* Account Details */}
               {accountStatus.detailsSubmitted && (
                 <View style={styles.detailRow}>
-                  <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? "#4ADE80" : HS.greenText} />
+                  <Ionicons name="checkmark-circle" size={20} color="#4ADE80" />
                   <Text style={[styles.detailText, isDarkMode && { color: "#F8FAFC" }]}>Details Submitted</Text>
                 </View>
               )}
 
               {accountStatus.chargesEnabled && (
                 <View style={styles.detailRow}>
-                  <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? "#4ADE80" : HS.greenText} />
+                  <Ionicons name="checkmark-circle" size={20} color="#4ADE80" />
                   <Text style={[styles.detailText, isDarkMode && { color: "#F8FAFC" }]}>Charges Enabled</Text>
                 </View>
               )}
 
               {accountStatus.payoutsEnabled && (
                 <View style={styles.detailRow}>
-                  <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? "#4ADE80" : HS.greenText} />
+                  <Ionicons name="checkmark-circle" size={20} color="#4ADE80" />
                   <Text style={[styles.detailText, isDarkMode && { color: "#F8FAFC" }]}>Payouts Enabled</Text>
                 </View>
               )}
@@ -401,7 +403,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
             {/* Info Messages */}
             {accountStatus.status === 'pending' && (
               <View style={styles.infoBox}>
-                <Ionicons name="information-circle" size={20} color={isDarkMode ? "#FBBF24" : HS.amberText} />
+                <Ionicons name="information-circle" size={20} color="#FBBF24" />
                 <Text style={styles.infoText}>
                   Your account is pending verification. This may take a few minutes.
                 </Text>
@@ -410,7 +412,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
 
             {accountStatus.status === 'restricted' && (
               <View style={[styles.infoBox, styles.warningBox]}>
-                <Ionicons name="warning" size={20} color={isDarkMode ? "#FCA5A5" : HS.redText} />
+                <Ionicons name="warning" size={20} color="#FCA5A5" />
                 <Text style={styles.warningText}>
                   Your account is restricted. Please complete the onboarding process.
                 </Text>
@@ -443,22 +445,22 @@ const PayoutAccountScreen = ({ navigation }: any) => {
                 activeOpacity={0.85}
                 onPress={() => refetch()}
               >
-                <Ionicons name="refresh-outline" size={20} color={isDarkMode ? "#38BDF8" : HS.blue} />
+                <Ionicons name="refresh-outline" size={20} color={isDarkMode ? "#38BDF8" : "#FFFFFF"} />
                 <Text style={[styles.secondaryButtonText, isDarkMode && { color: "#38BDF8" }]}>Refresh Status</Text>
               </TouchableOpacity>
 
               {/* Delete Account */}
               <TouchableOpacity
-                style={[styles.dangerButton, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#FCA5A5" }]}
+                style={[styles.dangerButton, isDarkMode && { backgroundColor: "#1E293B" }]}
                 onPress={handleDeleteAccount}
                 disabled={deleteAccount.isPending}
               >
                 {deleteAccount.isPending ? (
-                  <ActivityIndicator color={isDarkMode ? "#FCA5A5" : HS.redText} />
+                  <ActivityIndicator color="#FCA5A5" />
                 ) : (
                   <>
-                    <Ionicons name="trash-outline" size={20} color={isDarkMode ? "#FCA5A5" : HS.redText} />
-                    <Text style={[styles.dangerButtonText, isDarkMode && { color: "#FCA5A5" }]}>Delete Account</Text>
+                    <Ionicons name="trash-outline" size={20} color="#FCA5A5" />
+                    <Text style={styles.dangerButtonText}>Delete Account</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -481,7 +483,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#003399',
   },
   content: {
     flex: 1,
@@ -496,7 +498,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
   },
   emptyState: {
     flex: 1,
@@ -508,7 +510,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -516,18 +518,18 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     marginTop: 20,
-    color: HS.navy,
+    color: '#FFFFFF',
   },
   emptyDescription: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     marginTop: 8,
     lineHeight: 20,
   },
   emptyInfo: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     marginTop: 16,
   },
@@ -556,8 +558,8 @@ const styles = StyleSheet.create({
     gap: 8,
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderColor: HS.amberText,
-    backgroundColor: HS.amberBg,
+    borderColor: '#FBBF24',
+    backgroundColor: 'rgba(251,191,36,0.18)',
     borderRadius: 14,
     padding: 12,
     marginBottom: 14,
@@ -565,7 +567,7 @@ const styles = StyleSheet.create({
   abnGateText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.9)',
     lineHeight: 18,
   },
   primaryButtonText: {
@@ -577,17 +579,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statusCard: {
-    backgroundColor: HS.card,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: 20,
     marginBottom: 14,
-    shadowColor: HS.blue,
+    shadowColor: '#00114D',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
   },
   statusHeader: {
     flexDirection: 'row',
@@ -598,7 +599,7 @@ const styles = StyleSheet.create({
   statusLabel: {
     fontSize: 17,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -618,7 +619,7 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: RFValue(14),
-    color: HS.navy,
+    color: '#FFFFFF',
   },
   accountIdContainer: {
     marginTop: 16,
@@ -628,17 +629,17 @@ const styles = StyleSheet.create({
   },
   accountIdLabel: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     marginBottom: 4,
   },
   accountIdText: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
   infoBox: {
     flexDirection: 'row',
-    backgroundColor: HS.amberBg,
+    backgroundColor: 'rgba(251,191,36,0.18)',
     padding: 14,
     borderRadius: 14,
     marginBottom: 14,
@@ -647,16 +648,16 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.9)',
     lineHeight: 18,
   },
   warningBox: {
-    backgroundColor: HS.redBg,
+    backgroundColor: 'rgba(252,165,165,0.18)',
   },
   warningText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: HS.redText,
+    color: '#FCA5A5',
     lineHeight: 18,
   },
   actionButtons: {
@@ -666,16 +667,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: HS.blue,
+    borderColor: '#FFFFFF',
     paddingHorizontal: 24,
     borderRadius: 14,
     height: 52,
     gap: 8,
   },
   secondaryButtonText: {
-    color: HS.blue,
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -683,23 +684,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: HS.redText,
+    borderColor: '#FCA5A5',
     paddingHorizontal: 24,
     borderRadius: 14,
     height: 52,
     gap: 8,
   },
   dangerButtonText: {
-    color: HS.redText,
+    color: '#FCA5A5',
     fontSize: 16,
     fontWeight: '700',
   },
   payoutInfo: {
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: 16,
     borderRadius: 20,
     marginTop: 14,
@@ -707,12 +708,12 @@ const styles = StyleSheet.create({
   payoutInfoTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   payoutInfoText: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     lineHeight: 18,
   },
 });

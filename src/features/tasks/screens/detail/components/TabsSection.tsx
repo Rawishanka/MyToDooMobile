@@ -1,4 +1,4 @@
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import React from 'react';
 import { useTheme } from '@/src/shared/theme';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -22,7 +22,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({ activeTab, onTabChange
         <Ionicons
           name="pricetag-outline"
           size={16}
-          color={activeTab === 'offers' ? (isDarkMode ? '#38BDF8' : '#FFFFFF') : (isDarkMode ? '#94A3B8' : HS.navy)}
+          color={activeTab === 'offers' ? (isDarkMode ? '#38BDF8' : '#003399') : (isDarkMode ? '#94A3B8' : CARD_TEXT)}
         />
         <Text style={[styles.tabText, isDarkMode && { color: '#94A3B8' }, activeTab === 'offers' && (isDarkMode ? { color: '#38BDF8', fontWeight: '700' } : styles.activeTabText)]}>
           Offers
@@ -37,7 +37,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({ activeTab, onTabChange
         <Ionicons
           name="chatbubbles-outline"
           size={16}
-          color={activeTab === 'questions' ? (isDarkMode ? '#38BDF8' : '#FFFFFF') : (isDarkMode ? '#94A3B8' : HS.navy)}
+          color={activeTab === 'questions' ? (isDarkMode ? '#38BDF8' : '#003399') : (isDarkMode ? '#94A3B8' : CARD_TEXT)}
         />
         <Text style={[styles.tabText, isDarkMode && { color: '#94A3B8' }, activeTab === 'questions' && (isDarkMode ? { color: '#38BDF8', fontWeight: '700' } : styles.activeTabText)]}>
           Questions
@@ -50,12 +50,19 @@ export const TabsSection: React.FC<TabsSectionProps> = ({ activeTab, onTabChange
 const styles = StyleSheet.create({
   tabsContainer: {
     flexDirection: 'row',
-    ...homeCard,
+    backgroundColor: CARD_BG,
     borderRadius: 16,
     padding: 5,
     marginTop: 16,
     marginBottom: 16,
     gap: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
   },
   tabBtn: {
     flex: 1,
@@ -67,15 +74,20 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   activeTabBtn: {
-    backgroundColor: HS.blue,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   tabText: {
     fontSize: RFValue(14),
-    color: HS.navy,
+    color: CARD_TEXT_MUTED,
     fontWeight: '600',
   },
   activeTabText: {
-    color: '#FFFFFF',
+    color: '#003399',
     fontWeight: '700',
   },
 });

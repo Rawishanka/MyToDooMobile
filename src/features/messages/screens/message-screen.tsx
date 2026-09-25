@@ -7,7 +7,6 @@
 // ✅ Local storage integration for message previews
 // ✅ Pull-to-refresh functionality
 
-import { HS } from '@/src/shared/theme/homeStyle';
 import { hp, isTablet, RFValue, TAB_BAR_CLEARANCE, wp } from '@/src/shared/utils/responsive';
 import { formatAvatarName } from '@/src/utils/formatUserName';
 import { Ionicons } from '@expo/vector-icons';
@@ -313,7 +312,7 @@ const MessageScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <StatusBar barStyle="light-content" backgroundColor={HS.blue} />
+      <StatusBar barStyle="light-content" backgroundColor="#003399" />
       
       {/* Offline Banner */}
       <OfflineBanner />
@@ -347,7 +346,7 @@ const MessageScreen: React.FC = () => {
       {/* Messages List */}
       {isLoadingChats ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading chats...</Text>
         </View>
       ) : (
@@ -366,8 +365,8 @@ const MessageScreen: React.FC = () => {
             <RefreshControl
               refreshing={isLoadingChats}
               onRefresh={handleRefresh}
-              colors={[HS.blue]}
-              tintColor={HS.blue}
+              colors={['#003399']}
+              tintColor="#003399"
             />
           }
           ListEmptyComponent={() => (
@@ -376,7 +375,7 @@ const MessageScreen: React.FC = () => {
                 <Ionicons
                   name={chatError ? 'cloud-offline-outline' : 'chatbubbles-outline'}
                   size={40}
-                  color={isDarkMode ? '#38BDF8' : HS.blue}
+                  color={isDarkMode ? '#38BDF8' : '#003399'}
                 />
               </View>
               <Text style={[styles.emptyText, isDarkMode && { color: '#F8FAFC' }]}>
@@ -428,7 +427,7 @@ const MessageScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   header: {
     flexDirection: 'row',
@@ -437,7 +436,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     paddingTop: isTablet ? hp('6%') : hp('6.5%'),
     paddingBottom: isTablet ? hp('2%') : hp('2%'),
-    backgroundColor: HS.blue,
+    backgroundColor: '#003399',
   },
   headerTitle: {
     fontSize: RFValue(isTablet ? 18 : 22),
@@ -457,12 +456,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -4,
-    backgroundColor: HS.orange,
+    backgroundColor: '#ff6b35',
     borderRadius: 10,
     minWidth: 20,
     height: 20,
     borderWidth: 1.5,
-    borderColor: HS.blue,
+    borderColor: '#003399',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
@@ -485,7 +484,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(isTablet ? 18 : 16),
-    color: HS.muted,
+    color: '#64748B',
     marginTop: 12,
   },
   emptyContainer: {
@@ -498,20 +497,20 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(0,51,153,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyText: {
     fontSize: 18,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0F172A',
     marginTop: 16,
     textAlign: 'center',
   },
   emptySubText: {
     fontSize: 14,
-    color: HS.muted,
+    color: '#64748B',
     marginTop: 6,
     textAlign: 'center',
     paddingHorizontal: 32,
@@ -520,11 +519,11 @@ const styles = StyleSheet.create({
     marginTop: isTablet ? hp('2%') : hp('2%'),
     paddingHorizontal: isTablet ? wp('5%') : wp('5%'),
     paddingVertical: isTablet ? hp('1.5%') : hp('1.2%'),
-    backgroundColor: HS.orange,
+    backgroundColor: '#ff6b35',
     borderRadius: 14,
     height: 48,
     justifyContent: 'center',
-    shadowColor: HS.orange,
+    shadowColor: '#ff6b35',
     shadowOpacity: 0.3,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },

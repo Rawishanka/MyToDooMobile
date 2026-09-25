@@ -1,4 +1,4 @@
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
+import { CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
@@ -27,9 +27,17 @@ export default function TaskSummaryHeader({ title, budget, offerCount }: TaskSum
 const styles = StyleSheet.create({
   taskSummary: {
     flexDirection: 'row',
-    ...homeCard,
+    backgroundColor: CARD_BG,
     padding: 18,
     marginBottom: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   taskInfo: {
     flex: 1,
@@ -38,13 +46,13 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: HS.navy,
+    color: CARD_TEXT,
     marginBottom: 4,
   },
   taskBudget: {
     fontSize: RFValue(14),
-    color: HS.blue,
-    fontWeight: '600',
+    color: CARD_TEXT,
+    fontWeight: '500',
   },
   offerStats: {
     alignItems: 'center',
@@ -52,11 +60,11 @@ const styles = StyleSheet.create({
   offerCount: {
     fontSize: 26,
     fontWeight: '700',
-    color: HS.blue,
+    color: CARD_TEXT,
   },
   offerLabel: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: CARD_TEXT_MUTED,
     marginTop: 2,
   },
 });

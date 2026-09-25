@@ -8,7 +8,6 @@ import {
   View,
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { HS } from '@/src/shared/theme/homeStyle';
 import { useTheme } from '@/src/shared/theme';
 
 interface SortModalProps {
@@ -59,12 +58,12 @@ export default function SortModal({
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <View style={[styles.headerIconWrap, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                <Ionicons name="funnel-outline" size={18} color={isDarkMode ? '#94A3B8' : HS.blue} />
+                <Ionicons name="funnel-outline" size={18} color="#003399" />
               </View>
               <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Sort By</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={[styles.closeBtn, isDarkMode && { backgroundColor: '#0F172A' }]}>
-              <Ionicons name="close" size={20} color={isDarkMode ? '#94A3B8' : HS.muted} />
+              <Ionicons name="close" size={20} color="#6B7280" />
             </TouchableOpacity>
           </View>
 
@@ -102,7 +101,7 @@ export default function SortModal({
                     <Ionicons
                       name={iconName as any}
                       size={18}
-                      color={isActive ? '#fff' : (isDarkMode ? '#94A3B8' : HS.blue)}
+                      color={isActive ? '#fff' : (isDarkMode ? '#94A3B8' : '#6B7280')}
                     />
                   </View>
                   <Text style={[
@@ -149,7 +148,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 4,
     borderRadius: 2,
-    backgroundColor: HS.tintStrong,
+    backgroundColor: '#E8ECF4',
     alignSelf: 'center',
     marginTop: 12,
     marginBottom: 8,
@@ -170,27 +169,27 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 10,
-    backgroundColor: HS.tint,
+    backgroundColor: '#EEF2FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#1A1D2E',
     letterSpacing: -0.3,
   },
   closeBtn: {
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: HS.tint,
+    backgroundColor: '#F4F6FB',
     justifyContent: 'center',
     alignItems: 'center',
   },
   divider: {
     height: 1,
-    backgroundColor: HS.cardBorder,
+    backgroundColor: '#F0F2F8',
     marginHorizontal: 20,
   },
   scroll: {
@@ -209,33 +208,33 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginVertical: 3,
     gap: 14,
-    backgroundColor: HS.card,
+    backgroundColor: '#FAFBFF',
     borderWidth: 1,
-    borderColor: HS.cardBorder,
+    borderColor: '#F0F2F8',
   },
   optionActive: {
-    backgroundColor: HS.tint,
-    borderColor: HS.blue,
+    backgroundColor: '#EEF2FF',
+    borderColor: '#C7D2FE',
   },
   optionIconWrap: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: HS.tint,
+    backgroundColor: '#F0F2F8',
     justifyContent: 'center',
     alignItems: 'center',
   },
   optionIconWrapActive: {
-    backgroundColor: HS.blue,
+    backgroundColor: '#003399',
   },
   optionText: {
     flex: 1,
     fontSize: RFValue(15),
-    color: HS.text,
+    color: '#4B5563',
     fontWeight: '500',
   },
   optionTextActive: {
-    color: HS.blue,
+    color: '#003399',
     fontWeight: '700',
   },
   checkWrap: {

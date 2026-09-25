@@ -19,8 +19,16 @@ import type { ServiceListing } from '@/src/api/service-listing-api';
 import { useGetCategoriesWithAll } from '@/src/shared/hooks/useCategoriesApi';
 import { useSearchServiceListings } from '@/src/shared/hooks/useServiceListingApi';
 import ServiceListingDetailScreen from './service-listing-detail-screen';
-import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
-import { HS, homeCard, homeHero } from '@/src/shared/theme/homeStyle';
+import {
+  BRAND_ORANGE,
+  CARD_BG,
+  CARD_CHIP_BG,
+  CARD_DIVIDER,
+  CARD_PRICE_BG,
+  CARD_PRICE_TEXT,
+  CARD_TEXT,
+  CARD_TEXT_MUTED,
+} from '@/src/shared/theme/brandColors';
 
 // Components
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
@@ -360,7 +368,7 @@ export default function BrowseTasksScreen() {
             <View
               style={[
                 styles.serviceAvatar,
-                isDarkMode ? { borderColor: '#7C2D12' } : { borderColor: HS.tintBorder, backgroundColor: HS.blue, shadowColor: HS.blue },
+                isDarkMode ? { borderColor: '#7C2D12' } : { borderColor: 'rgba(255,255,255,0.5)' },
               ]}
             >
               <Text style={styles.serviceAvatarText}>{initials}</Text>
@@ -371,7 +379,7 @@ export default function BrowseTasksScreen() {
               <Text
                 style={[
                   styles.serviceTitle,
-                  isDarkMode ? { color: '#F8FAFC' } : { color: HS.navy },
+                  isDarkMode ? { color: '#F8FAFC' } : { color: CARD_TEXT },
                 ]}
                 numberOfLines={2}
               >
@@ -384,15 +392,15 @@ export default function BrowseTasksScreen() {
                   style={[
                     styles.serviceIconBadge,
                     styles.locationIconBadge,
-                    isDarkMode ? { backgroundColor: '#0F172A' } : { backgroundColor: HS.tint },
+                    isDarkMode ? { backgroundColor: '#0F172A' } : { backgroundColor: CARD_CHIP_BG },
                   ]}
                 >
-                  <Ionicons name="location-sharp" size={14} color={isDarkMode ? '#0284C7' : HS.blue} />
+                  <Ionicons name="location-sharp" size={14} color={isDarkMode ? '#0284C7' : CARD_TEXT} />
                 </View>
                 <Text
                   style={[
                     styles.serviceMeta,
-                    isDarkMode ? { color: '#94A3B8' } : { color: HS.text },
+                    isDarkMode ? { color: '#94A3B8' } : { color: CARD_TEXT_MUTED },
                   ]}
                   numberOfLines={1}
                 >
@@ -407,14 +415,14 @@ export default function BrowseTasksScreen() {
                             backgroundColor: '#1E1B4B',
                             borderColor: '#312E81',
                           }
-                        : { backgroundColor: HS.tint, borderColor: HS.tintBorder },
+                        : { backgroundColor: CARD_CHIP_BG, borderColor: CARD_DIVIDER },
                     ]}
                   >
-                    <Ionicons name="navigate-outline" size={12} color={isDarkMode ? '#818CF8' : HS.blue} />
+                    <Ionicons name="navigate-outline" size={12} color={isDarkMode ? '#818CF8' : CARD_TEXT} />
                     <Text
                       style={[
                         styles.radiusText,
-                        isDarkMode ? { color: '#A5B4FC' } : { color: HS.blue },
+                        isDarkMode ? { color: '#A5B4FC' } : { color: CARD_TEXT },
                       ]}
                     >
                       {item.radiusKm} km
@@ -428,7 +436,7 @@ export default function BrowseTasksScreen() {
                 <Text
                   style={[
                     styles.serviceDescription,
-                    isDarkMode ? { color: '#CBD5E1' } : { color: HS.muted },
+                    isDarkMode ? { color: '#CBD5E1' } : { color: CARD_TEXT_MUTED },
                   ]}
                   numberOfLines={2}
                 >
@@ -442,7 +450,7 @@ export default function BrowseTasksScreen() {
           <View
             style={[
               styles.serviceCardBottom,
-              { borderTopColor: isDarkMode ? '#334155' : HS.cardBorder },
+              { borderTopColor: isDarkMode ? '#334155' : CARD_DIVIDER },
             ]}
           >
             <View
@@ -453,13 +461,13 @@ export default function BrowseTasksScreen() {
                       backgroundColor: '#064E3B',
                       borderColor: '#047857',
                     }
-                  : { backgroundColor: HS.tint, borderColor: HS.tintBorder },
+                  : { backgroundColor: CARD_PRICE_BG, borderColor: CARD_PRICE_BG },
               ]}
             >
               <Text
                 style={[
                   styles.servicePriceLabel,
-                  isDarkMode ? { color: '#A7F3D0' } : { color: HS.blue },
+                  isDarkMode ? { color: '#A7F3D0' } : { color: CARD_PRICE_TEXT },
                 ]}
               >
                 From
@@ -467,7 +475,7 @@ export default function BrowseTasksScreen() {
               <Text
                 style={[
                   styles.servicePrice,
-                  isDarkMode ? { color: '#34D399' } : { color: HS.blue },
+                  isDarkMode ? { color: '#34D399' } : { color: CARD_PRICE_TEXT },
                 ]}
               >
                 ${Number(item.price).toFixed(0)}
@@ -475,7 +483,7 @@ export default function BrowseTasksScreen() {
               <Text
                 style={[
                   styles.serviceCurrency,
-                  isDarkMode ? { color: '#A7F3D0' } : { color: HS.blue },
+                  isDarkMode ? { color: '#A7F3D0' } : { color: CARD_PRICE_TEXT },
                 ]}
               >
                 {item.currency || 'AUD'}
@@ -648,7 +656,7 @@ export default function BrowseTasksScreen() {
         !isConnected ? (
           <View style={styles.errorContainer}>
             <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-              <Ionicons name="cloud-offline-outline" size={40} color={isDarkMode ? '#FCA5A5' : HS.redText} />
+              <Ionicons name="cloud-offline-outline" size={40} color="#FCA5A5" />
             </View>
             <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>No Internet Connection</Text>
             <TouchableOpacity style={styles.retryButton} onPress={() => refetchServices()}>
@@ -660,7 +668,7 @@ export default function BrowseTasksScreen() {
         ) : servicesError ? (
           <View style={styles.errorContainer}>
             <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-              <Ionicons name="alert-circle-outline" size={40} color={isDarkMode ? '#FCA5A5' : HS.redText} />
+              <Ionicons name="alert-circle-outline" size={40} color="#FCA5A5" />
             </View>
             <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>Failed to load services</Text>
             <Text style={[styles.errorSubtext, isDarkMode && { color: '#94A3B8' }]}>
@@ -673,7 +681,7 @@ export default function BrowseTasksScreen() {
         ) : serviceListings.length === 0 ? (
           <View style={styles.emptyState}>
             <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-              <Ionicons name="construct-outline" size={40} color={isDarkMode ? '#FFFFFF' : HS.blue} />
+              <Ionicons name="construct-outline" size={40} color="#FFFFFF" />
             </View>
             <Text style={[styles.emptyText, isDarkMode && { color: '#F8FAFC' }]}>No services found nearby</Text>
             <Text style={[styles.emptySubtext, isDarkMode && { color: '#94A3B8' }]}>
@@ -763,7 +771,7 @@ export default function BrowseTasksScreen() {
           {!isConnected ? (
             <View style={styles.errorContainer}>
               <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-              <Ionicons name="cloud-offline-outline" size={40} color={isDarkMode ? '#FCA5A5' : HS.redText} />
+              <Ionicons name="cloud-offline-outline" size={40} color="#FCA5A5" />
             </View>
               <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>No Internet Connection</Text>
               <Text style={[styles.errorSubtext, isDarkMode && { color: '#94A3B8' }]}>
@@ -778,7 +786,7 @@ export default function BrowseTasksScreen() {
           ) : error ? (
             <View style={styles.errorContainer}>
               <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-              <Ionicons name="alert-circle-outline" size={40} color={isDarkMode ? '#FCA5A5' : HS.redText} />
+              <Ionicons name="alert-circle-outline" size={40} color="#FCA5A5" />
             </View>
               <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>Failed to load tasks</Text>
               <Text style={[styles.errorSubtext, isDarkMode && { color: '#94A3B8' }]}>
@@ -791,7 +799,7 @@ export default function BrowseTasksScreen() {
           ) : filteredAndSortedTasks.length === 0 ? (
             <View style={styles.emptyState}>
               <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                <Ionicons name="search-outline" size={40} color={isDarkMode ? '#FFFFFF' : HS.blue} />
+                <Ionicons name="search-outline" size={40} color="#FFFFFF" />
               </View>
               <Text style={[styles.emptyText, isDarkMode && { color: '#F8FAFC' }]}>
                 {searchText.trim() 
@@ -922,7 +930,7 @@ export default function BrowseTasksScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
     paddingTop: 0,
   },
   header: {
@@ -959,14 +967,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   segmentedContainer: {
-    ...homeHero,
+    backgroundColor: '#003399',
     paddingHorizontal: isTablet ? wp('12.5%') : 16,
     paddingBottom: 14,
     paddingTop: 4,
   },
   segmentedTrack: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    backgroundColor: 'rgba(5, 18, 55, 0.45)',
     borderRadius: 30,
     padding: 4,
     borderWidth: 1,
@@ -1005,28 +1013,41 @@ const styles = StyleSheet.create({
   },
   // ─── Service Card ─────────────────────────────────────────────────────────
   serviceCard: {
-    ...homeCard,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     marginBottom: 12,
     marginTop: 0,
     overflow: 'hidden',
     flexDirection: 'row',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
   },
   serviceCardBlue: {
-    backgroundColor: HS.card,
-    borderColor: HS.cardBorder,
+    backgroundColor: CARD_BG,
+    borderColor: 'rgba(255,255,255,0.14)',
   },
   stateIconCircle: {
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: HS.tint,
+    backgroundColor: '#003399',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   serviceAccentStrip: {
-    width: 4,
-    backgroundColor: HS.blue,
+    width: 4.5,
+    backgroundColor: '#FF6B00',
   },
   serviceCardInner: {
     flex: 1,
@@ -1043,13 +1064,13 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: HS.blue,
+    backgroundColor: '#FF6B00',
     borderWidth: 2,
-    borderColor: HS.tintBorder,
+    borderColor: '#FFE2D1',
     justifyContent: 'center',
     alignItems: 'center',
     flexShrink: 0,
-    shadowColor: HS.blue,
+    shadowColor: '#FF6B00',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.18,
     shadowRadius: 4,
@@ -1067,7 +1088,7 @@ const styles = StyleSheet.create({
   serviceTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0F172A',
     marginBottom: 6,
     lineHeight: RFValue(21),
   },
@@ -1086,11 +1107,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   locationIconBadge: {
-    backgroundColor: HS.tint,
+    backgroundColor: '#EFF6FF',
   },
   serviceMeta: {
     fontSize: RFValue(12.5),
-    color: HS.text,
+    color: '#475569',
     fontWeight: '500',
     flexShrink: 1,
   },
@@ -1098,9 +1119,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: HS.tint,
+    backgroundColor: '#EEF2FF',
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: '#E0E7FF',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
@@ -1112,7 +1133,7 @@ const styles = StyleSheet.create({
   },
   serviceDescription: {
     fontSize: RFValue(13),
-    color: HS.muted,
+    color: '#64748B',
     lineHeight: RFValue(18),
   },
   serviceCardBottom: {
@@ -1121,34 +1142,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: HS.cardBorder,
+    borderTopColor: '#F1F5F9',
   },
   servicePriceBadge: {
     flexDirection: 'row',
     alignItems: 'baseline',
     gap: 3.5,
-    backgroundColor: HS.tint,
+    backgroundColor: '#F0FDF4',
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: '#DCFCE7',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   servicePriceLabel: {
     fontSize: RFValue(11),
-    color: HS.blue,
+    color: '#16A34A',
     fontWeight: '600',
     textTransform: 'uppercase',
   },
   servicePrice: {
     fontSize: RFValue(17),
     fontWeight: '800',
-    color: HS.blue,
+    color: '#15803D',
   },
   serviceCurrency: {
     fontSize: RFValue(11.5),
     fontWeight: '600',
-    color: HS.blue,
+    color: '#16A34A',
   },
   serviceActionBtn: {
     flexDirection: 'row',
@@ -1195,13 +1216,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: isTablet ? wp('12.5%') : 16,
     paddingVertical: 12,
-    backgroundColor: HS.tint,
+    backgroundColor: '#EEF2FF',
     borderBottomWidth: 1,
-    borderBottomColor: HS.tintBorder,
+    borderBottomColor: '#E8ECF4',
   },
   searchResultsText: {
     fontSize: RFValue(13),
-    color: HS.blue,
+    color: '#003399',
     fontWeight: '600',
     flex: 1,
   },
@@ -1212,7 +1233,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: isTablet ? wp('12.5%') : 16,
     paddingTop: 16,
     paddingBottom: 12,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   mapContainer: {
     flex: 1,
@@ -1221,10 +1242,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 20,
     overflow: 'hidden',
-    elevation: 3,
-    shadowColor: HS.blue,
+    elevation: 4,
+    shadowColor: '#001A66',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.18,
     shadowRadius: 12,
   },
   emptyState: {
@@ -1234,20 +1255,20 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: RFValue(18),
-    color: HS.navy,
+    color: '#0F172A',
     textAlign: 'center',
     fontWeight: '700',
   },
   emptySubtext: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 21,
     marginTop: 8,
   },
   loadingText: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: '#666',
     textAlign: 'center',
     marginTop: hp('1%'),
   },
@@ -1283,7 +1304,7 @@ const styles = StyleSheet.create({
   },
   errorSubtext: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 21,
     marginTop: 8,
@@ -1312,7 +1333,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: hp('0.8%'),
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    backgroundColor: HS.tint,
+    backgroundColor: '#EEF2FF',
     gap: wp('1%'),
   },
   locationIndicatorText: {

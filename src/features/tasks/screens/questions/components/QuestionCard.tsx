@@ -2,7 +2,6 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { formatUserName } from '@/src/utils/formatUserName';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface QuestionItem {
@@ -60,7 +59,7 @@ export default function QuestionCard({ question, onAnswerPress }: QuestionCardPr
             {formatUserName(question.askedBy.firstName, question.askedBy.lastName)}
           </Text>
           {question.askedBy.verified && (
-            <MaterialIcons name="verified" size={14} color={HS.blue} style={styles.verifiedIcon} />
+            <MaterialIcons name="verified" size={14} color="#BFD4FF" style={styles.verifiedIcon} />
           )}
         </View>
         <Text style={styles.questionDate}>{formatDate(question.createdAt)}</Text>
@@ -87,7 +86,7 @@ export default function QuestionCard({ question, onAnswerPress }: QuestionCardPr
         </View>
       ) : (
         <View style={styles.pendingContainer}>
-          <Ionicons name="time-outline" size={14} color={HS.amberText} />
+          <Ionicons name="time-outline" size={14} color="#FCD34D" />
           <Text style={styles.pendingText}>Waiting for answer...</Text>
         </View>
       )}
@@ -97,10 +96,16 @@ export default function QuestionCard({ question, onAnswerPress }: QuestionCardPr
 
 const styles = StyleSheet.create({
   questionCard: {
-    ...homeCard,
+    backgroundColor: '#003399',
     marginHorizontal: 20,
     marginBottom: 14,
+    borderRadius: 20,
     padding: 16,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   questionHeader: {
     flexDirection: 'row',
@@ -115,27 +120,27 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: RFValue(14),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
   },
   verifiedIcon: {
     marginLeft: 4,
   },
   questionDate: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.78)',
   },
   questionText: {
     fontSize: RFValue(15),
-    color: HS.text,
+    color: '#FFFFFF',
     lineHeight: 22,
     marginBottom: 12,
   },
   answerContainer: {
-    backgroundColor: HS.greenBg,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 12,
     borderRadius: 12,
     borderLeftWidth: 3,
-    borderLeftColor: HS.greenText,
+    borderLeftColor: '#4ADE80',
   },
   answerHeader: {
     flexDirection: 'row',
@@ -145,22 +150,22 @@ const styles = StyleSheet.create({
   answerLabel: {
     fontSize: RFValue(12),
     fontWeight: '700',
-    color: HS.greenText,
+    color: '#86EFAC',
   },
   answeredBy: {
     fontSize: RFValue(11),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.78)',
     marginLeft: 6,
   },
   answerText: {
     fontSize: RFValue(14),
-    color: HS.text,
+    color: '#FFFFFF',
     lineHeight: 20,
     marginBottom: 4,
   },
   answeredDate: {
     fontSize: RFValue(10),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.78)',
     textAlign: 'right',
   },
   pendingContainer: {
@@ -170,7 +175,7 @@ const styles = StyleSheet.create({
   },
   pendingText: {
     fontSize: RFValue(13),
-    color: HS.amberText,
+    color: '#FCD34D',
     fontStyle: 'italic',
   },
 });

@@ -197,16 +197,10 @@ const LocationScreen = () => {
         >
             <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
             <FlowBackground isDarkMode={isDarkMode} />
-            <View style={[styles.hero, { paddingTop: Math.max(insets.top, 20) + 6 }, isDarkMode && styles.heroDark]}>
-                {/* Back Arrow */}
-                <TouchableOpacity style={styles.backArrow} onPress={() => router.back()}>
-                    <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
-
-                {/* Title */}
-                <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Tell me more!</Text>
-                <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>Where do you need it done?</Text>
-            </View>
+            {/* Back Arrow */}
+            <TouchableOpacity style={[styles.backArrow, { top: Math.max(insets.top, 20) + 6 }]} onPress={() => router.back()}>
+                <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
 
             <ScrollView 
                 ref={scrollViewRef}
@@ -216,6 +210,10 @@ const LocationScreen = () => {
                 keyboardShouldPersistTaps="handled"
                 nestedScrollEnabled={true}
             >
+                {/* Title */}
+                <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Tell me more!</Text>
+                <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>Where do you need it done?</Text>
+
                 {/* Toggle for Moving */}
                 <MovingToggle value={isRemoval} onValueChange={setIsRemoval} />
 
@@ -276,28 +274,13 @@ export default LocationScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: FLOW.page,
-    },
-    hero: {
         backgroundColor: FLOW.blue,
-        borderBottomLeftRadius: 28,
-        borderBottomRightRadius: 28,
-        paddingHorizontal: 20,
-        paddingBottom: 24,
-    },
-    heroDark: {
-        backgroundColor: 'transparent',
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
     },
     backArrow: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: FLOW.heroPill,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 8,
+        position: 'absolute',
+        top: 50,
+        left: 20,
+        zIndex: 10,
     },
     scrollView: {
         flex: 1,
@@ -305,7 +288,7 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         padding: 20,
-        paddingTop: 16,
+        paddingTop: 90,
         paddingBottom: 100,
         overflow: 'visible', // Allow dropdown to escape bounds
     },
@@ -314,16 +297,16 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: '#FFFFFF',
         marginBottom: 5,
-        marginTop: 4,
     },
     subtitle: {
         fontSize: RFValue(14),
-        color: FLOW.onHeroMuted,
+        color: FLOW.textMuted,
+        marginBottom: 20,
     },
     actionBar: {
         paddingHorizontal: 20,
         paddingTop: 12,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: FLOW.blueDeep,
         borderTopWidth: 1,
         borderTopColor: FLOW.line,
     },

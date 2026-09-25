@@ -10,7 +10,6 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { HS } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 const NOTIFICATION_PROMPT_KEY = '@notification_permission_asked';
@@ -102,7 +101,7 @@ export const NotificationPermissionPrompt: React.FC<NotificationPermissionPrompt
       <View style={styles.overlay}>
         <View style={styles.container}>
           <View style={styles.iconContainer}>
-            <Ionicons name="notifications" size={44} color={HS.blue} />
+            <Ionicons name="notifications" size={60} color="#003399" />
           </View>
 
           <Text style={styles.title}>Stay Updated!</Text>
@@ -113,15 +112,15 @@ export const NotificationPermissionPrompt: React.FC<NotificationPermissionPrompt
 
           <View style={styles.features}>
             <View style={styles.feature}>
-              <Ionicons name="chatbubble" size={20} color={HS.blue} />
+              <Ionicons name="chatbubble" size={20} color="#003399" />
               <Text style={styles.featureText}>New messages</Text>
             </View>
             <View style={styles.feature}>
-              <Ionicons name="cash" size={20} color={HS.orange} />
+              <Ionicons name="cash" size={20} color="#ff6b35" />
               <Text style={styles.featureText}>New offers</Text>
             </View>
             <View style={styles.feature}>
-              <Ionicons name="checkmark-circle" size={20} color={HS.blue} />
+              <Ionicons name="checkmark-circle" size={20} color="#003399" />
               <Text style={styles.featureText}>Task updates</Text>
             </View>
           </View>
@@ -159,7 +158,7 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
+    borderRadius: 20,
     padding: 24,
     width: '100%',
     maxWidth: 400,
@@ -171,24 +170,18 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   iconContainer: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: HS.tint,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 16,
   },
   title: {
     fontSize: RFValue(24),
     fontWeight: 'bold',
-    color: HS.navy,
+    color: '#003399',
     marginBottom: 12,
     textAlign: 'center',
   },
   message: {
     fontSize: RFValue(16),
-    color: HS.text,
+    color: '#475569',
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 22,
@@ -205,7 +198,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     fontSize: RFValue(15),
-    color: HS.text,
+    color: '#333',
     marginLeft: 12,
   },
   button: {
@@ -218,7 +211,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   allowButton: {
-    backgroundColor: HS.orange,
+    backgroundColor: '#ff6b35',
   },
   allowButtonText: {
     color: '#FFFFFF',
@@ -228,10 +221,10 @@ const styles = StyleSheet.create({
   notNowButton: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: HS.blue,
+    borderColor: '#003399',
   },
   notNowButtonText: {
-    color: HS.blue,
+    color: '#003399',
     fontSize: RFValue(16),
     fontWeight: '600',
   },

@@ -12,7 +12,6 @@ import {
 import { WebView } from 'react-native-webview';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
-import { HS } from '@/src/shared/theme/homeStyle';
 
 interface ZendeskHelpProps {
   visible: boolean;
@@ -43,7 +42,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
         {/* Loading Indicator */}
         {loading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={HS.blue} />
+            <ActivityIndicator size="large" color="#003399" />
             <Text style={styles.loadingText}>Loading Help Center...</Text>
           </View>
         )}
@@ -68,7 +67,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
           // Show loading view
           renderLoading={() => (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={HS.blue} />
+              <ActivityIndicator size="large" color="#003399" />
             </View>
           )}
         />
@@ -80,7 +79,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   webview: {
     flex: 1,
@@ -94,13 +93,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
     zIndex: 1,
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: '#64748B',
   },
 });
 

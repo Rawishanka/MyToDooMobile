@@ -18,7 +18,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
 
 export default function AnswerQuestionScreen() {
   const { isDarkMode } = useTheme();
@@ -134,7 +133,7 @@ export default function AnswerQuestionScreen() {
   if (isLoading) {
     return (
       <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <ActivityIndicator size="large" color={HS.blue} />
+        <ActivityIndicator size="large" color="#003399" />
         <Text style={styles.loadingText}>Loading question details...</Text>
       </View>
     );
@@ -143,9 +142,7 @@ export default function AnswerQuestionScreen() {
   if (!task || !question) {
     return (
       <View style={[styles.errorContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <View style={styles.iconCircle}>
-          <Ionicons name="alert-circle-outline" size={44} color={HS.redText} />
-        </View>
+        <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
         <Text style={styles.errorTitle}>Question Not Found</Text>
         <Text style={styles.errorSubtitle}>Could not load question details.</Text>
         <TouchableOpacity 
@@ -209,7 +206,7 @@ export default function AnswerQuestionScreen() {
               multiline
               numberOfLines={6}
               textAlignVertical="top"
-              placeholderTextColor={HS.placeholder}
+              placeholderTextColor="#94A3B8"
               maxLength={1000}
               scrollEnabled
             />
@@ -257,11 +254,11 @@ export default function AnswerQuestionScreen() {
           disabled={isSubmitting || !canSubmitAnswer}
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color={HS.blue} />
+            <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
             <>
-              <Ionicons name="chatbubble" size={20} color={canSubmitAnswer ? '#FFFFFF' : HS.muted} />
-              <Text style={[styles.submitButtonText, !canSubmitAnswer && { color: HS.muted }]}>Post Answer</Text>
+              <Ionicons name="chatbubble" size={20} color="#FFFFFF" />
+              <Text style={styles.submitButtonText}>Post Answer</Text>
             </>
           )}
         </TouchableOpacity>
@@ -273,44 +270,36 @@ export default function AnswerQuestionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: HS.muted,
-  },
-  iconCircle: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: HS.tint,
-    alignItems: 'center',
-    justifyContent: 'center',
+    color: '#64748B',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -319,7 +308,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: HS.blue,
+    color: '#003399',
     fontSize: RFValue(16),
     fontWeight: '700',
   },
@@ -352,26 +341,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   taskSummary: {
-    ...homeCard,
+    backgroundColor: '#003399',
+    borderRadius: 20,
     padding: 16,
     marginTop: 20,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   taskTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   taskLocation: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.78)',
   },
   questionContainer: {
     marginTop: 24,
   },
   questionCard: {
-    ...homeCard,
+    backgroundColor: '#003399',
+    borderRadius: 20,
     padding: 16,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   questionHeader: {
     flexDirection: 'row',
@@ -382,15 +383,15 @@ const styles = StyleSheet.create({
   questionAsker: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#FFFFFF',
   },
   questionDate: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.78)',
   },
   questionText: {
     fontSize: RFValue(16),
-    color: HS.text,
+    color: '#FFFFFF',
     lineHeight: 22,
   },
   formContainer: {
@@ -399,27 +400,27 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0F172A',
     marginBottom: 20,
   },
   inputContainer: {
     marginBottom: 24,
   },
   answerInput: {
-    borderWidth: 1.5,
-    borderColor: HS.inputBorder,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: RFValue(16),
-    color: HS.navy,
+    color: '#0F172A',
     minHeight: 120,
     maxHeight: 200,
     backgroundColor: '#fff',
   },
   characterCount: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'right',
     marginTop: 4,
   },
@@ -429,7 +430,7 @@ const styles = StyleSheet.create({
   tipsTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0F172A',
     marginBottom: 12,
   },
   tipItem: {
@@ -439,32 +440,32 @@ const styles = StyleSheet.create({
   },
   tipBullet: {
     fontSize: RFValue(14),
-    color: HS.blue,
+    color: '#003399',
     marginRight: 8,
     marginTop: 2,
   },
   tipText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: HS.text,
+    color: '#334155',
     lineHeight: 20,
   },
   guidelinesContainer: {
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(0,51,153,0.08)',
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: 'rgba(0,51,153,0.18)',
     borderRadius: 16,
     padding: 16,
   },
   guidelinesTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#003399',
     marginBottom: 8,
   },
   guideline: {
     fontSize: RFValue(12),
-    color: HS.text,
+    color: '#003399',
     marginBottom: 4,
   },
   buttonContainer: {
@@ -472,7 +473,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     backgroundColor: '#FFFFFF',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: HS.cardBorder,
+    borderTopColor: '#CBD5E1',
   },
   submitButton: {
     backgroundColor: '#ff6b35',
@@ -484,7 +485,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   submittingButton: {
-    backgroundColor: HS.tintStrong,
+    opacity: 0.7,
   },
   submitButtonText: {
     color: '#FFFFFF',

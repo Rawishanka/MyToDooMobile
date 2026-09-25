@@ -1,5 +1,5 @@
 import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
-import { FLOW, FlowBackground, flowCard, primaryShadow } from './flowTheme';
+import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 import { CreateTaskRequest } from '@/src/api/types/tasks';
 import { useCreateTask, usePostTaskDirect, usePostTaskWithImages } from '@/src/shared/hooks/useTaskApi';
 import { formatCurrency, getCurrencyFromLocation } from '@/src/shared/utils/currency';
@@ -227,12 +227,12 @@ export default function PostTaskScreen() {
       <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
         <FlowBackground isDarkMode={isDarkMode} />
-        <ActivityIndicator size="large" color={isDarkMode ? '#FFFFFF' : FLOW.blue} />
-        <Text style={[styles.loadingText, isDarkMode && { color: '#FFFFFF' }]}>
+        <ActivityIndicator size="large" color="#FFFFFF" />
+        <Text style={styles.loadingText}>
           {uploadProgress || 'Posting your task...'}
         </Text>
         {uploadProgress.includes('Converting') && (
-          <Text style={[styles.subLoadingText, isDarkMode && { color: 'rgba(255,255,255,0.75)' }]}>
+          <Text style={styles.subLoadingText}>
             This may take a moment for multiple images
           </Text>
         )}
@@ -246,7 +246,7 @@ export default function PostTaskScreen() {
       <FlowBackground isDarkMode={isDarkMode} />
       
       {/* Header */}
-      <View style={[styles.header, isDarkMode && { backgroundColor: BRAND_BLUE, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
+      <View style={[styles.header, isDarkMode && { backgroundColor: BRAND_BLUE }, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -288,7 +288,7 @@ export default function PostTaskScreen() {
           {/* Budget */}
           <View style={styles.summaryItem}>
             <Text style={[styles.label, isDarkMode && { color: '#94A3B8' }]}>Budget</Text>
-            <Text style={[styles.value, styles.budgetValue, isDarkMode && { color: '#FFFFFF' }]}>{formatBudget()}</Text>
+            <Text style={[styles.value, styles.budgetValue]}>{formatBudget()}</Text>
           </View>
 
           {/* Date & Time */}
@@ -320,9 +320,9 @@ export default function PostTaskScreen() {
         </View>
 
         {/* Info Box */}
-        <View style={[styles.infoBox, isDarkMode && { backgroundColor: 'rgba(255,255,255,0.10)', borderColor: 'rgba(255,255,255,0.18)' }]}>
-          <Ionicons name="information-circle" size={20} color={isDarkMode ? '#FFFFFF' : FLOW.blue} />
-          <Text style={[styles.infoText, isDarkMode && { color: 'rgba(255,255,255,0.75)' }]}>
+        <View style={styles.infoBox}>
+          <Ionicons name="information-circle" size={20} color="#FFFFFF" />
+          <Text style={styles.infoText}>
             Once posted, your task will be visible to all users. You'll receive notifications when users make offers.
           </Text>
         </View>
@@ -331,11 +331,11 @@ export default function PostTaskScreen() {
       {/* Action Buttons */}
       <View style={[styles.actionButtons, isDarkMode && { backgroundColor: '#0B1120', borderTopColor: '#1E293B' }, { paddingBottom: Math.max(insets.bottom, 16) }]}>
         <TouchableOpacity 
-          style={[styles.editButton, isDarkMode && { borderColor: '#FFFFFF', backgroundColor: 'transparent' }]}
+          style={styles.editButton}
           onPress={() => router.push('/(welcome-screen)/title-screen')}
         >
-          <Ionicons name="create-outline" size={20} color={isDarkMode ? '#FFFFFF' : FLOW.blue} />
-          <Text style={[styles.editButtonText, isDarkMode && { color: '#FFFFFF' }]}>Edit Task</Text>
+          <Ionicons name="create-outline" size={20} color="#FFFFFF" />
+          <Text style={styles.editButtonText}>Edit Task</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
@@ -345,7 +345,7 @@ export default function PostTaskScreen() {
           activeOpacity={0.7}
         >
           <Ionicons name="send" size={20} color="#fff" />
-          <Text style={[styles.postButtonText, isSubmitting && { color: FLOW.disabledText }]}>
+          <Text style={styles.postButtonText}>
             {isSubmitting ? 'Posting...' : 'Post Task'}
           </Text>
         </TouchableOpacity>
@@ -357,23 +357,23 @@ export default function PostTaskScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: FLOW.page,
+    backgroundColor: FLOW.blue,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: FLOW.page,
+    backgroundColor: FLOW.blue,
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: FLOW.navy,
+    color: '#FFFFFF',
   },
   subLoadingText: {
     marginTop: 8,
     fontSize: RFValue(14),
-    color: FLOW.muted,
+    color: FLOW.textMuted,
     textAlign: 'center',
     paddingHorizontal: 20,
   },
@@ -382,10 +382,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingBottom: 22,
-    backgroundColor: FLOW.blue,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
+    paddingBottom: 15,
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
+    borderBottomColor: 'transparent',
   },
   backButton: {
     padding: 5,
@@ -403,11 +403,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   contentInner: {
-    paddingTop: 8,
     paddingBottom: 24,
   },
   summaryCard: {
-    ...flowCard,
+    backgroundColor: FLOW.glass,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
     borderRadius: 20,
     padding: 16,
     marginTop: 8,
@@ -415,7 +416,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: FLOW.navy,
+    color: '#FFFFFF',
     marginBottom: 16,
   },
   summaryItem: {
@@ -424,18 +425,18 @@ const styles = StyleSheet.create({
   label: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: FLOW.muted,
+    color: FLOW.textMuted,
     marginBottom: 4,
   },
   value: {
     fontSize: RFValue(16),
-    color: FLOW.navy,
+    color: '#FFFFFF',
     lineHeight: 22,
   },
   budgetValue: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: FLOW.blue,
+    color: '#FFFFFF',
   },
   imageContainer: {
     marginTop: 8,
@@ -445,13 +446,13 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 14,
     marginRight: 12,
-    backgroundColor: FLOW.tint,
+    backgroundColor: FLOW.glassStrong,
   },
   infoBox: {
     flexDirection: 'row',
-    backgroundColor: FLOW.tint,
+    backgroundColor: FLOW.glass,
     borderWidth: 1,
-    borderColor: FLOW.tintBorder,
+    borderColor: FLOW.glassBorder,
     borderRadius: 20,
     padding: 16,
     marginTop: 14,
@@ -460,7 +461,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: FLOW.text,
+    color: FLOW.textMuted,
     marginLeft: 8,
     lineHeight: 20,
   },
@@ -468,7 +469,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingTop: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: FLOW.blueDeep,
     borderTopWidth: 1,
     borderTopColor: FLOW.line,
     gap: 12,
@@ -481,12 +482,11 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: FLOW.blue,
-    backgroundColor: '#FFFFFF',
+    borderColor: '#FFFFFF',
     gap: 6,
   },
   editButtonText: {
-    color: FLOW.blue,
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },

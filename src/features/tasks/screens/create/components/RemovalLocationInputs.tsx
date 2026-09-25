@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { useTheme } from '@/src/shared/theme';
 import { FLOW } from '../flowTheme';
 
 interface RemovalLocationInputsProps {
@@ -18,11 +17,10 @@ export const RemovalLocationInputs: React.FC<RemovalLocationInputsProps> = ({
   onPickupChange,
   onDropoffChange,
 }) => {
-  const { isDarkMode } = useTheme();
   return (
     <>
       {/* Pickup */}
-      <Text style={[styles.label, isDarkMode && { color: '#FFFFFF' }]}>Pickup Location</Text>
+      <Text style={styles.label}>Pickup Location</Text>
       <View style={styles.inputBox}>
         <Ionicons name="location-outline" size={20} color={FLOW.blue} style={styles.icon} />
         <TextInput
@@ -35,7 +33,7 @@ export const RemovalLocationInputs: React.FC<RemovalLocationInputsProps> = ({
       </View>
 
       {/* Drop-off */}
-      <Text style={[styles.label, isDarkMode && { color: '#FFFFFF' }]}>Drop-off Location</Text>
+      <Text style={styles.label}>Drop-off Location</Text>
       <View style={styles.inputBox}>
         <Ionicons name="location-outline" size={20} color={FLOW.blue} style={styles.icon} />
         <TextInput
@@ -54,7 +52,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: FLOW.navy,
+    color: '#FFFFFF',
     marginBottom: 6,
     marginTop: 10,
   },
@@ -62,8 +60,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: FLOW.inputBorder,
     paddingHorizontal: 14,
     alignItems: 'center',
     height: 50,
@@ -75,6 +71,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: RFValue(16),
-    color: FLOW.navy,
+    color: FLOW.ink,
   },
 });

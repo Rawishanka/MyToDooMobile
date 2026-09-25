@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
-import { HS } from '@/src/shared/theme/homeStyle';
 import { useState } from 'react';
 import {
     Image,
@@ -440,7 +439,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   content: {
     flex: 1,
@@ -517,9 +516,9 @@ const styles = StyleSheet.create({
     marginTop: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
+    borderColor: '#E8ECF4',
     backgroundColor: '#FFFFFF',
-    shadowColor: HS.blue,
+    shadowColor: '#0F172A',
     shadowOpacity: 0.07,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
@@ -528,19 +527,19 @@ const styles = StyleSheet.create({
   guidelineTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: HS.navy,
+    color: '#0F172A',
     flex: 1,
   },
   bodyText: {
     fontSize: 16,
     lineHeight: 24,
-    color: HS.text,
+    color: '#334155',
     marginBottom: 16,
   },
   descriptionText: {
     fontSize: 15,
     lineHeight: 22,
-    color: HS.text,
+    color: '#334155',
     marginBottom: 20,
     backgroundColor: '#fff',
     padding: 16,
@@ -555,14 +554,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: HS.navy,
+    color: '#0F172A',
     marginTop: 24,
     marginBottom: 16,
   },
   bulletPoint: {
     fontSize: 16,
     fontWeight: '600',
-    color: HS.text,
+    color: '#334155',
     marginTop: 16,
     marginBottom: 8,
   },
@@ -645,7 +644,7 @@ const styles = StyleSheet.create({
   noteTitle: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: HS.navy,
+    color: '#0F172A',
     textAlign: 'center',
     marginBottom: 16,
     marginTop: 8,
@@ -673,7 +672,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    color: HS.muted,
+    color: '#64748B',
     fontWeight: '600',
   },
   activeTabText: {
@@ -697,7 +696,7 @@ const styles = StyleSheet.create({
   expandableTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: HS.navy,
+    color: '#0F172A',
     flex: 1,
   },
   expandedContent: {
@@ -710,13 +709,13 @@ const styles = StyleSheet.create({
   expandedText: {
     fontSize: 15,
     lineHeight: 22,
-    color: HS.text,
+    color: '#334155',
     marginBottom: 12,
   },
   feeInfoBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(0,51,153,0.08)',
     padding: 14,
     borderRadius: 14,
     marginTop: 8,
@@ -734,7 +733,7 @@ const styles = StyleSheet.create({
   noticeText: {
     fontSize: 13,
     lineHeight: 18,
-    color: HS.muted,
+    color: '#64748B',
     fontStyle: 'italic',
     marginTop: 8,
   },
@@ -757,7 +756,7 @@ const styles = StyleSheet.create({
   },
   suspensionText: {
     fontSize: 15,
-    color: HS.text,
+    color: '#334155',
     flex: 1,
     lineHeight: 20,
   },
@@ -815,13 +814,13 @@ const styles = StyleSheet.create({
   responsibilityTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: HS.navy,
+    color: '#0F172A',
     marginBottom: 6,
   },
   responsibilityDescription: {
     fontSize: 14,
     lineHeight: 20,
-    color: HS.muted,
+    color: '#64748B',
   },
 });
 

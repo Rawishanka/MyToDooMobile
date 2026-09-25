@@ -21,7 +21,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
-import { HS } from '@/src/shared/theme/homeStyle';
 import { BRAND_BLUE, BRAND_ORANGE, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -161,7 +160,7 @@ export default function PaymentReceiptScreen() {
 
       {loadState === 'error' && (
         <View style={styles.centerContent}>
-          <Ionicons name="document-text-outline" size={48} color={HS.blue} />
+          <Ionicons name="document-text-outline" size={48} color="#94A3B8" />
           <Text style={styles.errorTitle}>Receipt unavailable</Text>
           <Text style={styles.errorMessage}>{errorMessage}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadReceipt}>
@@ -201,7 +200,7 @@ export default function PaymentReceiptScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -253,19 +252,19 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: RFValue(15),
-    color: HS.muted,
+    color: '#64748B',
   },
   errorTitle: {
     marginTop: 16,
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0D1B2A',
     textAlign: 'center',
   },
   errorMessage: {
     marginTop: 8,
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
   },

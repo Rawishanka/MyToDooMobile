@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { HS } from '@/src/shared/theme/homeStyle';
 
 interface TaskCounts {
   created: number;
@@ -58,27 +57,26 @@ export const TasksTabsSection: React.FC<TasksTabsSectionProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: HS.card,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 16,
     marginBottom: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
-    shadowColor: HS.blue,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
   },
   title: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 12,
   },
   tabsContainer: {
     flexDirection: 'row',
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 14,
     padding: 4,
   },
@@ -90,15 +88,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: HS.blue,
+    backgroundColor: '#FFFFFF',
   },
   tabText: {
     fontSize: RFValue(12),
     fontWeight: '500',
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
   },
   activeTabText: {
-    color: '#FFFFFF',
+    color: '#003399',
     fontWeight: '700',
   },
 });

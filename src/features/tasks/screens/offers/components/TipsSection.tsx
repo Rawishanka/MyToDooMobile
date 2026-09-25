@@ -1,4 +1,4 @@
-import { HS } from '@/src/shared/theme/homeStyle';
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import React from 'react';
 import { useTheme } from '@/src/shared/theme';
 import { StyleSheet, Text, View } from 'react-native';
@@ -19,24 +19,24 @@ export const TipsSection: React.FC = () => {
 
 const styles = StyleSheet.create({
   tipsContainer: {
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 16,
     marginTop: 0,
     marginBottom: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   tipsTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: HS.navy,
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   tip: {
     fontSize: 13,
     lineHeight: 19,
-    color: HS.text,
+    color: CARD_TEXT_MUTED,
     marginBottom: 4,
   },
 });

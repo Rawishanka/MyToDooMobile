@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { HS } from '@/src/shared/theme/homeStyle';
+import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
 import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -12,8 +12,8 @@ export default function LoadingState({ message = 'Loading...' }: LoadingStatePro
   const { isDarkMode } = useTheme();
   return (
     <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
-      <Text style={[styles.loadingText, { color: isDarkMode ? '#94A3B8' : HS.muted }]}>{message}</Text>
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+      <Text style={[styles.loadingText, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>{message}</Text>
     </View>
   );
 }

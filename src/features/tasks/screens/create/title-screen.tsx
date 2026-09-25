@@ -146,9 +146,8 @@ export default function TitleInputScreen() {
     >
       <StatusBar barStyle="light-content" backgroundColor={FLOW.blue} />
       <FlowBackground isDarkMode={false} />
-      <View style={[styles.hero, { paddingTop: Math.max(insets.top, 20) + 6 }]}>
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => {
+      <TouchableOpacity style={[styles.backButton, { top: Math.max(insets.top, 20) + 6 }]} onPress={() => {
         // Check if user has entered any data (local state or store)
         const hasLocalData = title.trim() || description.trim() || selectedCategory;
         const hasStoreData = myTask.title || myTask.description || ('category' in myTask && myTask.category);
@@ -190,17 +189,16 @@ export default function TitleInputScreen() {
         <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
       </TouchableOpacity>
 
-      {/* Title & Subtitle */}
-      <Text style={styles.title}>Tell us about your task</Text>
-      <Text style={styles.subtitle}>Provide details so heroes know what you need</Text>
-      </View>
-
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Title & Subtitle */}
+        <Text style={styles.title}>Tell us about your task</Text>
+        <Text style={styles.subtitle}>Provide details so heroes know what you need</Text>
+
         {/* Category Selection */}
         <View style={styles.fieldContainer}>
           <Text style={styles.label}>Category</Text>
@@ -219,20 +217,20 @@ export default function TitleInputScreen() {
             <View style={styles.categoryDropdown}>
               {/* Search Input */}
               <View style={styles.searchContainer}>
-                <Ionicons name="search" size={18} color={FLOW.placeholder} />
+                <Ionicons name="search" size={18} color="#999" />
                 <TextInput
                   style={styles.searchInput}
                   placeholder="Search categories..."
                   value={categorySearchQuery}
                   onChangeText={setCategorySearchQuery}
-                  placeholderTextColor={FLOW.placeholder}
+                  placeholderTextColor="#999"
                 />
               </View>
 
               {/* Categories List */}
               <ScrollView style={styles.categoriesList} nestedScrollEnabled>
                 {loadingCategories ? (
-                  <ActivityIndicator size="small" color={FLOW.blue} style={styles.loader} />
+                  <ActivityIndicator size="small" color="#0057FF" style={styles.loader} />
                 ) : categoriesError ? (
                   <Text style={styles.errorText}>Failed to load categories</Text>
                 ) : categories.length === 0 ? (
@@ -258,7 +256,7 @@ export default function TitleInputScreen() {
                         {category}
                       </Text>
                       {selectedCategory === category && (
-                        <Ionicons name="checkmark" size={20} color={FLOW.blue} />
+                        <Ionicons name="checkmark" size={20} color="#0057FF" />
                       )}
                     </TouchableOpacity>
                   ))
@@ -289,7 +287,7 @@ export default function TitleInputScreen() {
             placeholder="e.g. Move my couch"
             value={title}
             onChangeText={setTitle}
-            placeholderTextColor={FLOW.placeholder}
+            placeholderTextColor="#999"
             maxLength={200}
           />
           {titleLength > 0 && titleLength < 10 && (
@@ -309,7 +307,7 @@ export default function TitleInputScreen() {
             placeholder="Give a detailed description of your task..."
             value={description}
             onChangeText={setDescription}
-            placeholderTextColor={FLOW.placeholder}
+            placeholderTextColor="#999"
             textAlignVertical="top"
             numberOfLines={4}
           />
@@ -336,30 +334,20 @@ export default function TitleInputScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: FLOW.page,
-  },
-  hero: {
     backgroundColor: FLOW.blue,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    paddingHorizontal: 20,
-    paddingBottom: 24,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: FLOW.heroPill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: 20,
-    paddingTop: 16,
+    paddingTop: 100,
     paddingBottom: 130,
   },
   title: {
@@ -370,7 +358,8 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: RFValue(14),
-    color: FLOW.onHeroMuted,
+    color: FLOW.textMuted,
+    marginBottom: 30,
   },
   fieldContainer: {
     marginBottom: 24,
@@ -378,7 +367,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: FLOW.navy,
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   categorySelector: {
@@ -389,12 +378,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: FLOW.inputBorder,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   categorySelectorText: {
     fontSize: RFValue(16),
-    color: FLOW.navy,
+    color: FLOW.ink,
   },
   placeholder: {
     color: FLOW.placeholder,
@@ -404,7 +393,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: FLOW.cardBorder,
+    borderColor: '#E5E5EA',
     maxHeight: 300,
     shadowColor: '#000',
     shadowOffset: {
@@ -420,13 +409,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: FLOW.cardBorder,
+    borderBottomColor: '#E5E5EA',
   },
   searchInput: {
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(16),
-    color: FLOW.navy,
+    color: '#000',
   },
   categoriesList: {
     maxHeight: 250,
@@ -440,7 +429,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   noResultsText: {
-    color: FLOW.muted,
+    color: '#8E8E93',
     padding: 20,
     textAlign: 'center',
   },
@@ -451,17 +440,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: FLOW.cardBorder,
+    borderBottomColor: '#F2F2F7',
   },
   categoryItemSelected: {
-    backgroundColor: FLOW.tint,
+    backgroundColor: '#F0F5FF',
   },
   categoryItemText: {
     fontSize: RFValue(16),
-    color: FLOW.navy,
+    color: '#1C1C1E',
   },
   categoryItemTextSelected: {
-    color: FLOW.blue,
+    color: '#0057FF',
     fontWeight: '600',
   },
   input: {
@@ -470,9 +459,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 14,
     fontSize: RFValue(16),
-    color: FLOW.navy,
+    color: FLOW.ink,
     borderWidth: 1.5,
-    borderColor: FLOW.inputBorder,
+    borderColor: 'transparent',
   },
   inputError: {
     borderColor: FLOW.error,
@@ -488,10 +477,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 14,
     fontSize: RFValue(16),
-    color: FLOW.navy,
+    color: FLOW.ink,
     height: 120,
     borderWidth: 1.5,
-    borderColor: FLOW.inputBorder,
+    borderColor: 'transparent',
   },
   actionBar: {
     position: 'absolute',
@@ -500,7 +489,7 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 20,
     paddingTop: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: FLOW.blueDeep,
     borderTopWidth: 1,
     borderTopColor: FLOW.line,
   },
@@ -525,7 +514,7 @@ const styles = StyleSheet.create({
   },
   characterCount: {
     fontSize: RFValue(12),
-    color: FLOW.muted,
+    color: FLOW.textMuted,
     textAlign: 'right',
     marginTop: 4,
   },

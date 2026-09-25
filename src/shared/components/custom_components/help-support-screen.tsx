@@ -15,7 +15,6 @@ import {
 import { RFValue } from '@/src/shared/utils/responsive';
 import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
-import { HS } from '@/src/shared/theme/homeStyle';
 
 interface HelpSupportProps {
   visible: boolean;
@@ -153,7 +152,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
           {/* Loading State */}
           {loading && (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={HS.blue} />
+              <ActivityIndicator size="large" color="#003399" />
               <Text style={styles.loadingText}>Loading help articles...</Text>
             </View>
           )}
@@ -262,7 +261,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   infoBanner: {
     paddingTop: 20,
@@ -276,13 +275,13 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0F172A',
     marginBottom: 6,
     textAlign: 'center',
   },
   infoSubtitle: {
     fontSize: 14,
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 20,
     paddingHorizontal: 12,
@@ -297,9 +296,9 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
-    shadowColor: HS.blue,
-    shadowOpacity: 0.08,
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
@@ -310,7 +309,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: RFValue(15),
-    color: HS.navy,
+    color: '#0F172A',
     paddingVertical: 0,
   },
   content: {
@@ -323,7 +322,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: '#64748B',
     marginTop: 16,
   },
   errorContainer: {
@@ -334,7 +333,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: RFValue(16),
-    color: HS.redText,
+    color: '#DC2626',
     marginTop: 16,
     marginBottom: 16,
     textAlign: 'center',
@@ -356,11 +355,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
+    borderColor: '#E8ECF4',
     marginHorizontal: 16,
     overflow: 'hidden',
-    shadowColor: HS.blue,
-    shadowOpacity: 0.08,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
@@ -381,21 +380,21 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontSize: 16,
     fontWeight: '600',
-    color: HS.navy,
+    color: '#0F172A',
     marginLeft: 12,
   },
   questionCount: {
     fontSize: 12,
-    color: HS.muted,
+    color: '#64748B',
     marginLeft: 8,
   },
   questionsContainer: {
     borderTopWidth: 1,
-    borderTopColor: HS.cardBorder,
+    borderTopColor: '#E8ECF4',
   },
   questionItem: {
     borderBottomWidth: 1,
-    borderBottomColor: HS.cardBorder,
+    borderBottomColor: '#E8ECF4',
   },
   questionHeader: {
     flexDirection: 'row',
@@ -407,7 +406,7 @@ const styles = StyleSheet.create({
   questionText: {
     flex: 1,
     fontSize: RFValue(15),
-    color: HS.navy,
+    color: '#0F172A',
     fontWeight: '600',
     marginRight: 8,
   },
@@ -415,11 +414,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 2,
     paddingBottom: 16,
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(0,51,153,0.04)',
   },
   answerText: {
     fontSize: RFValue(14),
-    color: HS.text,
+    color: '#334155',
     lineHeight: 22,
   },
   noResults: {
@@ -430,12 +429,12 @@ const styles = StyleSheet.create({
   noResultsText: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: HS.muted,
+    color: '#64748B',
     marginTop: 16,
   },
   noResultsSubtext: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: '#64748B',
     marginTop: 8,
   },
   contactContainer: {
@@ -446,10 +445,10 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
+    borderColor: '#E8ECF4',
     alignItems: 'center',
-    shadowColor: HS.blue,
-    shadowOpacity: 0.08,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
@@ -457,12 +456,12 @@ const styles = StyleSheet.create({
   contactTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0F172A',
     marginBottom: 8,
   },
   contactText: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -488,7 +487,7 @@ const styles = StyleSheet.create({
   },
   contactEmail: {
     fontSize: RFValue(14),
-    color: HS.blue,
+    color: '#003399',
     fontWeight: '600',
   },
 });

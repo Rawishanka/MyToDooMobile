@@ -3,7 +3,6 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useRef } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { useTheme } from '@/src/shared/theme';
 import { FLOW } from '../flowTheme';
 
 interface LocationData {
@@ -26,7 +25,6 @@ export const LocationInputSection: React.FC<LocationInputSectionProps> = ({
   scrollViewRef,
 }) => {
   const locationFieldRef = useRef<View>(null);
-  const { isDarkMode } = useTheme();
 
   // Handle input focus and auto-scroll
   const handleInputFocus = () => {
@@ -58,18 +56,19 @@ export const LocationInputSection: React.FC<LocationInputSectionProps> = ({
 
   return (
     <View ref={locationFieldRef} collapsable={false} style={styles.wrapper}>
-      <Text style={[styles.label, isDarkMode && { color: '#FFFFFF' }]}>Location</Text>
+      <Text style={styles.label}>Location</Text>
       <LocationAutocomplete
         onSelect={onLocationSelect}
         placeholder="Search for suburb, city or address..."
         style={styles.locationAutocomplete}
+        buttonStyle={styles.locateButtonOutline}
         onDropdownStateChange={handleDropdownStateChange}
         onFocus={() => handleDropdownStateChange(true)}
       />
       {selectedLocation && (
-        <View style={[styles.selectedLocationContainer, isDarkMode && { backgroundColor: 'rgba(255,255,255,0.16)' }]}>
-          <Ionicons name="location" size={16} color={isDarkMode ? '#FFFFFF' : FLOW.blue} />
-          <Text style={[styles.selectedLocationText, isDarkMode && { color: '#FFFFFF' }]}>
+        <View style={styles.selectedLocationContainer}>
+          <Ionicons name="location" size={16} color="#FFFFFF" />
+          <Text style={styles.selectedLocationText}>
             {selectedLocation.address}
           </Text>
         </View>
@@ -87,17 +86,21 @@ const styles = StyleSheet.create({
   label: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: FLOW.navy,
+    color: '#FFFFFF',
     marginBottom: 6,
     marginTop: 10,
   },
   locationAutocomplete: {
     marginBottom: 10,
   },
+  locateButtonOutline: {
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.6)',
+  },
   selectedLocationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: FLOW.tint,
+    backgroundColor: FLOW.glassStrong,
     borderRadius: 14,
     padding: 12,
     marginBottom: 10,
@@ -105,7 +108,7 @@ const styles = StyleSheet.create({
   selectedLocationText: {
     marginLeft: 8,
     fontSize: RFValue(14),
-    color: FLOW.navy,
+    color: '#FFFFFF',
     flex: 1,
   },
 });

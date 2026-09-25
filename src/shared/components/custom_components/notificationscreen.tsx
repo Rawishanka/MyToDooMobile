@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { HS } from '@/src/shared/theme/homeStyle';
 
 interface NotificationItem {
   id: string;
@@ -124,9 +123,9 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: HS.page,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    backgroundColor: '#F4F6FB',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     overflow: 'hidden',
     maxHeight: '80%',
     minHeight: '60%',
@@ -139,7 +138,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 14,
-    backgroundColor: HS.blue,
+    backgroundColor: '#003399',
   },
   backButton: {
     width: 40,
@@ -170,10 +169,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
+    borderColor: '#E8ECF4',
     alignItems: 'center',
-    shadowColor: HS.blue,
-    shadowOpacity: 0.08,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
@@ -190,16 +189,16 @@ const styles = StyleSheet.create({
   },
   notificationText: {
     fontSize: RFValue(14),
-    color: HS.navy,
+    color: '#0F172A',
     lineHeight: 19,
     marginBottom: 4,
   },
   username: {
     fontWeight: '600',
-    color: HS.navy,
+    color: '#0F172A',
   },
   timeText: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#64748B',
   },
 });

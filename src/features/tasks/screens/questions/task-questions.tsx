@@ -18,7 +18,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ErrorState, LoadingState } from '../../components/shared';
 import EmptyQuestionsState from './components/EmptyQuestionsState';
 import QuestionCard from './components/QuestionCard';
-import { HS } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface QuestionItem {
@@ -169,14 +168,14 @@ export default function TaskQuestionsScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Ask a Question</Text>
               <TouchableOpacity onPress={() => setShowAddQuestion(false)}>
-                <Ionicons name="close" size={24} color={HS.muted} />
+                <Ionicons name="close" size={24} color="#64748B" />
               </TouchableOpacity>
             </View>
             
             <TextInput
               style={styles.questionInput}
               placeholder="What would you like to know about this task?"
-              placeholderTextColor={HS.placeholder}
+              placeholderTextColor="#94A3B8"
               value={newQuestion}
               onChangeText={setNewQuestion}
               multiline={true}
@@ -220,7 +219,7 @@ export default function TaskQuestionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   loadingContainer: {
     flex: 1,
@@ -230,7 +229,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: '#64748B',
   },
   errorContainer: {
     flex: 1,
@@ -241,13 +240,13 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -269,7 +268,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: HS.blue,
+    color: '#003399',
     fontSize: RFValue(16),
     fontWeight: '600',
   },
@@ -335,13 +334,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: RFValue(20),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -390,11 +389,11 @@ const styles = StyleSheet.create({
   },
   questionDate: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#64748B',
   },
   questionText: {
     fontSize: RFValue(16),
-    color: HS.navy,
+    color: '#0F172A',
     lineHeight: 22,
   },
   answerSection: {
@@ -417,11 +416,11 @@ const styles = StyleSheet.create({
   },
   answerDate: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#64748B',
   },
   answerText: {
     fontSize: RFValue(15),
-    color: HS.navy,
+    color: '#0F172A',
     lineHeight: 20,
   },
   pendingAnswer: {
@@ -448,7 +447,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
+    borderRadius: 20,
     padding: 20,
     width: '100%',
     maxHeight: '80%',
@@ -462,14 +461,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0F172A',
   },
   questionInput: {
-    borderWidth: 1.5,
-    borderColor: HS.inputBorder,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
     borderRadius: 14,
     padding: 12,
-    color: HS.navy,
+    color: '#0F172A',
     backgroundColor: '#FFFFFF',
     fontSize: RFValue(16),
     height: 120,
@@ -482,7 +481,7 @@ const styles = StyleSheet.create({
   },
   characterText: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#64748B',
   },
   modalActions: {
     flexDirection: 'row',
@@ -490,15 +489,15 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    borderWidth: 1.5,
-    borderColor: HS.blue,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
     height: 48,
     justifyContent: 'center',
     borderRadius: 14,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: HS.blue,
+    color: '#64748B',
     fontSize: RFValue(16),
     fontWeight: '600',
   },

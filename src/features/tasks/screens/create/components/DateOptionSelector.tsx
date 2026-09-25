@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: FLOW.navy,
+    color: '#FFFFFF',
     marginBottom: 12,
   },
   optionRow: {
@@ -91,19 +91,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: FLOW.glassStrong,
     borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: FLOW.inputBorder,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
     marginBottom: 12,
   },
   optionRowSelected: {
-    borderColor: FLOW.blue,
-    backgroundColor: FLOW.tint,
+    borderColor: 'rgba(255,255,255,0.7)',
   },
   optionText: {
     fontSize: RFValue(16),
-    color: FLOW.navy,
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   radioOuter: {
@@ -111,13 +110,13 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: FLOW.tintBorder,
+    borderColor: 'rgba(255,255,255,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   radioOuterSelected: {
-    borderColor: FLOW.blue,
-    backgroundColor: FLOW.blue,
+    borderColor: FLOW.orange,
+    backgroundColor: FLOW.orange,
   },
   radioInner: {
     width: 8,
@@ -130,7 +129,7 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
   },
   dateText: {
-    color: FLOW.blue,
+    color: '#FFFFFF',
     fontSize: RFValue(14),
     fontWeight: '500',
   },

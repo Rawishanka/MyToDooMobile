@@ -14,8 +14,16 @@ import {
 
 // Import Task type
 import { Task } from '@/src/api/types/tasks';
-import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
+import {
+    BRAND_ORANGE,
+    CARD_BG,
+    CARD_CHIP_BG,
+    CARD_DIVIDER,
+    CARD_PRICE_BG,
+    CARD_PRICE_TEXT,
+    CARD_TEXT,
+    CARD_TEXT_MUTED,
+} from '@/src/shared/theme/brandColors';
 
 // Import responsive utilities
 import {
@@ -158,16 +166,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   // Helper: Get status color
   const getStatusColor = (status: string) => {
     if (!isDarkMode) {
-      // Home-style: readable semantic tones on the white card
+      // Lighter tints so status text stays readable on the blue card
       switch (status) {
         case 'completed':
-          return HS.greenText;
+          return '#4ADE80';
         case 'assigned':
-          return HS.blue;
+          return '#93C5FD';
         case 'open':
-          return HS.amberText;
+          return '#FBBF24';
         default:
-          return HS.muted;
+          return CARD_TEXT_MUTED;
       }
     }
     switch (status) {
@@ -217,7 +225,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </Text>
           </View>
           <View style={styles.compactRight}>
-            <Text style={[styles.compactPrice, !isDarkMode && styles.lightPrice]}>{formattedBudget}</Text>
+            <Text style={[styles.compactPrice, !isDarkMode && styles.lightTextWhite]}>{formattedBudget}</Text>
             <Text style={[styles.compactStatus, { color: getStatusColor(task.status) }]}>
               {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
             </Text>
@@ -265,7 +273,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </View>
           </View>
           <View style={styles.taskPriceContainer}>
-            <Text style={[styles.taskPrice, !isDarkMode && styles.lightPrice]}>{formattedBudget}</Text>
+            <Text style={[styles.taskPrice, !isDarkMode && styles.lightTextWhite]}>{formattedBudget}</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -280,7 +288,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       onPress={() => onPress(task._id)}
     >
       {/* Left accent strip */}
-      <View style={[styles.accentStrip, !isDarkMode && { backgroundColor: HS.blue }]} />
+      <View style={[styles.accentStrip, !isDarkMode && { backgroundColor: BRAND_ORANGE }]} />
 
       <View style={styles.cardBody}>
         {/* Header row: Title + Price */}
@@ -289,7 +297,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             {task.title}
           </Text>
           <View style={[styles.priceBubble, !isDarkMode && styles.priceBubbleLight]}>
-            <Text style={[styles.priceText, !isDarkMode && { color: HS.blue }]}>{formattedBudget}</Text>
+            <Text style={[styles.priceText, !isDarkMode && { color: CARD_PRICE_TEXT }]}>{formattedBudget}</Text>
           </View>
         </View>
 
@@ -301,10 +309,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <Ionicons
                 name={(locationInfo.icon === 'car-outline' ? 'car' : 'location-sharp') as any}
                 size={14}
-                color={isDarkMode ? '#0284C7' : HS.blue}
+                color={isDarkMode ? '#0284C7' : CARD_TEXT}
               />
             </View>
-            <Text style={[styles.taskRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextBody]} numberOfLines={1}>
+            <Text style={[styles.taskRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextMuted]} numberOfLines={1}>
               {(() => {
                 const address = parsedLocation?.address || 'Location not specified';
                 if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
@@ -320,18 +328,18 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           {dateDisplay && (
             <View style={[styles.taskRow, !isDarkMode && styles.rowChipLight]}>
               <View style={[styles.iconBadge, styles.dateIconBadge, !isDarkMode && styles.iconBadgeLight]}>
-                <Ionicons name="calendar" size={14} color={isDarkMode ? '#10B981' : HS.blue} />
+                <Ionicons name="calendar" size={14} color={isDarkMode ? '#10B981' : CARD_TEXT} />
               </View>
-              <Text numberOfLines={1} style={[styles.taskRowText, styles.dateRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextBody]}>{dateDisplay}</Text>
+              <Text numberOfLines={1} style={[styles.taskRowText, styles.dateRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextWhite]}>{dateDisplay}</Text>
             </View>
           )}
 
           {/* Time / Flexibility */}
           <View style={[styles.taskRow, !isDarkMode && styles.rowChipLight]}>
             <View style={[styles.iconBadge, styles.timeIconBadge, !isDarkMode && styles.iconBadgeLight]}>
-              <Ionicons name="time" size={14} color={isDarkMode ? '#FF6B00' : HS.blue} />
+              <Ionicons name="time" size={14} color={isDarkMode ? '#FF6B00' : CARD_TEXT} />
             </View>
-            <Text numberOfLines={1} style={[styles.taskRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextBody]}>{getTimePreference()}</Text>
+            <Text numberOfLines={1} style={[styles.taskRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextMuted]}>{getTimePreference()}</Text>
           </View>
         </View>
 
@@ -340,13 +348,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           <View style={styles.categoriesRow}>
             {task.categories.slice(0, 2).map((category, index) => (
               <View key={index} style={[styles.categoryTag, !isDarkMode && styles.categoryTagLight]}>
-                <View style={[styles.categoryDot, !isDarkMode && { backgroundColor: HS.blue }]} />
-                <Text style={[styles.categoryText, !isDarkMode && styles.lightTextBlue]}>{category}</Text>
+                <View style={[styles.categoryDot, !isDarkMode && { backgroundColor: CARD_TEXT }]} />
+                <Text style={[styles.categoryText, !isDarkMode && styles.lightTextWhite]}>{category}</Text>
               </View>
             ))}
             {task.categories.length > 2 && (
               <View style={[styles.moreCategoriesTag, !isDarkMode && styles.categoryTagLight]}>
-                <Text style={[styles.moreCategoriesText, !isDarkMode && styles.lightTextBlue]}>
+                <Text style={[styles.moreCategoriesText, !isDarkMode && styles.lightTextWhite]}>
                   +{task.categories.length - 2}
                 </Text>
               </View>
@@ -355,7 +363,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         )}
 
         {/* Bottom: Dynamic Offer / Status chip + Poster */}
-        <View style={[styles.bottomRow, !isDarkMode && { borderTopColor: HS.cardBorder }]}>
+        <View style={[styles.bottomRow, !isDarkMode && { borderTopColor: CARD_DIVIDER }]}>
           {/* Dynamic Offer Chip */}
           {(() => {
             const isAcceptedOrComplete =
@@ -368,7 +376,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             if (isAcceptedOrComplete) {
               const statusColor = getStatusColor(task.status);
               return (
-                <View style={[styles.statusChip, isDarkMode ? { backgroundColor: `${statusColor}14`, borderColor: `${statusColor}30` } : { backgroundColor: HS.tint, borderColor: HS.tintBorder }]}>
+                <View style={[styles.statusChip, isDarkMode ? { backgroundColor: `${statusColor}14`, borderColor: `${statusColor}30` } : { backgroundColor: CARD_CHIP_BG, borderColor: CARD_DIVIDER }]}>
                   <Ionicons name="checkmark-circle" size={14} color={statusColor} />
                   <Text style={[styles.statusChipText, { color: statusColor }]}>
                     {task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')}
@@ -381,8 +389,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             if (offerCount > 0) {
               return (
                 <View style={[styles.offerChipActive, !isDarkMode && styles.offerChipLight]}>
-                  <Ionicons name="pricetag" size={13} color={isDarkMode ? '#FF6B00' : '#FFFFFF'} />
-                  <Text style={[styles.offerTextActive, !isDarkMode && styles.offerTextLight]}>
+                  <Ionicons name="pricetag" size={13} color={isDarkMode ? '#FF6B00' : CARD_TEXT} />
+                  <Text style={[styles.offerTextActive, !isDarkMode && styles.lightTextWhite]}>
                     {offerCount} {offerCount === 1 ? 'Offer' : 'Offers'}
                   </Text>
                 </View>
@@ -390,9 +398,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             }
 
             return (
-              <View style={[styles.firstOfferChip, !isDarkMode && styles.firstOfferChipLight]}>
-                <Ionicons name="sparkles" size={13} color={isDarkMode ? '#10B981' : HS.greenText} />
-                <Text style={[styles.firstOfferText, !isDarkMode && { color: HS.greenText }]}>Be first to offer</Text>
+              <View style={[styles.firstOfferChip, !isDarkMode && styles.categoryTagLight]}>
+                <Ionicons name="sparkles" size={13} color={isDarkMode ? '#10B981' : '#4ADE80'} />
+                <Text style={[styles.firstOfferText, !isDarkMode && { color: '#4ADE80' }]}>Be first to offer</Text>
               </View>
             );
           })()}
@@ -405,9 +413,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                      task.createdBy?.profilePicture ||
                      `https://ui-avatars.com/api/?name=${formatAvatarName(task.createdBy?.firstName, task.createdBy?.lastName)}&background=003399&color=fff&size=80`,
               }}
-              style={[styles.userAvatar, !isDarkMode && { borderColor: HS.tintBorder }]}
+              style={[styles.userAvatar, !isDarkMode && { borderColor: CARD_TEXT }]}
             />
-            <Text style={[styles.posterName, isDarkMode ? { color: '#94A3B8' } : styles.lightTextBody]} numberOfLines={1}>
+            <Text style={[styles.posterName, isDarkMode ? { color: '#94A3B8' } : styles.lightTextWhite]} numberOfLines={1}>
               {formatUserName(task.createdBy?.firstName, task.createdBy?.lastName)}
             </Text>
           </View>
@@ -417,7 +425,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       {/* Navigation indicator */}
       <View style={styles.navigationIndicator}>
         <View style={[styles.chevronCircle, !isDarkMode && styles.chevronCircleLight]}>
-          <Ionicons name="chevron-forward" size={14} color={isDarkMode ? '#94A3B8' : HS.blue} />
+          <Ionicons name="chevron-forward" size={14} color={isDarkMode ? '#94A3B8' : CARD_TEXT} />
         </View>
       </View>
     </TouchableOpacity>
@@ -427,35 +435,33 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 const styles = StyleSheet.create({
   // Light-mode blue card helpers (dark mode keeps its own surfaces)
   blueCard: {
-    ...homeCard,
+    backgroundColor: CARD_BG,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  lightTextWhite: { color: HS.navy },
-  lightTextMuted: { color: HS.muted },
-  lightTextBody: { color: HS.text },
-  lightTextBlue: { color: HS.blue },
-  lightPrice: { color: HS.blue },
+  lightTextWhite: { color: CARD_TEXT },
+  lightTextMuted: { color: CARD_TEXT_MUTED },
   priceBubbleLight: {
-    backgroundColor: HS.tint,
-    borderColor: HS.tintBorder,
+    backgroundColor: CARD_PRICE_BG,
+    borderColor: CARD_PRICE_BG,
   },
   iconBadgeLight: { backgroundColor: 'transparent' },
-  rowChipLight: { backgroundColor: HS.tint },
+  rowChipLight: { backgroundColor: CARD_CHIP_BG },
   categoryTagLight: {
-    backgroundColor: HS.tint,
-    borderColor: HS.tintBorder,
+    backgroundColor: CARD_CHIP_BG,
+    borderColor: CARD_DIVIDER,
   },
   offerChipLight: {
     backgroundColor: BRAND_ORANGE,
     borderColor: BRAND_ORANGE,
   },
-  offerTextLight: { color: '#FFFFFF' },
-  firstOfferChipLight: {
-    backgroundColor: HS.greenBg,
-    borderColor: HS.greenBg,
-  },
   chevronCircleLight: {
-    backgroundColor: HS.tint,
-    borderColor: HS.tintBorder,
+    backgroundColor: CARD_CHIP_BG,
+    borderColor: CARD_DIVIDER,
   },
 
   // Default Card Styles - 2026 PREMIUM (COMPACT & SLEEK)

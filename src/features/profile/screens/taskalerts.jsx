@@ -10,8 +10,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/shared/theme';
-import { LightHeader, SectionCard } from '@/src/shared/components/custom_components/lightCard';
-import { HS } from '@/src/shared/theme/homeStyle';
+import { BlueBackdrop, LightHeader, SectionCard } from '@/src/shared/components/custom_components/lightCard';
 
 export default function TaskAlerts({ onBack }) {
   const { isDarkMode } = useTheme();
@@ -47,6 +46,7 @@ export default function TaskAlerts({ onBack }) {
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <BlueBackdrop />
       <LightHeader title="Task Alerts" onBack={onBack} />
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: insets.bottom + 32 }}
@@ -78,7 +78,7 @@ export default function TaskAlerts({ onBack }) {
                       {keyword}
                     </Text>
                     <TouchableOpacity onPress={() => removeKeyword(index)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                      <Ionicons name="close" size={16} color={isDarkMode ? '#94A3B8' : HS.blue} />
+                      <Ionicons name="close" size={16} color={isDarkMode ? '#94A3B8' : '#FFFFFF'} />
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -93,11 +93,11 @@ export default function TaskAlerts({ onBack }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#003399',
   },
   description: {
     fontSize: 13,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     lineHeight: 20,
     marginBottom: 16,
   },
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   keywordTag: {
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
@@ -135,13 +135,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: 'rgba(255,255,255,0.18)',
     maxWidth: '100%',
   },
   keywordText: {
     fontSize: 13,
     fontWeight: '600',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginRight: 6,
     flexShrink: 1,
   },

@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { ConstructionIcon } from './ConstructionIcon';
 import type { NotificationItem } from './message-types';
-import { HS } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface MenuModalProps {
@@ -54,16 +53,16 @@ export const MenuModal: React.FC<MenuModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.menuContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor={HS.page} />
+        <StatusBar barStyle="dark-content" backgroundColor="#f5f5f5" />
         
         {/* Header */}
         <View style={styles.menuHeader}>
           <TouchableOpacity onPress={onClose} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={HS.navy} />
+            <Ionicons name="chevron-back" size={24} color="#000" />
           </TouchableOpacity>
           <View style={styles.headerRight}>
             <TouchableOpacity>
-              <Ionicons name="ellipsis-horizontal" size={24} color={HS.navy} />
+              <Ionicons name="ellipsis-horizontal" size={24} color="#000" />
             </TouchableOpacity>
           </View>
         </View>
@@ -91,12 +90,12 @@ export const MenuModal: React.FC<MenuModalProps> = ({
             <Text style={styles.taskTitle}>Help me with Excel</Text>
             
             <View style={styles.taskDetailRow}>
-              <Ionicons name="location-outline" size={16} color={HS.muted} />
+              <Ionicons name="location-outline" size={16} color="#666" />
               <Text style={styles.taskDetailText}>Remote</Text>
             </View>
             
             <View style={styles.taskDetailRow}>
-              <Ionicons name="calendar-outline" size={16} color={HS.muted} />
+              <Ionicons name="calendar-outline" size={16} color="#666" />
               <Text style={styles.taskDetailText}>Flexible</Text>
             </View>
             
@@ -145,7 +144,7 @@ export const MenuModal: React.FC<MenuModalProps> = ({
 const styles = StyleSheet.create({
   menuContainer: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#f5f5f5',
   },
   menuHeader: {
     flexDirection: 'row',
@@ -154,7 +153,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     paddingTop: (StatusBar.currentHeight || 0) + 12,
-    backgroundColor: HS.page,
+    backgroundColor: '#f5f5f5',
   },
   backButton: {
     padding: 4,
@@ -165,7 +164,7 @@ const styles = StyleSheet.create({
   },
   menuContent: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#f5f5f5',
     paddingTop: 40,
   },
   iconSection: {
@@ -175,18 +174,18 @@ const styles = StyleSheet.create({
   cancelledTitle: {
     fontSize: RFValue(20),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#2c3e50',
     textAlign: 'center',
     marginBottom: 5,
   },
   cancelledSubtitle: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: '#7f8c8d',
     textAlign: 'center',
     marginBottom: 30,
   },
   postTaskButton: {
-    backgroundColor: HS.orange,
+    backgroundColor: '#ff6b35',
     marginHorizontal: 20,
     paddingVertical: 14,
     borderRadius: 25,
@@ -199,7 +198,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   taskDetailsContainer: {
-    backgroundColor: HS.card,
+    backgroundColor: '#fff',
     marginHorizontal: 0,
     paddingHorizontal: 20,
     paddingVertical: 20,
@@ -208,7 +207,7 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(28),
     fontWeight: '700',
-    color: HS.blue,
+    color: '#003399',
     marginBottom: 20,
   },
   taskDetailRow: {
@@ -218,53 +217,53 @@ const styles = StyleSheet.create({
   },
   taskDetailText: {
     fontSize: RFValue(16),
-    color: HS.navy,
+    color: '#2c3e50',
     marginLeft: 8,
     fontWeight: '400',
   },
   currencySymbol: {
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: '#666',
     marginRight: 8,
   },
   budgetLabel: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#7f8c8d',
     marginLeft: 8,
     marginTop: 2,
   },
   taskDescription: {
     fontSize: RFValue(14),
-    color: HS.navy,
+    color: '#2c3e50',
     marginTop: 15,
     lineHeight: 18,
   },
   bottomMenuContainer: {
-    backgroundColor: HS.card,
+    backgroundColor: '#fff',
     paddingBottom: 40,
   },
   moreOptionsText: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: '#7f8c8d',
     textAlign: 'center',
     paddingVertical: 15,
-    backgroundColor: HS.tint,
+    backgroundColor: '#f8f9fa',
   },
   menuOption: {
     paddingVertical: 18,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: HS.cardBorder,
+    borderBottomColor: '#f0f0f0',
   },
   menuOptionText: {
     fontSize: RFValue(16),
-    color: HS.blue,
+    color: '#003399',
     textAlign: 'center',
     fontWeight: '400',
   },
   cancelOptionText: {
     fontSize: RFValue(16),
-    color: HS.blue,
+    color: '#003399',
     textAlign: 'center',
     fontWeight: '400',
   },

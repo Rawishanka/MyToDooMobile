@@ -1,15 +1,15 @@
 /**
- * "Home style" kit for the Account family (light mode = dark-blue header band + light blue-white
- * page + white cards; dark mode keeps the existing navy surfaces). Purely presentational helpers.
+ * "Full blue glass" design kit for the Account family (light mode = whole screen blue,
+ * dark mode keeps the existing navy surfaces). Purely presentational helpers.
  *
- *  - BluePage      page root: HS.page background, light status bar
- *  - LightHeader   blue header band (white centred title, translucent back pill)
- *  - IconChip      36px tinted chip with blue glyph (tones: blue, green, amber, red)
- *  - SectionCard   white homeCard with optional chip + navy title
- *  - tokens        LC (colours), glassCard (= homeCard + padding), fieldLabel, inputBase,
- *                  primaryButton, secondaryButton
+ *  - BluePage      page root: #003399 -> #00287A gradient, light status bar, safe-area blends in
+ *  - LightHeader   transparent header band (same blue as page), centred white title, glass back pill
+ *  - IconChip      36px glass chip with white glyph (tones: blue/white, green=mint, amber, red=coral)
+ *  - SectionCard   glass card with optional chip + title
+ *  - tokens        LC (colours), glassCard, fieldLabel, inputBase, primaryButton, secondaryButton
  */
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
   Platform,
@@ -23,32 +23,29 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/shared/theme';
-import { HS, homeCard, homeIconChip } from '@/src/shared/theme/homeStyle';
 
 export const LC = {
-  blue: HS.blue,
-  blueDeep: HS.blueDeep,
-  orange: HS.orange,
-  page: HS.page,
-  card: HS.card,
-  border: HS.cardBorder,
-  chip: HS.tint,
-  text: HS.navy,
-  label: HS.navy,
-  muted: HS.muted,
-  faint: HS.placeholder,
-  chevron: HS.muted,
+  blue: '#003399',
+  blueDeep: '#00287A',
+  orange: '#ff6b35',
+  page: '#003399',
+  card: 'rgba(255,255,255,0.10)',
+  border: 'rgba(255,255,255,0.18)',
+  chip: 'rgba(255,255,255,0.16)',
+  text: '#FFFFFF',
+  label: '#FFFFFF',
+  muted: 'rgba(255,255,255,0.75)',
+  faint: 'rgba(255,255,255,0.55)',
+  chevron: 'rgba(255,255,255,0.6)',
   inputFill: '#FFFFFF',
-  inputText: HS.navy,
-  inputBorder: HS.inputBorder,
-  placeholder: HS.placeholder,
-  required: '#DC2626',
-  green: HS.greenText,
-  greenBg: HS.greenBg,
-  amber: HS.amberText,
-  amberBg: HS.amberBg,
-  red: HS.redText,
-  redBg: HS.redBg,
+  inputText: '#0F172A',
+  placeholder: '#94A3B8',
+  green: '#4ADE80',
+  greenBg: 'rgba(74,222,128,0.18)',
+  amber: '#FBBF24',
+  amberBg: 'rgba(251,191,36,0.18)',
+  red: '#FCA5A5',
+  redBg: 'rgba(252,165,165,0.18)',
   dark: {
     page: '#0B1120',
     card: '#1E293B',
@@ -61,20 +58,24 @@ export const LC = {
 } as const;
 
 export const cardShadow = {
-  shadowColor: HS.blue,
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
+  shadowColor: '#00114D',
+  shadowOpacity: 0.25,
+  shadowRadius: 14,
   shadowOffset: { width: 0, height: 6 },
 } as const;
 
-/** White card surface (light). Spread into a style. */
+/** Glass card surface (light). Spread into a style. */
 export const glassCard = {
-  ...homeCard,
+  backgroundColor: LC.card,
+  borderRadius: 20,
+  borderWidth: 1,
+  borderColor: LC.border,
   padding: 16,
+  ...cardShadow,
 } as const;
 
 export const fieldLabel = {
-  color: HS.navy,
+  color: '#FFFFFF',
   fontSize: 14,
   fontWeight: '600',
   marginBottom: 8,
@@ -84,7 +85,7 @@ export const inputBase = {
   backgroundColor: LC.inputFill,
   borderRadius: 14,
   borderWidth: 1.5,
-  borderColor: HS.inputBorder,
+  borderColor: 'transparent',
   color: LC.inputText,
   paddingHorizontal: 14,
   minHeight: 50,
@@ -105,28 +106,48 @@ export const primaryButton = {
 } as const;
 
 export const secondaryButton = {
-  backgroundColor: '#FFFFFF',
+  backgroundColor: 'transparent',
   borderRadius: 14,
   height: 52,
   borderWidth: 1.5,
-  borderColor: HS.blue,
+  borderColor: '#FFFFFF',
   alignItems: 'center',
   justifyContent: 'center',
 } as const;
 
-/** Page root: light Home-style page (HS.page); navy in dark mode. */
+/** Page root: full blue (light) with subtle gradient; navy in dark mode. */
 export const BluePage: React.FC<{ children?: React.ReactNode; style?: StyleProp<ViewStyle> }> = ({ children, style }) => {
   const { isDarkMode } = useTheme();
   return (
-    <View style={[{ flex: 1, backgroundColor: isDarkMode ? LC.dark.page : HS.page }, style]}>
+    <View style={[{ flex: 1, backgroundColor: isDarkMode ? LC.dark.page : LC.blue }, style]}>
       <StatusBar barStyle="light-content" />
+      {!isDarkMode && (
+        <LinearGradient
+          colors={[LC.blue, LC.blueDeep]}
+          style={StyleSheet.absoluteFill}
+          pointerEvents="none"
+        />
+      )}
       {children}
     </View>
   );
 };
 
-/** Legacy no-op (the gradient backdrop was removed with the Home-style redesign). */
-export const BlueBackdrop: React.FC = () => null;
+/**
+ * Drop-in first child for a screen root whose base background is already LC.blue:
+ * adds the subtle #003399 -> #00287A gradient in light mode (renders nothing in dark).
+ */
+export const BlueBackdrop: React.FC = () => {
+  const { isDarkMode } = useTheme();
+  if (isDarkMode) return null;
+  return (
+    <LinearGradient
+      colors={[LC.blue, LC.blueDeep]}
+      style={StyleSheet.absoluteFill}
+      pointerEvents="none"
+    />
+  );
+};
 
 interface HeaderProps {
   title: string;
@@ -135,17 +156,17 @@ interface HeaderProps {
   /** Use when the screen already sits below a safe-area / custom top padding */
   topPadding?: number;
   backIcon?: 'chevron-back' | 'close';
-  /** Legacy prop, the band is always solid blue now */
+  /** Opaque blue band for the few (legacy) screens whose body is still a light page */
   solid?: boolean;
 }
 
-/** Blue header band with translucent back pill and centred white title. */
-export const LightHeader: React.FC<HeaderProps> = ({ title, onBack, right, topPadding, backIcon = 'chevron-back' }) => {
+/** Header band (same blue as the page) with translucent back pill and centred white title. */
+export const LightHeader: React.FC<HeaderProps> = ({ title, onBack, right, topPadding, backIcon = 'chevron-back', solid = false }) => {
   const insets = useSafeAreaInsets();
   const { isDarkMode } = useTheme();
   const pad = topPadding ?? (Platform.OS === 'ios' ? insets.top + 6 : Math.max(insets.top, 24) + 6);
   return (
-    <View style={[hs.header, { paddingTop: pad }, isDarkMode && { backgroundColor: LC.dark.page }]}>
+    <View style={[hs.header, { paddingTop: pad }, solid && { backgroundColor: LC.blue }, isDarkMode && { backgroundColor: LC.dark.page }]}>
       <StatusBar barStyle="light-content" />
       <View style={hs.side}>
         {onBack ? (
@@ -167,7 +188,7 @@ export const LightHeader: React.FC<HeaderProps> = ({ title, onBack, right, topPa
   );
 };
 
-/** 36px rounded tinted icon chip used on every row / section title. */
+/** 36px rounded glass icon chip used on every row / section title. */
 export const IconChip: React.FC<{
   name: React.ComponentProps<typeof Ionicons>['name'];
   tone?: 'blue' | 'green' | 'amber' | 'red';
@@ -176,19 +197,19 @@ export const IconChip: React.FC<{
 }> = ({ name, tone = 'blue', size = 36, style }) => {
   const { isDarkMode } = useTheme();
   const map = {
-    blue: { bg: isDarkMode ? 'rgba(56,189,248,0.14)' : HS.tint, fg: isDarkMode ? LC.dark.accent : HS.blue },
-    green: { bg: HS.greenBg, fg: HS.greenText },
-    amber: { bg: HS.amberBg, fg: HS.amberText },
-    red: { bg: HS.redBg, fg: HS.redText },
+    blue: { bg: isDarkMode ? 'rgba(56,189,248,0.14)' : LC.chip, fg: isDarkMode ? LC.dark.accent : '#FFFFFF' },
+    green: { bg: LC.greenBg, fg: LC.green },
+    amber: { bg: LC.amberBg, fg: LC.amber },
+    red: { bg: LC.redBg, fg: LC.red },
   }[tone];
   return (
-    <View style={[homeIconChip, { width: size, height: size }, { backgroundColor: map.bg }, style]}>
+    <View style={[{ width: size, height: size, borderRadius: 12, backgroundColor: map.bg, alignItems: 'center', justifyContent: 'center' }, style]}>
       <Ionicons name={name} size={Math.round(size * 0.52)} color={map.fg} />
     </View>
   );
 };
 
-/** White homeCard with a bold navy title and optional icon chip. */
+/** Glass card with a bold white title and optional icon chip. */
 export const SectionCard: React.FC<{
   title?: string;
   icon?: React.ComponentProps<typeof Ionicons>['name'];
@@ -213,7 +234,7 @@ const hs = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: HS.blue,
+    backgroundColor: 'transparent',
     paddingHorizontal: 16,
     paddingBottom: 14,
   },
@@ -243,5 +264,5 @@ const cs = StyleSheet.create({
     marginBottom: 14,
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
-  title: { flex: 1, fontSize: 17, fontWeight: '700', color: HS.navy },
+  title: { flex: 1, fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
 });

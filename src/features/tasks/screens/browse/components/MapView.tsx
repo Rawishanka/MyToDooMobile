@@ -787,33 +787,33 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           font-size: 14px;
         }
         .leaflet-popup-content-wrapper {
-          background: #ffffff !important;
-          border: 1px solid #E3EAFB !important;
+          background: #003399 !important;
+          border: 1px solid rgba(255,255,255,0.14) !important;
           border-radius: 20px !important;
-          box-shadow: 0 6px 16px rgba(0,51,153,0.16) !important;
-          color: #3B4A6B !important;
+          box-shadow: 0 6px 12px rgba(0,26,102,0.30) !important;
+          color: #ffffff !important;
         }
         .leaflet-popup-content { margin: 14px 16px !important; }
         .leaflet-popup-tip {
-          background: #ffffff !important;
+          background: #003399 !important;
         }
         .leaflet-popup-close-button {
-          color: #6B7A99 !important;
+          color: rgba(255,255,255,0.78) !important;
           font-size: 18px !important;
         }
         .leaflet-popup-close-button:hover {
-          color: #003399 !important;
+          color: #ffffff !important;
         }
         .marker-title {
           font-weight: 700;
-          color: #0B1B4D;
+          color: #ffffff;
           margin-bottom: 8px;
           font-size: 16px;
           padding-right: 14px;
         }
         .marker-price {
           display: inline-block;
-          background: #EAF1FF;
+          background: #ffffff;
           color: #003399;
           font-weight: 800;
           font-size: 15px;
@@ -822,7 +822,7 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           margin-bottom: 8px;
         }
         .marker-location {
-          color: #6B7A99;
+          color: rgba(255,255,255,0.78);
           font-size: 13px;
           margin-bottom: 10px;
         }
@@ -830,14 +830,14 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           display: flex;
           justify-content: space-between;
           font-size: 12px;
-          color: #6B7A99;
-          border-top: 1px solid #E3EAFB;
+          color: rgba(255,255,255,0.78);
+          border-top: 1px solid rgba(255,255,255,0.22);
           padding-top: 8px;
         }
         .marker-actions {
           margin-top: 10px;
           padding-top: 12px;
-          border-top: 1px solid #E3EAFB;
+          border-top: 1px solid rgba(255,255,255,0.22);
           display: flex;
           gap: 8px;
         }
@@ -854,9 +854,8 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           box-shadow: 0 4px 8px rgba(255,107,53,0.35);
         }
         .action-btn + .action-btn {
-          background: #ffffff;
-          color: #003399;
-          border: 1.5px solid #003399;
+          background: transparent;
+          border: 1.5px solid rgba(255,255,255,0.6);
           box-shadow: none;
         }
         .action-btn:hover {
@@ -908,8 +907,6 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         }
         .action-btn + .action-btn {
           background: transparent !important;
-          color: #ffffff !important;
-          border: 1.5px solid rgba(255,255,255,0.6) !important;
         }
         .marker-location {
           color: #94A3B8 !important;

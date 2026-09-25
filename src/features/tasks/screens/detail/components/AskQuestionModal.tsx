@@ -3,8 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
-import { HS } from '@/src/shared/theme/homeStyle';
+import { BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -99,7 +98,7 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
           <View style={[styles.modalHeader, !isDarkMode && styles.modalHeaderBand]}>
             <Text style={[styles.modalTitle, isDarkMode && { color: "#38BDF8" }]}>Ask a Question</Text>
             <TouchableOpacity onPress={handleClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Ionicons name="close" size={24} color={isDarkMode ? "#F8FAFC" : "#FFFFFF"} />
+              <Ionicons name="close" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
             </TouchableOpacity>
           </View>
 
@@ -207,10 +206,10 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: CARD_TEXT,
   },
   modalHeaderBand: {
-    backgroundColor: HS.blue,
+    backgroundColor: CARD_BG,
     marginHorizontal: -20,
     paddingHorizontal: 20,
     paddingVertical: 14,
@@ -233,16 +232,16 @@ const styles = StyleSheet.create({
   },
   questionInput: {
     borderWidth: 1.5,
-    borderColor: HS.inputBorder,
+    borderColor: '#CBD5E1',
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     padding: 16,
     fontSize: 16,
-    color: HS.navy,
+    color: '#0D1B2A',
     minHeight: 120,
   },
   guidelinesContainer: {
-    backgroundColor: HS.tint,
+    backgroundColor: CARD_BG,
     padding: 16,
     borderRadius: 14,
     marginTop: 8,
@@ -251,12 +250,12 @@ const styles = StyleSheet.create({
   guidelinesTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: HS.navy,
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   guideline: {
     fontSize: RFValue(13),
-    color: HS.text,
+    color: CARD_TEXT_MUTED,
     marginBottom: 4,
     lineHeight: 18,
   },
@@ -273,7 +272,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   submitQuestionButtonDisabled: {
-    backgroundColor: HS.tintStrong,
+    backgroundColor: '#CBD5E1',
     shadowOpacity: 0,
     elevation: 0,
   },

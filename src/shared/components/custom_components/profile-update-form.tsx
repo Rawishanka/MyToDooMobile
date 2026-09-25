@@ -27,7 +27,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
 import AddSkillsModal from '@/src/shared/components/custom_components/add-skills-modal';
 import { requestPhoneOtp, verifyPhoneOtp } from '@/src/api/contact-change-api';
-import { HS } from '@/src/shared/theme/homeStyle';
 
 export function formatToE164(input: string): string {
   if (!input) return '';
@@ -673,7 +672,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                 <Ionicons
                   name={phoneStep === 'input' ? 'call-outline' : 'shield-checkmark-outline'}
                   size={24}
-                  color={isDarkMode ? '#60A5FA' : HS.blue}
+                  color={isDarkMode ? '#60A5FA' : '#003399'}
                 />
               </View>
               <Text style={[styles.phoneModalTitle, isDarkMode && { color: '#F8FAFC' }]}>
@@ -795,7 +794,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   content: {
     flex: 1,
@@ -813,11 +812,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: HS.inputBorder,
+    borderColor: '#E8ECF4',
     padding: 16,
     marginBottom: 14,
-    shadowColor: HS.blue,
-    shadowOpacity: 0.08,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
@@ -834,7 +833,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0F172A',
     marginBottom: 16,
   },
   inputGroup: {
@@ -843,18 +842,18 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: HS.text,
+    color: '#334155',
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: HS.inputBorder,
+    borderColor: '#E8ECF4',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: RFValue(15),
-    color: HS.navy,
-    backgroundColor: '#FFFFFF',
+    color: '#0F172A',
+    backgroundColor: '#F8FAFC',
   },
   textArea: {
     height: 100,
@@ -865,7 +864,7 @@ const styles = StyleSheet.create({
   },
   charCount: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'right',
     marginTop: 4,
   },
@@ -878,7 +877,7 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: HS.inputBorder,
+    borderTopColor: '#E8ECF4',
   },
   saveButton: {
     backgroundColor: BRAND_ORANGE,
@@ -930,14 +929,14 @@ const styles = StyleSheet.create({
   },
   modalMessage: {
     fontSize: RFValue(15),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 8,
     lineHeight: 22,
   },
   modalSubMessage: {
     fontSize: RFValue(13),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -957,13 +956,13 @@ const styles = StyleSheet.create({
   modalCancelText: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: HS.muted,
+    color: '#64748B',
   },
   modalSendButton: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: HS.blue,
+    backgroundColor: '#003399',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1008,7 +1007,7 @@ const styles = StyleSheet.create({
     color: '#856404',
   },
   backToProfileButton: {
-    backgroundColor: HS.blue,
+    backgroundColor: '#003399',
     paddingVertical: 14,
     paddingHorizontal: 32,
     borderRadius: 8,
@@ -1023,7 +1022,7 @@ const styles = StyleSheet.create({
   },
   modalFooterText: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -1040,7 +1039,7 @@ const styles = StyleSheet.create({
   skillTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(0,51,153,0.08)',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 14,
@@ -1048,7 +1047,7 @@ const styles = StyleSheet.create({
   },
   skillTagText: {
     fontSize: RFValue(14),
-    color: HS.blue,
+    color: '#003399',
   },
   // "Add Skills" / "Edit Skills" tap row for goodAt
   openSkillsBtn: {
@@ -1056,7 +1055,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     borderWidth: 1.5,
-    borderColor: HS.blue,
+    borderColor: '#003399',
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 14,
@@ -1065,7 +1064,7 @@ const styles = StyleSheet.create({
   },
   openSkillsBtnText: {
     fontSize: RFValue(15),
-    color: HS.blue,
+    color: '#003399',
     fontWeight: '600',
   },
   addSkillContainer: {
@@ -1075,13 +1074,13 @@ const styles = StyleSheet.create({
   addSkillInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: HS.inputBorder,
+    borderColor: '#E8ECF4',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: RFValue(15),
-    color: HS.navy,
-    backgroundColor: '#FFFFFF',
+    color: '#0F172A',
+    backgroundColor: '#F8FAFC',
   },
   addButton: {
     backgroundColor: '#ff6b35',
@@ -1106,16 +1105,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: HS.inputBorder,
-    backgroundColor: '#FFFFFF',
+    borderColor: '#E8ECF4',
+    backgroundColor: '#F8FAFC',
   },
   transportOptionSelected: {
-    backgroundColor: HS.blue,
-    borderColor: HS.blue,
+    backgroundColor: '#003399',
+    borderColor: '#003399',
   },
   transportOptionText: {
     fontSize: RFValue(14),
-    color: HS.text,
+    color: '#334155',
   },
   transportOptionTextSelected: {
     color: '#fff',
@@ -1132,10 +1131,10 @@ const styles = StyleSheet.create({
   },
   // Notification Preferences Styles
   notifCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: HS.inputBorder,
+    borderColor: '#E8ECF4',
     marginBottom: 4,
     overflow: 'hidden',
   },
@@ -1155,7 +1154,7 @@ const styles = StyleSheet.create({
   notifLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#0F172A',
     marginBottom: 3,
   },
   notifLabelDisabled: {
@@ -1163,12 +1162,12 @@ const styles = StyleSheet.create({
   },
   notifDesc: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#64748B',
     lineHeight: 17,
   },
   notifDivider: {
     height: 1,
-    backgroundColor: HS.inputBorder,
+    backgroundColor: '#E8ECF4',
     marginHorizontal: 16,
   },
   phoneLabelRow: {

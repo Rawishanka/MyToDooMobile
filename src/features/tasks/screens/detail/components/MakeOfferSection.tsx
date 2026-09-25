@@ -1,5 +1,4 @@
-import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
+import { BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import React from 'react';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
@@ -37,20 +36,28 @@ export const MakeOfferSection: React.FC<MakeOfferSectionProps> = ({ onMakeOffer,
 
 const styles = StyleSheet.create({
   makeOfferSection: {
-    ...homeCard,
+    backgroundColor: CARD_BG,
     padding: 18,
     marginBottom: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
   },
   makeOfferTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: HS.navy,
+    color: CARD_TEXT,
     marginBottom: 4,
   },
   viewersText: {
     fontSize: 13,
     lineHeight: 18,
-    color: HS.muted,
+    color: CARD_TEXT_MUTED,
     marginBottom: 14,
   },
   makeOfferButton: {

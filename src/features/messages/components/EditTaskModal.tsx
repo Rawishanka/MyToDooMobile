@@ -11,7 +11,6 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { HS } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface EditTaskModalProps {
@@ -36,12 +35,12 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.editContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor={HS.card} />
+        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
         
         {/* Header */}
         <View style={styles.editHeader}>
           <TouchableOpacity onPress={onClose} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={HS.navy} />
+            <Ionicons name="chevron-back" size={24} color="#000" />
           </TouchableOpacity>
           <Text style={styles.editHeaderTitle}>Edit task</Text>
           <View style={styles.placeholder} />
@@ -56,7 +55,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
               value={taskTitle}
               onChangeText={setTaskTitle}
               placeholder="Enter task title"
-              placeholderTextColor={HS.placeholder}
+              placeholderTextColor="#999"
             />
           </View>
 
@@ -131,7 +130,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
               <Ionicons 
                 name="location-outline" 
                 size={24} 
-                color={!isOnline ? "#fff" : HS.muted} 
+                color={!isOnline ? "#fff" : "#666"} 
                 style={styles.locationIcon}
               />
               <Text style={[
@@ -158,7 +157,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
               <Ionicons 
                 name="phone-portrait-outline" 
                 size={24} 
-                color={isOnline ? "#fff" : HS.muted}
+                color={isOnline ? "#fff" : "#666"}
                 style={styles.locationIcon}
               />
               <Text style={[
@@ -189,7 +188,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
 const styles = StyleSheet.create({
   editContainer: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#fff',
   },
   editHeader: {
     flexDirection: 'row',
@@ -199,8 +198,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingTop: (StatusBar.currentHeight || 0) + 12,
     borderBottomWidth: 1,
-    borderBottomColor: HS.cardBorder,
-    backgroundColor: HS.card,
+    borderBottomColor: '#e8e8e8',
+    backgroundColor: '#fff',
   },
   backButton: {
     padding: 4,
@@ -208,7 +207,7 @@ const styles = StyleSheet.create({
   editHeaderTitle: {
     fontSize: RFValue(24),
     fontWeight: '700',
-    color: HS.blue,
+    color: '#003399',
     textAlign: 'center',
     flex: 1,
   },
@@ -223,34 +222,34 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#2c3e50',
     marginBottom: 10,
     marginTop: 25,
   },
   inputContainer: {
-    backgroundColor: HS.tint,
+    backgroundColor: '#f8f9fa',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   textInput: {
     fontSize: RFValue(16),
-    color: HS.navy,
+    color: '#2c3e50',
     minHeight: 20,
   },
   dateOption: {
-    backgroundColor: HS.tint,
+    backgroundColor: '#f8f9fa',
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginBottom: 8,
   },
   dateOptionSelected: {
-    backgroundColor: HS.blue,
+    backgroundColor: '#003399',
   },
   dateOptionText: {
     fontSize: RFValue(16),
-    color: HS.navy,
+    color: '#2c3e50',
     textAlign: 'center',
     fontWeight: '500',
   },
@@ -267,19 +266,19 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderWidth: 2,
-    borderColor: HS.inputBorder,
+    borderColor: '#ddd',
     borderRadius: 3,
     marginRight: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: HS.blue,
-    borderColor: HS.blue,
+    backgroundColor: '#003399',
+    borderColor: '#003399',
   },
   checkboxLabel: {
     fontSize: RFValue(14),
-    color: HS.navy,
+    color: '#2c3e50',
   },
   locationContainer: {
     flexDirection: 'row',
@@ -288,7 +287,7 @@ const styles = StyleSheet.create({
   },
   locationOption: {
     flex: 1,
-    backgroundColor: HS.tint,
+    backgroundColor: '#f8f9fa',
     paddingVertical: 20,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -296,7 +295,7 @@ const styles = StyleSheet.create({
     minHeight: 120,
   },
   locationOptionSelected: {
-    backgroundColor: HS.blue,
+    backgroundColor: '#003399',
   },
   locationIcon: {
     marginBottom: 8,
@@ -304,7 +303,7 @@ const styles = StyleSheet.create({
   locationTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#2c3e50',
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -313,7 +312,7 @@ const styles = StyleSheet.create({
   },
   locationDescription: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#7f8c8d',
     textAlign: 'center',
     lineHeight: 16,
   },
@@ -321,7 +320,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   submitButton: {
-    backgroundColor: HS.orange,
+    backgroundColor: '#ff6b35',
     paddingVertical: 14,
     borderRadius: 25,
     marginTop: 20,

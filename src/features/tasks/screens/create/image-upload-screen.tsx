@@ -334,14 +334,14 @@ export default function SnapPhotoScreen() {
               >
                 {(isProcessing || validatingImages.size > 0) ? (
                   <View style={styles.uploadingContainer}>
-                    <ActivityIndicator size="small" color={FLOW.blue} />
+                    <ActivityIndicator size="small" color="#FFFFFF" />
                     <Text style={styles.uploadingText}>
                       {validatingImages.size > 0 ? 'Validating...' : 'Processing...'}
                     </Text>
                   </View>
                 ) : (
                   <>
-                    <Ionicons name="camera" size={24} color={FLOW.blue} />
+                    <Ionicons name="camera" size={24} color="#FFFFFF" />
                     <Ionicons name="add" size={16} color="#FFFFFF" style={styles.addIcon} />
                   </>
                 )}
@@ -389,15 +389,9 @@ export default function SnapPhotoScreen() {
     >
       <StatusBar barStyle="light-content" backgroundColor={FLOW.blue} />
       <FlowBackground isDarkMode={false} />
-      <View style={[styles.hero, { paddingTop: Math.max(insets.top, 20) + 6 }]}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Add photos & location</Text>
-        <Text style={styles.subtitle}>
-          Help taskers understand what needs doing. Add up to {MAX_TASK_PHOTOS} photos ({images.length}/{MAX_TASK_PHOTOS})
-        </Text>
-      </View>
+      <TouchableOpacity style={[styles.backBtn, { top: Math.max(insets.top, 20) + 6 }]} onPress={() => router.back()}>
+        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+      </TouchableOpacity>
 
       <ScrollView 
         style={styles.scrollView}
@@ -406,6 +400,11 @@ export default function SnapPhotoScreen() {
         keyboardShouldPersistTaps="handled"
         removeClippedSubviews={Platform.OS === 'android'}
       >
+        <Text style={styles.title}>Add photos & location</Text>
+        <Text style={styles.subtitle}>
+          Help taskers understand what needs doing. Add up to {MAX_TASK_PHOTOS} photos ({images.length}/{MAX_TASK_PHOTOS})
+        </Text>
+
         <View style={styles.imageSection}>
           {renderGridItems}
         </View>
@@ -423,7 +422,7 @@ export default function SnapPhotoScreen() {
           
           {selectedLocation && (
             <View style={styles.selectedLocationContainer}>
-              <Ionicons name="location" size={20} color={FLOW.blue} />
+              <Ionicons name="location" size={20} color="#FFFFFF" />
               <Text style={styles.selectedLocationText} numberOfLines={2}>
                 {selectedLocation.address}
               </Text>
@@ -454,42 +453,32 @@ export default function SnapPhotoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: FLOW.page,
-  },
-  hero: {
     backgroundColor: FLOW.blue,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    paddingHorizontal: 20,
-    paddingBottom: 24,
   },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: FLOW.heroPill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 100,
     paddingBottom: 130,
   },
   title: {
     fontSize: RFValue(22),
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginTop: 4,
   },
   subtitle: {
-    color: FLOW.onHeroMuted,
+    color: FLOW.textMuted,
     fontSize: RFValue(14),
     marginTop: 5,
+    marginBottom: 20,
   },
   imageSection: {
     marginBottom: 30,
@@ -512,7 +501,7 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: FLOW.tintBorder,
+    borderColor: FLOW.glassBorder,
   },
   deleteBtn: {
     position: 'absolute',
@@ -537,19 +526,19 @@ const styles = StyleSheet.create({
   uploadBox: {
     width: 70,
     height: 70,
-    backgroundColor: FLOW.tint,
+    backgroundColor: FLOW.glass,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
     borderWidth: 1.5,
-    borderColor: FLOW.tintBorder,
+    borderColor: FLOW.dashed,
     borderStyle: 'dashed',
     position: 'relative',
   },
   uploadBoxDisabled: {
     opacity: 0.5,
-    backgroundColor: FLOW.tint,
+    backgroundColor: FLOW.glass,
   },
   addIcon: {
     position: 'absolute',
@@ -568,18 +557,18 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: FLOW.navy,
+    color: '#FFFFFF',
     marginBottom: 5,
   },
   sectionSubtitle: {
     fontSize: RFValue(14),
-    color: FLOW.muted,
+    color: FLOW.textMuted,
     marginBottom: 15,
   },
   selectedLocationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: FLOW.tint,
+    backgroundColor: FLOW.glassStrong,
     padding: 12,
     borderRadius: 14,
     marginTop: 10,
@@ -588,7 +577,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(14),
-    color: FLOW.navy,
+    color: '#FFFFFF',
   },
   actionBar: {
     position: 'absolute',
@@ -597,7 +586,7 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 20,
     paddingTop: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: FLOW.blueDeep,
     borderTopWidth: 1,
     borderTopColor: FLOW.line,
   },
@@ -628,7 +617,7 @@ const styles = StyleSheet.create({
   },
   uploadingText: {
     fontSize: RFValue(9),
-    color: FLOW.blue,
+    color: '#FFFFFF',
     fontWeight: '600',
     marginTop: 2,
   },

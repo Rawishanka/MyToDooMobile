@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
 
 interface Stats {
   totalTasksCreated: number;
@@ -52,14 +51,21 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stats }) => {
 
 const styles = StyleSheet.create({
   statsCard: {
-    ...homeCard,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
   },
   statsTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 14,
   },
   statsGrid: {
@@ -70,44 +76,44 @@ const styles = StyleSheet.create({
   },
   statItem: {
     width: '48%',
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: 14,
-    borderRadius: 16,
+    borderRadius: 14,
     marginBottom: 10,
     alignItems: 'center',
   },
   statValue: {
     fontSize: RFValue(22),
     fontWeight: '800',
-    color: HS.blue,
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
   },
   responseTimeContainer: {
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: 14,
-    borderRadius: 16,
+    borderRadius: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   responseTimeLabel: {
     fontSize: 14,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     flexShrink: 1,
     marginRight: 8,
   },
   responseTimeValue: {
     fontSize: 14,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
   },
 });

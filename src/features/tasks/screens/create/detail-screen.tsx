@@ -1,4 +1,4 @@
-import { FLOW, FlowBackground, flowCard, primaryShadow } from './flowTheme';
+import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 import { CreateTaskRequest } from '@/src/api/types/tasks';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useStorageState } from '@/src/shared/hooks/useStorageState';
@@ -42,7 +42,7 @@ const ListItem = React.memo(({ icon, text, value, onPress }: ListItemProps) => (
         {value && <Text style={styles.valueText}>{value}</Text>}
       </View>
     </View>
-    <Ionicons name="chevron-forward" size={20} color={FLOW.muted} />
+    <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.6)" />
   </TouchableOpacity>
 ));
 ListItem.displayName = 'ListItem';
@@ -358,47 +358,45 @@ export default function DetailScreen() {
       {/* API Debug Panel */}
       {/* <ApiDebugPanel /> */}
       
-      <View style={[styles.hero, { paddingTop: Math.max(insets.top, 20) + 6 }]}>
-        {/* Back Arrow Button */}
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
+      {/* Back Arrow Button */}
+      <TouchableOpacity style={[styles.backBtn, { top: Math.max(insets.top, 20) + 6 }]} onPress={() => router.back()}>
+        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+      </TouchableOpacity>
 
-        <Text style={styles.title}>Ready to get offers?</Text>
-        <Text style={styles.subtitle}>Post the task when you&apos;re ready</Text>
-      </View>
+      <Text style={styles.title}>Ready to get offers?</Text>
+      <Text style={styles.subtitle}>Post the task when you&apos;re ready</Text>
 
       <ScrollView contentContainerStyle={styles.list} removeClippedSubviews={false}>
         <ListItem
-          icon={<MaterialIcons name="drive-file-rename-outline" size={22} color={FLOW.blue} />}
+          icon={<MaterialIcons name="drive-file-rename-outline" size={22} color="#FFFFFF" />}
           text="Task Title"
           value={myTask.title || 'Move the car'}
           onPress={() => router.push('/(welcome-screen)/title-screen?section=title' as any)}
         />
         
         <ListItem
-          icon={<MaterialIcons name="event-available" size={22} color={FLOW.blue} />}
+          icon={<MaterialIcons name="event-available" size={22} color="#FFFFFF" />}
           text="When"
           value={getDateTimeText()}
           onPress={() => router.push('/(welcome-screen)/title-screen?section=when' as any)}
         />
         
         <ListItem
-          icon={<Ionicons name="location-outline" size={22} color={FLOW.blue} />}
+          icon={<Ionicons name="location-outline" size={22} color="#FFFFFF" />}
           text="Location"
           value={getLocationText()}
           onPress={() => router.push('/(welcome-screen)/title-screen?section=location' as any)}
         />
         
         <ListItem
-          icon={<MaterialIcons name="description" size={22} color={FLOW.blue} />}
+          icon={<MaterialIcons name="description" size={22} color="#FFFFFF" />}
           text="Description"
           value={myTask.description || 'Add task description'}
           onPress={() => router.push('/(welcome-screen)/title-screen?section=description' as any)}
         />
         
         <ListItem
-          icon={<MaterialIcons name="attach-money" size={22} color={FLOW.blue} />}
+          icon={<MaterialIcons name="attach-money" size={22} color="#FFFFFF" />}
           text="Budget"
           value={myTask.budget > 0 ? `${currencyInfo.symbol}${myTask.budget}` : 'Set budget'}
           onPress={() => router.push('/(welcome-screen)/budget-screen' as any)}
@@ -424,8 +422,8 @@ export default function DetailScreen() {
       >
         {postTaskMutation.isPending ? (
           <View style={styles.postingContainer}>
-            <ActivityIndicator size="small" color={FLOW.blue} />
-            <Text style={[styles.continueText, styles.continueTextDisabled, { marginLeft: 8 }]}>Posting Task...</Text>
+            <ActivityIndicator size="small" color="#fff" />
+            <Text style={[styles.continueText, { marginLeft: 8 }]}>Posting Task...</Text>
           </View>
         ) : (
           <Text style={styles.continueText}>Post Task</Text>
@@ -440,53 +438,46 @@ export default function DetailScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: FLOW.page,
+    backgroundColor: FLOW.blue,
   },
   container: {
     flex: 1,
-    backgroundColor: FLOW.page,
+    backgroundColor: 'transparent',
+    paddingHorizontal: isTablet ? wp('12.5%') : wp('5%'),
+    paddingTop: 60,
     maxWidth: isTablet ? 900 : undefined,
     alignSelf: isTablet ? 'center' : 'auto',
     width: '100%',
   },
-  hero: {
-    backgroundColor: FLOW.blue,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('5%'),
-    paddingBottom: 24,
-  },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: FLOW.heroPill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
+    position: 'absolute',
+    top: 50,
+    left: isTablet ? wp('12.5%') : wp('5%'),
+    zIndex: 1,
   },
   title: {
     fontSize: RFValue(isTablet ? 24 : 20),
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: hp('0.6%'),
-    marginTop: hp('1%'),
+    marginTop: hp('5%'),
     textAlign: 'center',
   },
   subtitle: {
-    color: FLOW.onHeroMuted,
+    color: FLOW.textMuted,
+    marginBottom: hp('2.5%'),
     textAlign: 'center',
     fontSize: RFValue(isTablet ? 14 : 13),
   },
   list: {
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('5%'),
-    paddingTop: 16,
     paddingBottom: 24,
   },
   item: {
     paddingVertical: 14,
     paddingHorizontal: 14,
-    ...flowCard,
+    backgroundColor: FLOW.glass,
+    borderWidth: 1,
+    borderColor: FLOW.glassBorder,
     borderRadius: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -502,7 +493,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 14,
-    backgroundColor: FLOW.tint,
+    backgroundColor: FLOW.glassStrong,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -513,18 +504,19 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: RFValue(isTablet ? 16 : 14),
-    color: FLOW.navy,
+    color: '#FFFFFF',
     fontWeight: '700',
   },
   valueText: {
     fontSize: RFValue(isTablet ? 14 : 12),
-    color: FLOW.muted,
+    color: FLOW.textMuted,
     marginTop: hp('0.3%'),
   },
   actionBar: {
+    marginHorizontal: isTablet ? -wp('12.5%') : -wp('5%'),
     paddingHorizontal: isTablet ? wp('12.5%') : wp('5%'),
     paddingTop: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: FLOW.blueDeep,
     borderTopWidth: 1,
     borderTopColor: FLOW.line,
   },
@@ -540,9 +532,6 @@ const styles = StyleSheet.create({
     backgroundColor: FLOW.disabledFill,
     shadowOpacity: 0,
     elevation: 0,
-  },
-  continueTextDisabled: {
-    color: FLOW.disabledText,
   },
   postingContainer: {
     flexDirection: 'row',

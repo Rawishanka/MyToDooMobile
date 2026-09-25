@@ -7,7 +7,7 @@ import { validateContactContent } from '@/src/shared/utils/contactModeration';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -24,7 +24,6 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HS } from '@/src/shared/theme/homeStyle';
 
 interface CreateServiceScreenProps {
   onBack: () => void;
@@ -229,6 +228,7 @@ export default function CreateServiceScreen({
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 20 : 0}
     >
+      <BlueBackdrop />
       <LightHeader title="Offer a Service" onBack={handleBack} />
 
       <ScrollView
@@ -253,7 +253,7 @@ export default function CreateServiceScreen({
             <View style={[styles.formCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             {/* Category Picker */}
             <View style={styles.labelRow}>
-              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Category <Text style={[styles.required, isDarkMode && { color: '#FCA5A5' }]}>*</Text></Text>
+              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Category <Text style={styles.required}>*</Text></Text>
               {selectedCategory ? (
                 <Text style={[styles.selectedCategoryBadge, isDarkMode && { color: '#38BDF8' }]}>
                   ✓ {selectedCategory}
@@ -268,8 +268,8 @@ export default function CreateServiceScreen({
                 style={[
                   styles.categorySelectorBox,
                   isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
-                  categoryDropdownOpen && { borderColor: HS.blue },
-                  errors.category ? [styles.inputError, isDarkMode && { borderColor: '#F87171' }] : null,
+                  categoryDropdownOpen && { borderColor: '#ff6b35' },
+                  errors.category ? styles.inputError : null,
                 ]}
                 onPress={() => {
                   Keyboard.dismiss();
@@ -281,7 +281,7 @@ export default function CreateServiceScreen({
                   <Ionicons
                     name="grid-outline"
                     size={18}
-                    color={selectedCategory ? (isDarkMode ? '#38BDF8' : HS.blue) : '#94A3B8'}
+                    color={selectedCategory ? (isDarkMode ? '#38BDF8' : '#003399') : '#94A3B8'}
                     style={{ marginRight: 10 }}
                   />
                   <Text
@@ -379,17 +379,17 @@ export default function CreateServiceScreen({
                 </View>
               )}
             </View>
-            {errors.category ? <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>{errors.category}</Text> : null}
+            {errors.category ? <Text style={styles.errorText}>{errors.category}</Text> : null}
 
             {/* Title */}
             <View style={[styles.labelRow, { marginTop: 14 }]}>
-              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Service Title <Text style={[styles.required, isDarkMode && { color: '#FCA5A5' }]}>*</Text></Text>
+              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Service Title <Text style={styles.required}>*</Text></Text>
               <Text
                 style={[
                   styles.charCounter,
                   isDarkMode && { color: '#94A3B8' },
-                  titleLength > 0 && titleLength < 5 && [styles.charCounterWarning, isDarkMode && { color: '#FBBF24' }],
-                  titleLength >= 5 && [styles.charCounterSuccess, isDarkMode && { color: '#4ADE80' }],
+                  titleLength > 0 && titleLength < 5 && styles.charCounterWarning,
+                  titleLength >= 5 && styles.charCounterSuccess,
                 ]}
               >
                 {title.length}/80 (Min 5)
@@ -403,7 +403,7 @@ export default function CreateServiceScreen({
                 styles.input,
                 isDarkMode && { backgroundColor: '#1E293B', color: '#F8FAFC', borderColor: '#334155' },
                 focusedField === 'title' && styles.inputFocused,
-                errors.title ? [styles.inputError, isDarkMode && { borderColor: '#F87171' }] : null,
+                errors.title ? styles.inputError : null,
               ]}
               {...focusProps('title')}
               value={title}
@@ -415,17 +415,17 @@ export default function CreateServiceScreen({
               placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
               maxLength={80}
             />
-            {errors.title ? <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>{errors.title}</Text> : null}
+            {errors.title ? <Text style={styles.errorText}>{errors.title}</Text> : null}
 
             {/* Description */}
             <View style={[styles.labelRow, { marginTop: 14 }]}>
-              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Description <Text style={[styles.required, isDarkMode && { color: '#FCA5A5' }]}>*</Text></Text>
+              <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Description <Text style={styles.required}>*</Text></Text>
               <Text
                 style={[
                   styles.charCounter,
                   isDarkMode && { color: '#94A3B8' },
-                  descLength > 0 && descLength < 15 && [styles.charCounterWarning, isDarkMode && { color: '#FBBF24' }],
-                  descLength >= 15 && [styles.charCounterSuccess, isDarkMode && { color: '#4ADE80' }],
+                  descLength > 0 && descLength < 15 && styles.charCounterWarning,
+                  descLength >= 15 && styles.charCounterSuccess,
                 ]}
               >
                 {description.length}/1000 (Min 15)
@@ -440,7 +440,7 @@ export default function CreateServiceScreen({
                 styles.textArea,
                 isDarkMode && { backgroundColor: '#1E293B', color: '#F8FAFC', borderColor: '#334155' },
                 focusedField === 'description' && styles.inputFocused,
-                errors.description ? [styles.inputError, isDarkMode && { borderColor: '#F87171' }] : null,
+                errors.description ? styles.inputError : null,
               ]}
               {...focusProps('description')}
               value={description}
@@ -454,19 +454,19 @@ export default function CreateServiceScreen({
               textAlignVertical="top"
               maxLength={1000}
             />
-            {errors.description ? <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>{errors.description}</Text> : null}
+            {errors.description ? <Text style={styles.errorText}>{errors.description}</Text> : null}
 
             {/* Price & Radius Row */}
             <View style={[styles.row, { marginTop: 14 }]}>
               <View style={{ flex: 1, marginRight: 10 }}>
-                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Price (AUD) <Text style={[styles.required, isDarkMode && { color: '#FCA5A5' }]}>*</Text></Text>
+                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Price (AUD) <Text style={styles.required}>*</Text></Text>
                 <Text style={[styles.helperText, isDarkMode && { color: '#94A3B8' }]}>Fixed package price</Text>
                 <TextInput
                   style={[
                     styles.input,
                     isDarkMode && { backgroundColor: '#1E293B', color: '#F8FAFC', borderColor: '#334155' },
                     focusedField === 'price' && styles.inputFocused,
-                    errors.price ? [styles.inputError, isDarkMode && { borderColor: '#F87171' }] : null,
+                    errors.price ? styles.inputError : null,
                   ]}
                   {...focusProps('price')}
                   value={price}
@@ -478,7 +478,7 @@ export default function CreateServiceScreen({
                   placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
                   keyboardType="decimal-pad"
                 />
-                {errors.price ? <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>{errors.price}</Text> : null}
+                {errors.price ? <Text style={styles.errorText}>{errors.price}</Text> : null}
               </View>
 
               <View style={{ flex: 1, marginLeft: 10 }}>
@@ -489,7 +489,7 @@ export default function CreateServiceScreen({
                     styles.input,
                     isDarkMode && { backgroundColor: '#1E293B', color: '#F8FAFC', borderColor: '#334155' },
                     focusedField === 'radius' && styles.inputFocused,
-                    errors.radius ? [styles.inputError, isDarkMode && { borderColor: '#F87171' }] : null,
+                    errors.radius ? styles.inputError : null,
                   ]}
                   {...focusProps('radius')}
                   value={radiusKm}
@@ -502,12 +502,12 @@ export default function CreateServiceScreen({
                   keyboardType="number-pad"
                   maxLength={3}
                 />
-                {errors.radius ? <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>{errors.radius}</Text> : null}
+                {errors.radius ? <Text style={styles.errorText}>{errors.radius}</Text> : null}
               </View>
             </View>
 
             {/* Location */}
-            <Text style={[styles.label, { marginTop: 14 }, isDarkMode && { color: '#F8FAFC' }]}>Suburb / Service Area <Text style={[styles.required, isDarkMode && { color: '#FCA5A5' }]}>*</Text></Text>
+            <Text style={[styles.label, { marginTop: 14 }, isDarkMode && { color: '#F8FAFC' }]}>Suburb / Service Area <Text style={styles.required}>*</Text></Text>
             <Text style={[styles.helperText, isDarkMode && { color: '#94A3B8' }]}>Base suburb where you provide this service</Text>
             <View style={{ zIndex: 1000, elevation: 1000, marginTop: 4 }}>
               <LocationAutocomplete
@@ -525,10 +525,10 @@ export default function CreateServiceScreen({
                 onDropdownStateChange={setSuburbDropdownOpen}
               />
             </View>
-            {errors.suburb ? <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>{errors.suburb}</Text> : null}
+            {errors.suburb ? <Text style={styles.errorText}>{errors.suburb}</Text> : null}
             {suburb ? (
               <View style={styles.selectedLocBadge}>
-                <Ionicons name="location" size={14} color={isDarkMode ? '#38BDF8' : HS.blue} />
+                <Ionicons name="location" size={14} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
                 <Text style={[styles.selectedLocation, isDarkMode && { color: '#38BDF8' }]} numberOfLines={1}>{suburb}</Text>
               </View>
             ) : null}
@@ -556,42 +556,45 @@ export default function CreateServiceScreen({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: HS.page },
+  container: { flex: 1, backgroundColor: '#003399' },
   content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 60 },
   formCard: {
-    backgroundColor: HS.card,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: 16,
-    shadowColor: HS.blue,
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
   },
-  required: { color: '#DC2626' },
-  inputFocused: { borderColor: HS.blue },
+  required: { color: '#FCA5A5' },
+  inputFocused: { borderColor: '#ff6b35' },
   infoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: 'rgba(255,255,255,0.18)',
     gap: 12,
     marginBottom: 14,
+    shadowColor: '#00114D',
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
   },
   infoBannerTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 3,
   },
   infoBannerSub: {
     fontSize: 12,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     lineHeight: 17,
   },
   labelRow: {
@@ -602,48 +605,48 @@ const styles = StyleSheet.create({
   label: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   charCounter: {
     fontSize: RFValue(11),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.65)',
     fontWeight: '500',
   },
   charCounterWarning: {
-    color: HS.amberText,
+    color: '#FBBF24',
     fontWeight: '600',
   },
   charCounterSuccess: {
-    color: HS.greenText,
+    color: '#4ADE80',
     fontWeight: '600',
   },
   helperText: {
     fontSize: RFValue(11.5),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     marginBottom: 6,
   },
   selectedCategoryBadge: {
     fontSize: RFValue(12),
     fontWeight: '600',
-    color: HS.greenText,
+    color: '#4ADE80',
   },
   input: {
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: HS.inputBorder,
+    borderColor: 'transparent',
     paddingHorizontal: 14,
     paddingVertical: 13,
     fontSize: RFValue(14),
-    color: HS.navy,
+    color: '#0F172A',
   },
   inputError: {
-    borderColor: HS.redText,
+    borderColor: '#F87171',
     borderWidth: 1.5,
   },
   errorText: {
-    color: HS.redText,
+    color: '#FCA5A5',
     fontSize: RFValue(12),
     marginTop: 4,
     marginLeft: 2,
@@ -654,7 +657,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: HS.inputBorder,
+    borderColor: 'transparent',
     paddingHorizontal: 14,
     paddingVertical: 13,
     flexDirection: 'row',
@@ -671,14 +674,14 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#0F172A',
   },
   categoryDropdownMenu: {
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     marginTop: 6,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
+    borderColor: '#E8ECF4',
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
@@ -691,9 +694,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: HS.tint,
+    backgroundColor: '#F8FAFC',
     borderBottomWidth: 1,
-    borderBottomColor: HS.cardBorder,
+    borderBottomColor: '#E8ECF4',
   },
   categorySearchInput: {
     flex: 1,
@@ -711,11 +714,11 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F1F5F9',
   },
   categoryItemActive: {
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(0,51,153,0.08)',
   },
   categoryDropdownItemText: {
     fontSize: RFValue(13.5),
-    color: HS.text,
+    color: '#334155',
   },
   selectedLocBadge: {
     flexDirection: 'row',
@@ -725,7 +728,7 @@ const styles = StyleSheet.create({
   },
   selectedLocation: {
     flexShrink: 1,
-    color: HS.blue,
+    color: '#FFFFFF',
     fontSize: RFValue(12),
     fontWeight: '600',
   },

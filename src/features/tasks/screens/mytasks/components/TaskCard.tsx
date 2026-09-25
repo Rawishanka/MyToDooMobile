@@ -49,27 +49,6 @@ import {
   CARD_TEXT,
   CARD_TEXT_MUTED,
 } from '@/src/shared/theme/brandColors';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
-
-// Card palette: dark mode keeps its original values, light mode uses the Home style.
-const DARK_CARD = {
-  bg: CARD_BG,
-  text: CARD_TEXT,
-  muted: CARD_TEXT_MUTED,
-  divider: CARD_DIVIDER,
-  chip: CARD_CHIP_BG,
-  priceBg: CARD_PRICE_BG,
-  priceText: CARD_PRICE_TEXT,
-};
-const LIGHT_CARD = {
-  bg: HS.card,
-  text: HS.navy,
-  muted: HS.muted,
-  divider: HS.cardBorder,
-  chip: HS.tint,
-  priceBg: HS.tint,
-  priceText: HS.blue,
-};
 
 const REVIEW_PROMPT_STORAGE_PREFIX = '@mytodoo/review_prompt_shown_';
 const RECENT_COMPLETION_WINDOW_MS = 15 * 60 * 1000;
@@ -103,10 +82,6 @@ interface TaskCardProps {
 
 export default function TaskCard({ task, onPress, status, userRole, onTaskCancelled, onTaskDeleted, onTaskCompleted, myOffer, onOfferDeleted, autoPromptReview = false }: TaskCardProps) {
   const { isDarkMode } = useTheme();
-  const styles = useMemo(() => createStyles(isDarkMode), [isDarkMode]);
-  const ICON = isDarkMode
-    ? { chip: '#FFFFFF', chipDim: 'rgba(255,255,255,0.4)', danger: '#FCA5A5', dangerDim: 'rgba(252,165,165,0.4)', amber: '#FBBF24', green: '#4ADE80', base: CARD_TEXT, muted: CARD_TEXT_MUTED }
-    : { chip: HS.blue, chipDim: 'rgba(0,51,153,0.35)', danger: HS.redText, dangerDim: 'rgba(185,28,28,0.35)', amber: HS.amberText, green: HS.greenText, base: HS.blue, muted: HS.muted };
   const router = useRouter();
   const insets = useSafeAreaInsets();
   
@@ -1433,13 +1408,13 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const getStatusColor = () => {
     switch (task.status) {
       case 'completed':
-        return isDarkMode ? '#4ADE80' : HS.greenText;
+        return '#4ADE80';
       case 'assigned':
-        return isDarkMode ? '#93C5FD' : HS.blue;
+        return '#93C5FD';
       case 'open':
-        return isDarkMode ? '#FBBF24' : HS.amberText;
+        return '#FBBF24';
       default:
-        return isDarkMode ? '#CBD5E1' : HS.muted;
+        return '#CBD5E1';
     }
   };
 
@@ -1476,9 +1451,6 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' },
       hasPendingCancelRequestFromOther && styles.cardWithCancelRequest
     ]} pointerEvents="auto">
-      {!isDarkMode && (
-        <View pointerEvents="none" style={[styles.accentStrip, { backgroundColor: getStatusColor() }]} />
-      )}
       {/* Pending Cancellation Request Banner */}
       {hasPendingCancelRequestFromOther && (
         <TouchableOpacity 
@@ -1594,7 +1566,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               <MaterialIcons
                 name={timePreference.icon}
                 size={14}
-                color={ICON.base}
+                color={CARD_TEXT}
               />
             </View>
             <Text style={styles.timePreference} numberOfLines={1}>{timePreference.label}</Text>
@@ -1605,7 +1577,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               <MaterialIcons
                 name={getLocationIcon()}
                 size={14}
-                color={isMovingLocation() ? ICON.green : ICON.base}
+                color={isMovingLocation() ? '#4ADE80' : CARD_TEXT}
               />
             </View>
             {isMovingLocation() ? (
@@ -1676,7 +1648,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
       {status === 'unserviced' && userRole === 'Poster' && (
         <View style={styles.peerReviewLockBanner}>
-          <MaterialIcons name="hourglass-empty" size={18} color={ICON.amber} />
+          <MaterialIcons name="hourglass-empty" size={18} color="#FBBF24" />
           <Text style={styles.peerReviewLockText}>
             Unserviced after 30 days open — reopen to list it on Find Tasks again
           </Text>
@@ -1686,7 +1658,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       {/* Peer review lock notice */}
       {isCompletedTask && lockedPeerReview && (
         <View style={styles.peerReviewLockBanner}>
-          <MaterialIcons name="lock-outline" size={18} color={ICON.amber} />
+          <MaterialIcons name="lock-outline" size={18} color="#FBBF24" />
           <Text style={styles.peerReviewLockText}>
             {lockedPeerReview.message || 'Submit your review to see theirs'}
           </Text>
@@ -1721,18 +1693,18 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 onPress={handleViewOffers}
               >
                 <View style={styles.offersInfo}>
-                  <View style={styles.offersIconChip}><MaterialIcons name="local-offer" size={16} color={ICON.base} /></View>
+                  <View style={styles.offersIconChip}><MaterialIcons name="local-offer" size={16} color={CARD_TEXT} /></View>
                   <Text style={styles.offersLabel}>
                     Offers: {(task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0}
                   </Text>
                 </View>
-                <MaterialIcons name="chevron-right" size={22} color={ICON.muted} />
+                <MaterialIcons name="chevron-right" size={22} color={CARD_TEXT_MUTED} />
               </TouchableOpacity>
             ) : (
               /* For Taskers - just display offer count without interaction */
               <View style={styles.offersButton}>
                 <View style={styles.offersInfo}>
-                  <View style={styles.offersIconChip}><MaterialIcons name="local-offer" size={16} color={ICON.base} /></View>
+                  <View style={styles.offersIconChip}><MaterialIcons name="local-offer" size={16} color={CARD_TEXT} /></View>
                   <Text style={styles.offersLabel}>
                     Offers: {(task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0}
                   </Text>
@@ -1761,7 +1733,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               <MaterialIcons 
                 name="receipt" 
                 size={20} 
-                color={isProcessing ? ICON.chipDim : ICON.chip} 
+                color={isProcessing ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
               />
             </TouchableOpacity>
           ) : isCompletedTask && userRole === 'Poster' ? (
@@ -1781,7 +1753,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               <MaterialIcons 
                 name="receipt" 
                 size={20} 
-                color={isProcessing ? ICON.chipDim : ICON.chip} 
+                color={isProcessing ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
               />
             </TouchableOpacity>
           ) : status === 'cancelled' || status === 'overdue' ? (
@@ -1808,7 +1780,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                     <Ionicons
                       name="trash-outline"
                       size={18}
-                      color={(isProcessing || deleteOfferMutation.isPending) ? ICON.dangerDim : ICON.danger}
+                      color={(isProcessing || deleteOfferMutation.isPending) ? 'rgba(252,165,165,0.4)' : '#FCA5A5'}
                     />
                   </TouchableOpacity>
                 )}
@@ -1834,7 +1806,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                       <MaterialIcons 
                         name="chat" 
                         size={20} 
-                        color={ICON.chip} 
+                        color="#FFFFFF" 
                       />
                     </TouchableOpacity>
                   )}
@@ -1847,7 +1819,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                     task.status === 'pending_completion' ? (
                       // Task already marked complete - show waiting status badge instead of button
                       <View style={styles.pendingCompletionBadge}>
-                        <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color={ICON.amber} />
+                        <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#FBBF24" />
                         <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to accept</Text>
                       </View>
                     ) : (
@@ -1902,7 +1874,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                       <MaterialIcons 
                         name="close" 
                         size={20} 
-                        color={isProcessing ? ICON.dangerDim : ICON.danger} 
+                        color={isProcessing ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
                       />
                     </TouchableOpacity>
                   )}
@@ -1926,7 +1898,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                   <MaterialIcons 
                     name="chat" 
                     size={20} 
-                    color={ICON.chip} 
+                    color="#FFFFFF" 
                   />
                 </TouchableOpacity>
               )}
@@ -1937,7 +1909,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 task.status !== 'pending_admin_review' && task.status !== 'cancelled' && task.status !== 'rejected' && (
                 task.status === 'pending_completion' ? (
                   <View style={styles.pendingCompletionBadge}>
-                    <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color={ICON.amber} />
+                    <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#FBBF24" />
                     <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to accept</Text>
                   </View>
                 ) : (
@@ -2016,7 +1988,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                   <MaterialIcons 
                     name="close" 
                     size={20} 
-                    color={isProcessing ? ICON.dangerDim : ICON.danger} 
+                    color={isProcessing ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
                   />
                 </TouchableOpacity>
               )}
@@ -2031,13 +2003,13 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                   activeOpacity={0.7}
                   delayPressIn={0}
                 >
-                  <MaterialIcons name="chat" size={20} color={ICON.chip} />
+                  <MaterialIcons name="chat" size={20} color="#FFFFFF" />
                 </TouchableOpacity>
               )}
 
               {userRole === 'Tasker' && (
                 <View style={styles.pendingCompletionBadge}>
-                  <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color={ICON.amber} />
+                  <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#FBBF24" />
                   <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to release payment</Text>
                 </View>
               )}
@@ -2102,7 +2074,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 <MaterialIcons 
                   name="edit" 
                   size={20} 
-                  color={(isProcessing || deleteTaskMutation.isPending) ? ICON.chipDim : ICON.chip} 
+                  color={(isProcessing || deleteTaskMutation.isPending) ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
                 />
               </TouchableOpacity>
             
@@ -2121,7 +2093,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 <MaterialIcons 
                   name="delete" 
                   size={20} 
-                  color={(deleteTaskMutation.isPending || isProcessing) ? ICON.dangerDim : ICON.danger} 
+                  color={(deleteTaskMutation.isPending || isProcessing) ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
                 />
               </TouchableOpacity>
             
@@ -2141,7 +2113,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                   <MaterialIcons 
                     name="cancel" 
                     size={20} 
-                    color={isProcessing ? ICON.dangerDim : ICON.danger} 
+                    color={isProcessing ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
                   />
                 </TouchableOpacity>
               )}
@@ -2723,36 +2695,21 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   );
 }
 
-const createStyles = (isDarkMode: boolean) => {
-const P = isDarkMode ? DARK_CARD : LIGHT_CARD;
-return StyleSheet.create({
+const styles = StyleSheet.create({
   card: {
     marginHorizontal: isTablet ? 0 : 16,
+    backgroundColor: CARD_BG,
     padding: isTablet ? wp('2%') : 12,
     borderRadius: 20,
     marginBottom: 12,
     position: 'relative',
-    ...(isDarkMode
-      ? {
-          backgroundColor: P.bg,
-          borderWidth: 1,
-          borderColor: 'rgba(255,255,255,0.14)',
-          shadowColor: '#001A66',
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: 0.18,
-          shadowRadius: 12,
-          elevation: 4,
-        }
-      : homeCard),
-  },
-  accentStrip: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 4,
-    borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   cardWithCancelRequest: {
     borderWidth: 2,
@@ -2777,9 +2734,9 @@ return StyleSheet.create({
   peerReviewLockBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: isDarkMode ? 'rgba(251,191,36,0.16)' : HS.amberBg,
+    backgroundColor: 'rgba(251,191,36,0.16)',
     borderWidth: 1,
-    borderColor: isDarkMode ? 'rgba(251,191,36,0.4)' : '#FCD34D',
+    borderColor: 'rgba(251,191,36,0.4)',
     paddingVertical: 8,
     paddingHorizontal: 10,
     borderRadius: 12,
@@ -2788,7 +2745,7 @@ return StyleSheet.create({
   },
   peerReviewLockText: {
     flex: 1,
-    color: isDarkMode ? '#FDE68A' : HS.amberText,
+    color: '#FDE68A',
     fontSize: RFValue(12),
     fontWeight: '500',
   },
@@ -2818,7 +2775,7 @@ return StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: P.chip,
+    backgroundColor: CARD_CHIP_BG,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 20,
@@ -2830,7 +2787,7 @@ return StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: P.chip,
+    backgroundColor: CARD_CHIP_BG,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -2858,16 +2815,16 @@ return StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: isDarkMode ? 'rgba(251,191,36,0.16)' : HS.amberBg,
+    backgroundColor: 'rgba(251,191,36,0.16)',
     borderWidth: 1,
-    borderColor: isDarkMode ? 'rgba(251,191,36,0.45)' : '#FCD34D',
+    borderColor: 'rgba(251,191,36,0.45)',
     minHeight: 42,
     paddingHorizontal: 10,
     borderRadius: 12,
     gap: 6,
   },
   pendingCompletionBadgeText: {
-    color: isDarkMode ? '#FDE68A' : HS.amberText,
+    color: '#FDE68A',
     fontSize: RFValue(12),
     fontWeight: '600',
     flexShrink: 1,
@@ -2890,9 +2847,9 @@ return StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: isDarkMode ? 'rgba(248,113,113,0.22)' : HS.redBg,
+    backgroundColor: 'rgba(248,113,113,0.22)',
     borderWidth: 1.5,
-    borderColor: isDarkMode ? 'rgba(252,165,165,0.55)' : '#FCA5A5',
+    borderColor: 'rgba(252,165,165,0.55)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -2903,14 +2860,14 @@ return StyleSheet.create({
     marginTop: 8,
     paddingVertical: 8,
     paddingHorizontal: 10,
-    backgroundColor: isDarkMode ? 'rgba(248,113,113,0.16)' : HS.redBg,
+    backgroundColor: 'rgba(248,113,113,0.16)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: isDarkMode ? 'rgba(252,165,165,0.4)' : '#FCA5A5',
+    borderColor: 'rgba(252,165,165,0.4)',
   },
   cancellationText: {
     fontSize: RFValue(12),
-    color: isDarkMode ? '#FCA5A5' : HS.redText,
+    color: '#FCA5A5',
     marginLeft: isTablet ? wp('1%') : wp('1.5%'),
     fontWeight: '500',
   },
@@ -3003,7 +2960,7 @@ return StyleSheet.create({
   title: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: P.text,
+    color: CARD_TEXT,
     lineHeight: isTablet ? RFValue(21) : 21,
   },
   chipRow: {
@@ -3019,7 +2976,7 @@ return StyleSheet.create({
     height: 26,
     paddingRight: 10,
     borderRadius: 13,
-    backgroundColor: P.chip,
+    backgroundColor: CARD_CHIP_BG,
     gap: 2,
     flexShrink: 1,
     maxWidth: '100%',
@@ -3040,30 +2997,30 @@ return StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 9,
-    backgroundColor: P.chip,
+    backgroundColor: CARD_CHIP_BG,
     alignItems: 'center',
     justifyContent: 'center',
   },
   timePreference: {
     fontSize: RFValue(12),
     flexShrink: 1,
-    color: P.text,
+    color: CARD_TEXT,
     fontWeight: '500',
   },
   locationType: {
     fontSize: RFValue(12),
-    color: isDarkMode ? '#4ADE80' : HS.greenText,
+    color: '#4ADE80',
     fontWeight: '500',
     marginRight: 4,
   },
   locationDivider: {
     marginHorizontal: isTablet ? wp('1.5%') : 6,
-    color: P.divider,
+    color: CARD_DIVIDER,
     fontSize: RFValue(isTablet ? 12 : 12),
   },
   locationText: {
     fontSize: RFValue(12),
-    color: P.muted,
+    color: CARD_TEXT_MUTED,
     flexShrink: 1,
   },
   meta: {
@@ -3087,7 +3044,7 @@ return StyleSheet.create({
   },
   date: {
     fontSize: RFValue(12),
-    color: P.muted,
+    color: CARD_TEXT_MUTED,
     flexShrink: 1,
     marginLeft: 'auto',
   },
@@ -3110,8 +3067,8 @@ return StyleSheet.create({
   priceText: {
     fontSize: RFValue(15),
     fontWeight: '700',
-    color: P.priceText,
-    backgroundColor: P.priceBg,
+    color: CARD_PRICE_TEXT,
+    backgroundColor: CARD_PRICE_BG,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 14,
@@ -3121,13 +3078,13 @@ return StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: P.chip,
+    backgroundColor: CARD_CHIP_BG,
     borderWidth: 1.5,
-    borderColor: isDarkMode ? 'rgba(255,255,255,0.6)' : HS.tintBorder,
+    borderColor: 'rgba(255,255,255,0.6)',
   },
   description: {
     fontSize: RFValue(13),
-    color: P.muted,
+    color: CARD_TEXT_MUTED,
     lineHeight: 18,
     marginTop: 2,
   },
@@ -3138,7 +3095,7 @@ return StyleSheet.create({
     gap: 6,
   },
   categoryChip: {
-    backgroundColor: P.chip,
+    backgroundColor: CARD_CHIP_BG,
     paddingHorizontal: 9,
     paddingVertical: 3,
     borderRadius: 12,
@@ -3146,23 +3103,23 @@ return StyleSheet.create({
   },
   categoryLabel: {
     fontSize: RFValue(11),
-    color: P.text,
+    color: CARD_TEXT,
     fontWeight: '600',
   },
   categoryTag: {
-    backgroundColor: P.chip,
+    backgroundColor: CARD_CHIP_BG,
     paddingHorizontal: isTablet ? wp('2%') : 8,
     paddingVertical: isTablet ? hp('0.4%') : 4,
     borderRadius: 14,
   },
   categoryText: {
     fontSize: RFValue(isTablet ? 10 : 11),
-    color: P.text,
+    color: CARD_TEXT,
     fontWeight: '500',
   },
   moreCategoriesText: {
     fontSize: RFValue(isTablet ? 10 : 12),
-    color: P.muted,
+    color: CARD_TEXT_MUTED,
     fontWeight: '500',
     fontStyle: 'italic',
     marginLeft: isTablet ? wp('0.5%') : 4,
@@ -3338,7 +3295,7 @@ return StyleSheet.create({
     // Additional styles for delete button if needed
   },
   receiptButton: {
-    backgroundColor: P.chip,
+    backgroundColor: CARD_CHIP_BG,
   },
   leaveReviewCta: {
     flexDirection: 'row',
@@ -3361,12 +3318,12 @@ return StyleSheet.create({
     fontSize: 14,
   },
   reviewButton: {
-    backgroundColor: isDarkMode ? 'rgba(251,191,36,0.16)' : HS.amberBg,
+    backgroundColor: 'rgba(251,191,36,0.16)',
   },
   withdrawOfferBtn: {
-    backgroundColor: isDarkMode ? 'rgba(248,113,113,0.22)' : HS.redBg,
+    backgroundColor: 'rgba(248,113,113,0.22)',
     borderWidth: 1,
-    borderColor: isDarkMode ? 'rgba(252,165,165,0.5)' : '#FCA5A5',
+    borderColor: 'rgba(252,165,165,0.5)',
   },
   withdrawModalCard: {
     backgroundColor: '#FFFFFF',
@@ -3518,7 +3475,7 @@ return StyleSheet.create({
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: P.divider,
+    borderTopColor: CARD_DIVIDER,
   },
   footerRowStacked: {
     flexDirection: 'column',
@@ -3549,12 +3506,12 @@ return StyleSheet.create({
   offersLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: P.text,
+    color: CARD_TEXT,
     marginLeft: 8,
   },
   offersCount: {
     fontSize: RFValue(14),
-    color: P.muted,
+    color: CARD_TEXT_MUTED,
     marginLeft: 4,
   },
   // Offers modal styles
@@ -3678,4 +3635,5 @@ return StyleSheet.create({
     fontWeight: '600',
   },
 });
-};
+
+

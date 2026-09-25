@@ -1,8 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
-import { HS } from '@/src/shared/theme/homeStyle';
+import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -17,22 +16,22 @@ export default function ErrorState({ title, subtitle, onRetry, onGoBack }: Error
   const { isDarkMode } = useTheme();
   return (
     <View style={styles.errorContainer}>
-      <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? '#1E293B' : HS.redBg }]}>
-        <Ionicons name="alert-circle-outline" size={40} color={isDarkMode ? '#FCA5A5' : HS.redText} />
+      <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? '#1E293B' : BRAND_BLUE }]}>
+        <Ionicons name="alert-circle-outline" size={40} color="#FCA5A5" />
       </View>
-      <Text style={[styles.errorTitle, { color: isDarkMode ? '#F8FAFC' : HS.navy }]}>{title}</Text>
-      <Text style={[styles.errorSubtitle, { color: isDarkMode ? '#94A3B8' : HS.muted }]}>{subtitle}</Text>
+      <Text style={[styles.errorTitle, { color: isDarkMode ? '#F8FAFC' : '#0F172A' }]}>{title}</Text>
+      <Text style={[styles.errorSubtitle, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>{subtitle}</Text>
       {onRetry && (
         <TouchableOpacity style={styles.retryButton} onPress={onRetry} activeOpacity={0.85}>
           <Text style={styles.retryButtonText}>Try Again</Text>
         </TouchableOpacity>
       )}
       <TouchableOpacity
-        style={[styles.backButton, { borderColor: isDarkMode ? '#475569' : HS.blue }]}
+        style={[styles.backButton, { borderColor: isDarkMode ? '#475569' : BRAND_BLUE }]}
         onPress={onGoBack}
         activeOpacity={0.8}
       >
-        <Text style={[styles.backButtonText, { color: isDarkMode ? '#F8FAFC' : HS.blue }]}>Go Back</Text>
+        <Text style={[styles.backButtonText, { color: isDarkMode ? '#F8FAFC' : BRAND_BLUE }]}>Go Back</Text>
       </TouchableOpacity>
     </View>
   );
@@ -52,6 +51,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   errorTitle: {
     fontSize: RFValue(18),

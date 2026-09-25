@@ -17,8 +17,7 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
+import { BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 
@@ -286,7 +285,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
 
               {/* Star Rating */}
               <View style={[styles.ratingSection, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#334155" }]}>
-                <Text style={[styles.sectionLabel, isDarkMode && { color: '#F8FAFC' }]}>Your Rating *</Text>
+                <Text style={[styles.sectionLabel, !isDarkMode && { color: CARD_TEXT }, isDarkMode && { color: '#F8FAFC' }]}>Your Rating *</Text>
                 <View style={styles.starsContainer}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <TouchableOpacity
@@ -298,7 +297,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                       <Ionicons
                         name={star <= rating ? 'star' : 'star-outline'}
                         size={40}
-                        color={star <= rating ? '#ff6b35' : (isDarkMode ? '#475569' : HS.tintBorder)}
+                        color={star <= rating ? '#ff6b35' : (isDarkMode ? '#475569' : 'rgba(255,255,255,0.45)')}
                       />
                     </TouchableOpacity>
                   ))}
@@ -406,9 +405,9 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                 disabled={rating === 0 || isSubmitting}
               >
                 {isSubmitting ? (
-                  <ActivityIndicator color={isDarkMode ? '#FFF' : HS.blue} />
+                  <ActivityIndicator color="#FFF" />
                 ) : (
-                  <Text style={[styles.submitButtonText, !isDarkMode && rating === 0 && { color: HS.muted }]}>Submit Review</Text>
+                  <Text style={styles.submitButtonText}>Submit Review</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -430,7 +429,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   modalContent: {
-    backgroundColor: HS.page,
+    backgroundColor: '#FAFBFF',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     maxHeight: '92%',
@@ -460,7 +459,7 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255, 122, 0, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -494,11 +493,14 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginTop: 16,
     marginHorizontal: 16,
-    ...homeCard,
+    backgroundColor: CARD_BG,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
   },
   taskLabel: {
     fontSize: RFValue(10),
-    color: HS.muted,
+    color: CARD_TEXT_MUTED,
     marginBottom: 4,
     textTransform: 'uppercase',
     fontWeight: '700',
@@ -507,7 +509,7 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(15),
     fontWeight: '700',
-    color: HS.navy,
+    color: CARD_TEXT,
     lineHeight: RFValue(21),
   },
 
@@ -516,14 +518,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 24,
     alignItems: 'center',
-    ...homeCard,
+    backgroundColor: CARD_BG,
     marginTop: 14,
     marginHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   sectionLabel: {
     fontSize: RFValue(13),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#374151',
     marginBottom: 14,
     alignSelf: 'flex-start',
     textTransform: 'uppercase',
@@ -540,7 +550,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: RFValue(15),
-    color: HS.blue,
+    color: CARD_TEXT,
     fontWeight: '700',
     letterSpacing: 0.3,
   },
@@ -552,11 +562,11 @@ const styles = StyleSheet.create({
   },
   reviewInput: {
     borderWidth: 1.5,
-    borderColor: HS.inputBorder,
+    borderColor: '#E0E7FF',
     borderRadius: 14,
     padding: 14,
     fontSize: RFValue(14),
-    color: HS.navy,
+    color: '#1A1D2E',
     minHeight: 120,
     backgroundColor: '#FFFFFF',
     lineHeight: RFValue(21),
@@ -585,10 +595,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    backgroundColor: HS.tint,
+    backgroundColor: '#EEF2FF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: HS.tintBorder,
+    borderColor: '#C7D2FE',
     gap: 8,
   },
   attachmentButtonText: {
@@ -616,11 +626,11 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 12,
-    backgroundColor: HS.tint,
+    backgroundColor: '#EEF2FF',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: HS.tintBorder,
+    borderColor: '#C7D2FE',
   },
   attachmentName: {
     fontSize: RFValue(10),
@@ -643,8 +653,8 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: Platform.OS === 'ios' ? 8 : 16,
     borderTopWidth: 1,
-    borderTopColor: HS.cardBorder,
-    backgroundColor: '#FFFFFF',
+    borderTopColor: '#E8ECF4',
+    backgroundColor: '#FAFBFF',
   },
   submitButton: {
     backgroundColor: BRAND_ORANGE,
@@ -659,7 +669,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   submitButtonDisabled: {
-    backgroundColor: HS.tintStrong,
+    backgroundColor: '#CBD5E1',
     shadowOpacity: 0,
     elevation: 0,
   },

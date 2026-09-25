@@ -10,8 +10,6 @@ import {
     View,
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { useTheme } from '@/src/shared/theme';
-import { FLOW } from '../flowTheme';
 
 interface Category {
   _id: string;
@@ -54,14 +52,13 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
   onRetry,
   onCloseDropdown,
 }) => {
-  const { isDarkMode } = useTheme();
   return (
     <>
-      <Text style={[styles.label, isDarkMode && { color: '#FFFFFF' }]}>Category</Text>
+      <Text style={styles.label}>Category</Text>
       {isLoading ? (
-        <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: 'rgba(255,255,255,0.16)' }]}>
-          <ActivityIndicator size="small" color={isDarkMode ? '#FFFFFF' : FLOW.blue} />
-          <Text style={[styles.loadingText, isDarkMode && { color: '#FFFFFF' }]}>Loading categories from database...</Text>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color="#FFFFFF" />
+          <Text style={styles.loadingText}>Loading categories from database...</Text>
         </View>
       ) : hasError ? (
         <View style={styles.errorContainer}>
@@ -150,7 +147,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                         {category}
                       </Text>
                       {selectedCategory === category && (
-                        <Ionicons name="checkmark" size={20} color={FLOW.blue} />
+                        <Ionicons name="checkmark" size={20} color="#0057FF" />
                       )}
                     </TouchableOpacity>
                   );
@@ -170,7 +167,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: FLOW.navy,
+    color: '#FFFFFF',
     marginBottom: 6,
     marginTop: 10,
   },
@@ -178,14 +175,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: FLOW.tint,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     borderRadius: 14,
     marginBottom: 10,
   },
   loadingText: {
     marginLeft: 8,
     fontSize: RFValue(16),
-    color: FLOW.navy,
+    color: '#FFFFFF',
   },
   errorContainer: {
     flexDirection: 'row',
@@ -218,14 +215,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: FLOW.inputBorder,
     padding: 16,
     marginBottom: 10,
   },
   dropdownText: {
     fontSize: RFValue(16),
-    color: FLOW.navy,
+    color: '#0F172A',
   },
   placeholderText: {
     color: '#94A3B8',
@@ -258,7 +253,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: FLOW.cardBorder,
+    borderColor: '#E1E1E1',
     maxHeight: 250,
     shadowColor: '#000',
     shadowOffset: {
@@ -272,11 +267,11 @@ const styles = StyleSheet.create({
   categorySearchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: FLOW.page,
+    backgroundColor: '#F9F9F9',
     borderTopLeftRadius: 14,
     borderTopRightRadius: 14,
     borderBottomWidth: 1,
-    borderBottomColor: FLOW.cardBorder,
+    borderBottomColor: '#E1E1E1',
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
@@ -286,7 +281,7 @@ const styles = StyleSheet.create({
   categorySearchInput: {
     flex: 1,
     fontSize: RFValue(15),
-    color: FLOW.navy,
+    color: '#333',
     paddingVertical: 6,
   },
   clearSearchButton: {
@@ -309,23 +304,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: FLOW.cardBorder,
+    borderBottomColor: '#F0F0F0',
     minHeight: 54,
     backgroundColor: '#fff',
   },
   selectedDropdownItem: {
-    backgroundColor: FLOW.tint,
+    backgroundColor: '#F0F8FF',
     borderLeftWidth: 3,
     borderLeftColor: '#ff6b35',
   },
   dropdownItemText: {
     fontSize: RFValue(15),
-    color: FLOW.navy,
+    color: '#333',
     flex: 1,
     lineHeight: 20,
   },
   selectedDropdownItemText: {
-    color: FLOW.blue,
+    color: '#0057FF',
     fontWeight: '600',
   },
 });

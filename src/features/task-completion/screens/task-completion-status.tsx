@@ -27,7 +27,6 @@ import {
 
 // Hooks
 import { useCompletionStatus } from './completion/hooks';
-import { HS } from '@/src/shared/theme/homeStyle';
 import { BRAND_BLUE, BRAND_ORANGE, CARD_TEXT } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -155,7 +154,7 @@ export default function TaskCompletionStatusScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   header: {
     flexDirection: 'row',
@@ -195,7 +194,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     backgroundColor: '#fff',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: HS.cardBorder,
+    borderTopColor: '#CBD5E1',
   },
   completeButton: {
     flexDirection: 'row',

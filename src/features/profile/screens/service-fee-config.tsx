@@ -16,8 +16,7 @@ import {
     View
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
+import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 interface ServiceFeeConfigScreenProps {
   onBackToAccount: () => void;
@@ -114,17 +113,18 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flex: 1 }}>
     <View style={styles.container}>
+      <BlueBackdrop />
       <LightHeader title="Service Fee Configuration" onBack={onBackToAccount} />
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={HS.blue} />
+            <ActivityIndicator size="large" color="#FFFFFF" />
             <Text style={styles.loadingText}>Loading configuration...</Text>
           </View>
         ) : error && (error as any)?.message?.includes('Admin access required') ? (
           <View style={styles.errorContainer}>
-            <View style={styles.errorCircle}><Ionicons name="lock-closed" size={36} color={HS.amberText} /></View>
+            <View style={styles.errorCircle}><Ionicons name="lock-closed" size={36} color="#FBBF24" /></View>
             <Text style={styles.errorTitle}>Admin Access Required</Text>
             <Text style={styles.errorText}>
               This feature is only available to administrators. Service fee configuration requires elevated permissions.
@@ -135,7 +135,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
-            <View style={styles.errorCircle}><Ionicons name="alert-circle-outline" size={38} color={HS.redText} /></View>
+            <View style={styles.errorCircle}><Ionicons name="alert-circle-outline" size={38} color="#FCA5A5" /></View>
             <Text style={styles.errorTitle}>Failed to Load Configuration</Text>
             <Text style={styles.errorText}>
               {(error as any)?.message || 'Unable to fetch service fee configuration.'}
@@ -282,12 +282,21 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
   );
 };
 
-const CARD = { ...homeCard } as const;
+const CARD = {
+  backgroundColor: 'rgba(255,255,255,0.10)',
+  borderRadius: 20,
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.18)',
+  shadowColor: '#00114D',
+  shadowOpacity: 0.25,
+  shadowRadius: 14,
+  shadowOffset: { width: 0, height: 6 },
+} as const;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#003399',
   },
   content: {
     flex: 1,
@@ -306,7 +315,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
   },
   errorContainer: {
     flex: 1,
@@ -319,20 +328,20 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   errorTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   errorText: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -363,7 +372,7 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 13,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     lineHeight: 19,
   },
   section: {
@@ -374,15 +383,15 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 14,
   },
   currentConfigBox: {
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 12,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   configRow: {
     flexDirection: 'row',
@@ -391,14 +400,14 @@ const styles = StyleSheet.create({
   },
   configLabel: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     flexShrink: 1,
     marginRight: 8,
   },
   configValue: {
     fontSize: RFValue(14),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
   },
   formGroup: {
     marginBottom: 16,
@@ -406,22 +415,22 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   input: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: HS.inputBorder,
+    borderColor: 'transparent',
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 48,
     fontSize: RFValue(14),
-    color: HS.navy,
+    color: '#0F172A',
   },
   helperText: {
     fontSize: 12,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 6,
   },
   buttonContainer: {
@@ -437,12 +446,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   resetButton: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: HS.blue,
+    borderColor: '#FFFFFF',
   },
   resetButtonText: {
-    color: HS.blue,
+    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '700',
   },
@@ -463,11 +472,11 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   currencyBox: {
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 12,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: 'rgba(255,255,255,0.18)',
     marginBottom: 8,
   },
   currencyRow: {
@@ -477,12 +486,12 @@ const styles = StyleSheet.create({
   },
   currencyLabel: {
     fontSize: RFValue(13),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     fontWeight: '600',
   },
   currencyValue: {
     fontSize: RFValue(13),
-    color: HS.navy,
+    color: '#FFFFFF',
   },
 });
 

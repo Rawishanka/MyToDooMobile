@@ -5,7 +5,7 @@ import React from 'react';
 import { useTheme } from '@/src/shared/theme';
 import { StyleSheet, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
+import { BRAND_BLUE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 
 interface TaskSummarySectionProps {
   task: {
@@ -35,7 +35,7 @@ export const TaskSummarySection: React.FC<TaskSummarySectionProps> = ({ task }) 
     (!isInitialized ? 'Loading...' : 'Budget not specified')));
 
   return (
-    <View style={[styles.taskSummary, isDarkMode && { backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155", shadowOpacity: 0, elevation: 0 }]}>
+    <View style={[styles.taskSummary, isDarkMode && { backgroundColor: "#1E293B", borderWidth: 1, borderColor: "#334155" }]}>
       <Text style={[styles.taskTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={2}>
         {task.title || 'Untitled Task'}
       </Text>
@@ -51,27 +51,30 @@ export const TaskSummarySection: React.FC<TaskSummarySectionProps> = ({ task }) 
 
 const styles = StyleSheet.create({
   taskSummary: {
-    ...homeCard,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 18,
     marginTop: 0,
     marginBottom: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   taskTitle: {
     fontSize: 20,
     lineHeight: 26,
     fontWeight: '700',
-    color: HS.navy,
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   taskBudget: {
     fontSize: 16,
     fontWeight: '700',
-    color: HS.blue,
+    color: CARD_TEXT,
     marginBottom: 4,
   },
   taskLocation: {
     fontSize: 14,
     lineHeight: 20,
-    color: HS.muted,
+    color: CARD_TEXT_MUTED,
   },
 });

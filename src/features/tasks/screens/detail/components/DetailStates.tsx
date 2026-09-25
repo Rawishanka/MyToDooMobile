@@ -1,4 +1,3 @@
-import { HS } from '@/src/shared/theme/homeStyle';
 import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -50,30 +49,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: HS.page,
+    backgroundColor: '#fff',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: '#666',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: HS.page,
+    backgroundColor: '#fff',
   },
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: '#666',
     textAlign: 'center',
     marginBottom: 24,
   },

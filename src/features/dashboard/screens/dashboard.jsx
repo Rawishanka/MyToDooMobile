@@ -2,7 +2,6 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
 
 export default function TaskerDashboard({ onBack }) {
   const insets = useSafeAreaInsets();
@@ -134,13 +133,13 @@ export default function TaskerDashboard({ onBack }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: HS.blue,
+    backgroundColor: '#003399',
     paddingHorizontal: 16,
     paddingBottom: 14,
   },
@@ -168,13 +167,19 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   section: {
-    ...homeCard,
+    backgroundColor: '#003399',
+    borderRadius: 20,
     padding: 18,
     marginBottom: 16,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   sectionTitle: {
     fontSize: 12,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.78)',
     fontWeight: '700',
     letterSpacing: 0.8,
     marginBottom: 14,
@@ -190,7 +195,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
@@ -200,11 +205,11 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#94A3B8',
+    borderColor: '#E2E8F0',
     position: 'relative',
   },
   lockIcon: {
@@ -221,26 +226,32 @@ const styles = StyleSheet.create({
   tierName: {
     fontSize: 18,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   tierDescription: {
     fontSize: 14,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.78)',
   },
   divider: {
     height: 0,
     marginVertical: 0,
   },
   earningsSection: {
-    ...homeCard,
+    backgroundColor: '#003399',
+    borderRadius: 20,
     padding: 18,
     marginBottom: 16,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   earningsTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 16,
   },
   earningsContent: {
@@ -248,18 +259,18 @@ const styles = StyleSheet.create({
   },
   earningsDescription: {
     fontSize: 14,
-    color: HS.text,
+    color: 'rgba(255,255,255,0.78)',
     marginBottom: 16,
     lineHeight: 20,
   },
   highlightAmount: {
     fontWeight: '700',
-    color: HS.blue,
+    color: '#FFFFFF',
   },
   currentEarnings: {
     fontSize: 32,
     fontWeight: '700',
-    color: HS.blue,
+    color: '#FFFFFF',
     marginBottom: 24,
   },
   progressContainer: {
@@ -269,7 +280,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 8,
-    backgroundColor: HS.tintStrong,
+    backgroundColor: 'rgba(255,255,255,0.22)',
     borderRadius: 4,
     marginBottom: 20,
   },
@@ -291,7 +302,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: HS.tintBorder,
+    backgroundColor: 'rgba(255,255,255,0.35)',
     marginBottom: 4,
   },
   activeMarker: {
@@ -299,7 +310,7 @@ const styles = StyleSheet.create({
   },
   markerText: {
     fontSize: 11,
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.78)',
     fontWeight: '600',
   },
   infoLink: {

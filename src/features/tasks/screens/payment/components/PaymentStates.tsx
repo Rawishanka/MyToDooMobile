@@ -3,7 +3,6 @@ import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { HS } from '@/src/shared/theme/homeStyle';
 
 interface PaymentLoadingStateProps {
   message?: string;
@@ -44,44 +43,39 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: '#64748B',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 24,
   },
   backButton: {
-    paddingHorizontal: 32,
-    height: 48,
-    justifyContent: 'center',
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: HS.blue,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
   },
   backButtonText: {
-    color: HS.blue,
+    color: '#003399',
     fontSize: RFValue(16),
     fontWeight: '700',
   },

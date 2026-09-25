@@ -4,13 +4,12 @@ import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { HS } from '@/src/shared/theme/homeStyle';
 
 export const LoadingState: React.FC = () => {
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading user profile...</Text>
     </View>
   );
@@ -27,7 +26,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ onRetry }) => {
   return (
     <View style={[styles.errorContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-        <Ionicons name="person-circle-outline" size={44} color={isDarkMode ? '#38BDF8' : HS.blue} />
+        <Ionicons name="person-circle-outline" size={44} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
       </View>
       <Text style={[styles.errorTitle, isDarkMode && { color: '#F8FAFC' }]}>Failed to load user profile</Text>
       <Text style={[styles.errorSubtitle, isDarkMode && { color: '#94A3B8' }]}>
@@ -48,38 +47,38 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: HS.page,
+    backgroundColor: '#003399',
   },
   stateCircle: {
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: HS.page,
+    backgroundColor: '#003399',
   },
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -102,7 +101,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: HS.blue,
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },

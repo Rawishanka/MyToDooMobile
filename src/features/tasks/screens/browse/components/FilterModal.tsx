@@ -17,7 +17,6 @@ import {
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { HS } from '@/src/shared/theme/homeStyle';
 
 const RADIUS_OPTIONS_KM = [25, 50, 100, 200] as const;
 
@@ -201,7 +200,7 @@ export default function FilterModal({
               <MaterialCommunityIcons 
                 name={categoryDropdownVisible ? "chevron-up" : "chevron-down"}
  size={20} 
-                color={isDarkMode ? '#94A3B8' : HS.blue} 
+                color={isDarkMode ? '#94A3B8' : '#003399'} 
               />
             </TouchableOpacity>
             
@@ -209,11 +208,11 @@ export default function FilterModal({
               <View style={[styles.categoryDropdown, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
                 {/* Search Input */}
                 <View style={[styles.categorySearchContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
-                  <Ionicons name="search-outline" size={18} color={HS.placeholder} style={styles.searchIcon} />
+                  <Ionicons name="search-outline" size={18} color="#999" style={styles.searchIcon} />
                   <TextInput
                     style={[styles.categorySearchInput, isDarkMode && { color: '#F8FAFC' }]}
                     placeholder="Search categories..."
-                    placeholderTextColor={isDarkMode ? '#64748B' : HS.placeholder}
+                    placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
                     value={categorySearchText}
                     onChangeText={setCategorySearchText}
                     autoFocus={false}
@@ -223,7 +222,7 @@ export default function FilterModal({
                       onPress={() => setCategorySearchText('')}
                       style={styles.clearSearchIcon}
                     >
-                      <Ionicons name="close-circle" size={18} color={HS.placeholder} />
+                      <Ionicons name="close-circle" size={18} color="#999" />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -266,13 +265,13 @@ export default function FilterModal({
                           {cat}
                         </Text>
                         {selectedCategory === cat && (
-                          <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#38BDF8' : HS.blue} />
+                          <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
                         )}
                       </TouchableOpacity>
                     ))
                   ) : (
                     <View style={styles.noResultsContainer}>
-                      <Ionicons name="search-outline" size={32} color={HS.placeholder} />
+                      <Ionicons name="search-outline" size={32} color="#ccc" />
                       <Text style={styles.noResultsText}>No categories found</Text>
                       <Text style={styles.noResultsSubtext}>Try a different search term</Text>
                     </View>
@@ -424,7 +423,7 @@ export default function FilterModal({
 const styles = StyleSheet.create({
   filterModal: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
     paddingTop: Platform.OS === 'ios' ? 60 : 50,
   },
   filterHeader: {
@@ -474,28 +473,28 @@ const styles = StyleSheet.create({
   },
   filterSection: {
     marginBottom: 16,
-    backgroundColor: HS.card,
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 18,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
-    shadowColor: HS.blue,
+    borderColor: '#E8ECF4',
+    shadowColor: '#001A66',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.12,
     shadowRadius: 12,
-    elevation: 3,
+    elevation: 4,
   },
   sectionTitle: {
     fontSize: RFValue(12),
     fontWeight: '800',
-    color: HS.blue,
+    color: '#003399',
     marginBottom: 14,
     letterSpacing: 0.8,
     textTransform: 'uppercase' as const,
   },
   radiusLabel: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#6B7280',
     marginTop: 16,
     marginBottom: 10,
     fontWeight: '600',
@@ -510,17 +509,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 14,
     alignItems: 'center',
-    backgroundColor: HS.tint,
+    backgroundColor: '#F4F6FB',
     borderWidth: 1.5,
-    borderColor: HS.tintBorder,
+    borderColor: '#DCE3F5',
   },
   radiusChipSelected: {
-    backgroundColor: HS.blue,
-    borderColor: HS.blue,
+    backgroundColor: '#003399',
+    borderColor: '#003399',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
   },
   radiusChipText: {
     fontSize: RFValue(14),
-    color: HS.navy,
+    color: '#1A1D2E',
     fontWeight: '600',
   },
   radiusChipTextSelected: {
@@ -531,10 +535,10 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: RFValue(12),
     lineHeight: 18,
-    color: HS.muted,
+    color: '#6B7280',
   },
   categorySelector: {
-    backgroundColor: HS.tint,
+    backgroundColor: '#F4F6FB',
     paddingHorizontal: 14,
     minHeight: 48,
     borderRadius: 14,
@@ -542,11 +546,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: HS.tintBorder,
+    borderColor: '#DCE3F5',
   },
   categorySelectorText: {
     fontSize: RFValue(15),
-    color: HS.navy,
+    color: '#1A1D2E',
     fontWeight: '600',
     flex: 1,
   },
@@ -556,8 +560,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     maxHeight: 300,
     borderWidth: 1,
-    borderColor: HS.cardBorder,
-    shadowColor: HS.blue,
+    borderColor: '#E8ECF4',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -571,8 +575,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: HS.cardBorder,
-    backgroundColor: HS.tint,
+    borderBottomColor: '#F0F2F8',
+    backgroundColor: '#F4F6FB',
   },
   searchIcon: {
     marginRight: 8,
@@ -580,7 +584,7 @@ const styles = StyleSheet.create({
   categorySearchInput: {
     flex: 1,
     fontSize: RFValue(14),
-    color: HS.navy,
+    color: '#333',
     paddingVertical: 4,
   },
   clearSearchIcon: {
@@ -596,19 +600,19 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: HS.cardBorder,
+    borderBottomColor: '#F4F6FB',
     backgroundColor: '#fff',
   },
   categoryOptionSelected: {
-    backgroundColor: HS.tint,
+    backgroundColor: '#EEF2FF',
   },
   categoryOptionText: {
     fontSize: RFValue(14),
-    color: HS.text,
+    color: '#333',
     flex: 1,
   },
   categoryOptionTextSelected: {
-    color: HS.blue,
+    color: '#003399',
     fontWeight: '700',
   },
   noResultsContainer: {
@@ -619,13 +623,13 @@ const styles = StyleSheet.create({
   },
   noResultsText: {
     fontSize: RFValue(15),
-    color: HS.muted,
+    color: '#666',
     fontWeight: '600',
     marginTop: 12,
   },
   noResultsSubtext: {
     fontSize: RFValue(13),
-    color: HS.placeholder,
+    color: '#999',
     marginTop: 4,
   },
   categoryErrorText: {
@@ -651,7 +655,7 @@ const styles = StyleSheet.create({
   },
   taskTypeBtnText: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: '#6B7280',
     fontWeight: '500',
   },
   taskTypeBtnTextActive: {
@@ -666,18 +670,18 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   priceBox: {
-    backgroundColor: HS.tint,
+    backgroundColor: '#EEF2FF',
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: HS.tintBorder,
+    borderColor: '#C7D2FE',
     minWidth: 100,
     alignItems: 'center',
   },
   priceBoxLabel: {
     fontSize: RFValue(10),
-    color: HS.muted,
+    color: '#6B7280',
     marginBottom: 4,
     fontWeight: '700',
     textTransform: 'uppercase' as const,
@@ -699,7 +703,7 @@ const styles = StyleSheet.create({
   },
   sliderTrack: {
     height: 6,
-    backgroundColor: HS.tintStrong,
+    backgroundColor: '#E8ECF4',
     borderRadius: 3,
     position: 'relative',
     marginVertical: 20,
@@ -746,7 +750,7 @@ const styles = StyleSheet.create({
   },
   sliderLabel: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#6B7280',
     fontWeight: '600',
   },
   toggleRow: {
@@ -761,13 +765,13 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     fontSize: RFValue(15),
-    color: HS.navy,
+    color: '#1A1D2E',
     fontWeight: '600',
     marginBottom: 3,
   },
   toggleSubtitle: {
     fontSize: RFValue(13),
-    color: HS.muted,
+    color: '#6B7280',
   },
   filterFooter: {
     flexDirection: 'row',
@@ -775,7 +779,7 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: HS.cardBorder,
+    borderTopColor: '#E8ECF4',
     backgroundColor: '#FFFFFF',
   },
   resetButton: {

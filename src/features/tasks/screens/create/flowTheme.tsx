@@ -1,36 +1,27 @@
-import { View } from 'react-native';
-import { HS, homeCard, homeHero } from '@/src/shared/theme/homeStyle';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet } from 'react-native';
 
 /**
- * "Home style" design tokens shared by every step of the Post Task flow (light mode):
- * dark-blue hero band on top, light blue-white page below, white cards, orange primary.
- * Style only - no behaviour lives here. Dark mode keeps its own inline surfaces.
+ * "Full blue glass" design tokens shared by every step of the Post Task flow.
+ * Style only - no behaviour lives here.
  */
 export const FLOW = {
-  blue: HS.blue,
-  blueDeep: HS.blueDeep,
-  orange: HS.orange,
+  blue: '#003399',
+  blueDeep: '#00287A',
+  orange: '#ff6b35',
   white: '#FFFFFF',
-  page: HS.page,
-  card: HS.card,
-  cardBorder: HS.cardBorder,
-  tint: HS.tint,
-  tintStrong: HS.tintStrong,
-  tintBorder: HS.tintBorder,
-  inputBorder: HS.inputBorder,
-  navy: HS.navy,
-  text: HS.text,
-  muted: HS.muted,
-  placeholder: HS.placeholder,
-  onHero: HS.onHero,
-  onHeroMuted: HS.onHeroMuted,
-  heroPill: 'rgba(255,255,255,0.18)',
-  disabledFill: HS.tintStrong,
-  disabledText: HS.muted,
-  line: HS.cardBorder,
-  error: HS.redText,
-  errorBg: '#FFF8F8',
-  required: '#DC2626',
+  textMuted: 'rgba(255,255,255,0.75)',
+  glass: 'rgba(255,255,255,0.10)',
+  glassStrong: 'rgba(255,255,255,0.16)',
+  glassBorder: 'rgba(255,255,255,0.18)',
+  dashed: 'rgba(255,255,255,0.5)',
+  disabledFill: 'rgba(255,255,255,0.22)',
+  disabledText: 'rgba(255,255,255,0.6)',
+  line: 'rgba(255,255,255,0.15)',
+  ink: '#0F172A',
+  placeholder: '#94A3B8',
+  error: '#FCA5A5',
+  required: '#FCA5A5',
   mint: '#4ADE80',
   amber: '#FBBF24',
   darkPage: '#0B1120',
@@ -38,28 +29,23 @@ export const FLOW = {
   darkBorder: '#334155',
 } as const;
 
-/** Page background: plain light page (light) or nothing (dark). Kept for compatibility. */
+/** Page background: subtle blue gradient (light) or flat navy (dark). */
 export function FlowBackground({ isDarkMode }: { isDarkMode: boolean }) {
   if (isDarkMode) return null;
   return (
-    <View
+    <LinearGradient
       pointerEvents="none"
-      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: HS.page }}
+      colors={[FLOW.blue, FLOW.blueDeep]}
+      style={StyleSheet.absoluteFill}
     />
   );
 }
 
-/** White card used for each form section. */
-export const flowCard = homeCard;
-
-/** Hero band (dark blue, rounded bottom corners 28). */
-export const flowHero = homeHero;
-
-/** Orange primary button shadow (soft). */
+/** Orange primary button shadow. */
 export const primaryShadow = {
-  shadowColor: HS.orange,
+  shadowColor: FLOW.orange,
   shadowOffset: { width: 0, height: 6 },
-  shadowOpacity: 0.28,
+  shadowOpacity: 0.35,
   shadowRadius: 12,
-  elevation: 4,
+  elevation: 5,
 } as const;

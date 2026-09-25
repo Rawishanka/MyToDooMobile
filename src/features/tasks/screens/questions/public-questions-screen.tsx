@@ -15,7 +15,6 @@ import {
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PublicQuestion {
@@ -96,7 +95,7 @@ export default function PublicQuestionsScreen() {
         <View style={styles.questionHeader}>
           <View style={styles.userInfo}>
             <View style={styles.avatar}>
-              <Ionicons name="person" size={16} color={HS.blue} />
+              <Ionicons name="person" size={16} color="#FFFFFF" />
             </View>
             <Text style={styles.userName}>
               {formatUserName(question.askedBy?.firstName, question.askedBy?.lastName)}
@@ -145,7 +144,7 @@ export default function PublicQuestionsScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={HS.blue} />
+        <ActivityIndicator size="large" color="#003399" />
         <Text style={styles.loadingText}>Loading public questions...</Text>
       </View>
     );
@@ -154,9 +153,7 @@ export default function PublicQuestionsScreen() {
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <View style={styles.emptyIconChip}>
-          <Ionicons name="alert-circle-outline" size={40} color={HS.redText} />
-        </View>
+        <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
         <Text style={styles.errorTitle}>Failed to Load Questions</Text>
         <Text style={styles.errorSubtitle}>Please check your connection and try again.</Text>
         <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
@@ -184,11 +181,11 @@ export default function PublicQuestionsScreen() {
       {/* Search and Filter */}
       <View style={styles.searchSection}>
         <View style={styles.searchContainer}>
-          <Ionicons name="search-outline" size={20} color={HS.muted} />
+          <Ionicons name="search-outline" size={20} color="#64748B" />
           <TextInput
             style={styles.searchInput}
             placeholder="Search questions..."
-            placeholderTextColor={HS.placeholder}
+            placeholderTextColor="#94A3B8"
             value={searchText}
             onChangeText={setSearchText}
           />
@@ -228,7 +225,7 @@ export default function PublicQuestionsScreen() {
       {filteredQuestions.length === 0 ? (
         <View style={styles.emptyState}>
           <View style={styles.emptyIconChip}>
-            <Ionicons name="help-circle-outline" size={40} color={HS.blue} />
+            <Ionicons name="help-circle-outline" size={40} color="#003399" />
           </View>
           <Text style={styles.emptyStateTitle}>
             {searchText || filterCategory !== 'all' ? 'No matching questions' : 'No questions yet'}
@@ -258,35 +255,35 @@ export default function PublicQuestionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: HS.muted,
+    color: '#64748B',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: HS.page,
+    backgroundColor: '#F4F6FB',
   },
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0F172A',
     marginTop: 16,
   },
   errorSubtitle: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: '#64748B',
     textAlign: 'center',
     marginTop: 8,
   },
@@ -349,7 +346,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(16),
-    color: HS.navy,
+    color: '#0F172A',
   },
   categoryFilter: {
     flexGrow: 0,
@@ -376,20 +373,26 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   questionCard: {
-    ...homeCard,
+    backgroundColor: '#003399',
+    borderRadius: 20,
     marginBottom: 16,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
     overflow: 'hidden',
   },
   taskContext: {
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 14,
     borderBottomWidth: 1,
-    borderBottomColor: HS.tintBorder,
+    borderBottomColor: 'rgba(255,255,255,0.22)',
   },
   taskTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   taskMeta: {
@@ -400,17 +403,17 @@ const styles = StyleSheet.create({
   },
   taskCategory: {
     fontSize: RFValue(12),
-    color: HS.blue,
+    color: '#BFD4FF',
     fontWeight: '600',
   },
   taskBudget: {
     fontSize: RFValue(12),
-    color: HS.blue,
+    color: '#FFFFFF',
     fontWeight: '700',
   },
   taskLocation: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.78)',
   },
   questionSection: {
     padding: 14,
@@ -430,7 +433,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: HS.tint,
+    backgroundColor: 'rgba(255,255,255,0.16)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
@@ -438,12 +441,12 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: RFValue(12),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#FFFFFF',
     marginRight: 8,
   },
   timestamp: {
     fontSize: RFValue(11),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.78)',
   },
   statusBadge: {
     paddingHorizontal: 8,
@@ -451,10 +454,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   statusAnswered: {
-    backgroundColor: HS.greenBg,
+    backgroundColor: 'rgba(74,222,128,0.2)',
   },
   statusPending: {
-    backgroundColor: HS.amberBg,
+    backgroundColor: 'rgba(251,191,36,0.2)',
   },
   statusText: {
     fontSize: RFValue(10),
@@ -462,39 +465,39 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   statusAnsweredText: {
-    color: HS.greenText,
+    color: '#86EFAC',
   },
   statusPendingText: {
-    color: HS.amberText,
+    color: '#FCD34D',
   },
   questionText: {
     fontSize: RFValue(14),
-    color: HS.text,
+    color: '#FFFFFF',
     lineHeight: 20,
   },
   answerSection: {
-    backgroundColor: HS.greenBg,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     margin: 14,
     marginTop: 0,
     padding: 12,
     borderRadius: 12,
     borderLeftWidth: 3,
-    borderLeftColor: HS.greenText,
+    borderLeftColor: '#4ADE80',
   },
   answerLabel: {
     fontSize: RFValue(12),
     fontWeight: '700',
-    color: HS.greenText,
+    color: '#86EFAC',
     marginBottom: 4,
   },
   answerText: {
     fontSize: RFValue(13),
-    color: HS.text,
+    color: '#FFFFFF',
     lineHeight: 18,
   },
   answerTime: {
     fontSize: RFValue(10),
-    color: HS.muted,
+    color: 'rgba(255,255,255,0.78)',
     marginTop: 4,
     fontStyle: 'italic',
   },
@@ -508,20 +511,20 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: 38,
-    backgroundColor: HS.tint,
+    backgroundColor: '#E3EAF8',
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyStateTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#0F172A',
     marginTop: 16,
     textAlign: 'center',
   },
   emptyStateSubtitle: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: '#64748B',
     marginTop: 8,
     textAlign: 'center',
   },

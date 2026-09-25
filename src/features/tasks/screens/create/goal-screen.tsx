@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { Image, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { FLOW, FlowBackground, flowCard, primaryShadow } from './flowTheme';
+import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 
 export default function GoalSelectionScreen() {
   const [selectedGoal, setSelectedGoal] = useState('');
@@ -18,17 +18,13 @@ export default function GoalSelectionScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={FLOW.blue} />
       <FlowBackground isDarkMode={false} />
-      <View style={[styles.hero, { paddingTop: Math.max(insets.top, 20) + 6 }]}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
+      <TouchableOpacity style={[styles.backButton, { top: Math.max(insets.top, 20) + 6 }]} onPress={() => router.back()}>
+        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+      </TouchableOpacity>
 
-        {/* Title and Subtitle */}
-        <Text style={styles.title}>What to you want to do?</Text>
-        <Text style={styles.subtitle}>You can change your option later</Text>
-      </View>
-
-      <View style={styles.body}>
+      {/* Title and Subtitle */}
+      <Text style={styles.title}>What to you want to do?</Text>
+      <Text style={styles.subtitle}>You can change your option later</Text>
 
       {/* Option 1 */}
       <TouchableOpacity
@@ -66,7 +62,6 @@ export default function GoalSelectionScreen() {
           <Text style={[styles.cardSubtitle, selectedGoal === 'earnMoney' && styles.cardSubtitleSelected]}>Become a MyToDoo Hero!</Text>
         </View>
       </TouchableOpacity>
-      </View>
 
       {/* Continue button */}
       <View style={[styles.actionBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
@@ -97,76 +92,65 @@ export default function GoalSelectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: FLOW.page,
-  },
-  hero: {
     backgroundColor: FLOW.blue,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
     paddingHorizontal: 20,
-    paddingBottom: 24,
-  },
-  body: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 60,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: FLOW.heroPill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 1,
   },
   title: {
     fontSize: RFValue(22),
     fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: 5,
-    marginTop: 4,
+    marginTop: 40,
   },
   subtitle: {
     fontSize: RFValue(14),
-    color: FLOW.onHeroMuted,
+    color: FLOW.textMuted,
+    marginBottom: 30,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     borderWidth: 1.5,
-    ...flowCard,
-    borderColor: FLOW.inputBorder,
+    borderColor: FLOW.glassBorder,
+    backgroundColor: FLOW.glass,
     borderRadius: 20,
     marginBottom: 16,
     gap: 12,
   },
   cardSelected: {
-    borderColor: FLOW.blue,
-    backgroundColor: FLOW.tint,
+    borderColor: '#ff6b35',
+    backgroundColor: '#FFFFFF',
   },
   iconCircle: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: FLOW.tint,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
   cardTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: FLOW.navy,
+    color: '#FFFFFF',
   },
   cardTitleSelected: {
     color: FLOW.blue,
   },
   cardSubtitle: {
     fontSize: RFValue(13),
-    color: FLOW.muted,
+    color: FLOW.textMuted,
   },
   cardSubtitleSelected: {
-    color: FLOW.text,
+    color: '#475569',
   },
   iconImage: {
     width: 80,
@@ -180,7 +164,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 20,
     paddingTop: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: FLOW.blueDeep,
     borderTopWidth: 1,
     borderTopColor: FLOW.line,
   },

@@ -3,8 +3,6 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { formatUserName } from '@/src/utils/formatUserName';
 import { CompletionUser } from '../hooks/useCompletionStatus';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
-import { useTheme } from '@/src/shared/theme';
 import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -17,14 +15,6 @@ const ON_BLUE_TINT: Record<string, string> = {
   '#ffc107': '#FBBF24',
 };
 const onBlue = (color: string) => ON_BLUE_TINT[color] || color;
-const ON_LIGHT_TINT: Record<string, string> = {
-  '#28a745': HS.greenText,
-  '#007bff': HS.blue,
-  '#dc3545': HS.redText,
-  '#6c757d': HS.muted,
-  '#ffc107': HS.amberText,
-};
-const onLight = (color: string) => ON_LIGHT_TINT[color] || color;
 
 interface VerificationCardProps {
   verificationStatus?: string;
@@ -43,15 +33,14 @@ export default function VerificationCard({
   verifiedAt,
   formatDate,
 }: VerificationCardProps) {
-  const { isDarkMode } = useTheme();
   return (
-    <View style={[styles.card, isDarkMode && styles.cardDark]}>
-      <Text style={[styles.title, isDarkMode && styles.valueDark]}>Verification Status</Text>
+    <View style={styles.card}>
+      <Text style={styles.title}>Verification Status</Text>
 
       <View style={styles.status}>
         <View style={styles.indicator}>
-          <Ionicons name={verificationIcon as any} size={24} color={isDarkMode ? onBlue(verificationColor) : onLight(verificationColor)} />
-          <Text style={[styles.statusText, isDarkMode && styles.valueDark]}>
+          <Ionicons name={verificationIcon as any} size={24} color={onBlue(verificationColor)} />
+          <Text style={styles.statusText}>
             {verificationStatus?.toUpperCase() || 'PENDING'}
           </Text>
         </View>
@@ -59,8 +48,8 @@ export default function VerificationCard({
 
       {verifiedBy && (
         <View style={styles.info}>
-          <Text style={[styles.label, isDarkMode && styles.labelDark]}>Verified by:</Text>
-          <Text style={[styles.value, isDarkMode && styles.valueDark]}>
+          <Text style={styles.label}>Verified by:</Text>
+          <Text style={styles.value}>
             {formatUserName(verifiedBy.firstName, verifiedBy.lastName)}
           </Text>
         </View>
@@ -68,8 +57,8 @@ export default function VerificationCard({
 
       {verifiedAt && (
         <View style={styles.info}>
-          <Text style={[styles.label, isDarkMode && styles.labelDark]}>Verified on:</Text>
-          <Text style={[styles.value, isDarkMode && styles.valueDark]}>{formatDate(verifiedAt)}</Text>
+          <Text style={styles.label}>Verified on:</Text>
+          <Text style={styles.value}>{formatDate(verifiedAt)}</Text>
         </View>
       )}
     </View>
@@ -78,24 +67,23 @@ export default function VerificationCard({
 
 const styles = StyleSheet.create({
   card: {
-    ...homeCard,
+    backgroundColor: CARD_BG,
     marginHorizontal: 16,
     marginBottom: 14,
+    borderRadius: 20,
     padding: 18,
-  },
-  labelDark: { color: CARD_TEXT_MUTED },
-  valueDark: { color: CARD_TEXT },
-  cardDark: {
-    backgroundColor: CARD_BG,
+    borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.14)',
     shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,
+    shadowRadius: 12,
     elevation: 4,
   },
   title: {
     fontSize: 17,
     fontWeight: '700',
-    color: HS.navy,
+    color: CARD_TEXT,
     marginBottom: 14,
   },
   status: {
@@ -110,7 +98,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: HS.navy,
+    color: CARD_TEXT,
   },
   info: {
     flexDirection: 'row',
@@ -119,11 +107,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: CARD_TEXT_MUTED,
   },
   value: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: HS.navy,
+    color: CARD_TEXT,
   },
 });

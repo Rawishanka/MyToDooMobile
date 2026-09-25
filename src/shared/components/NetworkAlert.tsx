@@ -2,7 +2,6 @@ import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { HS } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface NetworkAlertProps {
@@ -40,8 +39,8 @@ export const NetworkAlert: React.FC<NetworkAlertProps> = ({
       <View style={styles.overlay}>
         <View style={[styles.alertContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
           {/* Icon */}
-          <View style={[styles.iconContainer, !isDarkMode && { backgroundColor: HS.redBg }]}>
-            <Ionicons name="cloud-offline" size={40} color={isDarkMode ? "#DC2626" : HS.redText} />
+          <View style={styles.iconContainer}>
+            <Ionicons name="cloud-offline" size={48} color="#DC2626" />
           </View>
 
           {/* Title */}
@@ -75,8 +74,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   alertContainer: {
-    backgroundColor: HS.card,
-    borderRadius: 24,
+    backgroundColor: '#fff',
+    borderRadius: 20,
     padding: 24,
     width: '100%',
     maxWidth: 400,
@@ -91,23 +90,18 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   iconContainer: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 16,
   },
   title: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: HS.navy,
+    color: '#003399',
     marginBottom: 12,
     textAlign: 'center',
   },
   message: {
     fontSize: RFValue(15),
-    color: HS.text,
+    color: '#475569',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -116,7 +110,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   actionButton: {
-    backgroundColor: HS.orange,
+    backgroundColor: '#ff6b35',
     minHeight: 48,
     justifyContent: 'center',
     paddingVertical: 14,

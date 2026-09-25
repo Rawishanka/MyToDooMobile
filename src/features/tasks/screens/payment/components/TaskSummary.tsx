@@ -1,4 +1,3 @@
-import { HS, homeCard, homeIconChip } from '@/src/shared/theme/homeStyle';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
@@ -23,21 +22,19 @@ export default function TaskSummary({ title, location }: TaskSummaryProps) {
 
 const styles = StyleSheet.create({
   container: {
-    ...homeCard,
-    borderLeftWidth: 4,
-    borderLeftColor: HS.blue,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
     padding: 16,
-    marginTop: 16,
-    marginHorizontal: 20,
+    marginTop: 20,
   },
   title: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#000',
     marginBottom: 8,
   },
   location: {
     fontSize: RFValue(14),
-    color: HS.muted,
+    color: '#666',
   },
 });

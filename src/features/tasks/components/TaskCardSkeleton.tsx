@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { HS, homeCard } from '@/src/shared/theme/homeStyle';
+import { BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_DIVIDER } from '@/src/shared/theme/brandColors';
 
 export interface TaskCardSkeletonProps {
   delay?: number;
@@ -45,10 +45,10 @@ export const TaskCardSkeleton: React.FC<TaskCardSkeletonProps> = ({ delay = 0 })
     };
   }, [delay, isDarkMode]);
 
-  const lineColorLong = isDarkMode ? '#334155' : HS.tintStrong;
-  const lineColorShort = isDarkMode ? '#1E293B' : HS.tint;
-  const pillBg = isDarkMode ? '#1E293B' : HS.tint;
-  const dotBg = isDarkMode ? '#334155' : HS.tint;
+  const lineColorLong = isDarkMode ? '#334155' : 'rgba(255,255,255,0.30)';
+  const lineColorShort = isDarkMode ? '#1E293B' : 'rgba(255,255,255,0.20)';
+  const pillBg = isDarkMode ? '#1E293B' : CARD_CHIP_BG;
+  const dotBg = isDarkMode ? '#334155' : CARD_CHIP_BG;
 
   return (
     <View style={[
@@ -59,12 +59,12 @@ export const TaskCardSkeleton: React.FC<TaskCardSkeletonProps> = ({ delay = 0 })
             borderColor: '#334155',
             shadowColor: '#000000',
           }
-        : homeCard,
+        : { backgroundColor: CARD_BG, borderColor: 'rgba(255,255,255,0.14)', shadowColor: '#001A66', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.18, shadowRadius: 12, elevation: 4 },
     ]}>
       {/* Left accent stripe */}
       <Animated.View style={[
         styles.accentStripe,
-        isDarkMode ? { backgroundColor: '#38BDF8' } : { backgroundColor: HS.blue },
+        isDarkMode ? { backgroundColor: '#38BDF8' } : { backgroundColor: BRAND_ORANGE },
         { opacity: shimmerOpacity }
       ]} />
 
@@ -77,7 +77,7 @@ export const TaskCardSkeleton: React.FC<TaskCardSkeletonProps> = ({ delay = 0 })
           </View>
           <Animated.View style={[
             styles.priceBadge,
-            isDarkMode ? { backgroundColor: '#0F172A', borderColor: '#38BDF8', borderWidth: 1 } : { backgroundColor: HS.tint },
+            isDarkMode ? { backgroundColor: '#0F172A', borderColor: '#38BDF8', borderWidth: 1 } : { backgroundColor: 'rgba(255,255,255,0.85)' },
             { opacity: shimmerOpacity }
           ]} />
         </View>
@@ -95,16 +95,16 @@ export const TaskCardSkeleton: React.FC<TaskCardSkeletonProps> = ({ delay = 0 })
         </View>
 
         {/* Footer: Offers tag + User Avatar placeholder */}
-        <View style={[styles.footerRow, { borderTopColor: isDarkMode ? '#334155' : HS.cardBorder }]}>
+        <View style={[styles.footerRow, { borderTopColor: isDarkMode ? '#334155' : CARD_DIVIDER }]}>
           <Animated.View style={[
             styles.offerPill,
-            isDarkMode ? { backgroundColor: '#0F172A' } : { backgroundColor: HS.tint },
+            isDarkMode ? { backgroundColor: '#0F172A' } : { backgroundColor: CARD_CHIP_BG },
             { opacity: shimmerOpacity }
           ]} />
           <View style={styles.userSection}>
             <Animated.View style={[
               styles.avatarCircle,
-              isDarkMode ? { backgroundColor: '#38BDF8' } : { backgroundColor: HS.tintStrong },
+              isDarkMode ? { backgroundColor: '#38BDF8' } : { backgroundColor: 'rgba(255,255,255,0.85)' },
               { opacity: shimmerOpacity }
             ]} />
             <Animated.View style={[

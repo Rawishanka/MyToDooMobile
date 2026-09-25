@@ -1,4 +1,3 @@
-import { HS, homeCard, homeIconChip } from '@/src/shared/theme/homeStyle';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
@@ -28,7 +27,7 @@ export default function PaymentNotes({
           multiline
           numberOfLines={4}
           textAlignVertical="top"
-          placeholderTextColor={HS.placeholder}
+          placeholderTextColor="#999"
           maxLength={maxLength}
         />
         <Text style={styles.characterCount}>
@@ -38,7 +37,7 @@ export default function PaymentNotes({
 
       {/* Security Notice */}
       <View style={styles.securityNotice}>
-        <Ionicons name="shield-checkmark" size={20} color={HS.greenText} />
+        <Ionicons name="shield-checkmark" size={20} color="#28a745" />
         <Text style={styles.securityText}>
           Your payment information is secure. This confirmation helps both parties 
           track payment completion for the task.
@@ -67,57 +66,57 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#333',
     marginBottom: 8,
   },
   notesInput: {
-    borderWidth: 1.5,
-    borderColor: HS.inputBorder,
-    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: RFValue(16),
-    color: HS.navy,
+    color: '#000',
     minHeight: 80,
     backgroundColor: '#fff',
   },
   characterCount: {
     fontSize: RFValue(12),
-    color: HS.muted,
+    color: '#666',
     textAlign: 'right',
     marginTop: 4,
   },
   securityNotice: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: HS.greenBg,
-    borderRadius: 14,
+    backgroundColor: '#e8f5e8',
+    borderRadius: 8,
     padding: 12,
     marginBottom: 20,
   },
   securityText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: HS.greenText,
+    color: '#2e7d32',
     marginLeft: 8,
     lineHeight: 20,
   },
   importantNotes: {
-    backgroundColor: HS.tint,
-    borderRadius: 14,
+    backgroundColor: '#fff3cd',
+    borderRadius: 8,
     padding: 16,
     borderWidth: 1,
-    borderColor: HS.tintBorder,
+    borderColor: '#ffeaa7',
   },
   notesTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: HS.navy,
+    color: '#856404',
     marginBottom: 8,
   },
   noteItem: {
     fontSize: RFValue(12),
-    color: HS.text,
+    color: '#856404',
     marginBottom: 4,
   },
 });
