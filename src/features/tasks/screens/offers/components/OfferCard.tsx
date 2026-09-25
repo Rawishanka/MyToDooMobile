@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { formatUserName, formatAvatarName } from '@/src/utils/formatUserName';
-import { BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS, homeCard } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface Offer {
@@ -42,10 +43,19 @@ const formatDate = (dateString: string) => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'accepted': return '#28a745';
-    case 'rejected': return '#dc3545';
-    case 'pending': return '#ffc107';
-    default: return '#6c757d';
+    case 'accepted': return HS.greenBg;
+    case 'rejected': return HS.redBg;
+    case 'pending': return HS.amberBg;
+    default: return HS.tint;
+  }
+};
+
+const getStatusTextColor = (status: string) => {
+  switch (status) {
+    case 'accepted': return HS.greenText;
+    case 'rejected': return HS.redText;
+    case 'pending': return HS.amberText;
+    default: return HS.muted;
   }
 };
 
@@ -127,7 +137,7 @@ export default function OfferCard({ offer, onAccept, onReject, onMessage }: Offe
         
         <View style={styles.offerPriceContainer}>
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(offer.status) }]}>
-            <Text style={styles.statusText}>
+            <Text style={[styles.statusText, { color: getStatusTextColor(offer.status) }]}>
               {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
             </Text>
           </View>
@@ -163,7 +173,7 @@ export default function OfferCard({ offer, onAccept, onReject, onMessage }: Offe
         style={styles.contactButton}
         onPress={handleMessage}
       >
-        <Ionicons name="chatbubble-outline" size={16} color={CARD_TEXT} />
+        <Ionicons name="chatbubble-outline" size={16} color={HS.blue} />
         <Text style={styles.contactButtonText}>Message</Text>
       </TouchableOpacity>
     </View>
@@ -172,18 +182,10 @@ export default function OfferCard({ offer, onAccept, onReject, onMessage }: Offe
 
 const styles = StyleSheet.create({
   offerCard: {
-    backgroundColor: CARD_BG,
+    ...homeCard,
     marginHorizontal: 16,
     marginBottom: 14,
-    borderRadius: 20,
     padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
   },
   offerHeader: {
     flexDirection: 'row',
@@ -202,7 +204,7 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     backgroundColor: '#f0f0f0',
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.7)',
+    borderColor: HS.tint,
   },
   taskerDetails: {
     marginLeft: 12,
@@ -211,7 +213,7 @@ const styles = StyleSheet.create({
   taskerName: {
     fontSize: 16,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: HS.navy,
     marginBottom: 2,
   },
   ratingContainer: {
@@ -221,12 +223,12 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     marginLeft: 4,
   },
   offerDate: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
   },
   offerPriceContainer: {
     alignItems: 'flex-end',
@@ -234,7 +236,7 @@ const styles = StyleSheet.create({
   offerPrice: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: HS.blue,
     marginBottom: 6,
   },
   statusBadge: {
@@ -249,20 +251,22 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   messageContainer: {
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: HS.tint,
+    borderWidth: 1,
+    borderColor: HS.tintBorder,
     padding: 14,
     borderRadius: 14,
     marginBottom: 12,
   },
   messageLabel: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     marginBottom: 4,
     fontWeight: '500',
   },
   messageText: {
     fontSize: RFValue(14),
-    color: CARD_TEXT,
+    color: HS.text,
     lineHeight: 20,
   },
   actionButtons: {
@@ -290,14 +294,16 @@ const styles = StyleSheet.create({
   },
   rejectButton: {
     flex: 1,
-    backgroundColor: '#dc3545',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#DC2626',
     height: 46,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   rejectButtonText: {
-    color: '#fff',
+    color: '#DC2626',
     fontSize: 15,
     fontWeight: '700',
   },
@@ -306,14 +312,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.85)',
+    borderColor: HS.blue,
     height: 44,
     borderRadius: 14,
     gap: 6,
   },
   contactButtonText: {
-    color: CARD_TEXT,
+    color: HS.blue,
     fontSize: RFValue(14),
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });

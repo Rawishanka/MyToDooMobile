@@ -4,6 +4,7 @@ import React from 'react';
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { TASK_FILTERS, TaskFilter } from '../hooks/useMyTasksFilters';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 interface FilterModalProps {
   visible: boolean;
@@ -58,7 +59,7 @@ export default function FilterModal({
                   {filter}
                 </Text>
                 {selectedFilter === filter && (
-                  <Ionicons name="checkmark-circle" size={22} color="#003399" />
+                  <Ionicons name="checkmark-circle" size={22} color={HS.blue} />
                 )}
               </TouchableOpacity>
             ))}
@@ -80,9 +81,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: '#001A66',
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.18,
     shadowRadius: 12,
     elevation: 8,
     maxHeight: '60%',
@@ -115,14 +116,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: HS.cardBorder,
   },
   optionText: {
     fontSize: RFValue(16),
-    color: '#333',
+    color: HS.text,
   },
   selectedOptionText: {
-    color: '#003399',
+    color: HS.blue,
     fontWeight: '700',
   },
 });

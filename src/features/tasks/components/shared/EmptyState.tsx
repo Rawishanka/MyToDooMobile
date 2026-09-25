@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -23,11 +24,11 @@ export default function EmptyState({
   const { isDarkMode } = useTheme();
   return (
     <View style={styles.emptyContainer}>
-      <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? '#1E293B' : BRAND_BLUE }]}>
-        <Ionicons name={icon} size={38} color="#FFFFFF" />
+      <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? '#1E293B' : HS.tint }]}>
+        <Ionicons name={icon} size={38} color={isDarkMode ? '#FFFFFF' : HS.blue} />
       </View>
-      <Text style={[styles.emptyTitle, { color: isDarkMode ? '#F8FAFC' : '#0F172A' }]}>{title}</Text>
-      <Text style={[styles.emptySubtitle, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>{subtitle}</Text>
+      <Text style={[styles.emptyTitle, { color: isDarkMode ? '#F8FAFC' : HS.navy }]}>{title}</Text>
+      <Text style={[styles.emptySubtitle, { color: isDarkMode ? '#94A3B8' : HS.muted }]}>{subtitle}</Text>
       {actionText && onAction && (
         <TouchableOpacity style={styles.actionButton} onPress={onAction} activeOpacity={0.85}>
           <Text style={styles.actionButtonText}>{actionText}</Text>
@@ -51,11 +52,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
   },
   emptyTitle: {
     fontSize: RFValue(18),

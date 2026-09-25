@@ -17,7 +17,8 @@ import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
-import { BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -98,7 +99,7 @@ export const OffersList: React.FC<OffersListProps> = ({
     return (
       <View style={[styles.emptyState, { paddingBottom: Math.max(insets.bottom, 20), marginBottom: 100 }]}>
         <View style={[styles.emptyIconChip, isDarkMode && { backgroundColor: '#1E293B' }]}>
-          <Ionicons name="pricetags-outline" size={28} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+          <Ionicons name="pricetags-outline" size={28} color={isDarkMode ? '#38BDF8' : HS.blue} />
         </View>
         <Text style={[styles.emptyStateText, isDarkMode && { color: '#F8FAFC' }]}>No other offers yet</Text>
         <Text style={[styles.emptyStateSubtext, isDarkMode && { color: '#94A3B8' }]}>
@@ -182,7 +183,7 @@ const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean; showStatu
       {/* Only show amount to task poster, hide from other taskers */}
       {isTaskPoster && (
         <View style={styles.offerAmountRow}>
-          <Ionicons name="cash-outline" size={16} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+          <Ionicons name="cash-outline" size={16} color={isDarkMode ? '#38BDF8' : HS.blue} />
           <Text style={[styles.offerAmountText, isDarkMode && { color: '#38BDF8' }]}>
             {formatCurrency(offerAmount, currencyInfo)}
           </Text>
@@ -319,7 +320,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
           <View style={[styles.offerCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             {/* Task Title - Show which task this offer is for */}
             <View style={[styles.taskTitleContainer, isDarkMode && { borderBottomColor: '#334155' }]}>
-              <Ionicons name="briefcase-outline" size={14} color={isDarkMode ? "#94A3B8" : CARD_TEXT_MUTED} />
+              <Ionicons name="briefcase-outline" size={14} color={isDarkMode ? "#94A3B8" : HS.muted} />
               <Text style={[styles.taskTitle, isDarkMode && { color: "#94A3B8" }]} numberOfLines={1}>
                 {taskTitle}
               </Text>
@@ -381,7 +382,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
 
                   {/* Message */}
                   <View style={[styles.offerMessageRow, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                    <Ionicons name="chatbubble-outline" size={13} color={isDarkMode ? "#94A3B8" : CARD_TEXT_MUTED} />
+                    <Ionicons name="chatbubble-outline" size={13} color={isDarkMode ? "#94A3B8" : HS.muted} />
                     <Text style={[styles.offerMessage, isDarkMode && { color: "#E2E8F0" }]}>
                       {offer.offer?.message || offer.message || 'No message provided'}
                     </Text>
@@ -389,7 +390,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                   
                   {/* Time posted */}
                   <View style={styles.offerDateRow}>
-                    <Ionicons name="time-outline" size={12} color={isDarkMode ? "#64748B" : CARD_TEXT_MUTED} />
+                    <Ionicons name="time-outline" size={12} color={isDarkMode ? "#64748B" : HS.muted} />
                     <Text style={[styles.offerDate, isDarkMode && { color: "#64748B" }]}>
                       {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-GB', {
                         day: 'numeric',
@@ -456,7 +457,7 @@ const styles = StyleSheet.create({
   loadingStateText: {
     marginTop: 8,
     fontSize: RFValue(14),
-    color: '#666',
+    color: HS.muted,
   },
   emptyState: {
     paddingVertical: 48,
@@ -466,31 +467,31 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: CARD_BG,
+    backgroundColor: HS.card,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyStateText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: HS.navy,
     marginTop: 14,
   },
   emptyStateSubtext: {
     fontSize: 14,
-    color: '#64748B',
+    color: HS.muted,
     marginTop: 4,
     textAlign: 'center',
   },
   offerCard: {
-    backgroundColor: CARD_BG,
+    backgroundColor: HS.card,
     padding: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
+    borderColor: HS.cardBorder,
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 4,
   },
@@ -500,11 +501,11 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     marginBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
+    borderBottomColor: HS.cardBorder,
   },
   taskTitle: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     marginLeft: 8,
     flex: 1,
     fontWeight: '600',
@@ -522,9 +523,9 @@ const styles = StyleSheet.create({
     width: isTablet ? 60 : 52,
     height: isTablet ? 60 : 52,
     borderRadius: isTablet ? 30 : 26,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: HS.tint,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.7)',
+    borderColor: HS.cardBorder,
   },
   offerUserInfo: {
     flex: 1,
@@ -537,12 +538,12 @@ const styles = StyleSheet.create({
   offerUserName: {
     fontSize: 16,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: HS.navy,
   },
   verifiedBadgeSmall: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
+    backgroundColor: HS.greenBg,
     paddingVertical: hp('0.3%'),
     paddingHorizontal: wp('1.5%'),
     borderRadius: 8,
@@ -550,7 +551,7 @@ const styles = StyleSheet.create({
   },
   verifiedTextSmall: {
     fontSize: RFValue(9),
-    color: '#28a745',
+    color: HS.greenText,
     fontWeight: '600',
   },
   verifiedIcon: {
@@ -572,12 +573,12 @@ const styles = StyleSheet.create({
   offerRatingText: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: HS.navy,
     marginLeft: 4,
   },
   offerRatingCount: {
     fontSize: RFValue(13),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     marginLeft: 2,
   },
   offerCompletionContainer: {
@@ -586,12 +587,12 @@ const styles = StyleSheet.create({
   },
   offerCompletionRate: {
     fontSize: RFValue(12),
-    color: '#4ADE80',
+    color: HS.greenText,
     fontWeight: '500',
   },
   offerTasksText: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     marginBottom: 8,
   },
   offerRating: {
@@ -601,12 +602,12 @@ const styles = StyleSheet.create({
   },
   statDivider: {
     fontSize: RFValue(13),
-    color: '#999',
+    color: HS.muted,
     marginHorizontal: 4,
   },
   offerTasksCount: {
     fontSize: RFValue(13),
-    color: '#666',
+    color: HS.muted,
   },
   completionRateRow: {
     flexDirection: 'row',
@@ -621,11 +622,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     padding: 12,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.tint,
   },
   offerMessage: {
     fontSize: RFValue(13),
-    color: CARD_TEXT,
+    color: HS.navy,
     marginLeft: 8,
     flex: 1,
     lineHeight: 18,
@@ -653,14 +654,14 @@ const styles = StyleSheet.create({
   acceptedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
+    backgroundColor: HS.greenBg,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 14,
     marginTop: 8,
   },
   acceptedText: {
-    color: '#4CAF50',
+    color: HS.greenText,
     fontSize: RFValue(14),
     fontWeight: '600',
     marginLeft: 6,
@@ -668,14 +669,14 @@ const styles = StyleSheet.create({
   completedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
+    backgroundColor: HS.greenBg,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 14,
     marginTop: 8,
   },
   completedText: {
-    color: '#2E7D32',
+    color: HS.greenText,
     fontSize: RFValue(14),
     fontWeight: '600',
     marginLeft: 6,
@@ -687,14 +688,14 @@ const styles = StyleSheet.create({
   },
   offerDate: {
     fontSize: RFValue(11),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     marginLeft: 4,
   },
   rebookedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 8,
-    backgroundColor: '#E8F5E9',
+    backgroundColor: HS.greenBg,
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 12,
@@ -702,7 +703,7 @@ const styles = StyleSheet.create({
   },
   rebookedText: {
     fontSize: RFValue(11),
-    color: '#4CAF50',
+    color: HS.greenText,
     marginLeft: 4,
     fontWeight: '600',
   },
@@ -722,7 +723,7 @@ const styles = StyleSheet.create({
   offerAmountText: {
     fontSize: RFValue(15),
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: HS.blue,
   },
   offerStatusBadge: {
     flexDirection: 'row',
@@ -733,16 +734,16 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   acceptedStatusBadge: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: HS.greenBg,
   },
   completedStatusBadge: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: HS.greenBg,
   },
   pendingStatusBadge: {
-    backgroundColor: '#FFF3E0',
+    backgroundColor: HS.amberBg,
   },
   rejectedStatusBadge: {
-    backgroundColor: '#FFEBEE',
+    backgroundColor: HS.redBg,
   },
   offerStatusText: {
     fontSize: RFValue(12),

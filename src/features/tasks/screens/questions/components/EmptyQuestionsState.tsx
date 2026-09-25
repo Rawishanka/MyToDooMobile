@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface EmptyQuestionsStateProps {
@@ -11,7 +12,7 @@ export default function EmptyQuestionsState({ onAskQuestion }: EmptyQuestionsSta
   return (
     <View style={styles.emptyContainer}>
       <View style={styles.iconChip}>
-        <Ionicons name="help-circle-outline" size={40} color="#003399" />
+        <Ionicons name="help-circle-outline" size={40} color={HS.blue} />
       </View>
       <Text style={styles.emptyTitle}>No questions yet</Text>
       <Text style={styles.emptySubtitle}>
@@ -36,20 +37,20 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: 38,
-    backgroundColor: '#E3EAF8',
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,

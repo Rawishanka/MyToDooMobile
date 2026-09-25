@@ -20,7 +20,8 @@ import ImportantNotes from './components/ImportantNotes';
 import TaskDetails from './components/TaskDetails';
 import TaskSummaryCard from './components/TaskSummaryCard';
 import TermsCheckbox from './components/TermsCheckbox';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_PRICE_BG, CARD_PRICE_TEXT, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS, homeCard } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 export default function AcceptTaskScreen() {
   const router = useRouter();
@@ -98,7 +99,7 @@ export default function AcceptTaskScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-          <Ionicons name="chevron-back" size={22} color={CARD_TEXT} />
+          <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Accept Task</Text>
         <View style={styles.placeholder} />
@@ -143,7 +144,7 @@ export default function AcceptTaskScreen() {
             style={styles.contactButton}
             onPress={() => router.push(`./ask-question-screen?taskId=${taskId}`)}
           >
-            <Ionicons name="chatbubble-outline" size={20} color={CARD_PRICE_TEXT} />
+            <Ionicons name="chatbubble-outline" size={20} color={HS.blue} />
             <Text style={styles.contactButtonText}>Ask a Question</Text>
           </TouchableOpacity>
         </View>
@@ -157,11 +158,11 @@ export default function AcceptTaskScreen() {
           disabled={!agreedToTerms || isSubmitting}
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={HS.blue} />
           ) : (
             <>
-              <Ionicons name="hand-left-outline" size={20} color="#fff" />
-              <Text style={styles.acceptButtonText}>Accept Task</Text>
+              <Ionicons name="hand-left-outline" size={20} color={!agreedToTerms ? HS.muted : '#fff'} />
+              <Text style={[styles.acceptButtonText, !agreedToTerms && { color: HS.muted }]}>Accept Task</Text>
             </>
           )}
         </TouchableOpacity>
@@ -173,7 +174,7 @@ export default function AcceptTaskScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: HS.page,
   },
   header: {
     flexDirection: 'row',
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: '#FFFFFF',
   },
   placeholder: {
     width: 36,
@@ -210,39 +211,31 @@ const styles = StyleSheet.create({
   contactContainer: {
     marginTop: 16,
     padding: 18,
-    backgroundColor: CARD_BG,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    ...homeCard,
   },
   contactTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: HS.navy,
     marginBottom: 8,
   },
   contactText: {
     fontSize: RFValue(14),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     marginBottom: 12,
     lineHeight: 20,
   },
   contactButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CARD_PRICE_BG,
+    backgroundColor: HS.tint,
     paddingHorizontal: 16,
     height: 44,
     borderRadius: 14,
     alignSelf: 'flex-start',
   },
   contactButtonText: {
-    color: CARD_PRICE_TEXT,
+    color: HS.blue,
     fontSize: RFValue(14),
     fontWeight: '600',
     marginLeft: 8,
@@ -252,7 +245,7 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     backgroundColor: '#fff',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#CBD5E1',
+    borderTopColor: HS.cardBorder,
   },
   acceptButton: {
     backgroundColor: BRAND_ORANGE,
@@ -269,7 +262,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   disabledButton: {
-    opacity: 0.5,
+    backgroundColor: HS.tintStrong,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   acceptButtonText: {
     color: '#fff',

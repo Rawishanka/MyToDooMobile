@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { useTheme } from '@/src/shared/theme';
-import { BlueBackdrop, LightHeader, IconChip } from '@/src/shared/components/custom_components/lightCard';
+import { LightHeader, IconChip } from '@/src/shared/components/custom_components/lightCard';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 const LegalScreen = ({ onBack }) => {
   const { isDarkMode } = useTheme();
@@ -20,13 +21,12 @@ const LegalScreen = ({ onBack }) => {
     >
       <IconChip name={icon} style={{ marginRight: 12 }} />
       <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={1}>{title}</Text>
-      <Ionicons name="chevron-forward" size={20} color={isDarkMode ? "#94A3B8" : "rgba(255,255,255,0.6)"} />
+      <Ionicons name="chevron-forward" size={20} color={isDarkMode ? "#94A3B8" : HS.muted} />
     </TouchableOpacity>
   );
 
   const MainLegalScreen = () => (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <BlueBackdrop />
       <BackButton 
         onPress={onBack} 
         title="Legal"
@@ -54,7 +54,6 @@ const LegalScreen = ({ onBack }) => {
 
   const OpenSourceScreen = () => (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <BlueBackdrop />
       <BackButton 
         onPress={() => setCurrentScreen('main')} 
         title="Open source libraries"
@@ -72,7 +71,6 @@ const LegalScreen = ({ onBack }) => {
 
   const TermsScreen = () => (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <BlueBackdrop />
       <BackButton 
         onPress={() => setCurrentScreen('main')} 
         title="Terms & conditions"
@@ -324,7 +322,6 @@ const LegalScreen = ({ onBack }) => {
 
   const PrivacyScreen = () => (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <BlueBackdrop />
       <LightHeader title="Privacy policy" onBack={() => setCurrentScreen('main')} />
 
       <ScrollView style={styles.scrollContent} contentContainerStyle={styles.docScroll}>
@@ -380,7 +377,7 @@ const LegalScreen = ({ onBack }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#003399',
+    backgroundColor: HS.page,
   },
   content: {
     flex: 1,
@@ -396,70 +393,72 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   docCard: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.cardBorder,
     paddingHorizontal: 18,
     paddingTop: 4,
     paddingBottom: 12,
-    shadowColor: '#00114D',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
     shadowOffset: { width: 0, height: 4 },
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.cardBorder,
     padding: 14,
     marginBottom: 14,
-    shadowColor: '#00114D',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
     shadowOffset: { width: 0, height: 4 },
   },
   menuText: {
     flex: 1,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: HS.navy,
     fontWeight: '600',
   },
   mainTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginVertical: 16,
   },
   privacyTitle: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 16,
   },
   paragraph: {
     fontSize: 14,
     lineHeight: 21,
-    color: 'rgba(255,255,255,0.85)',
+    color: HS.text,
     marginBottom: 16,
   },
   link: {
-    color: '#FFFFFF',
+    color: HS.blue,
     textDecorationLine: 'underline',
   },
   userAgreement: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 16,
   },
   listItem: {
     fontSize: 14,
     lineHeight: 21,
-    color: 'rgba(255,255,255,0.85)',
+    color: HS.text,
     marginBottom: 12,
     paddingLeft: 16,
   },
@@ -489,24 +488,24 @@ const styles = StyleSheet.create({
   brandText: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: HS.navy,
   },
   lastUpdated: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginTop: 22,
     marginBottom: 10,
   },
   subSectionTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginTop: 14,
     marginBottom: 6,
   },

@@ -1,6 +1,6 @@
 import { formatNumber } from '@/src/shared/utils/currency';
 import * as PaymentAPI from '@/src/api/payment-api';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import { HS, homeCard } from '@/src/shared/theme/homeStyle';
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '@/src/shared/theme';
 import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -99,17 +99,17 @@ export const OfferForm: React.FC<OfferFormProps> = ({
   }, [offerAmount, currency]);
 
   return (
-    <View style={[styles.formContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+    <View style={[styles.formContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', shadowOpacity: 0, elevation: 0 }]}>
       <Text style={[styles.sectionTitle, isDarkMode && { color: "#F8FAFC" }]}>Your Offer</Text>
 
       <View style={styles.inputContainer}>
-        <Text style={[styles.inputLabel, isDarkMode && { color: "#F8FAFC" }]}>
+        <Text style={[styles.inputLabel, !isDarkMode && styles.inputLabelLight, isDarkMode && { color: "#F8FAFC" }]}>
           Offer Amount * {budget && `(Budget: ${currencySymbol}${formatNumber(budget, { forceDecimals: true })})`}
         </Text>
         <View style={[
           styles.amountInputContainer,
           isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' },
-          validationError ? styles.errorBorder : undefined
+          validationError ? [styles.errorBorder, isDarkMode && { borderColor: '#FCA5A5' }] : undefined
         ]}>
           <Text style={[styles.currencySymbol, isDarkMode && { backgroundColor: "#1E293B", color: "#94A3B8" }]}>{currencySymbol}</Text>
           <TextInput
@@ -123,7 +123,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
           />
         </View>
         {validationError ? (
-          <Text style={styles.errorText}>{validationError}</Text>
+          <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>{validationError}</Text>
         ) : (
           <Text style={[styles.inputHint, isDarkMode && { color: "#94A3B8" }]}>
             Enter amount up to the task budget ({currencySymbol}{budget ? formatNumber(budget, { forceDecimals: true }) : '0.00'})
@@ -132,7 +132,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
         {(feeLoading || feePreview) && (
           <View style={[styles.feePreviewBox, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#334155" }]}>
             {feeLoading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={isDarkMode ? '#FFFFFF' : HS.blue} />
             ) : (
               <>
                 <Text style={[styles.feePreviewTitle, isDarkMode && { color: "#38BDF8" }]}>As you type</Text>
@@ -148,7 +148,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
                 {feePreview?.taskerNetReceives != null && (
                   <View style={styles.feeRow}>
                     <Text style={[styles.feeReceiveLabel, isDarkMode && { color: "#38BDF8" }]}>You'll receive</Text>
-                    <Text style={styles.feeReceiveValue}>
+                    <Text style={[styles.feeReceiveValue, !isDarkMode && { color: HS.greenText }]}>
                       {currencySymbol}
                       {formatNumber(feePreview.taskerNetReceives, { forceDecimals: true })}
                     </Text>
@@ -167,12 +167,12 @@ export const OfferForm: React.FC<OfferFormProps> = ({
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={[styles.inputLabel, isDarkMode && { color: "#F8FAFC" }]}>Your Message *</Text>
+        <Text style={[styles.inputLabel, !isDarkMode && styles.inputLabelLight, isDarkMode && { color: "#F8FAFC" }]}>Your Message *</Text>
         <TextInput
           style={[
             styles.messageInput,
             isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' },
-            messageError ? styles.errorBorder : undefined
+            messageError ? [styles.errorBorder, isDarkMode && { borderColor: '#FCA5A5' }] : undefined
           ]}
           placeholder="Why are you the best person for this task?"
           multiline
@@ -184,7 +184,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
           textAlignVertical="top"
         />
         {messageError ? (
-          <Text style={styles.errorText}>{messageError}</Text>
+          <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>{messageError}</Text>
         ) : (
           <Text style={[styles.inputHint, isDarkMode && { color: "#94A3B8" }]}>
             Explain your relevant experience and approach (min. 10 characters)
@@ -200,15 +200,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 16,
     padding: 18,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.10)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    ...homeCard,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: HS.navy,
     marginBottom: 16,
   },
   inputContainer: {
@@ -219,14 +216,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
-    color: CARD_TEXT,
+    color: HS.navy,
     marginBottom: 8,
+  },
+  inputLabelLight: {
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 0,
+    textTransform: 'none',
+    color: HS.navy,
   },
   amountInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: HS.inputBorder,
     borderRadius: 14,
     backgroundColor: '#FFFFFF',
     overflow: 'hidden',
@@ -236,8 +240,8 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     fontSize: 16,
     fontWeight: '700',
-    color: BRAND_BLUE,
-    backgroundColor: '#E8EEFB',
+    color: HS.blue,
+    backgroundColor: HS.tint,
   },
   amountInput: {
     flex: 1,
@@ -245,46 +249,46 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     fontSize: 17,
     fontWeight: '600',
-    color: '#0F172A',
+    color: HS.navy,
   },
   messageInput: {
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: HS.inputBorder,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 14,
     fontSize: 15,
     minHeight: 120,
     backgroundColor: '#FFFFFF',
-    color: '#0F172A',
+    color: HS.navy,
   },
   inputHint: {
     marginTop: 8,
     fontSize: 12,
     lineHeight: 17,
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
   },
   errorText: {
     marginTop: 8,
     fontSize: 12,
-    color: '#FCA5A5',
+    color: HS.redText,
     fontWeight: '600',
   },
   errorBorder: {
-    borderColor: '#FCA5A5',
+    borderColor: '#DC2626',
   },
   feePreviewBox: {
     marginTop: 14,
     padding: 14,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.tint,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.tintBorder,
   },
   feePreviewTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: HS.navy,
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
@@ -297,12 +301,12 @@ const styles = StyleSheet.create({
   },
   feePreviewLine: {
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.85)',
+    color: HS.text,
   },
   feeReceiveLabel: {
     fontSize: 15,
     fontWeight: '800',
-    color: CARD_TEXT,
+    color: HS.navy,
   },
   feeReceiveValue: {
     fontSize: 17,
@@ -311,7 +315,7 @@ const styles = StyleSheet.create({
   },
   feePreviewHint: {
     fontSize: RFValue(11),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     marginTop: 10,
   },
 });

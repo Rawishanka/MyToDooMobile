@@ -21,11 +21,11 @@ export const TimeToggle: React.FC<TimeToggleProps> = ({ needSpecificTime, onTogg
         value={needSpecificTime}
         onValueChange={disabled ? undefined : onToggle}
         trackColor={{ 
-          false: isDarkMode ? '#334155' : 'rgba(255,255,255,0.28)', 
+          false: isDarkMode ? '#334155' : '#CBD5E1', 
           true: disabled ? '#D1D1D6' : FLOW.orange 
         }}
         thumbColor={disabled ? '#8E8E93' : '#FFFFFF'}
-        ios_backgroundColor={isDarkMode ? '#334155' : 'rgba(255,255,255,0.28)'}
+        ios_backgroundColor={isDarkMode ? '#334155' : '#CBD5E1'}
         disabled={disabled}
       />
     </View>
@@ -39,22 +39,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: FLOW.glassStrong,
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: FLOW.glassBorder,
+    borderWidth: 1.5,
+    borderColor: FLOW.inputBorder,
     marginBottom: 16,
   },
   toggleText: {
     fontSize: RFValue(16),
-    color: '#FFFFFF',
+    color: FLOW.navy,
     fontWeight: '500',
   },
   toggleRowDisabled: {
-    opacity: 0.5,
-    backgroundColor: FLOW.glass,
+    opacity: 0.6,
+    backgroundColor: FLOW.tint,
   },
   toggleTextDisabled: {
-    color: 'rgba(255,255,255,0.75)',
+    color: FLOW.muted,
   },
 });

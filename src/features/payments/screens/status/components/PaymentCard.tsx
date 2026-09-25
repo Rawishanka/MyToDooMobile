@@ -2,6 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PaymentItem } from '../hooks/usePaymentStatus';
+import { HS, homeCard } from '@/src/shared/theme/homeStyle';
+import { useTheme } from '@/src/shared/theme';
 import { CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -18,6 +20,13 @@ export default function PaymentCard({
   getStatusColor,
   getStatusIcon,
 }: PaymentCardProps) {
+  const { isDarkMode } = useTheme();
+  const chipTone = (c: string) =>
+    c === '#28a745' ? { bg: HS.greenBg, fg: HS.greenText }
+    : c === '#dc3545' ? { bg: HS.redBg, fg: HS.redText }
+    : c === '#ffc107' ? { bg: HS.amberBg, fg: HS.amberText }
+    : { bg: HS.blueBg, fg: HS.blueText };
+  const tone = chipTone(getStatusColor(payment.status));
   const handlePress = () => {
     Alert.alert(
       'Payment Details',
@@ -27,28 +36,28 @@ export default function PaymentCard({
   };
 
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={handlePress}>
+    <TouchableOpacity style={[styles.card, isDarkMode && styles.cardDark]} activeOpacity={0.7} onPress={handlePress}>
       <View style={styles.header}>
         <View style={styles.info}>
-          <Text style={styles.taskTitle} numberOfLines={2}>
+          <Text style={[styles.taskTitle, isDarkMode && styles.onBlue]} numberOfLines={2}>
             {payment.taskTitle}
           </Text>
-          <Text style={styles.paymentMethod}>{payment.paymentMethod}</Text>
-          <Text style={styles.paymentDate}>{formatDate(payment.createdAt)}</Text>
+          <Text style={[styles.paymentMethod, isDarkMode && styles.onBlueMuted]}>{payment.paymentMethod}</Text>
+          <Text style={[styles.paymentDate, isDarkMode && styles.onBlueMuted]}>{formatDate(payment.createdAt)}</Text>
         </View>
 
         <View style={styles.right}>
-          <Text style={styles.amount}>
+          <Text style={[styles.amount, isDarkMode && styles.onBlue]}>
             {payment.formattedAmount || `${payment.currency}$${payment.amount}`}
           </Text>
           <View
             style={[
               styles.statusContainer,
-              { backgroundColor: getStatusColor(payment.status) },
+              isDarkMode ? { backgroundColor: getStatusColor(payment.status) } : { backgroundColor: tone.bg },
             ]}
           >
-            <Ionicons name={getStatusIcon(payment.status) as any} size={14} color="#fff" />
-            <Text style={styles.statusText}>
+            <Ionicons name={getStatusIcon(payment.status) as any} size={14} color={isDarkMode ? '#fff' : tone.fg} />
+            <Text style={[styles.statusText, !isDarkMode && { color: tone.fg }]}>
               {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
             </Text>
           </View>
@@ -56,9 +65,9 @@ export default function PaymentCard({
       </View>
 
       {payment.transactionId && (
-        <View style={styles.transactionInfo}>
-          <Text style={styles.transactionLabel}>Transaction ID:</Text>
-          <Text style={styles.transactionId}>{payment.transactionId}</Text>
+        <View style={[styles.transactionInfo, !isDarkMode && { borderTopColor: HS.cardBorder }]}>
+          <Text style={[styles.transactionLabel, isDarkMode && styles.onBlueMuted]}>Transaction ID:</Text>
+          <Text style={[styles.transactionId, isDarkMode && styles.onBlue]}>{payment.transactionId}</Text>
         </View>
       )}
     </TouchableOpacity>
@@ -67,10 +76,15 @@ export default function PaymentCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: CARD_BG,
-    borderRadius: 20,
+    ...homeCard,
     padding: 16,
     marginBottom: 14,
+  },
+  onBlue: { color: CARD_TEXT },
+  onBlueMuted: { color: CARD_TEXT_MUTED },
+  cardDark: {
+    backgroundColor: CARD_BG,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.14)',
     shadowColor: '#001A66',
@@ -91,17 +105,17 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: HS.navy,
     marginBottom: 6,
   },
   paymentMethod: {
     fontSize: RFValue(13),
-    color: CARD_TEXT_MUTED,
+    color: HS.text,
     marginBottom: 4,
   },
   paymentDate: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
   },
   right: {
     alignItems: 'flex-end',
@@ -109,7 +123,7 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 22,
     fontWeight: '800',
-    color: CARD_TEXT,
+    color: HS.blue,
     marginBottom: 8,
   },
   statusContainer: {
@@ -134,12 +148,12 @@ const styles = StyleSheet.create({
   },
   transactionLabel: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     marginRight: 6,
   },
   transactionId: {
     fontSize: RFValue(12),
-    color: CARD_TEXT,
+    color: HS.navy,
     fontWeight: '500',
   },
 });

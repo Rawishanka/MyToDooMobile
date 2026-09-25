@@ -14,9 +14,10 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { BlueBackdrop, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import { useSubmitFaceVerification, useGetVerificationStatus } from '@/src/shared/hooks/useFaceVerificationApi';
 import { useGetUserProfile } from '@/src/shared/hooks/useUserProfileApi';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 interface IDVerificationScreenProps {
   onBack: () => void;
@@ -153,13 +154,12 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
   if (isAlreadyVerified && step === 'overview') {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
         <LightHeader title="ID Verification" onBack={onBack} />
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={[styles.verifiedCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#16A34A' }]}>
             <View style={styles.verifiedIconLarge}>
-              <MaterialIcons name="verified" size={60} color="#4ADE80" />
+              <MaterialIcons name="verified" size={60} color={isDarkMode ? "#4ADE80" : HS.greenText} />
             </View>
             <Text style={[styles.verifiedHeading, isDarkMode && { color: '#F8FAFC' }]}>Identity Verified</Text>
             <Text style={[styles.verifiedSubtitle, isDarkMode && { color: '#94A3B8' }]}>
@@ -170,7 +170,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
               <View style={styles.metaRow}>
                 <Text style={[styles.metaLabel, isDarkMode && { color: '#94A3B8' }]}>Status:</Text>
                 <View style={styles.badgePill}>
-                  <Ionicons name="checkmark-circle" size={14} color="#4ADE80" />
+                  <Ionicons name="checkmark-circle" size={14} color={isDarkMode ? "#4ADE80" : HS.greenText} />
                   <Text style={styles.badgePillText}>Verified</Text>
                 </View>
               </View>
@@ -180,7 +180,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
               </View>
               <View style={styles.metaRow}>
                 <Text style={[styles.metaLabel, isDarkMode && { color: '#94A3B8' }]}>Confidence Score:</Text>
-                <Text style={[styles.metaValue, { color: '#4ADE80', fontWeight: '700' }]}>94% Match</Text>
+                <Text style={[styles.metaValue, { color: isDarkMode ? '#4ADE80' : HS.greenText, fontWeight: '700' }]}>94% Match</Text>
               </View>
             </View>
 
@@ -199,8 +199,8 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
               <Text style={styles.startVerifyBtnText}>Test / Re-verify 3-Point Face Scan</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.doneButton, { marginTop: 10, width: "100%", backgroundColor: "transparent", borderWidth: 1, borderColor: isDarkMode ? "#334155" : "rgba(255,255,255,0.7)" }]} onPress={onBack}>
-              <Text style={[styles.doneButtonText, { color: isDarkMode ? "#F8FAFC" : "#FFFFFF" }]}>Back to Account</Text>
+            <TouchableOpacity style={[styles.doneButton, { marginTop: 10, width: "100%", backgroundColor: isDarkMode ? "transparent" : "#FFFFFF", borderWidth: 1.5, borderColor: isDarkMode ? "#334155" : HS.blue }]} onPress={onBack}>
+              <Text style={[styles.doneButtonText, { color: isDarkMode ? "#F8FAFC" : HS.blue }]}>Back to Account</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -212,8 +212,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
   if (step === 'processing') {
     return (
       <View style={[styles.container, styles.centerContent, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
-        <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+        <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
         <Text style={[styles.processingTitle, isDarkMode && { color: '#F8FAFC' }]}>
           Analyzing Biometric Verification...
         </Text>
@@ -228,9 +227,8 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
   if (step === 'success') {
     return (
       <View style={[styles.container, styles.centerContent, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
         <View style={styles.successIconRing}>
-          <Ionicons name="checkmark-circle" size={72} color="#4ADE80" />
+          <Ionicons name="checkmark-circle" size={72} color={isDarkMode ? "#4ADE80" : HS.greenText} />
         </View>
         <Text style={[styles.successTitle, isDarkMode && { color: '#F8FAFC' }]}>
           Verification Successful!
@@ -239,7 +237,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
           Your face scan matched your government ID with {Math.round(similarityResult * 100)}% accuracy.
         </Text>
         <View style={styles.badgePreviewCard}>
-          <MaterialIcons name="verified-user" size={24} color="#4ADE80" />
+          <MaterialIcons name="verified-user" size={24} color={isDarkMode ? "#4ADE80" : HS.greenText} />
           <Text style={styles.badgePreviewText}>ID Verified Badge Activated</Text>
         </View>
         <TouchableOpacity style={styles.doneButton} onPress={onBack}>
@@ -253,7 +251,6 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
   if (step === 'face_scan') {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
         <LightHeader title="3-Point Face Scan" onBack={() => setStep('document')} />
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -275,12 +272,12 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
               {scanStage === 3 && 'Slowly turn your head to your right side to complete 3D liveness.'}
             </Text>
 
-            <View style={styles.ovalFrameContainer}>
+            <View style={[styles.ovalFrameContainer, isDarkMode && { borderColor: 'rgba(255,255,255,0.6)', backgroundColor: 'rgba(255,255,255,0.06)' }]}>
               <View style={[styles.ovalFrame, scanStage === 1 && styles.ovalStage1, scanStage === 2 && styles.ovalStage2, scanStage === 3 && styles.ovalStage3]}>
                 <Ionicons
                   name={scanStage === 1 ? 'person-outline' : scanStage === 2 ? 'arrow-back' : 'arrow-forward'}
                   size={64}
-                  color={isDarkMode ? '#38BDF8' : '#FFFFFF'}
+                  color={isDarkMode ? '#38BDF8' : HS.blue}
                 />
               </View>
             </View>
@@ -313,7 +310,6 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
   if (step === 'document') {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
         <LightHeader title="Upload Government ID" onBack={() => setStep('overview')} />
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -341,9 +337,9 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
                 <Ionicons
                   name={type === 'passport' ? 'airplane-outline' : 'card-outline'}
                   size={20}
-                  color={selectedDocType === type ? (isDarkMode ? '#fff' : '#003399') : isDarkMode ? '#94A3B8' : '#FFFFFF'}
+                  color={selectedDocType === type ? '#FFFFFF' : isDarkMode ? '#94A3B8' : HS.blue}
                 />
-                <Text style={[styles.docTypeBtnText, selectedDocType === type && { color: isDarkMode ? '#fff' : '#003399' }, isDarkMode && selectedDocType !== type && { color: '#94A3B8' }]}>
+                <Text style={[styles.docTypeBtnText, selectedDocType === type && { color: '#FFFFFF' }, isDarkMode && selectedDocType !== type && { color: '#94A3B8' }]}>
                   {type === 'driver_license' ? 'Driver Licence' : type === 'passport' ? 'Passport' : 'Photo ID'}
                 </Text>
               </TouchableOpacity>
@@ -361,7 +357,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
               </View>
             ) : (
               <View style={styles.docPlaceholder}>
-                <Ionicons name="document-text-outline" size={48} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+                <Ionicons name="document-text-outline" size={48} color={isDarkMode ? '#38BDF8' : HS.blue} />
                 <Text style={[styles.placeholderTitle, isDarkMode && { color: '#F8FAFC' }]}>
                   Take a photo of your {selectedDocType === 'driver_license' ? "Driver's Licence" : selectedDocType === 'passport' ? 'Passport' : 'ID Card'}
                 </Text>
@@ -375,7 +371,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
                     <Text style={styles.actionBtnText}>Camera</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.actionBtnGallery} onPress={() => handlePickDocument(false)}>
-                    <Ionicons name="images-outline" size={18} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+                    <Ionicons name="images-outline" size={18} color={isDarkMode ? '#38BDF8' : HS.blue} />
                     <Text style={styles.actionBtnGalleryText}>Gallery</Text>
                   </TouchableOpacity>
                 </View>
@@ -384,12 +380,12 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
           </View>
 
           <TouchableOpacity
-            style={[styles.nextButton, !documentImage && styles.disabledButton]}
+            style={[styles.nextButton, !documentImage && styles.disabledButton, !documentImage && isDarkMode && { backgroundColor: 'rgba(255,255,255,0.25)' }]}
             disabled={!documentImage}
             onPress={() => setStep('face_scan')}
           >
-            <Text style={styles.nextButtonText}>Continue to 3-Point Face Scan</Text>
-            <Ionicons name="arrow-forward" size={18} color="#fff" />
+            <Text style={[styles.nextButtonText, !documentImage && !isDarkMode && { color: HS.muted }]}>Continue to 3-Point Face Scan</Text>
+            <Ionicons name="arrow-forward" size={18} color={!documentImage && !isDarkMode ? HS.muted : '#fff'} />
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -399,13 +395,12 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
   // RENDER: Overview Step
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
       <LightHeader title="ID Verification" onBack={onBack} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={[styles.overviewCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
           <View style={styles.shieldIconWrapper}>
-            <MaterialIcons name="security" size={40} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+            <MaterialIcons name="security" size={40} color={isDarkMode ? '#38BDF8' : HS.blue} />
           </View>
           <Text style={[styles.overviewTitle, isDarkMode && { color: '#F8FAFC' }]}>
             Earn the "ID Verified" Badge
@@ -461,7 +456,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#003399',
+    backgroundColor: HS.page,
   },
   centerContent: {
     justifyContent: 'center',
@@ -473,23 +468,24 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   overviewCard: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-    shadowColor: '#00114D',
+    borderColor: HS.cardBorder,
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   shieldIconWrapper: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: HS.tint,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -497,32 +493,33 @@ const styles = StyleSheet.create({
   overviewTitle: {
     fontSize: RFValue(19),
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: HS.navy,
     textAlign: 'center',
     marginBottom: 8,
   },
   overviewDesc: {
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 20,
   },
   infoSection: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.cardBorder,
     marginBottom: 24,
-    shadowColor: '#00114D',
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   sectionHeading: {
     fontSize: RFValue(15),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 16,
   },
   benefitRow: {
@@ -534,7 +531,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.22)',
+    backgroundColor: HS.blue,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -547,12 +544,12 @@ const styles = StyleSheet.create({
   benefitTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 2,
   },
   benefitDesc: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     lineHeight: 16,
   },
   startVerifyBtn: {
@@ -584,7 +581,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: '#94A3B8',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -601,13 +598,13 @@ const styles = StyleSheet.create({
   stepLine: {
     width: 60,
     height: 3,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: '#CBD5E1',
     marginHorizontal: 8,
   },
   sectionSubtitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.85)',
+    color: HS.muted,
     marginBottom: 12,
   },
   docTypeRow: {
@@ -620,28 +617,28 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.inputBorder,
     alignItems: 'center',
     marginHorizontal: 4,
   },
   docTypeBtnSelected: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#FFFFFF',
+    backgroundColor: HS.blue,
+    borderColor: HS.blue,
   },
   docTypeBtnText: {
     fontSize: RFValue(11),
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginTop: 4,
   },
   docPreviewBox: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.tint,
     borderRadius: 20,
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: 'rgba(255,255,255,0.4)',
+    borderColor: 'rgba(0,51,153,0.35)',
     padding: 24,
     alignItems: 'center',
     marginBottom: 24,
@@ -654,14 +651,14 @@ const styles = StyleSheet.create({
   placeholderTitle: {
     fontSize: RFValue(14),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     textAlign: 'center',
     marginTop: 12,
     marginBottom: 6,
   },
   placeholderSubtitle: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     textAlign: 'center',
     marginBottom: 18,
     lineHeight: 18,
@@ -687,14 +684,16 @@ const styles = StyleSheet.create({
   actionBtnGallery: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: HS.blue,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 14,
     gap: 6,
   },
   actionBtnGalleryText: {
-    color: '#FFFFFF',
+    color: HS.blue,
     fontSize: RFValue(13),
     fontWeight: '600',
   },
@@ -713,7 +712,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 10,
     right: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    backgroundColor: 'rgba(15,23,42,0.75)',
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 6,
@@ -741,7 +740,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   disabledButton: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: HS.tintStrong,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   nextButtonText: {
     color: '#FFFFFF',
@@ -754,13 +755,13 @@ const styles = StyleSheet.create({
   scanStepTitle: {
     fontSize: RFValue(17),
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: HS.navy,
     textAlign: 'center',
     marginBottom: 6,
   },
   scanStepDesc: {
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 18,
@@ -770,11 +771,11 @@ const styles = StyleSheet.create({
     height: 280,
     borderRadius: 110,
     borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.6)',
+    borderColor: 'rgba(0,51,153,0.35)',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: HS.tint,
     marginBottom: 24,
   },
   ovalFrame: {
@@ -785,7 +786,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ovalStage1: {
-    borderColor: '#FFFFFF',
+    borderColor: HS.blue,
   },
   ovalStage2: {
     borderColor: '#FBBF24',
@@ -802,7 +803,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: '#94A3B8',
   },
   stagePillDone: {
     backgroundColor: '#16A34A',
@@ -829,14 +830,14 @@ const styles = StyleSheet.create({
   processingTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginTop: 20,
     marginBottom: 8,
     textAlign: 'center',
   },
   processingSubtitle: {
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 20,
     paddingHorizontal: 20,
@@ -845,7 +846,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: 'rgba(74, 222, 128, 0.18)',
+    backgroundColor: HS.greenBg,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -853,12 +854,12 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: RFValue(22),
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 8,
   },
   successSubtitle: {
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 24,
@@ -867,7 +868,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(74, 222, 128, 0.18)',
+    backgroundColor: HS.greenBg,
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 20,
@@ -876,7 +877,7 @@ const styles = StyleSheet.create({
   badgePreviewText: {
     fontSize: RFValue(13),
     fontWeight: '700',
-    color: '#4ADE80',
+    color: HS.greenText,
   },
   doneButton: {
     backgroundColor: '#ff6b35',
@@ -890,7 +891,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   verifiedCard: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.tint,
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
@@ -903,22 +904,22 @@ const styles = StyleSheet.create({
   verifiedHeading: {
     fontSize: RFValue(20),
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 8,
   },
   verifiedSubtitle: {
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 20,
   },
   verifiedMetaBox: {
     width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.tint,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.tintBorder,
     padding: 16,
     marginBottom: 24,
     gap: 12,
@@ -930,18 +931,18 @@ const styles = StyleSheet.create({
   },
   metaLabel: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     fontWeight: '600',
   },
   metaValue: {
     fontSize: RFValue(12),
-    color: '#FFFFFF',
+    color: HS.navy,
     fontWeight: '600',
   },
   badgePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(74, 222, 128, 0.18)',
+    backgroundColor: HS.greenBg,
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 12,
@@ -950,6 +951,6 @@ const styles = StyleSheet.create({
   badgePillText: {
     fontSize: RFValue(11),
     fontWeight: '700',
-    color: '#4ADE80',
+    color: HS.greenText,
   },
 });

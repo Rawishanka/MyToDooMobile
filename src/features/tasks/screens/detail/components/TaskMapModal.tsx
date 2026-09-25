@@ -19,7 +19,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { BRAND_BLUE, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TaskMapModalProps {
@@ -96,7 +96,7 @@ const TaskMapModal: React.FC<TaskMapModalProps> = ({ visible, onClose, task }) =
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.backButton} activeOpacity={0.7}>
-            <Ionicons name="chevron-back" size={22} color={CARD_TEXT} />
+            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerTitle} numberOfLines={1}>
@@ -154,11 +154,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: '#FFFFFF',
   },
   headerSubtitle: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: 'rgba(255,255,255,0.78)',
     marginTop: 1,
   },
   mapContainer: {

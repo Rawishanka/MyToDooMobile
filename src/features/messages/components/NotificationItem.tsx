@@ -1,5 +1,6 @@
 // Notification Item Component
 
+import { HS } from '@/src/shared/theme/homeStyle';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { NotificationItem as NotificationItemType } from './message-types';
@@ -40,10 +41,10 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: HS.cardBorder,
     backgroundColor: '#FFFFFF',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 12,
-    backgroundColor: '#EEF2FA',
+    backgroundColor: HS.tint,
   },
   notificationContent: {
     flex: 1,
@@ -61,17 +62,17 @@ const styles = StyleSheet.create({
   },
   notificationText: {
     fontSize: 15,
-    color: '#0F172A',
+    color: HS.text,
     lineHeight: 21,
     marginBottom: 4,
   },
   username: {
     fontWeight: '600',
-    color: '#0F172A',
+    color: HS.navy,
   },
   timeText: {
     fontSize: 12,
-    color: '#64748B',
+    color: HS.muted,
     marginTop: 2,
   },
 });

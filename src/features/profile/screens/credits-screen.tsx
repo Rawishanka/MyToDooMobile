@@ -15,7 +15,8 @@ import { RFValue } from '@/src/shared/utils/responsive';
 import { router } from 'expo-router';
 import InviteFriendsScreen from './invite-friends-screen';
 import { useTheme } from '@/src/shared/theme';
-import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 interface CreditsScreenProps {
   onBack: () => void;
@@ -89,7 +90,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
           <Ionicons
             name={isCredit ? 'gift-outline' : 'cart-outline'}
             size={19}
-            color={isCredit ? (isDarkMode ? '#16A34A' : '#4ADE80') : (isDarkMode ? '#38BDF8' : '#FFFFFF')}
+            color={isCredit ? (isDarkMode ? '#16A34A' : HS.greenText) : (isDarkMode ? '#38BDF8' : HS.blue)}
           />
         </View>
         <View style={styles.ledgerBody}>
@@ -97,14 +98,14 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
           <View style={styles.metaRow}>
             <Text style={[styles.ledgerDate, isDarkMode && { color: '#94A3B8' }]}>{formatDate(item.createdAt)}</Text>
             {item.expiresAt && (
-              <View style={styles.expiryBadge}>
-                <Text style={styles.expiryText}>Expires {formatDate(item.expiresAt)}</Text>
+              <View style={[styles.expiryBadge, isDarkMode && { backgroundColor: 'rgba(251,191,36,0.18)' }]}>
+                <Text style={[styles.expiryText, isDarkMode && { color: '#FBBF24' }]}>Expires {formatDate(item.expiresAt)}</Text>
               </View>
             )}
           </View>
         </View>
         <View style={styles.amountWrap}>
-          <Text style={[styles.ledgerAmount, isCredit ? styles.creditText : styles.debitText]}>
+          <Text style={[styles.ledgerAmount, isCredit ? styles.creditText : styles.debitText, isDarkMode && { color: isCredit ? '#4ADE80' : 'rgba(255,255,255,0.75)' }]}>
             {isCredit ? '+' : '−'}${Math.abs(Number(item.amount) || 0).toFixed(0)}
           </Text>
         </View>
@@ -114,7 +115,6 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <BlueBackdrop />
       <LightHeader
         title="My Credits & Rewards"
         onBack={onBack}
@@ -127,7 +127,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
 
       {(balanceLoading || ledgerLoading) && !balanceData ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
         </View>
       ) : (
         <FlatList
@@ -143,7 +143,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
                 refetchBalance();
                 refetchLedger();
               }}
-              tintColor={isDarkMode ? '#38BDF8' : '#FFFFFF'}
+              tintColor={isDarkMode ? '#38BDF8' : HS.blue}
             />
           }
           ListHeaderComponent={
@@ -205,7 +205,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
               <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                <Ionicons name="wallet-outline" size={36} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+                <Ionicons name="wallet-outline" size={36} color={isDarkMode ? '#38BDF8' : HS.blue} />
               </View>
               <Text style={[styles.emptyTitle, isDarkMode && { color: '#F8FAFC' }]}>No credit activity yet</Text>
               <Text style={[styles.emptySubtitle, isDarkMode && { color: '#94A3B8' }]}>
@@ -220,7 +220,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#003399' },
+  container: { flex: 1, backgroundColor: HS.page },
   headerRightBtn: {
     width: 40,
     height: 40,
@@ -237,16 +237,17 @@ const styles = StyleSheet.create({
 
   // Hero Card
   heroCard: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.blue,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.blueDeep,
     padding: 20,
-    marginBottom: 24,
-    shadowColor: '#00114D',
-    shadowOpacity: 0.25,
+    marginBottom: 20,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.18,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -339,11 +340,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
   },
   sectionSubtitle: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     fontWeight: '500',
   },
 
@@ -351,16 +352,17 @@ const styles = StyleSheet.create({
   ledgerCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     borderRadius: 20,
     padding: 14,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-    shadowColor: '#00114D',
+    borderColor: HS.cardBorder,
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   iconCircle: {
     width: 38,
@@ -371,16 +373,16 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   creditIconBg: {
-    backgroundColor: 'rgba(74,222,128,0.18)',
+    backgroundColor: HS.greenBg,
   },
   debitIconBg: {
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: HS.tint,
   },
   ledgerBody: { flex: 1, minWidth: 0 },
   ledgerReason: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 4,
   },
   metaRow: {
@@ -391,10 +393,10 @@ const styles = StyleSheet.create({
   },
   ledgerDate: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
   },
   expiryBadge: {
-    backgroundColor: 'rgba(251,191,36,0.18)',
+    backgroundColor: HS.amberBg,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -402,7 +404,7 @@ const styles = StyleSheet.create({
   expiryText: {
     fontSize: RFValue(10.5),
     fontWeight: '600',
-    color: '#FBBF24',
+    color: HS.amberText,
   },
   amountWrap: {
     paddingLeft: 8,
@@ -411,8 +413,8 @@ const styles = StyleSheet.create({
     fontSize: RFValue(16),
     fontWeight: '800',
   },
-  creditText: { color: '#4ADE80' },
-  debitText: { color: 'rgba(255,255,255,0.75)' },
+  creditText: { color: HS.greenText },
+  debitText: { color: HS.muted },
 
   // Empty Wrap
   emptyWrap: {
@@ -424,7 +426,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: HS.tint,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 14,
@@ -432,12 +434,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 6,
   },
   emptySubtitle: {
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 19,
   },

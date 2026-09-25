@@ -2,6 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CompletionMilestone } from '../hooks/useCompletionStatus';
+import { HS, homeCard } from '@/src/shared/theme/homeStyle';
+import { useTheme } from '@/src/shared/theme';
 import { CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -11,20 +13,24 @@ interface MilestonesCardProps {
 }
 
 export default function MilestonesCard({ milestones, formatDate }: MilestonesCardProps) {
+  const { isDarkMode } = useTheme();
+  const green = isDarkMode ? '#4ADE80' : HS.greenText;
+  const track = isDarkMode ? CARD_DIVIDER : HS.tintStrong;
+  const mutedTxt = isDarkMode ? CARD_TEXT_MUTED : HS.muted;
   const completedCount = milestones.filter((m) => m.completed).length;
   const totalCount = milestones.length;
   const progressPercentage = (completedCount / totalCount) * 100;
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>Project Milestones</Text>
+    <View style={[styles.card, isDarkMode && styles.cardDark]}>
+      <Text style={[styles.title, { color: isDarkMode ? CARD_TEXT : HS.navy }]}>Project Milestones</Text>
 
       <View style={styles.progress}>
-        <Text style={styles.progressText}>
+        <Text style={[styles.progressText, { color: mutedTxt }]}>
           {completedCount} of {totalCount} completed
         </Text>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${progressPercentage}%` }]} />
+        <View style={[styles.progressBar, { backgroundColor: track }]}>
+          <View style={[styles.progressFill, { backgroundColor: green, width: `${progressPercentage}%` }]} />
         </View>
       </View>
 
@@ -35,7 +41,7 @@ export default function MilestonesCard({ milestones, formatDate }: MilestonesCar
               <View
                 style={[
                   styles.circle,
-                  { backgroundColor: milestone.completed ? '#4ADE80' : CARD_DIVIDER },
+                  { backgroundColor: milestone.completed ? green : track },
                 ]}
               >
                 {milestone.completed && <Ionicons name="checkmark" size={14} color="#fff" />}
@@ -44,7 +50,7 @@ export default function MilestonesCard({ milestones, formatDate }: MilestonesCar
                 <View
                   style={[
                     styles.line,
-                    { backgroundColor: milestone.completed ? '#4ADE80' : CARD_DIVIDER },
+                    { backgroundColor: milestone.completed ? green : track },
                   ]}
                 />
               )}
@@ -52,13 +58,13 @@ export default function MilestonesCard({ milestones, formatDate }: MilestonesCar
 
             <View style={styles.content}>
               <Text
-                style={[styles.milestoneTitle, { color: milestone.completed ? '#4ADE80' : CARD_TEXT }]}
+                style={[styles.milestoneTitle, { color: milestone.completed ? green : (isDarkMode ? CARD_TEXT : HS.navy) }]}
               >
                 {milestone.title}
               </Text>
-              <Text style={styles.description}>{milestone.description}</Text>
+              <Text style={[styles.description, { color: isDarkMode ? CARD_TEXT_MUTED : HS.text }]}>{milestone.description}</Text>
               {milestone.completed && milestone.completedAt && (
-                <Text style={styles.date}>Completed: {formatDate(milestone.completedAt)}</Text>
+                <Text style={[styles.date, { color: mutedTxt }]}>Completed: {formatDate(milestone.completedAt)}</Text>
               )}
             </View>
           </View>
@@ -70,17 +76,16 @@ export default function MilestonesCard({ milestones, formatDate }: MilestonesCar
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: CARD_BG,
+    ...homeCard,
     marginHorizontal: 16,
     marginBottom: 14,
-    borderRadius: 20,
     padding: 18,
-    borderWidth: 1,
+  },
+  cardDark: {
+    backgroundColor: CARD_BG,
     borderColor: 'rgba(255,255,255,0.14)',
     shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,
-    shadowRadius: 12,
     elevation: 4,
   },
   title: {

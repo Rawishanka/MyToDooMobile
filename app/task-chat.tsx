@@ -44,6 +44,7 @@ import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-g
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/shared/theme';
 import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 // URL normalization helper for APK builds
@@ -707,7 +708,7 @@ export default function TaskChatScreen() {
             style={styles.fileMessage}
             onPress={() => handleFileDownload(normalizedMediaUrl, messageContent || 'File')}
           >
-            <MaterialIcons name="insert-drive-file" size={24} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+            <MaterialIcons name="insert-drive-file" size={24} color={isDarkMode ? '#38BDF8' : HS.blue} />
             <Text style={[styles.fileName, isDarkMode && { color: "#38BDF8" }]}>{messageContent || 'File'}</Text>
           </TouchableOpacity>
         ) : (
@@ -728,7 +729,7 @@ export default function TaskChatScreen() {
   if ((chatLoading && normalizedChatIdParam && !chat) || (createChatMutation.isPending && !normalizedChatIdParam)) {
     return (
       <GestureHandlerRootView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <View style={[styles.headerSafeArea, { paddingTop: headerTopPadding, backgroundColor: BRAND_BLUE, borderBottomWidth: 0 }]}>
+        <View style={[styles.headerSafeArea, { paddingTop: headerTopPadding, backgroundColor: HS.blue, borderBottomWidth: 0 }]}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
               <MaterialIcons name="arrow-back" size={24} color="#FFFFFF" />
@@ -737,7 +738,7 @@ export default function TaskChatScreen() {
           </View>
         </View>
         <View style={[{ flex: 1 }, styles.centerContent]}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading chat...</Text>
         </View>
       </GestureHandlerRootView>
@@ -758,7 +759,7 @@ export default function TaskChatScreen() {
             keyboardVerticalOffset={0}
           >
             {/* Header with safe area */}
-            <View style={[styles.headerSafeArea, { paddingTop: headerTopPadding, backgroundColor: BRAND_BLUE, borderBottomWidth: 0 }]}>
+            <View style={[styles.headerSafeArea, { paddingTop: headerTopPadding, backgroundColor: HS.blue, borderBottomWidth: 0 }]}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
               <MaterialIcons name="arrow-back" size={24} color="#FFFFFF" />
@@ -806,7 +807,7 @@ export default function TaskChatScreen() {
           ListHeaderComponent={
             messagesLoading ? (
               <View style={styles.loadingHeader}>
-                <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+                <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : HS.blue} />
                 <Text style={[styles.loadingHeaderText, isDarkMode && { color: '#94A3B8' }]}>Loading messages...</Text>
               </View>
             ) : null
@@ -815,7 +816,7 @@ export default function TaskChatScreen() {
             !messagesLoading ? (
               <View style={styles.emptyState}>
                 <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                  <MaterialIcons name="chat-bubble-outline" size={38} color={isDarkMode ? "#38BDF8" : BRAND_BLUE} />
+                  <MaterialIcons name="chat-bubble-outline" size={38} color={isDarkMode ? "#38BDF8" : HS.blue} />
                 </View>
                 <Text style={[styles.emptyText, isDarkMode && { color: "#F8FAFC" }]}>Start a conversation</Text>
                 <Text style={[styles.emptySubtext, isDarkMode && { color: "#94A3B8" }]}>Send a message to begin chatting about this task</Text>
@@ -847,13 +848,13 @@ export default function TaskChatScreen() {
             }}
             disabled={isUploading}
           >
-            <MaterialIcons name="attach-file" size={20} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+            <MaterialIcons name="attach-file" size={20} color={isDarkMode ? '#38BDF8' : HS.blue} />
           </TouchableOpacity>
 
           <TextInput
             style={[styles.input, isDarkMode && { backgroundColor: '#1E293B', color: '#F8FAFC', borderColor: '#334155', borderWidth: 1 }]}
             placeholder="Type a message..."
-            placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
+            placeholderTextColor={isDarkMode ? '#64748B' : HS.placeholder}
             value={messageText}
             onChangeText={setMessageText}
             multiline
@@ -882,7 +883,7 @@ export default function TaskChatScreen() {
         {isUploading && (
           <View style={styles.uploadOverlay}>
             <View style={[styles.uploadOverlayContent, isDarkMode && { backgroundColor: "#1E293B" }]}>
-              <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+              <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
               <Text style={[styles.uploadOverlayText, isDarkMode && { color: "#F8FAFC" }]}>Uploading...</Text>
             </View>
           </View>
@@ -929,7 +930,7 @@ export default function TaskChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: HS.page,
   },
   centerContent: {
     justifyContent: 'center',
@@ -938,10 +939,10 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: HS.muted,
   },
   headerSafeArea: {
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: HS.blue,
     zIndex: 10,
   },
   header: {
@@ -1000,7 +1001,7 @@ const styles = StyleSheet.create({
   },
   headerStatus: {
     fontSize: RFValue(12),
-    color: '#34C759',
+    color: '#4ADE80',
     marginTop: 2,
   },
   messagesList: {
@@ -1016,18 +1017,18 @@ const styles = StyleSheet.create({
   },
   loadingHeaderText: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: HS.muted,
   },
   messagesLoadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F4F6FB',
+    backgroundColor: HS.page,
   },
   messagesLoadingText: {
     marginTop: 16,
     fontSize: RFValue(16),
-    color: '#666',
+    color: HS.muted,
   },
   messageContainer: {
     maxWidth: '80%',
@@ -1039,9 +1040,9 @@ const styles = StyleSheet.create({
   },
   myMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: HS.blue,
     borderBottomRightRadius: 6,
-    shadowColor: BRAND_BLUE,
+    shadowColor: HS.blue,
     shadowOpacity: 0.2,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
@@ -1049,11 +1050,11 @@ const styles = StyleSheet.create({
   },
   theirMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: HS.card,
     borderBottomLeftRadius: 6,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
+    borderColor: HS.cardBorder,
+    shadowColor: HS.blue,
     shadowOpacity: 0.06,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
@@ -1061,14 +1062,14 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: RFValue(16),
-    color: '#0F172A',
+    color: HS.navy,
   },
   myMessageText: {
     color: '#fff',
   },
   messageTime: {
     fontSize: RFValue(11),
-    color: '#94A3B8',
+    color: HS.muted,
     marginTop: 4,
   },
   myMessageTime: {
@@ -1087,7 +1088,7 @@ const styles = StyleSheet.create({
   },
   fileName: {
     fontSize: RFValue(14),
-    color: BRAND_BLUE,
+    color: HS.blue,
     textDecorationLine: 'underline',
   },
   emptyState: {
@@ -1098,37 +1099,37 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: HS.muted,
     marginTop: 6,
   },
   emptyIconCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: HS.card,
     paddingHorizontal: 12,
     paddingTop: 10,
     // paddingBottom handled dynamically in component for safe area
     borderTopWidth: 1,
-    borderTopColor: '#E8ECF4',
+    borderTopColor: HS.cardBorder,
   },
   attachButton: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
@@ -1137,10 +1138,10 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 44,
     maxHeight: 100,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: HS.tint,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    color: '#0F172A',
+    borderColor: HS.inputBorder,
+    color: HS.navy,
     borderRadius: 24,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -1151,10 +1152,10 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#ff6b35',
+    backgroundColor: HS.orange,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#ff6b35',
+    shadowColor: HS.orange,
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
@@ -1187,7 +1188,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#333',
+    color: HS.navy,
   },
   previewModalContainer: {
     flex: 1,

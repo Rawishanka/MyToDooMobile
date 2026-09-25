@@ -18,6 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 export interface TaskerAbnSectionProps {
   variant?: 'default' | 'compact';
@@ -82,7 +83,7 @@ export default function TaskerAbnSection({
   if (loading) {
     return (
       <View style={[styles.card, variant === 'compact' && styles.cardCompact, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
-        <ActivityIndicator color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+        <ActivityIndicator color={isDarkMode ? '#38BDF8' : HS.blue} />
         <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading ABN status...</Text>
       </View>
     );
@@ -95,14 +96,14 @@ export default function TaskerAbnSection({
       <View style={[styles.card, variant === 'compact' && styles.cardCompact, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <View style={styles.verifiedHeader}>
           <Text style={[styles.title, styles.titleFlex, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={2}>Australian Business Number (ABN)</Text>
-          <View style={styles.verifiedBadge}>
-            <Ionicons name="checkmark-circle" size={14} color="#4ADE80" />
-            <Text style={styles.verifiedBadgeText}>Verified</Text>
+          <View style={[styles.verifiedBadge, isDarkMode && { backgroundColor: 'rgba(74,222,128,0.18)' }]}>
+            <Ionicons name="checkmark-circle" size={14} color={isDarkMode ? '#4ADE80' : HS.greenText} />
+            <Text style={[styles.verifiedBadgeText, isDarkMode && { color: '#4ADE80' }]}>Verified</Text>
           </View>
         </View>
         <Text style={[styles.maskedAbn, isDarkMode && { color: '#F8FAFC' }]}>{status.abnMasked || `********${status.abnLast3 || ''}`}</Text>
         {(status.businessName || status.entityName) && (
-          <Text style={[styles.metaText, { fontWeight: '600', color: isDarkMode ? '#38BDF8' : '#FFFFFF', marginTop: 2 }]}>
+          <Text style={[styles.metaText, { fontWeight: '600', color: isDarkMode ? '#38BDF8' : HS.blue, marginTop: 2 }]}>
             {status.businessName || status.entityName}
           </Text>
         )}
@@ -140,7 +141,7 @@ export default function TaskerAbnSection({
         maxLength={14}
         autoCorrect={false}
       />
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {error ? <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>{error}</Text> : null}
       <TouchableOpacity
         style={[styles.primaryButton, saving && styles.primaryButtonDisabled]}
         onPress={handleSave}
@@ -159,15 +160,16 @@ export default function TaskerAbnSection({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     borderRadius: 20,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-    shadowColor: '#00114D',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    borderColor: HS.cardBorder,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
     shadowOffset: { width: 0, height: 4 },
   },
   cardCompact: {
@@ -177,13 +179,13 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 8,
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     textAlign: 'center',
   },
   title: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 6,
   },
   titleFlex: {
@@ -193,18 +195,18 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 13,
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     lineHeight: 19,
     marginBottom: 14,
   },
   input: {
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: HS.inputBorder,
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 48,
     fontSize: 15,
-    color: '#0F172A',
+    color: HS.navy,
     backgroundColor: '#FFFFFF',
     marginBottom: 12,
   },
@@ -229,7 +231,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   errorText: {
-    color: '#FCA5A5',
+    color: HS.redText,
     fontSize: 12,
     marginBottom: 8,
   },
@@ -243,33 +245,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(74,222,128,0.18)',
+    backgroundColor: HS.greenBg,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   verifiedBadgeText: {
-    color: '#4ADE80',
+    color: HS.greenText,
     fontSize: 11,
     fontWeight: '700',
   },
   maskedAbn: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     letterSpacing: 1,
     marginBottom: 4,
   },
   metaText: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
   },
   linkButton: {
     marginTop: 10,
     alignSelf: 'flex-start',
   },
   linkButtonText: {
-    color: '#FFFFFF',
+    color: HS.blue,
     fontSize: 13,
     fontWeight: '600',
   },

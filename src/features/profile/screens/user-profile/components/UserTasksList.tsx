@@ -3,6 +3,7 @@ import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/
 import React from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 interface Task {
   _id: string;
@@ -30,13 +31,13 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return '#4ADE80';
+        return HS.greenText;
       case 'assigned':
-        return '#7DD3FC';
+        return HS.blue;
       case 'open':
-        return '#FBBF24';
+        return HS.amberText;
       default:
-        return 'rgba(255,255,255,0.75)';
+        return HS.muted;
     }
   };
 
@@ -99,16 +100,17 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
 
 const styles = StyleSheet.create({
   taskCard: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     padding: 16,
     marginBottom: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-    shadowColor: '#00114D',
+    borderColor: HS.cardBorder,
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   taskHeader: {
     flexDirection: 'row',
@@ -121,12 +123,12 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 8,
   },
   taskLocation: {
     fontSize: RFValue(14),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     marginBottom: 8,
   },
   taskMeta: {
@@ -141,7 +143,7 @@ const styles = StyleSheet.create({
   },
   taskDate: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
   },
   taskPrice: {
     justifyContent: 'center',
@@ -150,7 +152,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
   },
   emptyContainer: {
     padding: 40,
@@ -158,6 +160,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: RFValue(14),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
   },
 });

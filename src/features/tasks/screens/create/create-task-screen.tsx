@@ -37,7 +37,7 @@ import {
 } from './components';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
+import { FLOW, FlowBackground, flowCard, primaryShadow } from './flowTheme';
 
 // Helper function to copy image to persistent storage
 const copyImageToPersistentStorage = async (sourceUri: string): Promise<string> => {
@@ -858,14 +858,14 @@ Please remove phone numbers and addresses from the image.`,
               >
                 {isProcessing || isOCRProcessing ? (
                   <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color={isDarkMode ? "#60A5FA" : "#FFFFFF"} />
+                    <ActivityIndicator size="small" color={isDarkMode ? "#60A5FA" : FLOW.blue} />
                     {isOCRProcessing && (
                       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Checking image...</Text>
                     )}
                   </View>
                 ) : (
                   <>
-                    <Ionicons name="camera" size={24} color={isDarkMode ? "#60A5FA" : "#FFFFFF"} />
+                    <Ionicons name="camera" size={24} color={isDarkMode ? "#60A5FA" : FLOW.blue} />
                     <Ionicons name="add" size={16} color={isDarkMode ? "#60A5FA" : "#FFFFFF"} style={[styles.addIcon, isDarkMode && { backgroundColor: '#1E293B' }]} />
                   </>
                 )}
@@ -1030,7 +1030,7 @@ Please remove phone numbers and addresses from the image.`,
       <View style={[styles.bottomSafeArea, isDarkMode && { backgroundColor: '#0B1120' }]} />
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         {/* Fixed Header */}
-        <View style={[styles.header, isDarkMode && { backgroundColor: BRAND_BLUE }, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: BRAND_BLUE, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => {
           // Check if user has entered any data (local state or store)
           const hasLocalData = title.trim() || description.trim() || images.length > 0 || selectedCategory || selectedLocation || selectedOption;
@@ -1097,11 +1097,11 @@ Please remove phone numbers and addresses from the image.`,
           bounces={true}
         >
         {/* SECTION 1: TASK DETAILS */}
-        <View ref={section1Ref} style={styles.section}>
+        <View ref={section1Ref} style={[styles.section, isDarkMode && { backgroundColor: 'rgba(255,255,255,0.10)', borderColor: 'rgba(255,255,255,0.18)', shadowOpacity: 0, elevation: 0 }]}>
           {/* Category Selection */}
           <View style={styles.fieldContainer}>
             <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
-              Category <Text style={styles.required}>*</Text>
+              Category <Text style={[styles.required, isDarkMode && { color: '#FCA5A5' }]}>*</Text>
             </Text>
             <TouchableOpacity
               style={[
@@ -1139,7 +1139,7 @@ Please remove phone numbers and addresses from the image.`,
               />
             </TouchableOpacity>
             {touched.category && !selectedCategory && (
-              <Text style={styles.validationText}>Category is required</Text>
+              <Text style={[styles.validationText, isDarkMode && { color: '#FCA5A5' }]}>Category is required</Text>
             )}
 
             {showCategoryDropdown && (
@@ -1212,7 +1212,7 @@ Please remove phone numbers and addresses from the image.`,
           {/* Title Input */}
           <View style={styles.fieldContainer}>
             <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
-              Title <Text style={styles.required}>*</Text>
+              Title <Text style={[styles.required, isDarkMode && { color: '#FCA5A5' }]}>*</Text>
             </Text>
             <View style={[
               styles.inputWrapper,
@@ -1236,22 +1236,22 @@ Please remove phone numbers and addresses from the image.`,
             </View>
             <View style={styles.fieldMetaRow}>
               <View style={styles.helperRow}>
-                <Ionicons name="information-circle-outline" size={13} color={isDarkMode ? '#94A3B8' : FLOW.textMuted} />
-                <Text style={styles.helperText}>Only letters, spaces, and basic punctuation</Text>
+                <Ionicons name="information-circle-outline" size={13} color={isDarkMode ? '#94A3B8' : FLOW.muted} />
+                <Text style={[styles.helperText, isDarkMode && { color: 'rgba(255,255,255,0.75)' }]}>Only letters, spaces, and basic punctuation</Text>
               </View>
               <View style={[styles.charCountBadge, isDarkMode && { backgroundColor: '#1E293B' }]}>
                 <Text style={[styles.charCountText, isDarkMode && { color: '#94A3B8' }]}>{titleLength}/200</Text>
               </View>
             </View>
             {titleError ? (
-              <Text style={styles.fieldError}>{titleError}</Text>
+              <Text style={[styles.fieldError, isDarkMode && { color: '#FCA5A5' }]}>{titleError}</Text>
             ) : null}
           </View>
 
           {/* Description Input */}
           <View style={styles.fieldContainer}>
             <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
-              Description <Text style={styles.required}>*</Text>
+              Description <Text style={[styles.required, isDarkMode && { color: '#FCA5A5' }]}>*</Text>
             </Text>
             <View style={[
               styles.textAreaWrapper,
@@ -1278,18 +1278,18 @@ Please remove phone numbers and addresses from the image.`,
             </View>
             <View style={styles.fieldMetaRow}>
               <View style={styles.helperRow}>
-                <Ionicons name="information-circle-outline" size={13} color={isDarkMode ? '#94A3B8' : FLOW.textMuted} />
-                <Text style={styles.helperText}>Min 20 characters required</Text>
+                <Ionicons name="information-circle-outline" size={13} color={isDarkMode ? '#94A3B8' : FLOW.muted} />
+                <Text style={[styles.helperText, isDarkMode && { color: 'rgba(255,255,255,0.75)' }]}>Min 20 characters required</Text>
               </View>
               <View style={[styles.charCountBadge, isDarkMode && { backgroundColor: '#1E293B' }]}>
                 <Text style={[styles.charCountText, isDarkMode && { color: '#94A3B8' }]}>{descriptionLength}/1000</Text>
               </View>
             </View>
             {touched.description && descriptionError ? (
-              <Text style={styles.fieldError}>{descriptionError}</Text>
+              <Text style={[styles.fieldError, isDarkMode && { color: '#FCA5A5' }]}>{descriptionError}</Text>
             ) : null}
             {touched.description && !descriptionError && descriptionLength > 0 && descriptionLength < 20 ? (
-              <Text style={styles.fieldError}>Minimum 20 characters required</Text>
+              <Text style={[styles.fieldError, isDarkMode && { color: '#FCA5A5' }]}>Minimum 20 characters required</Text>
             ) : null}
           </View>
         </View>
@@ -1298,7 +1298,7 @@ Please remove phone numbers and addresses from the image.`,
         <View style={styles.divider} />
 
         {/* SECTION 2: PHOTOS & LOCATION */}
-        <View ref={section2Ref} style={styles.section}>
+        <View ref={section2Ref} style={[styles.section, isDarkMode && { backgroundColor: 'rgba(255,255,255,0.10)', borderColor: 'rgba(255,255,255,0.18)', shadowOpacity: 0, elevation: 0 }]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Photos & Location</Text>
           <Text style={[styles.sectionSubtitle, isDarkMode && { color: '#94A3B8' }]}>Help taskers understand what needs doing ({images.length}/{MAX_TASK_PHOTOS} photos)</Text>
 
@@ -1309,7 +1309,7 @@ Please remove phone numbers and addresses from the image.`,
           {/* Location */}
           <View style={styles.fieldContainer}>
             <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
-              Location <Text style={styles.required}>*</Text>
+              Location <Text style={[styles.required, isDarkMode && { color: '#FCA5A5' }]}>*</Text>
             </Text>
             <Text style={[styles.locationSubtitle, isDarkMode && { color: '#94A3B8' }]}>
               Where do you need this done? Type and select from suggestions.
@@ -1325,8 +1325,7 @@ Please remove phone numbers and addresses from the image.`,
               }}
               onFocus={handleLocationFocus}
               placeholder="Enter address or suburb"
-              buttonStyle={isDarkMode ? undefined : styles.locateButtonOutline}
-              initialValue={selectedLocation?.address}
+                            initialValue={selectedLocation?.address}
               onDropdownStateChange={(isOpen) => {
                 console.log('📍 Dropdown state changed:', isOpen);
                 handleLocationDropdownOpen(isOpen);
@@ -1334,14 +1333,14 @@ Please remove phone numbers and addresses from the image.`,
             />
 
             {!selectedLocation && touched.location && (
-              <Text style={styles.helperText}>
+              <Text style={[styles.helperText, isDarkMode && { color: 'rgba(255,255,255,0.75)' }]}>
                 💡 Tip: Type your address and tap on a suggestion from the dropdown list
               </Text>
             )}
 
             {selectedLocation && (
               <View style={[styles.selectedLocationContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                <Ionicons name="location" size={20} color={isDarkMode ? '#0057FF' : '#FFFFFF'} />
+                <Ionicons name="location" size={20} color={isDarkMode ? '#0057FF' : FLOW.blue} />
                 <Text style={[styles.selectedLocationText, isDarkMode && { color: '#60A5FA' }]} numberOfLines={2}>
                   {selectedLocation.address}
                 </Text>
@@ -1353,12 +1352,12 @@ Please remove phone numbers and addresses from the image.`,
                   }}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Ionicons name="close-circle" size={20} color={isDarkMode ? '#999' : 'rgba(255,255,255,0.75)'} />
+                  <Ionicons name="close-circle" size={20} color={isDarkMode ? '#999' : FLOW.muted} />
                 </TouchableOpacity>
               </View>
             )}
             {touched.location && !selectedLocation && (
-              <Text style={styles.validationText}>
+              <Text style={[styles.validationText, isDarkMode && { color: '#FCA5A5' }]}>
                 Location is required - Please select from dropdown
               </Text>
             )}
@@ -1374,9 +1373,9 @@ Please remove phone numbers and addresses from the image.`,
         <View style={styles.divider} />
 
         {/* SECTION 3: TIME */}
-        <View ref={section3Ref} style={styles.section}>
+        <View ref={section3Ref} style={[styles.section, isDarkMode && { backgroundColor: 'rgba(255,255,255,0.10)', borderColor: 'rgba(255,255,255,0.18)', shadowOpacity: 0, elevation: 0 }]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>
-            When <Text style={styles.required}>*</Text>
+            When <Text style={[styles.required, isDarkMode && { color: '#FCA5A5' }]}>*</Text>
           </Text>
           <Text style={[styles.sectionSubtitle, isDarkMode && { color: '#94A3B8' }]}>When do you need this done?</Text>
 
@@ -1393,7 +1392,7 @@ Please remove phone numbers and addresses from the image.`,
             onOpenPicker={handleOpenPicker}
           />
           {touched.when && selectedOption === '' && (
-            <Text style={styles.validationText}>Please select when you need this done</Text>
+            <Text style={[styles.validationText, isDarkMode && { color: '#FCA5A5' }]}>Please select when you need this done</Text>
           )}
 
           {/* Time Toggle */}
@@ -1470,21 +1469,27 @@ Please remove phone numbers and addresses from the image.`,
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: FLOW.blue,
+    backgroundColor: FLOW.page,
   },
   container: {
     flex: 1,
     backgroundColor: 'transparent',
   },
   header: {
-    paddingBottom: 16,
+    paddingBottom: 22,
     paddingHorizontal: 20,
-    backgroundColor: 'transparent',
-    borderBottomWidth: 0,
-    borderBottomColor: 'transparent',
+    backgroundColor: FLOW.blue,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
   },
   backButton: {
-    marginBottom: 15,
+    marginBottom: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: FLOW.heroPill,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerContent: {
     alignItems: 'center',
@@ -1498,7 +1503,7 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: RFValue(14),
-    color: 'rgba(255,255,255,0.85)',
+    color: FLOW.onHeroMuted,
     textAlign: 'center',
   },
   scrollView: {
@@ -1506,26 +1511,23 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 16,
     paddingBottom: 150,
   },
   section: {
     marginBottom: 14,
     padding: 16,
-    borderRadius: 20,
-    backgroundColor: FLOW.glass,
-    borderWidth: 1,
-    borderColor: FLOW.glassBorder,
+    ...flowCard,
   },
   sectionTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: FLOW.navy,
     marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: RFValue(13),
-    color: FLOW.textMuted,
+    color: FLOW.muted,
     marginBottom: 16,
   },
   divider: {
@@ -1538,7 +1540,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: FLOW.navy,
     marginBottom: 8,
   },
   required: {
@@ -1553,13 +1555,13 @@ const styles = StyleSheet.create({
   },
   helperText: {
     fontSize: RFValue(12),
-    color: FLOW.textMuted,
+    color: FLOW.muted,
     marginTop: 4,
     fontStyle: 'italic',
   },
   locationSubtitle: {
     fontSize: RFValue(13),
-    color: FLOW.textMuted,
+    color: FLOW.muted,
     marginBottom: 10,
   },
   categorySelector: {
@@ -1571,10 +1573,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: FLOW.inputBorder,
   },
   categorySelectorActive: {
-    borderColor: FLOW.orange,
+    borderColor: FLOW.blue,
     backgroundColor: '#FFFFFF',
   },
   categoryLeftContent: {
@@ -1589,7 +1591,7 @@ const styles = StyleSheet.create({
   categorySelectorText: {
     fontSize: RFValue(15),
     fontWeight: '500',
-    color: '#0F172A',
+    color: FLOW.navy,
   },
   placeholder: {
     color: '#94A3B8',
@@ -1611,7 +1613,7 @@ const styles = StyleSheet.create({
     zIndex: 999,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: FLOW.cardBorder,
     maxHeight: 300,
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 6 },
@@ -1624,13 +1626,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: FLOW.cardBorder,
   },
   searchInput: {
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(14),
-    color: '#0F172A',
+    color: FLOW.navy,
   },
   categoriesList: {
     maxHeight: 250,
@@ -1662,14 +1664,14 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F8FAFC',
+    borderBottomColor: FLOW.cardBorder,
   },
   categoryItemSelected: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: FLOW.tint,
   },
   categoryItemText: {
     fontSize: RFValue(14),
-    color: '#1E293B',
+    color: FLOW.navy,
     fontWeight: '500',
   },
   categoryItemTextSelected: {
@@ -1680,35 +1682,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: FLOW.inputBorder,
     overflow: 'hidden',
   },
   textAreaWrapper: {
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: FLOW.inputBorder,
     overflow: 'hidden',
   },
   inputWrapperFocused: {
-    borderColor: FLOW.orange,
+    borderColor: FLOW.blue,
     backgroundColor: '#FFFFFF',
-    shadowColor: FLOW.orange,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
   },
   input: {
     paddingVertical: 14,
     paddingHorizontal: 16,
     fontSize: RFValue(15),
-    color: '#0F172A',
+    color: FLOW.navy,
     backgroundColor: 'transparent',
   },
   inputError: {
     borderColor: FLOW.error,
-    backgroundColor: '#FFF8F8',
+    backgroundColor: FLOW.errorBg,
   },
   validationText: {
     fontSize: RFValue(12),
@@ -1720,7 +1717,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     fontSize: RFValue(15),
-    color: '#0F172A',
+    color: FLOW.navy,
     height: 120,
     backgroundColor: 'transparent',
   },
@@ -1738,7 +1735,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   charCountBadge: {
-    backgroundColor: FLOW.glassStrong,
+    backgroundColor: FLOW.tint,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
@@ -1746,7 +1743,7 @@ const styles = StyleSheet.create({
   charCountText: {
     fontSize: RFValue(11),
     fontWeight: '600',
-    color: FLOW.textMuted,
+    color: FLOW.blue,
   },
   imageSection: {
     marginBottom: 20,
@@ -1766,7 +1763,7 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: FLOW.glassBorder,
+    borderColor: FLOW.tintBorder,
   },
   deleteBtn: {
     position: 'absolute',
@@ -1785,19 +1782,19 @@ const styles = StyleSheet.create({
   uploadBox: {
     width: 70,
     height: 70,
-    backgroundColor: FLOW.glass,
+    backgroundColor: FLOW.tint,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
     borderWidth: 1.5,
-    borderColor: FLOW.dashed,
+    borderColor: FLOW.tintBorder,
     borderStyle: 'dashed',
     position: 'relative',
   },
   uploadBoxDisabled: {
     opacity: 0.5,
-    backgroundColor: FLOW.glass,
+    backgroundColor: FLOW.tint,
   },
   loadingContainer: {
     justifyContent: 'center',
@@ -1806,7 +1803,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(10),
-    color: '#FFFFFF',
+    color: FLOW.blue,
     marginTop: 4,
     textAlign: 'center',
   },
@@ -1824,7 +1821,7 @@ const styles = StyleSheet.create({
   selectedLocationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: FLOW.glassStrong,
+    backgroundColor: FLOW.tint,
     padding: 12,
     borderRadius: 14,
     marginTop: 10,
@@ -1833,7 +1830,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(14),
-    color: '#FFFFFF',
+    color: FLOW.navy,
   },
   actionBar: {
     position: 'absolute',
@@ -1842,13 +1839,9 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 16,
     paddingTop: 12,
-    backgroundColor: FLOW.blueDeep,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: FLOW.line,
-  },
-  locateButtonOutline: {
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.6)',
   },
   continueButton: {
     backgroundColor: FLOW.disabledFill,
@@ -1922,6 +1915,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: Platform.OS === 'android' ? 48 : 0,
-    backgroundColor: FLOW.blueDeep,
+    backgroundColor: '#FFFFFF',
   },
 });

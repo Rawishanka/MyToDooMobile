@@ -13,6 +13,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 export interface AttachmentItem {
@@ -254,7 +255,7 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
           <Image source={{ uri: item.uri }} style={styles.attachmentImage} />
         ) : (
           <View style={styles.documentIcon}>
-            <Ionicons name="document" size={24} color="#666" />
+            <Ionicons name="document" size={24} color={HS.muted} />
           </View>
         )}
         <View style={styles.attachmentInfo}>
@@ -299,12 +300,12 @@ export const AttachmentPicker: React.FC<AttachmentPickerProps> = ({
         >
           {isProcessing ? (
             <>
-              <Ionicons name="hourglass" size={20} color="#999" />
+              <Ionicons name="hourglass" size={20} color={HS.placeholder} />
               <Text style={styles.addButtonTextDisabled}>Processing...</Text>
             </>
           ) : (
             <>
-              <Ionicons name="attach" size={20} color="#003399" />
+              <Ionicons name="attach" size={20} color={HS.blue} />
               <Text style={styles.addButtonText}>
                 Attach {allowImages && allowDocuments ? 'Image or File' : allowImages ? 'Image' : 'File'}
                 {attachments.length > 0 && ` (${attachments.length}/${maxAttachments})`}
@@ -328,8 +329,8 @@ const styles = StyleSheet.create({
   attachmentItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
+    backgroundColor: HS.tint,
+    borderRadius: 14,
     padding: 12,
     marginBottom: 8,
   },
@@ -342,13 +343,13 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 6,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: HS.tintStrong,
   },
   documentIcon: {
     width: 40,
     height: 40,
     borderRadius: 6,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: HS.tintStrong,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -359,11 +360,11 @@ const styles = StyleSheet.create({
   attachmentName: {
     fontSize: RFValue(14),
     fontWeight: '500',
-    color: '#333',
+    color: HS.navy,
   },
   attachmentSize: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: HS.muted,
     marginTop: 2,
   },
   removeButton: {
@@ -373,26 +374,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EEF3FF',
+    backgroundColor: HS.tint,
     borderWidth: 1,
-    borderColor: '#003399',
+    borderColor: HS.blue,
     borderStyle: 'dashed',
-    borderRadius: 8,
+    borderRadius: 14,
     padding: 16,
   },
   addButtonDisabled: {
-    backgroundColor: '#f5f5f5',
-    borderColor: '#ccc',
+    backgroundColor: HS.page,
+    borderColor: HS.inputBorder,
   },
   addButtonText: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: HS.blue,
     fontWeight: '500',
     marginLeft: 8,
   },
   addButtonTextDisabled: {
     fontSize: RFValue(14),
-    color: '#999',
+    color: HS.placeholder,
     fontWeight: '500',
     marginLeft: 8,
   },

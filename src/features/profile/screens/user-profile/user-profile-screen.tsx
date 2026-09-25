@@ -15,7 +15,7 @@ import { OverallRatingSection } from './components/OverallRatingSection';
 import { ReviewsList } from './components/ReviewsList';
 import { useUserProfile } from './hooks/useUserProfile';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 export default function UserProfileScreen() {
   const {
@@ -75,8 +75,7 @@ export default function UserProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <BlueBackdrop />
-      <StatusBar barStyle="light-content" backgroundColor="#003399" />
+      <StatusBar barStyle="light-content" backgroundColor={HS.blue} />
 
       <UserProfileHeader />
 
@@ -151,12 +150,12 @@ export default function UserProfileScreen() {
       {/* Action Buttons */}
       <View style={styles.actionContainer}>
         <TouchableOpacity style={styles.messageButton} onPress={handleMessage}>
-          <Ionicons name="mail-outline" size={20} color="#FFFFFF" />
+          <Ionicons name="mail-outline" size={20} color={HS.blue} />
           <Text style={styles.messageButtonText}>Message</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.reportButton} onPress={handleReport}>
-          <Ionicons name="flag-outline" size={20} color="#FCA5A5" />
+          <Ionicons name="flag-outline" size={20} color={HS.redText} />
           <Text style={styles.reportButtonText}>Report</Text>
         </TouchableOpacity>
       </View>
@@ -167,7 +166,7 @@ export default function UserProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#003399',
+    backgroundColor: HS.page,
   },
   scrollView: {
     flex: 1,
@@ -179,12 +178,12 @@ const styles = StyleSheet.create({
   },
   actionContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(0,17,77,0.35)',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 28,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.18)',
+    borderTopColor: HS.cardBorder,
     gap: 12,
   },
   messageButton: {
@@ -192,9 +191,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+    borderColor: HS.blue,
     height: 50,
     borderRadius: 14,
     gap: 8,
@@ -202,16 +201,16 @@ const styles = StyleSheet.create({
   messageButtonText: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.blue,
   },
   reportButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#FCA5A5',
+    borderColor: HS.redText,
     height: 50,
     borderRadius: 14,
     gap: 8,
@@ -219,6 +218,6 @@ const styles = StyleSheet.create({
   reportButtonText: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#FCA5A5',
+    color: HS.redText,
   },
 });

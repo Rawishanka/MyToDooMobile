@@ -1,5 +1,6 @@
 // Message List Item Component - Optimized for Performance
 
+import { HS } from '@/src/shared/theme/homeStyle';
 import { isTablet, wp } from '@/src/shared/utils/responsive';
 import React, { useCallback } from 'react';
 import { useTheme } from '@/src/shared/theme';
@@ -109,11 +110,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: HS.cardBorder,
     alignItems: 'center',
     overflow: 'hidden',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
@@ -126,9 +127,9 @@ const styles = StyleSheet.create({
     width: isTablet ? 56 : 52,
     height: isTablet ? 56 : 52,
     borderRadius: isTablet ? 28 : 26,
-    backgroundColor: '#EEF2FA',
+    backgroundColor: HS.blue,
     borderWidth: 2,
-    borderColor: '#E8ECF4',
+    borderColor: HS.tintBorder,
   },
   unreadDot: {
     position: 'absolute',
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
     width: 13,
     height: 13,
     borderRadius: 7,
-    backgroundColor: '#ff6b35',
+    backgroundColor: HS.orange,
     borderWidth: 2,
     borderColor: '#FFFFFF',
   },
@@ -154,34 +155,34 @@ const styles = StyleSheet.create({
   messageTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#0F172A',
+    color: HS.navy,
     flex: 1,
     marginRight: 8,
   },
   messageDate: {
     fontSize: 12,
-    color: '#64748B',
+    color: HS.muted,
     flexShrink: 0,
   },
   messagePreview: {
     fontSize: 13,
-    color: '#64748B',
+    color: HS.muted,
     lineHeight: 18,
   },
   unreadItem: {
     borderLeftWidth: 3,
-    borderLeftColor: '#ff6b35',
+    borderLeftColor: HS.orange,
   },
   unreadTitle: {
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
   },
   unreadPreview: {
     fontWeight: '600',
-    color: '#334155',
+    color: HS.text,
   },
   unreadBadge: {
-    backgroundColor: '#ff6b35',
+    backgroundColor: HS.orange,
     borderRadius: 12,
     minWidth: 24,
     height: 24,

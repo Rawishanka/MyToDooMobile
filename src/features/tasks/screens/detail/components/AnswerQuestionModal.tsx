@@ -1,4 +1,5 @@
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { useTheme } from '@/src/shared/theme';
 import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { useAnswerTaskQuestion } from '@/src/shared/hooks/useTaskApi';
@@ -173,7 +174,7 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
         <View style={[styles.header, isDarkMode && { borderBottomColor: "#334155", backgroundColor: "#0B1120" }]}>
           <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]}>Answer Question</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
+            <Ionicons name="close" size={24} color={isDarkMode ? "#F8FAFC" : "#FFFFFF"} />
           </TouchableOpacity>
         </View>
 
@@ -228,7 +229,7 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
         </ScrollView>
 
         {/* Submit Button */}
-        <View style={[styles.footer, isDarkMode && { borderTopColor: "#334155" }]}>
+        <View style={[styles.footer, isDarkMode && { borderTopColor: "#334155", backgroundColor: "#0B1120" }]}>
           <TouchableOpacity
             style={[
               styles.submitButton,
@@ -256,7 +257,7 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: HS.page,
   },
   header: {
     flexDirection: 'row',
@@ -272,7 +273,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: '#FFFFFF',
     flex: 1,
     textAlign: 'center',
   },
@@ -295,11 +296,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: HS.navy,
     marginBottom: 12,
   },
   questionCard: {
-    backgroundColor: CARD_BG,
+    backgroundColor: HS.tint,
     padding: 16,
     borderRadius: 14,
     borderLeftWidth: 4,
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
   },
   questionText: {
     fontSize: RFValue(15),
-    color: CARD_TEXT,
+    color: HS.navy,
     lineHeight: 22,
   },
   answerContainer: {
@@ -315,12 +316,12 @@ const styles = StyleSheet.create({
   },
   answerInput: {
     borderWidth: 1.5,
-    borderColor: '#CBD5E1',
+    borderColor: HS.inputBorder,
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     padding: 16,
     fontSize: 15,
-    color: '#0D1B2A',
+    color: HS.navy,
     minHeight: 120,
     maxHeight: 200,
   },
@@ -331,7 +332,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   tipsContainer: {
-    backgroundColor: CARD_BG,
+    backgroundColor: HS.tint,
     padding: 16,
     borderRadius: 14,
     marginBottom: 20,
@@ -339,19 +340,20 @@ const styles = StyleSheet.create({
   tipsTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: HS.navy,
     marginBottom: 8,
   },
   tipText: {
     fontSize: RFValue(13),
-    color: CARD_TEXT_MUTED,
+    color: HS.text,
     marginBottom: 4,
     lineHeight: 18,
   },
   footer: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#E2E8F0',
+    borderTopColor: HS.cardBorder,
+    backgroundColor: '#FFFFFF',
   },
   submitButton: {
     backgroundColor: BRAND_ORANGE,
@@ -368,7 +370,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   submitButtonDisabled: {
-    backgroundColor: '#CBD5E1',
+    backgroundColor: HS.tintStrong,
     shadowOpacity: 0,
     elevation: 0,
   },

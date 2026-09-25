@@ -2,6 +2,7 @@ import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/src/shared/theme';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 interface SearchBarProps {
   visible: boolean;
@@ -25,21 +26,21 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose }
       isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }
     ]}>
       <TouchableOpacity onPress={onClose} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={isTablet ? 34 : 24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
+        <Ionicons name="arrow-back" size={isTablet ? 34 : 24} color={isDarkMode ? '#F8FAFC' : HS.blue} />
       </TouchableOpacity>
       
       <View style={[
         styles.searchInputContainer,
         isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }
       ]}>
-        <Ionicons name="search" size={isTablet ? 26 : 20} color={isDarkMode ? '#94A3B8' : '#003399'} style={styles.searchIcon} />
+        <Ionicons name="search" size={isTablet ? 26 : 20} color={isDarkMode ? '#94A3B8' : HS.blue} style={styles.searchIcon} />
         <TextInput
           style={[
             styles.searchBar,
             isDarkMode && { color: '#F8FAFC' }
           ]}
           placeholder="Search by title, location, category..."
-          placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
+          placeholderTextColor={isDarkMode ? '#64748B' : HS.placeholder}
           value={searchText}
           onChangeText={onChangeText}
           autoFocus
@@ -51,7 +52,7 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose }
         />
         {searchText.length > 0 && (
           <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
-            <Ionicons name="close-circle" size={isTablet ? 28 : 20} color={isDarkMode ? '#94A3B8' : '#666'} />
+            <Ionicons name="close-circle" size={isTablet ? 28 : 20} color={isDarkMode ? '#94A3B8' : HS.muted} />
           </TouchableOpacity>
         )}
       </View>
@@ -75,18 +76,18 @@ const styles = StyleSheet.create({
     paddingTop: isTablet ? hp('1.5%') : hp('1.2%'),
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
-    shadowColor: '#000',
+    borderBottomColor: HS.cardBorder,
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   backButton: {
     marginBottom: isTablet ? hp('1.2%') : hp('1%'),
     padding: 4,
     borderRadius: 12,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: HS.tint,
     width: isTablet ? 40 : 36,
     height: isTablet ? 40 : 36,
     justifyContent: 'center',
@@ -95,12 +96,12 @@ const styles = StyleSheet.create({
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: HS.page,
     borderRadius: 14,
     paddingHorizontal: 14,
     height: isTablet ? 52 : 48,
     borderWidth: 1.5,
-    borderColor: '#DCE3F2',
+    borderColor: HS.inputBorder,
   },
   searchIcon: {
     marginRight: 10,
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flex: 1,
     fontSize: RFValue(isTablet ? 13 : 16),
-    color: '#000',
+    color: HS.navy,
     paddingVertical: 0,
     height: '100%',
   },
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
   },
   searchInfo: {
     fontSize: RFValue(isTablet ? 12 : 12),
-    color: '#666',
+    color: HS.muted,
     marginTop: 8,
     marginLeft: 6,
     fontStyle: 'italic',

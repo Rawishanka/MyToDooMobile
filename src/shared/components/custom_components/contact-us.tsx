@@ -28,7 +28,8 @@ import FAQScreen from '@/src/shared/components/custom_components/faq-screen';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
-import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 type ContactUsProps = { 
   onBack: () => void;
@@ -495,7 +496,6 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <BlueBackdrop />
       <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : BRAND_BLUE} />
       
       <LightHeader title="Contact Us" onBack={onBack} />
@@ -528,7 +528,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                     <Text style={[styles.contactMethodValue, isDarkMode && { color: '#38BDF8' }]} numberOfLines={1}>{method.value}</Text>
                   </View>
                   {method.action && (
-                    <Ionicons name="chevron-forward" size={20} color={isDarkMode ? "#94A3B8" : "rgba(255,255,255,0.6)"} />
+                    <Ionicons name="chevron-forward" size={20} color={isDarkMode ? "#94A3B8" : HS.muted} />
                   )}
                 </TouchableOpacity>
               ))}
@@ -547,7 +547,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
               
               {/* Name Input */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Your Name <Text style={{ color: '#FCA5A5' }}>*</Text></Text>
+                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Your Name <Text style={{ color: isDarkMode ? '#FCA5A5' : '#DC2626' }}>*</Text></Text>
                 <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   <Ionicons name="person-outline" size={20} color="#94A3B8" style={styles.inputIcon} />
                   <TextInput
@@ -568,7 +568,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
               {/* Email Input */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Email Address <Text style={{ color: '#FCA5A5' }}>*</Text></Text>
+                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Email Address <Text style={{ color: isDarkMode ? '#FCA5A5' : '#DC2626' }}>*</Text></Text>
                 <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   <Ionicons name="mail-outline" size={20} color="#94A3B8" style={styles.inputIcon} />
                   <TextInput
@@ -586,7 +586,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
               {/* Category Dropdown */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Category <Text style={{ color: '#FCA5A5' }}>*</Text></Text>
+                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Category <Text style={{ color: isDarkMode ? '#FCA5A5' : '#DC2626' }}>*</Text></Text>
                 <TouchableOpacity 
                   style={[styles.dropdownButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}
                   onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
@@ -660,7 +660,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
               {/* Subject Input */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Subject <Text style={{ color: '#FCA5A5' }}>*</Text></Text>
+                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Subject <Text style={{ color: isDarkMode ? '#FCA5A5' : '#DC2626' }}>*</Text></Text>
                 <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   <Ionicons name="text-outline" size={20} color="#94A3B8" style={styles.inputIcon} />
                   <TextInput
@@ -676,7 +676,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
               {/* Message Input */}
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Message <Text style={{ color: '#FCA5A5' }}>*</Text></Text>
+                <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Message <Text style={{ color: isDarkMode ? '#FCA5A5' : '#DC2626' }}>*</Text></Text>
                 <View style={[styles.inputContainer, styles.messageInputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   <TextInput
                     style={[styles.input, styles.messageInput, isDarkMode && { color: '#F8FAFC' }]}
@@ -759,9 +759,9 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 Check out our FAQ section for instant solutions to common questions
               </Text>
               <TouchableOpacity style={[styles.faqButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#38BDF8' }]} onPress={() => setShowFAQ(true)}>
-                <Ionicons name="help-circle-outline" size={20} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+                <Ionicons name="help-circle-outline" size={20} color={isDarkMode ? '#38BDF8' : HS.blue} />
                 <Text style={[styles.faqButtonText, isDarkMode && { color: '#38BDF8' }]}>View FAQ</Text>
-                <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+                <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#38BDF8' : HS.blue} />
               </TouchableOpacity>
             </View>
 
@@ -790,7 +790,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#003399',
+    backgroundColor: HS.page,
   },
   content: {
     flex: 1,
@@ -808,13 +808,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 14,
     marginBottom: 12,
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-    shadowColor: '#00114D',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    borderColor: HS.cardBorder,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
     shadowOffset: { width: 0, height: 4 },
   },
   contactMethodInfo: {
@@ -824,12 +825,12 @@ const styles = StyleSheet.create({
   contactMethodTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 2,
   },
   contactMethodValue: {
     fontSize: 13,
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     fontWeight: '500',
   },
   dividerContainer: {
@@ -841,31 +842,32 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: HS.tintBorder,
   },
   dividerText: {
     fontSize: 12,
     fontWeight: '700',
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     marginHorizontal: 14,
     letterSpacing: 0.8,
   },
   formSection: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.cardBorder,
     padding: 16,
     marginBottom: 14,
-    shadowColor: '#00114D',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
     shadowOffset: { width: 0, height: 4 },
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 18,
   },
   inputGroup: {
@@ -874,7 +876,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 8,
   },
   inputContainer: {
@@ -883,7 +885,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: HS.inputBorder,
     paddingHorizontal: 14,
     paddingVertical: 14,
   },
@@ -893,7 +895,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: RFValue(15),
-    color: '#0F172A',
+    color: HS.navy,
     padding: 0,
   },
   messageInputContainer: {
@@ -907,7 +909,7 @@ const styles = StyleSheet.create({
   },
   charCount: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     marginTop: 6,
     textAlign: 'right',
   },
@@ -918,7 +920,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: HS.inputBorder,
     paddingHorizontal: 14,
     paddingVertical: 14,
     minHeight: 52,
@@ -942,8 +944,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#00114D',
+    borderColor: HS.cardBorder,
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 14,
@@ -1005,7 +1007,7 @@ const styles = StyleSheet.create({
   infoBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: HS.tint,
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 14,
@@ -1014,32 +1016,33 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: '#FFFFFF',
+    color: HS.navy,
     marginLeft: 10,
     lineHeight: 18,
   },
   // Token Lookup Section
   tokenLookupSection: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.cardBorder,
     padding: 16,
     marginBottom: 14,
-    shadowColor: '#00114D',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
     shadowOffset: { width: 0, height: 4 },
   },
   tokenLookupTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 6,
   },
   tokenLookupSubtitle: {
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     marginBottom: 14,
   },
   tokenInputRow: {
@@ -1053,7 +1056,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: HS.inputBorder,
     paddingHorizontal: 14,
     paddingVertical: 14,
     marginRight: 10,
@@ -1078,28 +1081,29 @@ const styles = StyleSheet.create({
   },
   // FAQ Section
   faqSection: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.cardBorder,
     padding: 16,
     marginBottom: 14,
-    shadowColor: '#00114D',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
     shadowOffset: { width: 0, height: 4 },
     alignItems: 'center',
   },
   faqTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 6,
     textAlign: 'center',
   },
   faqSubtitle: {
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     textAlign: 'center',
     marginBottom: 14,
     lineHeight: 19,
@@ -1108,24 +1112,24 @@ const styles = StyleSheet.create({
   faqButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: '#FFFFFF',
     height: 48,
     paddingHorizontal: 20,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+    borderColor: HS.blue,
   },
   faqButtonText: {
     fontSize: RFValue(15),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.blue,
     marginLeft: 8,
     marginRight: 8,
   },
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,

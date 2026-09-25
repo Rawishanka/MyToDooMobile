@@ -24,6 +24,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 // ─── Types ────────────────────────────────────────────────
 interface AddSkillsModalProps {
@@ -82,7 +83,7 @@ const AnimatedSkillTag = ({
     <Animated.View style={[styles.skillTag, { transform: [{ scale }], opacity }]}>
       <Text style={styles.skillTagText}>{skill}</Text>
       <TouchableOpacity onPress={handleRemove} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-        <Ionicons name="close" size={14} color="#003399" />
+        <Ionicons name="close" size={14} color={HS.blue} />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -261,7 +262,7 @@ export default function AddSkillsModal({
                   <Ionicons
                     name="add"
                     size={24}
-                    color={inputText.trim() ? '#003399' : '#94A3B8'}
+                    color={inputText.trim() ? HS.blue : '#94A3B8'}
                   />
                 </TouchableOpacity>
               </View>
@@ -317,7 +318,7 @@ export default function AddSkillsModal({
 
                 {categoriesLoading ? (
                   <View style={styles.loadingRow}>
-                    <ActivityIndicator size="small" color="#003399" />
+                    <ActivityIndicator size="small" color={HS.blue} />
                     <Text style={styles.loadingText}>Loading categories...</Text>
                   </View>
                 ) : filteredSuggestions.length === 0 && !inputText.trim() ? (
@@ -369,7 +370,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8ECF4',
+    borderBottomColor: HS.inputBorder,
     marginBottom: 4,
   },
   headerBtn: {
@@ -379,7 +380,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     textAlign: 'center',
     flex: 1,
   },
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
   // Description
   description: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: HS.muted,
     lineHeight: 20,
     marginTop: 10,
     marginBottom: 16,
@@ -410,12 +411,12 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderWidth: 1.5,
-    borderColor: '#E8ECF4',
+    borderColor: HS.inputBorder,
     borderRadius: 14,
     paddingHorizontal: 16,
     fontSize: RFValue(15),
-    backgroundColor: '#F8FAFC',
-    color: '#0F172A',
+    backgroundColor: '#FFFFFF',
+    color: HS.navy,
   },
   addBtn: {
     width: 48,
@@ -423,23 +424,23 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: HS.tint,
   },
   addBtnDisabled: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: HS.tintStrong,
   },
 
   // Dropdown
   dropdownContainer: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: HS.inputBorder,
     borderRadius: 14,
     marginTop: 4,
     marginBottom: 8,
-    shadowColor: '#0F172A',
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.07,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 4,
     overflow: 'hidden',
@@ -452,11 +453,11 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: RFValue(14),
-    color: '#0F172A',
+    color: HS.navy,
   },
   dropdownSeparator: {
     height: 1,
-    backgroundColor: '#E8ECF4',
+    backgroundColor: HS.inputBorder,
     marginHorizontal: 14,
   },
 
@@ -467,16 +468,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     marginBottom: 12,
   },
   sectionCount: {
     fontWeight: '500',
-    color: '#64748B',
+    color: HS.muted,
   },
   emptyHint: {
     fontSize: RFValue(13),
-    color: '#64748B',
+    color: HS.muted,
     marginTop: 2,
   },
 
@@ -490,16 +491,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0,51,153,0.18)',
+    borderColor: HS.tintBorder,
     borderRadius: 14,
     paddingVertical: 7,
     paddingHorizontal: 14,
     gap: 6,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: HS.tint,
   },
   skillTagText: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: HS.blue,
     fontWeight: '600',
   },
 
@@ -513,19 +514,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: HS.inputBorder,
     borderRadius: 14,
     paddingVertical: 7,
     paddingHorizontal: 14,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
   },
   suggestedChipText: {
     fontSize: RFValue(14),
-    color: '#334155',
+    color: HS.text,
   },
   suggestedChipPlus: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: HS.blue,
     fontWeight: '700',
   },
 
@@ -538,6 +539,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(13),
-    color: '#64748B',
+    color: HS.muted,
   },
 });

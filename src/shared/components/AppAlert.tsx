@@ -1,4 +1,5 @@
 import { BRAND_BLUE, BRAND_GREEN, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { useTheme } from '@/src/shared/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -107,7 +108,7 @@ export function AppAlertHost() {
 
   const type = payload.type || 'info';
   const accent =
-    type === 'success' ? BRAND_GREEN : type === 'error' ? '#DC2626' : type === 'warning' ? BRAND_ORANGE : BRAND_BLUE;
+    type === 'success' ? BRAND_GREEN : type === 'error' ? '#DC2626' : type === 'warning' ? BRAND_ORANGE : HS.blue;
   const icon = type === 'success' ? '✓' : type === 'error' ? '!' : type === 'warning' ? '!' : 'i';
 
   const close = (btn?: AppAlertButton) => {
@@ -175,8 +176,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: HS.card,
+    borderRadius: 24,
     overflow: 'hidden',
     paddingHorizontal: 22,
     paddingTop: 28,
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   title: {
-    color: '#003399',
+    color: HS.navy,
     fontSize: 20,
     fontWeight: '700',
     textAlign: 'center',
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   message: {
-    color: '#475569',
+    color: HS.text,
     fontSize: 15,
     lineHeight: 22,
     textAlign: 'center',
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
   buttonGhost: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: '#003399',
+    borderColor: HS.blue,
   },
   buttonDanger: {
     backgroundColor: '#DC2626',
@@ -244,14 +245,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   buttonGhostText: {
-    color: '#003399',
+    color: HS.blue,
   },
   buttonPrimaryText: {
     color: '#FFFFFF',
   },
   autoHint: {
     textAlign: 'center',
-    color: '#94A3B8',
+    color: HS.muted,
     fontSize: 12,
     paddingBottom: 6,
     letterSpacing: 0,

@@ -163,7 +163,7 @@ export default function BudgetScreen() {
       onPress={() => handleKeyPress(value.toString())}
     >
       {value === 'delete' ? (
-        <Ionicons name="backspace-outline" size={24} color="#FFFFFF" />
+        <Ionicons name="backspace-outline" size={24} color={isDarkMode ? '#FFFFFF' : FLOW.navy} />
       ) : value === '.' ? (
         <Text style={[styles.keyText, isDarkMode && { color: '#F8FAFC' }]}>.</Text>
       ) : (
@@ -215,8 +215,8 @@ export default function BudgetScreen() {
       <View style={[styles.wrapper, styles.centerContent, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
         <FlowBackground isDarkMode={isDarkMode} />
-        <ActivityIndicator size="large" color="#FFFFFF" />
-        <Text style={styles.loadingText}>Detecting your location...</Text>
+        <ActivityIndicator size="large" color={isDarkMode ? '#FFFFFF' : FLOW.blue} />
+        <Text style={[styles.loadingText, isDarkMode && { color: 'rgba(255,255,255,0.75)' }]}>Detecting your location...</Text>
       </View>
     );
   }
@@ -225,7 +225,7 @@ export default function BudgetScreen() {
     <View style={[styles.wrapper, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
       <FlowBackground isDarkMode={isDarkMode} />
-      <View style={[styles.header, isDarkMode && { backgroundColor: BRAND_BLUE }, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
+      <View style={[styles.header, isDarkMode && { backgroundColor: BRAND_BLUE, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton} hitSlop={12}>
           <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -242,7 +242,9 @@ export default function BudgetScreen() {
           <Text style={[
             styles.budgetText, 
             budget && budget !== '.' && (parseFloat(budget) < minimumBudget || parseFloat(budget) > maximumBudget) && parseFloat(budget) > 0 && styles.invalidBudgetText,
-            !hasUserInteracted && !budget && styles.placeholderText
+            !hasUserInteracted && !budget && styles.placeholderText,
+            isDarkMode && { color: '#FFFFFF' },
+            isDarkMode && !hasUserInteracted && !budget && { color: 'rgba(255,255,255,0.55)' },
           ]}>
             {budget ? (budget.endsWith('.') || budget.includes('.') ? budget : formatNumber(parseFloat(budget))) : (!hasUserInteracted ? formatNumber(defaultBudgetAmount) : '0')}
           </Text>
@@ -250,15 +252,15 @@ export default function BudgetScreen() {
         
         {/* Validation Message */}
         {errorMessage ? (
-          <Text style={styles.errorText}>
+          <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>
             {errorMessage}
           </Text>
         ) : budget && budget !== '.' && parseFloat(budget) < minimumBudget && parseFloat(budget) > 0 ? (
-          <Text style={styles.validationText}>
+          <Text style={[styles.validationText, isDarkMode && { color: '#FCA5A5' }]}>
             Minimum budget is {currencyInfo.symbol}{formatNumber(minimumBudget, { forceDecimals: true })}
           </Text>
         ) : budget && budget !== '.' && parseFloat(budget) > maximumBudget ? (
-          <Text style={styles.validationText}>
+          <Text style={[styles.validationText, isDarkMode && { color: '#FCA5A5' }]}>
             Maximum budget is {currencyInfo.symbol}{formatNumber(maximumBudget, { forceDecimals: true })}
           </Text>
         ) : null}
@@ -296,16 +298,24 @@ export default function BudgetScreen() {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: FLOW.blue,
+    backgroundColor: FLOW.page,
   },
   header: {
-    backgroundColor: 'transparent',
+    backgroundColor: FLOW.blue,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
     paddingHorizontal: isTablet ? wp('12.5%') : wp('6%'),
-    paddingBottom: hp('2%'),
+    paddingBottom: hp('2.5%'),
   },
   backButton: {
     marginBottom: hp('1%'),
     alignSelf: 'flex-start',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: FLOW.heroPill,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: RFValue(isTablet ? 24 : 20),
@@ -316,14 +326,14 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     textAlign: 'center',
-    color: 'rgba(255,255,255,0.85)',
+    color: FLOW.onHeroMuted,
     fontSize: RFValue(isTablet ? 14 : 13),
   },
   container: {
     flex: 1,
     paddingHorizontal: isTablet ? wp('12.5%') : wp('6%'),
     paddingTop: hp('2%'),
-    backgroundColor: 'transparent',
+    backgroundColor: FLOW.page,
     justifyContent: 'space-between',
     maxWidth: isTablet ? 900 : undefined,
     alignSelf: isTablet ? 'center' : 'auto',
@@ -333,9 +343,9 @@ const styles = StyleSheet.create({
     marginTop: hp('2%'),
     height: isTablet ? hp('12%') : hp('11%'),
     borderRadius: 20,
-    backgroundColor: FLOW.glass,
-    borderWidth: 1,
-    borderColor: FLOW.glassBorder,
+    backgroundColor: FLOW.tint,
+    borderWidth: 1.5,
+    borderColor: FLOW.tintBorder,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
@@ -343,16 +353,16 @@ const styles = StyleSheet.create({
   currencySymbol: {
     fontSize: RFValue(isTablet ? 32 : 28),
     fontWeight: '700',
-    color: 'rgba(255,255,255,0.8)',
+    color: FLOW.blue,
     marginRight: wp('1.5%'),
   },
   budgetText: {
     fontSize: RFValue(isTablet ? 40 : 36),
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: FLOW.blue,
   },
   placeholderText: {
-    color: 'rgba(255,255,255,0.55)',
+    color: FLOW.placeholder,
     fontWeight: '400',
   },
   invalidBudgetText: {
@@ -384,18 +394,18 @@ const styles = StyleSheet.create({
   key: {
     width: isTablet ? wp('10%') : wp('18%'),
     height: isTablet ? wp('10%') : wp('18%'),
-    backgroundColor: FLOW.glassStrong,
+    backgroundColor: '#FFFFFF',
     borderRadius: isTablet ? wp('5%') : wp('9%'),
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: isTablet ? wp('2%') : wp('2.5%'),
-    borderWidth: 1,
-    borderColor: FLOW.glassBorder,
+    borderWidth: 1.5,
+    borderColor: FLOW.inputBorder,
   },
   keyText: {
     fontSize: RFValue(isTablet ? 26 : 22),
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: FLOW.navy,
   },
   centerContent: {
     justifyContent: 'center',
@@ -404,13 +414,13 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: hp('2%'),
     fontSize: RFValue(16),
-    color: FLOW.textMuted,
+    color: FLOW.muted,
     textAlign: 'center',
   },
   actionBar: {
     paddingHorizontal: isTablet ? wp('12.5%') : wp('6%'),
     paddingTop: 12,
-    backgroundColor: FLOW.blueDeep,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: FLOW.line,
   },

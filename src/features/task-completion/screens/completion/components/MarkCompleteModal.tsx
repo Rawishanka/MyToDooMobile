@@ -3,6 +3,7 @@ import { appAlert } from '@/src/shared/components/AppAlert';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { BRAND_BLUE, BRAND_ORANGE, CARD_TEXT } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -54,7 +55,7 @@ export default function MarkCompleteModal({
           <TextInput
             style={[styles.input, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
             placeholder="Completion notes..."
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={HS.placeholder}
             value={completionNotes}
             onChangeText={setCompletionNotes}
             multiline={true}
@@ -113,14 +114,14 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: HS.text,
     marginBottom: 12,
   },
   input: {
     borderWidth: 1.5,
-    borderColor: '#CBD5E1',
+    borderColor: HS.inputBorder,
     backgroundColor: '#FFFFFF',
-    color: '#0D1B2A',
+    color: HS.navy,
     borderRadius: 14,
     padding: 14,
     fontSize: 16,
@@ -135,14 +136,15 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     borderWidth: 1.5,
-    borderColor: '#CBD5E1',
+    borderColor: HS.blue,
+    backgroundColor: '#FFFFFF',
     height: 50,
     justifyContent: 'center',
     borderRadius: 14,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#475569',
+    color: HS.blue,
     fontSize: 16,
     fontWeight: '700',
   },

@@ -1,3 +1,4 @@
+import { HS, homeCard, homeIconChip } from '@/src/shared/theme/homeStyle';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { formatUserName } from '@/src/utils/formatUserName';
@@ -70,20 +71,18 @@ export default function PaymentDetails({
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 24,
+    marginTop: 20,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#000',
-    marginBottom: 20,
+    color: HS.navy,
+    marginBottom: 14,
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    ...homeCard,
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
   },
   row: {
     flexDirection: 'row',
@@ -93,19 +92,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: HS.muted,
     flex: 1,
   },
   value: {
     fontSize: RFValue(14),
-    color: '#000',
-    fontWeight: '500',
+    color: HS.navy,
+    fontWeight: '600',
     flex: 1,
     textAlign: 'right',
   },
   amount: {
     fontSize: RFValue(18),
-    color: '#28a745',
+    color: HS.blue,
     fontWeight: '700',
   },
 });

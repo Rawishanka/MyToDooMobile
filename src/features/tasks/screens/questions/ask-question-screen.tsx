@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppAlert } from '@/src/shared/components/AppAlert';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { HS, homeCard } from '@/src/shared/theme/homeStyle';
 
 export default function AskQuestionScreen() {
   const { isDarkMode } = useTheme();
@@ -128,7 +129,7 @@ export default function AskQuestionScreen() {
   if (isLoading) {
     return (
       <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <ActivityIndicator size="large" color="#003399" />
+        <ActivityIndicator size="large" color={HS.blue} />
         <Text style={styles.loadingText}>Loading task details...</Text>
       </View>
     );
@@ -137,7 +138,9 @@ export default function AskQuestionScreen() {
   if (!task) {
     return (
       <View style={[styles.errorContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+        <View style={styles.iconCircle}>
+          <Ionicons name="alert-circle-outline" size={44} color={HS.redText} />
+        </View>
         <Text style={styles.errorTitle}>Task Not Found</Text>
         <Text style={styles.errorSubtitle}>Could not load task details.</Text>
         <TouchableOpacity 
@@ -193,7 +196,7 @@ export default function AskQuestionScreen() {
               multiline
               numberOfLines={6}
               textAlignVertical="top"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={HS.placeholder}
               maxLength={500}
               blurOnSubmit={true}
               returnKeyType="done"
@@ -248,7 +251,7 @@ export default function AskQuestionScreen() {
           disabled={isSubmitting || question.trim().length < 10}
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <ActivityIndicator size="small" color={HS.blue} />
           ) : (
             <>
               <Ionicons name="help-circle" size={20} color="#FFFFFF" />
@@ -264,36 +267,44 @@ export default function AskQuestionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: HS.page,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F4F6FB',
+    backgroundColor: HS.page,
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: HS.muted,
+  },
+  iconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: HS.tint,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: HS.page,
   },
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: HS.muted,
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -302,7 +313,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#003399',
+    color: HS.blue,
     fontSize: RFValue(16),
     fontWeight: '700',
   },
@@ -335,30 +346,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   taskSummary: {
-    backgroundColor: '#003399',
-    borderRadius: 20,
+    ...homeCard,
     padding: 16,
     marginTop: 20,
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
   },
   taskTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 8,
   },
   taskCreator: {
     fontSize: RFValue(14),
-    color: 'rgba(255,255,255,0.78)',
+    color: HS.muted,
     marginBottom: 4,
   },
   taskLocation: {
     fontSize: RFValue(14),
-    color: 'rgba(255,255,255,0.78)',
+    color: HS.muted,
   },
   formContainer: {
     marginTop: 24,
@@ -366,26 +371,26 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     marginBottom: 20,
   },
   inputContainer: {
     marginBottom: 24,
   },
   questionInput: {
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderWidth: 1.5,
+    borderColor: HS.inputBorder,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: RFValue(16),
-    color: '#0F172A',
+    color: HS.navy,
     minHeight: 120,
     backgroundColor: '#fff',
   },
   characterCount: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: HS.muted,
     textAlign: 'right',
     marginTop: 4,
   },
@@ -395,7 +400,7 @@ const styles = StyleSheet.create({
   suggestionsTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     marginBottom: 12,
   },
   suggestionItem: {
@@ -404,29 +409,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderWidth: 1.5,
+    borderColor: HS.inputBorder,
   },
   suggestionText: {
     fontSize: RFValue(14),
-    color: '#334155',
+    color: HS.text,
   },
   guidelinesContainer: {
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: HS.tint,
     borderWidth: 1,
-    borderColor: 'rgba(0,51,153,0.18)',
+    borderColor: HS.tintBorder,
     borderRadius: 16,
     padding: 16,
   },
   guidelinesTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#003399',
+    color: HS.navy,
     marginBottom: 8,
   },
   guideline: {
     fontSize: RFValue(12),
-    color: '#003399',
+    color: HS.text,
     marginBottom: 4,
   },
   buttonContainer: {
@@ -434,7 +439,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     backgroundColor: '#FFFFFF',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#CBD5E1',
+    borderTopColor: HS.cardBorder,
   },
   submitButton: {
     backgroundColor: '#ff6b35',
@@ -446,7 +451,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   submittingButton: {
-    opacity: 0.7,
+    backgroundColor: HS.tintStrong,
   },
   submitButtonText: {
     color: '#FFFFFF',

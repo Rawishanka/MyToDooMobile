@@ -15,7 +15,8 @@ import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Scroll
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 interface AccountInformationProps {
   onBack: () => void;
@@ -383,10 +384,9 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if (!isAuthenticated || !token) {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
         <LightHeader title="Account information" onBack={onBack} />
         <View style={styles.errorContainer}>
-          <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}><Ionicons name="alert-circle-outline" size={40} color={isDarkMode ? '#DC2626' : '#FCA5A5'} /></View>
+          <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}><Ionicons name="alert-circle-outline" size={40} color={isDarkMode ? '#DC2626' : HS.redText} /></View>
           <Text style={[styles.errorText, isDarkMode && { color: '#94A3B8' }]}>Please log in to view account information</Text>
           <TouchableOpacity 
             style={styles.retryButton} 
@@ -406,10 +406,9 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if ((isLoading || isFetching) && !profileData) {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
         <LightHeader title="Account information" onBack={onBack} />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading account information...</Text>
         </View>
       </View>
@@ -420,10 +419,9 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if (error) {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
         <LightHeader title="Account information" onBack={onBack} />
         <View style={styles.errorContainer}>
-          <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}><Ionicons name="alert-circle-outline" size={40} color={isDarkMode ? '#DC2626' : '#FCA5A5'} /></View>
+          <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}><Ionicons name="alert-circle-outline" size={40} color={isDarkMode ? '#DC2626' : HS.redText} /></View>
           <Text style={[styles.errorText, isDarkMode && { color: '#94A3B8' }]}>Failed to load account information</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
             <Text style={styles.retryButtonText}>Retry</Text>
@@ -437,10 +435,9 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if (!profileData) {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
         <LightHeader title="Account information" onBack={onBack} />
         <View style={styles.errorContainer}>
-          <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}><Ionicons name="alert-circle-outline" size={40} color={isDarkMode ? '#DC2626' : '#FCA5A5'} /></View>
+          <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}><Ionicons name="alert-circle-outline" size={40} color={isDarkMode ? '#DC2626' : HS.redText} /></View>
           <Text style={[styles.errorText, isDarkMode && { color: '#94A3B8' }]}>No account data available</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
             <Text style={styles.retryButtonText}>Retry</Text>
@@ -454,7 +451,6 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if (currentScreen === 'personal-details') {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
         <LightHeader title="Update personal details" onBack={goBackToMain} />
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={[styles.formCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
@@ -559,12 +555,11 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   if (currentScreen === 'change-password') {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
         <LightHeader title="Change Password" onBack={goBackToMain} />
         <View style={styles.passwordContent}>
           <View style={styles.lockIconContainer}>
             <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-              <Ionicons name="lock-closed-outline" size={40} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+              <Ionicons name="lock-closed-outline" size={40} color={isDarkMode ? '#38BDF8' : HS.blue} />
             </View>
           </View>
           
@@ -588,7 +583,6 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
     const phoneBusy = requestPhoneOtpMutation.isPending || verifyPhoneOtpMutation.isPending;
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
         <LightHeader title="Change phone" onBack={goBackToMain} />
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={[styles.formCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
@@ -633,11 +627,11 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
             </TouchableOpacity>
             {phoneOtpSent && (
               <TouchableOpacity
-                style={styles.removeButton}
+                style={[styles.removeButton, isDarkMode && { backgroundColor: 'transparent', borderColor: '#FFFFFF' }]}
                 onPress={handleRequestPhoneOtp}
                 disabled={phoneBusy}
               >
-                <Text style={styles.removeButtonText}>Resend code</Text>
+                <Text style={[styles.removeButtonText, isDarkMode && { color: '#FFFFFF' }]}>Resend code</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -651,7 +645,6 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
     const emailBusy = requestEmailOtpMutation.isPending || verifyEmailOtpMutation.isPending;
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
         <LightHeader title="Change email" onBack={goBackToMain} />
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={[styles.formCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
@@ -696,11 +689,11 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
             </TouchableOpacity>
             {emailOtpSent && (
               <TouchableOpacity
-                style={styles.removeButton}
+                style={[styles.removeButton, isDarkMode && { backgroundColor: 'transparent', borderColor: '#FFFFFF' }]}
                 onPress={handleRequestEmailOtp}
                 disabled={emailBusy}
               >
-                <Text style={styles.removeButtonText}>Resend code</Text>
+                <Text style={[styles.removeButtonText, isDarkMode && { color: '#FFFFFF' }]}>Resend code</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -713,7 +706,6 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   // Main Account Information Screen
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <BlueBackdrop />
       <LightHeader title="Account information" onBack={onBack} />
       
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -749,7 +741,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
           text="Delete my account" 
           onPress={handleDeleteAccount}
           showArrow={false}
-          textColor="#FCA5A5"
+          textColor={HS.redText}
         />
       </ScrollView>
 
@@ -829,7 +821,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
   );
 }
 
-const MenuItem = ({ text, onPress, showArrow = true, textColor = "#FFFFFF", disabled = false, subtitle, icon, tone = 'blue' }: {
+const MenuItem = ({ text, onPress, showArrow = true, textColor = HS.navy, disabled = false, subtitle, icon, tone = 'blue' }: {
   text: string;
   onPress: () => void;
   showArrow?: boolean;
@@ -850,14 +842,14 @@ const MenuItem = ({ text, onPress, showArrow = true, textColor = "#FFFFFF", disa
       {icon ? <IconChip name={icon} tone={tone} style={{ marginRight: 12 }} /> : null}
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text
-          style={[styles.menuText, { color: disabled ? (isDarkMode ? '#64748B' : 'rgba(255,255,255,0.55)') : (isDarkMode ? (tone === 'red' ? '#F87171' : '#F8FAFC') : textColor) }]}
+          style={[styles.menuText, { color: disabled ? (isDarkMode ? '#64748B' : HS.muted) : (isDarkMode ? (tone === 'red' ? '#F87171' : '#F8FAFC') : textColor) }]}
           numberOfLines={1}
         >
           {text}
         </Text>
         {subtitle && <Text style={[styles.menuSubtitle, isDarkMode && { color: '#94A3B8' }]}>{subtitle}</Text>}
       </View>
-      {showArrow && !disabled && <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.6)'} />}
+      {showArrow && !disabled && <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#94A3B8' : HS.muted} />}
     </TouchableOpacity>
   );
 };
@@ -865,7 +857,7 @@ const MenuItem = ({ text, onPress, showArrow = true, textColor = "#FFFFFF", disa
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#003399',
+    backgroundColor: HS.page,
   },
   content: {
     flex: 1,
@@ -876,38 +868,40 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   formCard: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.cardBorder,
     paddingHorizontal: 16,
     paddingTop: 4,
     paddingBottom: 20,
-    shadowColor: '#00114D',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
     shadowOffset: { width: 0, height: 6 },
   },
   stateCircle: {
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     padding: 14,
     marginBottom: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-    shadowColor: '#00114D',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    borderColor: HS.cardBorder,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
     shadowOffset: { width: 0, height: 6 },
   },
   menuText: {
@@ -919,7 +913,7 @@ const styles = StyleSheet.create({
   },
   menuSubtitle: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     marginTop: 2,
   },
   webOnlyLabel: {
@@ -929,7 +923,7 @@ const styles = StyleSheet.create({
   },
   changeContactLink: {
     fontSize: RFValue(14),
-    color: '#FFFFFF',
+    color: HS.blue,
     textDecorationLine: 'underline',
     fontWeight: '600',
     marginBottom: 8,
@@ -949,27 +943,27 @@ const styles = StyleSheet.create({
   webOnlyTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     marginBottom: 12,
     textAlign: 'center',
   },
   webOnlyDescription: {
     fontSize: RFValue(15),
-    color: '#666',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 16,
   },
   webOnlyUrl: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: HS.blue,
     fontWeight: '600',
     marginBottom: 32,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginTop: 16,
     marginBottom: 8,
   },
@@ -980,7 +974,7 @@ const styles = StyleSheet.create({
   },
   charCount: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.7)',
+    color: HS.muted,
     textAlign: 'right',
     marginBottom: 4,
   },
@@ -989,7 +983,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: HS.inputBorder,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -998,7 +992,7 @@ const styles = StyleSheet.create({
   inputText: {
     flex: 1,
     fontSize: RFValue(16),
-    color: '#0F172A',
+    color: HS.navy,
   },
   disabledInput: {
     color: '#64748B',
@@ -1073,7 +1067,7 @@ const styles = StyleSheet.create({
   },
   passwordText: {
     fontSize: RFValue(16),
-    color: 'rgba(255,255,255,0.85)',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 16,
@@ -1081,7 +1075,7 @@ const styles = StyleSheet.create({
   emailText: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -1090,9 +1084,9 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   removeButton: {
-    backgroundColor: 'transparent',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+    borderColor: HS.blue,
     borderRadius: 14,
     height: 52,
     paddingHorizontal: 24,
@@ -1100,7 +1094,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   removeButtonText: {
-    color: '#FFFFFF',
+    color: HS.blue,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -1124,14 +1118,14 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 24,
     width: '100%',
     maxWidth: 400,
@@ -1139,13 +1133,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     marginBottom: 16,
     textAlign: 'center',
   },
   modalText: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: HS.muted,
     lineHeight: 20,
     marginBottom: 24,
     textAlign: 'center',
@@ -1231,7 +1225,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: RFValue(16),
-    color: 'rgba(255,255,255,0.85)',
+    color: HS.muted,
   },
   errorContainer: {
     flex: 1,
@@ -1243,7 +1237,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 24,
     fontSize: RFValue(16),
-    color: 'rgba(255,255,255,0.85)',
+    color: HS.muted,
     textAlign: 'center',
   },
   retryButton: {

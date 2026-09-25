@@ -43,15 +43,18 @@ export default function DescribeTaskScreen() {
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
       <FlowBackground isDarkMode={isDarkMode} />
-      {/* Back Arrow */}
-      <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.back, { top: Math.max(insets.top, 20) + 6 }]}>
-        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-      </TouchableOpacity>
+      <View style={[styles.hero, { paddingTop: Math.max(insets.top, 20) + 6 }, isDarkMode && styles.heroDark]}>
+        {/* Back Arrow */}
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
+          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
 
-      {/* Title */}
-      <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Describe the MyToDoo task</Text>
-      <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>Give a detailed description of the MyToDoo tasks</Text>
+        {/* Title */}
+        <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Describe the MyToDoo task</Text>
+        <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>Give a detailed description of the MyToDoo tasks</Text>
+      </View>
 
+      <View style={styles.body}>
       {/* Input */}
       <TextInput
         style={[styles.textArea, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1, color: '#F8FAFC' }]}
@@ -61,6 +64,7 @@ export default function DescribeTaskScreen() {
         onChangeText={setDescription}
         placeholderTextColor={isDarkMode ? '#64748B' : FLOW.placeholder}
       />
+      </View>
 
       {/* Button */}
       <View style={[styles.actionBar, isDarkMode && { backgroundColor: '#0B1120', borderTopColor: '#1E293B' }, { paddingBottom: Math.max(insets.bottom, 16) }]}>
@@ -79,34 +83,53 @@ export default function DescribeTaskScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 60,
+    backgroundColor: FLOW.page,
+  },
+  hero: {
     backgroundColor: FLOW.blue,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+  },
+  heroDark: {
+    backgroundColor: 'transparent',
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  body: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
   },
   back: {
-    position: 'absolute',
-    top: 50,
-    left: 24,
-    zIndex: 1,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: FLOW.heroPill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   title: {
     fontSize: RFValue(22),
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginTop: 40,
+    marginTop: 4,
   },
   subtitle: {
-    color: FLOW.textMuted,
-    marginBottom: 20,
+    color: FLOW.onHeroMuted,
+    marginTop: 4,
   },
   textArea: {
     height: 150,
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: FLOW.inputBorder,
     padding: 16,
     fontSize: RFValue(16),
     textAlignVertical: 'top',
-    color: FLOW.ink,
+    color: FLOW.navy,
   },
   actionBar: {
     position: 'absolute',
@@ -115,7 +138,7 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 24,
     paddingTop: 12,
-    backgroundColor: FLOW.blueDeep,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: FLOW.line,
   },

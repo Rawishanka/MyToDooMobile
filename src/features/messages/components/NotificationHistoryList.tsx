@@ -5,6 +5,7 @@
  * Similar to web implementation that uses localStorage
  */
 
+import { HS } from '@/src/shared/theme/homeStyle';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
@@ -136,7 +137,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
         activeOpacity={0.7}
       >
         <View style={styles.notificationContent}>
-          <View style={[styles.iconContainer, { backgroundColor: iconColor === BRAND_BLUE ? 'rgba(0,51,153,0.08)' : iconColor + '1F' }]}>
+          <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? (iconColor === BRAND_BLUE ? 'rgba(0,51,153,0.08)' : iconColor + '1F') : (iconColor === '#16A34A' ? HS.greenBg : iconColor === '#D97706' ? HS.amberBg : HS.blueBg) }]}>
             <Ionicons name={iconName as any} size={19} color={isDarkMode && iconColor === BRAND_BLUE ? '#38BDF8' : iconColor} />
           </View>
 
@@ -162,10 +163,10 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
             )}
             <TouchableOpacity
               onPress={() => onDelete(item.id)}
-              style={styles.deleteButton}
+              style={[styles.deleteButton, !isDarkMode && { backgroundColor: HS.redBg }]}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="trash-outline" size={18} color="#DC2626" />
+              <Ionicons name="trash-outline" size={18} color={isDarkMode ? '#DC2626' : HS.redText} />
             </TouchableOpacity>
           </View>
         </View>
@@ -176,7 +177,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
       <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-        <Ionicons name="notifications-outline" size={40} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+        <Ionicons name="notifications-outline" size={40} color={isDarkMode ? '#38BDF8' : HS.blue} />
       </View>
       <Text style={[styles.emptyText, isDarkMode && { color: '#F8FAFC' }]}>No Notifications</Text>
       <Text style={[styles.emptySubtext, isDarkMode && { color: '#94A3B8' }]}>
@@ -201,7 +202,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
       keyExtractor={(item) => item.id}
       ListEmptyComponent={renderEmpty}
       refreshControl={
-        <RefreshControl refreshing={loading} onRefresh={onRefresh} colors={['#003399']} tintColor={isDarkMode ? '#38BDF8' : '#003399'} />
+        <RefreshControl refreshing={loading} onRefresh={onRefresh} colors={[HS.blue]} tintColor={isDarkMode ? '#38BDF8' : HS.blue} />
       }
       contentContainerStyle={
         notifications.length === 0 ? styles.emptyListContainer : styles.listContainer
@@ -230,7 +231,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 15,
-    color: '#64748B',
+    color: HS.muted,
   },
   notificationItem: {
     backgroundColor: '#FFFFFF',
@@ -239,18 +240,18 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
+    borderColor: HS.cardBorder,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
   },
   unreadNotification: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E8ECF4',
+    backgroundColor: HS.card,
+    borderColor: HS.cardBorder,
     borderLeftWidth: 3,
-    borderLeftColor: '#ff6b35',
+    borderLeftColor: HS.orange,
   },
   notificationContent: {
     flexDirection: 'row',
@@ -272,22 +273,22 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#0F172A',
+    color: HS.navy,
     marginBottom: 4,
   },
   unreadText: {
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
   },
   body: {
     fontSize: 13,
-    color: '#64748B',
+    color: HS.text,
     marginBottom: 6,
     lineHeight: 19,
   },
   time: {
     fontSize: 12,
-    color: '#94A3B8',
+    color: HS.muted,
   },
   actionsContainer: {
     flexDirection: 'column',
@@ -302,10 +303,11 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#ff6b35',
+    backgroundColor: HS.orange,
   },
   deleteButton: {
-    padding: 4,
+    padding: 6,
+    borderRadius: 10,
   },
   emptyContainer: {
     flex: 1,
@@ -317,20 +319,20 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     marginTop: 16,
     marginBottom: 6,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#64748B',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 20,
   },

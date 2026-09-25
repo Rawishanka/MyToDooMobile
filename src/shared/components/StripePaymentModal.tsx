@@ -15,6 +15,7 @@ import * as PaymentAPI from '../../api/payment-api';
 import { useAuthStore } from '../../store/auth-task-store';
 import { useCreatePaymentIntent } from '../hooks/usePaymentApi';
 import { useAcceptOffer } from '../hooks/useTaskApi';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface StripePaymentModalProps {
@@ -355,7 +356,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#003399" />
+        <ActivityIndicator size="large" color={HS.blue} />
         <Text style={styles.loadingText}>Preparing secure payment...</Text>
       </View>
     </View>
@@ -367,7 +368,7 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: HS.page,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -378,7 +379,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: RFValue(16),
-    color: '#666',
+    color: HS.muted,
     fontWeight: '500',
   },
   header: {
@@ -388,9 +389,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 50,
     paddingBottom: 15,
-    backgroundColor: '#fff',
+    backgroundColor: HS.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: HS.cardBorder,
   },
   closeButton: {
     padding: 5,
@@ -398,13 +399,13 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: HS.navy,
   },
   placeholder: {
     width: 34,
   },
   taskInfoSection: {
-    backgroundColor: '#fff',
+    backgroundColor: HS.card,
     borderRadius: 12,
     padding: 20,
     margin: 20,
@@ -413,21 +414,21 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: HS.navy,
     marginBottom: 8,
   },
   taskerName: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: HS.muted,
     marginBottom: 4,
   },
   offerDescription: {
     fontSize: RFValue(14),
-    color: '#374151',
+    color: HS.text,
     lineHeight: 20,
   },
   paymentSection: {
-    backgroundColor: '#fff',
+    backgroundColor: HS.card,
     borderRadius: 12,
     padding: 20,
     margin: 20,
@@ -436,7 +437,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: HS.navy,
     marginBottom: 16,
   },
   summaryContainer: {
@@ -449,49 +450,49 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: HS.muted,
   },
   summaryValue: {
     fontSize: RFValue(14),
     fontWeight: '500',
-    color: '#000',
+    color: HS.navy,
   },
   totalRow: {
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: HS.cardBorder,
     marginTop: 8,
     paddingTop: 12,
   },
   totalLabel: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#000',
+    color: HS.navy,
   },
   totalValue: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#003399',
+    color: HS.blue,
   },
   backendDataInfo: {
     marginTop: 12,
     padding: 12,
-    backgroundColor: '#EEF3FF',
+    backgroundColor: HS.tint,
     borderRadius: 8,
     borderLeftWidth: 3,
-    borderLeftColor: '#003399',
+    borderLeftColor: HS.blue,
   },
   backendDataLabel: {
     fontSize: RFValue(12),
     fontWeight: '600',
-    color: '#003399',
+    color: HS.blue,
     marginBottom: 4,
   },
   backendDataText: {
     fontSize: RFValue(11),
-    color: '#666',
+    color: HS.muted,
   },
   termsSection: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: HS.tint,
     borderRadius: 8,
     padding: 16,
     marginBottom: 20,
@@ -499,12 +500,12 @@ const styles = StyleSheet.create({
   termsTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: HS.navy,
     marginBottom: 8,
   },
   termsBullet: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: HS.muted,
     lineHeight: 18,
     marginBottom: 4,
   },
@@ -517,7 +518,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: HS.inputBorder,
     borderRadius: 4,
     marginRight: 12,
     alignItems: 'center',
@@ -525,17 +526,17 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   checkboxChecked: {
-    backgroundColor: '#ff6b35',
-    borderColor: '#ff6b35',
+    backgroundColor: HS.orange,
+    borderColor: HS.orange,
   },
   checkboxText: {
     flex: 1,
     fontSize: RFValue(12),
-    color: '#666',
+    color: HS.muted,
     lineHeight: 18,
   },
   linkText: {
-    color: '#003399',
+    color: HS.blue,
     textDecorationLine: 'underline',
   },
   securityInfo: {
@@ -548,7 +549,7 @@ const styles = StyleSheet.create({
   securityText: {
     flex: 1,
     fontSize: RFValue(12),
-    color: '#666',
+    color: HS.muted,
     lineHeight: 18,
     marginLeft: 8,
   },
@@ -560,7 +561,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   payButtonActive: {
-    backgroundColor: '#ff6b35',
+    backgroundColor: HS.orange,
   },
   payButtonDisabled: {
     backgroundColor: '#9CA3AF',
@@ -585,14 +586,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#003399',
+    borderColor: HS.blue,
     backgroundColor: 'transparent',
   },
   retryIcon: {
     marginRight: 8,
   },
   retryButtonText: {
-    color: '#003399',
+    color: HS.blue,
     fontSize: RFValue(14),
     fontWeight: '600',
   },

@@ -35,7 +35,7 @@ export const TimeOfDayGrid: React.FC<TimeOfDayGridProps> = ({
           ]}
           onPress={() => onSelectTimeBlock(block.value)}
         >
-          <View style={styles.iconContainer}>
+          <View style={[styles.iconContainer, isDarkMode && { backgroundColor: '#FFFFFF' }]}>
             <Image source={block.icon} style={styles.timeIcon} />
           </View>
           <Text style={[styles.gridTitle, selectedTimeBlock === block.value && styles.gridTitleSelected, isDarkMode && { color: '#F8FAFC' }]}>{block.label}</Text>
@@ -55,17 +55,17 @@ const styles = StyleSheet.create({
   },
   gridItem: {
     width: '48%',
-    backgroundColor: FLOW.glassStrong,
+    backgroundColor: '#FFFFFF',
     padding: 15,
     borderRadius: 14,
     marginVertical: 6,
     borderWidth: 1.5,
-    borderColor: FLOW.glassBorder,
+    borderColor: FLOW.inputBorder,
     alignItems: 'center',
   },
   gridItemSelected: {
-    borderColor: '#FF6A00',
-    backgroundColor: '#FFFFFF',
+    borderColor: FLOW.blue,
+    backgroundColor: FLOW.blue,
   },
   iconContainer: {
     alignItems: 'center',
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: FLOW.tint,
     marginBottom: 8,
   },
   timeIcon: {
@@ -86,17 +86,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginBottom: 2,
-    color: '#FFFFFF',
+    color: FLOW.navy,
   },
   gridTitleSelected: {
-    color: FLOW.blue,
+    color: '#FFFFFF',
   },
   gridDescription: {
     fontSize: RFValue(12),
-    color: FLOW.textMuted,
+    color: FLOW.muted,
     textAlign: 'center',
   },
   gridDescriptionSelected: {
-    color: '#475569',
+    color: FLOW.onHeroMuted,
   },
 });

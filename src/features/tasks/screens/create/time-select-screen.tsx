@@ -159,18 +159,19 @@ const TimeSelectScreen = () => {
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
       <FlowBackground isDarkMode={isDarkMode} />
-      <TouchableOpacity style={[styles.backButton, { top: Math.max(insets.top, 20) + 6 }]} onPress={() => router.back()}>
-        <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-      </TouchableOpacity>
-      
+      <View style={[styles.hero, { paddingTop: Math.max(insets.top, 20) + 6 }, isDarkMode && styles.heroDark]}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+        <Text style={[styles.title, isDarkMode && { color: '#FFFFFF' }]}>When & Budget</Text>
+        <Text style={[styles.subtitle, isDarkMode && { color: 'rgba(255,255,255,0.75)' }]}>When do you need this done and what's your budget?</Text>
+      </View>
+
       <ScrollView 
         style={styles.scrollContainer}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>When & Budget</Text>
-        <Text style={styles.subtitle}>When do you need this done and what's your budget?</Text>
-
         {/* Date/Time Options */}
         <DateOptionSelector
           options={options}
@@ -289,33 +290,47 @@ export default TimeSelectScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: FLOW.blue,
+    backgroundColor: FLOW.page,
   },
   scrollContainer: {
     flex: 1,
-    paddingTop: Platform.OS === 'ios' ? 60 : 50,
   },
   scrollContent: {
     paddingHorizontal: 20,
+    paddingTop: 16,
     paddingBottom: 150,
   },
+  hero: {
+    backgroundColor: FLOW.blue,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+  },
+  heroDark: {
+    backgroundColor: 'transparent',
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
   backButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 50,
-    left: 20,
-    zIndex: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: FLOW.heroPill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   title: {
     fontSize: RFValue(24),
     fontWeight: '700',
     marginBottom: 4,
     color: '#FFFFFF',
-    marginTop: 36,
+    marginTop: 4,
   },
   subtitle: {
     fontSize: RFValue(14),
-    color: FLOW.textMuted,
-    marginBottom: 24,
+    color: FLOW.onHeroMuted,
   },
   actionBar: {
     position: 'absolute',
@@ -324,7 +339,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 20,
     paddingTop: 12,
-    backgroundColor: FLOW.blueDeep,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: FLOW.line,
   },

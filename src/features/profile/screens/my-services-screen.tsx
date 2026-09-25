@@ -3,7 +3,7 @@ import {
   useDeleteServiceListing,
   useGetMyServiceListings,
 } from '@/src/shared/hooks/useServiceListingApi';
-import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
@@ -17,6 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 interface MyServicesScreenProps {
   onBack: () => void;
@@ -58,15 +59,14 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
         </Text>
         <Text style={[styles.status, isDarkMode && { color: '#94A3B8' }]}>Status: {item.status}</Text>
       </View>
-      <TouchableOpacity onPress={() => confirmDelete(item)} style={styles.deleteButton} activeOpacity={0.7}>
-        <Ionicons name="trash-outline" size={18} color={isDarkMode ? '#DC2626' : '#FCA5A5'} />
+      <TouchableOpacity onPress={() => confirmDelete(item)} style={[styles.deleteButton, isDarkMode && { backgroundColor: 'rgba(252,165,165,0.18)' }]} activeOpacity={0.7}>
+        <Ionicons name="trash-outline" size={18} color={isDarkMode ? '#DC2626' : HS.redText} />
       </TouchableOpacity>
     </View>
   );
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <BlueBackdrop />
       <LightHeader
         title="My services"
         onBack={onBack}
@@ -79,7 +79,7 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
 
       {isLoading && data.length === 0 ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
         </View>
       ) : (
         <FlatList
@@ -88,12 +88,12 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+            <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={isDarkMode ? '#38BDF8' : HS.blue} />
           }
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
               <View style={[styles.emptyCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                <Ionicons name="construct-outline" size={38} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+                <Ionicons name="construct-outline" size={38} color={isDarkMode ? '#38BDF8' : HS.blue} />
               </View>
               <Text style={[styles.emptyText, isDarkMode && { color: '#94A3B8' }]}>You have not listed any services yet.</Text>
               <TouchableOpacity style={styles.emptyCta} onPress={onCreate} activeOpacity={0.85}>
@@ -108,7 +108,7 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#003399' },
+  container: { flex: 1, backgroundColor: HS.page },
   createButton: {
     width: 40,
     height: 40,
@@ -122,28 +122,29 @@ const styles = StyleSheet.create({
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   listContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 },
   card: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.card,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.cardBorder,
     padding: 14,
     marginBottom: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#00114D',
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
     shadowOffset: { width: 0, height: 6 },
   },
   cardBody: { flex: 1, minWidth: 0 },
-  title: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
-  meta: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 4 },
-  status: { fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 4, textTransform: 'capitalize' },
+  title: { fontSize: 16, fontWeight: '600', color: HS.navy },
+  meta: { fontSize: 13, color: HS.muted, marginTop: 4 },
+  status: { fontSize: 12, color: HS.muted, marginTop: 4, textTransform: 'capitalize' },
   deleteButton: {
     width: 36,
     height: 36,
     borderRadius: 12,
-    backgroundColor: 'rgba(252,165,165,0.18)',
+    backgroundColor: HS.redBg,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,
@@ -153,12 +154,12 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
   },
-  emptyText: { color: 'rgba(255,255,255,0.75)', fontSize: 15, marginBottom: 20, textAlign: 'center' },
+  emptyText: { color: HS.muted, fontSize: 15, marginBottom: 20, textAlign: 'center' },
   emptyCta: {
     backgroundColor: '#ff6b35',
     paddingHorizontal: 28,

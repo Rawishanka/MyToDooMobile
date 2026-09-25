@@ -13,7 +13,7 @@ export default function WelcomeScreenLayout() {
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: isDarkMode ? '#0B1120' : '#003399' }
+        contentStyle: { backgroundColor: isDarkMode ? '#0B1120' : '#F4F7FF' }
       }}>
         <Stack.Screen name="first-screen" />
         <Stack.Screen name="second-screen" />

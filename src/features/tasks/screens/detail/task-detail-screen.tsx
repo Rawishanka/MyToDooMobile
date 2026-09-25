@@ -1,4 +1,5 @@
 import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: HS.page,
   },
   content: {
     flex: 1,

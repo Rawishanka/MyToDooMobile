@@ -1,6 +1,7 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -11,7 +12,7 @@ interface LoadingStateProps {
 export function PaymentLoadingState({ message = 'Loading payment status...' }: LoadingStateProps) {
   return (
     <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#003399" />
+      <ActivityIndicator size="large" color={HS.blue} />
       <Text style={styles.loadingText}>{message}</Text>
     </View>
   );
@@ -43,7 +44,9 @@ export function PaymentErrorState({ onRetry, onBack }: ErrorStateProps) {
 export function PaymentEmptyState() {
   return (
     <View style={styles.emptyContainer}>
-      <MaterialIcons name="payment" size={64} color="#94A3B8" />
+      <View style={styles.emptyIconCircle}>
+        <MaterialIcons name="payment" size={40} color={HS.blue} />
+      </View>
       <Text style={styles.emptyTitle}>No Payments Yet</Text>
       <Text style={styles.emptySubtitle}>
         Your payment history will appear here once you complete transactions.
@@ -61,7 +64,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: HS.muted,
   },
   errorContainer: {
     flex: 1,
@@ -72,13 +75,13 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: HS.navy,
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -97,11 +100,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   backButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: 32,
+    height: 48,
+    justifyContent: 'center',
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: HS.blue,
   },
   backButtonText: {
-    color: '#003399',
+    color: HS.blue,
     fontSize: RFValue(16),
     fontWeight: '600',
   },
@@ -112,16 +120,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     paddingVertical: 100,
   },
+  emptyIconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: HS.tint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emptyTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: HS.navy,
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 22,
   },

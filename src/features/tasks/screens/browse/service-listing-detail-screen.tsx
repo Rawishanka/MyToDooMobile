@@ -9,17 +9,8 @@ import { validateContactContent } from '@/src/shared/utils/contactModeration';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { formatUserName } from '@/src/utils/formatUserName';
-import {
-  BRAND_BLUE,
-  BRAND_ORANGE,
-  CARD_BG,
-  CARD_CHIP_BG,
-  CARD_DIVIDER,
-  CARD_PRICE_BG,
-  CARD_PRICE_TEXT,
-  CARD_TEXT,
-  CARD_TEXT_MUTED,
-} from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS, homeCard } from '@/src/shared/theme/homeStyle';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
@@ -134,7 +125,7 @@ export default function ServiceListingDetailScreen({
     <KeyboardAvoidingView
       style={[
         styles.container,
-        { backgroundColor: isDarkMode ? '#0B1120' : '#f8fafc' },
+        { backgroundColor: isDarkMode ? '#0B1120' : HS.page },
       ]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
@@ -143,15 +134,15 @@ export default function ServiceListingDetailScreen({
           styles.header,
           {
             paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 45,
-            backgroundColor: isDarkMode ? '#1E293B' : BRAND_BLUE,
-            borderBottomColor: isDarkMode ? '#334155' : BRAND_BLUE,
+            backgroundColor: isDarkMode ? '#1E293B' : HS.blue,
+            borderBottomColor: isDarkMode ? '#334155' : HS.blue,
           },
         ]}
       >
         <TouchableOpacity onPress={onBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} activeOpacity={0.75}>
-          <Ionicons name="chevron-back" size={22} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+          <Ionicons name="chevron-back" size={22} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
+        <Text style={[styles.headerTitle, { color: isDarkMode ? '#F8FAFC' : '#FFFFFF' }]}>
           Service Details
         </Text>
         <View style={styles.headerSpacer} />
@@ -159,17 +150,17 @@ export default function ServiceListingDetailScreen({
 
       {isLoading && !listing ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
         </View>
       ) : !listing ? (
         <View style={styles.loadingWrap}>
           <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-            <Ionicons name="search-outline" size={40} color="#FFFFFF" />
+            <Ionicons name="search-outline" size={40} color={isDarkMode ? '#FFFFFF' : HS.blue} />
           </View>
-          <Text style={[styles.emptyText, { color: isDarkMode ? '#F8FAFC' : '#0F172A' }]}>
+          <Text style={[styles.emptyText, { color: isDarkMode ? '#F8FAFC' : HS.navy }]}>
             Listing not found
           </Text>
-          <Text style={[styles.emptySub, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>
+          <Text style={[styles.emptySub, { color: isDarkMode ? '#94A3B8' : HS.muted }]}>
             This service may have been removed.
           </Text>
           <TouchableOpacity style={styles.emptyButton} onPress={onBack} activeOpacity={0.85}>
@@ -182,16 +173,16 @@ export default function ServiceListingDetailScreen({
           keyboardShouldPersistTaps="handled"
         >
           <View style={[styles.card, isDarkMode ? styles.cardDark : styles.cardBlue]}>
-            <Text style={[styles.title, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
+            <Text style={[styles.title, { color: isDarkMode ? '#F8FAFC' : HS.navy }]}>
               {listing.title}
             </Text>
             
             <View style={styles.priceRow}>
-              <View style={[styles.pricePill, isDarkMode ? { backgroundColor: '#0F172A' } : { backgroundColor: CARD_PRICE_BG }]}>
-                <Text style={[styles.price, { color: isDarkMode ? '#38BDF8' : CARD_PRICE_TEXT }]}>
+              <View style={[styles.pricePill, isDarkMode ? { backgroundColor: '#0F172A' } : { backgroundColor: HS.tint }]}>
+                <Text style={[styles.price, { color: isDarkMode ? '#38BDF8' : HS.blue }]}>
                   ${Number(listing.price).toFixed(0)}
                 </Text>
-                <Text style={[styles.currency, { color: isDarkMode ? '#94A3B8' : CARD_PRICE_TEXT }]}>
+                <Text style={[styles.currency, { color: isDarkMode ? '#94A3B8' : HS.blue }]}>
                   {listing.currency || 'AUD'}
                 </Text>
               </View>
@@ -199,9 +190,9 @@ export default function ServiceListingDetailScreen({
 
             <View style={styles.metaRow}>
               <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                <Ionicons name="location-outline" size={18} color={isDarkMode ? '#94A3B8' : CARD_TEXT} />
+                <Ionicons name="location-outline" size={18} color={isDarkMode ? '#94A3B8' : HS.blue} />
               </View>
-              <Text style={[styles.metaText, { color: isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED }]} numberOfLines={2}>
+              <Text style={[styles.metaText, { color: isDarkMode ? '#94A3B8' : HS.text }]} numberOfLines={2}>
                 {listing.suburb}
                 {listing.radiusKm ? ` · within ${listing.radiusKm} km` : ''}
               </Text>
@@ -209,19 +200,19 @@ export default function ServiceListingDetailScreen({
 
             <View style={styles.metaRow}>
               <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                <Ionicons name="person-outline" size={18} color={isDarkMode ? '#94A3B8' : CARD_TEXT} />
+                <Ionicons name="person-outline" size={18} color={isDarkMode ? '#94A3B8' : HS.blue} />
               </View>
-              <Text numberOfLines={2} style={[styles.taskerText, { color: isDarkMode ? '#CBD5E1' : CARD_TEXT_MUTED }]}>
-                Offered by <Text style={{ fontWeight: '600', color: isDarkMode ? undefined : CARD_TEXT }}>{taskerName}</Text>
+              <Text numberOfLines={2} style={[styles.taskerText, { color: isDarkMode ? '#CBD5E1' : HS.text }]}>
+                Offered by <Text style={{ fontWeight: '600', color: isDarkMode ? undefined : HS.navy }}>{taskerName}</Text>
               </Text>
             </View>
 
-            <View style={[styles.divider, { backgroundColor: isDarkMode ? '#334155' : CARD_DIVIDER }]} />
+            <View style={[styles.divider, { backgroundColor: isDarkMode ? '#334155' : HS.cardBorder }]} />
 
-            <Text style={[styles.sectionHeading, { color: isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED }]}>
+            <Text style={[styles.sectionHeading, { color: isDarkMode ? '#94A3B8' : HS.muted }]}>
               Description
             </Text>
-            <Text style={[styles.description, { color: isDarkMode ? '#CBD5E1' : CARD_TEXT }]}>
+            <Text style={[styles.description, { color: isDarkMode ? '#CBD5E1' : HS.text }]}>
               {listing.description}
             </Text>
           </View>
@@ -230,33 +221,33 @@ export default function ServiceListingDetailScreen({
           <View style={[styles.card, isDarkMode ? styles.cardDark : styles.cardBlue, { marginTop: 16 }]}>
             <View style={styles.sectionHeaderRow}>
               <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                <Ionicons name="calendar-outline" size={18} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+                <Ionicons name="calendar-outline" size={18} color={isDarkMode ? '#38BDF8' : HS.blue} />
               </View>
-              <Text style={[styles.sectionTitle, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
+              <Text style={[styles.sectionTitle, { color: isDarkMode ? '#F8FAFC' : HS.navy }]}>
                 Book this Service
               </Text>
             </View>
 
-            <Text style={[styles.label, { color: isDarkMode ? '#E2E8F0' : CARD_TEXT }]}>
+            <Text style={[styles.label, { color: isDarkMode ? '#E2E8F0' : HS.navy }]}>
               Agreed Offer Amount ($)
             </Text>
             <TextInput
               style={[
                 styles.input,
                 {
-                  backgroundColor: isDarkMode ? '#0F172A' : '#ffffff',
-                  borderColor: isDarkMode ? '#334155' : 'rgba(255,255,255,0.6)',
-                  color: isDarkMode ? '#F8FAFC' : '#0F172A',
+                  backgroundColor: isDarkMode ? '#0F172A' : HS.page,
+                  borderColor: isDarkMode ? '#334155' : HS.inputBorder,
+                  color: isDarkMode ? '#F8FAFC' : HS.navy,
                 },
               ]}
               value={amount}
               onChangeText={setAmount}
               keyboardType="decimal-pad"
               placeholder="Amount"
-              placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
+              placeholderTextColor={isDarkMode ? '#64748B' : HS.placeholder}
             />
 
-            <Text style={[styles.label, { color: isDarkMode ? '#E2E8F0' : CARD_TEXT, marginTop: 16 }]}>
+            <Text style={[styles.label, { color: isDarkMode ? '#E2E8F0' : HS.navy, marginTop: 16 }]}>
               Message for Tasker (Optional)
             </Text>
             <TextInput
@@ -264,15 +255,15 @@ export default function ServiceListingDetailScreen({
                 styles.input,
                 styles.textArea,
                 {
-                  backgroundColor: isDarkMode ? '#0F172A' : '#ffffff',
-                  borderColor: isDarkMode ? '#334155' : 'rgba(255,255,255,0.6)',
-                  color: isDarkMode ? '#F8FAFC' : '#0F172A',
+                  backgroundColor: isDarkMode ? '#0F172A' : HS.page,
+                  borderColor: isDarkMode ? '#334155' : HS.inputBorder,
+                  color: isDarkMode ? '#F8FAFC' : HS.navy,
                 },
               ]}
               value={message}
               onChangeText={setMessage}
               placeholder="Add details about your task (no phone numbers or emails)"
-              placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
+              placeholderTextColor={isDarkMode ? '#64748B' : HS.placeholder}
               multiline
               textAlignVertical="top"
             />
@@ -331,7 +322,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
@@ -353,13 +344,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   cardBlue: {
-    backgroundColor: CARD_BG,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    ...homeCard,
   },
   cardDark: {
     backgroundColor: '#1E293B',
@@ -374,7 +359,7 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 11,
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
   },

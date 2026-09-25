@@ -1,6 +1,5 @@
 import { useGetTaskById } from '@/src/shared/hooks/useTaskApi';
 import { useLocalSearchParams } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
     ActivityIndicator,
@@ -24,6 +23,7 @@ import {
 import { useOfferSubmission } from './hooks/useOfferSubmission';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 export default function MakeOfferScreen() {
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
@@ -85,13 +85,6 @@ export default function MakeOfferScreen() {
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
       <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : BRAND_BLUE} />
-      {!isDarkMode && (
-        <LinearGradient
-          pointerEvents="none"
-          colors={[BRAND_BLUE, '#00287A']}
-          style={StyleSheet.absoluteFill}
-        />
-      )}
       
       <View style={{ flex: 1 }}>
         <OfferFormHeader />
@@ -126,8 +119,8 @@ export default function MakeOfferScreen() {
           
           {/* Show message if user already has an offer */}
           {userHasExistingOffer && (
-            <View style={styles.warningContainer}>
-              <Text style={styles.warningText}>
+            <View style={[styles.warningContainer, isDarkMode && styles.warningContainerDark]}>
+              <Text style={[styles.warningText, isDarkMode && styles.warningTextDark]}>
                 ⚠️ You have already submitted an offer for this task. Only one offer per task is allowed.
               </Text>
             </View>
@@ -138,15 +131,23 @@ export default function MakeOfferScreen() {
           <TouchableOpacity
             style={[
               styles.submitButton, 
-              (isSubmitting || userHasExistingOffer || isLoadingOffers || !!validationError) && styles.disabledButton
+              (isSubmitting || userHasExistingOffer || isLoadingOffers || !!validationError) &&
+                (isDarkMode ? styles.disabledButton : styles.disabledButtonLight)
             ]}
             onPress={userHasExistingOffer ? undefined : handleSubmitOffer}
             disabled={isSubmitting || userHasExistingOffer || isLoadingOffers || !!validationError}
           >
             {isSubmitting || isLoadingOffers ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={isDarkMode ? '#FFFFFF' : HS.blue} />
             ) : (
-              <Text style={styles.submitButtonText}>
+              <Text
+                style={[
+                  styles.submitButtonText,
+                  !isDarkMode &&
+                    (userHasExistingOffer || !!validationError) &&
+                    { color: HS.muted },
+                ]}
+              >
                 {userHasExistingOffer 
                   ? 'Already Offer Submitted' 
                   : isLoadingOffers
@@ -165,23 +166,30 @@ export default function MakeOfferScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: HS.page,
   },
   content: {
     flex: 1,
     paddingHorizontal: 16,
   },
   warningContainer: {
-    backgroundColor: 'rgba(251,191,36,0.18)',
+    backgroundColor: HS.amberBg,
     borderWidth: 1,
-    borderColor: 'rgba(251,191,36,0.55)',
+    borderColor: '#FCD34D',
     borderRadius: 14,
     padding: 16,
     marginTop: 0,
     marginBottom: 16,
   },
-  warningText: {
+  warningContainerDark: {
+    backgroundColor: 'rgba(251,191,36,0.18)',
+    borderColor: 'rgba(251,191,36,0.55)',
+  },
+  warningTextDark: {
     color: '#FEF3C7',
+  },
+  warningText: {
+    color: HS.amberText,
     fontSize: RFValue(15),
     textAlign: 'center',
     fontWeight: '600',
@@ -190,9 +198,9 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingHorizontal: 16,
     paddingTop: 14,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.25)',
+    borderTopColor: HS.cardBorder,
   },
   submitButton: {
     backgroundColor: BRAND_ORANGE,
@@ -209,6 +217,11 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: 'rgba(255,255,255,0.22)',
     opacity: 0.8,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  disabledButtonLight: {
+    backgroundColor: HS.tintStrong,
     shadowOpacity: 0,
     elevation: 0,
   },

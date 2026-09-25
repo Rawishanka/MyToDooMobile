@@ -2,6 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CompletionRating } from '../hooks/useCompletionStatus';
+import { HS, homeCard } from '@/src/shared/theme/homeStyle';
+import { useTheme } from '@/src/shared/theme';
 import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -11,9 +13,10 @@ interface RatingCardProps {
 }
 
 export default function RatingCard({ rating, formatDate }: RatingCardProps) {
+  const { isDarkMode } = useTheme();
   return (
-    <View style={styles.card}>
-      <Text style={styles.title}>Task Rating</Text>
+    <View style={[styles.card, isDarkMode && styles.cardDark]}>
+      <Text style={[styles.title, isDarkMode && styles.onBlue]}>Task Rating</Text>
 
       <View style={styles.display}>
         <View style={styles.stars}>
@@ -26,35 +29,36 @@ export default function RatingCard({ rating, formatDate }: RatingCardProps) {
             />
           ))}
         </View>
-        <Text style={styles.score}>{rating.score}/5</Text>
+        <Text style={[styles.score, isDarkMode && styles.onBlue]}>{rating.score}/5</Text>
       </View>
 
-      {rating.feedback && <Text style={styles.feedback}>"{rating.feedback}"</Text>}
+      {rating.feedback && <Text style={[styles.feedback, isDarkMode && styles.onBlueMuted]}>"{rating.feedback}"</Text>}
 
-      <Text style={styles.date}>Rated on {formatDate(rating.ratedAt)}</Text>
+      <Text style={[styles.date, isDarkMode && styles.onBlueMuted]}>Rated on {formatDate(rating.ratedAt)}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: CARD_BG,
+    ...homeCard,
     marginHorizontal: 16,
     marginBottom: 14,
-    borderRadius: 20,
     padding: 18,
-    borderWidth: 1,
+  },
+  onBlue: { color: CARD_TEXT },
+  onBlueMuted: { color: CARD_TEXT_MUTED },
+  cardDark: {
+    backgroundColor: CARD_BG,
     borderColor: 'rgba(255,255,255,0.14)',
     shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,
-    shadowRadius: 12,
     elevation: 4,
   },
   title: {
     fontSize: 17,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: HS.navy,
     marginBottom: 14,
   },
   display: {
@@ -71,11 +75,11 @@ const styles = StyleSheet.create({
   score: {
     fontSize: 20,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: HS.navy,
   },
   feedback: {
     fontSize: RFValue(14),
-    color: CARD_TEXT_MUTED,
+    color: HS.text,
     fontStyle: 'italic',
     textAlign: 'center',
     marginBottom: 8,
@@ -83,7 +87,7 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     textAlign: 'center',
   },
 });

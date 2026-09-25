@@ -1,3 +1,4 @@
+import { HS, homeCard, homeIconChip } from '@/src/shared/theme/homeStyle';
 import { useGetAcceptedOffer, useGetTaskById } from '@/src/shared/hooks/useTaskApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -75,7 +76,7 @@ export default function CompletePaymentScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#003399" />
+      <StatusBar barStyle="light-content" backgroundColor={HS.blue} />
       
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
@@ -141,7 +142,7 @@ export default function CompletePaymentScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: HS.page,
   },
   header: {
     flexDirection: 'row',
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 14,
-    backgroundColor: '#003399',
+    backgroundColor: HS.blue,
   },
   backIcon: {
     width: 36,
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     backgroundColor: '#FFFFFF',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#CBD5E1',
+    borderTopColor: HS.cardBorder,
   },
   submitButton: {
     backgroundColor: '#ff6b35',
@@ -188,6 +189,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 8,
+    shadowColor: '#ff6b35',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 3,
   },
   submittingButton: {
     opacity: 0.7,

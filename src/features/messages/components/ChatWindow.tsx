@@ -1,5 +1,6 @@
 import { useTheme } from '@/src/shared/theme';
 import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
+import { HS } from '@/src/shared/theme/homeStyle';
 // ChatWindow using NEW task-based chat API
 
 import { uploadChatFile, uploadChatImage } from '@/src/api/cdn-api';
@@ -993,7 +994,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         keyboardVerticalOffset={Platform.OS === 'ios' ? headerTopPadding : 0}
       >
         <View style={[styles.chatContainer, isDarkMode && { backgroundColor: "#0B1120" }]}>
-          <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
+          <StatusBar barStyle="light-content" backgroundColor={HS.blue} />
           
           {/* Chat Header */}
           <View style={[styles.chatHeader, { paddingTop: headerTopPadding }]}>
@@ -1061,13 +1062,13 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
           ListEmptyComponent={() => (
             isLoadingMessages ? (
               <View style={styles.emptyContainer}>
-                <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+                <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
                 <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading messages...</Text>
               </View>
             ) : (
               <View style={styles.emptyContainer}>
                 <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                  <Ionicons name="chatbubbles-outline" size={40} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+                  <Ionicons name="chatbubbles-outline" size={40} color={isDarkMode ? '#38BDF8' : HS.blue} />
                 </View>
                 <Text style={[styles.emptyTitle, isDarkMode && { color: '#F8FAFC' }]}>Start a conversation</Text>
                 <Text style={[styles.emptySubtext, isDarkMode && { color: "#94A3B8" }]}>Send a message to begin chatting about this task</Text>
@@ -1137,7 +1138,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                 ) : msg.messageType === 'file' && msg.mediaUrl ? (
                   <TouchableOpacity onPress={() => handleFileDownload(normalizeMediaUrl(msg.mediaUrl), msg.text || 'File')}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <Ionicons name="document-attach" size={24} color={msg.sender === 'me' ? '#fff' : BRAND_BLUE} />
+                      <Ionicons name="document-attach" size={24} color={msg.sender === 'me' ? '#fff' : HS.blue} />
                       <Text style={[
                         styles.messageText,
                         msg.sender === 'me' ? styles.myMessageText : [styles.otherMessageText, isDarkMode && { color: '#F8FAFC' }]
@@ -1200,12 +1201,12 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
             isDarkMode && { backgroundColor: "#0B1120", borderTopColor: "#334155" }, { paddingBottom: inputBottomPadding }]}>
           <View style={[styles.inputWrapper, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             <TouchableOpacity onPress={handleAttachment} style={[styles.attachButton, isDarkMode && { backgroundColor: '#334155' }]}>
-              <Ionicons name="attach" size={20} color={isDarkMode ? '#94A3B8' : BRAND_BLUE} />
+              <Ionicons name="attach" size={20} color={isDarkMode ? '#94A3B8' : HS.blue} />
             </TouchableOpacity>
             <TextInput
               style={[styles.messageInput, isDarkMode && { color: '#F8FAFC' }]}
               placeholder="Type a message..."
-              placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
+              placeholderTextColor={isDarkMode ? "#64748B" : HS.placeholder}
               value={newMessage}
               onChangeText={setNewMessage}
               multiline
@@ -1225,7 +1226,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         {isUploading && (
           <View style={styles.uploadOverlay}>
             <View style={styles.uploadOverlayContent}>
-              <Ionicons name="cloud-upload" size={44} color={BRAND_BLUE} />
+              <Ionicons name="cloud-upload" size={44} color={HS.blue} />
               <Text style={styles.uploadOverlayText}>{uploadProgressText || 'Uploading...'}</Text>
             </View>
           </View>
@@ -1326,7 +1327,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                         }
                       }}
                     >
-                      <Ionicons name="information-circle-outline" size={22} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+                      <Ionicons name="information-circle-outline" size={22} color={isDarkMode ? '#38BDF8' : HS.blue} />
                       <Text style={[styles.actionMenuText, isDarkMode && { color: '#F8FAFC' }]}>Info</Text>
                     </TouchableOpacity>
 
@@ -1334,7 +1335,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                       style={[styles.actionMenuItem, { borderBottomWidth: 0 }]}
                       onPress={() => setIsActionMenuVisible(false)}
                     >
-                      <Ionicons name="close-circle-outline" size={22} color={isDarkMode ? '#94A3B8' : '#64748B'} />
+                      <Ionicons name="close-circle-outline" size={22} color={isDarkMode ? '#94A3B8' : HS.muted} />
                       <Text style={[styles.actionMenuText, isDarkMode && { color: '#94A3B8' }]}>Cancel</Text>
                     </TouchableOpacity>
                   </View>
@@ -1386,14 +1387,14 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
 const styles = StyleSheet.create({
   chatContainer: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: HS.page,
   },
   chatHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingBottom: 12,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: HS.blue,
     borderBottomWidth: 0,
   },
   backButton: {
@@ -1452,7 +1453,7 @@ const styles = StyleSheet.create({
   },
   messagesContainer: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: HS.page,
   },
   messagesContentContainer: {
     padding: 16,
@@ -1480,12 +1481,14 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     marginRight: 8,
-    backgroundColor: 'rgba(0,51,153,0.12)',
+    backgroundColor: HS.tint,
+    borderWidth: 1,
+    borderColor: HS.tintBorder,
     justifyContent: 'center',
     alignItems: 'center',
   },
   messageAvatarInitials: {
-    color: BRAND_BLUE,
+    color: HS.blue,
     fontSize: RFValue(11),
     fontWeight: '600',
   },
@@ -1497,20 +1500,20 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   myMessage: {
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: HS.blue,
     borderBottomRightRadius: 6,
-    shadowColor: BRAND_BLUE,
+    shadowColor: HS.blue,
     shadowOpacity: 0.2,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
   otherMessage: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: HS.card,
     borderBottomLeftRadius: 6,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
+    borderColor: HS.cardBorder,
+    shadowColor: HS.blue,
     shadowOpacity: 0.06,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
@@ -1531,7 +1534,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   otherMessageText: {
-    color: '#0F172A',
+    color: HS.navy,
   },
   messageTime: {
     fontSize: RFValue(11),
@@ -1541,7 +1544,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   otherMessageTime: {
-    color: '#94A3B8',
+    color: HS.muted,
   },
   messageFooter: {
     flexDirection: 'row',
@@ -1564,7 +1567,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#E8ECF4',
+    borderTopColor: HS.cardBorder,
     paddingHorizontal: 12,
     paddingTop: 8,
     // paddingBottom is dynamic via inline style with SafeArea insets
@@ -1575,10 +1578,10 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: HS.tint,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: HS.inputBorder,
     paddingLeft: 6,
     paddingRight: 6,
     paddingVertical: 4,
@@ -1588,7 +1591,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     maxHeight: 100,
-    color: '#0F172A',
+    color: HS.navy,
     paddingVertical: 8,
     paddingHorizontal: 4,
   },
@@ -1596,7 +1599,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 12,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: HS.card,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 6,
@@ -1605,11 +1608,11 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#ff6b35',
+    backgroundColor: HS.orange,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 6,
-    shadowColor: '#ff6b35',
+    shadowColor: HS.orange,
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 },
@@ -1629,27 +1632,27 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingText: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: HS.muted,
     marginTop: 12,
     textAlign: 'center',
   },
   emptyTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtext: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -1675,7 +1678,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#333',
+    color: HS.navy,
   },
   previewModalContainer: {
     flex: 1,
@@ -1739,7 +1742,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: HS.cardBorder,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.12,
@@ -1757,7 +1760,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(13),
   },
   reactionBtnSelected: {
-    backgroundColor: 'rgba(0, 82, 162, 0.15)',
+    backgroundColor: HS.tint,
     borderRadius: 16,
   },
   reactionBtn: {
@@ -1792,13 +1795,13 @@ const styles = StyleSheet.create({
   confirmDeleteTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     marginBottom: 8,
     textAlign: 'center',
   },
   confirmDeleteMessage: {
     fontSize: 14,
-    color: '#64748B',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 20,
@@ -1812,14 +1815,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 13,
     borderRadius: 12,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
   },
   confirmCancelText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#475569',
+    color: HS.text,
   },
   confirmDeleteBtn: {
     flex: 1,
@@ -1852,11 +1855,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 18,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: HS.cardBorder,
   },
   actionMenuText: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#1E293B',
+    color: HS.navy,
   },
 });

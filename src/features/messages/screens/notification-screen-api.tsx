@@ -1,6 +1,7 @@
 // Notification Screen - Backend API + Local Storage Integration
 // Loads notification history from the backend (GET /notifications) AND local FCM storage
 // Supports mark-as-read, mark-all-as-read, delete, delete-all
+import { HS } from '@/src/shared/theme/homeStyle';
 import { AppAlert } from '@/src/shared/components/AppAlert';
 import {
     deleteAllNotifications,
@@ -279,7 +280,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
       onRequestClose={onClose}
     >
       <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : "#003399"} />
+        <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : HS.blue} />
 
         {/* Header */}
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
@@ -381,11 +382,11 @@ export default NotificationModalWithAPI;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#003399',
+    backgroundColor: HS.blue,
   },
   body: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: HS.page,
   },
   header: {
     flexDirection: 'row',
@@ -393,7 +394,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: isTablet ? wp('6%') : 16,
     paddingVertical: 12,
-    backgroundColor: '#003399',
+    backgroundColor: HS.blue,
   },
   backButton: {
     width: 40,
@@ -415,7 +416,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   headerBadge: {
-    backgroundColor: '#ff6b35',
+    backgroundColor: HS.orange,
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -455,16 +456,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 19,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    backgroundColor: '#FFFFFF',
+    borderColor: HS.inputBorder,
+    backgroundColor: HS.card,
   },
   tabActive: {
-    backgroundColor: '#003399',
-    borderColor: '#003399',
+    backgroundColor: HS.blue,
+    borderColor: HS.blue,
   },
   tabText: {
     fontSize: 13,
-    color: '#64748B',
+    color: HS.muted,
     fontWeight: '600',
   },
   tabTextActive: {

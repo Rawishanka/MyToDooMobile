@@ -14,6 +14,7 @@ import {
   View
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 
@@ -150,7 +151,7 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
   if (tokenLoading) {
     return (
       <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : "#003399"} />
+        <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : HS.blue} />
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
@@ -159,7 +160,7 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
           <View style={styles.headerSpacer} />
         </View>
         <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-          <ActivityIndicator size="large" color={isDarkMode ? "#ff6b35" : "#003399"} />
+          <ActivityIndicator size="large" color={isDarkMode ? "#ff6b35" : HS.blue} />
           <Text style={[styles.loadingText, isDarkMode && { color: "#94A3B8" }]}>Loading {title}...</Text>
         </View>
       </SafeAreaView>
@@ -168,7 +169,7 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
   
   return (
     <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : "#003399"} />
+      <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : HS.blue} />
       
       {/* Header */}
       <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
@@ -185,7 +186,7 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
       {/* Loading Indicator */}
       {loading && (
         <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-          <ActivityIndicator size="large" color={isDarkMode ? "#ff6b35" : "#003399"} />
+          <ActivityIndicator size="large" color={isDarkMode ? "#ff6b35" : HS.blue} />
           <Text style={[styles.loadingText, isDarkMode && { color: "#94A3B8" }]}>Loading {title}...</Text>
         </View>
       )}
@@ -230,7 +231,7 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#003399',
+    backgroundColor: HS.blue,
   },
   header: {
     flexDirection: 'row',
@@ -239,8 +240,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.18)',
-    backgroundColor: '#003399',
-    shadowColor: '#000',
+    backgroundColor: HS.blue,
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
@@ -278,7 +279,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#475569',
+    color: HS.text,
   },
   webview: {
     flex: 1,

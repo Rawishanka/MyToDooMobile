@@ -3,6 +3,7 @@ import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { HS } from '@/src/shared/theme/homeStyle';
 
 interface LoadingStateProps {
   message?: string;
@@ -12,7 +13,7 @@ export function LoadingState({ message = 'Loading tasks...' }: LoadingStateProps
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : HS.blue} />
       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>{message}</Text>
     </View>
   );
@@ -29,7 +30,7 @@ export function EmptyState({ searchText, selectedFilter, onRefresh }: EmptyState
   return (
     <View style={[styles.emptyContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <View style={[styles.emptyCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-        <Ionicons name="document-text-outline" size={44} color={isDarkMode ? '#94A3B8' : '#003399'} />
+        <Ionicons name="document-text-outline" size={44} color={isDarkMode ? '#94A3B8' : HS.blue} />
       </View>
       <Text style={[styles.emptyTitle, isDarkMode && { color: '#F8FAFC' }]}>No tasks found</Text>
       <Text style={[styles.emptySubtitle, isDarkMode && { color: '#94A3B8' }]}>
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: HS.muted,
   },
   emptyContainer: {
     flex: 1,
@@ -67,20 +68,20 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: HS.navy,
     marginTop: 20,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#5B6472',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,

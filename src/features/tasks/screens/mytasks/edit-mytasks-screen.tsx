@@ -5,7 +5,6 @@ import { formatNumber, getCurrencyFromLocation, getMinimumBudget } from '@/src/s
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -16,6 +15,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    StatusBar,
     StyleSheet,
     Text,
     TextInput,
@@ -29,6 +29,7 @@ import { OCRAPI } from '@/src/api/ocr-api';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS, homeCard, homeIconChip } from '@/src/shared/theme/homeStyle';
 
 const MAX_TASK_PHOTOS = 5;
 
@@ -836,13 +837,7 @@ Please remove phone numbers and addresses from the image.`,
   return (
     <View style={[styles.wrapper, isDarkMode && darkStyles.wrapper]}>
       <View style={[styles.container, isDarkMode && darkStyles.container]}>
-        {!isDarkMode && (
-          <LinearGradient
-            pointerEvents="none"
-            colors={[BRAND_BLUE, '#00287A']}
-            style={StyleSheet.absoluteFill}
-          />
-        )}
+        <StatusBar barStyle="light-content" />
         {/* Fixed Header */}
         <View style={[styles.header, isDarkMode && darkStyles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
@@ -875,13 +870,13 @@ Please remove phone numbers and addresses from the image.`,
           {/* Category Selection */}
           <View style={styles.fieldContainer}>
             <Text style={[styles.label, isDarkMode && darkStyles.label]}>
-              Category <Text style={styles.required}>*</Text>
+              Category <Text style={[styles.required, isDarkMode && darkStyles.required]}>*</Text>
             </Text>
             <TouchableOpacity
               style={[
                 styles.categorySelector,
                 isDarkMode && darkStyles.surface,
-                touched.category && !selectedCategory && styles.inputError
+                touched.category && !selectedCategory && [styles.inputError, isDarkMode && darkStyles.inputError]
               ]}
               onPress={() => {
                 setShowCategoryDropdown(!showCategoryDropdown);
@@ -891,16 +886,16 @@ Please remove phone numbers and addresses from the image.`,
               <Text style={[styles.categorySelectorText, isDarkMode && darkStyles.text, !selectedCategory && styles.placeholder]}>
                 {selectedCategory || 'Select a category'}
               </Text>
-              <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#94A3B8' : '#666'} />
+              <Ionicons name="chevron-down" size={20} color={isDarkMode ? '#94A3B8' : HS.muted} />
             </TouchableOpacity>
             {touched.category && !selectedCategory && (
-              <Text style={styles.validationText}>Category is required</Text>
+              <Text style={[styles.validationText, isDarkMode && darkStyles.validationText]}>Category is required</Text>
             )}
 
             {showCategoryDropdown && (
               <View style={[styles.categoryDropdown, isDarkMode && darkStyles.surface]}>
                 <View style={[styles.searchContainer, isDarkMode && darkStyles.searchContainer]}>
-                  <Ionicons name="search" size={18} color={isDarkMode ? '#94A3B8' : '#999'} />
+                  <Ionicons name="search" size={18} color={isDarkMode ? '#94A3B8' : HS.muted} />
                   <TextInput
                     style={[styles.searchInput, isDarkMode && darkStyles.text]}
                     placeholder="Search categories..."
@@ -912,7 +907,7 @@ Please remove phone numbers and addresses from the image.`,
 
                 <ScrollView style={styles.categoriesList} nestedScrollEnabled>
                   {loadingCategories ? (
-                    <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#003399'} style={styles.loader} />
+                    <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : HS.blue} style={styles.loader} />
                   ) : categories.length === 0 ? (
                     <Text style={styles.noResultsText}>No categories found</Text>
                   ) : (
@@ -937,7 +932,7 @@ Please remove phone numbers and addresses from the image.`,
                           >
                             {categoryName}
                           </Text>
-                          {selectedCategory === categoryName && <Ionicons name="checkmark" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />}
+                          {selectedCategory === categoryName && <Ionicons name="checkmark" size={20} color={isDarkMode ? '#38BDF8' : HS.blue} />}
                         </TouchableOpacity>
                       );
                     })
@@ -950,14 +945,14 @@ Please remove phone numbers and addresses from the image.`,
           {/* Title Input */}
           <View style={styles.fieldContainer}>
             <Text style={[styles.label, isDarkMode && darkStyles.label]}>
-              Title <Text style={styles.required}>*</Text>
+              Title <Text style={[styles.required, isDarkMode && darkStyles.required]}>*</Text>
             </Text>
             <TextInput
               style={[
                 styles.input,
                 isDarkMode && darkStyles.surface,
                 isDarkMode && darkStyles.text,
-                titleError && styles.inputError
+                titleError && [styles.inputError, isDarkMode && darkStyles.inputError]
               ]}
               placeholder="e.g. Move my couch"
               value={title}
@@ -968,7 +963,7 @@ Please remove phone numbers and addresses from the image.`,
             />
             <Text style={[styles.charCount, isDarkMode && darkStyles.subtleText]}>{titleLength}/200</Text>
             {titleError && (
-              <Text style={styles.errorText}>{titleError}</Text>
+              <Text style={[styles.errorText, isDarkMode && darkStyles.errorText]}>{titleError}</Text>
             )}
             <Text style={[styles.helperText, isDarkMode && darkStyles.subtleText]}>Only letters, spaces, and basic punctuation allowed</Text>
           </View>
@@ -976,14 +971,14 @@ Please remove phone numbers and addresses from the image.`,
           {/* Description Input */}
           <View style={styles.fieldContainer}>
             <Text style={[styles.label, isDarkMode && darkStyles.label]}>
-              Description <Text style={styles.required}>*</Text>
+              Description <Text style={[styles.required, isDarkMode && darkStyles.required]}>*</Text>
             </Text>
             <TextInput
               style={[
                 styles.textArea,
                 isDarkMode && darkStyles.surface,
                 isDarkMode && darkStyles.text,
-                touched.description && (descriptionError || (descriptionLength > 0 && descriptionLength < 20)) && styles.inputError
+                touched.description && (descriptionError || (descriptionLength > 0 && descriptionLength < 20)) && [styles.inputError, isDarkMode && darkStyles.inputError]
               ]}
               multiline
               placeholder="Give a detailed description of your task..."
@@ -997,10 +992,10 @@ Please remove phone numbers and addresses from the image.`,
             />
             <Text style={[styles.charCount, isDarkMode && darkStyles.subtleText]}>{descriptionLength}/1000</Text>
             {touched.description && descriptionError && (
-              <Text style={styles.errorText}>{descriptionError}</Text>
+              <Text style={[styles.errorText, isDarkMode && darkStyles.errorText]}>{descriptionError}</Text>
             )}
             {touched.description && !descriptionError && descriptionLength > 0 && descriptionLength < 20 && (
-              <Text style={styles.errorText}>Minimum 20 characters required</Text>
+              <Text style={[styles.errorText, isDarkMode && darkStyles.errorText]}>Minimum 20 characters required</Text>
             )}
             <Text style={[styles.helperText, isDarkMode && darkStyles.subtleText]}>Only letters, spaces, and basic punctuation allowed</Text>
           </View>
@@ -1013,7 +1008,7 @@ Please remove phone numbers and addresses from the image.`,
         <View style={[styles.section, isDarkMode && darkStyles.section, { zIndex: 3 }]}>
           <View style={styles.sectionHeaderRow}>
             <View style={[styles.sectionIconChip, isDarkMode && darkStyles.sectionIconChip]}>
-              <Ionicons name="images-outline" size={18} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+              <Ionicons name="images-outline" size={18} color={isDarkMode ? '#38BDF8' : HS.blue} />
             </View>
             <Text style={[styles.sectionTitle, isDarkMode && darkStyles.text]}>Photos & Location</Text>
           </View>
@@ -1040,15 +1035,15 @@ Please remove phone numbers and addresses from the image.`,
               >
                 {isProcessing || isOCRProcessing ? (
                   <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+                    <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : HS.blue} />
                     {isOCRProcessing && (
-                      <Text style={styles.loadingText}>Checking...</Text>
+                      <Text style={[styles.loadingText, isDarkMode && darkStyles.loadingText]}>Checking...</Text>
                     )}
                   </View>
                 ) : (
                   <>
-                    <Ionicons name="camera" size={24} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
-                    <Ionicons name="add" size={16} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} style={styles.addIcon} />
+                    <Ionicons name="camera" size={24} color={isDarkMode ? '#38BDF8' : HS.blue} />
+                    <Ionicons name="add" size={16} color={isDarkMode ? '#38BDF8' : HS.blue} style={styles.addIcon} />
                   </>
                 )}
               </TouchableOpacity>
@@ -1058,7 +1053,7 @@ Please remove phone numbers and addresses from the image.`,
           {/* Location */}
           <View ref={locationSectionRef} style={styles.fieldContainer}>
             <Text style={[styles.label, isDarkMode && darkStyles.label]}>
-              Location <Text style={styles.required}>*</Text>
+              Location <Text style={[styles.required, isDarkMode && darkStyles.required]}>*</Text>
             </Text>
             <Text style={[styles.locationSubtitle, isDarkMode && darkStyles.subtleText]}>
               Where do you need this done? Type and select from suggestions.
@@ -1080,14 +1075,14 @@ Please remove phone numbers and addresses from the image.`,
 
             {selectedLocation && (
               <View style={[styles.selectedLocationContainer, isDarkMode && darkStyles.selectedLocationContainer]}>
-                <Ionicons name="location" size={20} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+                <Ionicons name="location" size={20} color={isDarkMode ? '#38BDF8' : HS.blue} />
                 <Text style={[styles.selectedLocationText, isDarkMode && darkStyles.selectedLocationText]} numberOfLines={2}>
                   {selectedLocation.address}
                 </Text>
               </View>
             )}
             {touched.location && !selectedLocation && (
-              <Text style={styles.validationText}>
+              <Text style={[styles.validationText, isDarkMode && darkStyles.validationText]}>
                 Location is required - Please select from dropdown
               </Text>
             )}
@@ -1101,10 +1096,10 @@ Please remove phone numbers and addresses from the image.`,
         <View style={[styles.section, isDarkMode && darkStyles.section, { zIndex: 2 }]}>
           <View style={styles.sectionHeaderRow}>
             <View style={[styles.sectionIconChip, isDarkMode && darkStyles.sectionIconChip]}>
-              <Ionicons name="calendar-outline" size={18} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+              <Ionicons name="calendar-outline" size={18} color={isDarkMode ? '#38BDF8' : HS.blue} />
             </View>
             <Text style={[styles.sectionTitle, isDarkMode && darkStyles.text]}>
-            When <Text style={styles.required}>*</Text>
+            When <Text style={[styles.required, isDarkMode && darkStyles.required]}>*</Text>
           </Text>
           </View>
           <Text style={[styles.sectionSubtitle, isDarkMode && darkStyles.subtleText]}>When do you need this done?</Text>
@@ -1158,12 +1153,12 @@ Please remove phone numbers and addresses from the image.`,
             ))}
           </View>
           {touched.when && selectedOption === '' && (
-            <Text style={styles.validationText}>Please select when you need this done</Text>
+            <Text style={[styles.validationText, isDarkMode && darkStyles.validationText]}>Please select when you need this done</Text>
           )}
 
           {/* Time Toggle */}
           <View style={[styles.toggleRow, isDarkMode && darkStyles.surface, selectedOption === 'no_rush' && (isDarkMode ? darkStyles.toggleRowDisabled : styles.toggleRowDisabled)]}>
-            <Text style={[styles.toggleText, isDarkMode && darkStyles.text, selectedOption === 'no_rush' && styles.toggleTextDisabled]}>
+            <Text style={[styles.toggleText, isDarkMode && darkStyles.text, selectedOption === 'no_rush' && styles.toggleTextDisabled, selectedOption === 'no_rush' && isDarkMode && darkStyles.toggleTextDisabled]}>
               I need certain time of day
             </Text>
             <TouchableOpacity
@@ -1176,8 +1171,10 @@ Please remove phone numbers and addresses from the image.`,
             >
               <View style={[
                 styles.switch,
+                isDarkMode && darkStyles.switch,
                 needSpecificTime && selectedOption !== 'no_rush' && styles.switchActive,
-                selectedOption === 'no_rush' && styles.switchDisabled
+                selectedOption === 'no_rush' && styles.switchDisabled,
+                selectedOption === 'no_rush' && isDarkMode && darkStyles.switchDisabled
               ]}>
                 <View style={[
                   styles.switchThumb,
@@ -1218,7 +1215,7 @@ Please remove phone numbers and addresses from the image.`,
         <View style={[styles.section, isDarkMode && darkStyles.section, { zIndex: 1 }]}>
           <View style={styles.sectionHeaderRow}>
             <View style={[styles.sectionIconChip, isDarkMode && darkStyles.sectionIconChip]}>
-              <Ionicons name="cash-outline" size={18} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+              <Ionicons name="cash-outline" size={18} color={isDarkMode ? '#38BDF8' : HS.blue} />
             </View>
             <Text style={[styles.sectionTitle, isDarkMode && darkStyles.text]}>Budget</Text>
           </View>
@@ -1276,7 +1273,7 @@ Please remove phone numbers and addresses from the image.`,
               <Text style={styles.saveButtonText}>Saving...</Text>
             </View>
           ) : (
-            <Text style={[styles.saveButtonText, !isFormValid && styles.saveButtonTextInactive]}>Save Changes</Text>
+            <Text style={[styles.saveButtonText, !isFormValid && styles.saveButtonTextInactive, !isFormValid && isDarkMode && darkStyles.saveButtonTextInactive]}>Save Changes</Text>
           )}
         </TouchableOpacity>
       )}
@@ -1292,17 +1289,17 @@ Please remove phone numbers and addresses from the image.`,
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#003399',
+    backgroundColor: HS.page,
   },
   container: {
     flex: 1,
-    backgroundColor: '#003399',
+    backgroundColor: HS.page,
   },
   header: {
     // paddingTop is applied dynamically via insets.top for iOS notch support
     paddingBottom: 20,
     paddingHorizontal: 20,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: HS.blue,
     borderBottomWidth: 0,
   },
   backButton: {
@@ -1310,7 +1307,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: 'rgba(255,255,255,0.18)',
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'flex-start',
@@ -1327,7 +1324,7 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     fontSize: RFValue(14),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.onHeroMuted,
     textAlign: 'center',
   },
   scrollView: {
@@ -1339,12 +1336,9 @@ const styles = StyleSheet.create({
     paddingBottom: 140,
   },
   section: {
+    ...homeCard,
     marginBottom: 16,
     padding: 16,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.10)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
   },
   sectionHeaderRow: {
     flexDirection: 'row',
@@ -1353,22 +1347,17 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   sectionIconChip: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.16)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    ...homeIconChip,
   },
   sectionTitle: {
     fontSize: RFValue(19),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     flexShrink: 1,
   },
   sectionSubtitle: {
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     marginBottom: 16,
     lineHeight: 19,
   },
@@ -1383,28 +1372,28 @@ const styles = StyleSheet.create({
   label: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 8,
   },
   required: {
-    color: '#FCA5A5',
+    color: '#DC2626',
     fontSize: RFValue(16),
   },
   charCount: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     marginTop: 4,
     textAlign: 'right',
   },
   helperText: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     marginTop: 4,
     fontStyle: 'italic',
   },
   locationSubtitle: {
     fontSize: RFValue(13),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     marginBottom: 10,
   },
   categorySelector: {
@@ -1415,22 +1404,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: HS.inputBorder,
   },
   categorySelectorText: {
     fontSize: RFValue(16),
-    color: '#0F172A',
+    color: HS.navy,
   },
   placeholder: {
-    color: '#94A3B8',
+    color: HS.placeholder,
   },
   categoryDropdown: {
     marginTop: 8,
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: HS.cardBorder,
     maxHeight: 300,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -1443,13 +1432,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    borderBottomColor: HS.cardBorder,
   },
   searchInput: {
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(16),
-    color: '#0F172A',
+    color: HS.navy,
   },
   categoriesList: {
     maxHeight: 250,
@@ -1458,7 +1447,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#FCA5A5',
+    color: HS.redText,
     fontSize: RFValue(12),
     marginTop: 4,
   },
@@ -1469,7 +1458,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   noResultsText: {
-    color: '#8E8E93',
+    color: HS.muted,
     padding: 20,
     textAlign: 'center',
   },
@@ -1480,17 +1469,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF1F6',
+    borderBottomColor: HS.cardBorder,
   },
   categoryItemSelected: {
-    backgroundColor: '#F0F5FF',
+    backgroundColor: HS.tint,
   },
   categoryItemText: {
     fontSize: RFValue(16),
-    color: '#1C1C1E',
+    color: HS.navy,
   },
   categoryItemTextSelected: {
-    color: '#003399',
+    color: HS.blue,
     fontWeight: '600',
   },
   input: {
@@ -1499,17 +1488,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 14,
     fontSize: RFValue(16),
-    color: '#0F172A',
-    borderWidth: 1,
-    borderColor: 'transparent',
+    color: HS.navy,
+    borderWidth: 1.5,
+    borderColor: HS.inputBorder,
   },
   inputError: {
-    borderColor: '#FCA5A5',
+    borderColor: HS.redText,
     borderWidth: 2,
   },
   validationText: {
     fontSize: RFValue(12),
-    color: '#FCA5A5',
+    color: HS.redText,
     marginTop: 4,
   },
   textArea: {
@@ -1518,10 +1507,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 14,
     fontSize: RFValue(16),
-    color: '#0F172A',
+    color: HS.navy,
     height: 120,
-    borderWidth: 1,
-    borderColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: HS.inputBorder,
   },
   imageSection: {
     marginBottom: 20,
@@ -1555,19 +1544,19 @@ const styles = StyleSheet.create({
   uploadBox: {
     width: 80,
     height: 80,
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: HS.tint,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.5)',
+    borderColor: HS.blue,
     borderStyle: 'dashed',
     position: 'relative',
   },
   uploadBoxDisabled: {
     opacity: 0.6,
-    backgroundColor: 'rgba(255,255,255,0.22)',
+    backgroundColor: HS.tintStrong,
   },
   loadingContainer: {
     alignItems: 'center',
@@ -1575,7 +1564,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(9),
-    color: '#FFFFFF',
+    color: HS.blue,
     marginTop: 4,
     fontWeight: '500',
   },
@@ -1589,7 +1578,9 @@ const styles = StyleSheet.create({
   selectedLocationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: HS.tint,
+    borderWidth: 1,
+    borderColor: HS.tintBorder,
     padding: 12,
     borderRadius: 14,
     marginTop: 10,
@@ -1598,7 +1589,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(14),
-    color: '#FFFFFF',
+    color: HS.navy,
   },
   dateSection: {
     marginBottom: 16,
@@ -1606,7 +1597,7 @@ const styles = StyleSheet.create({
   dateSectionTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 12,
   },
   optionRow: {
@@ -1615,15 +1606,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: HS.inputBorder,
     borderRadius: 14,
     marginBottom: 12,
   },
   optionText: {
     fontSize: RFValue(16),
-    color: '#FFFFFF',
+    color: HS.navy,
     fontWeight: '500',
   },
   radioOuter: {
@@ -1631,13 +1622,13 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.6)',
+    borderColor: HS.placeholder,
     justifyContent: 'center',
     alignItems: 'center',
   },
   radioOuterSelected: {
-    borderColor: '#FFFFFF',
-    backgroundColor: BRAND_ORANGE,
+    borderColor: HS.blue,
+    backgroundColor: HS.blue,
   },
   radioInner: {
     width: 8,
@@ -1650,7 +1641,7 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
   },
   dateText: {
-    color: '#BFD4FF',
+    color: HS.blue,
     fontSize: RFValue(14),
     fontWeight: '500',
   },
@@ -1660,29 +1651,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: HS.inputBorder,
     borderRadius: 14,
     marginBottom: 16,
   },
   toggleText: {
     fontSize: RFValue(16),
-    color: '#FFFFFF',
+    color: HS.navy,
     fontWeight: '500',
   },
   toggleRowDisabled: {
     opacity: 0.5,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: HS.tint,
   },
   toggleTextDisabled: {
-    color: 'rgba(255,255,255,0.6)',
+    color: HS.muted,
   },
   switch: {
     width: 51,
     height: 31,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: HS.tintStrong,
     padding: 2,
     justifyContent: 'center',
   },
@@ -1690,7 +1681,7 @@ const styles = StyleSheet.create({
     backgroundColor: BRAND_ORANGE,
   },
   switchDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: HS.tint,
   },
   switchThumb: {
     width: 27,
@@ -1714,17 +1705,17 @@ const styles = StyleSheet.create({
   },
   gridItem: {
     width: '48%',
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: '#FFFFFF',
     padding: 15,
     borderRadius: 14,
     marginVertical: 6,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: HS.inputBorder,
     alignItems: 'center',
   },
   gridItemSelected: {
-    borderColor: BRAND_ORANGE,
-    backgroundColor: 'rgba(255,255,255,0.22)',
+    borderColor: HS.blue,
+    backgroundColor: HS.tint,
   },
   iconContainer: {
     alignItems: 'center',
@@ -1738,13 +1729,13 @@ const styles = StyleSheet.create({
   gridTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: HS.navy,
     textAlign: 'center',
     marginBottom: 2,
   },
   gridDescription: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     textAlign: 'center',
   },
   budgetInputContainer: {
@@ -1754,22 +1745,23 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: HS.inputBorder,
   },
   budgetReadOnly: {
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: HS.tint,
+    borderColor: HS.tintBorder,
     opacity: 1,
   },
   budgetDisplayText: {
     flex: 1,
     fontSize: RFValue(16),
-    color: '#FFFFFF',
+    color: HS.navy,
     fontWeight: '600',
   },
   currencySymbol: {
     fontSize: RFValue(16),
-    color: 'rgba(255,255,255,0.85)',
+    color: HS.muted,
     marginRight: 8,
   },
   budgetTextInput: {
@@ -1782,7 +1774,7 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 16,
     right: 16,
-    backgroundColor: 'rgba(255,255,255,0.22)',
+    backgroundColor: HS.tintStrong,
     height: 52,
     justifyContent: 'center',
     borderRadius: 14,
@@ -1800,7 +1792,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   saveButtonTextInactive: {
-    color: 'rgba(255,255,255,0.7)',
+    color: HS.muted,
   },
   saveButtonContent: {
     flexDirection: 'row',
@@ -1856,7 +1848,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: Platform.OS === 'android' ? 48 : 0,
-    backgroundColor: '#00287A',
+    backgroundColor: HS.page,
   },
 });
 
@@ -1872,7 +1864,18 @@ const darkStyles = StyleSheet.create({
   section: {
     backgroundColor: '#0F172A',
     borderColor: '#1E293B',
+    shadowOpacity: 0,
+    elevation: 0,
   },
+  required: { color: '#FCA5A5' },
+  errorText: { color: '#FCA5A5' },
+  validationText: { color: '#FCA5A5' },
+  inputError: { borderColor: '#FCA5A5' },
+  loadingText: { color: '#FFFFFF' },
+  toggleTextDisabled: { color: 'rgba(255,255,255,0.6)' },
+  switch: { backgroundColor: 'rgba(255,255,255,0.3)' },
+  switchDisabled: { backgroundColor: 'rgba(255,255,255,0.15)' },
+  saveButtonTextInactive: { color: 'rgba(255,255,255,0.7)' },
   sectionIconChip: {
     backgroundColor: '#1E293B',
   },
@@ -1901,6 +1904,7 @@ const darkStyles = StyleSheet.create({
   surface: {
     backgroundColor: '#1E293B',
     borderColor: '#334155',
+    borderWidth: 1,
   },
   searchContainer: {
     borderBottomColor: '#334155',
@@ -1943,6 +1947,7 @@ const darkStyles = StyleSheet.create({
   },
   budgetReadOnly: {
     backgroundColor: '#1E293B',
+    borderColor: '#334155',
     opacity: 0.7,
   },
   saveButton: {

@@ -3,7 +3,8 @@ import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -38,7 +39,7 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
     <View style={[styles.container, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#38BDF8" }]}>
       <View style={[styles.header, isDarkMode && { borderBottomColor: "#334155" }]}>
         <View style={[styles.headerChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
-          <Ionicons name="document-text-outline" size={18} color={isDarkMode ? "#38BDF8" : CARD_TEXT} />
+          <Ionicons name="document-text-outline" size={18} color={isDarkMode ? "#38BDF8" : HS.blue} />
         </View>
         <Text style={[styles.headerText, isDarkMode && { color: "#38BDF8" }]}>
           {isViewingOthersOffer ? 'Offer' : 'Your Offer'}
@@ -57,7 +58,7 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
         )}
         {status === 'pending' && (
           <View style={styles.pendingBadge}>
-            <Ionicons name="time" size={16} color="#FFA500" />
+            <Ionicons name="time" size={16} color={HS.amberText} />
             <Text style={styles.pendingText}>Pending</Text>
           </View>
         )}
@@ -96,7 +97,7 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
 
         {/* Status Info */}
         <View style={[styles.infoContainer, isDarkMode && { backgroundColor: "#0F172A" }]}>
-          <Ionicons name="information-circle-outline" size={18} color={isDarkMode ? "#94A3B8" : CARD_TEXT_MUTED} />
+          <Ionicons name="information-circle-outline" size={18} color={isDarkMode ? "#94A3B8" : HS.muted} />
           <Text style={[styles.infoText, isDarkMode && { color: "#94A3B8" }]}>
             {status === 'completed'
               ? isViewingOthersOffer
@@ -118,15 +119,15 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: CARD_BG,
+    backgroundColor: HS.card,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: HS.cardBorder,
     borderRadius: 20,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#001A66',
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 4,
   },
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 12,
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -144,25 +145,25 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
+    borderBottomColor: HS.cardBorder,
   },
   headerText: {
     fontSize: 16,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: HS.navy,
     marginLeft: 10,
     flex: 1,
   },
   acceptedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
+    backgroundColor: HS.greenBg,
     paddingVertical: hp('0.5%'),
     paddingHorizontal: wp('2%'),
     borderRadius: 12,
   },
   acceptedText: {
-    color: '#4CAF50',
+    color: HS.greenText,
     fontSize: RFValue(11),
     fontWeight: '600',
     marginLeft: wp('1%'),
@@ -170,13 +171,13 @@ const styles = StyleSheet.create({
   completedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#C8E6C9',
+    backgroundColor: HS.greenBg,
     paddingVertical: hp('0.5%'),
     paddingHorizontal: wp('2%'),
     borderRadius: 12,
   },
   completedText: {
-    color: '#2E7D32',
+    color: HS.greenText,
     fontSize: RFValue(11),
     fontWeight: '700',
     marginLeft: wp('1%'),
@@ -184,13 +185,13 @@ const styles = StyleSheet.create({
   pendingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF3E0',
+    backgroundColor: HS.amberBg,
     paddingVertical: hp('0.5%'),
     paddingHorizontal: wp('2%'),
     borderRadius: 12,
   },
   pendingText: {
-    color: '#FFA500',
+    color: HS.amberText,
     fontSize: RFValue(11),
     fontWeight: '600',
     marginLeft: wp('1%'),
@@ -199,50 +200,50 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   amountContainer: {
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: HS.tint,
     padding: 14,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: HS.tintBorder,
   },
   amountLabel: {
     fontSize: 12,
     letterSpacing: 0.8,
     textTransform: 'uppercase',
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     marginBottom: 4,
   },
   amount: {
     fontSize: 26,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: HS.blue,
   },
   messageContainer: {
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: HS.tint,
     padding: 14,
     borderRadius: 14,
   },
   messageLabel: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     marginBottom: 6,
     fontWeight: '600',
   },
   message: {
     fontSize: RFValue(14),
-    color: CARD_TEXT,
+    color: HS.navy,
     lineHeight: 20,
   },
   infoContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: HS.tint,
     padding: 12,
     borderRadius: 14,
   },
   infoText: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: HS.muted,
     marginLeft: 6,
     flex: 1,
     lineHeight: 18,

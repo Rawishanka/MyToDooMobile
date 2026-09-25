@@ -1,4 +1,5 @@
 import { useTheme } from '@/src/shared/theme';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { removeFCMToken } from '@/src/api/fcm-api';
 import { deleteFCMToken, getFCMToken } from '@/src/services/notification-service';
 import { useClearAllCaches } from '@/src/shared/utils/cache-utils';
@@ -143,14 +144,14 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 24,
     paddingTop: 28,
     paddingBottom: 22,
     paddingHorizontal: 24,
     width: '100%',
     maxWidth: 340,
     alignItems: 'center',
-    shadowColor: '#0F172A',
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
     shadowRadius: 20,
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#FEE2E2',
+    backgroundColor: HS.redBg,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -168,13 +169,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#0F172A',
+    color: HS.navy,
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 14,
-    color: '#64748B',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 21,
     marginBottom: 24,
@@ -188,14 +189,16 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     borderRadius: 14,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: HS.blue,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelBtnText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#475569',
+    color: HS.blue,
   },
   logoutBtn: {
     flex: 1,

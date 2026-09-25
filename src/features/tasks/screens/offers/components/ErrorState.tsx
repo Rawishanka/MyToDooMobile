@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface ErrorStateProps {
@@ -14,7 +15,9 @@ interface ErrorStateProps {
 export default function ErrorState({ title, subtitle, onRetry, onGoBack }: ErrorStateProps) {
   return (
     <View style={styles.errorContainer}>
-      <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+      <View style={styles.iconCircle}>
+        <Ionicons name="alert-circle-outline" size={44} color={HS.redText} />
+      </View>
       <Text style={styles.errorTitle}>{title}</Text>
       <Text style={styles.errorSubtitle}>{subtitle}</Text>
       {onRetry && (
@@ -30,8 +33,17 @@ export default function ErrorState({ title, subtitle, onRetry, onGoBack }: Error
 }
 
 const styles = StyleSheet.create({
+  iconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: HS.tint,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   errorContainer: {
     flex: 1,
+    backgroundColor: HS.page,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
@@ -39,13 +51,13 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: HS.navy,
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: HS.muted,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -68,7 +80,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#003399',
+    color: HS.blue,
     fontSize: 16,
     fontWeight: '700',
   },

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { HS } from '@/src/shared/theme/homeStyle';
 import { useTheme } from '@/src/shared/theme';
 
 interface SearchBarProps {
@@ -36,21 +37,21 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose, 
       isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }
     ]}>
       <TouchableOpacity onPress={onClose} style={[styles.backButton, isDarkMode && { backgroundColor: '#1E293B' }]} activeOpacity={0.75}>
-        <Ionicons name="arrow-back" size={20} color={isDarkMode ? '#F8FAFC' : '#003399'} />
+        <Ionicons name="arrow-back" size={20} color={isDarkMode ? '#F8FAFC' : HS.blue} />
       </TouchableOpacity>
       
       <View style={[
         styles.searchInputContainer,
         isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }
       ]}>
-        <Ionicons name="search" size={20} color={isDarkMode ? '#94A3B8' : '#003399'} style={styles.searchIcon} />
+        <Ionicons name="search" size={20} color={isDarkMode ? '#94A3B8' : HS.blue} style={styles.searchIcon} />
         <TextInput
           style={[
             styles.searchBar,
             isDarkMode && { color: '#F8FAFC' }
           ]}
           placeholder="Search by title, location, category..."
-          placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
+          placeholderTextColor={isDarkMode ? '#64748B' : HS.placeholder}
           value={searchText}
           onChangeText={handleTextChange}
           onSubmitEditing={handleSearch}
@@ -92,13 +93,13 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8ECF4',
+    borderBottomColor: HS.cardBorder,
   },
   backButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: HS.tint,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -106,10 +107,10 @@ const styles = StyleSheet.create({
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F4F6FB',
+    backgroundColor: HS.page,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#DCE3F5',
+    borderColor: HS.inputBorder,
     paddingHorizontal: 14,
     height: 48,
   },
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flex: 1,
     fontSize: RFValue(15),
-    color: '#0F172A',
+    color: HS.navy,
     paddingVertical: 0,
   },
   clearButton: {
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
   },
   searchInfo: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: HS.muted,
     marginTop: 10,
     marginLeft: 4,
   },

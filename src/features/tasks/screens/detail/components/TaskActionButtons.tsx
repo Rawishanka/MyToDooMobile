@@ -1,4 +1,5 @@
-import { BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_PRICE_BG, CARD_PRICE_TEXT, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS } from '@/src/shared/theme/homeStyle';
 import TaskAPI from '@/src/api/task-api';
 import { ChatWindow } from '@/src/features/messages/components/ChatWindow';
 import type { Message } from '@/src/features/messages/components/message-types';
@@ -449,7 +450,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
           onPress={handleOpenChat}
           activeOpacity={0.7}
         >
-          <MaterialIcons name="chat" size={20} color={isDarkMode ? "#38BDF8" : CARD_PRICE_TEXT} />
+          <MaterialIcons name="chat" size={20} color={isDarkMode ? "#38BDF8" : HS.blue} />
         </TouchableOpacity>
 
         {/* Release Payment Button - ONLY show for POSTER when task is pending_completion */}
@@ -612,12 +613,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     marginBottom: 16,
-    backgroundColor: CARD_BG,
+    backgroundColor: HS.card,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOpacity: 0.18,
+    borderColor: HS.cardBorder,
+    shadowColor: HS.blue,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
     elevation: 4,
@@ -645,10 +646,10 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: CARD_PRICE_BG,
+    backgroundColor: HS.tint,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#001A66',
+    shadowColor: HS.blue,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -708,7 +709,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   disabledButton: {
-    backgroundColor: 'rgba(255,255,255,0.28)',
+    backgroundColor: 'rgba(255,107,53,0.55)',
     shadowOpacity: 0,
     elevation: 0,
   },
@@ -730,13 +731,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: HS.navy,
     marginBottom: 8,
     textAlign: 'center',
   },
   modalSubtitle: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: HS.muted,
     marginBottom: 20,
     textAlign: 'center',
     lineHeight: 20,
@@ -750,22 +751,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: HS.cardBorder,
     borderRadius: 14,
-    backgroundColor: CARD_BG,
+    backgroundColor: HS.card,
     marginBottom: 10,
     paddingVertical: 14,
   },
   reasonItemSelected: {
     borderColor: BRAND_ORANGE,
-    backgroundColor: CARD_BG,
+    backgroundColor: HS.tint,
   },
   radioButton: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: CARD_TEXT_MUTED,
+    borderColor: HS.muted,
     marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
@@ -782,10 +783,10 @@ const styles = StyleSheet.create({
   reasonText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: CARD_TEXT,
+    color: HS.navy,
   },
   reasonTextSelected: {
-    color: CARD_TEXT,
+    color: HS.navy,
     fontWeight: '500',
   },
   modalButtons: {
@@ -800,16 +801,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalButtonCancel: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: HS.tint,
   },
   modalButtonConfirm: {
     backgroundColor: BRAND_ORANGE,
   },
   modalButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: HS.tintStrong,
   },
   modalButtonTextCancel: {
-    color: '#333',
+    color: HS.blue,
     fontSize: RFValue(15),
     fontWeight: '600',
   },

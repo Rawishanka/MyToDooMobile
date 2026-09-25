@@ -1,3 +1,4 @@
+import { HS, homeCard, homeIconChip } from '@/src/shared/theme/homeStyle';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -33,7 +34,7 @@ export default function PaymentMethodSelector({
             <Text style={styles.methodDescription}>{method.description}</Text>
           </View>
           {selectedMethod === method.id && (
-            <Ionicons name="checkmark-circle" size={24} color="#28a745" />
+            <Ionicons name="checkmark-circle" size={24} color={HS.blue} />
           )}
         </TouchableOpacity>
       ))}
@@ -43,28 +44,26 @@ export default function PaymentMethodSelector({
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 24,
+    marginTop: 8,
   },
   sectionTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#000',
-    marginBottom: 20,
+    color: HS.navy,
+    marginBottom: 14,
   },
   methodCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    ...homeCard,
     padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
+    marginBottom: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   selectedCard: {
-    borderColor: '#28a745',
-    backgroundColor: '#f8fff9',
+    borderColor: HS.blue,
+    borderWidth: 1.5,
+    backgroundColor: HS.tint,
   },
   methodContent: {
     flex: 1,
@@ -72,11 +71,11 @@ const styles = StyleSheet.create({
   methodLabel: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#000',
+    color: HS.navy,
     marginBottom: 4,
   },
   methodDescription: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: HS.muted,
   },
 });

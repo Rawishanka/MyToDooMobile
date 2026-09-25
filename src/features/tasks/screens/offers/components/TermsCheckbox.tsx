@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Modal, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import TermsConditionsScreen from '@/src/features/legal/screens/TermsConditionsScreen';
-import { BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { HS, homeCard } from '@/src/shared/theme/homeStyle';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TermsCheckboxProps {
@@ -47,15 +48,7 @@ const styles = StyleSheet.create({
   termsContainer: {
     marginTop: 16,
     padding: 18,
-    backgroundColor: CARD_BG,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    ...homeCard,
   },
   termsCheckbox: {
     flexDirection: 'row',
@@ -65,7 +58,8 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: CARD_TEXT_MUTED,
+    borderColor: HS.muted,
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     marginRight: 12,
     alignItems: 'center',
@@ -78,11 +72,11 @@ const styles = StyleSheet.create({
   termsText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: CARD_TEXT,
+    color: HS.text,
     lineHeight: 20,
   },
   termsLink: {
-    color: CARD_TEXT,
+    color: HS.blue,
     textDecorationLine: 'underline',
     fontWeight: '700',
   },

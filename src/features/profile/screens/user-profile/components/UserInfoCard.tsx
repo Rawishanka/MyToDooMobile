@@ -3,6 +3,7 @@ import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { formatUserName } from '@/src/utils/formatUserName';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { HS, homeCard } from '@/src/shared/theme/homeStyle';
 
 interface UserProfile {
   _id: string;
@@ -62,7 +63,7 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, formatDate, ac
             <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
           ) : (
             <View style={styles.profileImagePlaceholder}>
-              <Ionicons name="person" size={40} color="rgba(255,255,255,0.75)" />
+              <Ionicons name="person" size={40} color={HS.blue} />
             </View>
           )}
           {user.verified && (
@@ -86,18 +87,18 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, formatDate, ac
 
           <View style={styles.userMeta}>
             <Text style={styles.metaText}>
-              <Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.7)" /> Joined{' '}
+              <Ionicons name="calendar-outline" size={14} color={HS.muted} /> Joined{' '}
               {formatDate(user.joinedDate)}
             </Text>
             <Text style={styles.metaText}>
-              <Ionicons name="time-outline" size={14} color="rgba(255,255,255,0.7)" /> Last active{' '}
+              <Ionicons name="time-outline" size={14} color={HS.muted} /> Last active{' '}
               {formatDate(user.lastActive)}
             </Text>
           </View>
 
           {user.location && (
             <Text style={styles.locationText}>
-              <Ionicons name="location-outline" size={14} color="rgba(255,255,255,0.7)" /> {user.location.city},{' '}
+              <Ionicons name="location-outline" size={14} color={HS.muted} /> {user.location.city},{' '}
               {user.location.state}
             </Text>
           )}
@@ -128,16 +129,9 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, formatDate, ac
 
 const styles = StyleSheet.create({
   profileCard: {
-    backgroundColor: 'rgba(255,255,255,0.10)',
+    ...homeCard,
     padding: 16,
-    marginBottom: 14,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
-    shadowColor: '#00114D',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
+    marginBottom: 12,
   },
   profileHeader: {
     flexDirection: 'row',
@@ -151,14 +145,14 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    borderWidth: 2.5,
-    borderColor: '#FFFFFF',
+    borderWidth: 3,
+    borderColor: HS.tintStrong,
   },
   profileImagePlaceholder: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: HS.tint,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -176,7 +170,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 8,
     flexShrink: 1,
   },
@@ -191,41 +185,41 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: RFValue(14),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
   },
   userMeta: {
     marginBottom: 4,
   },
   metaText: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
     marginBottom: 4,
   },
   locationText: {
     fontSize: RFValue(12),
-    color: 'rgba(255,255,255,0.75)',
+    color: HS.muted,
   },
   bioSection: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E8ECF4',
+    borderTopColor: HS.cardBorder,
   },
   bioText: {
     fontSize: RFValue(14),
-    color: '#FFFFFF',
+    color: HS.text,
     lineHeight: 20,
   },
   skillsSection: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E8ECF4',
+    borderTopColor: HS.cardBorder,
   },
   skillsTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: HS.navy,
     marginBottom: 8,
   },
   skillsContainer: {
@@ -234,14 +228,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   skillTag: {
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: HS.tint,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   skillText: {
     fontSize: RFValue(12),
-    color: '#FFFFFF',
+    color: HS.blue,
     fontWeight: '500',
   },
 });
