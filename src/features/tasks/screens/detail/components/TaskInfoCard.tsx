@@ -12,6 +12,7 @@ import { ActivityIndicator, Alert, Dimensions, Image, Modal, ScrollView, StyleSh
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import TaskMapModal from './TaskMapModal';
 import { useTheme } from '@/src/shared/theme';
+import { CARD_BG, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 
 interface TaskInfoCardProps {
   task: Task;
@@ -502,7 +503,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
             Images found but could not be displayed. Check console for details.
           </Text>
           {__DEV__ && (
-            <Text style={[styles.noImagesText, { fontSize: RFValue(10), color: '#999' }]}>
+            <Text style={[styles.noImagesText, { fontSize: RFValue(10), color: CARD_TEXT_MUTED }]}>
               DEV: {JSON.stringify(imageDataToProcess[0], null, 2).substring(0, 200)}...
             </Text>
           )}
@@ -782,7 +783,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
       {/* Poster Info */}
       <View style={styles.posterInfo}>
-        <Ionicons name="person-outline" size={16} color={isDarkMode ? '#94A3B8' : '#666'} />
+        <Ionicons name="person-outline" size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED} />
         <Text style={[styles.posterName, isDarkMode && { color: '#94A3B8' }]}>
           {formatUserName(task.createdBy?.firstName, task.createdBy?.lastName)}
         </Text>
@@ -791,7 +792,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {/* Task Creation Date */}
       {task.createdAt && (
         <View style={styles.dateRow}>
-          <Ionicons name="calendar-outline" size={16} color={isDarkMode ? '#64748B' : '#666'} />
+          <Ionicons name="calendar-outline" size={16} color={isDarkMode ? '#64748B' : CARD_TEXT_MUTED} />
           <Text style={[styles.dateText, isDarkMode && { color: '#64748B' }]}>
             Posted {new Date(task.createdAt).toLocaleDateString('en-US', {
               year: 'numeric',
@@ -804,7 +805,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
       {/* Location */}
       <View style={styles.detailRow}>
-        <Ionicons name={getLocationIcon()} size={16} color={isDarkMode ? '#94A3B8' : '#666'} />
+        <Ionicons name={getLocationIcon()} size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED} />
         <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
           {(() => {
             const address = parsedLocation?.address || 'Location not specified';
@@ -835,7 +836,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         };
         return (
           <TouchableOpacity style={[styles.viewOnMapButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 }]} onPress={handleViewOnMap} activeOpacity={0.7}>
-            <Ionicons name="map-outline" size={14} color={isDarkMode ? '#38BDF8' : '#003399'} />
+            <Ionicons name="map-outline" size={14} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
             <Text style={[styles.viewOnMapText, isDarkMode && { color: '#38BDF8' }]}>View on Map</Text>
           </TouchableOpacity>
         );
@@ -844,7 +845,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {/* Date */}
       {dateDisplay && (
         <View style={styles.detailRow}>
-          <Ionicons name="calendar-outline" size={16} color={isDarkMode ? '#94A3B8' : '#666'} />
+          <Ionicons name="calendar-outline" size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED} />
           <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
             {dateDisplay}
           </Text>
@@ -853,7 +854,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
       {/* Timing */}
       <View style={styles.detailRow}>
-        <Ionicons name="time-outline" size={16} color={isDarkMode ? '#94A3B8' : '#666'} />
+        <Ionicons name="time-outline" size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED} />
         <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
           {getTimeDisplay().replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
         </Text>
@@ -862,7 +863,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {/* Modern 2026 Budget Card */}
       <View style={[styles.budgetCard, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
         <View style={[styles.budgetIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-          <Ionicons name="wallet-outline" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
+          <Ionicons name="wallet-outline" size={24} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
         </View>
         <View style={styles.budgetInfoCol}>
           <Text style={[styles.budgetAmountText, isDarkMode && { color: '#38BDF8' }]}>
@@ -884,7 +885,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {/* Category Badge */}
       {task.categories && task.categories.length > 0 && (
         <View style={[styles.categoryBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
-          <Ionicons name="pricetag-outline" size={13} color={isDarkMode ? '#38BDF8' : '#003399'} />
+          <Ionicons name="pricetag-outline" size={13} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
           <Text style={[styles.categoryText, isDarkMode && { color: '#38BDF8' }]}>{task.categories[0]}</Text>
         </View>
       )}
@@ -915,12 +916,12 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
 const styles = StyleSheet.create({
   taskCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: CARD_BG,
     padding: isTablet ? wp('4%') : wp('5%'),
     marginBottom: hp('2%'),
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: CARD_DIVIDER,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
@@ -930,18 +931,18 @@ const styles = StyleSheet.create({
   budgetCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: CARD_CHIP_BG,
     padding: isTablet ? wp('3%') : wp('4%'),
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: '#BFDBFE',
+    borderColor: CARD_DIVIDER,
     marginBottom: hp('2%'),
   },
   budgetIconCircle: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#DBEAFE',
+    backgroundColor: CARD_CHIP_BG,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: wp('3%'),
@@ -952,18 +953,18 @@ const styles = StyleSheet.create({
   budgetAmountText: {
     fontSize: RFValue(isTablet ? 22 : 22),
     fontWeight: '800',
-    color: '#0F172A',
+    color: CARD_TEXT,
     letterSpacing: -0.5,
   },
   budgetSublabel: {
     fontSize: RFValue(10.5),
     fontWeight: '700',
-    color: '#003399',
+    color: CARD_TEXT_MUTED,
     letterSpacing: 0.8,
     marginTop: 2,
   },
   budgetStatusPill: {
-    backgroundColor: 'rgba(0, 51, 153, 0.08)',
+    backgroundColor: CARD_CHIP_BG,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -971,26 +972,26 @@ const styles = StyleSheet.create({
   budgetStatusText: {
     fontSize: RFValue(10),
     fontWeight: '700',
-    color: '#003399',
+    color: CARD_TEXT,
     letterSpacing: 0.5,
   },
   categoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: CARD_CHIP_BG,
     paddingHorizontal: wp('3%'),
     paddingVertical: hp('0.8%'),
     borderRadius: 20,
     alignSelf: 'flex-start',
     marginBottom: hp('2%'),
     borderWidth: 1,
-    borderColor: '#C7D2FE',
+    borderColor: CARD_DIVIDER,
   },
   categoryText: {
     fontSize: RFValue(12),
     fontWeight: '700',
-    color: '#003399',
+    color: CARD_TEXT,
   },
   avatarContainer: {
     alignItems: 'center',
@@ -1013,7 +1014,7 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(isTablet ? 18 : 18),
     fontWeight: '700',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: hp('1.5%'),
     textAlign: 'center',
   },
@@ -1025,7 +1026,7 @@ const styles = StyleSheet.create({
   },
   posterName: {
     fontSize: RFValue(isTablet ? 12 : 12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginLeft: wp('1.5%'),
     marginRight: wp('2%'),
   },
@@ -1048,7 +1049,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: RFValue(11),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
     marginLeft: wp('1.5%'),
   },
   detailRow: {
@@ -1058,7 +1059,7 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: RFValue(isTablet ? 12 : 12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginLeft: wp('2%'),
     flex: 1,
   },
@@ -1066,7 +1067,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: CARD_CHIP_BG,
     paddingHorizontal: wp('3%'),
     paddingVertical: hp('0.7%'),
     borderRadius: 8,
@@ -1075,7 +1076,7 @@ const styles = StyleSheet.create({
   },
   viewOnMapText: {
     fontSize: RFValue(isTablet ? 11 : 12),
-    color: '#003399',
+    color: CARD_TEXT,
     fontWeight: '600',
   },
   budgetRow: {
@@ -1110,7 +1111,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: RFValue(isTablet ? 12 : 12),
-    color: '#333',
+    color: CARD_TEXT,
     lineHeight: RFValue(isTablet ? 18 : 18),
     marginBottom: hp('1.5%'),
   },
@@ -1129,16 +1130,16 @@ const styles = StyleSheet.create({
   imageGalleryTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
     marginBottom: hp('1%'),
   },
   noImagesText: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
     fontStyle: 'italic',
     textAlign: 'center',
     padding: isTablet ? wp('3%') : wp('4%'),
-    backgroundColor: '#f9f9f9',
+    backgroundColor: CARD_CHIP_BG,
     borderRadius: 8,
   },
   imageRow: {

@@ -14,6 +14,16 @@ import {
 
 // Import Task type
 import { Task } from '@/src/api/types/tasks';
+import {
+    BRAND_ORANGE,
+    CARD_BG,
+    CARD_CHIP_BG,
+    CARD_DIVIDER,
+    CARD_PRICE_BG,
+    CARD_PRICE_TEXT,
+    CARD_TEXT,
+    CARD_TEXT_MUTED,
+} from '@/src/shared/theme/brandColors';
 
 // Import responsive utilities
 import {
@@ -155,6 +165,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   // Helper: Get status color
   const getStatusColor = (status: string) => {
+    if (!isDarkMode) {
+      // Lighter tints so status text stays readable on the blue card
+      switch (status) {
+        case 'completed':
+          return '#4ADE80';
+        case 'assigned':
+          return '#93C5FD';
+        case 'open':
+          return '#FBBF24';
+        default:
+          return CARD_TEXT_MUTED;
+      }
+    }
     switch (status) {
       case 'completed':
         return colors.success;
@@ -181,16 +204,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   if (variant === 'compact') {
     return (
       <TouchableOpacity
-        style={[cardStyles.card, styles.compactCard]}
+        style={[cardStyles.card, styles.compactCard, !isDarkMode && styles.blueCard]}
         activeOpacity={0.7}
         onPress={() => onPress(task._id)}
       >
         <View style={styles.compactContent}>
           <View style={styles.compactLeft}>
-            <Text style={styles.compactTitle} numberOfLines={1}>
+            <Text style={[styles.compactTitle, !isDarkMode && styles.lightTextWhite]} numberOfLines={1}>
               {task.title}
             </Text>
-            <Text style={styles.compactLocation} numberOfLines={1}>
+            <Text style={[styles.compactLocation, !isDarkMode && styles.lightTextMuted]} numberOfLines={1}>
               {(() => {
                 const address = parsedLocation?.address || 'Location not specified';
                 if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
@@ -202,7 +225,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </Text>
           </View>
           <View style={styles.compactRight}>
-            <Text style={styles.compactPrice}>{formattedBudget}</Text>
+            <Text style={[styles.compactPrice, !isDarkMode && styles.lightTextWhite]}>{formattedBudget}</Text>
             <Text style={[styles.compactStatus, { color: getStatusColor(task.status) }]}>
               {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
             </Text>
@@ -216,16 +239,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   if (variant === 'detailed') {
     return (
       <TouchableOpacity
-        style={[cardStyles.taskCard, styles.detailedCard]}
+        style={[cardStyles.taskCard, styles.detailedCard, !isDarkMode && styles.blueCard]}
         activeOpacity={0.7}
         onPress={() => onPress(task._id)}
       >
         <View style={styles.taskHeader}>
           <View style={styles.taskInfo}>
-            <Text style={styles.taskTitle} numberOfLines={2}>
+            <Text style={[styles.taskTitle, !isDarkMode && styles.lightTextWhite]} numberOfLines={2}>
               {task.title}
             </Text>
-            <Text style={styles.taskLocation} numberOfLines={1}>
+            <Text style={[styles.taskLocation, !isDarkMode && styles.lightTextMuted]} numberOfLines={1}>
               {(() => {
                 const address = parsedLocation?.address || 'Location not specified';
                 if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
@@ -240,7 +263,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 {task.status?.charAt(0).toUpperCase() + task.status?.slice(1)}
               </Text>
               {task.createdAt && (
-                <Text style={styles.taskDate}>
+                <Text style={[styles.taskDate, !isDarkMode && styles.lightTextMuted]}>
                   {new Date(task.createdAt).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
@@ -250,7 +273,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             </View>
           </View>
           <View style={styles.taskPriceContainer}>
-            <Text style={styles.taskPrice}>{formattedBudget}</Text>
+            <Text style={[styles.taskPrice, !isDarkMode && styles.lightTextWhite]}>{formattedBudget}</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -260,21 +283,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   // Default variant (for browse/explore screens)
   return (
     <TouchableOpacity
-      style={[cardStyles.taskCard, styles.defaultCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
+      style={[cardStyles.taskCard, styles.defaultCard, isDarkMode ? { backgroundColor: '#1E293B', borderColor: '#334155' } : styles.blueCard]}
       activeOpacity={0.75}
       onPress={() => onPress(task._id)}
     >
       {/* Left accent strip */}
-      <View style={styles.accentStrip} />
+      <View style={[styles.accentStrip, !isDarkMode && { backgroundColor: BRAND_ORANGE }]} />
 
       <View style={styles.cardBody}>
         {/* Header row: Title + Price */}
         <View style={styles.cardHeaderRow}>
-          <Text style={[styles.taskTitle, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={2}>
+          <Text style={[styles.taskTitle, isDarkMode ? { color: '#F8FAFC' } : styles.lightTextWhite]} numberOfLines={2}>
             {task.title}
           </Text>
-          <View style={styles.priceBubble}>
-            <Text style={styles.priceText}>{formattedBudget}</Text>
+          <View style={[styles.priceBubble, !isDarkMode && styles.priceBubbleLight]}>
+            <Text style={[styles.priceText, !isDarkMode && { color: CARD_PRICE_TEXT }]}>{formattedBudget}</Text>
           </View>
         </View>
 
@@ -282,14 +305,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         <View style={styles.metaContainer}>
           {/* Location */}
           <View style={styles.taskRow}>
-            <View style={[styles.iconBadge, styles.locationIconBadge]}>
+            <View style={[styles.iconBadge, styles.locationIconBadge, !isDarkMode && styles.iconBadgeLight]}>
               <Ionicons
                 name={(locationInfo.icon === 'car-outline' ? 'car' : 'location-sharp') as any}
                 size={RFValue(11)}
-                color="#0284C7"
+                color={isDarkMode ? '#0284C7' : CARD_TEXT}
               />
             </View>
-            <Text style={[styles.taskRowText, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>
+            <Text style={[styles.taskRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextMuted]} numberOfLines={1}>
               {(() => {
                 const address = parsedLocation?.address || 'Location not specified';
                 if (typeof address === 'string' && (address.includes('{') || address.includes('\"coordinates\"'))) {
@@ -304,19 +327,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           {/* Date Display - Show when specific date is set */}
           {dateDisplay && (
             <View style={styles.taskRow}>
-              <View style={[styles.iconBadge, styles.dateIconBadge]}>
-                <Ionicons name="calendar" size={RFValue(11)} color="#10B981" />
+              <View style={[styles.iconBadge, styles.dateIconBadge, !isDarkMode && styles.iconBadgeLight]}>
+                <Ionicons name="calendar" size={RFValue(11)} color={isDarkMode ? '#10B981' : CARD_TEXT} />
               </View>
-              <Text style={[styles.taskRowText, styles.dateRowText, isDarkMode && { color: '#94A3B8' }]}>{dateDisplay}</Text>
+              <Text style={[styles.taskRowText, styles.dateRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextWhite]}>{dateDisplay}</Text>
             </View>
           )}
 
           {/* Time / Flexibility */}
           <View style={styles.taskRow}>
-            <View style={[styles.iconBadge, styles.timeIconBadge]}>
-              <Ionicons name="time" size={RFValue(11)} color="#FF6B00" />
+            <View style={[styles.iconBadge, styles.timeIconBadge, !isDarkMode && styles.iconBadgeLight]}>
+              <Ionicons name="time" size={RFValue(11)} color={isDarkMode ? '#FF6B00' : CARD_TEXT} />
             </View>
-            <Text style={[styles.taskRowText, isDarkMode && { color: '#94A3B8' }]}>{getTimePreference()}</Text>
+            <Text style={[styles.taskRowText, isDarkMode ? { color: '#94A3B8' } : styles.lightTextMuted]}>{getTimePreference()}</Text>
           </View>
         </View>
 
@@ -324,14 +347,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         {task.categories && Array.isArray(task.categories) && task.categories.length > 0 && (
           <View style={styles.categoriesRow}>
             {task.categories.slice(0, 2).map((category, index) => (
-              <View key={index} style={styles.categoryTag}>
-                <View style={styles.categoryDot} />
-                <Text style={styles.categoryText}>{category}</Text>
+              <View key={index} style={[styles.categoryTag, !isDarkMode && styles.categoryTagLight]}>
+                <View style={[styles.categoryDot, !isDarkMode && { backgroundColor: CARD_TEXT }]} />
+                <Text style={[styles.categoryText, !isDarkMode && styles.lightTextWhite]}>{category}</Text>
               </View>
             ))}
             {task.categories.length > 2 && (
-              <View style={styles.moreCategoriesTag}>
-                <Text style={styles.moreCategoriesText}>
+              <View style={[styles.moreCategoriesTag, !isDarkMode && styles.categoryTagLight]}>
+                <Text style={[styles.moreCategoriesText, !isDarkMode && styles.lightTextWhite]}>
                   +{task.categories.length - 2}
                 </Text>
               </View>
@@ -340,7 +363,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         )}
 
         {/* Bottom: Dynamic Offer / Status chip + Poster */}
-        <View style={styles.bottomRow}>
+        <View style={[styles.bottomRow, !isDarkMode && { borderTopColor: CARD_DIVIDER }]}>
           {/* Dynamic Offer Chip */}
           {(() => {
             const isAcceptedOrComplete =
@@ -353,7 +376,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             if (isAcceptedOrComplete) {
               const statusColor = getStatusColor(task.status);
               return (
-                <View style={[styles.statusChip, { backgroundColor: `${statusColor}14`, borderColor: `${statusColor}30` }]}>
+                <View style={[styles.statusChip, isDarkMode ? { backgroundColor: `${statusColor}14`, borderColor: `${statusColor}30` } : { backgroundColor: CARD_CHIP_BG, borderColor: CARD_DIVIDER }]}>
                   <Ionicons name="checkmark-circle" size={RFValue(11)} color={statusColor} />
                   <Text style={[styles.statusChipText, { color: statusColor }]}>
                     {task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')}
@@ -365,9 +388,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             const offerCount = task.offerCount || task.offers?.length || 0;
             if (offerCount > 0) {
               return (
-                <View style={styles.offerChipActive}>
-                  <Ionicons name="pricetag" size={RFValue(10)} color="#FF6B00" />
-                  <Text style={styles.offerTextActive}>
+                <View style={[styles.offerChipActive, !isDarkMode && styles.offerChipLight]}>
+                  <Ionicons name="pricetag" size={RFValue(10)} color={isDarkMode ? '#FF6B00' : CARD_TEXT} />
+                  <Text style={[styles.offerTextActive, !isDarkMode && styles.lightTextWhite]}>
                     {offerCount} {offerCount === 1 ? 'Offer' : 'Offers'}
                   </Text>
                 </View>
@@ -375,9 +398,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             }
 
             return (
-              <View style={styles.firstOfferChip}>
-                <Ionicons name="sparkles" size={RFValue(10)} color="#10B981" />
-                <Text style={styles.firstOfferText}>Be first to offer</Text>
+              <View style={[styles.firstOfferChip, !isDarkMode && styles.categoryTagLight]}>
+                <Ionicons name="sparkles" size={RFValue(10)} color={isDarkMode ? '#10B981' : '#4ADE80'} />
+                <Text style={[styles.firstOfferText, !isDarkMode && { color: '#4ADE80' }]}>Be first to offer</Text>
               </View>
             );
           })()}
@@ -390,9 +413,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                      task.createdBy?.profilePicture ||
                      `https://ui-avatars.com/api/?name=${formatAvatarName(task.createdBy?.firstName, task.createdBy?.lastName)}&background=003399&color=fff&size=80`,
               }}
-              style={styles.userAvatar}
+              style={[styles.userAvatar, !isDarkMode && { borderColor: CARD_TEXT }]}
             />
-            <Text style={[styles.posterName, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>
+            <Text style={[styles.posterName, isDarkMode ? { color: '#94A3B8' } : styles.lightTextWhite]} numberOfLines={1}>
               {formatUserName(task.createdBy?.firstName, task.createdBy?.lastName)}
             </Text>
           </View>
@@ -401,8 +424,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
       {/* Navigation indicator */}
       <View style={styles.navigationIndicator}>
-        <View style={styles.chevronCircle}>
-          <Ionicons name="chevron-forward" size={RFValue(11)} color="#94A3B8" />
+        <View style={[styles.chevronCircle, !isDarkMode && styles.chevronCircleLight]}>
+          <Ionicons name="chevron-forward" size={RFValue(11)} color={isDarkMode ? '#94A3B8' : CARD_TEXT} />
         </View>
       </View>
     </TouchableOpacity>
@@ -410,6 +433,31 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 };
 
 const styles = StyleSheet.create({
+  // Light-mode blue card helpers (dark mode keeps its own surfaces)
+  blueCard: {
+    backgroundColor: CARD_BG,
+    borderColor: CARD_BG,
+  },
+  lightTextWhite: { color: CARD_TEXT },
+  lightTextMuted: { color: CARD_TEXT_MUTED },
+  priceBubbleLight: {
+    backgroundColor: CARD_PRICE_BG,
+    borderColor: CARD_PRICE_BG,
+  },
+  iconBadgeLight: { backgroundColor: CARD_CHIP_BG },
+  categoryTagLight: {
+    backgroundColor: CARD_CHIP_BG,
+    borderColor: CARD_DIVIDER,
+  },
+  offerChipLight: {
+    backgroundColor: BRAND_ORANGE,
+    borderColor: BRAND_ORANGE,
+  },
+  chevronCircleLight: {
+    backgroundColor: CARD_CHIP_BG,
+    borderColor: CARD_DIVIDER,
+  },
+
   // Default Card Styles - 2026 PREMIUM (COMPACT & SLEEK)
   defaultCard: {
     marginHorizontal: isTablet ? wp('-2%') : wp('4%'),

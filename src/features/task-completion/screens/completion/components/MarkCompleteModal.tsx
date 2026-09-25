@@ -1,9 +1,9 @@
 import { useTheme } from '@/src/shared/theme';
 import { appAlert } from '@/src/shared/components/AppAlert';
-import { BRAND_BLUE, BRAND_GREEN } from '@/src/shared/theme/brandColors';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_TEXT } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface MarkCompleteModalProps {
@@ -40,10 +40,10 @@ export default function MarkCompleteModal({
     >
       <View style={styles.overlay}>
         <View style={[styles.content, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
-          <View style={styles.header}>
-            <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Mark Task Complete</Text>
+          <View style={[styles.header, !isDarkMode && styles.headerBand]}>
+            <Text style={[styles.title, !isDarkMode && { color: CARD_TEXT }, isDarkMode && { color: '#F8FAFC' }]}>Mark Task Complete</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color="#666" />
+              <Ionicons name="close" size={24} color={isDarkMode ? "#666" : CARD_TEXT} />
             </TouchableOpacity>
           </View>
 
@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
   content: {
     backgroundColor: '#fff',
     borderRadius: 12,
+    overflow: 'hidden',
     padding: 20,
     width: '100%',
     maxHeight: '80%',
@@ -97,6 +98,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+  },
+  headerBand: {
+    backgroundColor: BRAND_BLUE,
+    marginHorizontal: -20,
+    marginTop: -20,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
   },
   title: {
     fontSize: RFValue(18),
@@ -137,7 +145,7 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     flex: 1,
-    backgroundColor: '#28a745',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',

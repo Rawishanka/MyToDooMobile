@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 
 interface HelpSupportProps {
   visible: boolean;
@@ -123,7 +124,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
         {/* Header */}
         <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#003399" />
+            <Ionicons name="close" size={24} color={CARD_TEXT} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Frequently Asked Questions</Text>
           <View style={styles.placeholder} />
@@ -131,7 +132,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
 
         {/* Info Banner */}
         <View style={styles.infoBanner}>
-          <Ionicons name="information-circle" size={60} color="#003399" style={styles.infoIcon} />
+          <Ionicons name="information-circle" size={60} color={CARD_TEXT} style={styles.infoIcon} />
           <Text style={styles.infoTitle}>How can we help you?</Text>
           <Text style={styles.infoSubtitle}>
             Browse through our frequently asked questions to find answers to common queries about MyToDoo.
@@ -183,14 +184,14 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
                 onPress={() => toggleCategory(category.id)}
               >
                 <View style={styles.categoryTitleContainer}>
-                  <Ionicons name={category.icon as any} size={24} color="#003399" />
+                  <Ionicons name={category.icon as any} size={24} color={CARD_TEXT} />
                   <Text style={styles.categoryTitle}>{category.title}</Text>
                   <Text style={styles.questionCount}>({category.questions.length} questions)</Text>
                 </View>
                 <Ionicons
                   name={expandedCategory === category.id ? "chevron-up" : "chevron-down"}
                   size={24}
-                  color="#666"
+                  color={CARD_TEXT_MUTED}
                 />
               </TouchableOpacity>
 
@@ -206,7 +207,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
                         <Ionicons
                           name={expandedQuestion === item.id ? "chevron-up" : "chevron-down"}
                           size={20}
-                          color="#003399"
+                          color={CARD_TEXT}
                         />
                       </TouchableOpacity>
 
@@ -276,9 +277,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingBottom: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e4e8',
+    borderBottomColor: BRAND_BLUE,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -291,18 +292,18 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#003399',
+    color: CARD_TEXT,
   },
   placeholder: {
     width: 32,
   },
   infoBanner: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     paddingVertical: 24,
     paddingHorizontal: 20,
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e4e8',
+    borderBottomColor: CARD_DIVIDER,
     marginBottom: 8,
   },
   infoIcon: {
@@ -311,13 +312,13 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: RFValue(22),
     fontWeight: '700',
-    color: '#333',
+    color: CARD_TEXT,
     marginBottom: 8,
     textAlign: 'center',
   },
   infoSubtitle: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     textAlign: 'center',
     lineHeight: 20,
     paddingHorizontal: 16,
@@ -381,7 +382,7 @@ const styles = StyleSheet.create({
   },
   categoryContainer: {
     marginBottom: 8,
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     borderRadius: 8,
     marginHorizontal: 16,
     overflow: 'hidden',
@@ -391,7 +392,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
   },
   categoryTitleContainer: {
     flexDirection: 'row',
@@ -401,21 +402,21 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
     marginLeft: 12,
   },
   questionCount: {
     fontSize: RFValue(14),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
     marginLeft: 8,
   },
   questionsContainer: {
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: CARD_DIVIDER,
   },
   questionItem: {
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: CARD_DIVIDER,
   },
   questionHeader: {
     flexDirection: 'row',
@@ -427,17 +428,17 @@ const styles = StyleSheet.create({
   questionText: {
     flex: 1,
     fontSize: RFValue(15),
-    color: '#003399',
+    color: CARD_TEXT,
     fontWeight: '500',
   },
   answerContainer: {
     paddingHorizontal: 52,
     paddingBottom: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: CARD_CHIP_BG,
   },
   answerText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT,
     lineHeight: 22,
   },
   noResults: {
@@ -457,7 +458,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   contactContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     marginHorizontal: 16,
     marginVertical: 16,
     padding: 20,
@@ -467,19 +468,19 @@ const styles = StyleSheet.create({
   contactTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   contactText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     textAlign: 'center',
     marginBottom: 16,
   },
   contactButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#003399',
+    backgroundColor: BRAND_ORANGE,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -493,7 +494,7 @@ const styles = StyleSheet.create({
   },
   contactEmail: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: CARD_TEXT,
     fontWeight: '500',
   },
 });

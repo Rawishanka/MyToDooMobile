@@ -18,6 +18,7 @@ import { ErrorState, LoadingState } from '../../components/shared';
 import EmptyOffersState from './components/EmptyOffersState';
 import OfferCard from './components/OfferCard';
 import TaskSummaryHeader from './components/TaskSummaryHeader';
+import { BRAND_BLUE, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface Offer {
@@ -88,12 +89,12 @@ export default function TaskOffersScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
       
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerTitle}>Offers</Text>
@@ -141,9 +142,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'ios' ? 60 : 50,
     paddingBottom: 15,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: CARD_DIVIDER,
   },
   backIcon: {
     padding: 5,
@@ -155,11 +156,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
   },
   headerSubtitle: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginTop: 2,
   },
   headerRight: {

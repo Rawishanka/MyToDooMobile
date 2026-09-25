@@ -3,7 +3,18 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { formatUserName } from '@/src/utils/formatUserName';
 import { CompletionUser } from '../hooks/useCompletionStatus';
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
+
+// Status colours from the hook are dark; lighten them so they stay readable on the blue card.
+const ON_BLUE_TINT: Record<string, string> = {
+  '#28a745': '#4ADE80',
+  '#007bff': '#FFFFFF',
+  '#dc3545': '#FCA5A5',
+  '#6c757d': 'rgba(255,255,255,0.78)',
+  '#ffc107': '#FBBF24',
+};
+const onBlue = (color: string) => ON_BLUE_TINT[color] || color;
 
 interface VerificationCardProps {
   verificationStatus?: string;
@@ -28,7 +39,7 @@ export default function VerificationCard({
 
       <View style={styles.status}>
         <View style={styles.indicator}>
-          <Ionicons name={verificationIcon as any} size={24} color={verificationColor} />
+          <Ionicons name={verificationIcon as any} size={24} color={onBlue(verificationColor)} />
           <Text style={styles.statusText}>
             {verificationStatus?.toUpperCase() || 'PENDING'}
           </Text>
@@ -56,7 +67,7 @@ export default function VerificationCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     marginHorizontal: 20,
     marginBottom: 20,
     borderRadius: 12,
@@ -70,7 +81,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 16,
   },
   status: {
@@ -85,7 +96,7 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
   },
   info: {
     flexDirection: 'row',
@@ -94,11 +105,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
   value: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
   },
 });

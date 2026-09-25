@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Modal, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import TermsConditionsScreen from '@/src/features/legal/screens/TermsConditionsScreen';
+import { BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TermsCheckboxProps {
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
   termsContainer: {
     marginTop: 24,
     padding: 16,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_BG,
     borderRadius: 8,
   },
   termsCheckbox: {
@@ -57,24 +58,24 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
-    borderColor: '#ddd',
+    borderColor: CARD_TEXT_MUTED,
     borderRadius: 4,
     marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkedBox: {
-    backgroundColor: '#28a745',
-    borderColor: '#28a745',
+    backgroundColor: BRAND_ORANGE,
+    borderColor: BRAND_ORANGE,
   },
   termsText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: '#333',
+    color: CARD_TEXT,
     lineHeight: 20,
   },
   termsLink: {
-    color: '#003399',
+    color: CARD_TEXT,
     textDecorationLine: 'underline',
   },
 });

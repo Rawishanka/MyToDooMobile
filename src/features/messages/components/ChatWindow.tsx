@@ -993,7 +993,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         keyboardVerticalOffset={Platform.OS === 'ios' ? headerTopPadding : 0}
       >
         <View style={[styles.chatContainer, isDarkMode && { backgroundColor: "#0B1120" }]}>
-          <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
+          <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : BRAND_BLUE} />
           
           {/* Chat Header */}
           <View style={[styles.chatHeader, { paddingTop: headerTopPadding }]}>
@@ -1438,7 +1438,7 @@ const styles = StyleSheet.create({
   },
   chatStatus: {
     fontSize: RFValue(12),
-    color: '#34C759',
+    color: '#4ADE80',
   },
   moreButton: {
     padding: 4,
@@ -1492,7 +1492,7 @@ const styles = StyleSheet.create({
     backgroundColor: BRAND_BLUE,
   },
   otherMessage: {
-    backgroundColor: '#E9ECEF',
+    backgroundColor: '#FFFFFF',
   },
   messageText: {
     fontSize: RFValue(15),

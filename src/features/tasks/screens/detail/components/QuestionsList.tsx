@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
+import { BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { ActivityIndicator, Dimensions, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { formatUserName } from '@/src/utils/formatUserName';
@@ -518,7 +519,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                           <Ionicons 
                             name={attachment.resourceType === 'image' ? 'image-outline' : 'document-outline'} 
                             size={22} 
-                            color="#007AFF" 
+                            color={CARD_TEXT} 
                           />
                           
                           {/* Image Preview Thumbnail */}
@@ -534,7 +535,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                             {attachment.fileId?.split('/').pop() || 'Attachment'}
                           </Text>
                           {attachment.resourceType === 'image' && (
-                            <Ionicons name="eye-outline" size={20} color="#007AFF" style={{ marginLeft: 'auto' }} />
+                            <Ionicons name="eye-outline" size={20} color={CARD_TEXT} style={{ marginLeft: 'auto' }} />
                           )}
                         </TouchableOpacity>
                       ))}
@@ -570,7 +571,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                     if (attachments.length > 0) {
                       return (
                         <View style={[styles.answerAttachmentsContainer, isDarkMode && { borderTopColor: "#166534" }]}>
-                          <Text style={[styles.attachmentsLabel, { color: '#2E7D32' }]}>📎 Attachments ({attachments.length}):</Text>
+                          <Text style={[styles.attachmentsLabel, { color: '#4ADE80' }]}>📎 Attachments ({attachments.length}):</Text>
                           {attachments.map((attachment: any, index: number) => (
                             <TouchableOpacity
                               key={attachment._id || index} 
@@ -587,7 +588,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                               <Ionicons 
                                 name={attachment.resourceType === 'image' ? 'image' : 'document'} 
                                 size={20} 
-                                color="#4CAF50" 
+                                color="#4ADE80" 
                               />
                               
                               {/* Image Preview Thumbnail */}
@@ -603,7 +604,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
                                 {attachment.fileId?.split('/').pop() || 'Attachment'}
                               </Text>
                               {attachment.resourceType === 'image' && (
-                                <Ionicons name="eye" size={18} color="#4CAF50" style={{ marginLeft: 'auto' }} />
+                                <Ionicons name="eye" size={18} color="#4ADE80" style={{ marginLeft: 'auto' }} />
                               )}
                             </TouchableOpacity>
                           ))}
@@ -775,12 +776,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   questionCard: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     padding: 16,
     marginBottom: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: CARD_DIVIDER,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -812,40 +813,40 @@ const styles = StyleSheet.create({
   questionUserName: {
     fontSize: RFValue(isTablet ? 12 : 12),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 2,
   },
   questionTime: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
   },
   questionText: {
     fontSize: RFValue(15),
-    color: '#1a1a1a',
+    color: CARD_TEXT,
     lineHeight: 22,
     marginBottom: 16,
     fontWeight: '400',
   },
   answerSection: {
-    backgroundColor: '#F0F9F4',
+    backgroundColor: CARD_CHIP_BG,
     padding: 14,
     borderRadius: 10,
     borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
+    borderLeftColor: '#4ADE80',
     marginTop: 16,
     borderWidth: 1,
-    borderColor: '#D4EDDA',
+    borderColor: CARD_DIVIDER,
   },
   answerLabel: {
     fontSize: RFValue(13),
     fontWeight: '700',
-    color: '#2E7D32',
+    color: '#4ADE80',
     marginBottom: 8,
     letterSpacing: 0.3,
   },
   answerText: {
     fontSize: RFValue(15),
-    color: '#1a1a1a',
+    color: CARD_TEXT,
     lineHeight: 22,
     fontWeight: '400',
   },
@@ -863,9 +864,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    backgroundColor: '#4CAF50',
+    backgroundColor: BRAND_ORANGE,
     borderRadius: 10,
-    shadowColor: '#4CAF50',
+    shadowColor: BRAND_ORANGE,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -903,7 +904,7 @@ const styles = StyleSheet.create({
   },
   answerTime: {
     fontSize: RFValue(12),
-    color: '#2E7D32',
+    color: '#86EFAC',
     marginTop: 8,
     fontStyle: 'italic',
     fontWeight: '500',
@@ -912,12 +913,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#007AFF',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginTop: 16,
-    shadowColor: '#007AFF',
+    shadowColor: BRAND_ORANGE,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
@@ -930,18 +931,18 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   noAnswerYet: {
-    backgroundColor: '#FFF9E6',
+    backgroundColor: CARD_CHIP_BG,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginTop: 16,
     borderWidth: 1,
-    borderColor: '#FFE0B2',
+    borderColor: CARD_DIVIDER,
     alignItems: 'center',
   },
   noAnswerText: {
     fontSize: RFValue(14),
-    color: '#E65100',
+    color: '#FBBF24',
     fontStyle: 'italic',
     textAlign: 'center',
     fontWeight: '500',
@@ -964,30 +965,30 @@ const styles = StyleSheet.create({
   attachmentsContainer: {
     marginTop: 12,
     padding: 12,
-    backgroundColor: '#F0F8FF',
+    backgroundColor: CARD_CHIP_BG,
     borderRadius: 10,
     borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
+    borderLeftColor: CARD_TEXT,
     borderWidth: 1,
-    borderColor: '#CCE5FF',
+    borderColor: CARD_DIVIDER,
   },
   attachmentsLabel: {
     fontSize: RFValue(13),
     fontWeight: '700',
-    color: '#0056B3',
+    color: CARD_TEXT,
     marginBottom: 10,
     letterSpacing: 0.3,
   },
   attachmentItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: CARD_CHIP_BG,
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#B3D9FF',
+    borderColor: CARD_DIVIDER,
   },
   attachmentThumbnail: {
     width: 50,
@@ -999,7 +1000,7 @@ const styles = StyleSheet.create({
   },
   attachmentName: {
     fontSize: RFValue(14),
-    color: '#1a1a1a',
+    color: CARD_TEXT,
     marginLeft: 10,
     flex: 1,
     fontWeight: '500',
@@ -1008,18 +1009,18 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#C8E6C9',
+    borderTopColor: CARD_DIVIDER,
   },
   answerAttachmentItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: CARD_CHIP_BG,
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#A5D6A7',
+    borderColor: CARD_DIVIDER,
   },
   answerAttachmentThumbnail: {
     width: 50,
@@ -1031,7 +1032,7 @@ const styles = StyleSheet.create({
   },
   answerAttachmentName: {
     fontSize: RFValue(14),
-    color: '#2E7D32',
+    color: '#4ADE80',
     marginLeft: 10,
     flex: 1,
     fontWeight: '500',

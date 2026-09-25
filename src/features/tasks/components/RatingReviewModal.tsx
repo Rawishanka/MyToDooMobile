@@ -17,6 +17,7 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 
@@ -262,7 +263,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                 disabled={isSubmitting}
                 style={styles.closeButton}
               >
-                <Ionicons name="close" size={22} color="#6B7280" />
+                <Ionicons name="close" size={22} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
 
@@ -284,7 +285,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
 
               {/* Star Rating */}
               <View style={[styles.ratingSection, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#334155" }]}>
-                <Text style={[styles.sectionLabel, isDarkMode && { color: '#F8FAFC' }]}>Your Rating *</Text>
+                <Text style={[styles.sectionLabel, !isDarkMode && { color: CARD_TEXT }, isDarkMode && { color: '#F8FAFC' }]}>Your Rating *</Text>
                 <View style={styles.starsContainer}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <TouchableOpacity
@@ -490,13 +491,13 @@ const styles = StyleSheet.create({
   taskInfo: {
     paddingHorizontal: 20,
     paddingVertical: 14,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: CARD_BG,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E7FF',
+    borderBottomColor: CARD_DIVIDER,
   },
   taskLabel: {
     fontSize: RFValue(10),
-    color: '#6B7280',
+    color: CARD_TEXT_MUTED,
     marginBottom: 4,
     textTransform: 'uppercase',
     fontWeight: '700',
@@ -505,7 +506,7 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(15),
     fontWeight: '700',
-    color: '#1A1D2E',
+    color: CARD_TEXT,
     lineHeight: RFValue(21),
   },
 
@@ -514,12 +515,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 24,
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: CARD_BG,
     marginTop: 12,
     marginHorizontal: 16,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: CARD_DIVIDER,
     shadowColor: '#003399',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -546,7 +547,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: RFValue(15),
-    color: '#003399',
+    color: CARD_TEXT,
     fontWeight: '700',
     letterSpacing: 0.3,
   },
@@ -653,11 +654,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFBFF',
   },
   submitButton: {
-    backgroundColor: '#003399',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',
-    shadowColor: '#003399',
+    shadowColor: BRAND_ORANGE,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,

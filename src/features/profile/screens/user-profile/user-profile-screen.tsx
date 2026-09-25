@@ -15,6 +15,7 @@ import { OverallRatingSection } from './components/OverallRatingSection';
 import { ReviewsList } from './components/ReviewsList';
 import { useUserProfile } from './hooks/useUserProfile';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG, BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 
 export default function UserProfileScreen() {
   const {
@@ -74,7 +75,7 @@ export default function UserProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor="#003399" />
 
       <UserProfileHeader />
 
@@ -149,12 +150,12 @@ export default function UserProfileScreen() {
       {/* Action Buttons */}
       <View style={styles.actionContainer}>
         <TouchableOpacity style={styles.messageButton} onPress={handleMessage}>
-          <Ionicons name="mail-outline" size={20} color="#007bff" />
+          <Ionicons name="mail-outline" size={20} color={CARD_TEXT} />
           <Text style={styles.messageButtonText}>Message</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.reportButton} onPress={handleReport}>
-          <Ionicons name="flag-outline" size={20} color="#dc3545" />
+          <Ionicons name="flag-outline" size={20} color="#FCA5A5" />
           <Text style={styles.reportButtonText}>Report</Text>
         </TouchableOpacity>
       </View>
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#e3f2fd',
+    backgroundColor: CARD_BG,
     paddingVertical: 12,
     borderRadius: 8,
     gap: 8,
@@ -194,14 +195,14 @@ const styles = StyleSheet.create({
   messageButtonText: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#007bff',
+    color: CARD_TEXT,
   },
   reportButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fef0f0',
+    backgroundColor: CARD_BG,
     paddingVertical: 12,
     borderRadius: 8,
     gap: 8,
@@ -209,6 +210,6 @@ const styles = StyleSheet.create({
   reportButtonText: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#dc3545',
+    color: '#FCA5A5',
   },
 });

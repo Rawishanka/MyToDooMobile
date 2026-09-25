@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { useTheme } from '@/src/shared/theme';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const LegalScreen = ({ onBack }) => {
@@ -10,7 +11,7 @@ const LegalScreen = ({ onBack }) => {
   const BackButton = ({ onPress, title }) => (
     <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
       <TouchableOpacity onPress={onPress} style={styles.backButton}>
-        <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : '#333'} />
+        <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : CARD_TEXT} />
       </TouchableOpacity>
       <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>{title}</Text>
       <View style={styles.placeholder} />
@@ -18,9 +19,9 @@ const LegalScreen = ({ onBack }) => {
   );
 
   const MenuItem = ({ title, onPress }) => (
-    <TouchableOpacity style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }]} onPress={onPress}>
+    <TouchableOpacity style={[styles.menuItem, !isDarkMode && styles.menuItemCard, isDarkMode && { borderBottomColor: '#334155' }]} onPress={onPress}>
       <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }]}>{title}</Text>
-      <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#94A3B8' : '#999'} />
+      <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED} />
     </TouchableOpacity>
   );
 
@@ -386,8 +387,8 @@ const styles = StyleSheet.create({
     paddingTop: (StatusBar.currentHeight || 0) + 12,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    backgroundColor: '#fff',
+    borderBottomColor: BRAND_BLUE,
+    backgroundColor: BRAND_BLUE,
   },
   backButton: {
     padding: 8,
@@ -397,7 +398,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
   },
   placeholder: {
     width: 40,
@@ -418,9 +419,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
+  menuItemCard: {
+    backgroundColor: CARD_BG,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginTop: 10,
+    borderBottomWidth: 0,
+  },
   menuText: {
     fontSize: 16,
-    color: '#333',
+    color: CARD_TEXT,
     fontWeight: '500',
   },
   mainTitle: {

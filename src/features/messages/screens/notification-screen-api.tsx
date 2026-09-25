@@ -2,7 +2,7 @@
 // Loads notification history from the backend (GET /notifications) AND local FCM storage
 // Supports mark-as-read, mark-all-as-read, delete, delete-all
 import { AppAlert } from '@/src/shared/components/AppAlert';
-import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import {
     deleteAllNotifications,
     deleteNotification,
@@ -280,12 +280,12 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
       onRequestClose={onClose}
     >
       <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
+        <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : BRAND_BLUE} />
 
         {/* Header */}
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
           <TouchableOpacity onPress={onClose} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : '#000'} />
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : '#FFFFFF'} />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Notifications</Text>
@@ -298,12 +298,12 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
           <View style={styles.headerActions}>
             {unreadCount > 0 && (
               <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.headerActionBtn}>
-                <Ionicons name="checkmark-done" size={20} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+                <Ionicons name="checkmark-done" size={20} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
               </TouchableOpacity>
             )}
             {totalCount > 0 && (
               <TouchableOpacity onPress={handleDeleteAll} style={styles.headerActionBtn}>
-                <Ionicons name="trash-outline" size={20} color="#dc3545" />
+                <Ionicons name="trash-outline" size={20} color={isDarkMode ? '#dc3545' : '#FCA5A5'} />
               </TouchableOpacity>
             )}
           </View>
@@ -338,7 +338,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
         )}
 
         {/* Notification List */}
-        <View style={styles.listContainer}>
+        <View style={[styles.listContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
           <NotificationHistoryList
             notifications={filteredNotifications}
             loading={isLoading}
@@ -378,7 +378,7 @@ export default NotificationModalWithAPI;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: BRAND_BLUE,
   },
   header: {
     flexDirection: 'row',
@@ -387,8 +387,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: isTablet ? wp('6%') : 16,
     paddingVertical: isTablet ? 16 : 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    backgroundColor: '#fff',
+    borderBottomColor: BRAND_BLUE,
+    backgroundColor: BRAND_BLUE,
   },
   backButton: {
     padding: 8,
@@ -402,10 +402,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(isTablet ? 16 : 18),
     fontWeight: '600',
-    color: '#000',
+    color: '#FFFFFF',
   },
   headerBadge: {
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: BRAND_ORANGE,
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -426,11 +426,11 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
     paddingHorizontal: isTablet ? wp('6%') : 16,
     paddingVertical: isTablet ? 10 : 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: 'rgba(255,255,255,0.22)',
   },
   tab: {
     flex: 1,
@@ -440,18 +440,19 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   tabActive: {
-    borderBottomColor: BRAND_BLUE,
+    borderBottomColor: BRAND_ORANGE,
   },
   tabText: {
     fontSize: RFValue(isTablet ? 13 : 14),
-    color: '#6c757d',
+    color: 'rgba(255,255,255,0.78)',
     fontWeight: '500',
   },
   tabTextActive: {
-    color: BRAND_BLUE,
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   listContainer: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
 });

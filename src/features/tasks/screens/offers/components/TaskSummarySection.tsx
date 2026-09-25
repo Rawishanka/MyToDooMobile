@@ -5,7 +5,7 @@ import React from 'react';
 import { useTheme } from '@/src/shared/theme';
 import { StyleSheet, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 
 interface TaskSummarySectionProps {
   task: {
@@ -51,7 +51,7 @@ export const TaskSummarySection: React.FC<TaskSummarySectionProps> = ({ task }) 
 
 const styles = StyleSheet.create({
   taskSummary: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     padding: 16,
     marginTop: 20,
@@ -59,17 +59,17 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   taskBudget: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: BRAND_BLUE,
+    color: CARD_TEXT,
     marginBottom: 4,
   },
   taskLocation: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
 });

@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CompletionMilestone } from '../hooks/useCompletionStatus';
+import { CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface MilestonesCardProps {
@@ -34,7 +35,7 @@ export default function MilestonesCard({ milestones, formatDate }: MilestonesCar
               <View
                 style={[
                   styles.circle,
-                  { backgroundColor: milestone.completed ? '#28a745' : '#ddd' },
+                  { backgroundColor: milestone.completed ? '#4ADE80' : CARD_DIVIDER },
                 ]}
               >
                 {milestone.completed && <Ionicons name="checkmark" size={16} color="#fff" />}
@@ -43,7 +44,7 @@ export default function MilestonesCard({ milestones, formatDate }: MilestonesCar
                 <View
                   style={[
                     styles.line,
-                    { backgroundColor: milestone.completed ? '#28a745' : '#ddd' },
+                    { backgroundColor: milestone.completed ? '#4ADE80' : CARD_DIVIDER },
                   ]}
                 />
               )}
@@ -51,7 +52,7 @@ export default function MilestonesCard({ milestones, formatDate }: MilestonesCar
 
             <View style={styles.content}>
               <Text
-                style={[styles.milestoneTitle, { color: milestone.completed ? '#28a745' : '#333' }]}
+                style={[styles.milestoneTitle, { color: milestone.completed ? '#4ADE80' : CARD_TEXT }]}
               >
                 {milestone.title}
               </Text>
@@ -69,7 +70,7 @@ export default function MilestonesCard({ milestones, formatDate }: MilestonesCar
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     marginHorizontal: 20,
     marginBottom: 20,
     borderRadius: 12,
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 16,
   },
   progress: {
@@ -91,18 +92,18 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: 8,
   },
   progressBar: {
     height: 6,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: CARD_DIVIDER,
     borderRadius: 3,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#28a745',
+    backgroundColor: '#4ADE80',
     borderRadius: 3,
   },
   list: {
@@ -137,12 +138,12 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     lineHeight: 18,
     marginBottom: 4,
   },
   date: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
   },
 });

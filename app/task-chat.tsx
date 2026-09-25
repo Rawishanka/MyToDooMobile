@@ -995,7 +995,7 @@ const styles = StyleSheet.create({
   },
   headerStatus: {
     fontSize: RFValue(12),
-    color: '#34C759',
+    color: '#4ADE80',
     marginTop: 2,
   },
   messagesList: {

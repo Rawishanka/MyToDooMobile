@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/shared/theme';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface InviteFriendsScreenProps {
@@ -46,7 +47,7 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 44 }, isDarkMode && { backgroundColor: "#0B1120", borderBottomColor: "#334155" }]}>
         <TouchableOpacity onPress={onBack} style={[styles.backButton, isDarkMode && { backgroundColor: "#1E293B" }]} activeOpacity={0.7}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#0F172A"} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]}>Invite Friends</Text>
         <View style={{ width: 36 }} />
@@ -130,7 +131,7 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
               <View style={[styles.statIconWrap, { backgroundColor: '#DCFCE7' }]}>
                 <Ionicons name="checkmark-circle-outline" size={18} color="#16A34A" />
               </View>
-              <Text style={[styles.statValue, { color: '#16A34A' }]}>{data?.rewarded ?? 0}</Text>
+              <Text style={[styles.statValue, { color: isDarkMode ? '#16A34A' : '#4ADE80' }]}>{data?.rewarded ?? 0}</Text>
               <Text style={[styles.statLabel, isDarkMode && { color: "#94A3B8" }]}>Rewarded</Text>
             </View>
           </View>
@@ -166,24 +167,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: BRAND_BLUE,
     paddingHorizontal: 16,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: BRAND_BLUE,
   },
   backButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: CARD_CHIP_BG,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#0F172A',
+    color: CARD_TEXT,
   },
   loadingWrap: {
     flex: 1,
@@ -262,12 +263,12 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
   codeCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: CARD_BG,
     borderRadius: 20,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: CARD_DIVIDER,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -278,7 +279,7 @@ const styles = StyleSheet.create({
   codeCardLabel: {
     fontSize: RFValue(11),
     fontWeight: '700',
-    color: '#64748B',
+    color: CARD_TEXT_MUTED,
     letterSpacing: 0.8,
     marginBottom: 12,
   },
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
   urlLabel: {
     fontSize: RFValue(11),
     fontWeight: '700',
-    color: '#94A3B8',
+    color: CARD_TEXT_MUTED,
     letterSpacing: 0.6,
     marginBottom: 6,
   },
@@ -348,12 +349,12 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: CARD_BG,
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: CARD_DIVIDER,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
@@ -371,25 +372,25 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: RFValue(20),
     fontWeight: '800',
-    color: '#0F172A',
+    color: CARD_TEXT,
   },
   statLabel: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: CARD_TEXT_MUTED,
     marginTop: 2,
     fontWeight: '500',
   },
   infoCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: CARD_BG,
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: CARD_DIVIDER,
   },
   infoTitle: {
     fontSize: RFValue(14),
     fontWeight: '700',
-    color: '#0F172A',
+    color: CARD_TEXT,
     marginBottom: 14,
   },
   infoStep: {
@@ -414,7 +415,7 @@ const styles = StyleSheet.create({
   stepText: {
     flex: 1,
     fontSize: RFValue(12),
-    color: '#475569',
+    color: CARD_TEXT_MUTED,
     lineHeight: 18,
   },
 });

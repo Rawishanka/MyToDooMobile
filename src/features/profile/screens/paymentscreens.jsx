@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getAbnStatus } from '@/src/api/abn-api';
 import { useTheme } from '@/src/shared/theme';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 import TaskerAbnSection from '@/src/features/profile/components/TaskerAbnSection';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import PayoutAccountScreen from './payout-account-screen';
@@ -35,7 +36,7 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false })
         style={styles.backButton}
         onPress={onBackToAccount}
       >
-        <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
+        <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : CARD_TEXT} />
       </TouchableOpacity>
       <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Payment options</Text>
     </View>
@@ -57,6 +58,7 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false })
       <TouchableOpacity 
         style={[
           styles.menuItem,
+          !isDarkMode && styles.menuItemCard,
           isDarkMode && { borderBottomColor: '#334155' },
           isTasker && !abnVerified && styles.menuItemDisabled
         ]}
@@ -70,7 +72,7 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false })
         ]}>
           Setup Payout Account
         </Text>
-        <Ionicons name="chevron-forward" size={20} color={isTasker && !abnVerified ? '#64748B' : (isDarkMode ? '#94A3B8' : '#999')} />
+        <Ionicons name="chevron-forward" size={20} color={isTasker && !abnVerified ? '#64748B' : (isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED)} />
       </TouchableOpacity>
     </ScrollView>
   </View>
@@ -87,7 +89,7 @@ const PaymentHistoryScreen = ({ onNavigate }) => {
           style={styles.backButton}
           onPress={() => onNavigate('paymentOptions')}
         >
-          <Ionicons name="chevron-back" size={24} color="#003399" />
+          <Ionicons name="chevron-back" size={24} color={CARD_TEXT} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Payment history</Text>
       </View>
@@ -222,7 +224,7 @@ const PaymentMethodsScreen = ({ onNavigate }) => {
           style={styles.backButton}
           onPress={() => onNavigate('paymentOptions')}
         >
-          <Ionicons name="chevron-back" size={24} color="#003399" />
+          <Ionicons name="chevron-back" size={24} color={CARD_TEXT} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit payment methods</Text>
       </View>
@@ -330,9 +332,9 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 50,
     paddingBottom: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: BRAND_BLUE,
   },
   backButton: {
     marginRight: 16,
@@ -341,7 +343,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#003399',
+    color: CARD_TEXT,
   },
   content: {
     flex: 1,
@@ -360,7 +362,7 @@ const styles = StyleSheet.create({
     opacity: 0.55,
   },
   menuTextDisabled: {
-    color: '#999',
+    color: CARD_TEXT_MUTED,
   },
   menuItem: {
     flexDirection: 'row',
@@ -370,9 +372,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
+  menuItemCard: {
+    backgroundColor: CARD_BG,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginTop: 12,
+    borderBottomWidth: 0,
+  },
   menuText: {
     fontSize: 16,
-    color: '#333',
+    color: CARD_TEXT,
   },
   tabContainer: {
     flexDirection: 'row',

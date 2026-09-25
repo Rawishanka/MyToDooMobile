@@ -45,6 +45,7 @@ import TaskAlerts from './taskalerts';
 import { RFValue, TAB_BAR_CLEARANCE } from '@/src/shared/utils/responsive';
 import { consumePendingAccountNavigation } from '@/src/shared/utils/pending-account-navigation';
 import { useTheme } from '@/src/shared/theme';
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import type { BiometricTypeLabel } from "@/src/shared/utils/biometric-auth";
 import { getBiometricCapability, isBiometricLoginEnabled, setBiometricLoginEnabled, authenticateWithBiometrics } from '@/src/shared/utils/biometric-auth';
 
@@ -1254,7 +1255,7 @@ export default function AccountScreen() {
           <View style={[styles.stripeAccountCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             <View style={styles.stripeAccountHeader}>
               <View style={styles.stripeAccountTitleRow}>
-                <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
                 <Text style={[styles.stripeAccountTitle, isDarkMode && { color: '#F8FAFC' }]}>Payment Account</Text>
               </View>
               <View style={[
@@ -1285,7 +1286,7 @@ export default function AccountScreen() {
               >
                 <View style={[styles.bankAccountItem, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   <View style={[styles.bankIconContainer, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                    <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                    <MaterialIcons name="account-balance" size={20} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
                   </View>
                   <View style={styles.bankAccountInfo}>
                     <Text style={[styles.bankAccountLabel, isDarkMode && { color: '#F8FAFC' }]}>
@@ -1295,7 +1296,7 @@ export default function AccountScreen() {
                       BSB {stripeAccountStatus.bankAccount.routingNumber} • **** {stripeAccountStatus.bankAccount.last4}
                     </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color="#888" />
+                  <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#888' : CARD_TEXT_MUTED} />
                 </View>
               </TouchableOpacity>
             )}
@@ -1311,27 +1312,27 @@ export default function AccountScreen() {
               <View style={styles.stripeAccountCapabilities}>
                 <View style={[styles.capabilityBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   {stripeAccountStatus.chargesEnabled ? (
-                    <Ionicons name="checkmark-circle" size={14} color="#28a745" />
+                    <Ionicons name="checkmark-circle" size={14} color="#4ADE80" />
                   ) : (
-                    <Ionicons name="close-circle" size={14} color="#dc3545" />
+                    <Ionicons name="close-circle" size={14} color="#FCA5A5" />
                   )}
                   <Text style={[styles.capabilityText, isDarkMode && { color: '#F8FAFC' }]}>Charges</Text>
                 </View>
                 
                 <View style={[styles.capabilityBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   {stripeAccountStatus.payoutsEnabled ? (
-                    <Ionicons name="checkmark-circle" size={14} color="#28a745" />
+                    <Ionicons name="checkmark-circle" size={14} color="#4ADE80" />
                   ) : (
-                    <Ionicons name="close-circle" size={14} color="#dc3545" />
+                    <Ionicons name="close-circle" size={14} color="#FCA5A5" />
                   )}
                   <Text style={[styles.capabilityText, isDarkMode && { color: '#F8FAFC' }]}>Payouts</Text>
                 </View>
                 
                 <View style={[styles.capabilityBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                   {stripeAccountStatus.detailsSubmitted ? (
-                    <Ionicons name="checkmark-circle" size={14} color="#28a745" />
+                    <Ionicons name="checkmark-circle" size={14} color="#4ADE80" />
                   ) : (
-                    <Ionicons name="close-circle" size={14} color="#dc3545" />
+                    <Ionicons name="close-circle" size={14} color="#FCA5A5" />
                   )}
                   <Text style={[styles.capabilityText, isDarkMode && { color: '#F8FAFC' }]}>Details</Text>
                 </View>
@@ -1357,7 +1358,7 @@ export default function AccountScreen() {
             }}
           >
             <View style={[styles.pendingReviewsIconWrap, isDarkMode && { backgroundColor: 'rgba(234, 88, 12, 0.2)' }]}>
-              <Ionicons name="star" size={18} color="#EA580C" />
+              <Ionicons name="star" size={18} color={isDarkMode ? "#EA580C" : "#FBBF24"} />
             </View>
             <View style={styles.pendingReviewsTextCol}>
               <View style={styles.pendingReviewsTitleRow}>
@@ -1383,7 +1384,7 @@ export default function AccountScreen() {
                   : "chevron-down"
               }
               size={18}
-              color="#64748B"
+              color={isDarkMode ? "#64748B" : CARD_TEXT}
             />
           </TouchableOpacity>
 
@@ -1492,12 +1493,12 @@ export default function AccountScreen() {
 
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>APP PREFERENCES</Text>
         {biometricSupported && (
-          <View style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }]}>
+          <View style={[styles.menuItem, !isDarkMode && styles.menuItemCard, isDarkMode && { borderBottomColor: '#334155' }]}>
             <View style={styles.iconWrapper}>
               <Ionicons
                 name={biometricTypeLabel === 'Face ID' ? 'scan-outline' : 'finger-print-outline'}
                 size={20}
-                color={isDarkMode ? "#38BDF8" : "#003399"}
+                color={isDarkMode ? "#38BDF8" : CARD_TEXT}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -1519,9 +1520,9 @@ export default function AccountScreen() {
             />
           </View>
         )}
-        <View style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }]}>
+        <View style={[styles.menuItem, !isDarkMode && styles.menuItemCard, isDarkMode && { borderBottomColor: '#334155' }]}>
           <View style={styles.iconWrapper}>
-            <Ionicons name={isDarkMode ? "moon" : "moon-outline"} size={20} color={isDarkMode ? "#38BDF8" : "#003399"} />
+            <Ionicons name={isDarkMode ? "moon" : "moon-outline"} size={20} color={isDarkMode ? "#38BDF8" : CARD_TEXT} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }]}>Dark Mode</Text>
@@ -1930,7 +1931,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disab
   const { isDarkMode } = useTheme();
   return (
     <TouchableOpacity 
-      style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }, disabled && styles.menuItemDisabled]} 
+      style={[styles.menuItem, !isDarkMode && styles.menuItemCard, isDarkMode && { borderBottomColor: '#334155' }, disabled && styles.menuItemDisabled]} 
       onPress={onPress}
       disabled={disabled && !onPress}
       activeOpacity={0.7}
@@ -1938,7 +1939,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disab
       <View style={styles.iconWrapper}>
         {React.isValidElement(icon)
           ? React.cloneElement(icon as React.ReactElement<any>, {
-              color: isDarkMode ? '#38BDF8' : (icon.props as any).color || '#003399',
+              color: isDarkMode ? '#38BDF8' : ((icon.props as any).color === '#10B981' ? '#4ADE80' : (icon.props as any).color === '#0EA5E9' ? '#7DD3FC' : CARD_TEXT),
             })
           : icon}
       </View>
@@ -1952,9 +1953,9 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disab
         </View>
       ) : null}
       {disabled ? (
-        <Ionicons name="lock-closed" size={18} color={isDarkMode ? '#64748B' : '#999'} />
+        <Ionicons name="lock-closed" size={18} color={isDarkMode ? '#64748B' : CARD_TEXT_MUTED} />
       ) : (
-        <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#64748B' : '#888'} />
+        <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#64748B' : CARD_TEXT_MUTED} />
       )}
     </TouchableOpacity>
   );
@@ -2185,13 +2186,13 @@ const styles = StyleSheet.create({
   },
   // Stripe Connect Account Status Card
   stripeAccountCard: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     padding: 16,
     marginHorizontal: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: CARD_DIVIDER,
   },
   stripeAccountHeader: {
     flexDirection: 'row',
@@ -2207,7 +2208,7 @@ const styles = StyleSheet.create({
   stripeAccountTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
   },
   statusBadge: {
     paddingHorizontal: 10,
@@ -2215,26 +2216,26 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusBadgeActive: {
-    backgroundColor: '#d4edda',
+    backgroundColor: 'rgba(74, 222, 128, 0.2)',
   },
   statusBadgePending: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: 'rgba(251, 191, 36, 0.2)',
   },
   statusBadgeRestricted: {
-    backgroundColor: '#f8d7da',
+    backgroundColor: 'rgba(252, 165, 165, 0.2)',
   },
   statusBadgeText: {
     fontSize: RFValue(12),
     fontWeight: '600',
   },
   statusBadgeTextActive: {
-    color: '#155724',
+    color: '#4ADE80',
   },
   statusBadgeTextPending: {
-    color: '#856404',
+    color: '#FBBF24',
   },
   statusBadgeTextRestricted: {
-    color: '#721c24',
+    color: '#FCA5A5',
   },
   stripeAccountDetails: {
     gap: 8,
@@ -2246,12 +2247,12 @@ const styles = StyleSheet.create({
   },
   stripeAccountLabel: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
   stripeAccountValue: {
     fontSize: RFValue(14),
     fontWeight: '500',
-    color: '#000',
+    color: CARD_TEXT,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   bankAccountSection: {
@@ -2261,17 +2262,17 @@ const styles = StyleSheet.create({
   bankAccountItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: CARD_CHIP_BG,
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: CARD_DIVIDER,
   },
   bankIconContainer: {
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: CARD_CHIP_BG,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -2282,12 +2283,12 @@ const styles = StyleSheet.create({
   bankAccountLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 4,
   },
   bankAccountNumber: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   stripeAccountCapabilities: {
@@ -2301,14 +2302,14 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    backgroundColor: '#fff',
+    backgroundColor: CARD_CHIP_BG,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: CARD_DIVIDER,
   },
   capabilityText: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT,
   },
   // Bank Account Details Modal
   bankDetailsModalContent: {
@@ -2421,6 +2422,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  menuItemCard: {
+    backgroundColor: CARD_BG,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    marginBottom: 8,
+    borderBottomWidth: 0,
+  },
   card: {
     paddingHorizontal: 20,
     paddingTop: 24,
@@ -2463,21 +2471,21 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: RFValue(15),
     fontWeight: '500',
-    color: '#003399',
+    color: CARD_TEXT,
   },
   subtext: {
     fontSize: RFValue(13),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginTop: 2,
   },
   menuItemDisabled: {
     opacity: 0.6,
   },
   menuTextDisabled: {
-    color: '#999',
+    color: CARD_TEXT_MUTED,
   },
   subtextDisabled: {
-    color: '#999',
+    color: CARD_TEXT_MUTED,
   },
   modalOverlay: {
     flex: 1,
@@ -2548,14 +2556,14 @@ const styles = StyleSheet.create({
   },
   // Skills Section Styles
   skillsSection: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     padding: 20,
     marginTop: 12,
   },
   skillsSectionTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 16,
   },
   skillCategory: {
@@ -2564,7 +2572,7 @@ const styles = StyleSheet.create({
   skillCategoryTitle: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT_MUTED,
     marginBottom: 10,
   },
   skillTagsContainer: {
@@ -2573,14 +2581,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   skillTagDisplay: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: CARD_CHIP_BG,
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 16,
   },
   skillTagDisplayText: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: CARD_TEXT,
     fontWeight: '500',
   },
   pendingBadge: {
@@ -2681,12 +2689,12 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   pendingReviewsContainer: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: CARD_BG,
     borderRadius: 16,
     marginHorizontal: 16,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
+    borderColor: CARD_DIVIDER,
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -2704,7 +2712,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: "#FFF7ED",
+    backgroundColor: CARD_CHIP_BG,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -2720,10 +2728,10 @@ const styles = StyleSheet.create({
   pendingReviewsTitle: {
     fontSize: RFValue(15),
     fontWeight: "700",
-    color: "#0F172A",
+    color: CARD_TEXT,
   },
   pendingReviewsBadge: {
-    backgroundColor: "#EA580C",
+    backgroundColor: BRAND_ORANGE,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
@@ -2735,28 +2743,28 @@ const styles = StyleSheet.create({
   },
   pendingReviewsSubtext: {
     fontSize: RFValue(12.5),
-    color: "#64748B",
+    color: CARD_TEXT_MUTED,
     marginTop: 2,
   },
   expandedReviewsContent: {
     borderTopWidth: 1,
-    borderTopColor: "#F1F5F9",
+    borderTopColor: CARD_DIVIDER,
     paddingTop: 10,
     paddingHorizontal: 14,
     paddingBottom: 14,
-    backgroundColor: "#F8FAFC",
+    backgroundColor: 'transparent',
   },
   reviewTaskItem: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: CARD_CHIP_BG,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
+    borderColor: CARD_DIVIDER,
   },
   reviewTaskInfo: {
     flex: 1,
@@ -2765,15 +2773,15 @@ const styles = StyleSheet.create({
   reviewTaskTitle: {
     fontSize: RFValue(13.5),
     fontWeight: "600",
-    color: "#1E293B",
+    color: CARD_TEXT,
     marginBottom: 2,
   },
   reviewTaskMeta: {
     fontSize: RFValue(11.5),
-    color: "#64748B",
+    color: CARD_TEXT_MUTED,
   },
   reviewNowBtn: {
-    backgroundColor: "#003399",
+    backgroundColor: BRAND_ORANGE,
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 10,
@@ -2786,12 +2794,12 @@ const styles = StyleSheet.create({
   seeAllReviewsBtn: {
     alignItems: "center",
     paddingVertical: 10,
-    backgroundColor: "#EFF6FF",
+    backgroundColor: CARD_CHIP_BG,
     borderRadius: 10,
     marginTop: 4,
   },
   seeAllReviewsBtnText: {
-    color: "#003399",
+    color: CARD_TEXT,
     fontSize: RFValue(13),
     fontWeight: "700",
   },

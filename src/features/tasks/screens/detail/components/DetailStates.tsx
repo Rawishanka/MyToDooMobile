@@ -1,3 +1,4 @@
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: BRAND_ORANGE,
     paddingHorizontal: 32,
     paddingVertical: 12,
     borderRadius: 8,

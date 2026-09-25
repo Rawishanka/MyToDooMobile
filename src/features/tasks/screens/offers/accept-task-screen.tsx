@@ -20,6 +20,7 @@ import ImportantNotes from './components/ImportantNotes';
 import TaskDetails from './components/TaskDetails';
 import TaskSummaryCard from './components/TaskSummaryCard';
 import TermsCheckbox from './components/TermsCheckbox';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_PRICE_BG, CARD_PRICE_TEXT, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 export default function AcceptTaskScreen() {
   const router = useRouter();
@@ -92,12 +93,12 @@ export default function AcceptTaskScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
       
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Accept Task</Text>
         <View style={styles.placeholder} />
@@ -142,7 +143,7 @@ export default function AcceptTaskScreen() {
             style={styles.contactButton}
             onPress={() => router.push(`./ask-question-screen?taskId=${taskId}`)}
           >
-            <Ionicons name="chatbubble-outline" size={20} color="#007bff" />
+            <Ionicons name="chatbubble-outline" size={20} color={CARD_PRICE_TEXT} />
             <Text style={styles.contactButtonText}>Ask a Question</Text>
           </TouchableOpacity>
         </View>
@@ -180,9 +181,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 15,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: BRAND_BLUE,
   },
   backIcon: {
     padding: 5,
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
   },
   placeholder: {
     width: 34,
@@ -202,32 +203,32 @@ const styles = StyleSheet.create({
   contactContainer: {
     marginTop: 24,
     padding: 16,
-    backgroundColor: '#e8f5e8',
+    backgroundColor: CARD_BG,
     borderRadius: 8,
   },
   contactTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#2e7d32',
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   contactText: {
     fontSize: RFValue(14),
-    color: '#2e7d32',
+    color: CARD_TEXT_MUTED,
     marginBottom: 12,
     lineHeight: 20,
   },
   contactButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: CARD_PRICE_BG,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
     alignSelf: 'flex-start',
   },
   contactButtonText: {
-    color: '#007bff',
+    color: CARD_PRICE_TEXT,
     fontSize: RFValue(14),
     fontWeight: '600',
     marginLeft: 8,
@@ -240,7 +241,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#f0f0f0',
   },
   acceptButton: {
-    backgroundColor: '#28a745',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',

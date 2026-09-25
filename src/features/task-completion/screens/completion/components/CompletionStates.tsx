@@ -1,6 +1,7 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: BRAND_ORANGE,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PaymentItem } from '../hooks/usePaymentStatus';
+import { CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PaymentCardProps {
@@ -66,7 +67,7 @@ export default function PaymentCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -88,17 +89,17 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 6,
   },
   paymentMethod: {
     fontSize: RFValue(13),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: 4,
   },
   paymentDate: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
   },
   right: {
     alignItems: 'flex-end',
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#007bff',
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   statusContainer: {
@@ -127,16 +128,16 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: CARD_DIVIDER,
   },
   transactionLabel: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginRight: 6,
   },
   transactionId: {
     fontSize: RFValue(12),
-    color: '#333',
+    color: CARD_TEXT,
     fontWeight: '500',
   },
 });

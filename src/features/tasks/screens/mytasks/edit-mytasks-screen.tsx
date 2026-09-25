@@ -838,7 +838,7 @@ Please remove phone numbers and addresses from the image.`,
         {/* Fixed Header */}
         <View style={[styles.header, isDarkMode && darkStyles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#FFFFFF' : '#333'} />
+          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
 
         <View style={styles.headerContent}>
@@ -1279,9 +1279,8 @@ const styles = StyleSheet.create({
     // paddingTop is applied dynamically via insets.top for iOS notch support
     paddingBottom: 20,
     paddingHorizontal: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    backgroundColor: BRAND_BLUE,
+    borderBottomWidth: 0,
   },
   backButton: {
     marginBottom: 15,
@@ -1292,13 +1291,13 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(22),
     fontWeight: '700',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
     marginBottom: 5,
     textAlign: 'center',
   },
   headerSubtitle: {
     fontSize: RFValue(14),
-    color: '#8E8E93',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
   },
   scrollView: {

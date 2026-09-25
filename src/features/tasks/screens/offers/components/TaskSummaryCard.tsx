@@ -1,3 +1,4 @@
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { formatUserName } from '@/src/utils/formatUserName';
@@ -65,7 +66,7 @@ export default function TaskSummaryCard({
 
 const styles = StyleSheet.create({
   taskSummary: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     padding: 16,
     marginTop: 20,
@@ -73,17 +74,17 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   taskCreator: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: 4,
   },
   taskLocation: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: 12,
   },
   budgetContainer: {
@@ -93,17 +94,17 @@ const styles = StyleSheet.create({
   },
   budgetLabel: {
     fontSize: RFValue(16),
-    color: '#333',
+    color: CARD_TEXT,
     fontWeight: '600',
   },
   budgetAmount: {
     fontSize: RFValue(20),
-    color: '#28a745',
+    color: CARD_TEXT,
     fontWeight: '700',
   },
   loadingText: {
     fontSize: RFValue(16),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
     fontStyle: 'italic',
   },
 });

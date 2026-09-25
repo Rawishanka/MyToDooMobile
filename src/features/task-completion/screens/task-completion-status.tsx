@@ -27,6 +27,7 @@ import {
 
 // Hooks
 import { useCompletionStatus } from './completion/hooks';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_TEXT } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function TaskCompletionStatusScreen() {
@@ -59,19 +60,19 @@ export default function TaskCompletionStatusScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
 
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Completion Status</Text>
         <TouchableOpacity style={styles.helpIcon}>
           <Ionicons
             name="help-circle-outline"
             size={24}
-            color="#666"
+            color={CARD_TEXT}
             onPress={() => {
               Alert.alert(
                 'Completion Help',
@@ -161,9 +162,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 15,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: BRAND_BLUE,
   },
   backIcon: {
     padding: 5,
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
   },
   helpIcon: {
     padding: 5,
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#28a745',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 14,
     borderRadius: 8,
     gap: 8,

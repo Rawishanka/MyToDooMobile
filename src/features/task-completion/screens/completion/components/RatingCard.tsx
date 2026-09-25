@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CompletionRating } from '../hooks/useCompletionStatus';
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface RatingCardProps {
@@ -21,7 +22,7 @@ export default function RatingCard({ rating, formatDate }: RatingCardProps) {
               key={star}
               name={star <= rating.score ? 'star' : 'star-outline'}
               size={24}
-              color="#ffc107"
+              color="#FBBF24"
             />
           ))}
         </View>
@@ -37,7 +38,7 @@ export default function RatingCard({ rating, formatDate }: RatingCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     marginHorizontal: 20,
     marginBottom: 20,
     borderRadius: 12,
@@ -51,7 +52,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 16,
   },
   display: {
@@ -68,11 +69,11 @@ const styles = StyleSheet.create({
   score: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
   },
   feedback: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     fontStyle: 'italic',
     textAlign: 'center',
     marginBottom: 8,
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
     textAlign: 'center',
   },
 });

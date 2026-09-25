@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import { ErrorState, LoadingState } from '../../components/shared';
 import TermsConditionsScreen from '@/src/features/legal/screens/TermsConditionsScreen';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function AcceptOfferScreen() {
@@ -111,12 +112,12 @@ export default function AcceptOfferScreen() {
   if (offers.length === 0) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
         
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-            <Ionicons name="arrow-back" size={24} color="#000" />
+            <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Accept Offer</Text>
           <View style={styles.placeholder} />
@@ -135,12 +136,12 @@ export default function AcceptOfferScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
       
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Accept Offer</Text>
         <View style={styles.placeholder} />
@@ -180,7 +181,7 @@ export default function AcceptOfferScreen() {
                 </View>
                 <View style={styles.offerAmount}>
                   {selectedOfferId === offer._id && (
-                    <Ionicons name="checkmark-circle" size={24} color="#28a745" />
+                    <Ionicons name="checkmark-circle" size={24} color="#4ADE80" />
                   )}
                 </View>
               </View>
@@ -327,9 +328,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'ios' ? 60 : 50,
     paddingBottom: 15,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: BRAND_BLUE,
   },
   backIcon: {
     padding: 5,
@@ -337,7 +338,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
   },
   placeholder: {
     width: 34,
@@ -347,7 +348,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   taskSummary: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     padding: 16,
     marginTop: 20,
@@ -355,12 +356,12 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   taskLocation: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
   offersContainer: {
     marginTop: 24,
@@ -372,16 +373,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   offerCard: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: CARD_DIVIDER,
   },
   selectedOfferCard: {
-    borderColor: '#28a745',
-    backgroundColor: '#f8fff9',
+    borderColor: BRAND_ORANGE,
+    backgroundColor: CARD_BG,
   },
   offerHeader: {
     flexDirection: 'row',
@@ -395,7 +396,7 @@ const styles = StyleSheet.create({
   offerUserName: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 4,
   },
   ratingContainer: {
@@ -404,7 +405,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginLeft: 4,
   },
   offerAmount: {
@@ -415,17 +416,17 @@ const styles = StyleSheet.create({
   offerPrice: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#28a745',
+    color: CARD_TEXT,
   },
   offerMessage: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_CHIP_BG,
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
   },
   offerMessageText: {
     fontSize: RFValue(14),
-    color: '#495057',
+    color: CARD_TEXT,
     lineHeight: 20,
   },
   offerFooter: {
@@ -435,7 +436,7 @@ const styles = StyleSheet.create({
   },
   offerDate: {
     fontSize: RFValue(12),
-    color: '#6c757d',
+    color: CARD_TEXT_MUTED,
   },
   offerStatus: {
     alignItems: 'flex-end',
@@ -451,7 +452,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   selectionInfo: {
-    backgroundColor: '#e8f5e8',
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
@@ -459,7 +460,7 @@ const styles = StyleSheet.create({
   selectionTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#2e7d32',
+    color: '#4ADE80',
     marginBottom: 12,
   },
   summaryRow: {
@@ -470,42 +471,42 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: RFValue(14),
-    color: '#2e7d32',
+    color: CARD_TEXT_MUTED,
     flex: 1,
   },
   summaryValue: {
     fontSize: RFValue(14),
-    color: '#2e7d32',
+    color: CARD_TEXT,
     fontWeight: '600',
     flex: 1,
     textAlign: 'right',
   },
   summaryAmount: {
     fontSize: RFValue(16),
-    color: '#2e7d32',
+    color: CARD_TEXT,
     fontWeight: '700',
   },
   termsContainer: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: CARD_BG,
     borderRadius: 8,
     padding: 16,
     marginTop: 24,
     borderWidth: 1,
-    borderColor: '#ffeaa7',
+    borderColor: CARD_DIVIDER,
   },
   termsTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#856404',
+    color: '#FBBF24',
     marginBottom: 8,
   },
   termItem: {
     fontSize: RFValue(12),
-    color: '#856404',
+    color: CARD_TEXT,
     marginBottom: 4,
   },
   termLink: {
-    color: '#003399',
+    color: CARD_TEXT,
     textDecorationLine: 'underline' as const,
   },
   emptyContainer: {
@@ -534,7 +535,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#f0f0f0',
   },
   acceptButton: {
-    backgroundColor: '#28a745',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',

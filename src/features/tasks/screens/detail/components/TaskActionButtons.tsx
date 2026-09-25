@@ -1,3 +1,4 @@
+import { BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_PRICE_BG, CARD_PRICE_TEXT, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import TaskAPI from '@/src/api/task-api';
 import { ChatWindow } from '@/src/features/messages/components/ChatWindow';
 import type { Message } from '@/src/features/messages/components/message-types';
@@ -448,7 +449,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
           onPress={handleOpenChat}
           activeOpacity={0.7}
         >
-          <MaterialIcons name="chat" size={20} color={isDarkMode ? "#38BDF8" : "#007bff"} />
+          <MaterialIcons name="chat" size={20} color={isDarkMode ? "#38BDF8" : CARD_PRICE_TEXT} />
         </TouchableOpacity>
 
         {/* Release Payment Button - ONLY show for POSTER when task is pending_completion */}
@@ -529,7 +530,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
                     key={reason._id}
                     style={[
                       styles.reasonItem,
-                      isDarkMode && { borderColor: "#334155" },
+                      isDarkMode && { borderColor: "#334155", backgroundColor: "transparent" },
                       selectedCancelReason === reason._id && (isDarkMode ? { borderColor: "#38BDF8", backgroundColor: "#0F172A" } : styles.reasonItemSelected)
                     ]}
                     onPress={() => setSelectedCancelReason(reason._id)}
@@ -610,9 +611,9 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: CARD_DIVIDER,
   },
   successToast: {
     marginBottom: 10,
@@ -637,7 +638,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 22,
-    backgroundColor: '#e3f2fd',
+    backgroundColor: CARD_PRICE_BG,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#007bff',
@@ -649,11 +650,11 @@ const styles = StyleSheet.create({
   completedButton: {
     flex: 1,
     height: 44,
-    backgroundColor: '#FFA500',
+    backgroundColor: BRAND_ORANGE,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#FFA500',
+    shadowColor: BRAND_ORANGE,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -671,11 +672,11 @@ const styles = StyleSheet.create({
   confirmCompletionButton: {
     flex: 1,
     height: 44,
-    backgroundColor: '#28a745',
+    backgroundColor: BRAND_ORANGE,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#28a745',
+    shadowColor: BRAND_ORANGE,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -742,40 +743,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: CARD_DIVIDER,
     borderRadius: 8,
+    backgroundColor: CARD_BG,
     marginBottom: 8,
   },
   reasonItemSelected: {
-    borderColor: '#003399',
-    backgroundColor: '#E6F2FF',
+    borderColor: BRAND_ORANGE,
+    backgroundColor: CARD_BG,
   },
   radioButton: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#ccc',
+    borderColor: CARD_TEXT_MUTED,
     marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   radioButtonSelected: {
-    borderColor: '#003399',
+    borderColor: BRAND_ORANGE,
   },
   radioButtonInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#003399',
+    backgroundColor: BRAND_ORANGE,
   },
   reasonText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: '#333',
+    color: CARD_TEXT,
   },
   reasonTextSelected: {
-    color: '#003399',
+    color: CARD_TEXT,
     fontWeight: '500',
   },
   modalButtons: {
@@ -793,7 +795,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
   },
   modalButtonConfirm: {
-    backgroundColor: '#dc3545',
+    backgroundColor: BRAND_ORANGE,
   },
   modalButtonDisabled: {
     backgroundColor: '#ccc',

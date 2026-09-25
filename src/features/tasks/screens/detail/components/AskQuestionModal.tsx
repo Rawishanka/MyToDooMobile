@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -95,10 +95,10 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
           {/* Handle bar */}
           <View style={[styles.handleBar, isDarkMode && { backgroundColor: "#334155" }]} />
 
-          <View style={styles.modalHeader}>
+          <View style={[styles.modalHeader, !isDarkMode && styles.modalHeaderBand]}>
             <Text style={[styles.modalTitle, isDarkMode && { color: "#38BDF8" }]}>Ask a Question</Text>
             <TouchableOpacity onPress={handleClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Ionicons name="close" size={24} color={isDarkMode ? "#F8FAFC" : BRAND_BLUE} />
+              <Ionicons name="close" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
             </TouchableOpacity>
           </View>
 
@@ -206,7 +206,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: BRAND_BLUE,
+    color: CARD_TEXT,
+  },
+  modalHeaderBand: {
+    backgroundColor: CARD_BG,
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   scrollContainer: {
     flexShrink: 1,
@@ -233,7 +239,7 @@ const styles = StyleSheet.create({
     minHeight: 120,
   },
   guidelinesContainer: {
-    backgroundColor: '#f0f8ff',
+    backgroundColor: CARD_BG,
     padding: 16,
     borderRadius: 12,
     marginTop: 8,
@@ -242,12 +248,12 @@ const styles = StyleSheet.create({
   guidelinesTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: BRAND_BLUE,
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   guideline: {
     fontSize: RFValue(13),
-    color: '#555',
+    color: CARD_TEXT_MUTED,
     marginBottom: 4,
     lineHeight: 18,
   },

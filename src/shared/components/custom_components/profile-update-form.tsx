@@ -1,4 +1,5 @@
 import { useTheme } from '@/src/shared/theme';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 // components/custom_components/profile-update-form.tsx
 import { User } from '@/src/api/types/user';
 import { UserProfile } from '@/src/api/user-profile-api';
@@ -304,7 +305,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Edit Profile</Text>
         <View style={styles.placeholder} />
@@ -604,7 +605,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                   setNotifyNewTask(val);
                   if (!val) setNotifySkillMatch(false);
                 }}
-                trackColor={{ false: '#ddd', true: '#003399' }}
+                trackColor={{ false: '#ddd', true: BRAND_ORANGE }}
                 thumbColor={notifyNewTask ? '#fff' : '#f4f3f4'}
               />
             </View>
@@ -621,7 +622,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                 value={notifySkillMatch && notifyNewTask}
                 onValueChange={(val) => { if (notifyNewTask) setNotifySkillMatch(val); }}
                 disabled={!notifyNewTask}
-                trackColor={{ false: '#ddd', true: '#003399' }}
+                trackColor={{ false: '#ddd', true: BRAND_ORANGE }}
                 thumbColor={(notifySkillMatch && notifyNewTask) ? '#fff' : '#f4f3f4'}
               />
             </View>
@@ -799,15 +800,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
+    borderBottomColor: BRAND_BLUE, backgroundColor: BRAND_BLUE,
+},
   backButton: {
     padding: 5,
   },
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
   },
   placeholder: {
     width: 34, // Same as back button to center the title
@@ -871,7 +872,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#f0f0f0',
   },
   saveButton: {
-    backgroundColor: '#003399',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -1115,10 +1116,10 @@ const styles = StyleSheet.create({
   },
   // Notification Preferences Styles
   notifCard: {
-    backgroundColor: '#F0F6FF',
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#D0E4FF',
+    borderColor: CARD_DIVIDER,
     marginBottom: 24,
     overflow: 'hidden',
   },
@@ -1138,20 +1139,20 @@ const styles = StyleSheet.create({
   notifLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: CARD_TEXT,
     marginBottom: 3,
   },
   notifLabelDisabled: {
-    color: '#999',
+    color: CARD_TEXT_MUTED,
   },
   notifDesc: {
     fontSize: RFValue(12),
-    color: '#555',
+    color: CARD_TEXT_MUTED,
     lineHeight: 17,
   },
   notifDivider: {
     height: 1,
-    backgroundColor: '#D0E4FF',
+    backgroundColor: CARD_DIVIDER,
     marginHorizontal: 16,
   },
   phoneLabelRow: {

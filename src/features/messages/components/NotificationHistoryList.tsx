@@ -19,7 +19,7 @@ import {
 import type { StoredNotification } from '@/src/services/notification-storage';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 
 function normalizeNotificationType(item: StoredNotification): string {
   const raw =
@@ -137,8 +137,8 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
         activeOpacity={0.7}
       >
         <View style={styles.notificationContent}>
-          <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
-            <Ionicons name={iconName as any} size={24} color={iconColor} />
+          <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? iconColor + '20' : CARD_CHIP_BG }]}>
+            <Ionicons name={iconName as any} size={24} color={isDarkMode ? iconColor : CARD_TEXT} />
           </View>
 
           <View style={styles.textContainer}>
@@ -166,7 +166,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
               style={styles.deleteButton}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="trash-outline" size={20} color="#dc3545" />
+              <Ionicons name="trash-outline" size={20} color={isDarkMode ? '#dc3545' : '#FCA5A5'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -176,7 +176,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="notifications-outline" size={64} color={isDarkMode ? '#334155' : '#ccc'} />
+      <Ionicons name="notifications-outline" size={64} color={isDarkMode ? '#334155' : '#9CA3AF'} />
       <Text style={[styles.emptyText, isDarkMode && { color: '#F8FAFC' }]}>No Notifications</Text>
       <Text style={[styles.emptySubtext, isDarkMode && { color: '#94A3B8' }]}>
         You'll see notifications here when you receive messages, offers, or task updates
@@ -200,7 +200,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
       keyExtractor={(item) => item.id}
       ListEmptyComponent={renderEmpty}
       refreshControl={
-        <RefreshControl refreshing={loading} onRefresh={onRefresh} />
+        <RefreshControl refreshing={loading} onRefresh={onRefresh} tintColor={isDarkMode ? undefined : BRAND_BLUE} colors={[BRAND_BLUE]} />
       }
       contentContainerStyle={
         notifications.length === 0 ? styles.emptyListContainer : styles.listContainer
@@ -231,17 +231,17 @@ const styles = StyleSheet.create({
     color: '#6c757d',
   },
   notificationItem: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     marginHorizontal: 16,
     marginVertical: 4,
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: CARD_BG,
   },
   unreadNotification: {
-    backgroundColor: '#f8f9fa',
-    borderColor: BRAND_BLUE,
+    backgroundColor: CARD_BG,
+    borderColor: BRAND_ORANGE,
   },
   notificationContent: {
     flexDirection: 'row',
@@ -262,22 +262,22 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
     marginBottom: 4,
   },
   unreadText: {
     fontWeight: '700',
-    color: '#000',
+    color: CARD_TEXT,
   },
   body: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: 4,
     lineHeight: 20,
   },
   time: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
   },
   actionsContainer: {
     flexDirection: 'column',
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: BRAND_ORANGE,
   },
   deleteButton: {
     padding: 4,

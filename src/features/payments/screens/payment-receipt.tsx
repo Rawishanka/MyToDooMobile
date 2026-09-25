@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 type LoadState = 'loading' | 'ready' | 'error';
@@ -111,7 +112,7 @@ export default function PaymentReceiptScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
 
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity
@@ -121,7 +122,7 @@ export default function PaymentReceiptScreen() {
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Ionicons name="chevron-back" size={24} color="#000" />
+          <Ionicons name="chevron-back" size={24} color={CARD_TEXT} />
         </TouchableOpacity>
 
         <View style={styles.headerTextWrap}>
@@ -140,9 +141,9 @@ export default function PaymentReceiptScreen() {
             accessibilityLabel="Share receipt PDF"
           >
             {isSharing ? (
-              <ActivityIndicator size="small" color="#003399" />
+              <ActivityIndicator size="small" color={CARD_TEXT} />
             ) : (
-              <Ionicons name="share-outline" size={22} color="#003399" />
+              <Ionicons name="share-outline" size={22} color={CARD_TEXT} />
             )}
           </TouchableOpacity>
         ) : (
@@ -207,8 +208,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
-    backgroundColor: '#fff',
+    borderBottomColor: BRAND_BLUE,
+    backgroundColor: BRAND_BLUE,
   },
   backButton: {
     minWidth: 44,
@@ -223,12 +224,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#111',
+    color: CARD_TEXT,
   },
   headerSubtitle: {
     marginTop: 2,
     fontSize: RFValue(13),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
   shareButton: {
     minWidth: 44,
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     marginTop: 20,
-    backgroundColor: '#003399',
+    backgroundColor: BRAND_ORANGE,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,

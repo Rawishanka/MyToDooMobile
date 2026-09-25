@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 
 interface PayoutHistoryScreenProps {
   onNavigate: (screen: string) => void;
@@ -95,7 +96,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
 
       {item.arrivalDate && (
         <View style={styles.arrivalInfo}>
-          <Ionicons name="calendar-outline" size={14} color="#666" />
+          <Ionicons name="calendar-outline" size={14} color={isDarkMode ? "#666" : CARD_TEXT_MUTED} />
           <Text style={styles.arrivalText}>
             Arrives: {formatDate(item.arrivalDate)}
           </Text>
@@ -110,7 +111,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0F172A', borderBottomColor: '#334155' }]}>
           <TouchableOpacity onPress={() => onNavigate('paymentOptions')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#38BDF8" : "#000"} />
+            <Ionicons name="arrow-back" size={24} color={isDarkMode ? "#38BDF8" : CARD_TEXT} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]}>Payout History</Text>
         </View>
@@ -128,7 +129,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => onNavigate('paymentOptions')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#000" />
+            <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Payout History</Text>
         </View>
@@ -156,11 +157,11 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => onNavigate('paymentOptions')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#000" />
+            <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Payout History</Text>
           <TouchableOpacity onPress={() => refetch()} style={styles.refreshButton}>
-            <Ionicons name="refresh" size={20} color="#6200ee" />
+            <Ionicons name="refresh" size={20} color={CARD_TEXT} />
           </TouchableOpacity>
         </View>
         <View style={styles.emptyState}>
@@ -178,11 +179,11 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => onNavigate('paymentOptions')} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Payout History</Text>
         <TouchableOpacity onPress={() => refetch()} style={styles.refreshButton}>
-          <Ionicons name="refresh" size={20} color="#6200ee" />
+          <Ionicons name="refresh" size={20} color={CARD_TEXT} />
         </TouchableOpacity>
       </View>
 
@@ -214,9 +215,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: BRAND_BLUE,
     paddingTop: Platform.OS === 'ios' ? 50 : 12,
   },
   backButton: {
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 12,
     flex: 1,
-    color: '#000',
+    color: CARD_TEXT,
   },
   refreshButton: {
     padding: 8,
@@ -265,7 +266,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#6200ee',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -282,7 +283,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   payoutItem: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -304,12 +305,12 @@ const styles = StyleSheet.create({
   payoutAmount: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 4,
   },
   payoutDate: {
     fontSize: RFValue(13),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
   statusBadge: {
     paddingHorizontal: 12,
@@ -323,7 +324,7 @@ const styles = StyleSheet.create({
   },
   payoutDescription: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: CARD_TEXT,
     marginBottom: 8,
     lineHeight: 20,
   },
@@ -335,7 +336,7 @@ const styles = StyleSheet.create({
   },
   arrivalText: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
   loadMoreContainer: {
     padding: 16,

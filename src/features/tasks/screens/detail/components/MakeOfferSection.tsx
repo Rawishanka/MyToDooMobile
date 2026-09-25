@@ -1,3 +1,4 @@
+import { BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import React from 'react';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
@@ -35,7 +36,7 @@ export const MakeOfferSection: React.FC<MakeOfferSectionProps> = ({ onMakeOffer,
 
 const styles = StyleSheet.create({
   makeOfferSection: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_BG,
     padding: isTablet ? wp('3%') : wp('4%'),
     marginBottom: hp('2%'),
     borderRadius: 8,
@@ -43,16 +44,16 @@ const styles = StyleSheet.create({
   makeOfferTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: hp('0.5%'),
   },
   viewersText: {
     fontSize: RFValue(11),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: hp('1.5%'),
   },
   makeOfferButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: hp('1.5%'),
     borderRadius: 8,
     alignItems: 'center',

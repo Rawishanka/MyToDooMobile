@@ -1,6 +1,6 @@
 import { formatNumber } from '@/src/shared/utils/currency';
 import * as PaymentAPI from '@/src/api/payment-api';
-import { BRAND_BLUE, BRAND_GREEN, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '@/src/shared/theme';
 import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -266,14 +266,14 @@ const styles = StyleSheet.create({
     marginTop: 12,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: CARD_BG,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: CARD_DIVIDER,
   },
   feePreviewTitle: {
     fontSize: RFValue(12),
     fontWeight: '700',
-    color: BRAND_BLUE,
+    color: CARD_TEXT,
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
@@ -286,21 +286,21 @@ const styles = StyleSheet.create({
   },
   feePreviewLine: {
     fontSize: RFValue(13),
-    color: '#475569',
+    color: CARD_TEXT,
   },
   feeReceiveLabel: {
     fontSize: RFValue(14),
     fontWeight: '700',
-    color: BRAND_BLUE,
+    color: CARD_TEXT,
   },
   feeReceiveValue: {
     fontSize: RFValue(14),
     fontWeight: '700',
-    color: BRAND_GREEN,
+    color: '#4ADE80',
   },
   feePreviewHint: {
     fontSize: RFValue(11),
-    color: '#64748b',
+    color: CARD_TEXT_MUTED,
     marginTop: 10,
   },
 });

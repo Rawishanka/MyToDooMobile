@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { PaymentItem } from '../hooks/usePaymentStatus';
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PaymentSummaryProps {
@@ -33,14 +34,14 @@ export default function PaymentSummary({ payments }: PaymentSummaryProps) {
 
       <View style={styles.card}>
         <Text style={styles.label}>Pending</Text>
-        <Text style={[styles.amount, { color: '#ffc107' }]}>
+        <Text style={[styles.amount, { color: '#FBBF24' }]}>
           ${calculatePendingAmount().toFixed(2)}
         </Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.label}>Transactions</Text>
-        <Text style={[styles.amount, { color: '#007bff' }]}>
+        <Text style={[styles.amount, { color: CARD_TEXT }]}>
           {getTotalTransactions()}
         </Text>
       </View>
@@ -57,7 +58,7 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -69,12 +70,12 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: 8,
   },
   amount: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#28a745',
+    color: '#4ADE80',
   },
 });

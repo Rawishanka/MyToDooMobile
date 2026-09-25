@@ -1,3 +1,4 @@
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { useTheme } from '@/src/shared/theme';
 import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { useAnswerTaskQuestion } from '@/src/shared/hooks/useTaskApi';
@@ -169,10 +170,10 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
       >
       <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
         {/* Header */}
-        <View style={[styles.header, isDarkMode && { borderBottomColor: "#334155" }]}>
+        <View style={[styles.header, isDarkMode && { borderBottomColor: "#334155", backgroundColor: "#0B1120" }]}>
           <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]}>Answer Question</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color={isDarkMode ? "#F8FAFC" : "#000"} />
+            <Ionicons name="close" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
           </TouchableOpacity>
         </View>
 
@@ -261,16 +262,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    backgroundColor: BRAND_BLUE,
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: BRAND_BLUE,
   },
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     flex: 1,
     textAlign: 'center',
   },
@@ -292,15 +294,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   questionCard: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_BG,
     padding: 16,
     borderRadius: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
+    borderLeftColor: BRAND_ORANGE,
   },
   questionText: {
     fontSize: RFValue(15),
-    color: '#333',
+    color: CARD_TEXT,
     lineHeight: 22,
   },
   answerContainer: {
@@ -323,7 +325,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   tipsContainer: {
-    backgroundColor: '#f0f8ff',
+    backgroundColor: CARD_BG,
     padding: 16,
     borderRadius: 12,
     marginBottom: 20,
@@ -331,12 +333,12 @@ const styles = StyleSheet.create({
   tipsTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#007AFF',
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   tipText: {
     fontSize: RFValue(13),
-    color: '#555',
+    color: CARD_TEXT_MUTED,
     marginBottom: 4,
     lineHeight: 18,
   },
@@ -346,7 +348,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#e0e0e0',
   },
   submitButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: BRAND_ORANGE,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

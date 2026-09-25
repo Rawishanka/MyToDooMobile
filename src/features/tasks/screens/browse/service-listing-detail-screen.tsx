@@ -9,7 +9,14 @@ import { validateContactContent } from '@/src/shared/utils/contactModeration';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { formatUserName } from '@/src/utils/formatUserName';
-import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import {
+  BRAND_BLUE,
+  BRAND_ORANGE,
+  CARD_BG,
+  CARD_DIVIDER,
+  CARD_TEXT,
+  CARD_TEXT_MUTED,
+} from '@/src/shared/theme/brandColors';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
@@ -133,15 +140,15 @@ export default function ServiceListingDetailScreen({
           styles.header,
           {
             paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 45,
-            backgroundColor: isDarkMode ? '#1E293B' : '#ffffff',
-            borderBottomColor: isDarkMode ? '#334155' : '#e2e8f0',
+            backgroundColor: isDarkMode ? '#1E293B' : BRAND_BLUE,
+            borderBottomColor: isDarkMode ? '#334155' : BRAND_BLUE,
           },
         ]}
       >
         <TouchableOpacity onPress={onBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: isDarkMode ? '#F8FAFC' : BRAND_BLUE }]}>
+        <Text style={[styles.headerTitle, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
           Service Details
         </Text>
       </View>
@@ -161,59 +168,59 @@ export default function ServiceListingDetailScreen({
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E293B' : '#ffffff', borderColor: isDarkMode ? '#334155' : '#e2e8f0' }]}>
-            <Text style={[styles.title, { color: isDarkMode ? '#F8FAFC' : '#0F172A' }]}>
+          <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E293B' : CARD_BG, borderColor: isDarkMode ? '#334155' : CARD_BG }]}>
+            <Text style={[styles.title, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
               {listing.title}
             </Text>
             
             <View style={styles.priceRow}>
-              <Text style={[styles.price, { color: isDarkMode ? '#38BDF8' : BRAND_BLUE }]}>
+              <Text style={[styles.price, { color: isDarkMode ? '#38BDF8' : CARD_TEXT }]}>
                 ${Number(listing.price).toFixed(0)}
               </Text>
-              <Text style={[styles.currency, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>
+              <Text style={[styles.currency, { color: isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED }]}>
                 {listing.currency || 'AUD'}
               </Text>
             </View>
 
             <View style={styles.metaRow}>
-              <Ionicons name="location-outline" size={16} color={isDarkMode ? '#94A3B8' : '#64748B'} />
-              <Text style={[styles.metaText, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>
+              <Ionicons name="location-outline" size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT} />
+              <Text style={[styles.metaText, { color: isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED }]}>
                 {listing.suburb}
                 {listing.radiusKm ? ` · within ${listing.radiusKm} km` : ''}
               </Text>
             </View>
 
             <View style={styles.metaRow}>
-              <Ionicons name="person-outline" size={16} color={isDarkMode ? '#94A3B8' : '#64748B'} />
-              <Text style={[styles.taskerText, { color: isDarkMode ? '#CBD5E1' : '#475569' }]}>
-                Offered by <Text style={{ fontWeight: '600' }}>{taskerName}</Text>
+              <Ionicons name="person-outline" size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT} />
+              <Text style={[styles.taskerText, { color: isDarkMode ? '#CBD5E1' : CARD_TEXT_MUTED }]}>
+                Offered by <Text style={{ fontWeight: '600', color: isDarkMode ? undefined : CARD_TEXT }}>{taskerName}</Text>
               </Text>
             </View>
 
-            <View style={[styles.divider, { backgroundColor: isDarkMode ? '#334155' : '#e2e8f0' }]} />
+            <View style={[styles.divider, { backgroundColor: isDarkMode ? '#334155' : CARD_DIVIDER }]} />
 
-            <Text style={[styles.sectionHeading, { color: isDarkMode ? '#F8FAFC' : '#0F172A' }]}>
+            <Text style={[styles.sectionHeading, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
               Description
             </Text>
-            <Text style={[styles.description, { color: isDarkMode ? '#CBD5E1' : '#334155' }]}>
+            <Text style={[styles.description, { color: isDarkMode ? '#CBD5E1' : CARD_TEXT }]}>
               {listing.description}
             </Text>
           </View>
 
           {/* Booking Section */}
-          <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E293B' : '#ffffff', borderColor: isDarkMode ? '#334155' : '#e2e8f0', marginTop: 16 }]}>
-            <Text style={[styles.sectionHeading, { color: isDarkMode ? '#F8FAFC' : '#0F172A', marginBottom: 12 }]}>
+          <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E293B' : CARD_BG, borderColor: isDarkMode ? '#334155' : CARD_BG, marginTop: 16 }]}>
+            <Text style={[styles.sectionHeading, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT, marginBottom: 12 }]}>
               Book this Service
             </Text>
 
-            <Text style={[styles.label, { color: isDarkMode ? '#E2E8F0' : '#334155' }]}>
+            <Text style={[styles.label, { color: isDarkMode ? '#E2E8F0' : CARD_TEXT }]}>
               Agreed Offer Amount ($)
             </Text>
             <TextInput
               style={[
                 styles.input,
                 {
-                  backgroundColor: isDarkMode ? '#0F172A' : '#f8fafc',
+                  backgroundColor: isDarkMode ? '#0F172A' : '#ffffff',
                   borderColor: isDarkMode ? '#334155' : '#cbd5e1',
                   color: isDarkMode ? '#F8FAFC' : '#0F172A',
                 },
@@ -225,7 +232,7 @@ export default function ServiceListingDetailScreen({
               placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
             />
 
-            <Text style={[styles.label, { color: isDarkMode ? '#E2E8F0' : '#334155', marginTop: 14 }]}>
+            <Text style={[styles.label, { color: isDarkMode ? '#E2E8F0' : CARD_TEXT, marginTop: 14 }]}>
               Message for Tasker (Optional)
             </Text>
             <TextInput
@@ -233,7 +240,7 @@ export default function ServiceListingDetailScreen({
                 styles.input,
                 styles.textArea,
                 {
-                  backgroundColor: isDarkMode ? '#0F172A' : '#f8fafc',
+                  backgroundColor: isDarkMode ? '#0F172A' : '#ffffff',
                   borderColor: isDarkMode ? '#334155' : '#cbd5e1',
                   color: isDarkMode ? '#F8FAFC' : '#0F172A',
                 },

@@ -4,6 +4,7 @@ import React from 'react';
 import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG, BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 
 export const UserProfileHeader: React.FC = () => {
   const router = useRouter();
@@ -20,11 +21,11 @@ export const UserProfileHeader: React.FC = () => {
   return (
     <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-        <Ionicons name="arrow-back" size={24} color="#000" />
+        <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
       </TouchableOpacity>
       <Text style={styles.headerTitle}>User Profile</Text>
       <TouchableOpacity style={styles.shareIcon} onPress={handleShare}>
-        <Ionicons name="share-outline" size={24} color="#666" />
+        <Ionicons name="share-outline" size={24} color={CARD_TEXT} />
       </TouchableOpacity>
     </View>
   );
@@ -37,9 +38,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    backgroundColor: BRAND_BLUE,
   },
   backIcon: {
     padding: 4,
@@ -47,7 +46,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
   },
   shareIcon: {
     padding: 4,

@@ -3,6 +3,7 @@ import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -36,7 +37,7 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#38BDF8" }]}>
       <View style={[styles.header, isDarkMode && { borderBottomColor: "#334155" }]}>
-        <Ionicons name="document-text" size={20} color="#004aad" />
+        <Ionicons name="document-text" size={20} color={isDarkMode ? "#38BDF8" : CARD_TEXT} />
         <Text style={[styles.headerText, isDarkMode && { color: "#38BDF8" }]}>
           {isViewingOthersOffer ? 'Offer' : 'Your Offer'}
         </Text>
@@ -93,7 +94,7 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
 
         {/* Status Info */}
         <View style={[styles.infoContainer, isDarkMode && { backgroundColor: "#0F172A" }]}>
-          <Ionicons name="information-circle-outline" size={16} color="#666" />
+          <Ionicons name="information-circle-outline" size={16} color={CARD_TEXT_MUTED} />
           <Text style={[styles.infoText, isDarkMode && { color: "#94A3B8" }]}>
             {status === 'completed'
               ? isViewingOthersOffer
@@ -115,9 +116,9 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#F0F8FF',
+    backgroundColor: CARD_BG,
     borderWidth: 2,
-    borderColor: '#004aad',
+    borderColor: CARD_DIVIDER,
     borderRadius: 12,
     padding: isTablet ? wp('3%') : wp('4%'),
     marginBottom: hp('2%'),
@@ -128,12 +129,12 @@ const styles = StyleSheet.create({
     marginBottom: hp('1.5%'),
     paddingBottom: hp('1.5%'),
     borderBottomWidth: 1,
-    borderBottomColor: '#cce7ff',
+    borderBottomColor: CARD_DIVIDER,
   },
   headerText: {
     fontSize: RFValue(14),
     fontWeight: '700',
-    color: '#004aad',
+    color: CARD_TEXT,
     marginLeft: wp('2%'),
     flex: 1,
   },
@@ -183,54 +184,54 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   amountContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_CHIP_BG,
     padding: isTablet ? wp('2%') : wp('3%'),
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#004aad',
+    borderColor: CARD_DIVIDER,
   },
   amountLabel: {
     fontSize: RFValue(11),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: hp('0.5%'),
   },
   amount: {
     fontSize: RFValue(isTablet ? 26 : 22),
     fontWeight: '700',
-    color: '#004aad',
+    color: CARD_TEXT,
   },
   messageContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_CHIP_BG,
     padding: 12,
     borderRadius: 8,
   },
   messageLabel: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: 6,
     fontWeight: '600',
   },
   message: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: CARD_TEXT,
     lineHeight: 20,
   },
   infoContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#fff',
+    backgroundColor: CARD_CHIP_BG,
     padding: 10,
     borderRadius: 8,
   },
   infoText: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginLeft: 6,
     flex: 1,
     lineHeight: 18,
   },
   acceptOfferButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 8,

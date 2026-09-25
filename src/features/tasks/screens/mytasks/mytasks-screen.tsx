@@ -28,6 +28,7 @@ import { useAuthStore } from '@/src/store/auth-task-store';
 // Responsive utilities
 import { hp, isTablet, RFValue, TAB_BAR_CLEARANCE, wp } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 
 interface TabScreenProps {
   tasks: Task[];
@@ -150,7 +151,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             <View style={styles.emptyListContent}>
               <View style={styles.smartReviewCard}>
                 <View style={styles.smartReviewIconBadge}>
-                  <Ionicons name="star" size={26} color="#EA580C" />
+                  <Ionicons name="star" size={26} color="#FBBF24" />
                 </View>
                 <Text style={styles.smartReviewTitle}>
                   {oppositeReviewCount} {oppositeReviewCount === 1 ? 'task' : 'tasks'} waiting for review
@@ -1295,13 +1296,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   smartReviewCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: CARD_BG,
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
     marginHorizontal: 16,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: CARD_BG,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
@@ -1312,7 +1313,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#FFF7ED',
+    backgroundColor: CARD_CHIP_BG,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
@@ -1320,13 +1321,13 @@ const styles = StyleSheet.create({
   smartReviewTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#0F172A',
+    color: CARD_TEXT,
     marginBottom: 6,
     textAlign: 'center',
   },
   smartReviewSubtitle: {
     fontSize: RFValue(13),
-    color: '#64748B',
+    color: CARD_TEXT_MUTED,
     textAlign: 'center',
     lineHeight: 19,
     marginBottom: 20,
@@ -1337,11 +1338,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#FF914D',
+    backgroundColor: BRAND_ORANGE,
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 22,
-    shadowColor: '#FF914D',
+    shadowColor: BRAND_ORANGE,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

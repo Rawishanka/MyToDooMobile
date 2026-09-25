@@ -9,6 +9,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { BRAND_ORANGE, CARD_BG, CARD_TEXT } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PayoutAccountRequiredModalProps {
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
   },
   stepsContainer: {
     width: '100%',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
@@ -169,7 +170,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#007bff',
+    backgroundColor: BRAND_ORANGE,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
   stepText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: '#333',
+    color: CARD_TEXT,
     fontWeight: '500',
   },
   buttonsContainer: {
@@ -193,11 +194,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#007bff',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 14,
     borderRadius: 12,
     gap: 8,
-    shadowColor: '#007bff',
+    shadowColor: BRAND_ORANGE,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,

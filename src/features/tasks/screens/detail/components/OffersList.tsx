@@ -17,6 +17,7 @@ import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
+import { BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -178,7 +179,7 @@ const OfferAmountStatus: React.FC<{ offer: any; isTaskPoster: boolean; showStatu
       {/* Only show amount to task poster, hide from other taskers */}
       {isTaskPoster && (
         <View style={styles.offerAmountRow}>
-          <Ionicons name="cash-outline" size={16} color={isDarkMode ? '#38BDF8' : '#004aad'} />
+          <Ionicons name="cash-outline" size={16} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
           <Text style={[styles.offerAmountText, isDarkMode && { color: '#38BDF8' }]}>
             {formatCurrency(offerAmount, currencyInfo)}
           </Text>
@@ -315,7 +316,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
           <View style={[styles.offerCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             {/* Task Title - Show which task this offer is for */}
             <View style={[styles.taskTitleContainer, isDarkMode && { borderBottomColor: '#334155' }]}>
-              <Ionicons name="briefcase-outline" size={14} color={isDarkMode ? "#94A3B8" : "#666"} />
+              <Ionicons name="briefcase-outline" size={14} color={isDarkMode ? "#94A3B8" : CARD_TEXT_MUTED} />
               <Text style={[styles.taskTitle, isDarkMode && { color: "#94A3B8" }]} numberOfLines={1}>
                 {taskTitle}
               </Text>
@@ -377,7 +378,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
 
                   {/* Message */}
                   <View style={[styles.offerMessageRow, isDarkMode && { borderTopColor: '#334155' }]}>
-                    <Ionicons name="chatbubble-outline" size={13} color={isDarkMode ? "#94A3B8" : "#666"} />
+                    <Ionicons name="chatbubble-outline" size={13} color={isDarkMode ? "#94A3B8" : CARD_TEXT_MUTED} />
                     <Text style={[styles.offerMessage, isDarkMode && { color: "#E2E8F0" }]}>
                       {offer.offer?.message || offer.message || 'No message provided'}
                     </Text>
@@ -385,7 +386,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                   
                   {/* Time posted */}
                   <View style={styles.offerDateRow}>
-                    <Ionicons name="time-outline" size={12} color={isDarkMode ? "#64748B" : "#999"} />
+                    <Ionicons name="time-outline" size={12} color={isDarkMode ? "#64748B" : CARD_TEXT_MUTED} />
                     <Text style={[styles.offerDate, isDarkMode && { color: "#64748B" }]}>
                       {offer.createdAt ? new Date(offer.createdAt).toLocaleDateString('en-GB', {
                         day: 'numeric',
@@ -470,12 +471,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   offerCard: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     padding: isTablet ? wp('3%') : wp('4%'),
     marginBottom: hp('1.5%'),
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: CARD_DIVIDER,
   },
   taskTitleContainer: {
     flexDirection: 'row',
@@ -483,11 +484,11 @@ const styles = StyleSheet.create({
     paddingBottom: hp('1%'),
     marginBottom: hp('1%'),
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: CARD_DIVIDER,
   },
   taskTitle: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginLeft: wp('1.5%'),
     flex: 1,
     fontWeight: '500',
@@ -518,7 +519,7 @@ const styles = StyleSheet.create({
   offerUserName: {
     fontSize: RFValue(isTablet ? 14 : 14),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
   },
   verifiedBadgeSmall: {
     flexDirection: 'row',
@@ -553,12 +554,12 @@ const styles = StyleSheet.create({
   offerRatingText: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginLeft: 4,
   },
   offerRatingCount: {
     fontSize: RFValue(13),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginLeft: 2,
   },
   offerCompletionContainer: {
@@ -567,12 +568,12 @@ const styles = StyleSheet.create({
   },
   offerCompletionRate: {
     fontSize: RFValue(12),
-    color: '#4CAF50',
+    color: '#4ADE80',
     fontWeight: '500',
   },
   offerTasksText: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: 8,
   },
   offerRating: {
@@ -602,23 +603,23 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#f5f5f5',
+    borderTopColor: CARD_DIVIDER,
   },
   offerMessage: {
     fontSize: RFValue(13),
-    color: '#333',
+    color: CARD_TEXT,
     marginLeft: 8,
     flex: 1,
     lineHeight: 18,
   },
   acceptOfferButton: {
-    backgroundColor: '#003399',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 13,
     paddingHorizontal: 20,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: '#003399',
+    shadowColor: BRAND_ORANGE,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.22,
     shadowRadius: 5,
@@ -667,7 +668,7 @@ const styles = StyleSheet.create({
   },
   offerDate: {
     fontSize: RFValue(11),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
     marginLeft: 4,
   },
   rebookedBadge: {
@@ -702,7 +703,7 @@ const styles = StyleSheet.create({
   offerAmountText: {
     fontSize: RFValue(15),
     fontWeight: '700',
-    color: '#004aad',
+    color: CARD_TEXT,
   },
   offerStatusBadge: {
     flexDirection: 'row',

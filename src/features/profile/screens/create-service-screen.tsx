@@ -6,6 +6,7 @@ import { useCreateServiceListing } from '@/src/shared/hooks/useServiceListingApi
 import { validateContactContent } from '@/src/shared/utils/contactModeration';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
@@ -229,7 +230,7 @@ export default function CreateServiceScreen({
         ]}
       >
         <TouchableOpacity onPress={handleBack} style={styles.backButton} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Offer a Service</Text>
       </View>
@@ -244,7 +245,7 @@ export default function CreateServiceScreen({
           <View>
             {/* Info Banner */}
             <View style={[styles.infoBanner, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
-              <MaterialCommunityIcons name="shield-check-outline" size={20} color="#0284C7" style={{ marginTop: 2 }} />
+              <MaterialCommunityIcons name="shield-check-outline" size={20} color={isDarkMode ? "#0284C7" : CARD_TEXT} style={{ marginTop: 2 }} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.infoBannerTitle, isDarkMode && { color: '#F8FAFC' }]}>List your skills on MyToDoo</Text>
                 <Text style={[styles.infoBannerSub, isDarkMode && { color: '#94A3B8' }]}>
@@ -551,39 +552,39 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: BRAND_BLUE,
   },
   backButton: { padding: 4 },
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#003399',
+    color: CARD_TEXT,
     marginLeft: 10,
   },
   content: { padding: 16, paddingBottom: 60 },
   infoBanner: {
     flexDirection: 'row',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: CARD_BG,
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: CARD_DIVIDER,
     gap: 12,
     marginBottom: 16,
   },
   infoBannerTitle: {
     fontSize: RFValue(13),
     fontWeight: '700',
-    color: '#1E3A8A',
+    color: CARD_TEXT,
     marginBottom: 3,
   },
   infoBannerSub: {
     fontSize: RFValue(11),
-    color: '#3B82F6',
+    color: CARD_TEXT_MUTED,
     lineHeight: RFValue(16),
   },
   labelRow: {
@@ -721,11 +722,11 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: 26,
-    backgroundColor: '#003399',
+    backgroundColor: BRAND_ORANGE,
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
-    shadowColor: '#003399',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,

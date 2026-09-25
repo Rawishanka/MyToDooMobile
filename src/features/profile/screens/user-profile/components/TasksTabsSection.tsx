@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG, BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 
 interface TaskCounts {
   created: number;
@@ -57,7 +58,7 @@ export const TasksTabsSection: React.FC<TasksTabsSectionProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     padding: 16,
     marginBottom: 12,
     borderRadius: 12,
@@ -70,12 +71,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 12,
   },
   tabsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_CHIP_BG,
     borderRadius: 8,
     padding: 4,
   },
@@ -87,12 +88,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTab: {
-    backgroundColor: '#007bff',
+    backgroundColor: BRAND_ORANGE,
   },
   tabText: {
     fontSize: RFValue(12),
     fontWeight: '500',
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
   activeTabText: {
     color: '#fff',

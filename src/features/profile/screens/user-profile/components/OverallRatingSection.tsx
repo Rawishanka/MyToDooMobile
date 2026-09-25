@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 
 interface OverallRatingProps {
   averageRating: number | null | undefined;
@@ -56,14 +57,14 @@ export const OverallRatingSection: React.FC<OverallRatingProps> = ({
       {/* Stats Cards */}
       <View style={styles.statsContainer}>
         <View style={[styles.statCard, isDarkMode && { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' }]}>
-          <Ionicons name="checkmark-circle" size={24} color="#28A745" />
+          <Ionicons name="checkmark-circle" size={24} color="#4ADE80" />
           <Text style={[styles.statValue, isDarkMode && { color: '#F8FAFC' }]}>{completionRate || 0}%</Text>
           <Text style={[styles.statLabel, isDarkMode && { color: '#F8FAFC' }]}>Completion rate</Text>
           <Text style={[styles.statSubtext, isDarkMode && { color: '#94A3B8' }]}>{totalTasks || 0} task{(totalTasks || 0) !== 1 ? 's' : ''} completed</Text>
         </View>
 
         <View style={[styles.statCard, isDarkMode && { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' }]}>
-          <Ionicons name="chatbox" size={24} color="#38BDF8" />
+          <Ionicons name="chatbox" size={24} color="#7DD3FC" />
           <Text style={[styles.statValue, isDarkMode && { color: '#F8FAFC' }]}>{totalReviews}</Text>
           <Text style={[styles.statLabel, isDarkMode && { color: '#F8FAFC' }]}>review{totalReviews !== 1 ? 's' : ''}</Text>
           <Text style={[styles.statSubtext, isDarkMode && { color: '#94A3B8' }]}>From completed tasks</Text>
@@ -85,7 +86,7 @@ export const OverallRatingSection: React.FC<OverallRatingProps> = ({
                   <Ionicons key={index} name="star" size={14} color="#FFD700" />
                 ))}
                 {Array.from({ length: 5 - starCount }).map((_, index) => (
-                  <Ionicons key={`empty-${index}`} name="star-outline" size={14} color={isDarkMode ? '#334155' : '#E0E0E0'} />
+                  <Ionicons key={`empty-${index}`} name="star-outline" size={14} color={isDarkMode ? '#334155' : CARD_DIVIDER} />
                 ))}
               </View>
               
@@ -116,7 +117,7 @@ export const OverallRatingSection: React.FC<OverallRatingProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff',
+    backgroundColor: CARD_BG,
     borderRadius: 12,
     marginBottom: 16,
     shadowColor: '#000',
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(22),
     fontWeight: 'bold',
-    color: '#333',
+    color: CARD_TEXT,
     marginBottom: 16,
   },
   ratingMainContainer: {
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
   ratingNumber: {
     fontSize: RFValue(48),
     fontWeight: 'bold',
-    color: '#333',
+    color: CARD_TEXT,
     marginRight: 8,
   },
   mainStar: {
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
   },
   reviewCount: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: CARD_CHIP_BG,
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -171,19 +172,19 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: RFValue(24),
     fontWeight: 'bold',
-    color: '#333',
+    color: CARD_TEXT,
     marginTop: 8,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
     marginBottom: 2,
   },
   statSubtext: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     textAlign: 'center',
   },
   breakdownSection: {
@@ -193,7 +194,7 @@ const styles = StyleSheet.create({
   breakdownTitle: {
     fontSize: RFValue(20),
     fontWeight: 'bold',
-    color: '#333',
+    color: CARD_TEXT,
     marginBottom: 16,
   },
   ratingRow: {
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
   },
   barBackground: {
     height: 8,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: CARD_DIVIDER,
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
   },
   countText: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: CARD_TEXT,
     fontWeight: '500',
     minWidth: 60,
     textAlign: 'right',

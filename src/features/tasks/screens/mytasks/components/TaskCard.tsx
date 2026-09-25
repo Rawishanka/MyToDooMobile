@@ -39,6 +39,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // Responsive utilities
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import {
+  BRAND_ORANGE,
+  CARD_BG,
+  CARD_CHIP_BG,
+  CARD_DIVIDER,
+  CARD_PRICE_BG,
+  CARD_PRICE_TEXT,
+  CARD_TEXT,
+  CARD_TEXT_MUTED,
+} from '@/src/shared/theme/brandColors';
 
 const REVIEW_PROMPT_STORAGE_PREFIX = '@mytodoo/review_prompt_shown_';
 const RECENT_COMPLETION_WINDOW_MS = 15 * 60 * 1000;
@@ -1398,13 +1408,13 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const getStatusColor = () => {
     switch (task.status) {
       case 'completed':
-        return '#28a745';
+        return '#4ADE80';
       case 'assigned':
-        return '#007bff';
+        return '#93C5FD';
       case 'open':
-        return '#ffc107';
+        return '#FBBF24';
       default:
-        return '#6c757d';
+        return '#CBD5E1';
     }
   };
 
@@ -1488,7 +1498,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               <MaterialIcons
                 name={timePreference.icon}
                 size={14}
-                color="#007bff"
+                color={CARD_TEXT}
                 style={styles.metaIcon}
               />
               <Text style={styles.timePreference}>{timePreference.label}</Text>
@@ -1499,7 +1509,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               <MaterialIcons
                 name={getLocationIcon()}
                 size={14}
-                color={isMovingLocation() ? '#28a745' : '#666'}
+                color={isMovingLocation() ? '#4ADE80' : CARD_TEXT_MUTED}
                 style={styles.metaIcon}
               />
               {isMovingLocation() ? (
@@ -1560,7 +1570,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
           {/* Price and User Info */}
           <View style={styles.price}>
-            <Text style={[styles.priceText, isDarkMode && { color: '#38BDF8' }]}>
+            <Text style={[styles.priceText, isDarkMode && { color: '#38BDF8', backgroundColor: 'transparent' }]}>
               {formattedBudgetDisplay}
             </Text>
             {(() => {
@@ -1630,18 +1640,18 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               onPress={handleViewOffers}
             >
               <View style={styles.offersInfo}>
-                <MaterialIcons name="local-offer" size={20} color="#007bff" />
+                <MaterialIcons name="local-offer" size={20} color={CARD_TEXT} />
                 <Text style={styles.offersLabel}>
                   Offers: {(task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0}
                 </Text>
               </View>
-              <MaterialIcons name="chevron-right" size={20} color="#007bff" />
+              <MaterialIcons name="chevron-right" size={20} color={CARD_TEXT} />
             </TouchableOpacity>
           ) : (
             /* For Taskers - just display offer count without interaction */
             <View style={styles.offersButton}>
               <View style={styles.offersInfo}>
-                <MaterialIcons name="local-offer" size={20} color="#007bff" />
+                <MaterialIcons name="local-offer" size={20} color={CARD_TEXT} />
                 <Text style={styles.offersLabel}>
                   Offers: {(task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0}
                 </Text>
@@ -2665,7 +2675,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
 const styles = StyleSheet.create({
   card: {
     marginHorizontal: isTablet ? 0 : wp('4%'),
-    backgroundColor: '#F9F9F9',
+    backgroundColor: CARD_BG,
     padding: isTablet ? wp('2%') : wp('4%'),
     borderRadius: isTablet ? 12 : 10,
     marginBottom: isTablet ? hp('1.5%') : hp('2%'),
@@ -2674,7 +2684,6 @@ const styles = StyleSheet.create({
   cardWithCancelRequest: {
     borderWidth: 3,
     borderColor: '#dc3545',
-    backgroundColor: '#fff5f5',
   },
   cancelRequestBanner: {
     flexDirection: 'row',
@@ -2763,7 +2772,7 @@ const styles = StyleSheet.create({
   },
   completedButton: {
     flex: 1,
-    backgroundColor: '#FFA500',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: isTablet ? hp('1.3%') : hp('1.2%'),
     paddingHorizontal: isTablet ? wp('3%') : wp('4%'),
     borderRadius: isTablet ? 8 : 8,
@@ -2816,6 +2825,8 @@ const styles = StyleSheet.create({
     height: isTablet ? 44 : wp('9%'),
     borderRadius: isTablet ? 22 : wp('4.5%'),
     backgroundColor: '#dc3545',
+    borderWidth: 1.5,
+    borderColor: CARD_TEXT,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -2927,7 +2938,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(isTablet ? 14 : 14),
     fontWeight: '600',
     marginBottom: isTablet ? hp('0.8%') : 8,
-    color: '#1a1a1a',
+    color: CARD_TEXT,
     lineHeight: isTablet ? RFValue(20) : undefined,
   },
   metaRow: {
@@ -2942,12 +2953,12 @@ const styles = StyleSheet.create({
   },
   timePreference: {
     fontSize: RFValue(isTablet ? 12 : 12),
-    color: '#007bff',
+    color: CARD_TEXT,
     fontWeight: '500',
   },
   locationType: {
     fontSize: RFValue(isTablet ? 12 : 12),
-    color: '#28a745',
+    color: '#4ADE80',
     fontWeight: '500',
     marginRight: 4,
   },
@@ -2958,7 +2969,7 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: RFValue(isTablet ? 12 : 12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     flex: 1,
   },
   meta: {
@@ -2981,13 +2992,19 @@ const styles = StyleSheet.create({
   },
   date: {
     fontSize: RFValue(isTablet ? 11 : 12),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
   },
   offerCountText: {
     fontSize: RFValue(isTablet ? 12 : 12),
-    color: '#007bff',
+    color: '#FFFFFF',
     fontWeight: '600',
     marginTop: isTablet ? hp('0.5%') : 4,
+    alignSelf: 'flex-start',
+    backgroundColor: BRAND_ORANGE,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   price: {
     alignItems: 'flex-end',
@@ -2995,7 +3012,12 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: RFValue(isTablet ? 14 : 16),
     fontWeight: '700',
-    color: '#007bff',
+    color: CARD_PRICE_TEXT,
+    backgroundColor: CARD_PRICE_BG,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 12,
+    overflow: 'hidden',
     marginBottom: isTablet ? hp('0.8%') : 8,
   },
   userAvatar: {
@@ -3003,10 +3025,12 @@ const styles = StyleSheet.create({
     height: isTablet ? 44 : 32,
     borderRadius: isTablet ? 22 : 16,
     backgroundColor: '#f0f0f0',
+    borderWidth: 2,
+    borderColor: CARD_TEXT,
   },
   description: {
     fontSize: RFValue(isTablet ? 13 : 14),
-    color: '#555',
+    color: CARD_TEXT_MUTED,
     lineHeight: isTablet ? RFValue(18) : 20,
     marginTop: isTablet ? hp('0.8%') : 8,
   },
@@ -3018,28 +3042,28 @@ const styles = StyleSheet.create({
     marginTop: isTablet ? hp('1%') : 10,
     paddingTop: isTablet ? hp('0.8%') : 8,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: CARD_DIVIDER,
   },
   categoryLabel: {
     fontSize: RFValue(isTablet ? 12 : 13),
-    color: '#4a5568',
+    color: CARD_TEXT_MUTED,
     fontWeight: '600',
     lineHeight: isTablet ? RFValue(16) : 18,
   },
   categoryTag: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: CARD_CHIP_BG,
     paddingHorizontal: isTablet ? wp('2%') : 8,
     paddingVertical: isTablet ? hp('0.4%') : 4,
     borderRadius: isTablet ? 10 : 12,
   },
   categoryText: {
     fontSize: RFValue(isTablet ? 10 : 11),
-    color: '#1976d2',
+    color: CARD_TEXT,
     fontWeight: '500',
   },
   moreCategoriesText: {
     fontSize: RFValue(isTablet ? 10 : 12),
-    color: '#718096',
+    color: CARD_TEXT_MUTED,
     fontWeight: '500',
     fontStyle: 'italic',
     marginLeft: isTablet ? wp('0.5%') : 4,
@@ -3385,7 +3409,7 @@ const styles = StyleSheet.create({
   // Offers section styles
   offersSection: {
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: CARD_DIVIDER,
     paddingTop: 12,
     marginTop: 12,
   },
@@ -3402,12 +3426,12 @@ const styles = StyleSheet.create({
   offersLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
     marginLeft: 8,
   },
   offersCount: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginLeft: 4,
   },
   // Offers modal styles

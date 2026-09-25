@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 
 interface Stats {
   totalTasksCreated: number;
@@ -51,7 +52,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stats }) => {
 
 const styles = StyleSheet.create({
   statsCard: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     padding: 16,
     marginBottom: 12,
     borderRadius: 12,
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
   statsTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 16,
   },
   statsGrid: {
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
   },
   statItem: {
     width: '48%',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_CHIP_BG,
     padding: 16,
     borderRadius: 8,
     marginBottom: 8,
@@ -84,16 +85,16 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: RFValue(24),
     fontWeight: '700',
-    color: '#007bff',
+    color: CARD_TEXT,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     textAlign: 'center',
   },
   responseTimeContainer: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_CHIP_BG,
     padding: 12,
     borderRadius: 8,
     flexDirection: 'row',
@@ -102,11 +103,11 @@ const styles = StyleSheet.create({
   },
   responseTimeLabel: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
   responseTimeValue: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
   },
 });

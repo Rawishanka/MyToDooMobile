@@ -27,6 +27,7 @@ import {
 import FAQScreen from '@/src/shared/components/custom_components/faq-screen';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 
 type ContactUsProps = { 
   onBack: () => void;
@@ -493,12 +494,12 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
   return (
     <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
+      <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : BRAND_BLUE} />
       
       {/* Header */}
       <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : "#333"} />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>Contact Us</Text>
         <View style={styles.headerSpacer} />
@@ -526,14 +527,14 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                   activeOpacity={method.action ? 0.7 : 1}
                 >
                   <View style={[styles.contactMethodIcon, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                    <Ionicons name={method.icon as any} size={24} color="#003399" />
+                    <Ionicons name={method.icon as any} size={24} color={isDarkMode ? "#003399" : CARD_TEXT} />
                   </View>
                   <View style={styles.contactMethodInfo}>
                     <Text style={[styles.contactMethodTitle, isDarkMode && { color: '#F8FAFC' }]}>{method.title}</Text>
                     <Text style={[styles.contactMethodValue, isDarkMode && { color: '#38BDF8' }]}>{method.value}</Text>
                   </View>
                   {method.action && (
-                    <Ionicons name="chevron-forward" size={20} color="#999" />
+                    <Ionicons name="chevron-forward" size={20} color={isDarkMode ? "#999" : CARD_TEXT_MUTED} />
                   )}
                 </TouchableOpacity>
               ))}
@@ -716,7 +717,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
               {/* Info Note */}
               <View style={styles.infoBox}>
-                <Ionicons name="information-circle" size={20} color="#003399" />
+                <Ionicons name="information-circle" size={20} color={isDarkMode ? "#003399" : CARD_TEXT} />
                 <Text style={styles.infoText}>
                   We typically respond within 24 hours during business days
                 </Text>
@@ -724,7 +725,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
             </View>
 
             {/* Token Lookup Section */}
-            <View style={styles.tokenLookupSection}>
+            <View style={[styles.tokenLookupSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
               <Text style={styles.tokenLookupTitle}>Track Your Request</Text>
               <Text style={styles.tokenLookupSubtitle}>
                 Enter your support token to check the status of your request
@@ -758,7 +759,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
             </View>
 
             {/* FAQ Link */}
-            <View style={styles.faqSection}>
+            <View style={[styles.faqSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
               <Text style={styles.faqTitle}>Looking for quick answers?</Text>
               <Text style={styles.faqSubtitle}>
                 Check out our FAQ section for instant solutions to common questions
@@ -802,9 +803,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 14,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e4e8',
+    borderBottomColor: BRAND_BLUE,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -819,7 +820,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: CARD_TEXT,
     textAlign: 'center',
     marginHorizontal: 8,
   },
@@ -830,7 +831,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   quickContactSection: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     marginTop: 10,
     paddingVertical: 6,
   },
@@ -840,13 +841,13 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: CARD_DIVIDER,
   },
   contactMethodIcon: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#E8F2FF',
+    backgroundColor: CARD_CHIP_BG,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
@@ -857,12 +858,12 @@ const styles = StyleSheet.create({
   contactMethodTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: CARD_TEXT,
     marginBottom: 3,
   },
   contactMethodValue: {
     fontSize: RFValue(13),
-    color: '#003399',
+    color: CARD_TEXT_MUTED,
     fontWeight: '500',
   },
   dividerContainer: {
@@ -884,7 +885,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   formSection: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     paddingHorizontal: 16,
     paddingVertical: 20,
     marginBottom: 10,
@@ -892,7 +893,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(19),
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: CARD_TEXT,
     marginBottom: 18,
   },
   inputGroup: {
@@ -901,7 +902,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   inputContainer: {
@@ -934,7 +935,7 @@ const styles = StyleSheet.create({
   },
   charCount: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
     marginTop: 6,
     textAlign: 'right',
   },
@@ -1009,11 +1010,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#003399',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 16,
     borderRadius: 12,
     marginTop: 8,
-    shadowColor: '#003399',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -1032,7 +1033,7 @@ const styles = StyleSheet.create({
   infoBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F2FF',
+    backgroundColor: CARD_CHIP_BG,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 10,
@@ -1041,13 +1042,13 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: '#003399',
+    color: CARD_TEXT,
     marginLeft: 10,
     lineHeight: 18,
   },
   // Token Lookup Section
   tokenLookupSection: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     paddingHorizontal: 16,
     paddingVertical: 20,
     marginBottom: 10,
@@ -1055,12 +1056,12 @@ const styles = StyleSheet.create({
   tokenLookupTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: CARD_TEXT,
     marginBottom: 6,
   },
   tokenLookupSubtitle: {
     fontSize: RFValue(13),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: 14,
   },
   tokenInputRow: {
@@ -1087,7 +1088,7 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   checkButton: {
-    backgroundColor: '#003399',
+    backgroundColor: BRAND_ORANGE,
     width: 50,
     height: 50,
     borderRadius: 10,
@@ -1099,7 +1100,7 @@ const styles = StyleSheet.create({
   },
   // FAQ Section
   faqSection: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     paddingVertical: 20,
     paddingHorizontal: 16,
     alignItems: 'center',
@@ -1107,13 +1108,13 @@ const styles = StyleSheet.create({
   faqTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: CARD_TEXT,
     marginBottom: 6,
     textAlign: 'center',
   },
   faqSubtitle: {
     fontSize: RFValue(13),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     textAlign: 'center',
     marginBottom: 14,
     lineHeight: 19,

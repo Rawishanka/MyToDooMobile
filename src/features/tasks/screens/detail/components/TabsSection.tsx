@@ -1,3 +1,4 @@
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import React from 'react';
 import { useTheme } from '@/src/shared/theme';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -21,7 +22,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({ activeTab, onTabChange
         <Ionicons
           name="pricetag-outline"
           size={16}
-          color={activeTab === 'offers' ? (isDarkMode ? '#38BDF8' : '#003399') : (isDarkMode ? '#94A3B8' : '#64748B')}
+          color={activeTab === 'offers' ? (isDarkMode ? '#38BDF8' : '#003399') : (isDarkMode ? '#94A3B8' : CARD_TEXT)}
         />
         <Text style={[styles.tabText, isDarkMode && { color: '#94A3B8' }, activeTab === 'offers' && (isDarkMode ? { color: '#38BDF8', fontWeight: '700' } : styles.activeTabText)]}>
           Offers
@@ -36,7 +37,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({ activeTab, onTabChange
         <Ionicons
           name="chatbubbles-outline"
           size={16}
-          color={activeTab === 'questions' ? (isDarkMode ? '#38BDF8' : '#003399') : (isDarkMode ? '#94A3B8' : '#64748B')}
+          color={activeTab === 'questions' ? (isDarkMode ? '#38BDF8' : '#003399') : (isDarkMode ? '#94A3B8' : CARD_TEXT)}
         />
         <Text style={[styles.tabText, isDarkMode && { color: '#94A3B8' }, activeTab === 'questions' && (isDarkMode ? { color: '#38BDF8', fontWeight: '700' } : styles.activeTabText)]}>
           Questions
@@ -49,7 +50,7 @@ export const TabsSection: React.FC<TabsSectionProps> = ({ activeTab, onTabChange
 const styles = StyleSheet.create({
   tabsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: CARD_BG,
     borderRadius: 14,
     padding: 4,
     marginBottom: 16,
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: CARD_TEXT_MUTED,
     fontWeight: '600',
   },
   activeTabText: {

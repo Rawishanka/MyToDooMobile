@@ -3,7 +3,18 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { formatUserName } from '@/src/utils/formatUserName';
 import { CompletionUser } from '../hooks/useCompletionStatus';
+import { CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
+
+// Status colours from the hook are dark; lighten them so they stay readable on the blue card.
+const ON_BLUE_TINT: Record<string, string> = {
+  '#28a745': '#4ADE80',
+  '#007bff': '#FFFFFF',
+  '#dc3545': '#FCA5A5',
+  '#6c757d': 'rgba(255,255,255,0.78)',
+  '#ffc107': '#FBBF24',
+};
+const onBlue = (color: string) => ON_BLUE_TINT[color] || color;
 
 interface StatusCardProps {
   status: string;
@@ -28,8 +39,8 @@ export default function StatusCard({
     <View style={styles.card}>
       <View style={styles.header}>
         <View style={styles.indicator}>
-          <Ionicons name={statusIcon as any} size={32} color={statusColor} />
-          <Text style={[styles.statusText, { color: statusColor }]}>
+          <Ionicons name={statusIcon as any} size={32} color={onBlue(statusColor)} />
+          <Text style={[styles.statusText, { color: onBlue(statusColor) }]}>
             {status.replace('_', ' ').toUpperCase()}
           </Text>
         </View>
@@ -64,7 +75,7 @@ export default function StatusCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     margin: 20,
     borderRadius: 12,
     padding: 20,
@@ -93,28 +104,28 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
   value: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
   },
   notesSection: {
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: CARD_DIVIDER,
   },
   notesLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#333',
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   notesText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     lineHeight: 20,
   },
 });

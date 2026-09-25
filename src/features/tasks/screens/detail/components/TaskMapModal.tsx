@@ -19,6 +19,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { BRAND_BLUE, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TaskMapModalProps {
@@ -90,12 +91,12 @@ const TaskMapModal: React.FC<TaskMapModalProps> = ({ visible, onClose, task }) =
       onRequestClose={onClose}
     >
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
 
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.backButton} activeOpacity={0.7}>
-            <Ionicons name="chevron-back" size={24} color="#000" />
+            <Ionicons name="chevron-back" size={24} color={CARD_TEXT} />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerTitle} numberOfLines={1}>
@@ -128,7 +129,7 @@ export default TaskMapModal;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
   },
   header: {
     flexDirection: 'row',
@@ -136,8 +137,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    backgroundColor: '#fff',
+    borderBottomColor: CARD_DIVIDER,
+    backgroundColor: BRAND_BLUE,
   },
   backButton: {
     padding: 6,
@@ -149,11 +150,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
   },
   headerSubtitle: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginTop: 1,
   },
   mapContainer: {

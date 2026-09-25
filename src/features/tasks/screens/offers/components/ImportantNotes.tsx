@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { CARD_BG, CARD_DIVIDER, CARD_TEXT } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function ImportantNotes() {
@@ -24,22 +25,22 @@ export default function ImportantNotes() {
 
 const styles = StyleSheet.create({
   notesContainer: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: CARD_BG,
     borderRadius: 8,
     padding: 16,
     marginTop: 24,
     borderWidth: 1,
-    borderColor: '#ffeaa7',
+    borderColor: CARD_DIVIDER,
   },
   notesTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#856404',
+    color: '#FBBF24',
     marginBottom: 8,
   },
   noteItem: {
     fontSize: RFValue(12),
-    color: '#856404',
+    color: CARD_TEXT,
     marginBottom: 4,
   },
 });

@@ -3,6 +3,7 @@ import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { formatUserName } from '@/src/utils/formatUserName';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG, BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 
 interface UserProfile {
   _id: string;
@@ -47,7 +48,7 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, formatDate, ac
             key={star}
             name={star <= rating ? 'star' : 'star-outline'}
             size={16}
-            color="#ffc107"
+            color="#FBBF24"
           />
         ))}
       </View>
@@ -62,12 +63,12 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, formatDate, ac
             <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
           ) : (
             <View style={styles.profileImagePlaceholder}>
-              <Ionicons name="person" size={40} color="#666" />
+              <Ionicons name="person" size={40} color={CARD_TEXT_MUTED} />
             </View>
           )}
           {user.verified && (
             <View style={styles.verifiedBadge}>
-              <Ionicons name="checkmark-circle" size={20} color="#007bff" />
+              <Ionicons name="checkmark-circle" size={20} color="#4ADE80" />
             </View>
           )}
         </View>
@@ -86,18 +87,18 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, formatDate, ac
 
           <View style={styles.userMeta}>
             <Text style={styles.metaText}>
-              <Ionicons name="calendar-outline" size={14} color="#666" /> Joined{' '}
+              <Ionicons name="calendar-outline" size={14} color={CARD_TEXT_MUTED} /> Joined{' '}
               {formatDate(user.joinedDate)}
             </Text>
             <Text style={styles.metaText}>
-              <Ionicons name="time-outline" size={14} color="#666" /> Last active{' '}
+              <Ionicons name="time-outline" size={14} color={CARD_TEXT_MUTED} /> Last active{' '}
               {formatDate(user.lastActive)}
             </Text>
           </View>
 
           {user.location && (
             <Text style={styles.locationText}>
-              <Ionicons name="location-outline" size={14} color="#666" /> {user.location.city},{' '}
+              <Ionicons name="location-outline" size={14} color={CARD_TEXT_MUTED} /> {user.location.city},{' '}
               {user.location.state}
             </Text>
           )}
@@ -128,7 +129,7 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, formatDate, ac
 
 const styles = StyleSheet.create({
   profileCard: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     padding: 16,
     marginBottom: 12,
     borderRadius: 12,
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: CARD_CHIP_BG,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     borderRadius: 10,
   },
   profileInfo: {
@@ -173,7 +174,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   ratingContainer: {
@@ -187,41 +188,41 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
   userMeta: {
     marginBottom: 4,
   },
   metaText: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: 4,
   },
   locationText: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
   },
   bioSection: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: CARD_DIVIDER,
   },
   bioText: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: CARD_TEXT,
     lineHeight: 20,
   },
   skillsSection: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: CARD_DIVIDER,
   },
   skillsTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   skillsContainer: {
@@ -230,14 +231,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   skillTag: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: CARD_CHIP_BG,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   skillText: {
     fontSize: RFValue(12),
-    color: '#007bff',
+    color: CARD_TEXT,
     fontWeight: '500',
   },
 });

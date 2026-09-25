@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
 
 interface ZendeskHelpProps {
   visible: boolean;
@@ -40,7 +41,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#003399" />
+            <Ionicons name="close" size={24} color={CARD_TEXT} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Help & Support</Text>
           <View style={styles.placeholder} />
@@ -95,9 +96,9 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 50 : 20,
     paddingBottom: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e4e8',
+    borderBottomColor: BRAND_BLUE,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#003399',
+    color: CARD_TEXT,
   },
   placeholder: {
     width: 32,

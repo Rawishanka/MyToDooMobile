@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { formatUserName, formatAvatarName } from '@/src/utils/formatUserName';
+import { BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface Offer {
@@ -162,7 +163,7 @@ export default function OfferCard({ offer, onAccept, onReject, onMessage }: Offe
         style={styles.contactButton}
         onPress={handleMessage}
       >
-        <Ionicons name="chatbubble-outline" size={16} color="#007bff" />
+        <Ionicons name="chatbubble-outline" size={16} color={CARD_TEXT} />
         <Text style={styles.contactButtonText}>Message</Text>
       </TouchableOpacity>
     </View>
@@ -171,7 +172,7 @@ export default function OfferCard({ offer, onAccept, onReject, onMessage }: Offe
 
 const styles = StyleSheet.create({
   offerCard: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     marginHorizontal: 20,
     marginBottom: 12,
     borderRadius: 12,
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
   taskerName: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#000',
+    color: CARD_TEXT,
     marginBottom: 2,
   },
   ratingContainer: {
@@ -216,12 +217,12 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginLeft: 4,
   },
   offerDate: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: CARD_TEXT_MUTED,
   },
   offerPriceContainer: {
     alignItems: 'flex-end',
@@ -229,7 +230,7 @@ const styles = StyleSheet.create({
   offerPrice: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#007bff',
+    color: CARD_TEXT,
     marginBottom: 6,
   },
   statusBadge: {
@@ -244,20 +245,20 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   messageContainer: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: CARD_CHIP_BG,
     padding: 12,
     borderRadius: 8,
     marginBottom: 12,
   },
   messageLabel: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: CARD_TEXT_MUTED,
     marginBottom: 4,
     fontWeight: '500',
   },
   messageText: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: CARD_TEXT,
     lineHeight: 20,
   },
   actionButtons: {
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     flex: 1,
-    backgroundColor: '#28a745',
+    backgroundColor: BRAND_ORANGE,
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
@@ -294,13 +295,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#007bff',
+    borderColor: CARD_TEXT,
     paddingVertical: 8,
     borderRadius: 8,
     gap: 6,
   },
   contactButtonText: {
-    color: '#007bff',
+    color: CARD_TEXT,
     fontSize: RFValue(14),
     fontWeight: '500',
   },

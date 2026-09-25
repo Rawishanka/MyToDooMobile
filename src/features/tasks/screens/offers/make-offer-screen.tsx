@@ -22,7 +22,7 @@ import {
 } from './components';
 import { useOfferSubmission } from './hooks/useOfferSubmission';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 
 export default function MakeOfferScreen() {
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
@@ -83,7 +83,7 @@ export default function MakeOfferScreen() {
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120" }]}>
-      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
+      <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : BRAND_BLUE} />
       
       <View style={{ flex: 1 }}>
         <OfferFormHeader />

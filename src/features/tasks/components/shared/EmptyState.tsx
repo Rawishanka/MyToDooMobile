@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface EmptyStateProps {
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   actionButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: BRAND_ORANGE,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
