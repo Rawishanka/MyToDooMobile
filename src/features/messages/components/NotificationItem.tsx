@@ -3,7 +3,6 @@
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { NotificationItem as NotificationItemType } from './message-types';
-import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 
 interface NotificationItemProps {
@@ -18,7 +17,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({ item, onMenu
     <TouchableOpacity
       style={[
         styles.notificationItem,
-        isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }
+        isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }
       ]}
       onPress={() => onMenuPress(item)}
     >
@@ -36,34 +35,43 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({ item, onMenu
 const styles = StyleSheet.create({
   notificationItem: {
     flexDirection: 'row',
-    padding: 16,
+    padding: 14,
+    marginBottom: 12,
     alignItems: 'flex-start',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   avatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
     marginRight: 12,
+    backgroundColor: '#EEF2FA',
   },
   notificationContent: {
     flex: 1,
+    minWidth: 0,
   },
   notificationText: {
-    fontSize: RFValue(15),
-    color: '#000',
-    lineHeight: 20,
+    fontSize: 15,
+    color: '#0F172A',
+    lineHeight: 21,
     marginBottom: 4,
   },
   username: {
     fontWeight: '600',
-    color: '#000',
+    color: '#0F172A',
   },
   timeText: {
-    fontSize: RFValue(13),
-    color: '#8e8e93',
+    fontSize: 12,
+    color: '#64748B',
     marginTop: 2,
   },
 });

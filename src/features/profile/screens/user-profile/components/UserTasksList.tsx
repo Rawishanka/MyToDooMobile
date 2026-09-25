@@ -30,13 +30,13 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return '#28a745';
+        return '#16A34A';
       case 'assigned':
-        return '#007bff';
+        return '#003399';
       case 'open':
-        return '#ffc107';
+        return '#D97706';
       default:
-        return '#6c757d';
+        return '#64748B';
     }
   };
 
@@ -58,7 +58,7 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
             <Text style={styles.taskTitle} numberOfLines={2}>
               {item.title}
             </Text>
-            <Text style={styles.taskLocation}>
+            <Text style={styles.taskLocation} numberOfLines={1}>
               {item.location?.address || 'Location not specified'}
             </Text>
             <View style={styles.taskMeta}>
@@ -99,15 +99,17 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
 
 const styles = StyleSheet.create({
   taskCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     padding: 16,
-    marginBottom: 12,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginBottom: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 2,
   },
   taskHeader: {
     flexDirection: 'row',
@@ -120,12 +122,12 @@ const styles = StyleSheet.create({
   taskTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#000',
+    color: '#0F172A',
     marginBottom: 8,
   },
   taskLocation: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
     marginBottom: 8,
   },
   taskMeta: {
@@ -140,7 +142,7 @@ const styles = StyleSheet.create({
   },
   taskDate: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: '#64748B',
   },
   taskPrice: {
     justifyContent: 'center',
@@ -149,7 +151,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#007bff',
+    color: '#003399',
   },
   emptyContainer: {
     padding: 40,
@@ -157,6 +159,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: RFValue(14),
-    color: '#999',
+    color: '#64748B',
   },
 });

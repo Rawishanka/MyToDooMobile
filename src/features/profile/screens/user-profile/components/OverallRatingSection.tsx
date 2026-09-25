@@ -32,15 +32,15 @@ export const OverallRatingSection: React.FC<OverallRatingProps> = ({
   };
 
   const getBarColor = (starCount: number) => {
-    if (starCount === 5) return '#FFD700';
-    if (starCount === 4) return '#FFA500';
-    if (starCount === 3) return '#FF8C00';
-    if (starCount === 2) return '#FF6347';
-    return '#FF4500';
+    if (starCount === 5) return '#16A34A';
+    if (starCount === 4) return '#84CC16';
+    if (starCount === 3) return '#F59E0B';
+    if (starCount === 2) return '#F97316';
+    return '#DC2626';
   };
 
   return (
-    <View style={[styles.container, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
       {/* Overall Rating Display */}
       <View style={styles.overallSection}>
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Overall rating</Text>
@@ -48,22 +48,22 @@ export const OverallRatingSection: React.FC<OverallRatingProps> = ({
           <Text style={[styles.ratingNumber, isDarkMode && { color: '#F8FAFC' }]}>
             {averageRating != null ? averageRating.toFixed(1) : '0.0'}
           </Text>
-          <Ionicons name="star" size={32} color="#FFD700" style={styles.mainStar} />
+          <Ionicons name="star" size={32} color="#F59E0B" style={styles.mainStar} />
         </View>
         <Text style={[styles.reviewCount, isDarkMode && { color: '#94A3B8' }]}>{totalReviews} review{totalReviews !== 1 ? 's' : ''}</Text>
       </View>
 
       {/* Stats Cards */}
       <View style={styles.statsContainer}>
-        <View style={[styles.statCard, isDarkMode && { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' }]}>
-          <Ionicons name="checkmark-circle" size={24} color="#28A745" />
+        <View style={[styles.statCard, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+          <View style={[styles.statChip, { backgroundColor: '#DCFCE7' }]}><Ionicons name="checkmark-circle" size={20} color="#16A34A" /></View>
           <Text style={[styles.statValue, isDarkMode && { color: '#F8FAFC' }]}>{completionRate || 0}%</Text>
           <Text style={[styles.statLabel, isDarkMode && { color: '#F8FAFC' }]}>Completion rate</Text>
           <Text style={[styles.statSubtext, isDarkMode && { color: '#94A3B8' }]}>{totalTasks || 0} task{(totalTasks || 0) !== 1 ? 's' : ''} completed</Text>
         </View>
 
-        <View style={[styles.statCard, isDarkMode && { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' }]}>
-          <Ionicons name="chatbox" size={24} color="#38BDF8" />
+        <View style={[styles.statCard, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+          <View style={[styles.statChip, isDarkMode && { backgroundColor: 'rgba(56,189,248,0.14)' }]}><Ionicons name="chatbox" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} /></View>
           <Text style={[styles.statValue, isDarkMode && { color: '#F8FAFC' }]}>{totalReviews}</Text>
           <Text style={[styles.statLabel, isDarkMode && { color: '#F8FAFC' }]}>review{totalReviews !== 1 ? 's' : ''}</Text>
           <Text style={[styles.statSubtext, isDarkMode && { color: '#94A3B8' }]}>From completed tasks</Text>
@@ -82,10 +82,10 @@ export const OverallRatingSection: React.FC<OverallRatingProps> = ({
             <View key={starCount} style={styles.ratingRow}>
               <View style={styles.starsContainer}>
                 {Array.from({ length: starCount }).map((_, index) => (
-                  <Ionicons key={index} name="star" size={14} color="#FFD700" />
+                  <Ionicons key={index} name="star" size={14} color="#F59E0B" />
                 ))}
                 {Array.from({ length: 5 - starCount }).map((_, index) => (
-                  <Ionicons key={`empty-${index}`} name="star-outline" size={14} color={isDarkMode ? '#334155' : '#E0E0E0'} />
+                  <Ionicons key={`empty-${index}`} name="star-outline" size={14} color={isDarkMode ? '#334155' : '#CBD5E1'} />
                 ))}
               </View>
               
@@ -116,14 +116,24 @@ export const OverallRatingSection: React.FC<OverallRatingProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  statChip: {
+    width: 36,
+    height: 36,
     borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   overallSection: {
     alignItems: 'center',
@@ -132,9 +142,9 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   sectionTitle: {
-    fontSize: RFValue(22),
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: RFValue(20),
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 16,
   },
   ratingMainContainer: {
@@ -143,17 +153,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   ratingNumber: {
-    fontSize: RFValue(48),
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: RFValue(44),
+    fontWeight: '800',
+    color: '#003399',
     marginRight: 8,
   },
   mainStar: {
     marginTop: -4,
   },
   reviewCount: {
-    fontSize: RFValue(16),
-    color: '#666',
+    fontSize: RFValue(15),
+    color: '#64748B',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -163,27 +173,29 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
   },
   statValue: {
     fontSize: RFValue(24),
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '800',
+    color: '#003399',
     marginTop: 8,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#333',
+    color: '#0F172A',
     marginBottom: 2,
   },
   statSubtext: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
   },
   breakdownSection: {
@@ -191,9 +203,9 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   breakdownTitle: {
-    fontSize: RFValue(20),
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: RFValue(17),
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 16,
   },
   ratingRow: {
@@ -212,7 +224,7 @@ const styles = StyleSheet.create({
   },
   barBackground: {
     height: 8,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: '#E8ECF4',
     borderRadius: 4,
     overflow: 'hidden',
   },
@@ -221,8 +233,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   countText: {
-    fontSize: RFValue(14),
-    color: '#333',
+    fontSize: RFValue(13),
+    color: '#334155',
     fontWeight: '500',
     minWidth: 60,
     textAlign: 'right',

@@ -13,12 +13,10 @@ export const DetailHeader: React.FC = () => {
   return (
     <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 46 }]}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButtonHeader} activeOpacity={0.8}>
-        <View style={styles.backIconCircle}>
-          <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
-        </View>
+        <Ionicons name="chevron-back" size={18} color="#FFFFFF" />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>Task Details</Text>
+      <Text style={styles.headerTitle} numberOfLines={1}>Task Details</Text>
       <View style={styles.rightPlaceholder} />
     </View>
   );
@@ -30,22 +28,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingBottom: hp('1.5%'),
+    paddingBottom: 14,
     backgroundColor: BRAND_BLUE,
     borderBottomWidth: 0,
   },
   backButtonHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-  backIconCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    gap: 2,
+    width: 84,
+    height: 36,
+    paddingLeft: 8,
+    paddingRight: 12,
+    borderRadius: 18,
     backgroundColor: 'rgba(255, 255, 255, 0.18)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   backText: {
     fontSize: RFValue(14),
@@ -53,11 +49,13 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   headerTitle: {
+    flex: 1,
+    textAlign: 'center',
     fontSize: RFValue(16),
     fontWeight: '700',
     color: '#FFFFFF',
   },
   rightPlaceholder: {
-    width: 44,
+    width: 84,
   },
 });

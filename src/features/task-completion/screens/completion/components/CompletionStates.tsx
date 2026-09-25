@@ -15,7 +15,7 @@ export function CompletionLoadingState({
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#007bff'} />
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>{message}</Text>
     </View>
   );
@@ -30,7 +30,7 @@ export function CompletionErrorState({ onRetry, onBack }: ErrorStateProps) {
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.errorContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
+      <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
       <Text style={[styles.errorTitle, isDarkMode && { color: '#F8FAFC' }]}>Failed to load completion status</Text>
       <Text style={[styles.errorSubtitle, isDarkMode && { color: '#94A3B8' }]}>
         Could not load task completion information. Please check your connection and try again.
@@ -49,7 +49,7 @@ export function CompletionEmptyState() {
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.emptyContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <MaterialIcons name="assignment" size={64} color={isDarkMode ? '#475569' : '#ccc'} />
+      <MaterialIcons name="assignment" size={64} color={isDarkMode ? '#475569' : '#94A3B8'} />
       <Text style={[styles.emptyTitle, isDarkMode && { color: '#F8FAFC' }]}>No completion data</Text>
       <Text style={[styles.emptySubtitle, isDarkMode && { color: '#94A3B8' }]}>
         This task doesn't have completion tracking enabled or hasn't been started yet.
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
   },
   errorContainer: {
     flex: 1,
@@ -79,23 +79,24 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0D1B2A',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
   },
   retryButton: {
     backgroundColor: BRAND_ORANGE,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: 32,
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 14,
     marginBottom: 12,
   },
   retryButtonText: {
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#007bff',
+    color: '#003399',
     fontSize: RFValue(16),
     fontWeight: '600',
   },
@@ -122,14 +123,14 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0D1B2A',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
   },

@@ -92,7 +92,7 @@ export default function LogoutPopup({ onBack }) {
         >
           {/* Red/Coral Soft Icon Badge */}
           <View style={[styles.iconBadge, isDarkMode && { backgroundColor: '#450A0A', borderColor: '#7F1D1D', borderWidth: 1 }]}>
-            <Ionicons name="log-out-outline" size={32} color={isDarkMode ? "#F87171" : "#EF4444"} />
+            <Ionicons name="log-out-outline" size={32} color={isDarkMode ? "#F87171" : "#DC2626"} />
           </View>
 
           {/* Heading */}
@@ -143,14 +143,14 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
+    borderRadius: 20,
     paddingTop: 28,
     paddingBottom: 22,
     paddingHorizontal: 24,
     width: '100%',
     maxWidth: 340,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.18,
     shadowRadius: 20,
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   },
   cancelBtn: {
     flex: 1,
-    paddingVertical: 14,
+    height: 50,
     borderRadius: 14,
     backgroundColor: '#F1F5F9',
     alignItems: 'center',
@@ -199,15 +199,15 @@ const styles = StyleSheet.create({
   },
   logoutBtn: {
     flex: 1,
-    paddingVertical: 14,
+    height: 50,
     borderRadius: 14,
-    backgroundColor: '#EF4444',
+    backgroundColor: '#DC2626',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#EF4444',
+    shadowColor: '#DC2626',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
     elevation: 3,
   },
   logoutBtnText: {

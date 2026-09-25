@@ -88,8 +88,8 @@ export const OffersList: React.FC<OffersListProps> = ({
   if (isLoading) {
     return (
       <View style={styles.loadingState}>
-        <ActivityIndicator size="small" color="#4CAF50" />
-        <Text style={styles.loadingStateText}>Loading offers...</Text>
+        <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#003399'} />
+        <Text style={[styles.loadingStateText, isDarkMode && { color: '#94A3B8' }]}>Loading offers...</Text>
       </View>
     );
   }
@@ -97,7 +97,9 @@ export const OffersList: React.FC<OffersListProps> = ({
   if (otherOffers.length === 0) {
     return (
       <View style={[styles.emptyState, { paddingBottom: Math.max(insets.bottom, 20), marginBottom: 100 }]}>
-        <Ionicons name="document-outline" size={48} color={isDarkMode ? '#475569' : '#ccc'} />
+        <View style={[styles.emptyIconChip, isDarkMode && { backgroundColor: '#1E293B' }]}>
+          <Ionicons name="pricetags-outline" size={28} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+        </View>
         <Text style={[styles.emptyStateText, isDarkMode && { color: '#F8FAFC' }]}>No other offers yet</Text>
         <Text style={[styles.emptyStateSubtext, isDarkMode && { color: '#94A3B8' }]}>
           {offers.length > 0 ? 'Only your offer has been submitted.' : 'Be the first to make an offer!'}
@@ -111,6 +113,7 @@ export const OffersList: React.FC<OffersListProps> = ({
       data={otherOffers}
       scrollEnabled={false}
       keyExtractor={(item: any) => item._id}
+      ItemSeparatorComponent={() => <View style={{ height: 14 }} />}
       contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 20), marginBottom: 100 }}
       renderItem={({ item: offer }: { item: any }) => (
         <OfferCard
@@ -348,11 +351,11 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                   {/* Rating and Stats Row */}
                   <View style={styles.offerStatsRow}>
                     {isLoadingRatingStats ? (
-                      <ActivityIndicator size="small" color="#FFD700" />
+                      <ActivityIndicator size="small" color="#FBBF24" />
                     ) : (
                       <>
                         <View style={styles.offerRatingContainer}>
-                          <Ionicons name="star" size={14} color="#FFD700" />
+                          <Ionicons name="star" size={14} color="#FBBF24" />
                           <Text style={[styles.offerRatingText, isDarkMode && { color: "#F8FAFC" }]}>
                             {Number(rating).toFixed(1)}
                           </Text>
@@ -377,7 +380,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                   </Text>
 
                   {/* Message */}
-                  <View style={[styles.offerMessageRow, isDarkMode && { borderTopColor: '#334155' }]}>
+                  <View style={[styles.offerMessageRow, isDarkMode && { backgroundColor: '#0F172A' }]}>
                     <Ionicons name="chatbubble-outline" size={13} color={isDarkMode ? "#94A3B8" : CARD_TEXT_MUTED} />
                     <Text style={[styles.offerMessage, isDarkMode && { color: "#E2E8F0" }]}>
                       {offer.offer?.message || offer.message || 'No message provided'}
@@ -456,42 +459,55 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   emptyState: {
-    paddingVertical: 60,
+    paddingVertical: 48,
     alignItems: 'center',
   },
+  emptyIconChip: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: CARD_BG,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emptyStateText: {
-    fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#666',
-    marginTop: 12,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#0D1B2A',
+    marginTop: 14,
   },
   emptyStateSubtext: {
-    fontSize: RFValue(14),
-    color: '#999',
+    fontSize: 14,
+    color: '#64748B',
     marginTop: 4,
+    textAlign: 'center',
   },
   offerCard: {
     backgroundColor: CARD_BG,
-    padding: isTablet ? wp('3%') : wp('4%'),
-    marginBottom: hp('1.5%'),
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   taskTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: hp('1%'),
-    marginBottom: hp('1%'),
+    paddingBottom: 12,
+    marginBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: CARD_DIVIDER,
   },
   taskTitle: {
     fontSize: RFValue(12),
     color: CARD_TEXT_MUTED,
-    marginLeft: wp('1.5%'),
+    marginLeft: 8,
     flex: 1,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   offerHeader: {
     marginBottom: hp('1.5%'),
@@ -500,13 +516,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   offerAvatarContainer: {
-    marginRight: wp('3%'),
+    marginRight: 14,
   },
   offerAvatar: {
-    width: isTablet ? 60 : 48,
-    height: isTablet ? 60 : 48,
-    borderRadius: isTablet ? 30 : 24,
+    width: isTablet ? 60 : 52,
+    height: isTablet ? 60 : 52,
+    borderRadius: isTablet ? 30 : 26,
     backgroundColor: '#f0f0f0',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.7)',
   },
   offerUserInfo: {
     flex: 1,
@@ -517,8 +535,8 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   offerUserName: {
-    fontSize: RFValue(isTablet ? 14 : 14),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: CARD_TEXT,
   },
   verifiedBadgeSmall: {
@@ -599,11 +617,11 @@ const styles = StyleSheet.create({
   offerMessageRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginTop: 8,
+    marginTop: 10,
     marginBottom: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: CARD_DIVIDER,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.10)',
   },
   offerMessage: {
     fontSize: RFValue(13),
@@ -614,15 +632,16 @@ const styles = StyleSheet.create({
   },
   acceptOfferButton: {
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: 13,
+    height: 50,
     paddingHorizontal: 20,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 10,
     shadowColor: BRAND_ORANGE,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.22,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
     elevation: 3,
   },
   acceptOfferButtonText: {
@@ -637,7 +656,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8F5E9',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 14,
     marginTop: 8,
   },
   acceptedText: {
@@ -652,7 +671,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8F5E9',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 14,
     marginTop: 8,
   },
   completedText: {

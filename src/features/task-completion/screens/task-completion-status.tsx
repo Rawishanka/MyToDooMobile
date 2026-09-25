@@ -65,13 +65,13 @@ export default function TaskCompletionStatusScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-          <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
+          <Ionicons name="chevron-back" size={22} color={CARD_TEXT} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Completion Status</Text>
         <TouchableOpacity style={styles.helpIcon}>
           <Ionicons
             name="help-circle-outline"
-            size={24}
+            size={20}
             color={CARD_TEXT}
             onPress={() => {
               Alert.alert(
@@ -84,7 +84,7 @@ export default function TaskCompletionStatusScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28 }}>
         {!completion ? (
           <CompletionEmptyState />
         ) : (
@@ -160,44 +160,59 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 15,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
     backgroundColor: BRAND_BLUE,
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
   },
   backIcon: {
-    padding: 5,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: CARD_TEXT,
   },
   helpIcon: {
-    padding: 5,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scrollView: {
     flex: 1,
   },
   actionContainer: {
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 20,
     backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#CBD5E1',
   },
   completeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: 14,
-    borderRadius: 8,
+    height: 52,
+    borderRadius: 14,
     gap: 8,
+    shadowColor: BRAND_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 3,
   },
   completeButtonText: {
     color: '#fff',
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

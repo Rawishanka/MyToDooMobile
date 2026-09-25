@@ -49,7 +49,7 @@ export default function PayoutAccountRequiredModal({
         <View style={[styles.modalContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
           {/* Icon */}
           <View style={styles.iconContainer}>
-            <MaterialIcons name="account-balance-wallet" size={56} color="#007bff" />
+            <MaterialIcons name="account-balance-wallet" size={56} color="#003399" />
           </View>
 
           {/* Title */}
@@ -142,13 +142,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(22),
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: '#0D1B2A',
     textAlign: 'center',
     marginBottom: 12,
   },
   description: {
     fontSize: RFValue(15),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   stepsContainer: {
     width: '100%',
     backgroundColor: CARD_BG,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     marginBottom: 24,
   },
@@ -195,29 +195,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: 14,
-    borderRadius: 12,
+    height: 52,
+    borderRadius: 14,
     gap: 8,
     shadowColor: BRAND_ORANGE,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
     elevation: 3,
   },
   primaryButtonText: {
     color: '#fff',
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
   secondaryButton: {
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
     backgroundColor: '#fff',
   },
   secondaryButtonText: {
-    color: '#666',
+    color: '#475569',
     fontSize: RFValue(16),
     fontWeight: '600',
     textAlign: 'center',

@@ -122,7 +122,7 @@ export default function PaymentReceiptScreen() {
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Ionicons name="chevron-back" size={24} color={CARD_TEXT} />
+          <Ionicons name="chevron-back" size={22} color={CARD_TEXT} />
         </TouchableOpacity>
 
         <View style={styles.headerTextWrap}>
@@ -143,7 +143,7 @@ export default function PaymentReceiptScreen() {
             {isSharing ? (
               <ActivityIndicator size="small" color={CARD_TEXT} />
             ) : (
-              <Ionicons name="share-outline" size={22} color={CARD_TEXT} />
+              <Ionicons name="share-outline" size={20} color={CARD_TEXT} />
             )}
           </TouchableOpacity>
         ) : (
@@ -160,7 +160,7 @@ export default function PaymentReceiptScreen() {
 
       {loadState === 'error' && (
         <View style={styles.centerContent}>
-          <Ionicons name="document-text-outline" size={48} color="#999" />
+          <Ionicons name="document-text-outline" size={48} color="#94A3B8" />
           <Text style={styles.errorTitle}>Receipt unavailable</Text>
           <Text style={styles.errorMessage}>{errorMessage}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadReceipt}>
@@ -205,21 +205,21 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
     backgroundColor: BRAND_BLUE,
   },
   backButton: {
-    minWidth: 44,
-    minHeight: 44,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTextWrap: {
     flex: 1,
-    marginHorizontal: 8,
+    marginHorizontal: 12,
   },
   headerTitle: {
     fontSize: RFValue(18),
@@ -232,14 +232,16 @@ const styles = StyleSheet.create({
     color: CARD_TEXT_MUTED,
   },
   shareButton: {
-    minWidth: 44,
-    minHeight: 44,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   shareButtonPlaceholder: {
-    width: 44,
-    height: 44,
+    width: 36,
+    height: 36,
   },
   centerContent: {
     flex: 1,
@@ -250,33 +252,34 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: RFValue(15),
-    color: '#666',
+    color: '#64748B',
   },
   errorTitle: {
     marginTop: 16,
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#111',
+    color: '#0D1B2A',
     textAlign: 'center',
   },
   errorMessage: {
     marginTop: 8,
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
   },
   retryButton: {
     marginTop: 20,
     backgroundColor: BRAND_ORANGE,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: 32,
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 14,
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: RFValue(15),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
   webView: {
     flex: 1,

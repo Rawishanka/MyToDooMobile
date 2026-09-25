@@ -76,14 +76,18 @@ export default function StatusCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: CARD_BG,
-    margin: 20,
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 14,
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   header: {
     alignItems: 'center',
@@ -94,7 +98,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   statusText: {
-    fontSize: RFValue(18),
+    fontSize: 20,
     fontWeight: '700',
   },
   info: {

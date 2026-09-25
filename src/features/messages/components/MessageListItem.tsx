@@ -1,6 +1,6 @@
 // Message List Item Component - Optimized for Performance
 
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { isTablet, wp } from '@/src/shared/utils/responsive';
 import React, { useCallback } from 'react';
 import { useTheme } from '@/src/shared/theme';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -20,15 +20,15 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
 
   // Memoize avatar URL to ensure it's always valid
   const avatarUri = React.useMemo(() => {
-    return message.avatar || 'https://ui-avatars.com/api/?name=User&background=007AFF&color=fff&size=100';
+    return message.avatar || 'https://ui-avatars.com/api/?name=User&background=003399&color=fff&size=100';
   }, [message.avatar]);
 
   return (
     <TouchableOpacity 
       style={[
         styles.messageItem,
-        isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' },
-        (message.unreadCount && message.unreadCount > 0) ? (isDarkMode ? { backgroundColor: '#1E293B' } : styles.unreadItem) : undefined
+        isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
+        (message.unreadCount && message.unreadCount > 0) ? styles.unreadItem : undefined
       ]} 
       onPress={handlePress}
       activeOpacity={0.7}
@@ -56,7 +56,7 @@ const MessageListItemComponent: React.FC<MessageListItemProps> = ({ message, onP
             style={[
               styles.messageTitle,
               isDarkMode && { color: '#F8FAFC' },
-              (message.unreadCount && message.unreadCount > 0) ? (isDarkMode ? { color: '#38BDF8' } : styles.unreadTitle) : undefined
+              (message.unreadCount && message.unreadCount > 0) ? (isDarkMode ? { color: '#F8FAFC' } : styles.unreadTitle) : undefined
             ]} 
             numberOfLines={1}
           >
@@ -102,84 +102,97 @@ export const MessageListItem = React.memo(MessageListItemComponent, (prevProps, 
 const styles = StyleSheet.create({
   messageItem: {
     flexDirection: 'row',
-    paddingVertical: isTablet ? hp('1.8%') : hp('1.7%'),
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    marginHorizontal: isTablet ? wp('12.5%') : 16,
+    marginBottom: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
     alignItems: 'center',
+    overflow: 'hidden',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   avatarContainer: {
     position: 'relative',
-    marginRight: isTablet ? wp('2%') : wp('3%'),
+    marginRight: 12,
   },
   avatar: {
-    width: isTablet ? 56 : 50,
-    height: isTablet ? 56 : 50,
-    borderRadius: isTablet ? 28 : 25,
-    backgroundColor: '#F0F0F0',
+    width: isTablet ? 56 : 52,
+    height: isTablet ? 56 : 52,
+    borderRadius: isTablet ? 28 : 26,
+    backgroundColor: '#EEF2FA',
+    borderWidth: 2,
+    borderColor: '#E8ECF4',
   },
   unreadDot: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#007AFF',
+    top: -1,
+    right: -1,
+    width: 13,
+    height: 13,
+    borderRadius: 7,
+    backgroundColor: '#ff6b35',
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: '#FFFFFF',
   },
   messageContent: {
     flex: 1,
+    minWidth: 0,
   },
   messageTitleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 4,
   },
   messageTitle: {
-    fontSize: RFValue(isTablet ? 14 : 15),
+    fontSize: 16,
     fontWeight: '600',
-    color: '#000',
+    color: '#0F172A',
     flex: 1,
-    marginRight: isTablet ? wp('2%') : wp('2%'),
+    marginRight: 8,
   },
   messageDate: {
-    fontSize: RFValue(isTablet ? 10 : 13),
-    color: '#8E8E93',
+    fontSize: 12,
+    color: '#64748B',
     flexShrink: 0,
   },
   messagePreview: {
-    fontSize: RFValue(isTablet ? 10 : 14),
-    color: '#8E8E93',
-    lineHeight: isTablet ? RFValue(20) : 18,
+    fontSize: 13,
+    color: '#64748B',
+    lineHeight: 18,
   },
   unreadItem: {
-    backgroundColor: '#F0F7FF',
+    borderLeftWidth: 3,
+    borderLeftColor: '#ff6b35',
   },
   unreadTitle: {
     fontWeight: '700',
-    color: '#000',
+    color: '#0F172A',
   },
   unreadPreview: {
     fontWeight: '600',
-    color: '#000',
+    color: '#334155',
   },
   unreadBadge: {
-    backgroundColor: '#007AFF',
-    borderRadius: isTablet ? 18 : 12,
-    minWidth: isTablet ? 36 : 24,
-    height: isTablet ? 36 : 24,
+    backgroundColor: '#ff6b35',
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: isTablet ? wp('2%') : wp('2%'),
-    paddingHorizontal: isTablet ? 8 : 6,
+    marginLeft: 8,
+    paddingHorizontal: 7,
   },
   unreadText: {
-    fontSize: RFValue(isTablet ? 10 : 12),
-    color: '#fff',
+    fontSize: 12,
+    color: '#FFFFFF',
     fontWeight: '700',
   },
 });

@@ -23,7 +23,7 @@ import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { AppAlert } from '@/src/shared/components/AppAlert';
-import { ActivityIndicator, Image, Linking, Modal, Platform, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Linking, Modal, Platform, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import rating components
@@ -46,7 +46,7 @@ import { RFValue, TAB_BAR_CLEARANCE } from '@/src/shared/utils/responsive';
 import { consumePendingAccountNavigation } from '@/src/shared/utils/pending-account-navigation';
 import { useTheme } from '@/src/shared/theme';
 import type { BiometricTypeLabel } from "@/src/shared/utils/biometric-auth";
-import { getBiometricCapability, isBiometricLoginEnabled, setBiometricLoginEnabled, authenticateWithBiometrics } from '@/src/shared/utils/biometric-auth';
+import { getBiometricCapability, isBiometricLoginEnabled, setBiometricLoginEnabled, authenticateWithBiometrics, hasBiometricCredentialsFor, verifyAndSaveBiometricCredentials } from '@/src/shared/utils/biometric-auth';
 
 export default function AccountScreen() {
   const { isDarkMode, toggleDarkMode, colors: themeColors } = useTheme();
@@ -61,29 +61,106 @@ export default function AccountScreen() {
   const [biometricTypeLabel, setBiometricTypeLabel] = useState<BiometricTypeLabel>("Biometrics");
   const [biometricEnabled, setBiometricEnabled] = useState(false);
 
-  React.useEffect(() => {
-    let isMounted = true;
-    getBiometricCapability().then(cap => {
-      if (isMounted) {
-        setBiometricSupported(!!cap.canAuthenticate);
-        setBiometricTypeLabel(cap.biometricTypeLabel);
-      }
+  const biometricBusyRef = useRef(false);
+
+  // Re-read on every focus: the flag/credentials can change elsewhere (login screen, logout,
+  // another account) while this tab stays mounted.
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+      (async () => {
+        try {
+          const [cap, enabled] = await Promise.all([getBiometricCapability(), isBiometricLoginEnabled()]);
+          console.log('[Biometric] profile focus: canAuthenticate =', cap.canAuthenticate, 'enabled =', enabled);
+          if (!isMounted) return;
+          setBiometricSupported(!!cap.canAuthenticate);
+          setBiometricTypeLabel(cap.biometricTypeLabel);
+          setBiometricEnabled(enabled);
+        } catch (e) {
+          console.warn('[Biometric] profile focus check failed:', e);
+        }
+      })();
+      return () => { isMounted = false; };
+    }, [])
+  );
+
+  // iOS-only native password prompt (Alert.prompt does not exist on Android)
+  const askForPassword = (label: string) =>
+    new Promise<string | null>((resolve) => {
+      Alert.prompt(
+        `Enable ${label} Login`,
+        'Enter your MyToDoo password once. It is stored only in this device\'s secure Keychain and used to sign you in after you scan.',
+        [
+          { text: 'Cancel', style: 'cancel', onPress: () => resolve(null) },
+          { text: 'Enable', onPress: (value?: string) => resolve(value ? value : null) },
+        ],
+        'secure-text',
+        '',
+        'default'
+      );
     });
-    isBiometricLoginEnabled().then(enabled => {
-      if (isMounted) setBiometricEnabled(enabled);
-    });
-    return () => { isMounted = false; };
-  }, []);
 
   const handleToggleBiometrics = async (newVal: boolean) => {
-    if (newVal) {
-      const authResult = await authenticateWithBiometrics('Verify your ' + biometricTypeLabel + ' to enable fast login');
-      if (!authResult.success) {
+    if (biometricBusyRef.current) return;
+    biometricBusyRef.current = true;
+    try {
+      if (!newVal) {
+        await setBiometricLoginEnabled(false);
+        setBiometricEnabled(false);
         return;
       }
+
+      console.log('[Biometric] toggle ON requested');
+      const authResult = await authenticateWithBiometrics('Verify your ' + biometricTypeLabel + ' to enable fast login');
+      if (!authResult.success) {
+        console.log('[Biometric] toggle ON aborted:', authResult.code);
+        if (!authResult.cancelled) {
+          AppAlert.alert(biometricTypeLabel + ' Not Enabled', authResult.error || 'Authentication failed.');
+        }
+        setBiometricEnabled(false);
+        return;
+      }
+
+      // Face ID sign-in on the login screen needs email + password in the Keychain. A session
+      // restored from a token, or created by Google/Apple, has no password - ask for it once.
+      const email = useAuthStore.getState().user?.email;
+      let haveCreds = false;
+      if (email) {
+        haveCreds = await hasBiometricCredentialsFor(email);
+      }
+      if (!haveCreds) {
+        if (Platform.OS === 'ios' && email) {
+          const pw = await askForPassword(biometricTypeLabel);
+          if (!pw) {
+            console.log('[Biometric] toggle ON aborted: no password entered');
+            setBiometricEnabled(false);
+            return;
+          }
+          const saved = await verifyAndSaveBiometricCredentials(email, pw);
+          if (!saved.ok) {
+            AppAlert.alert(biometricTypeLabel + ' Not Enabled', saved.message || 'Could not save your credentials.');
+            setBiometricEnabled(false);
+            return;
+          }
+        } else {
+          // Cannot prompt here: credentials get stored automatically at the next password login.
+          AppAlert.alert(
+            biometricTypeLabel + ' Login',
+            'Log out and sign in once with your email and password. ' + biometricTypeLabel + ' sign-in will be set up automatically.'
+          );
+        }
+      }
+
+      const ok = await setBiometricLoginEnabled(true);
+      setBiometricEnabled(ok);
+      if (!ok) AppAlert.alert('Error', 'Could not save this setting. Please try again.');
+    } catch (e: any) {
+      console.warn('[Biometric] toggle error:', e);
+      AppAlert.alert('Error', e?.message || 'Something went wrong enabling ' + biometricTypeLabel + '.');
+      setBiometricEnabled(false);
+    } finally {
+      biometricBusyRef.current = false;
     }
-    setBiometricEnabled(newVal);
-    await setBiometricLoginEnabled(newVal);
   };
   const [isPendingReviewsExpanded, setIsPendingReviewsExpanded] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -1295,7 +1372,7 @@ export default function AccountScreen() {
                       BSB {stripeAccountStatus.bankAccount.routingNumber} • **** {stripeAccountStatus.bankAccount.last4}
                     </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color="#888" />
+                  <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
                 </View>
               </TouchableOpacity>
             )}
@@ -1480,7 +1557,7 @@ export default function AccountScreen() {
           subtext={undefined}        
         />
         <MenuItem
-          icon={<MaterialIcons name="verified-user" size={20} color={userData?.verification?.faceMatch?.status === "verified" ? "#10B981" : "#0EA5E9"} />}
+          icon={<MaterialIcons name="verified-user" size={20} color={userData?.verification?.faceMatch?.status === "verified" ? "#16A34A" : "#003399"} />}
           text="ID Verification (AI Face Match)"
           onPress={navigateToIDVerification}
           subtext={
@@ -1492,8 +1569,8 @@ export default function AccountScreen() {
 
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>APP PREFERENCES</Text>
         {(biometricSupported || biometricEnabled) && (
-          <View style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }]}>
-            <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: '#1E293B' }]}>
+          <View style={[styles.menuItem, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+            <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: 'rgba(56,189,248,0.14)' }]}>
               <Ionicons
                 name={biometricTypeLabel === 'Face ID' ? 'scan-outline' : 'finger-print-outline'}
                 size={20}
@@ -1513,14 +1590,14 @@ export default function AccountScreen() {
             <Switch
               value={biometricEnabled}
               onValueChange={handleToggleBiometrics}
-              trackColor={{ false: '#D1D5DB', true: '#4CAF50' }}
+              trackColor={{ false: isDarkMode ? '#475569' : '#CBD5E1', true: '#ff6b35' }}
               thumbColor="#FFFFFF"
-              ios_backgroundColor="#D1D5DB"
+              ios_backgroundColor={isDarkMode ? '#475569' : '#CBD5E1'}
             />
           </View>
         )}
-        <View style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }]}>
-          <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: '#1E293B' }]}>
+        <View style={[styles.menuItem, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+          <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: 'rgba(56,189,248,0.14)' }]}>
             <Ionicons name={isDarkMode ? "moon" : "moon-outline"} size={20} color={isDarkMode ? "#38BDF8" : "#003399"} />
           </View>
           <View style={{ flex: 1 }}>
@@ -1532,9 +1609,9 @@ export default function AccountScreen() {
           <Switch
             value={isDarkMode}
             onValueChange={toggleDarkMode}
-            trackColor={{ false: '#D1D5DB', true: '#4CAF50' }}
+            trackColor={{ false: isDarkMode ? '#475569' : '#CBD5E1', true: '#ff6b35' }}
             thumbColor="#FFFFFF"
-            ios_backgroundColor="#D1D5DB"
+            ios_backgroundColor={isDarkMode ? '#475569' : '#CBD5E1'}
           />
         </View>
 
@@ -1583,9 +1660,10 @@ export default function AccountScreen() {
         
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>ACCOUNT</Text>
         <MenuItem 
-          icon={<Ionicons name="log-out-outline" size={20} color="#003399" />}
+          icon={<Ionicons name="log-out-outline" size={20} color="#DC2626" />}
           text="Logout" 
           subtext={undefined} 
+          danger
           onPress={navigateToLogoutScreen}
         />
       </View>
@@ -1924,26 +2002,27 @@ type MenuItemProps = {
   onPress?: () => void;
   disabled?: boolean;
   badge?: number;
+  danger?: boolean;
 };
 
-const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disabled, badge }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disabled, badge, danger }) => {
   const { isDarkMode } = useTheme();
   return (
     <TouchableOpacity 
-      style={[styles.menuItem, isDarkMode && { borderBottomColor: '#334155' }, disabled && styles.menuItemDisabled]} 
+      style={[styles.menuItem, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }, disabled && styles.menuItemDisabled]} 
       onPress={onPress}
       disabled={disabled && !onPress}
       activeOpacity={0.7}
     >
-      <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: '#1E293B' }]}>
+      <View style={[styles.iconWrapper, isDarkMode && { backgroundColor: 'rgba(56,189,248,0.14)' }, danger && { backgroundColor: isDarkMode ? 'rgba(220,38,38,0.18)' : '#FEE2E2' }]}>
         {React.isValidElement(icon)
           ? React.cloneElement(icon as React.ReactElement<any>, {
-              color: isDarkMode ? '#38BDF8' : (icon.props as any).color || '#003399',
+              color: danger ? '#DC2626' : isDarkMode ? '#38BDF8' : (icon.props as any).color || '#003399',
             })
           : icon}
       </View>
-      <View style={{ flex: 1 }}>
-        <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }, disabled && styles.menuTextDisabled]}>{text}</Text>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }, danger && { color: isDarkMode ? '#F87171' : '#DC2626' }, disabled && styles.menuTextDisabled]}>{text}</Text>
         {subtext && <Text style={[styles.subtext, isDarkMode && { color: '#94A3B8' }, disabled && styles.subtextDisabled]}>{subtext}</Text>}
       </View>
       {badge && badge > 0 ? (
@@ -1952,9 +2031,9 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, text, subtext, onPress, disab
         </View>
       ) : null}
       {disabled ? (
-        <Ionicons name="lock-closed" size={18} color={isDarkMode ? '#64748B' : '#999'} />
+        <Ionicons name="lock-closed" size={18} color="#64748B" />
       ) : (
-        <Ionicons name="chevron-forward" size={18} color={isDarkMode ? '#64748B' : '#888'} />
+        <Ionicons name="chevron-forward" size={18} color="#94A3B8" />
       )}
     </TouchableOpacity>
   );
@@ -2173,13 +2252,13 @@ const styles = StyleSheet.create({
   noRatingText: {
     fontSize: RFValue(18),
     fontWeight: 'bold',
-    color: '#666',
+    color: '#64748B',
     marginTop: 16,
     marginBottom: 8,
   },
   noRatingSubtext: {
     fontSize: RFValue(14),
-    color: '#999',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -2427,11 +2506,13 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   sectionTitle: {
-    fontSize: RFValue(12),
-    color: '#003399',
-    marginTop: 25,
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 22,
     marginBottom: 10,
+    marginLeft: 4,
     fontWeight: '700',
+    letterSpacing: 0.8,
   },
   pendingReviewBadge: {
     minWidth: 22,
@@ -2451,9 +2532,17 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEF1F8',
+    padding: 14,
+    marginBottom: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   iconWrapper: {
     width: 38,
@@ -2462,26 +2551,26 @@ const styles = StyleSheet.create({
     marginRight: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(0,51,153,0.08)',
   },
   menuText: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#1A1D2E',
+    color: '#0F172A',
   },
   subtext: {
     fontSize: RFValue(13),
-    color: '#6B7280',
+    color: '#64748B',
     marginTop: 2,
   },
   menuItemDisabled: {
     opacity: 0.6,
   },
   menuTextDisabled: {
-    color: '#999',
+    color: '#94A3B8',
   },
   subtextDisabled: {
-    color: '#999',
+    color: '#94A3B8',
   },
   modalOverlay: {
     flex: 1,
@@ -2491,8 +2580,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: 24,
     width: '100%',
     maxWidth: 400,
@@ -2500,14 +2589,14 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: RFValue(20),
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 12,
     textAlign: 'center',
   },
   modalMessage: {
     fontSize: RFValue(15),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 8,
     lineHeight: 22,
@@ -2525,27 +2614,29 @@ const styles = StyleSheet.create({
   },
   modalCancelButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
   },
   modalCancelText: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#334155',
     fontWeight: '600',
   },
   modalSendButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
-    backgroundColor: '#003399',
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 14,
+    backgroundColor: '#ff6b35',
     alignItems: 'center',
   },
   modalSendText: {
     fontSize: RFValue(16),
-    color: '#fff',
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   pendingIconContainer: {
     marginBottom: 16,
@@ -2590,7 +2681,7 @@ const styles = StyleSheet.create({
   pendingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(0,51,153,0.08)',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
@@ -2602,31 +2693,32 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#999',
+    backgroundColor: '#D97706',
     marginRight: 8,
   },
   pendingText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
     fontWeight: '500',
   },
   backToProfileButton: {
-    paddingVertical: 14,
+    height: 50,
+    justifyContent: 'center',
     paddingHorizontal: 32,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    borderWidth: 1,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
     borderColor: '#003399',
     marginBottom: 12,
   },
   backToProfileText: {
     fontSize: RFValue(16),
     color: '#003399',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   modalFooterText: {
     fontSize: RFValue(13),
-    color: '#999',
+    color: '#64748B',
     textAlign: 'center',
   },
   modalButtonDisabled: {
@@ -2635,9 +2727,9 @@ const styles = StyleSheet.create({
   modalErrorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fee',
+    backgroundColor: '#FEE2E2',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 14,
     marginBottom: 16,
     marginTop: 8,
   },

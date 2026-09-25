@@ -1495,23 +1495,25 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
             {/* Time and Date Information */}
             <View style={styles.metaRow}>
-              <MaterialIcons
-                name={timePreference.icon}
-                size={14}
-                color={CARD_TEXT}
-                style={styles.metaIcon}
-              />
+              <View style={styles.metaIcon}>
+                <MaterialIcons
+                  name={timePreference.icon}
+                  size={14}
+                  color={CARD_TEXT}
+                />
+              </View>
               <Text style={styles.timePreference}>{timePreference.label}</Text>
             </View>
 
             {/* Location Information */}
             <View style={styles.metaRow}>
-              <MaterialIcons
-                name={getLocationIcon()}
-                size={14}
-                color={isMovingLocation() ? '#4ADE80' : CARD_TEXT_MUTED}
-                style={styles.metaIcon}
-              />
+              <View style={styles.metaIcon}>
+                <MaterialIcons
+                  name={getLocationIcon()}
+                  size={14}
+                  color={isMovingLocation() ? '#4ADE80' : CARD_TEXT}
+                />
+              </View>
               {isMovingLocation() ? (
                 <Text style={styles.locationType}>Moving/Delivery</Text>
               ) : null}
@@ -1640,18 +1642,18 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               onPress={handleViewOffers}
             >
               <View style={styles.offersInfo}>
-                <MaterialIcons name="local-offer" size={20} color={CARD_TEXT} />
+                <View style={styles.offersIconChip}><MaterialIcons name="local-offer" size={16} color={CARD_TEXT} /></View>
                 <Text style={styles.offersLabel}>
                   Offers: {(task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0}
                 </Text>
               </View>
-              <MaterialIcons name="chevron-right" size={20} color={CARD_TEXT} />
+              <MaterialIcons name="chevron-right" size={22} color={CARD_TEXT_MUTED} />
             </TouchableOpacity>
           ) : (
             /* For Taskers - just display offer count without interaction */
             <View style={styles.offersButton}>
               <View style={styles.offersInfo}>
-                <MaterialIcons name="local-offer" size={20} color={CARD_TEXT} />
+                <View style={styles.offersIconChip}><MaterialIcons name="local-offer" size={16} color={CARD_TEXT} /></View>
                 <Text style={styles.offersLabel}>
                   Offers: {(task.offers?.filter((offer: any) => offer.status !== 'rejected') || []).length || task.offerCount || 0}
                 </Text>
@@ -1663,7 +1665,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
       {status === 'unserviced' && userRole === 'Poster' && (
         <View style={styles.peerReviewLockBanner}>
-          <MaterialIcons name="hourglass-empty" size={18} color="#856404" />
+          <MaterialIcons name="hourglass-empty" size={18} color="#FBBF24" />
           <Text style={styles.peerReviewLockText}>
             Unserviced after 30 days open — reopen to list it on Find Tasks again
           </Text>
@@ -1673,7 +1675,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       {/* Peer review lock notice */}
       {isCompletedTask && lockedPeerReview && (
         <View style={styles.peerReviewLockBanner}>
-          <MaterialIcons name="lock-outline" size={18} color="#856404" />
+          <MaterialIcons name="lock-outline" size={18} color="#FBBF24" />
           <Text style={styles.peerReviewLockText}>
             {lockedPeerReview.message || 'Submit your review to see theirs'}
           </Text>
@@ -1711,7 +1713,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
             <MaterialIcons 
               name="receipt" 
               size={20} 
-              color={isProcessing ? "#999" : "#007AFF"} 
+              color={isProcessing ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
             />
           </TouchableOpacity>
         ) : isCompletedTask && userRole === 'Poster' ? (
@@ -1731,7 +1733,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
             <MaterialIcons 
               name="receipt" 
               size={20} 
-              color={isProcessing ? "#999" : "#007AFF"} 
+              color={isProcessing ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
             />
           </TouchableOpacity>
         ) : status === 'cancelled' || status === 'overdue' ? (
@@ -1758,7 +1760,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
                   <Ionicons
                     name="trash-outline"
                     size={18}
-                    color={(isProcessing || deleteOfferMutation.isPending) ? '#999' : '#EF4444'}
+                    color={(isProcessing || deleteOfferMutation.isPending) ? 'rgba(252,165,165,0.4)' : '#FCA5A5'}
                   />
                 </TouchableOpacity>
               )}
@@ -1784,7 +1786,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
                     <MaterialIcons 
                       name="chat" 
                       size={20} 
-                      color="#007bff" 
+                      color="#FFFFFF" 
                     />
                   </TouchableOpacity>
                 )}
@@ -1797,7 +1799,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
                   task.status === 'pending_completion' ? (
                     // Task already marked complete - show waiting status badge instead of button
                     <View style={styles.pendingCompletionBadge}>
-                      <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#f39c12" />
+                      <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#FBBF24" />
                       <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to accept</Text>
                     </View>
                   ) : (
@@ -1852,7 +1854,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
                     <MaterialIcons 
                       name="close" 
                       size={20} 
-                      color={isProcessing ? "#999" : "#fff"} 
+                      color={isProcessing ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
                     />
                   </TouchableOpacity>
                 )}
@@ -1876,7 +1878,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
                 <MaterialIcons 
                   name="chat" 
                   size={20} 
-                  color="#007bff" 
+                  color="#FFFFFF" 
                 />
               </TouchableOpacity>
             )}
@@ -1887,7 +1889,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
               task.status !== 'pending_admin_review' && task.status !== 'cancelled' && task.status !== 'rejected' && (
               task.status === 'pending_completion' ? (
                 <View style={styles.pendingCompletionBadge}>
-                  <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#f39c12" />
+                  <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#FBBF24" />
                   <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to accept</Text>
                 </View>
               ) : (
@@ -1966,7 +1968,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
                 <MaterialIcons 
                   name="close" 
                   size={20} 
-                  color={isProcessing ? "#999" : "#fff"} 
+                  color={isProcessing ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
                 />
               </TouchableOpacity>
             )}
@@ -1981,13 +1983,13 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
                 activeOpacity={0.7}
                 delayPressIn={0}
               >
-                <MaterialIcons name="chat" size={20} color="#007bff" />
+                <MaterialIcons name="chat" size={20} color="#FFFFFF" />
               </TouchableOpacity>
             )}
 
             {userRole === 'Tasker' && (
               <View style={styles.pendingCompletionBadge}>
-                <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#f39c12" />
+                <MaterialIcons name="hourglass-empty" size={isTablet ? 16 : 14} color="#FBBF24" />
                 <Text style={styles.pendingCompletionBadgeText}>Waiting for poster to release payment</Text>
               </View>
             )}
@@ -2052,7 +2054,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
               <MaterialIcons 
                 name="edit" 
                 size={20} 
-                color={(isProcessing || deleteTaskMutation.isPending) ? "#999" : "#007bff"} 
+                color={(isProcessing || deleteTaskMutation.isPending) ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
               />
             </TouchableOpacity>
             
@@ -2071,7 +2073,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
               <MaterialIcons 
                 name="delete" 
                 size={20} 
-                color={(deleteTaskMutation.isPending || isProcessing) ? "#999" : "#dc3545"} 
+                color={(deleteTaskMutation.isPending || isProcessing) ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
               />
             </TouchableOpacity>
             
@@ -2091,7 +2093,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
                 <MaterialIcons 
                   name="cancel" 
                   size={20} 
-                  color={isProcessing ? "#999" : "#dc3545"} 
+                  color={isProcessing ? "rgba(252,165,165,0.4)" : "#FCA5A5"} 
                 />
               </TouchableOpacity>
             )}
@@ -2127,7 +2129,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
       {/* Cancellation Notice for Cancelled Tab */}
       {status === 'cancelled' && pendingCancellationRequest && (
         <View style={styles.cancellationNotice}>
-          <MaterialIcons name="info-outline" size={16} color="#dc3545" />
+          <MaterialIcons name="info-outline" size={16} color="#FCA5A5" />
           <Text style={styles.cancellationText}>Cancelled</Text>
         </View>
       )}
@@ -2135,7 +2137,7 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
       {/* Fallback for cancelled tasks without cancellation request data - show for ALL roles */}
       {status === 'cancelled' && !pendingCancellationRequest && (
         <View style={styles.cancellationNotice}>
-          <MaterialIcons name="info-outline" size={16} color="#dc3545" />
+          <MaterialIcons name="info-outline" size={16} color="#FCA5A5" />
           <Text style={styles.cancellationText}>Cancelled</Text>
         </View>
       )}
@@ -2674,16 +2676,23 @@ isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth:
 
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: isTablet ? 0 : wp('4%'),
+    marginHorizontal: isTablet ? 0 : 16,
     backgroundColor: CARD_BG,
-    padding: isTablet ? wp('2%') : wp('4%'),
-    borderRadius: isTablet ? 12 : 10,
-    marginBottom: isTablet ? hp('1.5%') : hp('2%'),
+    padding: isTablet ? wp('2%') : 16,
+    borderRadius: 20,
+    marginBottom: 16,
     position: 'relative',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   cardWithCancelRequest: {
-    borderWidth: 3,
-    borderColor: '#dc3545',
+    borderWidth: 2,
+    borderColor: '#F87171',
   },
   cancelRequestBanner: {
     flexDirection: 'row',
@@ -2691,7 +2700,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#dc3545',
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 12,
     gap: 8,
   },
@@ -2704,28 +2713,28 @@ const styles = StyleSheet.create({
   peerReviewLockBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff3cd',
+    backgroundColor: 'rgba(251,191,36,0.16)',
     borderWidth: 1,
-    borderColor: '#ffeeba',
+    borderColor: 'rgba(251,191,36,0.4)',
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 12,
     gap: 8,
   },
   peerReviewLockText: {
     flex: 1,
-    color: '#856404',
+    color: '#FDE68A',
     fontSize: RFValue(13),
     fontWeight: '500',
   },
   ownCancelPendingBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#e67e22',
+    backgroundColor: '#E67E22',
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 12,
     gap: 8,
   },
@@ -2735,98 +2744,91 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: isTablet ? hp('1.2%') : hp('1.5%'),
-    gap: isTablet ? wp('1.5%') : wp('2%'),
+    alignItems: 'center',
+    marginTop: 14,
+    gap: 10,
     zIndex: 10,
     elevation: 10,
   },
   actionButton: {
-    width: isTablet ? 44 : wp('9%'),
-    height: isTablet ? 44 : wp('9%'),
-    borderRadius: isTablet ? 22 : wp('4.5%'),
-    backgroundColor: '#fff',
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: CARD_CHIP_BG,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 5,
     zIndex: 20,
   },
   disabledButton: {
-    opacity: 0.5,
-    backgroundColor: '#f5f5f5',
+    opacity: 0.45,
   },
   chatButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#e7f3ff',
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: CARD_CHIP_BG,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
   },
   completedButton: {
     flex: 1,
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: isTablet ? hp('1.3%') : hp('1.2%'),
-    paddingHorizontal: isTablet ? wp('3%') : wp('4%'),
-    borderRadius: isTablet ? 8 : 8,
-    marginRight: isTablet ? wp('1.5%') : wp('2%'),
+    height: 44,
+    paddingHorizontal: 14,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: BRAND_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 3,
   },
   completedButtonText: {
     color: '#fff',
-    fontSize: RFValue(isTablet ? 12 : 12),
-    fontWeight: '600',
+    fontSize: RFValue(13),
+    fontWeight: '700',
   },
   pendingCompletionBadge: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff8e1',
+    backgroundColor: 'rgba(251,191,36,0.16)',
     borderWidth: 1,
-    borderColor: '#f39c12',
-    paddingVertical: isTablet ? hp('1.3%') : hp('1.2%'),
-    paddingHorizontal: isTablet ? wp('2%') : wp('3%'),
-    borderRadius: 8,
-    marginRight: isTablet ? wp('1.5%') : wp('2%'),
-    gap: 4,
+    borderColor: 'rgba(251,191,36,0.45)',
+    minHeight: 44,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    gap: 6,
   },
   pendingCompletionBadgeText: {
-    color: '#e67e22',
-    fontSize: RFValue(isTablet ? 11 : 11),
+    color: '#FDE68A',
+    fontSize: RFValue(12),
     fontWeight: '600',
     flexShrink: 1,
   },
   acceptCompletionButton: {
     flex: 1,
-    backgroundColor: '#28a745',
-    paddingVertical: isTablet ? hp('1.3%') : hp('1.2%'),
-    paddingHorizontal: isTablet ? wp('3%') : wp('4%'),
-    borderRadius: 8,
-    marginRight: isTablet ? wp('1.5%') : wp('2%'),
+    backgroundColor: '#00A651',
+    height: 44,
+    paddingHorizontal: 14,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
   acceptCompletionButtonText: {
     color: '#fff',
-    fontSize: RFValue(isTablet ? 12 : 12),
-    fontWeight: '600',
+    fontSize: RFValue(13),
+    fontWeight: '700',
   },
   cancelButton: {
-    width: isTablet ? 44 : wp('9%'),
-    height: isTablet ? 44 : wp('9%'),
-    borderRadius: isTablet ? 22 : wp('4.5%'),
-    backgroundColor: '#dc3545',
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(248,113,113,0.22)',
     borderWidth: 1.5,
-    borderColor: CARD_TEXT,
+    borderColor: 'rgba(252,165,165,0.55)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -2834,17 +2836,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: hp('1.5%'),
-    paddingVertical: hp('1%'),
-    paddingHorizontal: wp('3%'),
-    backgroundColor: '#fff5f5',
-    borderRadius: 6,
+    marginTop: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(248,113,113,0.16)',
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ffcccc',
+    borderColor: 'rgba(252,165,165,0.4)',
   },
   cancellationText: {
-    fontSize: RFValue(isTablet ? 11 : 11),
-    color: '#dc3545',
+    fontSize: RFValue(12),
+    color: '#FCA5A5',
     marginLeft: isTablet ? wp('1%') : wp('1.5%'),
     fontWeight: '500',
   },
@@ -2927,7 +2929,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: isTablet ? hp('1%') : 8,
+    marginBottom: 8,
     paddingRight: isTablet ? wp('1%') : 0,
   },
   info: {
@@ -2935,24 +2937,38 @@ const styles = StyleSheet.create({
     marginRight: isTablet ? wp('2%') : 12,
   },
   title: {
-    fontSize: RFValue(isTablet ? 14 : 14),
-    fontWeight: '600',
-    marginBottom: isTablet ? hp('0.8%') : 8,
+    fontSize: RFValue(isTablet ? 16 : 17),
+    fontWeight: '700',
+    marginBottom: 10,
     color: CARD_TEXT,
-    lineHeight: isTablet ? RFValue(20) : undefined,
+    lineHeight: isTablet ? RFValue(22) : 23,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: isTablet ? hp('0.6%') : 4,
+    marginBottom: 8,
     flexWrap: 'wrap',
-    gap: isTablet ? wp('1.5%') : 4,
+    gap: 4,
   },
   metaIcon: {
-    marginRight: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    backgroundColor: CARD_CHIP_BG,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
+  },
+  offersIconChip: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: CARD_CHIP_BG,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   timePreference: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(13),
     color: CARD_TEXT,
     fontWeight: '500',
   },
@@ -2964,19 +2980,21 @@ const styles = StyleSheet.create({
   },
   locationDivider: {
     marginHorizontal: isTablet ? wp('1.5%') : 6,
-    color: '#ccc',
+    color: CARD_DIVIDER,
     fontSize: RFValue(isTablet ? 12 : 12),
   },
   locationText: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: RFValue(13),
     color: CARD_TEXT_MUTED,
     flex: 1,
+    flexShrink: 1,
   },
   meta: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: isTablet ? hp('0.6%') : 4,
+    marginTop: 2,
+    gap: 8,
   },
   statusRow: {
     flexDirection: 'row',
@@ -2991,19 +3009,20 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   date: {
-    fontSize: RFValue(isTablet ? 11 : 12),
+    fontSize: RFValue(12),
     color: CARD_TEXT_MUTED,
+    flexShrink: 1,
   },
   offerCountText: {
     fontSize: RFValue(isTablet ? 12 : 12),
     color: '#FFFFFF',
     fontWeight: '600',
-    marginTop: isTablet ? hp('0.5%') : 4,
+    marginTop: 12,
     alignSelf: 'flex-start',
     backgroundColor: BRAND_ORANGE,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
     overflow: 'hidden',
   },
   price: {
@@ -3014,47 +3033,48 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: CARD_PRICE_TEXT,
     backgroundColor: CARD_PRICE_BG,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
     overflow: 'hidden',
-    marginBottom: isTablet ? hp('0.8%') : 8,
+    marginBottom: 10,
   },
   userAvatar: {
     width: isTablet ? 44 : 32,
     height: isTablet ? 44 : 32,
     borderRadius: isTablet ? 22 : 16,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: CARD_CHIP_BG,
     borderWidth: 2,
-    borderColor: CARD_TEXT,
+    borderColor: 'rgba(255,255,255,0.6)',
   },
   description: {
     fontSize: RFValue(isTablet ? 13 : 14),
     color: CARD_TEXT_MUTED,
-    lineHeight: isTablet ? RFValue(18) : 20,
-    marginTop: isTablet ? hp('0.8%') : 8,
+    lineHeight: isTablet ? RFValue(18) : 21,
+    marginTop: 8,
   },
   categoryContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: isTablet ? wp('1.5%') : 8,
-    marginTop: isTablet ? hp('1%') : 10,
-    paddingTop: isTablet ? hp('0.8%') : 8,
+    marginTop: 12,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: CARD_DIVIDER,
   },
   categoryLabel: {
-    fontSize: RFValue(isTablet ? 12 : 13),
+    fontSize: RFValue(12),
     color: CARD_TEXT_MUTED,
     fontWeight: '600',
-    lineHeight: isTablet ? RFValue(16) : 18,
+    letterSpacing: 0.3,
+    lineHeight: 18,
   },
   categoryTag: {
     backgroundColor: CARD_CHIP_BG,
     paddingHorizontal: isTablet ? wp('2%') : 8,
     paddingVertical: isTablet ? hp('0.4%') : 4,
-    borderRadius: isTablet ? 10 : 12,
+    borderRadius: 14,
   },
   categoryText: {
     fontSize: RFValue(isTablet ? 10 : 11),
@@ -3239,19 +3259,22 @@ const styles = StyleSheet.create({
     // Additional styles for delete button if needed
   },
   receiptButton: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: CARD_CHIP_BG,
   },
   leaveReviewCta: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 4,
+    marginTop: 14,
     backgroundColor: '#ff6b35',
-    borderRadius: 10,
-    paddingVertical: 12,
+    borderRadius: 14,
+    height: 48,
+    shadowColor: '#ff6b35',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 3,
   },
   leaveReviewCtaText: {
     color: '#FFFFFF',
@@ -3259,12 +3282,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   reviewButton: {
-    backgroundColor: '#FFF9E6',
+    backgroundColor: 'rgba(251,191,36,0.16)',
   },
   withdrawOfferBtn: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: 'rgba(248,113,113,0.22)',
     borderWidth: 1,
-    borderColor: '#FEE2E2',
+    borderColor: 'rgba(252,165,165,0.5)',
   },
   withdrawModalCard: {
     backgroundColor: '#FFFFFF',
@@ -3411,13 +3434,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: CARD_DIVIDER,
     paddingTop: 12,
-    marginTop: 12,
+    marginTop: 14,
   },
   offersButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 2,
   },
   offersInfo: {
     flexDirection: 'row',
@@ -3427,7 +3450,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(14),
     fontWeight: '600',
     color: CARD_TEXT,
-    marginLeft: 8,
+    marginLeft: 10,
   },
   offersCount: {
     fontSize: RFValue(14),
@@ -3477,7 +3500,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
+    borderLeftColor: '#003399',
   },
   offerHeader: {
     flexDirection: 'row',
@@ -3520,7 +3543,7 @@ const styles = StyleSheet.create({
   offerPrice: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#007AFF',
+    color: '#003399',
   },
   offerMessage: {
     fontSize: RFValue(14),
@@ -3539,10 +3562,10 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   acceptOfferButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#ff6b35',
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingVertical: 10,
+    borderRadius: 14,
     minWidth: 100,
     alignItems: 'center',
   },

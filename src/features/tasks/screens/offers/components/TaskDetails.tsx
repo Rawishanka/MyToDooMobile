@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { CARD_BG, CARD_CHIP_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface TaskDetailsProps {
@@ -19,7 +20,7 @@ export default function TaskDetails({ description, dueDate, dateType }: TaskDeta
 
       {dueDate && (
         <View style={styles.dueDateContainer}>
-          <Ionicons name="calendar-outline" size={20} color="#666" />
+          <View style={styles.iconChip}><Ionicons name="calendar-outline" size={18} color={CARD_TEXT} /></View>
           <Text style={styles.dueDateText}>
             Due: {new Date(dueDate).toLocaleDateString()}
           </Text>
@@ -28,7 +29,7 @@ export default function TaskDetails({ description, dueDate, dateType }: TaskDeta
 
       {dateType && (
         <View style={styles.urgencyContainer}>
-          <Ionicons name="time-outline" size={20} color="#ff6b6b" />
+          <View style={styles.iconChip}><Ionicons name="time-outline" size={18} color="#FBBF24" /></View>
           <Text style={styles.urgencyText}>Date Type: {dateType}</Text>
         </View>
       )}
@@ -38,38 +39,56 @@ export default function TaskDetails({ description, dueDate, dateType }: TaskDeta
 
 const styles = StyleSheet.create({
   detailsContainer: {
-    marginTop: 24,
+    marginTop: 16,
+    padding: 18,
+    backgroundColor: CARD_BG,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   sectionTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 12,
+    fontSize: 17,
+    fontWeight: '700',
+    color: CARD_TEXT,
+    marginBottom: 10,
   },
   taskDescription: {
-    fontSize: RFValue(16),
-    color: '#333',
-    lineHeight: 24,
+    fontSize: 15,
+    color: CARD_TEXT,
+    lineHeight: 22,
     marginBottom: 16,
+  },
+  iconChip: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: CARD_CHIP_BG,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dueDateContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   dueDateText: {
-    fontSize: RFValue(14),
-    color: '#666',
-    marginLeft: 8,
+    fontSize: 14,
+    color: CARD_TEXT_MUTED,
+    marginLeft: 12,
   },
   urgencyContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   urgencyText: {
-    fontSize: RFValue(14),
-    color: '#ff6b6b',
+    fontSize: 14,
+    color: '#FBBF24',
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: 12,
   },
 });

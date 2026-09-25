@@ -88,7 +88,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
         key={index}
         name={index < rating ? "star" : "star-outline"}
         size={16}
-        color={index < rating ? "#FFD700" : "#E0E0E0"}
+        color={index < rating ? "#F59E0B" : "#CBD5E1"}
       />
     ));
   };
@@ -192,7 +192,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
       {/* Task Reference */}
       {review.task && (
         <View style={styles.taskReference}>
-          <Ionicons name="briefcase-outline" size={14} color={isDarkMode ? '#94A3B8' : '#666'} />
+          <Ionicons name="briefcase-outline" size={14} color={isDarkMode ? '#94A3B8' : '#64748B'} />
           <Text style={[styles.taskTitle, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>{taskTitle}</Text>
         </View>
       )}
@@ -205,7 +205,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
       {/* Attachments */}
       {review.attachments && review.attachments.length > 0 && (
         <View style={styles.attachmentsContainer}>
-          <Text style={styles.attachmentsLabel}>Attachments:</Text>
+          <Text style={[styles.attachmentsLabel, isDarkMode && { color: '#F8FAFC' }]}>Attachments:</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.attachmentsScroll}>
             {review.attachments.map((attachment, index) => (
               <TouchableOpacity 
@@ -226,7 +226,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
                   />
                 ) : (
                   <View style={styles.attachmentFile}>
-                    <Ionicons name="document-outline" size={32} color="#007AFF" />
+                    <Ionicons name="document-outline" size={32} color={isDarkMode ? '#38BDF8' : '#003399'} />
                     <Text style={styles.attachmentFileName} numberOfLines={1}>
                       {attachment.format || 'file'}
                     </Text>
@@ -340,9 +340,11 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Ionicons name="chatbox-outline" size={48} color="#CCC" />
-      <Text style={styles.emptyStateTitle}>No reviews yet</Text>
-      <Text style={styles.emptyStateSubtext}>
+      <View style={[styles.emptyCircle, isDarkMode && { backgroundColor: '#0F172A' }]}>
+        <Ionicons name="chatbox-outline" size={34} color={isDarkMode ? '#38BDF8' : '#003399'} />
+      </View>
+      <Text style={[styles.emptyStateTitle, isDarkMode && { color: '#F8FAFC' }]}>No reviews yet</Text>
+      <Text style={[styles.emptyStateSubtext, isDarkMode && { color: '#94A3B8' }]}>
         {activeRole === 'tasker' 
           ? 'Reviews from tasks you completed as a tasker will appear here'
           : 'Reviews from tasks you posted will appear here'
@@ -358,19 +360,19 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
       <View style={styles.footer}>
         {isLoading && (
           <>
-            <ActivityIndicator size="small" color="#007AFF" />
-            <Text style={styles.loadingText}>Loading reviews...</Text>
+            <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#003399'} />
+            <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading reviews...</Text>
           </>
         )}
         {!isLoading && hasMore && (
-          <Text style={styles.loadMoreText}>Scroll down to load more</Text>
+          <Text style={[styles.loadMoreText, isDarkMode && { color: '#38BDF8' }]}>Scroll down to load more</Text>
         )}
       </View>
     );
   };
 
   return (
-    <View style={[styles.container, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
       <View style={[styles.headerContainer, isDarkMode && { borderBottomColor: '#334155' }]}>
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Reviews</Text>
       </View>
@@ -470,14 +472,24 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  emptyCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerContainer: {
     flexDirection: 'row',
@@ -487,16 +499,16 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#E8ECF4',
   },
   sectionTitle: {
-    fontSize: RFValue(20),
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: RFValue(18),
+    fontWeight: '700',
+    color: '#0F172A',
   },
   reviewCount: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
   },
   listContainer: {
     maxHeight: 300, // Limit height to avoid infinite scrolling issues
@@ -508,7 +520,7 @@ const styles = StyleSheet.create({
   reviewItem: {
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#E8ECF4',
   },
   reviewHeader: {
     flexDirection: 'row',
@@ -525,7 +537,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#003399',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -546,14 +558,14 @@ const styles = StyleSheet.create({
   reviewerName: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#333',
+    color: '#0F172A',
     marginRight: 6,
   },
   categoryBadge: {
     fontSize: RFValue(11),
     fontWeight: '600',
-    color: '#1d4ed8',
-    backgroundColor: '#dbeafe',
+    color: '#003399',
+    backgroundColor: 'rgba(0,51,153,0.08)',
     overflow: 'hidden',
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -561,8 +573,8 @@ const styles = StyleSheet.create({
     maxWidth: 120,
   },
   lockedBanner: {
-    backgroundColor: '#fff3cd',
-    borderRadius: 8,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderWidth: 1,
@@ -578,7 +590,7 @@ const styles = StyleSheet.create({
   },
   reviewDate: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
   },
   starsContainer: {
     flexDirection: 'row',
@@ -590,33 +602,33 @@ const styles = StyleSheet.create({
   },
   taskTitle: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
     fontStyle: 'italic',
     marginLeft: 6,
     flex: 1,
   },
   reviewComment: {
     fontSize: RFValue(16),
-    color: '#333',
+    color: '#0F172A',
     lineHeight: 22,
   },
   responseContainer: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F8FAFC',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 14,
     marginTop: 12,
     borderLeftWidth: 3,
-    borderLeftColor: '#007AFF',
+    borderLeftColor: '#003399',
   },
   responseLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#007AFF',
+    color: '#003399',
     marginBottom: 4,
   },
   responseText: {
     fontSize: RFValue(14),
-    color: '#555',
+    color: '#334155',
     lineHeight: 20,
   },
   emptyState: {
@@ -627,13 +639,13 @@ const styles = StyleSheet.create({
   emptyStateTitle: {
     fontSize: RFValue(20),
     fontWeight: 'bold',
-    color: '#666',
+    color: '#64748B',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyStateSubtext: {
     fontSize: RFValue(16),
-    color: '#999',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -643,11 +655,11 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
   },
   loadMoreText: {
     fontSize: RFValue(14),
-    color: '#007AFF',
+    color: '#003399',
   },
   roleToggleContainer: {
     flexDirection: 'row',
@@ -658,7 +670,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     gap: 4,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#E8ECF4',
   },
   roleToggleButton: {
     flex: 1,
@@ -667,7 +679,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 11,
     backgroundColor: 'transparent',
     gap: 8,
   },
@@ -682,7 +694,7 @@ const styles = StyleSheet.create({
   roleToggleText: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#666',
+    color: '#64748B',
   },
   roleToggleTextActive: {
     color: '#FFF',
@@ -700,7 +712,7 @@ const styles = StyleSheet.create({
   averageRatingNumber: {
     fontSize: RFValue(32),
     fontWeight: 'bold',
-    color: '#333',
+    color: '#0F172A',
     marginBottom: 8,
   },
   starsRow: {
@@ -710,7 +722,7 @@ const styles = StyleSheet.create({
   },
   totalReviewsText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
   },
   attachmentsContainer: {
     marginTop: 12,
@@ -718,7 +730,7 @@ const styles = StyleSheet.create({
   attachmentsLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#333',
+    color: '#0F172A',
     marginBottom: 8,
   },
   attachmentsScroll: {
@@ -747,7 +759,7 @@ const styles = StyleSheet.create({
   },
   attachmentFileName: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: '#64748B',
     marginTop: 4,
     textAlign: 'center',
   },

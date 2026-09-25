@@ -16,10 +16,12 @@ export default function FilterButton({ activeFiltersCount, onPress }: FilterButt
       onPress={onPress} 
       activeOpacity={0.75}
     >
-      <Ionicons name="options-outline" size={16} color={isDarkMode ? '#38BDF8' : '#003399'} />
+      <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
+        <Ionicons name="options-outline" size={14} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+      </View>
       <Text style={[styles.filterText, isDarkMode && { color: '#F8FAFC' }]}>Filter</Text>
       {activeFiltersCount > 0 && (
-        <View style={[styles.countBadge, isDarkMode && { backgroundColor: '#38BDF8' }]}>
+        <View style={[styles.countBadge, !isDarkMode && { backgroundColor: '#ff6b35' }, isDarkMode && { backgroundColor: '#38BDF8' }]}>
           <Text style={[styles.countText, isDarkMode && { color: '#0B1120' }]}>{activeFiltersCount}</Text>
         </View>
       )}
@@ -32,17 +34,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 24,
-    gap: 6,
-    borderWidth: 1.5,
-    borderColor: '#E0E7FF',
-    shadowColor: '#003399',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    paddingLeft: 6,
+    paddingRight: 14,
+    height: 40,
+    borderRadius: 20,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#DCE3F5',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
     elevation: 3,
+  },
+  iconChip: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#003399',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterText: {
     fontSize: RFValue(13),

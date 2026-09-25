@@ -45,21 +45,28 @@ export default function TermsCheckbox({ agreed, onToggle }: TermsCheckboxProps) 
 
 const styles = StyleSheet.create({
   termsContainer: {
-    marginTop: 24,
-    padding: 16,
+    marginTop: 16,
+    padding: 18,
     backgroundColor: CARD_BG,
-    borderRadius: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   termsCheckbox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   checkbox: {
-    width: 20,
-    height: 20,
+    width: 24,
+    height: 24,
     borderWidth: 2,
     borderColor: CARD_TEXT_MUTED,
-    borderRadius: 4,
+    borderRadius: 8,
     marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -77,5 +84,6 @@ const styles = StyleSheet.create({
   termsLink: {
     color: CARD_TEXT,
     textDecorationLine: 'underline',
+    fontWeight: '700',
   },
 });

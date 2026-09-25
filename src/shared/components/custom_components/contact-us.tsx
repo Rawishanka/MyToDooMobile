@@ -27,7 +27,8 @@ import {
 import FAQScreen from '@/src/shared/components/custom_components/faq-screen';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 type ContactUsProps = { 
   onBack: () => void;
@@ -306,39 +307,39 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
       onRequestClose={() => setShowSuccessModal(false)}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.successModalContent}>
+        <View style={[styles.successModalContent, isDarkMode && { backgroundColor: '#1E293B' }]}>
           {/* Success Icon */}
           <View style={styles.successIconContainer}>
             <Ionicons name="checkmark" size={40} color="#fff" />
           </View>
           
-          <Text style={styles.successTitle}>Message Sent Successfully!</Text>
-          <Text style={styles.successSubtitle}>
+          <Text style={[styles.successTitle, isDarkMode && { color: '#F8FAFC' }]}>Message Sent Successfully!</Text>
+          <Text style={[styles.successSubtitle, isDarkMode && { color: '#94A3B8' }]}>
             Your support request has been submitted to support@mytodoo.com
           </Text>
 
           {/* Support Token Card */}
-          <View style={styles.tokenCard}>
+          <View style={[styles.tokenCard, isDarkMode && { backgroundColor: '#0F172A' }]}>
             <View style={styles.tokenHeader}>
               <Ionicons name="ticket-outline" size={20} color="#003399" />
               <Text style={styles.tokenLabel}>Support Token</Text>
             </View>
-            <Text style={styles.tokenValue}>{supportToken}</Text>
-            <Text style={styles.tokenHint}>Save this token to track your request</Text>
+            <Text style={[styles.tokenValue, isDarkMode && { color: '#F8FAFC' }]}>{supportToken}</Text>
+            <Text style={[styles.tokenHint, isDarkMode && { color: '#94A3B8' }]}>Save this token to track your request</Text>
           </View>
 
           {/* Email Confirmation */}
-          <View style={styles.emailConfirmation}>
-            <Ionicons name="checkmark-circle" size={20} color="#28a745" />
-            <Text style={styles.emailConfirmationText}>
+          <View style={[styles.emailConfirmation, isDarkMode && { backgroundColor: '#064E3B' }]}>
+            <Ionicons name="checkmark-circle" size={20} color="#16A34A" />
+            <Text style={[styles.emailConfirmationText, isDarkMode && { color: '#A7F3D0' }]}>
               We'll respond to <Text style={styles.emailBold}>{submittedEmail}</Text> as soon as possible
             </Text>
           </View>
 
           {/* Response Time */}
           <View style={styles.responseTimeContainer}>
-            <Ionicons name="time-outline" size={18} color="#666" />
-            <Text style={styles.responseTimeText}>
+            <Ionicons name="time-outline" size={18} color="#64748B" />
+            <Text style={[styles.responseTimeText, isDarkMode && { color: '#94A3B8' }]}>
               We typically respond within 24 hours during business days
             </Text>
           </View>
@@ -368,15 +369,15 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
       onRequestClose={() => setShowStatusModal(false)}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.statusModalContent}>
+        <View style={[styles.statusModalContent, isDarkMode && { backgroundColor: '#1E293B' }]}>
           {/* Header */}
           <View style={styles.statusModalHeader}>
-            <Text style={styles.statusModalTitle}>Support Request Details</Text>
+            <Text style={[styles.statusModalTitle, isDarkMode && { color: '#F8FAFC' }]}>Support Request Details</Text>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setShowStatusModal(false)}
             >
-              <Ionicons name="close" size={24} color="#333" />
+              <Ionicons name="close" size={24} color={isDarkMode ? '#F8FAFC' : '#334155'} />
             </TouchableOpacity>
           </View>
 
@@ -387,16 +388,16 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
             {statusData && (
               <>
                 {/* Token */}
-                <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                <View style={styles.statusSection}>
                   <View style={styles.statusSectionHeader}>
                     <Ionicons name="ticket-outline" size={18} color="#003399" />
                     <Text style={styles.statusSectionLabel}>Support Token</Text>
                   </View>
-                  <Text style={styles.statusTokenValue}>{statusData.supportToken}</Text>
+                  <Text style={[styles.statusTokenValue, isDarkMode && { color: '#F8FAFC' }]}>{statusData.supportToken}</Text>
                 </View>
 
                 {/* Status Badge */}
-                <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                <View style={styles.statusSection}>
                   <View style={styles.statusSectionHeader}>
                     <Ionicons name="flag-outline" size={18} color="#003399" />
                     <Text style={styles.statusSectionLabel}>Status</Text>
@@ -410,42 +411,42 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 </View>
 
                 {/* Category */}
-                <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                <View style={styles.statusSection}>
                   <View style={styles.statusSectionHeader}>
                     <Ionicons name="folder-outline" size={18} color="#003399" />
                     <Text style={styles.statusSectionLabel}>Category</Text>
                   </View>
-                  <Text style={styles.statusValue}>{statusData.category}</Text>
+                  <Text style={[styles.statusValue, isDarkMode && { color: '#E2E8F0' }]}>{statusData.category}</Text>
                 </View>
 
                 {/* Subject */}
-                <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                <View style={styles.statusSection}>
                   <View style={styles.statusSectionHeader}>
                     <Ionicons name="text-outline" size={18} color="#003399" />
                     <Text style={styles.statusSectionLabel}>Subject</Text>
                   </View>
-                  <Text style={styles.statusValue}>{statusData.subject}</Text>
+                  <Text style={[styles.statusValue, isDarkMode && { color: '#E2E8F0' }]}>{statusData.subject}</Text>
                 </View>
 
                 {/* Your Message */}
                 {statusData.message && (
-                  <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                  <View style={styles.statusSection}>
                     <View style={styles.statusSectionHeader}>
                       <Ionicons name="chatbubble-outline" size={18} color="#003399" />
                       <Text style={styles.statusSectionLabel}>Your Message</Text>
                     </View>
-                    <View style={styles.messageBox}>
-                      <Text style={styles.messageText}>{statusData.message}</Text>
+                    <View style={[styles.messageBox, isDarkMode && { backgroundColor: '#0F172A', borderLeftColor: '#334155' }]}>
+                      <Text style={[styles.messageText, isDarkMode && { color: '#E2E8F0' }]}>{statusData.message}</Text>
                     </View>
                   </View>
                 )}
 
                 {/* Admin Response */}
                 {statusData.adminResponse && (
-                  <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                  <View style={styles.statusSection}>
                     <View style={styles.statusSectionHeader}>
-                      <Ionicons name="chatbubbles" size={18} color="#28a745" />
-                      <Text style={[styles.statusSectionLabel, { color: '#28a745' }]}>Support Response</Text>
+                      <Ionicons name="chatbubbles" size={18} color="#16A34A" />
+                      <Text style={[styles.statusSectionLabel, { color: '#16A34A' }]}>Support Response</Text>
                     </View>
                     <View style={styles.responseBox}>
                       <Text style={styles.responseText}>{statusData.adminResponse}</Text>
@@ -459,21 +460,21 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 )}
 
                 {/* Dates */}
-                <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                <View style={styles.statusSection}>
                   <View style={styles.statusSectionHeader}>
                     <Ionicons name="calendar-outline" size={18} color="#003399" />
                     <Text style={styles.statusSectionLabel}>Submitted</Text>
                   </View>
-                  <Text style={styles.statusValue}>{formatDate(statusData.createdAt)}</Text>
+                  <Text style={[styles.statusValue, isDarkMode && { color: '#E2E8F0' }]}>{formatDate(statusData.createdAt)}</Text>
                 </View>
 
                 {statusData.resolvedAt && (
-                  <View style={[styles.statusSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                  <View style={styles.statusSection}>
                     <View style={styles.statusSectionHeader}>
-                      <Ionicons name="checkmark-circle-outline" size={18} color="#28a745" />
+                      <Ionicons name="checkmark-circle-outline" size={18} color="#16A34A" />
                       <Text style={styles.statusSectionLabel}>Resolved</Text>
                     </View>
-                    <Text style={styles.statusValue}>{formatDate(statusData.resolvedAt)}</Text>
+                    <Text style={[styles.statusValue, isDarkMode && { color: '#E2E8F0' }]}>{formatDate(statusData.resolvedAt)}</Text>
                   </View>
                 )}
               </>
@@ -493,17 +494,10 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : BRAND_BLUE} />
       
-      {/* Header */}
-      <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, isDarkMode && { color: "#F8FAFC" }]} numberOfLines={1}>Contact Us</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <LightHeader title="Contact Us" onBack={onBack} />
 
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -513,28 +507,27 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView 
             style={styles.content} 
+            contentContainerStyle={styles.contentInner}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
             {/* Quick Contact Methods */}
-            <View style={[styles.quickContactSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
+            <View style={styles.quickContactSection}>
               {contactMethods.map((method, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={[styles.contactMethodCard, isDarkMode && { borderBottomColor: '#334155' }]}
+                  style={[styles.contactMethodCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
                   onPress={method.action ? method.action : undefined}
                   disabled={!method.action}
                   activeOpacity={method.action ? 0.7 : 1}
                 >
-                  <View style={[styles.contactMethodIcon, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                    <Ionicons name={method.icon as any} size={24} color={isDarkMode ? "#003399" : CARD_TEXT} />
-                  </View>
+                  <IconChip name={method.icon as any} style={{ marginRight: 12 }} />
                   <View style={styles.contactMethodInfo}>
                     <Text style={[styles.contactMethodTitle, isDarkMode && { color: '#F8FAFC' }]}>{method.title}</Text>
-                    <Text style={[styles.contactMethodValue, isDarkMode && { color: '#38BDF8' }]}>{method.value}</Text>
+                    <Text style={[styles.contactMethodValue, isDarkMode && { color: '#38BDF8' }]} numberOfLines={1}>{method.value}</Text>
                   </View>
                   {method.action && (
-                    <Ionicons name="chevron-forward" size={20} color={isDarkMode ? "#999" : CARD_TEXT_MUTED} />
+                    <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
                   )}
                 </TouchableOpacity>
               ))}
@@ -548,14 +541,14 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
             </View>
 
             {/* Contact Form */}
-            <View style={[styles.formSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
+            <View style={[styles.formSection, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
               <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Send Us a Message</Text>
               
               {/* Name Input */}
               <View style={styles.inputGroup}>
                 <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Your Name *</Text>
                 <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
-                  <Ionicons name="person-outline" size={20} color="#999" style={styles.inputIcon} />
+                  <Ionicons name="person-outline" size={20} color="#94A3B8" style={styles.inputIcon} />
                   <TextInput
                     style={[styles.input, isDarkMode && { color: '#F8FAFC' }]}
                     value={name}
@@ -565,7 +558,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                       setName(cleaned);
                     }}
                     placeholder="Enter your full name"
-                    placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+                    placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
                     autoCapitalize="words"
                     maxLength={80}
                   />
@@ -576,13 +569,13 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
               <View style={styles.inputGroup}>
                 <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Email Address *</Text>
                 <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
-                  <Ionicons name="mail-outline" size={20} color="#999" style={styles.inputIcon} />
+                  <Ionicons name="mail-outline" size={20} color="#94A3B8" style={styles.inputIcon} />
                   <TextInput
                     style={[styles.input, isDarkMode && { color: '#F8FAFC' }]}
                     value={email}
                     onChangeText={setEmail}
                     placeholder="your.email@example.com"
-                    placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+                    placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoCorrect={false}
@@ -602,42 +595,42 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                     <Ionicons 
                       name={(selectedCategory ? categoryIcons[selectedCategory] : 'help-circle-outline') as any} 
                       size={20} 
-                      color={selectedCategory ? '#333' : '#999'} 
+                      color={selectedCategory ? (isDarkMode ? '#38BDF8' : '#003399') : '#94A3B8'} 
                       style={styles.inputIcon} 
                     />
-                    <Text style={[styles.dropdownText, selectedCategory && styles.dropdownTextSelected]}>
+                    <Text style={[styles.dropdownText, selectedCategory && styles.dropdownTextSelected, selectedCategory && isDarkMode && { color: '#F8FAFC' }]} numberOfLines={1}>
                       {selectedCategory || 'Select a category'}
                     </Text>
                   </View>
                   <Ionicons 
                     name={showCategoryDropdown ? "chevron-up" : "chevron-down"} 
                     size={20} 
-                    color="#666" 
+                    color="#94A3B8" 
                   />
                 </TouchableOpacity>
                 
                 {showCategoryDropdown && (
-                  <View style={styles.dropdownMenu}>
+                  <View style={[styles.dropdownMenu, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
                     {loadingCategories ? (
                       <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="small" color="#003399" />
-                        <Text style={styles.loadingText}>Loading categories...</Text>
+                        <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#003399'} />
+                        <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading categories...</Text>
                       </View>
                     ) : (
                       categories.map((category, index) => (
                         <TouchableOpacity
                           key={index}
-                          style={styles.dropdownItem}
+                          style={[styles.dropdownItem, isDarkMode && { borderBottomColor: '#334155' }]}
                           onPress={() => handleCategorySelect(category)}
                         >
                           <Ionicons 
                             name={(categoryIcons[category] || 'help-circle-outline') as any} 
                             size={20} 
-                            color="#003399" 
+                            color={isDarkMode ? '#38BDF8' : '#003399'} 
                           />
-                          <Text style={styles.dropdownItemText}>{category}</Text>
+                          <Text style={[styles.dropdownItemText, isDarkMode && { color: '#F8FAFC' }]}>{category}</Text>
                           {selectedCategory === category && (
-                            <Ionicons name="checkmark" size={20} color="#003399" />
+                            <Ionicons name="checkmark" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
                           )}
                         </TouchableOpacity>
                       ))
@@ -649,13 +642,13 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {selectedCategory === 'Other' && (
                   <View style={styles.customCategoryContainer}>
                     <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
-                      <Ionicons name="create-outline" size={20} color="#999" style={styles.inputIcon} />
+                      <Ionicons name="create-outline" size={20} color="#94A3B8" style={styles.inputIcon} />
                       <TextInput
                         style={[styles.input, isDarkMode && { color: '#F8FAFC' }]}
                         value={customCategory}
                         onChangeText={setCustomCategory}
                         placeholder="Please specify your category"
-                        placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+                        placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
                         maxLength={100}
                         autoFocus
                       />
@@ -668,13 +661,13 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
               <View style={styles.inputGroup}>
                 <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Subject *</Text>
                 <View style={[styles.inputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
-                  <Ionicons name="text-outline" size={20} color="#999" style={styles.inputIcon} />
+                  <Ionicons name="text-outline" size={20} color="#94A3B8" style={styles.inputIcon} />
                   <TextInput
                     style={[styles.input, isDarkMode && { color: '#F8FAFC' }]}
                     value={subject}
                     onChangeText={setSubject}
                     placeholder="Brief description of your issue"
-                    placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+                    placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
                     maxLength={200}
                   />
                 </View>
@@ -689,13 +682,13 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                     value={message}
                     onChangeText={(text) => setMessage(text.slice(0, 1000))}
                     placeholder="Please provide detailed information about your inquiry..."
-                    placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+                    placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
                     multiline
                     numberOfLines={6}
                     textAlignVertical="top"
                   />
                 </View>
-                <Text style={styles.charCount}>{message.length} / 1000 characters</Text>
+                <Text style={[styles.charCount, isDarkMode && { color: '#94A3B8' }]}>{message.length} / 1000 characters</Text>
               </View>
 
               {/* Submit Button */}
@@ -716,30 +709,30 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
               </TouchableOpacity>
 
               {/* Info Note */}
-              <View style={styles.infoBox}>
-                <Ionicons name="information-circle" size={20} color={isDarkMode ? "#003399" : CARD_TEXT} />
-                <Text style={styles.infoText}>
+              <View style={[styles.infoBox, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                <Ionicons name="information-circle" size={20} color={isDarkMode ? "#38BDF8" : "#003399"} />
+                <Text style={[styles.infoText, isDarkMode && { color: '#CBD5E1' }]}>
                   We typically respond within 24 hours during business days
                 </Text>
               </View>
             </View>
 
             {/* Token Lookup Section */}
-            <View style={[styles.tokenLookupSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
-              <Text style={styles.tokenLookupTitle}>Track Your Request</Text>
-              <Text style={styles.tokenLookupSubtitle}>
+            <View style={[styles.tokenLookupSection, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <Text style={[styles.tokenLookupTitle, isDarkMode && { color: '#F8FAFC' }]}>Track Your Request</Text>
+              <Text style={[styles.tokenLookupSubtitle, isDarkMode && { color: '#94A3B8' }]}>
                 Enter your support token to check the status of your request
               </Text>
               
               <View style={styles.tokenInputRow}>
-                <View style={styles.tokenInputContainer}>
-                  <Ionicons name="ticket-outline" size={20} color="#999" style={styles.inputIcon} />
+                <View style={[styles.tokenInputContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+                  <Ionicons name="ticket-outline" size={20} color="#94A3B8" style={styles.inputIcon} />
                   <TextInput
-                    style={styles.tokenInput}
+                    style={[styles.tokenInput, isDarkMode && { color: '#F8FAFC' }]}
                     value={tokenInput}
                     onChangeText={setTokenInput}
                     placeholder="SUP-XXXXXX-XXXXXXXX"
-                    placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+                    placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
                     autoCapitalize="characters"
                     autoCorrect={false}
                   />
@@ -759,15 +752,15 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
             </View>
 
             {/* FAQ Link */}
-            <View style={[styles.faqSection, isDarkMode && { backgroundColor: '#1E293B' }]}>
-              <Text style={styles.faqTitle}>Looking for quick answers?</Text>
-              <Text style={styles.faqSubtitle}>
+            <View style={[styles.faqSection, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <Text style={[styles.faqTitle, isDarkMode && { color: '#F8FAFC' }]}>Looking for quick answers?</Text>
+              <Text style={[styles.faqSubtitle, isDarkMode && { color: '#94A3B8' }]}>
                 Check out our FAQ section for instant solutions to common questions
               </Text>
-              <TouchableOpacity style={styles.faqButton} onPress={() => setShowFAQ(true)}>
-                <Ionicons name="help-circle-outline" size={20} color="#003399" />
-                <Text style={styles.faqButtonText}>View FAQ</Text>
-                <Ionicons name="chevron-forward" size={20} color="#003399" />
+              <TouchableOpacity style={[styles.faqButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#38BDF8' }]} onPress={() => setShowFAQ(true)}>
+                <Ionicons name="help-circle-outline" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                <Text style={[styles.faqButtonText, isDarkMode && { color: '#38BDF8' }]}>View FAQ</Text>
+                <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
               </TouchableOpacity>
             </View>
 
@@ -789,129 +782,109 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
           </SafeAreaView>
         </Modal>
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 14,
-    backgroundColor: BRAND_BLUE,
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 8,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: RFValue(17),
-    fontWeight: '700',
-    color: CARD_TEXT,
-    textAlign: 'center',
-    marginHorizontal: 8,
-  },
-  headerSpacer: {
-    width: 40,
+    backgroundColor: '#F4F6FB',
   },
   content: {
     flex: 1,
   },
+  contentInner: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
   quickContactSection: {
-    backgroundColor: CARD_BG,
-    marginTop: 10,
-    paddingVertical: 6,
+    marginBottom: 2,
   },
   contactMethodCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
-  },
-  contactMethodIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: CARD_CHIP_BG,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
+    padding: 14,
+    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   contactMethodInfo: {
     flex: 1,
+    minWidth: 0,
   },
   contactMethodTitle: {
-    fontSize: RFValue(14),
+    fontSize: 15,
     fontWeight: '600',
-    color: CARD_TEXT,
-    marginBottom: 3,
+    color: '#0F172A',
+    marginBottom: 2,
   },
   contactMethodValue: {
-    fontSize: RFValue(13),
-    color: CARD_TEXT_MUTED,
+    fontSize: 13,
+    color: '#64748B',
     fontWeight: '500',
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingHorizontal: 0,
+    paddingVertical: 14,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#e1e4e8',
+    backgroundColor: '#E8ECF4',
   },
   dividerText: {
-    fontSize: RFValue(12),
-    fontWeight: '600',
-    color: '#999',
-    marginHorizontal: 16,
-    letterSpacing: 0.5,
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748B',
+    marginHorizontal: 14,
+    letterSpacing: 0.8,
   },
   formSection: {
-    backgroundColor: CARD_BG,
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    marginBottom: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    padding: 16,
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   sectionTitle: {
-    fontSize: RFValue(19),
+    fontSize: 18,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: '#0F172A',
     marginBottom: 18,
   },
   inputGroup: {
     marginBottom: 18,
   },
   label: {
-    fontSize: RFValue(14),
+    fontSize: 13,
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#334155',
     marginBottom: 8,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 10,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#e1e4e8',
+    borderColor: '#E8ECF4',
     paddingHorizontal: 14,
     paddingVertical: 14,
   },
@@ -921,7 +894,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: RFValue(15),
-    color: '#1a1a1a',
+    color: '#0F172A',
     padding: 0,
   },
   messageInputContainer: {
@@ -935,7 +908,7 @@ const styles = StyleSheet.create({
   },
   charCount: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#64748B',
     marginTop: 6,
     textAlign: 'right',
   },
@@ -943,10 +916,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 10,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#e1e4e8',
+    borderColor: '#E8ECF4',
     paddingHorizontal: 14,
     paddingVertical: 14,
     minHeight: 52,
@@ -958,23 +931,23 @@ const styles = StyleSheet.create({
   },
   dropdownText: {
     fontSize: RFValue(15),
-    color: '#999',
+    color: '#94A3B8',
     flex: 1,
   },
   dropdownTextSelected: {
-    color: '#1a1a1a',
-    fontWeight: '500',
+    color: '#0F172A',
+    fontWeight: '600',
   },
   dropdownMenu: {
     marginTop: 8,
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#e1e4e8',
-    shadowColor: '#000',
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 5,
     overflow: 'hidden',
   },
@@ -984,12 +957,12 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#E8ECF4',
   },
   dropdownItemText: {
     flex: 1,
     fontSize: RFValue(15),
-    color: '#333',
+    color: '#0F172A',
     marginLeft: 12,
   },
   customCategoryContainer: {
@@ -1004,24 +977,24 @@ const styles = StyleSheet.create({
   loadingText: {
     marginLeft: 10,
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
   },
   submitButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: 16,
-    borderRadius: 12,
+    height: 52,
+    borderRadius: 14,
     marginTop: 8,
-    shadowColor: '#000',
+    shadowColor: BRAND_ORANGE,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 3,
   },
   submitButtonDisabled: {
-    backgroundColor: '#B0C4DE',
+    opacity: 0.55,
     shadowOpacity: 0,
   },
   submitButtonText: {
@@ -1033,35 +1006,42 @@ const styles = StyleSheet.create({
   infoBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: 'rgba(0,51,153,0.08)',
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
+    paddingHorizontal: 14,
+    borderRadius: 14,
     marginTop: 16,
   },
   infoText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: CARD_TEXT,
+    color: '#334155',
     marginLeft: 10,
     lineHeight: 18,
   },
   // Token Lookup Section
   tokenLookupSection: {
-    backgroundColor: CARD_BG,
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    marginBottom: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    padding: 16,
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   tokenLookupTitle: {
-    fontSize: RFValue(17),
+    fontSize: 17,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: '#0F172A',
     marginBottom: 6,
   },
   tokenLookupSubtitle: {
     fontSize: RFValue(13),
-    color: CARD_TEXT_MUTED,
+    color: '#64748B',
     marginBottom: 14,
   },
   tokenInputRow: {
@@ -1072,10 +1052,10 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 10,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#e1e4e8',
+    borderColor: '#E8ECF4',
     paddingHorizontal: 14,
     paddingVertical: 14,
     marginRight: 10,
@@ -1083,38 +1063,46 @@ const styles = StyleSheet.create({
   tokenInput: {
     flex: 1,
     fontSize: RFValue(15),
-    color: '#1a1a1a',
+    color: '#0F172A',
     padding: 0,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   checkButton: {
     backgroundColor: BRAND_ORANGE,
-    width: 50,
-    height: 50,
-    borderRadius: 10,
+    width: 52,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkButtonDisabled: {
-    backgroundColor: '#B0C4DE',
+    opacity: 0.55,
   },
   // FAQ Section
   faqSection: {
-    backgroundColor: CARD_BG,
-    paddingVertical: 20,
-    paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    padding: 16,
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
     alignItems: 'center',
   },
   faqTitle: {
-    fontSize: RFValue(17),
+    fontSize: 17,
     fontWeight: '700',
-    color: CARD_TEXT,
+    color: '#0F172A',
     marginBottom: 6,
     textAlign: 'center',
   },
   faqSubtitle: {
     fontSize: RFValue(13),
-    color: CARD_TEXT_MUTED,
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 14,
     lineHeight: 19,
@@ -1123,16 +1111,16 @@ const styles = StyleSheet.create({
   faqButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F2FF',
-    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    height: 48,
     paddingHorizontal: 20,
-    borderRadius: 10,
-    borderWidth: 1,
+    borderRadius: 14,
+    borderWidth: 1.5,
     borderColor: '#003399',
   },
   faqButtonText: {
     fontSize: RFValue(15),
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#003399',
     marginLeft: 8,
     marginRight: 8,
@@ -1158,7 +1146,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#28a745',
+    backgroundColor: '#16A34A',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
@@ -1166,20 +1154,20 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: RFValue(22),
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: '#0F172A',
     marginBottom: 8,
     textAlign: 'center',
   },
   successSubtitle: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 20,
   },
   tokenCard: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
     padding: 16,
     width: '100%',
     borderLeftWidth: 4,
@@ -1200,19 +1188,19 @@ const styles = StyleSheet.create({
   tokenValue: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: '#0F172A',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     marginBottom: 4,
   },
   tokenHint: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: '#64748B',
     fontStyle: 'italic',
   },
   emailConfirmation: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#d4edda',
+    backgroundColor: '#DCFCE7',
     padding: 12,
     borderRadius: 10,
     width: '100%',
@@ -1221,7 +1209,7 @@ const styles = StyleSheet.create({
   emailConfirmationText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: '#155724',
+    color: '#166534',
     marginLeft: 8,
     lineHeight: 18,
   },
@@ -1235,14 +1223,15 @@ const styles = StyleSheet.create({
   },
   responseTimeText: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: '#64748B',
     marginLeft: 8,
   },
   doneButton: {
-    backgroundColor: '#003399',
-    paddingVertical: 14,
+    backgroundColor: '#ff6b35',
+    height: 50,
+    justifyContent: 'center',
     paddingHorizontal: 40,
-    borderRadius: 10,
+    borderRadius: 14,
     width: '100%',
   },
   doneButtonText: {
@@ -1267,12 +1256,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e1e4e8',
+    borderBottomColor: '#E8ECF4',
   },
   statusModalTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: '#0F172A',
   },
   closeButton: {
     padding: 4,
@@ -1300,7 +1289,7 @@ const styles = StyleSheet.create({
   statusTokenValue: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#1a1a1a',
+    color: '#0F172A',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   statusBadge: {
@@ -1323,45 +1312,46 @@ const styles = StyleSheet.create({
   },
   statusValue: {
     fontSize: RFValue(15),
-    color: '#333',
+    color: '#334155',
     lineHeight: 22,
   },
   messageBox: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F8FAFC',
     padding: 14,
-    borderRadius: 10,
+    borderRadius: 14,
     borderLeftWidth: 3,
-    borderLeftColor: '#e1e4e8',
+    borderLeftColor: '#E8ECF4',
   },
   messageText: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: '#334155',
     lineHeight: 20,
   },
   responseBox: {
-    backgroundColor: '#d4edda',
+    backgroundColor: '#DCFCE7',
     padding: 14,
-    borderRadius: 10,
+    borderRadius: 14,
     borderLeftWidth: 3,
-    borderLeftColor: '#28a745',
+    borderLeftColor: '#16A34A',
   },
   responseText: {
     fontSize: RFValue(14),
-    color: '#155724',
+    color: '#166534',
     lineHeight: 20,
     marginBottom: 8,
   },
   responseTime: {
     fontSize: RFValue(12),
-    color: '#155724',
+    color: '#166534',
     fontStyle: 'italic',
   },
   statusCloseButton: {
-    backgroundColor: '#003399',
+    backgroundColor: '#ff6b35',
     marginHorizontal: 20,
     marginVertical: 16,
-    paddingVertical: 14,
-    borderRadius: 10,
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 14,
   },
   statusCloseButtonText: {
     fontSize: RFValue(16),

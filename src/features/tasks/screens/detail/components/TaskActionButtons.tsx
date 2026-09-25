@@ -436,7 +436,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
   }
 
   return (
-    <View style={[styles.container, isDarkMode && { backgroundColor: "#0B1120", borderBottomColor: "#334155" }]}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
       {successToast ? (
         <View style={styles.successToast} pointerEvents="none">
           <Text style={styles.successToastText}>{successToast}</Text>
@@ -609,11 +609,18 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    marginBottom: 16,
     backgroundColor: CARD_BG,
-    borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
   },
   successToast: {
     marginBottom: 10,
@@ -632,12 +639,12 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   chatButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     backgroundColor: CARD_PRICE_BG,
     justifyContent: 'center',
     alignItems: 'center',
@@ -649,16 +656,16 @@ const styles = StyleSheet.create({
   },
   completedButton: {
     flex: 1,
-    height: 44,
+    height: 48,
     backgroundColor: BRAND_ORANGE,
-    borderRadius: 8,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: BRAND_ORANGE,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 3,
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -666,14 +673,14 @@ const styles = StyleSheet.create({
   },
   completedButtonText: {
     color: '#fff',
-    fontSize: RFValue(15),
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
   },
   confirmCompletionButton: {
     flex: 1,
-    height: 44,
+    height: 48,
     backgroundColor: BRAND_ORANGE,
-    borderRadius: 8,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: BRAND_ORANGE,
@@ -688,9 +695,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   cancelButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     backgroundColor: '#dc3545',
     justifyContent: 'center',
     alignItems: 'center',
@@ -701,7 +708,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   disabledButton: {
-    backgroundColor: '#ccc',
+    backgroundColor: 'rgba(255,255,255,0.28)',
     shadowOpacity: 0,
     elevation: 0,
   },
@@ -714,16 +721,16 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 20,
+    padding: 22,
     width: '100%',
     maxWidth: 400,
     maxHeight: '80%',
   },
   modalTitle: {
-    fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0D1B2A',
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -744,9 +751,10 @@ const styles = StyleSheet.create({
     padding: 12,
     borderWidth: 1,
     borderColor: CARD_DIVIDER,
-    borderRadius: 8,
+    borderRadius: 14,
     backgroundColor: CARD_BG,
-    marginBottom: 8,
+    marginBottom: 10,
+    paddingVertical: 14,
   },
   reasonItemSelected: {
     borderColor: BRAND_ORANGE,
@@ -786,8 +794,8 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    height: 44,
-    borderRadius: 8,
+    height: 50,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },

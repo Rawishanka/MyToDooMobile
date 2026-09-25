@@ -9,7 +9,7 @@ export const LoadingState: React.FC = () => {
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#007bff'} />
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading user profile...</Text>
     </View>
   );
@@ -25,7 +25,9 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ onRetry }) => {
 
   return (
     <View style={[styles.errorContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <Ionicons name="person-circle-outline" size={64} color="#ff4444" />
+      <View style={[styles.stateCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+        <Ionicons name="person-circle-outline" size={44} color={isDarkMode ? '#38BDF8' : '#003399'} />
+      </View>
       <Text style={[styles.errorTitle, isDarkMode && { color: '#F8FAFC' }]}>Failed to load user profile</Text>
       <Text style={[styles.errorSubtitle, isDarkMode && { color: '#94A3B8' }]}>
         Could not load user information. Please check your connection and try again.
@@ -45,52 +47,61 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
+  },
+  stateCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
   },
   errorTitle: {
     fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: '#007bff',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#ff6b35',
+    paddingHorizontal: 28,
+    height: 48,
+    justifyContent: 'center',
+    borderRadius: 14,
     marginBottom: 12,
   },
   retryButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
-    fontWeight: '600',
+    fontWeight: '700',
   },
   backButton: {
     paddingHorizontal: 24,
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#007bff',
+    color: '#003399',
     fontSize: RFValue(16),
     fontWeight: '600',
   },

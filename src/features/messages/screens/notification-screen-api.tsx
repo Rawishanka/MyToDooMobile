@@ -2,7 +2,6 @@
 // Loads notification history from the backend (GET /notifications) AND local FCM storage
 // Supports mark-as-read, mark-all-as-read, delete, delete-all
 import { AppAlert } from '@/src/shared/components/AppAlert';
-import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
 import {
     deleteAllNotifications,
     deleteNotification,
@@ -34,7 +33,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import { RFValue, isTablet, wp, hp } from '@/src/shared/utils/responsive';
+import { isTablet, wp } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 
 interface NotificationModalProps {
@@ -280,15 +279,15 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
       onRequestClose={onClose}
     >
       <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
+        <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#0B1120" : "#003399"} />
 
         {/* Header */}
         <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
-          <TouchableOpacity onPress={onClose} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : '#000'} />
+          <TouchableOpacity onPress={onClose} style={styles.backButton} activeOpacity={0.7}>
+            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
-            <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Notifications</Text>
+            <Text style={styles.headerTitle}>Notifications</Text>
             {totalCount > 0 && (
               <View style={[styles.headerBadge, isDarkMode && { backgroundColor: '#38BDF8' }]}>
                 <Text style={[styles.headerBadgeText, isDarkMode && { color: '#0F172A' }]}>{totalCount}</Text>
@@ -298,20 +297,21 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
           <View style={styles.headerActions}>
             {unreadCount > 0 && (
               <TouchableOpacity onPress={handleMarkAllAsRead} style={styles.headerActionBtn}>
-                <Ionicons name="checkmark-done" size={20} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+                <Ionicons name="checkmark-done" size={20} color="#FFFFFF" />
               </TouchableOpacity>
             )}
             {totalCount > 0 && (
               <TouchableOpacity onPress={handleDeleteAll} style={styles.headerActionBtn}>
-                <Ionicons name="trash-outline" size={20} color="#dc3545" />
+                <Ionicons name="trash-outline" size={20} color="#FFFFFF" />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
+        <View style={[styles.body, isDarkMode && { backgroundColor: '#0B1120' }]}>
         {/* Tabs — only show when there are notifications */}
         {totalCount > 0 && (
-          <View style={[styles.tabContainer, isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]}>
+          <View style={styles.tabContainer}>
             {[
               { key: 'all', label: `All (${totalCount})` },
               { key: 'unread', label: `Unread (${unreadCount})` },
@@ -321,14 +321,16 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
                 key={tab.key}
                 style={[
                   styles.tab,
-                  selectedTab === tab.key && [styles.tabActive, isDarkMode && { borderBottomColor: '#38BDF8' }]
+                  isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                  selectedTab === tab.key && [styles.tabActive, isDarkMode && { backgroundColor: '#38BDF8', borderColor: '#38BDF8' }]
                 ]}
+                activeOpacity={0.8}
                 onPress={() => setSelectedTab(tab.key as any)}
               >
                 <Text style={[
                   styles.tabText,
                   isDarkMode && { color: '#94A3B8' },
-                  selectedTab === tab.key && [styles.tabTextActive, isDarkMode && { color: '#38BDF8' }]
+                  selectedTab === tab.key && [styles.tabTextActive, isDarkMode && { color: '#0F172A' }]
                 ]}>
                   {tab.label}
                 </Text>
@@ -368,6 +370,7 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
             }}
           />
         </View>
+        </View>
       </SafeAreaView>
     </Modal>
   );
@@ -378,20 +381,27 @@ export default NotificationModalWithAPI;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#003399',
+  },
+  body: {
+    flex: 1,
+    backgroundColor: '#F4F6FB',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: isTablet ? wp('6%') : 16,
-    paddingVertical: isTablet ? 16 : 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    backgroundColor: '#fff',
+    paddingVertical: 12,
+    backgroundColor: '#003399',
   },
   backButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitleContainer: {
     flexDirection: 'row',
@@ -400,56 +410,66 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: RFValue(isTablet ? 16 : 18),
-    fontWeight: '600',
-    color: '#000',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   headerBadge: {
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: '#ff6b35',
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 2,
     marginLeft: 8,
   },
   headerBadgeText: {
-    color: '#fff',
-    fontSize: RFValue(12),
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
+    minWidth: 40,
+    justifyContent: 'flex-end',
   },
   headerActionBtn: {
-    padding: 8,
-    marginLeft: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 6,
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
     paddingHorizontal: isTablet ? wp('6%') : 16,
-    paddingVertical: isTablet ? 10 : 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingTop: 14,
+    paddingBottom: 4,
+    gap: 8,
   },
   tab: {
     flex: 1,
-    paddingVertical: isTablet ? 10 : 8,
+    height: 38,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    borderRadius: 19,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    backgroundColor: '#FFFFFF',
   },
   tabActive: {
-    borderBottomColor: BRAND_BLUE,
+    backgroundColor: '#003399',
+    borderColor: '#003399',
   },
   tabText: {
-    fontSize: RFValue(isTablet ? 13 : 14),
-    color: '#6c757d',
-    fontWeight: '500',
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '600',
   },
   tabTextActive: {
-    color: BRAND_BLUE,
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   listContainer: {
     flex: 1,

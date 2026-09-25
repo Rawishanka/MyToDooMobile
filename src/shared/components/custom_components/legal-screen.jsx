@@ -1,27 +1,26 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
-import { ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { LightHeader, IconChip } from '@/src/shared/components/custom_components/lightCard';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const LegalScreen = ({ onBack }) => {
   const { isDarkMode } = useTheme();
   const [currentScreen, setCurrentScreen] = useState('main');
 
   const BackButton = ({ onPress, title }) => (
-    <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
-      <TouchableOpacity onPress={onPress} style={styles.backButton}>
-        <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : CARD_TEXT} />
-      </TouchableOpacity>
-      <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>{title}</Text>
-      <View style={styles.placeholder} />
-    </View>
+    <LightHeader title={title} onBack={onPress} />
   );
 
-  const MenuItem = ({ title, onPress }) => (
-    <TouchableOpacity style={[styles.menuItem, !isDarkMode && styles.menuItemCard, isDarkMode && { borderBottomColor: '#334155' }]} onPress={onPress}>
-      <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }]}>{title}</Text>
-      <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED} />
+  const MenuItem = ({ title, onPress, icon = 'document-text-outline' }) => (
+    <TouchableOpacity
+      style={[styles.menuItem, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <IconChip name={icon} style={{ marginRight: 12 }} />
+      <Text style={[styles.menuText, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={1}>{title}</Text>
+      <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
     </TouchableOpacity>
   );
 
@@ -34,14 +33,17 @@ const LegalScreen = ({ onBack }) => {
       
       <View style={styles.content}>
         <MenuItem 
+          icon="shield-checkmark-outline"
           title="Privacy policy" 
           onPress={() => setCurrentScreen('privacy')}
         />
         <MenuItem 
+          icon="document-text-outline"
           title="Terms & conditions" 
           onPress={() => setCurrentScreen('terms')}
         />
         <MenuItem 
+          icon="code-slash-outline"
           title="Open source libraries" 
           onPress={() => setCurrentScreen('opensource')}
         />
@@ -57,11 +59,11 @@ const LegalScreen = ({ onBack }) => {
       />
       
       <View style={styles.content}>
-        <MenuItem title="messagingapi_sdk_ios" onPress={() => {}} />
-        <MenuItem title="Moya" onPress={() => {}} />
-        <MenuItem title="nanopb" onPress={() => {}} />
-        <MenuItem title="nwwebsocket" onPress={() => {}} />
-        <MenuItem title="PLCrashReporter" onPress={() => {}} />
+        <MenuItem icon="cube-outline" title="messagingapi_sdk_ios" onPress={() => {}} />
+        <MenuItem icon="cube-outline" title="Moya" onPress={() => {}} />
+        <MenuItem icon="cube-outline" title="nanopb" onPress={() => {}} />
+        <MenuItem icon="cube-outline" title="nwwebsocket" onPress={() => {}} />
+        <MenuItem icon="cube-outline" title="PLCrashReporter" onPress={() => {}} />
       </View>
     </View>
   );
@@ -73,7 +75,8 @@ const LegalScreen = ({ onBack }) => {
         title="Terms & conditions"
       />
       
-      <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={true}>
+      <ScrollView style={styles.scrollContent} contentContainerStyle={styles.docScroll} showsVerticalScrollIndicator={true}>
+        <View style={[styles.docCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <Text style={[styles.mainTitle, isDarkMode && { color: '#38BDF8' }]}>MyToDoo Terms and Conditions</Text>
         
         <Text style={[styles.sectionTitle, isDarkMode && { color: '#38BDF8' }]}>1. Introduction</Text>
@@ -299,7 +302,7 @@ const LegalScreen = ({ onBack }) => {
           (c) consent to receiving notices and communications in electronic form.
         </Text>
         
-        <Text style={styles.lastUpdated}>
+        <Text style={[styles.lastUpdated, isDarkMode && { color: '#94A3B8' }]}>
           Last updated: November 2025
         </Text>
         
@@ -307,7 +310,9 @@ const LegalScreen = ({ onBack }) => {
           For questions about these terms, please contact us through the Platform support channels.
         </Text>
         
-        <TouchableOpacity style={styles.acceptButton}>
+        </View>
+
+        <TouchableOpacity style={styles.acceptButton} activeOpacity={0.85}>
           <Text style={styles.acceptButtonText}>Accept updated terms</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -316,25 +321,17 @@ const LegalScreen = ({ onBack }) => {
 
   const PrivacyScreen = () => (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <View style={[styles.privacyHeader, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
-        <TouchableOpacity 
-          onPress={() => setCurrentScreen('main')}
-          style={styles.doneButton}
-        >
-          <Text style={styles.doneText}>Done</Text>
-        </TouchableOpacity>
-        <Text style={styles.websiteText}>airtasker.com</Text>
-        <View style={styles.placeholder} />
-      </View>
-      
-      <ScrollView style={styles.scrollContent}>
+      <LightHeader title="Privacy policy" onBack={() => setCurrentScreen('main')} />
+
+      <ScrollView style={styles.scrollContent} contentContainerStyle={styles.docScroll}>
+        <View style={[styles.docCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <View style={styles.brandContainer}>
           <Text style={styles.brandText}>Airtasker</Text>
         </View>
         
         <Text style={[styles.privacyTitle, isDarkMode && { color: '#F8FAFC' }]}>Privacy policy</Text>
         
-        <Text style={styles.lastUpdated}>
+        <Text style={[styles.lastUpdated, isDarkMode && { color: '#94A3B8' }]}>
           This Privacy Policy was last updated on 26 September 2024.
         </Text>
         
@@ -361,6 +358,7 @@ const LegalScreen = ({ onBack }) => {
         <Text style={[styles.paragraph, isDarkMode && { color: '#94A3B8' }]}>
           This Privacy Policy describes how Airtasker collects, uses, shares and handles your personal
         </Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -378,165 +376,137 @@ const LegalScreen = ({ onBack }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: (StatusBar.currentHeight || 0) + 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
-    backgroundColor: BRAND_BLUE,
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '600',
-    color: CARD_TEXT,
-  },
-  placeholder: {
-    width: 40,
+    backgroundColor: '#F4F6FB',
   },
   content: {
     flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   scrollContent: {
     flex: 1,
+  },
+  docScroll: {
     paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 32,
+  },
+  docCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    paddingHorizontal: 18,
+    paddingTop: 4,
+    paddingBottom: 12,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  menuItemCard: {
-    backgroundColor: CARD_BG,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginTop: 10,
-    borderBottomWidth: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    padding: 14,
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   menuText: {
+    flex: 1,
     fontSize: 16,
-    color: CARD_TEXT,
-    fontWeight: '500',
+    color: '#0F172A',
+    fontWeight: '600',
   },
   mainTitle: {
-    fontSize: 23,
-    fontWeight: 'bold',
-    color: '#1e3a8a',
-    marginVertical: 20,
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#003399',
+    marginVertical: 16,
   },
   privacyTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 20,
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 16,
   },
   paragraph: {
     fontSize: 14,
-    lineHeight: 20,
-    color: '#666',
+    lineHeight: 21,
+    color: '#64748B',
     marginBottom: 16,
   },
   link: {
-    color: '#2563eb',
+    color: '#003399',
     textDecorationLine: 'underline',
   },
   userAgreement: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: '#0F172A',
     marginBottom: 16,
   },
   listItem: {
     fontSize: 14,
-    lineHeight: 20,
-    color: '#666',
+    lineHeight: 21,
+    color: '#64748B',
     marginBottom: 12,
     paddingLeft: 16,
   },
   acceptButton: {
-    backgroundColor: '#2563eb',
-    borderRadius: 8,
-    paddingVertical: 14,
+    backgroundColor: '#ff6b35',
+    borderRadius: 14,
+    height: 52,
     alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 40,
-    marginHorizontal: 0,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    justifyContent: 'center',
+    marginTop: 20,
+    marginBottom: 8,
+    shadowColor: '#ff6b35',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
     elevation: 3,
   },
   acceptButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
-  },
-  privacyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    backgroundColor: '#fff',
-  },
-  doneButton: {
-    padding: 8,
-  },
-  doneText: {
-    color: '#2563eb',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  websiteText: {
-    fontSize: 14,
-    color: '#666',
+    fontWeight: '700',
   },
   brandContainer: {
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 16,
   },
   brandText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2563eb',
+    fontWeight: '800',
+    color: '#003399',
   },
   lastUpdated: {
     fontSize: 12,
-    color: '#999',
+    color: '#64748B',
     marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1e3a8a',
-    marginTop: 24,
-    marginBottom: 12,
+    fontWeight: '700',
+    color: '#003399',
+    marginTop: 22,
+    marginBottom: 10,
   },
   subSectionTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#333',
-    marginTop: 16,
-    marginBottom: 8,
+    color: '#0F172A',
+    marginTop: 14,
+    marginBottom: 6,
   },
 });
 

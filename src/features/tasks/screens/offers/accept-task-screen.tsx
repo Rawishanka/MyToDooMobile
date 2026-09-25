@@ -98,13 +98,13 @@ export default function AcceptTaskScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-          <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
+          <Ionicons name="chevron-back" size={22} color={CARD_TEXT} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Accept Task</Text>
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" removeClippedSubviews={false}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" removeClippedSubviews={false} contentContainerStyle={styles.scrollContent}>
         {/* Task Summary */}
         <TaskSummaryCard
           title={task.title}
@@ -150,7 +150,7 @@ export default function AcceptTaskScreen() {
       </ScrollView>
 
       {/* Accept Button */}
-      <View style={styles.buttonContainer}>
+      <View style={[styles.buttonContainer, { paddingBottom: Math.max(insets.bottom, 14) }]}>
         <TouchableOpacity 
           style={[styles.acceptButton, (!agreedToTerms || isSubmitting) && styles.disabledButton]}
           onPress={handleAcceptTask}
@@ -179,36 +179,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 15,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
     backgroundColor: BRAND_BLUE,
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
   },
   backIcon: {
-    padding: 5,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: CARD_TEXT,
   },
   placeholder: {
-    width: 34,
+    width: 36,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
+  },
+  scrollContent: {
+    paddingTop: 16,
+    paddingBottom: 24,
   },
   contactContainer: {
-    marginTop: 24,
-    padding: 16,
+    marginTop: 16,
+    padding: 18,
     backgroundColor: CARD_BG,
-    borderRadius: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   contactTitle: {
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     color: CARD_TEXT,
     marginBottom: 8,
   },
@@ -223,8 +237,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: CARD_PRICE_BG,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
+    height: 44,
+    borderRadius: 14,
     alignSelf: 'flex-start',
   },
   contactButtonText: {
@@ -234,16 +248,21 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 16,
+    paddingTop: 14,
     backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#CBD5E1',
   },
   acceptButton: {
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: 16,
-    borderRadius: 8,
+    height: 52,
+    borderRadius: 14,
+    shadowColor: BRAND_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 3,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -254,7 +273,7 @@ const styles = StyleSheet.create({
   },
   acceptButtonText: {
     color: '#fff',
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

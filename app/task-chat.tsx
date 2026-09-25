@@ -697,7 +697,7 @@ export default function TaskChatScreen() {
               />
             </TouchableOpacity>
             {messageContent && messageContent !== 'Photo' && (
-              <Text style={[styles.messageText, isMine && styles.myMessageText, { marginTop: 8 }]}>
+              <Text style={[styles.messageText, isMine ? styles.myMessageText : isDarkMode && { color: '#F8FAFC' }, { marginTop: 8 }]}>
                 {messageContent}
               </Text>
             )}
@@ -711,11 +711,11 @@ export default function TaskChatScreen() {
             <Text style={[styles.fileName, isDarkMode && { color: "#38BDF8" }]}>{messageContent || 'File'}</Text>
           </TouchableOpacity>
         ) : (
-          <Text style={[styles.messageText, isMine && styles.myMessageText]}>
+          <Text style={[styles.messageText, isMine ? styles.myMessageText : isDarkMode && { color: '#F8FAFC' }]}>
             {messageContent || '[Empty message]'}
           </Text>
         )}
-        <Text style={[styles.messageTime, isMine && styles.myMessageTime]}>
+        <Text style={[styles.messageTime, isMine ? styles.myMessageTime : isDarkMode && { color: '#94A3B8' }]}>
           {new Date(item.createdAt).toLocaleTimeString('en-US', {
             hour: 'numeric',
             minute: '2-digit',
@@ -814,7 +814,9 @@ export default function TaskChatScreen() {
           ListEmptyComponent={
             !messagesLoading ? (
               <View style={styles.emptyState}>
-                <MaterialIcons name="chat-bubble-outline" size={48} color={isDarkMode ? "#475569" : "#ccc"} />
+                <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                  <MaterialIcons name="chat-bubble-outline" size={38} color={isDarkMode ? "#38BDF8" : BRAND_BLUE} />
+                </View>
                 <Text style={[styles.emptyText, isDarkMode && { color: "#F8FAFC" }]}>Start a conversation</Text>
                 <Text style={[styles.emptySubtext, isDarkMode && { color: "#94A3B8" }]}>Send a message to begin chatting about this task</Text>
               </View>
@@ -835,7 +837,7 @@ export default function TaskChatScreen() {
           }
         ]}>
           <TouchableOpacity
-            style={styles.attachButton}
+            style={[styles.attachButton, isDarkMode && { backgroundColor: '#1E293B' }]}
             onPress={() => {
               Alert.alert('Attach', 'Choose attachment type', [
                 { text: 'Image', onPress: handleImagePicker },
@@ -845,13 +847,13 @@ export default function TaskChatScreen() {
             }}
             disabled={isUploading}
           >
-            <MaterialIcons name="attach-file" size={24} color={isDarkMode ? '#38BDF8' : '#666'} />
+            <MaterialIcons name="attach-file" size={20} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
           </TouchableOpacity>
 
           <TextInput
             style={[styles.input, isDarkMode && { backgroundColor: '#1E293B', color: '#F8FAFC', borderColor: '#334155', borderWidth: 1 }]}
             placeholder="Type a message..."
-            placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
+            placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
             value={messageText}
             onChangeText={setMessageText}
             multiline
@@ -861,7 +863,7 @@ export default function TaskChatScreen() {
           <TouchableOpacity
             style={[
               styles.sendButton,
-              isDarkMode && { backgroundColor: '#38BDF8' },
+              isDarkMode && { backgroundColor: '#38BDF8', shadowColor: '#38BDF8' },
               (!messageText.trim() || sendMessageMutation.isPending || isUploading) &&
                 styles.sendButtonDisabled,
             ]}
@@ -927,7 +929,7 @@ export default function TaskChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F4F6FB',
   },
   centerContent: {
     justifyContent: 'center',
@@ -936,12 +938,10 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
   },
   headerSafeArea: {
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    backgroundColor: BRAND_BLUE,
     zIndex: 10,
   },
   header: {
@@ -952,10 +952,11 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   backButton: {
-    padding: 8,
-    marginRight: 4,
-    minWidth: 44,
-    minHeight: 44,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    marginRight: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -969,12 +970,16 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 12,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.6)',
   },
   headerAvatarFallback: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -988,9 +993,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#000',
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#FFFFFF',
     flexShrink: 1,
   },
   headerStatus: {
@@ -1011,13 +1016,13 @@ const styles = StyleSheet.create({
   },
   loadingHeaderText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
   },
   messagesLoadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F4F6FB',
   },
   messagesLoadingText: {
     marginTop: 16,
@@ -1027,29 +1032,43 @@ const styles = StyleSheet.create({
   messageContainer: {
     maxWidth: '80%',
     marginBottom: 12,
-    padding: 12,
-    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 8,
+    borderRadius: 18,
   },
   myMessage: {
     alignSelf: 'flex-end',
     backgroundColor: BRAND_BLUE,
+    borderBottomRightRadius: 6,
+    shadowColor: BRAND_BLUE,
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   theirMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
+    borderBottomLeftRadius: 6,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   messageText: {
     fontSize: RFValue(16),
-    color: '#333',
+    color: '#0F172A',
   },
   myMessageText: {
     color: '#fff',
   },
   messageTime: {
     fontSize: RFValue(11),
-    color: '#666',
+    color: '#94A3B8',
     marginTop: 4,
   },
   myMessageTime: {
@@ -1078,50 +1097,73 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#999',
-    marginTop: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginTop: 16,
   },
   emptySubtext: {
     fontSize: RFValue(14),
-    color: '#ccc',
-    marginTop: 4,
+    color: '#64748B',
+    marginTop: 6,
+  },
+  emptyIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
     paddingTop: 10,
     // paddingBottom handled dynamically in component for safe area
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: '#E8ECF4',
   },
   attachButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 8,
   },
   input: {
     flex: 1,
-    minHeight: 40,
+    minHeight: 44,
     maxHeight: 100,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 20,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    color: '#0F172A',
+    borderRadius: 24,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: RFValue(16),
     marginRight: 8,
   },
   sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: BRAND_BLUE,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#ff6b35',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#ff6b35',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   sendButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#CBD5E1',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   uploadOverlay: {
     position: 'absolute',
@@ -1135,8 +1177,8 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   uploadOverlayContent: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: 24,
     alignItems: 'center',
     minWidth: 150,

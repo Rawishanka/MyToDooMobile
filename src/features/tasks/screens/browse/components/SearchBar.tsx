@@ -35,15 +35,15 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose, 
       styles.searchContainer,
       isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }
     ]}>
-      <TouchableOpacity onPress={onClose} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#000'} />
+      <TouchableOpacity onPress={onClose} style={[styles.backButton, isDarkMode && { backgroundColor: '#1E293B' }]} activeOpacity={0.75}>
+        <Ionicons name="arrow-back" size={20} color={isDarkMode ? '#F8FAFC' : '#003399'} />
       </TouchableOpacity>
       
       <View style={[
         styles.searchInputContainer,
         isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }
       ]}>
-        <Ionicons name="search" size={20} color={isDarkMode ? '#94A3B8' : '#666'} style={styles.searchIcon} />
+        <Ionicons name="search" size={20} color={isDarkMode ? '#94A3B8' : '#003399'} style={styles.searchIcon} />
         <TextInput
           style={[
             styles.searchBar,
@@ -64,10 +64,10 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose, 
         {searchText.length > 0 && (
           <>
             <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
-              <Ionicons name="close-circle" size={20} color={isDarkMode ? '#94A3B8' : '#666'} />
+              <Ionicons name="close-circle" size={20} color={isDarkMode ? '#94A3B8' : '#64748B'} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleSearch} style={[styles.searchButton, isDarkMode && { backgroundColor: '#0F172A' }]}>
-              <Ionicons name="search" size={20} color={isDarkMode ? '#38BDF8' : '#007AFF'} />
+              <Ionicons name="search" size={16} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
             </TouchableOpacity>
           </>
         )}
@@ -87,31 +87,39 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose, 
 
 const styles = StyleSheet.create({
   searchContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: 14,
+    paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: '#E8ECF4',
   },
   backButton: {
-    marginBottom: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#EEF2FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    height: 44,
+    backgroundColor: '#F4F6FB',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#DCE3F5',
+    paddingHorizontal: 14,
+    height: 48,
   },
   searchIcon: {
     marginRight: 8,
   },
   searchBar: {
     flex: 1,
-    fontSize: RFValue(16),
-    color: '#000',
+    fontSize: RFValue(15),
+    color: '#0F172A',
     paddingVertical: 0,
   },
   clearButton: {
@@ -119,15 +127,18 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   searchButton: {
-    padding: 6,
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: 4,
-    borderRadius: 12,
-    backgroundColor: '#E8F4FF',
+    borderRadius: 10,
+    backgroundColor: '#ff6b35',
   },
   searchInfo: {
     fontSize: RFValue(12),
-    color: '#666',
-    marginTop: 6,
+    color: '#64748B',
+    marginTop: 10,
     marginLeft: 4,
   },
 });

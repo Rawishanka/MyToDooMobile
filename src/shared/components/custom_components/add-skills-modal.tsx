@@ -213,7 +213,7 @@ export default function AddSkillsModal({
               {/* ── Header (fixed, not scrolled) ── */}
               <View style={styles.header}>
                 <TouchableOpacity onPress={handleClose} style={styles.headerBtn}>
-                  <Ionicons name="close" size={22} color="#000" />
+                  <Ionicons name="close" size={20} color="#0F172A" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Add Skills</Text>
                 <TouchableOpacity onPress={handleSave} style={styles.headerBtn}>
@@ -240,7 +240,7 @@ export default function AddSkillsModal({
                   value={inputText}
                   onChangeText={setInputText}
                   placeholder="Type a skill..."
-                  placeholderTextColor="#aaa"
+                  placeholderTextColor="#94A3B8"
                   returnKeyType="done"
                   onSubmitEditing={() => {
                     if (inputText.trim()) addSkill(inputText);
@@ -261,7 +261,7 @@ export default function AddSkillsModal({
                   <Ionicons
                     name="add"
                     size={24}
-                    color={inputText.trim() ? '#003399' : '#ccc'}
+                    color={inputText.trim() ? '#003399' : '#94A3B8'}
                   />
                 </TouchableOpacity>
               </View>
@@ -278,7 +278,7 @@ export default function AddSkillsModal({
                         style={styles.dropdownItem}
                         onPress={() => addSkill(item)}
                       >
-                        <Ionicons name="search-outline" size={14} color="#888" style={{ marginRight: 8 }} />
+                        <Ionicons name="search-outline" size={14} color="#94A3B8" style={{ marginRight: 8 }} />
                         <Text style={styles.dropdownItemText}>{item}</Text>
                       </TouchableOpacity>
                     )}
@@ -347,16 +347,16 @@ export default function AddSkillsModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(15,23,42,0.5)',
     justifyContent: 'flex-end',
   },
   avoidingView: {
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingHorizontal: 20,
     paddingTop: 8,
     maxHeight: '90%',
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#E8ECF4',
     marginBottom: 4,
   },
   headerBtn: {
@@ -379,21 +379,21 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#000',
+    color: '#0F172A',
     textAlign: 'center',
     flex: 1,
   },
   saveText: {
     fontSize: RFValue(15),
-    fontWeight: '600',
-    color: '#003399',
+    fontWeight: '700',
+    color: '#ff6b35',
     textAlign: 'right',
   },
 
   // Description
   description: {
     fontSize: RFValue(14),
-    color: '#555',
+    color: '#64748B',
     lineHeight: 20,
     marginTop: 10,
     marginBottom: 16,
@@ -410,40 +410,37 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderWidth: 1.5,
-    borderColor: '#e0e0e0',
-    borderRadius: 12,
+    borderColor: '#E8ECF4',
+    borderRadius: 14,
     paddingHorizontal: 16,
     fontSize: RFValue(15),
-    backgroundColor: '#f8f8f8',
-    color: '#222',
+    backgroundColor: '#F8FAFC',
+    color: '#0F172A',
   },
   addBtn: {
     width: 48,
     height: 48,
-    borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor: '#003399',
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(0,51,153,0.08)',
   },
   addBtnDisabled: {
-    borderColor: '#ddd',
-    backgroundColor: '#fafafa',
+    backgroundColor: '#F1F5F9',
   },
 
   // Dropdown
   dropdownContainer: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#e8e8e8',
-    borderRadius: 10,
+    borderColor: '#E8ECF4',
+    borderRadius: 14,
     marginTop: 4,
     marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
     elevation: 4,
     overflow: 'hidden',
   },
@@ -455,11 +452,11 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: RFValue(14),
-    color: '#222',
+    color: '#0F172A',
   },
   dropdownSeparator: {
     height: 1,
-    backgroundColor: '#f3f3f3',
+    backgroundColor: '#E8ECF4',
     marginHorizontal: 14,
   },
 
@@ -470,17 +467,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#111',
+    color: '#0F172A',
     marginBottom: 12,
   },
   sectionCount: {
     fontWeight: '500',
-    color: '#555',
+    color: '#64748B',
   },
   emptyHint: {
     fontSize: RFValue(13),
-    color: '#aaa',
-    fontStyle: 'italic',
+    color: '#64748B',
     marginTop: 2,
   },
 
@@ -493,18 +489,18 @@ const styles = StyleSheet.create({
   skillTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#003399',
-    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(0,51,153,0.18)',
+    borderRadius: 14,
     paddingVertical: 7,
     paddingHorizontal: 14,
     gap: 6,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(0,51,153,0.08)',
   },
   skillTagText: {
     fontSize: RFValue(14),
     color: '#003399',
-    fontWeight: '500',
+    fontWeight: '600',
   },
 
   // Suggested chips
@@ -517,15 +513,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 20,
+    borderColor: '#E8ECF4',
+    borderRadius: 14,
     paddingVertical: 7,
     paddingHorizontal: 14,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#F8FAFC',
   },
   suggestedChipText: {
     fontSize: RFValue(14),
-    color: '#444',
+    color: '#334155',
   },
   suggestedChipPlus: {
     fontSize: RFValue(14),
@@ -542,6 +538,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(13),
-    color: '#888',
+    color: '#64748B',
   },
 });

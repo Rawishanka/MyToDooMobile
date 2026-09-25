@@ -116,7 +116,7 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
               <TextInput
                 style={[styles.questionInput, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#334155", color: "#F8FAFC" }]}
                 placeholder="Type your question here..."
-                placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+                placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
                 value={questionText}
                 onChangeText={(text) => onChangeText(text.slice(0, 500))}
                 multiline
@@ -185,15 +185,15 @@ const styles = StyleSheet.create({
   handleBar: {
     width: 40,
     height: 4,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#CBD5E1',
     borderRadius: 2,
     alignSelf: 'center',
     marginBottom: 12,
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingTop: 12,
     paddingHorizontal: 20,
   },
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   modalTitle: {
-    fontSize: RFValue(20),
+    fontSize: 20,
     fontWeight: '700',
     color: CARD_TEXT,
   },
@@ -212,7 +212,8 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_BG,
     marginHorizontal: -20,
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 14,
+    marginBottom: 16,
   },
   scrollContainer: {
     flexShrink: 1,
@@ -225,23 +226,24 @@ const styles = StyleSheet.create({
   },
   charCount: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: '#64748B',
     textAlign: 'right',
     marginTop: 4,
   },
   questionInput: {
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     padding: 16,
-    fontSize: RFValue(16),
-    color: '#000',
+    fontSize: 16,
+    color: '#0D1B2A',
     minHeight: 120,
   },
   guidelinesContainer: {
     backgroundColor: CARD_BG,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     marginTop: 8,
     marginBottom: 16,
   },
@@ -259,16 +261,24 @@ const styles = StyleSheet.create({
   },
   submitQuestionButton: {
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: 16,
-    borderRadius: 12,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: BRAND_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 3,
   },
   submitQuestionButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#CBD5E1',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   submitQuestionButtonText: {
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: '#fff',
   },
 });

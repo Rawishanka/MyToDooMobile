@@ -350,7 +350,7 @@ export default function BrowseTasksScreen() {
                 borderColor: '#334155',
                 shadowColor: '#000000',
               }
-            : { backgroundColor: CARD_BG, borderColor: CARD_BG },
+            : styles.serviceCardBlue,
         ]}
         activeOpacity={0.82}
         onPress={() => {
@@ -368,7 +368,7 @@ export default function BrowseTasksScreen() {
             <View
               style={[
                 styles.serviceAvatar,
-                isDarkMode ? { borderColor: '#7C2D12' } : { borderColor: CARD_TEXT },
+                isDarkMode ? { borderColor: '#7C2D12' } : { borderColor: 'rgba(255,255,255,0.5)' },
               ]}
             >
               <Text style={styles.serviceAvatarText}>{initials}</Text>
@@ -395,7 +395,7 @@ export default function BrowseTasksScreen() {
                     isDarkMode ? { backgroundColor: '#0F172A' } : { backgroundColor: CARD_CHIP_BG },
                   ]}
                 >
-                  <Ionicons name="location-sharp" size={11} color={isDarkMode ? '#0284C7' : CARD_TEXT} />
+                  <Ionicons name="location-sharp" size={14} color={isDarkMode ? '#0284C7' : CARD_TEXT} />
                 </View>
                 <Text
                   style={[
@@ -418,7 +418,7 @@ export default function BrowseTasksScreen() {
                         : { backgroundColor: CARD_CHIP_BG, borderColor: CARD_DIVIDER },
                     ]}
                   >
-                    <Ionicons name="navigate-outline" size={10} color={isDarkMode ? '#818CF8' : CARD_TEXT} />
+                    <Ionicons name="navigate-outline" size={12} color={isDarkMode ? '#818CF8' : CARD_TEXT} />
                     <Text
                       style={[
                         styles.radiusText,
@@ -492,7 +492,7 @@ export default function BrowseTasksScreen() {
 
             <View style={[styles.serviceActionBtn, !isDarkMode && { backgroundColor: BRAND_ORANGE, shadowColor: BRAND_ORANGE }]}>
               <Text style={styles.serviceActionText}>View</Text>
-              <Ionicons name="chevron-forward" size={13} color="#FFFFFF" />
+              <Ionicons name="chevron-forward" size={14} color="#FFFFFF" />
             </View>
           </View>
         </View>
@@ -532,13 +532,14 @@ export default function BrowseTasksScreen() {
           {browseMode === 'tasks' ? 'Browse Tasks' : 'Browse Services'}
         </Text>
         <View style={styles.headerIcons}>
-          <TouchableOpacity onPress={() => setSearchVisible(true)}>
+          <TouchableOpacity onPress={() => setSearchVisible(true)} style={styles.headerChip} activeOpacity={0.75}>
             <Ionicons name="search-outline" size={20} color="#fff" />
           </TouchableOpacity>
           
           <TouchableOpacity 
             onPress={() => setShowNotifications(true)} 
-            style={styles.notificationButton}
+            style={[styles.headerChip, styles.notificationButton]}
+            activeOpacity={0.75}
           >
             <Ionicons name="notifications-outline" size={20} color="#fff" />
             {notificationCount > 0 && (
@@ -625,8 +626,8 @@ export default function BrowseTasksScreen() {
 
       {/* Search Results Info */}
       {searchText.trim().length > 0 && !searchVisible && (
-        <View style={styles.searchResultsInfo}>
-          <Text style={styles.searchResultsText}>
+        <View style={[styles.searchResultsInfo, isDarkMode && { backgroundColor: '#0F172A', borderBottomColor: '#334155' }]}>
+          <Text style={[styles.searchResultsText, isDarkMode && { color: '#CBD5E1' }]}>
             {browseMode === 'services'
               ? `${serviceListings.length} service${serviceListings.length !== 1 ? 's' : ''} for "${searchText}"`
               : `${filteredAndSortedTasks.length} result${filteredAndSortedTasks.length !== 1 ? 's' : ''} for "${searchText}"`}
@@ -635,7 +636,7 @@ export default function BrowseTasksScreen() {
             setSearchText('');
             setSearchVisible(false);
           }}>
-            <Ionicons name="close-circle" size={20} color="#666" />
+            <Ionicons name="close-circle" size={22} color={isDarkMode ? '#94A3B8' : '#003399'} />
           </TouchableOpacity>
         </View>
       )}
@@ -654,8 +655,10 @@ export default function BrowseTasksScreen() {
       {browseMode === 'services' ? (
         !isConnected ? (
           <View style={styles.errorContainer}>
-            <Ionicons name="cloud-offline-outline" size={64} color="#ff6b6b" style={{ marginBottom: 16 }} />
-            <Text style={styles.errorText}>No Internet Connection</Text>
+            <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+              <Ionicons name="cloud-offline-outline" size={40} color="#FCA5A5" />
+            </View>
+            <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>No Internet Connection</Text>
             <TouchableOpacity style={styles.retryButton} onPress={() => refetchServices()}>
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
@@ -664,9 +667,11 @@ export default function BrowseTasksScreen() {
           <TaskCardSkeletonList count={4} />
         ) : servicesError ? (
           <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle-outline" size={64} color="#ff6b6b" style={{ marginBottom: 16 }} />
-            <Text style={styles.errorText}>Failed to load services</Text>
-            <Text style={styles.errorSubtext}>
+            <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+              <Ionicons name="alert-circle-outline" size={40} color="#FCA5A5" />
+            </View>
+            <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>Failed to load services</Text>
+            <Text style={[styles.errorSubtext, isDarkMode && { color: '#94A3B8' }]}>
               {(servicesError as Error)?.message || 'Please try again'}
             </Text>
             <TouchableOpacity style={styles.retryButton} onPress={() => refetchServices()}>
@@ -675,7 +680,9 @@ export default function BrowseTasksScreen() {
           </View>
         ) : serviceListings.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="construct-outline" size={64} color={isDarkMode ? '#475569' : '#ccc'} style={{ marginBottom: 16 }} />
+            <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+              <Ionicons name="construct-outline" size={40} color="#FFFFFF" />
+            </View>
             <Text style={[styles.emptyText, isDarkMode && { color: '#F8FAFC' }]}>No services found nearby</Text>
             <Text style={[styles.emptySubtext, isDarkMode && { color: '#94A3B8' }]}>
               Try widening your radius or searching a different suburb.
@@ -687,7 +694,8 @@ export default function BrowseTasksScreen() {
             keyExtractor={(item) => item._id}
             renderItem={renderServiceCard}
             contentContainerStyle={{
-              paddingBottom: TAB_BAR_CLEARANCE,
+              paddingTop: 4,
+              paddingBottom: TAB_BAR_CLEARANCE + 16,
               paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
             }}
             refreshing={false}
@@ -762,9 +770,11 @@ export default function BrowseTasksScreen() {
         <>
           {!isConnected ? (
             <View style={styles.errorContainer}>
-              <Ionicons name="cloud-offline-outline" size={64} color="#ff6b6b" style={{ marginBottom: 16 }} />
-              <Text style={styles.errorText}>No Internet Connection</Text>
-              <Text style={styles.errorSubtext}>
+              <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+              <Ionicons name="cloud-offline-outline" size={40} color="#FCA5A5" />
+            </View>
+              <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>No Internet Connection</Text>
+              <Text style={[styles.errorSubtext, isDarkMode && { color: '#94A3B8' }]}>
                 Please check your Wi-Fi or mobile data and try again.
               </Text>
               <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
@@ -775,9 +785,11 @@ export default function BrowseTasksScreen() {
             <TaskCardSkeletonList count={4} />
           ) : error ? (
             <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle-outline" size={64} color="#ff6b6b" style={{ marginBottom: 16 }} />
-              <Text style={styles.errorText}>Failed to load tasks</Text>
-              <Text style={styles.errorSubtext}>
+              <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+              <Ionicons name="alert-circle-outline" size={40} color="#FCA5A5" />
+            </View>
+              <Text style={[styles.errorText, isDarkMode && { color: '#FCA5A5' }]}>Failed to load tasks</Text>
+              <Text style={[styles.errorSubtext, isDarkMode && { color: '#94A3B8' }]}>
                 {error.message || 'Please check your internet connection and try again'}
               </Text>
               <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
@@ -786,15 +798,17 @@ export default function BrowseTasksScreen() {
             </View>
           ) : filteredAndSortedTasks.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="search-outline" size={64} color="#ccc" style={{ marginBottom: 16 }} />
-              <Text style={styles.emptyText}>
+              <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                <Ionicons name="search-outline" size={40} color="#FFFFFF" />
+              </View>
+              <Text style={[styles.emptyText, isDarkMode && { color: '#F8FAFC' }]}>
                 {searchText.trim() 
                   ? `No tasks found matching "${searchText.replace(/"/g, '\\"')}"`
                   : activeFiltersCount > 0
                     ? 'No tasks match your current filters'
                     : 'No tasks available at the moment'}
               </Text>
-              <Text style={styles.emptySubtext}>
+              <Text style={[styles.emptySubtext, isDarkMode && { color: '#94A3B8' }]}>
                 {searchText.trim()
                   ? 'Try a different search term'
                   : activeFiltersCount > 0
@@ -824,7 +838,8 @@ export default function BrowseTasksScreen() {
               data={filteredAndSortedTasks}
               keyExtractor={(item) => item._id}
               contentContainerStyle={{ 
-                paddingBottom: TAB_BAR_CLEARANCE,
+                paddingTop: 4,
+                paddingBottom: TAB_BAR_CLEARANCE + 16,
                 paddingHorizontal: isTablet ? wp('12.5%') : 0,
               }}
               renderItem={renderTaskCard}
@@ -850,8 +865,8 @@ export default function BrowseTasksScreen() {
               ListFooterComponent={() => 
                 isLoadingMore ? (
                   <View style={{ padding: 20, alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color="#003399" />
-                    <Text style={styles.loadingText}>Loading more tasks...</Text>
+                    <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
+                    <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading more tasks...</Text>
                   </View>
                 ) : null
               }
@@ -921,16 +936,16 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#003399',
     flexDirection: 'row',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('3%'),
+    paddingHorizontal: isTablet ? wp('12.5%') : 16,
     paddingTop: hp('6%'),
-    paddingBottom: hp('1.5%'),
+    paddingBottom: 12,
     alignItems: 'center',
     justifyContent: 'space-between',
     minHeight: 50,
   },
   headerTitle: {
-    fontSize: RFValue(14),
-    fontWeight: 'bold',
+    fontSize: RFValue(17),
+    fontWeight: '700',
     flex: 1,
     textAlign: 'center',
     marginHorizontal: wp('2%'),
@@ -939,13 +954,23 @@ const styles = StyleSheet.create({
   headerIcons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: wp('2%'),
+    gap: 8,
+  },
+  headerChip: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   segmentedContainer: {
     backgroundColor: '#003399',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingBottom: hp('1.2%'),
-    paddingTop: hp('0.4%'),
+    paddingHorizontal: isTablet ? wp('12.5%') : 16,
+    paddingBottom: 14,
+    paddingTop: 4,
   },
   segmentedTrack: {
     flexDirection: 'row',
@@ -990,39 +1015,55 @@ const styles = StyleSheet.create({
   serviceCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    marginBottom: 12,
-    marginTop: 2,
+    marginBottom: 16,
+    marginTop: 0,
     overflow: 'hidden',
     flexDirection: 'row',
-    shadowColor: '#003399',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
     shadowRadius: 12,
     elevation: 4,
     borderWidth: 1,
     borderColor: '#E8ECF4',
   },
+  serviceCardBlue: {
+    backgroundColor: CARD_BG,
+    borderColor: 'rgba(255,255,255,0.14)',
+  },
+  stateIconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: '#003399',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
+  },
   serviceAccentStrip: {
     width: 4.5,
     backgroundColor: '#FF6B00',
-    borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
   },
   serviceCardInner: {
     flex: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   serviceCardTop: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   serviceAvatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#FF6B00',
     borderWidth: 2,
     borderColor: '#FFE2D1',
@@ -1045,23 +1086,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   serviceTitle: {
-    fontSize: RFValue(14),
+    fontSize: RFValue(16),
     fontWeight: '700',
     color: '#0F172A',
-    marginBottom: 4,
-    lineHeight: RFValue(19),
+    marginBottom: 8,
+    lineHeight: RFValue(21),
   },
   serviceMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 6,
+    gap: 8,
+    marginBottom: 8,
     flexWrap: 'wrap',
   },
   serviceIconBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 5,
+    width: 28,
+    height: 28,
+    borderRadius: 9,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1069,7 +1110,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EFF6FF',
   },
   serviceMeta: {
-    fontSize: RFValue(11),
+    fontSize: RFValue(13),
     color: '#475569',
     fontWeight: '500',
     flexShrink: 1,
@@ -1081,25 +1122,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEF2FF',
     borderWidth: 1,
     borderColor: '#E0E7FF',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 14,
   },
   radiusText: {
-    fontSize: RFValue(9.5),
+    fontSize: RFValue(11.5),
     color: '#4F46E5',
     fontWeight: '600',
   },
   serviceDescription: {
-    fontSize: RFValue(11.5),
+    fontSize: RFValue(13),
     color: '#64748B',
-    lineHeight: RFValue(16),
+    lineHeight: RFValue(18.5),
   },
   serviceCardBottom: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 10,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
   },
@@ -1110,23 +1151,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0FDF4',
     borderWidth: 1,
     borderColor: '#DCFCE7',
-    paddingHorizontal: 9,
-    paddingVertical: 3.5,
-    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
   servicePriceLabel: {
-    fontSize: RFValue(9.5),
+    fontSize: RFValue(11),
     color: '#16A34A',
     fontWeight: '600',
     textTransform: 'uppercase',
   },
   servicePrice: {
-    fontSize: RFValue(15),
+    fontSize: RFValue(17),
     fontWeight: '800',
     color: '#15803D',
   },
   serviceCurrency: {
-    fontSize: RFValue(10),
+    fontSize: RFValue(11.5),
     fontWeight: '600',
     color: '#16A34A',
   },
@@ -1135,30 +1176,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     backgroundColor: '#003399',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 38,
+    borderRadius: 14,
     shadowColor: '#003399',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   serviceActionText: {
-    fontSize: RFValue(11),
+    fontSize: RFValue(13),
     fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: 0.2,
   },
   notificationButton: {
     position: 'relative',
-    marginLeft: wp('2.5%'),
-    padding: wp('1%'),
   },
   notificationBadge: {
     position: 'absolute',
-    top: -2,
-    right: -2,
+    top: -3,
+    right: -3,
     backgroundColor: '#ff6b35',
     borderRadius: 10,
     minWidth: isTablet ? 20 : 18,
@@ -1175,54 +1214,57 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingVertical: hp('1.2%'),
+    paddingHorizontal: isTablet ? wp('12.5%') : 16,
+    paddingVertical: 12,
     backgroundColor: '#EEF2FF',
     borderBottomWidth: 1,
     borderBottomColor: '#E8ECF4',
   },
   searchResultsText: {
-    fontSize: RFValue(12),
-    color: '#333',
-    fontWeight: '500',
+    fontSize: RFValue(13),
+    color: '#003399',
+    fontWeight: '600',
     flex: 1,
   },
   filterSortRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingVertical: hp('1%'),
-    marginBottom: hp('0.5%'),
+    paddingHorizontal: isTablet ? wp('12.5%') : 16,
+    paddingTop: 16,
+    paddingBottom: 12,
     backgroundColor: '#F4F6FB',
   },
   mapContainer: {
     flex: 1,
-    marginHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    marginBottom: hp('1.2%'),
-    borderRadius: 12,
+    marginHorizontal: isTablet ? wp('12.5%') : 16,
+    marginTop: 4,
+    marginBottom: 16,
+    borderRadius: 20,
     overflow: 'hidden',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    elevation: 4,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
   },
   emptyState: {
-    padding: isTablet ? hp('6%') : hp('5%'),
+    paddingHorizontal: 32,
+    paddingVertical: isTablet ? hp('6%') : hp('5%'),
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: RFValue(14),
-    color: '#666',
+    fontSize: RFValue(18),
+    color: '#0F172A',
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   emptySubtext: {
-    fontSize: RFValue(12),
-    color: '#999',
+    fontSize: RFValue(14),
+    color: '#64748B',
     textAlign: 'center',
-    marginTop: hp('1%'),
+    lineHeight: 21,
+    marginTop: 8,
   },
   loadingText: {
     fontSize: RFValue(14),
@@ -1231,16 +1273,22 @@ const styles = StyleSheet.create({
     marginTop: hp('1%'),
   },
   clearSearchButton: {
-    marginTop: hp('2%'),
-    paddingHorizontal: wp('5%'),
-    paddingVertical: hp('1.2%'),
-    backgroundColor: '#003399',
-    borderRadius: 8,
+    marginTop: 24,
+    paddingHorizontal: 28,
+    minHeight: 48,
+    justifyContent: 'center',
+    backgroundColor: '#ff6b35',
+    borderRadius: 14,
+    shadowColor: '#ff6b35',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   clearSearchText: {
     color: '#fff',
-    fontSize: RFValue(12),
-    fontWeight: '600',
+    fontSize: RFValue(15),
+    fontWeight: '700',
   },
   errorContainer: {
     flex: 1,
@@ -1249,26 +1297,35 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   errorText: {
-    fontSize: RFValue(16),
-    color: '#ff6b6b',
-    fontWeight: '600',
+    fontSize: RFValue(18),
+    color: '#DC2626',
+    fontWeight: '700',
     textAlign: 'center',
   },
   errorSubtext: {
-    fontSize: RFValue(13),
-    color: '#999',
+    fontSize: RFValue(14),
+    color: '#64748B',
     textAlign: 'center',
-    marginTop: hp('1%'),
-    marginBottom: hp('2%'),
+    lineHeight: 21,
+    marginTop: 8,
+    marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: '#003399',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: '#ff6b35',
+    minHeight: 48,
+    paddingHorizontal: 28,
+    justifyContent: 'center',
+    borderRadius: 14,
+    shadowColor: '#ff6b35',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   retryButtonText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontWeight: '700',
+    fontSize: RFValue(15),
   },
   locationIndicator: {
     flexDirection: 'row',

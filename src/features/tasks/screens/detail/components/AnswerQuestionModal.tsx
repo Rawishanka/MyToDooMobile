@@ -192,7 +192,7 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
             <TextInput
               style={[styles.answerInput, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155", color: "#F8FAFC" }]}
               placeholder="Type your answer here..."
-              placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+              placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
               value={answer}
               onChangeText={setAnswer}
               multiline
@@ -264,20 +264,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: BRAND_BLUE,
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingTop: 18,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: BRAND_BLUE,
   },
   headerTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: CARD_TEXT,
     flex: 1,
     textAlign: 'center',
   },
   closeButton: {
-    padding: 4,
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
@@ -288,15 +293,15 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0D1B2A',
     marginBottom: 12,
   },
   questionCard: {
     backgroundColor: CARD_BG,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     borderLeftWidth: 4,
     borderLeftColor: BRAND_ORANGE,
   },
@@ -309,25 +314,26 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   answerInput: {
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     padding: 16,
-    fontSize: RFValue(15),
-    color: '#333',
+    fontSize: 15,
+    color: '#0D1B2A',
     minHeight: 120,
     maxHeight: 200,
   },
   characterCount: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'right',
     marginTop: 8,
   },
   tipsContainer: {
     backgroundColor: CARD_BG,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     marginBottom: 20,
   },
   tipsTitle: {
@@ -345,23 +351,30 @@ const styles = StyleSheet.create({
   footer: {
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: '#E2E8F0',
   },
   submitButton: {
     backgroundColor: BRAND_ORANGE,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 12,
+    height: 52,
+    borderRadius: 14,
     gap: 8,
+    shadowColor: BRAND_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 3,
   },
   submitButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#CBD5E1',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

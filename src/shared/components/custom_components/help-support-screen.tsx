@@ -12,9 +12,9 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 interface HelpSupportProps {
   visible: boolean;
@@ -23,7 +23,6 @@ interface HelpSupportProps {
 }
 
 const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onContactSupport }) => {
-  const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
@@ -121,18 +120,11 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
       onRequestClose={onClose}
     >
       <View style={styles.container}>
-        {/* Header */}
-        <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color={CARD_TEXT} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Frequently Asked Questions</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <LightHeader title="Frequently Asked Questions" onBack={onClose} backIcon="close" topPadding={Platform.OS === 'ios' ? 18 : 24} />
 
         {/* Info Banner */}
         <View style={styles.infoBanner}>
-          <Ionicons name="information-circle" size={60} color={CARD_TEXT} style={styles.infoIcon} />
+          <IconChip name="help-buoy-outline" size={48} style={styles.infoIcon} />
           <Text style={styles.infoTitle}>How can we help you?</Text>
           <Text style={styles.infoSubtitle}>
             Browse through our frequently asked questions to find answers to common queries about MyToDoo.
@@ -141,17 +133,17 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
+          <Ionicons name="search" size={20} color="#94A3B8" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search for help..."
-            placeholderTextColor="#999"
+            placeholderTextColor="#94A3B8"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={20} color="#999" />
+              <Ionicons name="close-circle" size={20} color="#94A3B8" />
             </TouchableOpacity>
           )}
         </View>
@@ -168,7 +160,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
           {/* Error State */}
           {error && !loading && (
             <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle" size={48} color="#ff3b30" />
+              <Ionicons name="alert-circle" size={48} color="#DC2626" />
               <Text style={styles.errorText}>{error}</Text>
               <TouchableOpacity style={styles.retryButton} onPress={loadHelpArticles}>
                 <Text style={styles.retryButtonText}>Retry</Text>
@@ -184,14 +176,14 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
                 onPress={() => toggleCategory(category.id)}
               >
                 <View style={styles.categoryTitleContainer}>
-                  <Ionicons name={category.icon as any} size={24} color={CARD_TEXT} />
-                  <Text style={styles.categoryTitle}>{category.title}</Text>
+                  <IconChip name={category.icon as any} />
+                  <Text style={styles.categoryTitle} numberOfLines={2}>{category.title}</Text>
                   <Text style={styles.questionCount}>({category.questions.length} questions)</Text>
                 </View>
                 <Ionicons
                   name={expandedCategory === category.id ? "chevron-up" : "chevron-down"}
-                  size={24}
-                  color={CARD_TEXT_MUTED}
+                  size={22}
+                  color="#94A3B8"
                 />
               </TouchableOpacity>
 
@@ -207,7 +199,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
                         <Ionicons
                           name={expandedQuestion === item.id ? "chevron-up" : "chevron-down"}
                           size={20}
-                          color={CARD_TEXT}
+                          color="#94A3B8"
                         />
                       </TouchableOpacity>
 
@@ -226,7 +218,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
           {/* No Results */}
           {!loading && !error && helpCategories.length === 0 && searchQuery.length > 0 && (
             <View style={styles.noResults}>
-              <Ionicons name="search" size={48} color="#ccc" />
+              <Ionicons name="search" size={48} color="#94A3B8" />
               <Text style={styles.noResultsText}>No results found for "{searchQuery}"</Text>
               <Text style={styles.noResultsSubtext}>Try different keywords or browse categories</Text>
             </View>
@@ -235,7 +227,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
           {/* Empty State (No Articles) */}
           {!loading && !error && articles.length === 0 && searchQuery.length === 0 && (
             <View style={styles.noResults}>
-              <Ionicons name="document-text-outline" size={48} color="#ccc" />
+              <Ionicons name="document-text-outline" size={48} color="#94A3B8" />
               <Text style={styles.noResultsText}>No help articles available</Text>
               <Text style={styles.noResultsSubtext}>Please check back later or contact support</Text>
             </View>
@@ -269,79 +261,56 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-    backgroundColor: BRAND_BLUE,
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  closeButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
-    color: CARD_TEXT,
-  },
-  placeholder: {
-    width: 32,
+    backgroundColor: '#F4F6FB',
   },
   infoBanner: {
-    backgroundColor: CARD_BG,
-    paddingVertical: 24,
+    paddingTop: 20,
+    paddingBottom: 12,
     paddingHorizontal: 20,
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
-    marginBottom: 8,
   },
   infoIcon: {
     marginBottom: 12,
   },
   infoTitle: {
-    fontSize: RFValue(22),
+    fontSize: 20,
     fontWeight: '700',
-    color: CARD_TEXT,
-    marginBottom: 8,
+    color: '#0F172A',
+    marginBottom: 6,
     textAlign: 'center',
   },
   infoSubtitle: {
-    fontSize: RFValue(14),
-    color: CARD_TEXT_MUTED,
+    fontSize: 14,
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 20,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
     marginHorizontal: 16,
-    marginBottom: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
+    marginBottom: 14,
+    paddingHorizontal: 16,
+    height: 48,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: '#e1e4e8',
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   searchIcon: {
     marginRight: 8,
   },
   searchInput: {
     flex: 1,
-    fontSize: RFValue(16),
-    color: '#333',
+    fontSize: RFValue(15),
+    color: '#0F172A',
+    paddingVertical: 0,
   },
   content: {
     flex: 1,
@@ -353,7 +322,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     marginTop: 16,
   },
   errorContainer: {
@@ -364,16 +333,17 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: RFValue(16),
-    color: '#ff3b30',
+    color: '#DC2626',
     marginTop: 16,
     marginBottom: 16,
     textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: '#003399',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#ff6b35',
+    paddingHorizontal: 28,
+    height: 48,
+    justifyContent: 'center',
+    borderRadius: 14,
   },
   retryButtonText: {
     color: '#fff',
@@ -381,18 +351,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   categoryContainer: {
-    marginBottom: 8,
-    backgroundColor: CARD_BG,
-    borderRadius: 8,
+    marginBottom: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
     marginHorizontal: 16,
     overflow: 'hidden',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   categoryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: CARD_BG,
+    padding: 14,
+    backgroundColor: '#FFFFFF',
   },
   categoryTitleContainer: {
     flexDirection: 'row',
@@ -400,45 +377,48 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   categoryTitle: {
-    fontSize: RFValue(16),
+    flexShrink: 1,
+    fontSize: 16,
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#0F172A',
     marginLeft: 12,
   },
   questionCount: {
-    fontSize: RFValue(14),
-    color: CARD_TEXT_MUTED,
+    fontSize: 12,
+    color: '#64748B',
     marginLeft: 8,
   },
   questionsContainer: {
     borderTopWidth: 1,
-    borderTopColor: CARD_DIVIDER,
+    borderTopColor: '#E8ECF4',
   },
   questionItem: {
     borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
+    borderBottomColor: '#E8ECF4',
   },
   questionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    paddingLeft: 52,
+    padding: 14,
+    paddingLeft: 16,
   },
   questionText: {
     flex: 1,
     fontSize: RFValue(15),
-    color: CARD_TEXT,
-    fontWeight: '500',
+    color: '#0F172A',
+    fontWeight: '600',
+    marginRight: 8,
   },
   answerContainer: {
-    paddingHorizontal: 52,
+    paddingHorizontal: 16,
+    paddingTop: 2,
     paddingBottom: 16,
-    backgroundColor: CARD_CHIP_BG,
+    backgroundColor: 'rgba(0,51,153,0.04)',
   },
   answerText: {
     fontSize: RFValue(14),
-    color: CARD_TEXT,
+    color: '#334155',
     lineHeight: 22,
   },
   noResults: {
@@ -449,31 +429,39 @@ const styles = StyleSheet.create({
   noResultsText: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#666',
+    color: '#64748B',
     marginTop: 16,
   },
   noResultsSubtext: {
     fontSize: RFValue(14),
-    color: '#999',
+    color: '#64748B',
     marginTop: 8,
   },
   contactContainer: {
-    backgroundColor: CARD_BG,
+    backgroundColor: '#FFFFFF',
     marginHorizontal: 16,
-    marginVertical: 16,
+    marginTop: 4,
+    marginBottom: 32,
     padding: 20,
-    borderRadius: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
     alignItems: 'center',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   contactTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
-    color: CARD_TEXT,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 8,
   },
   contactText: {
     fontSize: RFValue(14),
-    color: CARD_TEXT_MUTED,
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -482,9 +470,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: BRAND_ORANGE,
     paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    height: 48,
+    borderRadius: 14,
     marginBottom: 12,
+    shadowColor: BRAND_ORANGE,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   contactButtonText: {
     color: '#fff',
@@ -494,8 +487,8 @@ const styles = StyleSheet.create({
   },
   contactEmail: {
     fontSize: RFValue(14),
-    color: CARD_TEXT,
-    fontWeight: '500',
+    color: '#003399',
+    fontWeight: '600',
   },
 });
 

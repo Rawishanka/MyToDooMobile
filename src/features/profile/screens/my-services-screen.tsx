@@ -3,7 +3,7 @@ import {
   useDeleteServiceListing,
   useGetMyServiceListings,
 } from '@/src/shared/hooks/useServiceListingApi';
-import { RFValue } from '@/src/shared/utils/responsive';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
@@ -11,14 +11,12 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Platform,
   RefreshControl,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface MyServicesScreenProps {
   onBack: () => void;
@@ -27,7 +25,6 @@ interface MyServicesScreenProps {
 
 export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenProps) {
   const { isDarkMode } = useTheme();
-  const insets = useSafeAreaInsets();
   const { data = [], isLoading, refetch, isRefetching } = useGetMyServiceListings();
   const deleteMutation = useDeleteServiceListing();
 
@@ -52,35 +49,36 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
   };
 
   const renderItem = ({ item }: { item: ServiceListing }) => (
-    <View style={[styles.card, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
+    <View style={[styles.card, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+      <IconChip name="construct-outline" style={{ marginRight: 12 }} />
       <View style={styles.cardBody}>
-        <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>{item.title}</Text>
-        <Text style={[styles.meta, isDarkMode && { color: '#94A3B8' }]}>
+        <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={2}>{item.title}</Text>
+        <Text style={[styles.meta, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>
           ${Number(item.price).toFixed(0)} {item.currency || 'AUD'} · {item.suburb}
         </Text>
-        <Text style={[styles.status, isDarkMode && { color: '#64748B' }]}>Status: {item.status}</Text>
+        <Text style={[styles.status, isDarkMode && { color: '#94A3B8' }]}>Status: {item.status}</Text>
       </View>
-      <TouchableOpacity onPress={() => confirmDelete(item)} style={styles.deleteButton}>
-        <Ionicons name="trash-outline" size={20} color="#dc3545" />
+      <TouchableOpacity onPress={() => confirmDelete(item)} style={styles.deleteButton} activeOpacity={0.7}>
+        <Ionicons name="trash-outline" size={18} color="#DC2626" />
       </TouchableOpacity>
     </View>
   );
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>My services</Text>
-        <TouchableOpacity onPress={onCreate} style={styles.createButton}>
-          <Ionicons name="add" size={22} color={isDarkMode ? '#38BDF8' : '#003399'} />
-        </TouchableOpacity>
-      </View>
+      <LightHeader
+        title="My services"
+        onBack={onBack}
+        right={
+          <TouchableOpacity onPress={onCreate} style={styles.createButton} activeOpacity={0.7}>
+            <Ionicons name="add" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+        }
+      />
 
       {isLoading && data.length === 0 ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color="#003399" />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
         </View>
       ) : (
         <FlatList
@@ -89,12 +87,15 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#003399" />
+            <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={isDarkMode ? '#38BDF8' : '#003399'} />
           }
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
+              <View style={[styles.emptyCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                <Ionicons name="construct-outline" size={38} color={isDarkMode ? '#38BDF8' : '#003399'} />
+              </View>
               <Text style={[styles.emptyText, isDarkMode && { color: '#94A3B8' }]}>You have not listed any services yet.</Text>
-              <TouchableOpacity style={styles.emptyCta} onPress={onCreate}>
+              <TouchableOpacity style={styles.emptyCta} onPress={onCreate} activeOpacity={0.85}>
                 <Text style={styles.emptyCtaText}>Create a service</Text>
               </TouchableOpacity>
             </View>
@@ -106,47 +107,67 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  header: {
+  container: { flex: 1, backgroundColor: '#F4F6FB' },
+  createButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  listContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    padding: 14,
+    marginBottom: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
-  backButton: { padding: 4 },
-  headerTitle: {
-    flex: 1,
-    fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#003399',
+  cardBody: { flex: 1, minWidth: 0 },
+  title: { fontSize: 16, fontWeight: '600', color: '#0F172A' },
+  meta: { fontSize: 13, color: '#64748B', marginTop: 4 },
+  status: { fontSize: 12, color: '#64748B', marginTop: 4, textTransform: 'capitalize' },
+  deleteButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: 8,
   },
-  createButton: { padding: 4 },
-  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  listContent: { padding: 16, paddingBottom: 40 },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cardBody: { flex: 1 },
-  title: { fontSize: RFValue(15), fontWeight: '600', color: '#222' },
-  meta: { fontSize: RFValue(13), color: '#666', marginTop: 4 },
-  status: { fontSize: RFValue(12), color: '#888', marginTop: 4, textTransform: 'capitalize' },
-  deleteButton: { padding: 8 },
   emptyWrap: { paddingVertical: 48, alignItems: 'center' },
-  emptyText: { color: '#888', fontSize: RFValue(14), marginBottom: 16 },
-  emptyCta: {
-    backgroundColor: '#003399',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
+  emptyCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
   },
-  emptyCtaText: { color: '#fff', fontWeight: '600' },
+  emptyText: { color: '#64748B', fontSize: 15, marginBottom: 20, textAlign: 'center' },
+  emptyCta: {
+    backgroundColor: '#ff6b35',
+    paddingHorizontal: 28,
+    height: 48,
+    justifyContent: 'center',
+    borderRadius: 14,
+    shadowColor: '#ff6b35',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
+  emptyCtaText: { color: '#FFFFFF', fontWeight: '700', fontSize: 16 },
 });

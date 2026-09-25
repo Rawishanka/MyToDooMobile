@@ -11,7 +11,7 @@ interface EmptyOffersStateProps {
 export default function EmptyOffersState({ onRefresh }: EmptyOffersStateProps) {
   return (
     <View style={styles.emptyContainer}>
-      <Ionicons name="clipboard-outline" size={64} color="#ccc" />
+      <Ionicons name="clipboard-outline" size={64} color="#94A3B8" />
       <Text style={styles.emptyTitle}>No offers yet</Text>
       <Text style={styles.emptySubtitle}>
         Your task is live! Offers will appear here when taskers make bids.
@@ -32,27 +32,28 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0D1B2A',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
   },
   refreshButton: {
     backgroundColor: BRAND_ORANGE,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: 32,
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 14,
   },
   refreshButtonText: {
     color: '#fff',
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

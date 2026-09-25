@@ -993,7 +993,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         keyboardVerticalOffset={Platform.OS === 'ios' ? headerTopPadding : 0}
       >
         <View style={[styles.chatContainer, isDarkMode && { backgroundColor: "#0B1120" }]}>
-          <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#0B1120" : "#fff"} />
+          <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
           
           {/* Chat Header */}
           <View style={[styles.chatHeader, { paddingTop: headerTopPadding }]}>
@@ -1004,7 +1004,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
               accessibilityRole="button"
               accessibilityLabel="Go back"
             >
-              <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+              <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
             </TouchableOpacity>
 
             <View style={styles.chatHeaderInfo}>
@@ -1053,7 +1053,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         <FlatList
           data={chatMessages}
           keyExtractor={(item) => item.id}
-          style={styles.messagesContainer}
+          style={[styles.messagesContainer, isDarkMode && { backgroundColor: '#0B1120' }]}
           contentContainerStyle={styles.messagesContentContainer}
           showsVerticalScrollIndicator={false}
           keyboardDismissMode="interactive"
@@ -1061,13 +1061,15 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
           ListEmptyComponent={() => (
             isLoadingMessages ? (
               <View style={styles.emptyContainer}>
-                <ActivityIndicator size="large" color={BRAND_BLUE} />
-                <Text style={styles.loadingText}>Loading messages...</Text>
+                <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+                <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading messages...</Text>
               </View>
             ) : (
               <View style={styles.emptyContainer}>
-                <Ionicons name="chatbubbles-outline" size={64} color="#E1E8ED" />
-                <Text style={styles.emptyTitle}>Start a conversation</Text>
+                <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                  <Ionicons name="chatbubbles-outline" size={40} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+                </View>
+                <Text style={[styles.emptyTitle, isDarkMode && { color: '#F8FAFC' }]}>Start a conversation</Text>
                 <Text style={[styles.emptySubtext, isDarkMode && { color: "#94A3B8" }]}>Send a message to begin chatting about this task</Text>
               </View>
             )
@@ -1099,7 +1101,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                 delayLongPress={300}
                 style={[
                   styles.messageBubble,
-                  msg.sender === 'me' ? styles.myMessage : [styles.otherMessage, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]
+                  msg.sender === 'me' ? styles.myMessage : [styles.otherMessage, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]
                 ]}
               >
                 {msg.messageType === 'image' && msg.mediaUrl ? (
@@ -1196,14 +1198,14 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         {/* Message Input */}
         <View style={[styles.inputContainer,
             isDarkMode && { backgroundColor: "#0B1120", borderTopColor: "#334155" }, { paddingBottom: inputBottomPadding }]}>
-          <View style={styles.inputWrapper}>
-            <TouchableOpacity onPress={handleAttachment} style={styles.attachButton}>
-              <Ionicons name="attach" size={22} color="#666" />
+          <View style={[styles.inputWrapper, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+            <TouchableOpacity onPress={handleAttachment} style={[styles.attachButton, isDarkMode && { backgroundColor: '#334155' }]}>
+              <Ionicons name="attach" size={20} color={isDarkMode ? '#94A3B8' : BRAND_BLUE} />
             </TouchableOpacity>
             <TextInput
-              style={styles.messageInput}
+              style={[styles.messageInput, isDarkMode && { color: '#F8FAFC' }]}
               placeholder="Type a message..."
-              placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+              placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
               value={newMessage}
               onChangeText={setNewMessage}
               multiline
@@ -1214,7 +1216,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
               style={[styles.sendButton, isLoading && styles.sendButtonDisabled]}
               disabled={isLoading}
             >
-              <Ionicons name="send" size={20} color={isLoading ? "#ccc" : BRAND_BLUE} />
+              <Ionicons name="send" size={18} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         </View>
@@ -1223,7 +1225,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         {isUploading && (
           <View style={styles.uploadOverlay}>
             <View style={styles.uploadOverlayContent}>
-              <Ionicons name="cloud-upload" size={48} color={BRAND_BLUE} />
+              <Ionicons name="cloud-upload" size={44} color={BRAND_BLUE} />
               <Text style={styles.uploadOverlayText}>{uploadProgressText || 'Uploading...'}</Text>
             </View>
           </View>
@@ -1305,8 +1307,8 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                         style={[styles.actionMenuItem, isDarkMode && { borderBottomColor: '#334155' }]}
                         onPress={handleDeleteSelectedMessage}
                       >
-                        <Ionicons name="trash-outline" size={22} color="#FF3B30" />
-                        <Text style={[styles.actionMenuText, { color: '#FF3B30' }]}>
+                        <Ionicons name="trash-outline" size={22} color="#DC2626" />
+                        <Text style={[styles.actionMenuText, { color: '#DC2626' }]}>
                           Delete {selectedMessageForAction?.messageType === 'image' ? 'Photo' : 'Message'}
                         </Text>
                       </TouchableOpacity>
@@ -1324,7 +1326,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                         }
                       }}
                     >
-                      <Ionicons name="information-circle-outline" size={22} color={isDarkMode ? '#38BDF8' : '#1E293B'} />
+                      <Ionicons name="information-circle-outline" size={22} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
                       <Text style={[styles.actionMenuText, isDarkMode && { color: '#F8FAFC' }]}>Info</Text>
                     </TouchableOpacity>
 
@@ -1384,21 +1386,22 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
 const styles = StyleSheet.create({
   chatContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F4F6FB',
   },
   chatHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingBottom: 10,
+    paddingBottom: 12,
     backgroundColor: BRAND_BLUE,
     borderBottomWidth: 0,
   },
   backButton: {
-    padding: 8,
-    marginRight: 4,
-    minWidth: 44,
-    minHeight: 44,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    marginRight: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1408,17 +1411,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   chatAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     marginRight: 10,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.6)',
   },
   chatAvatarFallback: {
     width: 36,
     height: 36,
     borderRadius: 18,
     marginRight: 10,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1431,21 +1438,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   chatTitle: {
-    fontSize: RFValue(15),
-    fontWeight: '600',
-    color: '#000',
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
     marginBottom: 2,
   },
   chatStatus: {
-    fontSize: RFValue(12),
-    color: '#34C759',
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.8)',
   },
   moreButton: {
     padding: 4,
   },
   messagesContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F4F6FB',
   },
   messagesContentContainer: {
     padding: 16,
@@ -1473,26 +1480,41 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     marginRight: 8,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: 'rgba(0,51,153,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   messageAvatarInitials: {
-    color: '#FFFFFF',
+    color: BRAND_BLUE,
     fontSize: RFValue(11),
     fontWeight: '600',
   },
   messageBubble: {
-    maxWidth: '75%',
+    maxWidth: '78%',
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: 8,
     borderRadius: 18,
   },
   myMessage: {
     backgroundColor: BRAND_BLUE,
+    borderBottomRightRadius: 6,
+    shadowColor: BRAND_BLUE,
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   otherMessage: {
-    backgroundColor: '#E9ECEF',
+    backgroundColor: '#FFFFFF',
+    borderBottomLeftRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   messageText: {
     fontSize: RFValue(15),
@@ -1509,7 +1531,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   otherMessageText: {
-    color: '#000',
+    color: '#0F172A',
   },
   messageTime: {
     fontSize: RFValue(11),
@@ -1519,7 +1541,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   otherMessageTime: {
-    color: '#8E8E93',
+    color: '#94A3B8',
   },
   messageFooter: {
     flexDirection: 'row',
@@ -1540,9 +1562,9 @@ const styles = StyleSheet.create({
     marginLeft: 0,
   },
   inputContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#e8e8e8',
+    borderTopColor: '#E8ECF4',
     paddingHorizontal: 12,
     paddingTop: 8,
     // paddingBottom is dynamic via inline style with SafeArea insets
@@ -1553,29 +1575,48 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    minHeight: 44,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    paddingLeft: 6,
+    paddingRight: 6,
+    paddingVertical: 4,
+    minHeight: 48,
   },
   messageInput: {
     flex: 1,
-    fontSize: RFValue(15),
+    fontSize: 15,
     maxHeight: 100,
-    color: '#000',
-    paddingVertical: 6,
+    color: '#0F172A',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
   attachButton: {
-    padding: 6,
-    marginRight: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
   },
   sendButton: {
-    padding: 6,
-    marginLeft: 8,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#ff6b35',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 6,
+    shadowColor: '#ff6b35',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   sendButtonDisabled: {
-    opacity: 0.5,
+    opacity: 0.45,
   },
   emptyContainer: {
     flex: 1,
@@ -1584,23 +1625,31 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     paddingHorizontal: 40,
   },
+  emptyIconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   loadingText: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     marginTop: 12,
     textAlign: 'center',
   },
   emptyTitle: {
     fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontWeight: '700',
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtext: {
     fontSize: RFValue(14),
-    color: '#8E8E93',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -1616,8 +1665,8 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   uploadOverlayContent: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: 24,
     alignItems: 'center',
     minWidth: 150,

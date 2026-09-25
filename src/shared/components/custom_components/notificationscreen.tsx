@@ -93,8 +93,8 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = ({ visible,
         <View style={styles.modalContainer}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={onClose} style={styles.backButton}>
-              <Ionicons name="chevron-back" size={24} color="#000" />
+            <TouchableOpacity onPress={onClose} style={styles.backButton} activeOpacity={0.7}>
+              <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Notifications</Text>
             <View style={styles.placeholder} />
@@ -106,6 +106,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = ({ visible,
             renderItem={({ item }) => <NotificationItem item={item} />}
             keyExtractor={(item) => item.id}
             style={styles.notificationsList}
+            contentContainerStyle={{ paddingTop: 14, paddingBottom: 24 }}
             showsVerticalScrollIndicator={false}
           />
         </View>
@@ -118,49 +119,63 @@ const styles = StyleSheet.create({
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    overflow: 'hidden',
     maxHeight: '80%',
     minHeight: '60%',
   },
-  
+
   // Notification Screen Header
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingVertical: 14,
+    backgroundColor: '#003399',
   },
   backButton: {
-    padding: 4,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#000',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   placeholder: {
-    width: 32,
+    width: 40,
   },
-  
+
   // Notifications List
   notificationsList: {
     flex: 1,
   },
   notificationItem: {
     flexDirection: 'row',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    padding: 14,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
     alignItems: 'center',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   avatar: {
     width: 40,
@@ -170,19 +185,20 @@ const styles = StyleSheet.create({
   },
   notificationContent: {
     flex: 1,
+    minWidth: 0,
   },
   notificationText: {
     fontSize: RFValue(14),
-    color: '#333',
-    lineHeight: 18,
+    color: '#0F172A',
+    lineHeight: 19,
     marginBottom: 4,
   },
   username: {
     fontWeight: '600',
-    color: '#000',
+    color: '#0F172A',
   },
   timeText: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: '#64748B',
   },
 });

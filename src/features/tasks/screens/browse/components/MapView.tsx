@@ -787,66 +787,79 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
           font-size: 14px;
         }
         .leaflet-popup-content-wrapper {
-          background: #ffffff !important;
-          border: 1px solid #e0e0e0 !important;
-          border-radius: 12px !important;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
-          color: #333333 !important;
+          background: #003399 !important;
+          border: 1px solid rgba(255,255,255,0.14) !important;
+          border-radius: 20px !important;
+          box-shadow: 0 6px 12px rgba(0,26,102,0.30) !important;
+          color: #ffffff !important;
         }
+        .leaflet-popup-content { margin: 14px 16px !important; }
         .leaflet-popup-tip {
-          background: #ffffff !important;
+          background: #003399 !important;
         }
         .leaflet-popup-close-button {
-          color: #999999 !important;
+          color: rgba(255,255,255,0.78) !important;
           font-size: 18px !important;
         }
         .leaflet-popup-close-button:hover {
-          color: #333333 !important;
+          color: #ffffff !important;
         }
         .marker-title {
-          font-weight: 600;
-          color: #1a1a1a;
-          margin-bottom: 4px;
-          font-size: 15px;
+          font-weight: 700;
+          color: #ffffff;
+          margin-bottom: 8px;
+          font-size: 16px;
+          padding-right: 14px;
         }
         .marker-price {
-          color: #FF914D;
-          font-weight: 700;
-          font-size: 18px;
-          margin-bottom: 4px;
+          display: inline-block;
+          background: #ffffff;
+          color: #003399;
+          font-weight: 800;
+          font-size: 15px;
+          padding: 4px 12px;
+          border-radius: 12px;
+          margin-bottom: 8px;
         }
         .marker-location {
-          color: #777777;
-          font-size: 12px;
-          margin-bottom: 8px;
+          color: rgba(255,255,255,0.78);
+          font-size: 13px;
+          margin-bottom: 10px;
         }
         .marker-meta {
           display: flex;
           justify-content: space-between;
-          font-size: 11px;
-          color: #999999;
-          border-top: 1px solid #eeeeee;
-          padding-top: 4px;
+          font-size: 12px;
+          color: rgba(255,255,255,0.78);
+          border-top: 1px solid rgba(255,255,255,0.22);
+          padding-top: 8px;
         }
         .marker-actions {
-          margin-top: 8px;
-          padding-top: 8px;
-          border-top: 1px solid #eeeeee;
+          margin-top: 10px;
+          padding-top: 12px;
+          border-top: 1px solid rgba(255,255,255,0.22);
+          display: flex;
+          gap: 8px;
         }
         .action-btn {
-          background: linear-gradient(135deg, #FF914D, #e67535);
+          background: #ff6b35;
           color: white;
           border: none;
-          padding: 7px 14px;
-          border-radius: 6px;
+          padding: 10px 14px;
+          border-radius: 14px;
           font-size: 12px;
           cursor: pointer;
-          margin-right: 6px;
-          font-weight: 600;
-          box-shadow: 0 2px 8px rgba(255,145,77,0.4);
+          margin-right: 0;
+          font-weight: 700;
+          box-shadow: 0 4px 8px rgba(255,107,53,0.35);
+        }
+        .action-btn + .action-btn {
+          background: transparent;
+          border: 1.5px solid rgba(255,255,255,0.6);
+          box-shadow: none;
         }
         .action-btn:hover {
-          background: linear-gradient(135deg, #e67535, #cc5f22);
+          background: #e85d2a;
         }
         ${isDarkMode ? `
         body { background-color: #0B1120 !important; }
@@ -887,6 +900,13 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
         }
         .marker-title {
           color: #F8FAFC !important;
+        }
+        .marker-price {
+          background: #0F172A !important;
+          color: #FF914D !important;
+        }
+        .action-btn + .action-btn {
+          background: transparent !important;
         }
         .marker-location {
           color: #94A3B8 !important;

@@ -17,7 +17,6 @@ import {
   View,
 } from 'react-native';
 import type { StoredNotification } from '@/src/services/notification-storage';
-import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
 
@@ -99,11 +98,11 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
         return BRAND_BLUE;
       case 'message':
       case 'chat_message':
-        return '#28a745';
+        return BRAND_BLUE;
       case 'task_completed':
-        return '#28a745';
+        return '#16A34A';
       case 'task_assigned':
-        return '#17a2b8';
+        return '#16A34A';
       case 'payment':
       case 'payment_received':
       case 'payment_sent':
@@ -111,9 +110,9 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
       case 'profile_incomplete':
       case 'complete_profile':
       case 'payout_required':
-        return '#ffc107';
+        return '#D97706';
       default:
-        return '#6c757d';
+        return BRAND_BLUE;
     }
   };
 
@@ -126,7 +125,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
         style={[
           styles.notificationItem,
           isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
-          !item.isRead && [styles.unreadNotification, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#38BDF8' }],
+          !item.isRead && [styles.unreadNotification, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }],
         ]}
         onPress={() => {
           if (!item.isRead) {
@@ -137,15 +136,15 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
         activeOpacity={0.7}
       >
         <View style={styles.notificationContent}>
-          <View style={[styles.iconContainer, { backgroundColor: iconColor + '20' }]}>
-            <Ionicons name={iconName as any} size={24} color={iconColor} />
+          <View style={[styles.iconContainer, { backgroundColor: iconColor === BRAND_BLUE ? 'rgba(0,51,153,0.08)' : iconColor + '1F' }]}>
+            <Ionicons name={iconName as any} size={19} color={isDarkMode && iconColor === BRAND_BLUE ? '#38BDF8' : iconColor} />
           </View>
 
           <View style={styles.textContainer}>
             <Text style={[
               styles.title,
               isDarkMode && { color: '#F8FAFC' },
-              !item.isRead && [styles.unreadText, isDarkMode && { color: '#38BDF8' }]
+              !item.isRead && [styles.unreadText, isDarkMode && { color: '#F8FAFC' }]
             ]}>
               {item.title}
             </Text>
@@ -166,7 +165,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
               style={styles.deleteButton}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="trash-outline" size={20} color="#dc3545" />
+              <Ionicons name="trash-outline" size={18} color="#DC2626" />
             </TouchableOpacity>
           </View>
         </View>
@@ -176,7 +175,9 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="notifications-outline" size={64} color={isDarkMode ? '#334155' : '#ccc'} />
+      <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+        <Ionicons name="notifications-outline" size={40} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+      </View>
       <Text style={[styles.emptyText, isDarkMode && { color: '#F8FAFC' }]}>No Notifications</Text>
       <Text style={[styles.emptySubtext, isDarkMode && { color: '#94A3B8' }]}>
         You'll see notifications here when you receive messages, offers, or task updates
@@ -200,7 +201,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
       keyExtractor={(item) => item.id}
       ListEmptyComponent={renderEmpty}
       refreshControl={
-        <RefreshControl refreshing={loading} onRefresh={onRefresh} />
+        <RefreshControl refreshing={loading} onRefresh={onRefresh} colors={['#003399']} tintColor={isDarkMode ? '#38BDF8' : '#003399'} />
       }
       contentContainerStyle={
         notifications.length === 0 ? styles.emptyListContainer : styles.listContainer
@@ -212,7 +213,8 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
 
 const styles = StyleSheet.create({
   listContainer: {
-    paddingVertical: 8,
+    paddingTop: 14,
+    paddingBottom: 32,
   },
   emptyListContainer: {
     flex: 1,
@@ -227,57 +229,65 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 16,
-    fontSize: RFValue(16),
-    color: '#6c757d',
+    fontSize: 15,
+    color: '#64748B',
   },
   notificationItem: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     marginHorizontal: 16,
-    marginVertical: 4,
-    borderRadius: 12,
-    padding: 12,
+    marginBottom: 12,
+    borderRadius: 20,
+    padding: 14,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   unreadNotification: {
-    backgroundColor: '#f8f9fa',
-    borderColor: BRAND_BLUE,
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E8ECF4',
+    borderLeftWidth: 3,
+    borderLeftColor: '#ff6b35',
   },
   notificationContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   textContainer: {
     flex: 1,
+    minWidth: 0,
     marginRight: 8,
   },
   title: {
-    fontSize: RFValue(16),
+    fontSize: 15,
     fontWeight: '600',
-    color: '#333',
+    color: '#0F172A',
     marginBottom: 4,
   },
   unreadText: {
     fontWeight: '700',
-    color: '#000',
+    color: '#0F172A',
   },
   body: {
-    fontSize: RFValue(14),
-    color: '#666',
-    marginBottom: 4,
-    lineHeight: 20,
+    fontSize: 13,
+    color: '#64748B',
+    marginBottom: 6,
+    lineHeight: 19,
   },
   time: {
-    fontSize: RFValue(12),
-    color: '#999',
+    fontSize: 12,
+    color: '#94A3B8',
   },
   actionsContainer: {
     flexDirection: 'column',
@@ -292,7 +302,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: '#ff6b35',
   },
   deleteButton: {
     padding: 4,
@@ -303,16 +313,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 32,
   },
+  emptyIconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emptyText: {
-    fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
     marginTop: 16,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   emptySubtext: {
-    fontSize: RFValue(14),
-    color: '#666',
+    fontSize: 14,
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 20,
   },

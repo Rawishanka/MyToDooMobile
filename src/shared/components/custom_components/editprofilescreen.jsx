@@ -1,7 +1,8 @@
 // EditProfileScreen.tsx
 import { useGetCategoryNames } from '@/src/shared/hooks/useCategoriesApi';
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
@@ -427,24 +428,15 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
       statusBarTranslucent={true}
     >
       <View style={[styles.modalContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <View style={[styles.modalHeader, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }, !isDarkMode && { backgroundColor: BRAND_BLUE, borderBottomColor: BRAND_BLUE }]}>
-          <TouchableOpacity 
-            onPress={() => setShowPhotoSelectionScreen(false)}
-            style={styles.backButton}
-          >
-            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#F8FAFC" : CARD_TEXT} />
-          </TouchableOpacity>
-          <Text style={[styles.modalHeaderTitle, !isDarkMode && { color: CARD_TEXT }, isDarkMode && { color: '#F8FAFC' }]}>Profile Photo</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <LightHeader title="Profile Photo" onBack={() => setShowPhotoSelectionScreen(false)} />
 
-        <ScrollView style={styles.modalContent}>
+        <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
           <View style={styles.profileImageContainer}>
             <Image source={{ uri: profileImage }} style={styles.largeProfileImage} />
           </View>
 
-          <Text style={styles.modalTitle}>Upload a profile photo of you</Text>
-          <Text style={styles.modalSubtext}>
+          <Text style={[styles.modalTitle, isDarkMode && { color: '#F8FAFC' }]}>Upload a profile photo of you</Text>
+          <Text style={[styles.modalSubtext, isDarkMode && { color: '#94A3B8' }]}>
             Show yourself clearly to let customers and Taskers know who they're working with.
           </Text>
 
@@ -469,12 +461,12 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
 
           <View style={styles.photoTips}>
             <View style={styles.photoTip}>
-              <Ionicons name="checkmark" size={16} color="#28a745" />
-              <Text style={styles.photoTipText}>Do show your face in bright lighting</Text>
+              <Ionicons name="checkmark" size={16} color="#16A34A" />
+              <Text style={[styles.photoTipText, isDarkMode && { color: '#94A3B8' }]}>Do show your face in bright lighting</Text>
             </View>
             <View style={styles.photoTip}>
-              <Ionicons name="close" size={16} color="#dc3545" />
-              <Text style={styles.photoTipText}>Avoid using logos, objects, vehicles etc.</Text>
+              <Ionicons name="close" size={16} color="#DC2626" />
+              <Text style={[styles.photoTipText, isDarkMode && { color: '#94A3B8' }]}>Avoid using logos, objects, vehicles etc.</Text>
             </View>
           </View>
         </ScrollView>
@@ -484,19 +476,12 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : CARD_TEXT} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Edit Profile</Text>
-        <View style={styles.placeholder} />
-      </View>
+      <LightHeader title="Edit Profile" onBack={onBack} />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
         {/* Info Banner */}
-        <View style={[styles.infoBanner, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
-          <Ionicons name="bulb-outline" size={20} color={isDarkMode ? "#003399" : CARD_TEXT} />
+        <View style={[styles.infoBanner, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+          <IconChip name="bulb-outline" tone="amber" />
           <View style={styles.infoBannerText}>
             <Text style={[styles.infoBannerTitle, isDarkMode && { color: '#F8FAFC' }]}>Make your profile shine!</Text>
             <Text style={[styles.infoBannerSubtext, isDarkMode && { color: '#94A3B8' }]}>
@@ -506,7 +491,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
         </View>
 
         {/* Profile Picture Section */}
-        <View style={[styles.section, !isDarkMode && styles.sectionCard]}>
+        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Profile picture</Text>
           <Text style={[styles.sectionSubtext, isDarkMode && { color: '#94A3B8' }]}>
             Show yourself clearly to let others know who they're connecting with.
@@ -525,11 +510,11 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
               )}
             </View>
             <TouchableOpacity 
-              style={styles.changePhotoButton} 
+              style={[styles.changePhotoButton, isDarkMode && { backgroundColor: '#0F172A' }]} 
               onPress={handleChangePhoto}
               disabled={isUploadingPhoto}
             >
-              <Text style={[styles.changePhotoText, !isDarkMode && { color: CARD_TEXT }]}>
+              <Text style={[styles.changePhotoText, isDarkMode && { color: '#38BDF8' }]}>
                 {isUploadingPhoto ? 'Uploading...' : 'Change photo'}
               </Text>
             </TouchableOpacity>
@@ -537,7 +522,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
         </View>
 
         {/* Bio Section */}
-        <View style={[styles.section, !isDarkMode && styles.sectionCard]}>
+        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Bio</Text>
           <Text style={[styles.sectionSubtext, isDarkMode && { color: '#94A3B8' }]}>
             Introduce yourself to new customers.
@@ -547,12 +532,12 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
             style={[
               styles.bioInput,
               bio.length > 300 && styles.bioInputError,
-              isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }
+              isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }
             ]}
             value={bio}
             onChangeText={(text) => setBio(text.slice(0, 300))}
             placeholder="A brief introduction of who you are and what you do on Mytodoo"
-            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+            placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
             multiline
             numberOfLines={6}
             maxLength={300}
@@ -564,7 +549,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                 {bio.length >= 300 ? '⚠️ Maximum 300 characters reached' : `⚠️ ${300 - bio.length} characters remaining`}
               </Text>
             ) : (
-              <Text style={styles.bioCharCountNormal}>
+              <Text style={[styles.bioCharCountNormal, isDarkMode && { color: '#94A3B8' }]}>
                 {bio.length}/300
               </Text>
             )}
@@ -572,7 +557,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
         </View>
 
         {/* Verifications Section */}
-        <View style={[styles.section, !isDarkMode && styles.sectionCard]}>
+        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Verifications</Text>
           <Text style={[styles.sectionSubtext, isDarkMode && { color: '#94A3B8' }]}>
             Build trust by adding verifications.
@@ -583,51 +568,51 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
             onPress={onNavigateToIDVerification}
             style={[
               styles.verificationItem,
-              isDarkMode && { backgroundColor: '#1E293B', borderColor: isIdVerified ? '#065F46' : '#334155' },
-              !isDarkMode && { borderColor: isIdVerified ? '#86EFAC' : '#E2E8F0', borderWidth: 1 }
+              isDarkMode && { backgroundColor: '#0F172A', borderColor: isIdVerified ? '#065F46' : '#334155' },
+              !isDarkMode && { borderColor: isIdVerified ? '#86EFAC' : '#E8ECF4' }
             ]}
           >
             <View style={styles.verificationIcon}>
               <Ionicons 
                 name={isIdVerified ? "checkmark-circle" : "shield-checkmark-outline"} 
                 size={24} 
-                color={isIdVerified ? (isDarkMode ? "#10B981" : "#4ADE80") : (isDarkMode ? "#0EA5E9" : "#7DD3FC")} 
+                color={isIdVerified ? (isDarkMode ? "#10B981" : "#16A34A") : (isDarkMode ? "#38BDF8" : "#003399")} 
               />
             </View>
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, minWidth: 0 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                <Text style={[styles.verificationText, isDarkMode && { color: '#F8FAFC' }]}>
+                <Text style={[styles.verificationText, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={1}>
                   {isIdVerified ? "ID & Face Verified" : "ID Verification (AI Face Match)"}
                 </Text>
                 <View style={{
                   paddingHorizontal: 8,
                   paddingVertical: 2,
                   borderRadius: 10,
-                  backgroundColor: isIdVerified ? (isDarkMode ? '#064E3B' : '#DCFCE7') : (isDarkMode ? '#082F49' : '#E0F2FE')
+                  backgroundColor: isIdVerified ? (isDarkMode ? '#064E3B' : '#DCFCE7') : (isDarkMode ? '#78350F' : '#FEF3C7')
                 }}>
                   <Text style={{
                     fontSize: 11,
                     fontWeight: '700',
-                    color: isIdVerified ? '#10B981' : '#0284C7'
+                    color: isIdVerified ? (isDarkMode ? '#10B981' : '#16A34A') : (isDarkMode ? '#FBBF24' : '#D97706')
                   }}>
                     {isIdVerified ? "VERIFIED" : "VERIFY NOW"}
                   </Text>
                 </View>
               </View>
-              <Text style={{ fontSize: 12, color: isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED }}>
+              <Text style={{ fontSize: 12, color: '#64748B' }}>
                 {isIdVerified 
                   ? "Australian ID & 3-Point Face Scan Verified" 
                   : "Tap to capture ID and complete 3-point live face scan"}
               </Text>
             </View>
             {onNavigateToIDVerification && (
-              <Ionicons name="chevron-forward" size={18} color={isDarkMode ? "#64748B" : CARD_TEXT_MUTED} style={{ marginLeft: 8 }} />
+              <Ionicons name="chevron-forward" size={18} color="#94A3B8" style={{ marginLeft: 8 }} />
             )}
           </TouchableOpacity>
         </View>
 
         {/* Skills Section */}
-        <View style={[styles.section, !isDarkMode && styles.sectionCard]}>
+        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Skills</Text>
           <Text style={[styles.sectionSubtext, isDarkMode && { color: '#94A3B8' }]}>
             Add skills relevant to your services.
@@ -636,13 +621,13 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
           {skills.length > 0 && (
             <View style={styles.skillsContainer}>
               {skills.map((skill, index) => (
-                <View key={index} style={[styles.skillChip, !isDarkMode && styles.skillChipCard]}>
-                  <Text style={[styles.skillText, !isDarkMode && styles.skillTextCard]}>{skill}</Text>
+                <View key={index} style={[styles.skillChip, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+                  <Text style={[styles.skillText, isDarkMode && { color: '#38BDF8' }]}>{skill}</Text>
                   <TouchableOpacity 
                     onPress={() => handleRemoveSkill(skill)}
                     style={styles.removeSkillButton}
                   >
-                    <Ionicons name="close" size={16} color={isDarkMode ? "#003399" : CARD_TEXT} />
+                    <Ionicons name="close" size={16} color={isDarkMode ? "#94A3B8" : "#003399"} />
                   </TouchableOpacity>
                 </View>
               ))}
@@ -650,39 +635,39 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
           )}
           
           <TouchableOpacity style={styles.addSkillsButton} onPress={handleAddSkills}>
-            <Ionicons name="add-circle-outline" size={20} color={isDarkMode ? "#003399" : CARD_TEXT} />
-            <Text style={[styles.addSkillsText, !isDarkMode && { color: CARD_TEXT }]}>Add skills</Text>
+            <IconChip name="add" size={32} />
+            <Text style={[styles.addSkillsText, isDarkMode && { color: '#38BDF8' }]}>Add skills</Text>
           </TouchableOpacity>
         </View>
 
         {/* Personal Information Section */}
-        <View style={[styles.section, !isDarkMode && styles.sectionCard]}>
+        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>First name <Text style={styles.requiredAsterisk}>*</Text></Text>
           <TextInput
-            style={[styles.textInput, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
+            style={[styles.textInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
             value={firstName}
             onChangeText={setFirstName}
             placeholder="Enter your first name"
-            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+            placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
           />
         </View>
 
-        <View style={[styles.section, !isDarkMode && styles.sectionCard]}>
+        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Last name <Text style={styles.requiredAsterisk}>*</Text></Text>
           <TextInput
-            style={[styles.textInput, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
+            style={[styles.textInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
             value={lastName}
             onChangeText={setLastName}
             placeholder="Enter your last name"
-            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+            placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
           />
         </View>
 
-        <View style={[styles.section, !isDarkMode && styles.sectionCard]}>
+        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
             <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Phone Number</Text>
             <TouchableOpacity
-              style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: "#EFF6FF", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: "#BFDBFE" }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: isDarkMode ? "#0F172A" : "rgba(0,51,153,0.08)", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, borderWidth: 1, borderColor: isDarkMode ? "#334155" : "#E8ECF4" }}
               activeOpacity={0.7}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               onPress={() => {
@@ -693,8 +678,8 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                 setShowPhoneModal(true);
               }}
             >
-              <Ionicons name="create-outline" size={14} color="#003399" />
-              <Text style={{ fontSize: 12, fontWeight: "700", color: "#003399" }}>Change</Text>
+              <Ionicons name="create-outline" size={14} color={isDarkMode ? "#38BDF8" : "#003399"} />
+              <Text style={{ fontSize: 12, fontWeight: "700", color: isDarkMode ? "#38BDF8" : "#003399" }}>Change</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity
@@ -708,48 +693,48 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
             }}
           >
             <TextInput
-              style={[styles.textInput, styles.readOnlyInput]}
+              style={[styles.textInput, styles.readOnlyInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#94A3B8' }]}
               value={phone || "No phone number added"}
               editable={false}
               pointerEvents="none"
               placeholder="Phone number"
-              placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+              placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
               keyboardType="phone-pad"
             />
           </TouchableOpacity>
-          <Text style={{ fontSize: 11.5, color: isDarkMode ? "#059669" : "#4ADE80", marginTop: 4, fontWeight: "500" }}>
+          <Text style={{ fontSize: 11.5, color: isDarkMode ? "#10B981" : "#16A34A", marginTop: 6, fontWeight: "500" }}>
             🔒 Protected by SMS verification for your security
           </Text>
         </View>
 
         {/* Location Section */}
-        <View style={[styles.section, !isDarkMode && styles.sectionCard]}>
+        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Country (Optional)</Text>
           <Text style={[styles.sectionSubtext, isDarkMode && { color: '#94A3B8' }]}>Defaults to Australia if left blank</Text>
           <TextInput
-            style={[styles.textInput, styles.readOnlyInput]}
+            style={[styles.textInput, styles.readOnlyInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#94A3B8' }]}
             value={country}
             editable={false}
             placeholder="Australia"
-            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+            placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
           />
         </View>
 
-        <View style={[styles.section, !isDarkMode && styles.sectionCard]}>
+        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Country Code (Optional)</Text>
           <Text style={[styles.sectionSubtext, isDarkMode && { color: '#94A3B8' }]}>Defaults to AU if left blank (must be 2 characters)</Text>
           <TextInput
-            style={[styles.textInput, styles.readOnlyInput]}
+            style={[styles.textInput, styles.readOnlyInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#94A3B8' }]}
             value={countryCode}
             editable={false}
             placeholder="AU"
-            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+            placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
           />
         </View>
 
-        <View style={[styles.section, !isDarkMode && styles.sectionCard]}>
+        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Suburb *</Text>
-          <Text style={styles.helperText}>Search for your Australian suburb</Text>
+          <Text style={[styles.helperText, isDarkMode && { color: '#94A3B8' }]}>Search for your Australian suburb</Text>
           <LocationAutocomplete
             initialValue={suburb}
             placeholder="Start typing suburb name..."
@@ -798,30 +783,30 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
           />
         </View>
 
-        <View style={[styles.section, !isDarkMode && styles.sectionCard]}>
+        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>State/Region (Optional)</Text>
           <TextInput
-            style={[styles.textInput, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
+            style={[styles.textInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
             value={region}
             onChangeText={setRegion}
             placeholder="e.g., VIC, NSW, QLD"
-            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+            placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
           />
         </View>
 
-        <View style={[styles.section, !isDarkMode && styles.sectionCard]}>
+        <View style={[styles.section, isDarkMode && styles.sectionDark]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>City (Optional)</Text>
           <TextInput
-            style={[styles.textInput, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
+            style={[styles.textInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
             value={city}
             onChangeText={setCity}
             placeholder="e.g., Melbourne, Sydney"
-            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+            placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
           />
         </View>
 
         {/* Save Button */}
-        <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges}>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges} activeOpacity={0.85}>
           <Text style={styles.saveButtonText}>Save changes</Text>
         </TouchableOpacity>
 
@@ -839,14 +824,14 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
         <View style={styles.modalOverlay}>
           <View style={[styles.modalBottom, isDarkMode && { backgroundColor: '#1E293B' }]}>
             <TouchableOpacity style={styles.modalOption} onPress={handleTakePhoto}>
-              <Text style={styles.modalOptionText}>Take photo</Text>
+              <Text style={[styles.modalOptionText, isDarkMode && { color: '#38BDF8' }]}>Take photo</Text>
             </TouchableOpacity>
-            <View style={styles.modalDivider} />
+            <View style={[styles.modalDivider, isDarkMode && { backgroundColor: '#334155' }]} />
             <TouchableOpacity style={styles.modalOption} onPress={handleChoosePhoto}>
-              <Text style={styles.modalOptionText}>Choose photo</Text>
+              <Text style={[styles.modalOptionText, isDarkMode && { color: '#38BDF8' }]}>Choose photo</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={[styles.modalOption, styles.cancelOption]} 
+              style={[styles.modalOption, styles.cancelOption, isDarkMode && { backgroundColor: '#0F172A' }]} 
               onPress={() => setShowPhotoModal(false)}
             >
               <Text style={styles.cancelOptionText}>Cancel</Text>
@@ -862,40 +847,30 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
         presentationStyle="pageSheet"
         onRequestClose={() => setShowSkillsModal(false)}
       >
-        <View style={styles.skillsModalContainer}>
-          <View style={[styles.skillsModalHeader, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
-            {/* <TouchableOpacity 
-              onPress={() => setShowSkillsModal(false)}
-              style={styles.backButton}
-            >
-              <Text style={styles.cancelSkillsText}>Cancel</Text>
-            </TouchableOpacity> */}
-
-            <TouchableOpacity 
-              onPress={() => setShowSkillsModal(false)} 
-              style={styles.cancelButton}
-            >
-              <Ionicons name="close" size={24} color={CARD_TEXT} />
-            </TouchableOpacity>
-
-            <Text style={styles.skillsModalTitle}>Add Skills</Text>
-            <TouchableOpacity onPress={handleSaveSkills}>
-              <Text style={styles.saveSkillsText}>Save</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={[styles.skillsModalContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
+          <LightHeader
+            title="Add Skills"
+            backIcon="close"
+            onBack={() => setShowSkillsModal(false)}
+            right={
+              <TouchableOpacity onPress={handleSaveSkills} activeOpacity={0.7}>
+                <Text style={styles.saveSkillsText}>Save</Text>
+              </TouchableOpacity>
+            }
+          />
 
           <ScrollView style={styles.skillsModalContent}>
-            <Text style={styles.skillsModalSubtitle}>
+            <Text style={[styles.skillsModalSubtitle, isDarkMode && { color: '#94A3B8' }]}>
               Add skills that are relevant to the services you provide
             </Text>
 
             <View style={styles.skillInputContainer}>
               <TextInput
-                style={styles.skillInput}
+                style={[styles.skillInput, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
                 value={newSkill}
                 onChangeText={setNewSkill}
                 placeholder="Type a skill..."
-                placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+                placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
                 onSubmitEditing={handleAddSkill}
               />
               <TouchableOpacity 
@@ -903,17 +878,17 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                 onPress={handleAddSkill}
                 disabled={!newSkill.trim()}
               >
-                <Ionicons name="add" size={24} color={newSkill.trim() ? "#003399" : "#ccc"} />
+                <Ionicons name="add" size={24} color={newSkill.trim() ? "#003399" : "#94A3B8"} />
               </TouchableOpacity>
             </View>
 
             {skills.length > 0 && (
               <View style={styles.addedSkillsSection}>
-                <Text style={styles.addedSkillsTitle}>Your Skills ({skills.length})</Text>
+                <Text style={[styles.addedSkillsTitle, isDarkMode && { color: '#F8FAFC' }]}>Your Skills ({skills.length})</Text>
                 <View style={styles.skillsContainer}>
                   {skills.map((skill, index) => (
-                    <View key={index} style={styles.skillChip}>
-                      <Text style={styles.skillText}>{skill}</Text>
+                    <View key={index} style={[styles.skillChip, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+                      <Text style={[styles.skillText, isDarkMode && { color: '#38BDF8' }]}>{skill}</Text>
                       <TouchableOpacity 
                         onPress={() => handleRemoveSkill(skill)}
                         style={styles.removeSkillButton}
@@ -927,7 +902,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
             )}
 
             <View style={styles.suggestedSkillsSection}>
-              <Text style={styles.suggestedSkillsTitle}>Suggested Skills</Text>
+              <Text style={[styles.suggestedSkillsTitle, isDarkMode && { color: '#F8FAFC' }]}>Suggested Skills</Text>
               {categoriesLoading ? (
                 <ActivityIndicator size="small" color="#003399" style={{ marginTop: 8 }} />
               ) : (
@@ -935,10 +910,10 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                   {categoryNames.filter(cat => !skills.includes(cat) && (newSkill.trim() === '' || cat.toLowerCase().includes(newSkill.toLowerCase()))).map((skill) => (
                     <TouchableOpacity 
                       key={skill}
-                      style={styles.suggestedSkillChip}
+                      style={[styles.suggestedSkillChip, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
                       onPress={() => setSkills([...skills, skill])}
                     >
-                      <Text style={styles.suggestedSkillText}>{skill}</Text>
+                      <Text style={[styles.suggestedSkillText, isDarkMode && { color: '#94A3B8' }]}>{skill}</Text>
                       <Ionicons name="add" size={16} color="#003399" />
                     </TouchableOpacity>
                   ))}
@@ -1019,14 +994,14 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
 
                 <View style={{ flexDirection: "row", gap: 10, marginTop: 18 }}>
                   <TouchableOpacity
-                    style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: isDarkMode ? "#0F172A" : "#F1F5F9", borderWidth: isDarkMode ? 1 : 0, borderColor: "#334155", alignItems: "center", justifyContent: "center" }}
+                    style={{ flex: 1, paddingVertical: 12, borderRadius: 14, backgroundColor: isDarkMode ? "#0F172A" : "#F1F5F9", borderWidth: isDarkMode ? 1 : 0, borderColor: "#334155", alignItems: "center", justifyContent: "center" }}
                     onPress={() => setShowPhoneModal(false)}
                     disabled={phoneLoading}
                   >
                     <Text style={{ fontSize: 14, fontWeight: "600", color: isDarkMode ? "#94A3B8" : "#64748B" }}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={{ flex: 1.6, paddingVertical: 12, borderRadius: 12, backgroundColor: "#003399", alignItems: "center", justifyContent: "center" }}
+                    style={{ flex: 1.6, paddingVertical: 12, borderRadius: 14, backgroundColor: "#ff6b35", alignItems: "center", justifyContent: "center" }}
                     onPress={handleRequestPhoneOtp}
                     disabled={phoneLoading}
                   >
@@ -1069,14 +1044,14 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
 
                 <View style={{ flexDirection: "row", gap: 10, marginTop: 18 }}>
                   <TouchableOpacity
-                    style={{ flex: 1, paddingVertical: 12, borderRadius: 12, backgroundColor: isDarkMode ? "#0F172A" : "#F1F5F9", borderWidth: isDarkMode ? 1 : 0, borderColor: "#334155", alignItems: "center", justifyContent: "center" }}
+                    style={{ flex: 1, paddingVertical: 12, borderRadius: 14, backgroundColor: isDarkMode ? "#0F172A" : "#F1F5F9", borderWidth: isDarkMode ? 1 : 0, borderColor: "#334155", alignItems: "center", justifyContent: "center" }}
                     onPress={() => setPhoneStep("input")}
                     disabled={phoneLoading}
                   >
                     <Text style={{ fontSize: 14, fontWeight: "600", color: isDarkMode ? "#94A3B8" : "#64748B" }}>Back</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={{ flex: 1.6, paddingVertical: 12, borderRadius: 12, backgroundColor: "#003399", alignItems: "center", justifyContent: "center" }}
+                    style={{ flex: 1.6, paddingVertical: 12, borderRadius: 14, backgroundColor: "#ff6b35", alignItems: "center", justifyContent: "center" }}
                     onPress={handleVerifyPhoneOtp}
                     disabled={phoneLoading}
                   >
@@ -1104,97 +1079,83 @@ export default EditProfileScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
-    backgroundColor: BRAND_BLUE,
-  },
-  backButton: {
-    padding: 4,
-    width: 32,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: CARD_TEXT,
-    textAlign: 'center',
-    flex: 1,
-  },
-  placeholder: {
-    width: 32,
+    backgroundColor: '#F4F6FB',
   },
   content: {
     flex: 1,
   },
+  contentInner: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 40,
+  },
   infoBanner: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: CARD_BG,
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    marginBottom: 14,
+    padding: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   infoBannerText: {
     flex: 1,
     marginLeft: 12,
   },
   infoBannerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: CARD_TEXT,
-    marginBottom: 4,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 2,
   },
   infoBannerSubtext: {
-    fontSize: 14,
-    color: CARD_TEXT_MUTED,
+    fontSize: 13,
+    color: '#64748B',
     lineHeight: 18,
   },
   section: {
-    paddingHorizontal: 16,
-    marginBottom: 32,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    padding: 16,
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
-  sectionCard: {
-    backgroundColor: CARD_BG,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    paddingVertical: 16,
-    marginBottom: 16,
-  },
-  skillChipCard: {
-    backgroundColor: CARD_CHIP_BG,
-    borderColor: CARD_DIVIDER,
-  },
-  skillTextCard: {
-    color: CARD_TEXT,
+  sectionDark: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: CARD_TEXT,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 8,
   },
   helperText: {
     fontSize: 13,
-    color: CARD_TEXT_MUTED,
+    color: '#64748B',
     marginBottom: 8,
-    fontStyle: 'italic',
   },
   requiredAsterisk: {
-    color: '#FCA5A5',
-    fontSize: 18,
-    fontWeight: '600',
+    color: '#DC2626',
+    fontSize: 16,
+    fontWeight: '700',
   },
   sectionSubtext: {
-    fontSize: 14,
-    color: CARD_TEXT_MUTED,
-    marginBottom: 16,
+    fontSize: 13,
+    color: '#64748B',
+    marginBottom: 14,
     lineHeight: 18,
   },
   profilePictureContainer: {
@@ -1202,37 +1163,43 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   profilePicture: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     marginRight: 16,
+    borderWidth: 3,
+    borderColor: '#E8ECF4',
   },
   uploadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 35,
+    borderRadius: 36,
     justifyContent: 'center',
     alignItems: 'center',
   },
   changePhotoButton: {
-    paddingVertical: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0,51,153,0.08)',
   },
   changePhotoText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#003399',
-    fontWeight: '500',
+    fontWeight: '700',
   },
   bioInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
+    borderColor: '#E8ECF4',
+    borderRadius: 14,
+    padding: 14,
+    fontSize: 15,
     minHeight: 120,
-    backgroundColor: '#f9f9f9',
+    color: '#0F172A',
+    backgroundColor: '#F8FAFC',
   },
   bioInputError: {
-    borderColor: '#dc3545',
+    borderColor: '#DC2626',
   },
   bioFooter: {
     flexDirection: 'row',
@@ -1241,15 +1208,15 @@ const styles = StyleSheet.create({
   },
   bioCharCountNormal: {
     fontSize: 12,
-    color: CARD_TEXT_MUTED,
+    color: '#64748B',
   },
   bioCharCount: {
     fontSize: 12,
-    color: '#FBBF24',
-    fontWeight: '500',
+    color: '#D97706',
+    fontWeight: '600',
   },
   bioCharCountError: {
-    color: '#FCA5A5',
+    color: '#DC2626',
     fontWeight: '600',
   },
   addPortfolioButton: {
@@ -1266,43 +1233,48 @@ const styles = StyleSheet.create({
   verificationItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CARD_CHIP_BG,
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    padding: 14,
+    borderRadius: 14,
   },
   verificationIcon: {
     marginRight: 12,
   },
   verificationText: {
-    fontSize: 16,
-    color: CARD_TEXT,
-    fontWeight: '500',
+    fontSize: 15,
+    color: '#0F172A',
+    fontWeight: '600',
+    flexShrink: 1,
   },
   addSkillsButton: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   addSkillsText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#003399',
-    fontWeight: '500',
-    marginLeft: 8,
+    fontWeight: '700',
+    marginLeft: 10,
   },
   textInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    borderColor: '#E8ECF4',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#0F172A',
+    backgroundColor: '#F8FAFC',
   },
   readOnlyInput: {
-    backgroundColor: '#f0f0f0',
-    color: '#888',
+    backgroundColor: '#F1F5F9',
+    color: '#94A3B8',
   },
   webOnlyMessage: {
     fontSize: 12,
-    color: '#dc3545',
+    color: '#DC2626',
     marginTop: 4,
   },
   locationAutocomplete: {
@@ -1325,16 +1297,21 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: BRAND_ORANGE,
-    marginHorizontal: 16,
-    paddingVertical: 16,
-    borderRadius: 25,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
-    marginTop: 20,
+    justifyContent: 'center',
+    marginTop: 6,
+    shadowColor: BRAND_ORANGE,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   saveButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
   },
   // Modal styles
   modalOverlay: {
@@ -1344,7 +1321,7 @@ const styles = StyleSheet.create({
     paddingBottom: 0, // Ensure it goes to the very bottom
   },
   modalBottom: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: 40,
@@ -1355,26 +1332,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalOptionText: {
-    fontSize: 18,
+    fontSize: 17,
     color: '#003399',
+    fontWeight: '600',
   },
   modalDivider: {
     height: 1,
-    backgroundColor: '#eee',
+    backgroundColor: '#E8ECF4',
   },
   cancelOption: {
     marginTop: 10,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#F8FAFC',
   },
   cancelOptionText: {
-    fontSize: 18,
-    color: '#dc3545',
-    fontWeight: '500',
+    fontSize: 17,
+    color: '#DC2626',
+    fontWeight: '600',
   },
   // Photo Selection Screen styles
   modalContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
     paddingBottom: 0, // Ensure full screen coverage
   },
   modalHeader: {
@@ -1407,15 +1385,15 @@ const styles = StyleSheet.create({
     borderRadius: 60,
   },
   modalTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#000',
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#0F172A',
     textAlign: 'center',
     marginBottom: 16,
   },
   modalSubtext: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 15,
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 40,
@@ -1444,10 +1422,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   goodPhoto: {
-    backgroundColor: '#28a745',
+    backgroundColor: '#16A34A',
   },
   badPhoto: {
-    backgroundColor: '#dc3545',
+    backgroundColor: '#DC2626',
   },
   photoTips: {
     marginTop: 20,
@@ -1458,8 +1436,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   photoTipText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 15,
+    color: '#64748B',
     marginLeft: 12,
   },
   // Skills styles
@@ -1471,17 +1449,18 @@ const styles = StyleSheet.create({
   skillChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f0f8ff',
+    backgroundColor: 'rgba(0,51,153,0.08)',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 20,
+    borderRadius: 14,
     marginRight: 8,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#003399',
+    borderColor: 'rgba(0,51,153,0.18)',
   },
   skillText: {
     fontSize: 14,
+    fontWeight: '600',
     color: '#003399',
     marginRight: 4,
   },
@@ -1491,38 +1470,20 @@ const styles = StyleSheet.create({
   // Skills Modal styles
   skillsModalContainer: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  skillsModalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
-    minHeight: 60, backgroundColor: BRAND_BLUE,
-},
-  skillsModalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: CARD_TEXT,
-  },
-  cancelSkillsText: {
-    padding: 4
+    backgroundColor: '#F4F6FB',
   },
   saveSkillsText: {
     fontSize: 16,
-    color: CARD_TEXT,
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   skillsModalContent: {
     flex: 1,
     padding: 16,
   },
   skillsModalSubtitle: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 15,
+    color: '#64748B',
     marginBottom: 24,
     lineHeight: 22,
   },
@@ -1534,56 +1495,55 @@ const styles = StyleSheet.create({
   skillInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    borderColor: '#E8ECF4',
+    borderRadius: 14,
+    padding: 14,
+    fontSize: 15,
+    color: '#0F172A',
+    backgroundColor: '#FFFFFF',
     marginRight: 12,
   },
   addSkillButton: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#f0f8ff',
+    backgroundColor: 'rgba(0,51,153,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#003399',
   },
   addedSkillsSection: {
     marginBottom: 32,
   },
   addedSkillsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 16,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 14,
   },
   suggestedSkillsSection: {
     marginBottom: 32,
   },
   suggestedSkillsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 16,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 14,
   },
   suggestedSkillChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#FFFFFF',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 20,
+    borderRadius: 14,
     marginRight: 8,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#E8ECF4',
   },
   suggestedSkillText: {
     fontSize: 14,
-    color: '#666',
+    color: '#64748B',
     marginRight: 4,
   },
 phoneModalOverlay: {

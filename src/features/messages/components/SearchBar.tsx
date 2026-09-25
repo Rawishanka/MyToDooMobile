@@ -1,6 +1,6 @@
 // Search Bar Component
 
-import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import { isTablet, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
@@ -21,14 +21,14 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   const clearSearch = () => setSearchQuery('');
   
   return (
-    <View style={[styles.searchContainer, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
-      <View style={[styles.searchBox, isDarkMode && { backgroundColor: '#1E293B' }]}>
-        <Ionicons name="search" size={20} color={isDarkMode ? '#94A3B8' : '#8E8E93'} style={styles.searchIcon} />
+    <View style={[styles.searchContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <View style={[styles.searchBox, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+        <Ionicons name="search" size={20} color={isDarkMode ? '#94A3B8' : '#003399'} style={styles.searchIcon} />
         
         <TextInput
           style={[styles.searchInput, isDarkMode && { color: '#F8FAFC' }]}
           placeholder={placeholder}
-          placeholderTextColor={isDarkMode ? '#64748B' : '#8E8E93'}
+          placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
           value={searchQuery}
           onChangeText={setSearchQuery}
           autoCapitalize="none"
@@ -37,7 +37,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         
         {searchQuery.length > 0 && (
           <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
-            <Ionicons name="close-circle" size={20} color="#8E8E93" />
+            <Ionicons name="close-circle" size={20} color="#94A3B8" />
           </TouchableOpacity>
         )}
       </View>
@@ -47,31 +47,37 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
 const styles = StyleSheet.create({
   searchContainer: {
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingVertical: isTablet ? hp('1.5%') : hp('1.2%'),
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingHorizontal: isTablet ? wp('12.5%') : 16,
+    paddingTop: 14,
+    paddingBottom: 12,
+    backgroundColor: '#F4F6FB',
   },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F2F2F7',
-    borderRadius: isTablet ? 12 : 10,
-    paddingHorizontal: isTablet ? wp('2%') : wp('2.5%'),
-    height: isTablet ? hp('5.5%') : hp('4.5%'),
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    paddingHorizontal: 16,
+    height: 48,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   searchIcon: {
-    marginRight: isTablet ? wp('1.5%') : wp('2%'),
+    marginRight: 10,
   },
   searchInput: {
     flex: 1,
-    fontSize: RFValue(isTablet ? 17 : 15),
-    color: '#000',
+    fontSize: 15,
+    color: '#0F172A',
     paddingVertical: 0,
   },
   clearButton: {
-    padding: isTablet ? 6 : 4,
-    marginLeft: isTablet ? wp('1%') : wp('1%'),
+    padding: 4,
+    marginLeft: 6,
   },
 });

@@ -16,7 +16,7 @@ export const OfferFormHeader: React.FC = () => {
         style={styles.backIcon}
         onPress={() => router.back()}
       >
-        <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+        <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
       </TouchableOpacity>
       <Text style={styles.headerTitle}>Make an Offer</Text>
       <View style={styles.placeholder} />
@@ -29,21 +29,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     // paddingTop is applied dynamically via insets.top for iOS notch support
-    paddingBottom: 15,
+    paddingBottom: 14,
     backgroundColor: BRAND_BLUE,
     borderBottomWidth: 0,
   },
   backIcon: {
-    padding: 5,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   placeholder: {
-    width: 34,
+    width: 36,
   },
 });

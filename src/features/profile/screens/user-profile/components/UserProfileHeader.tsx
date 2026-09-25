@@ -1,13 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { RFValue } from '@/src/shared/utils/responsive';
+import { Alert, TouchableOpacity } from 'react-native';
+import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 export const UserProfileHeader: React.FC = () => {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   const handleShare = () => {
     Alert.alert(
@@ -18,38 +16,18 @@ export const UserProfileHeader: React.FC = () => {
   };
 
   return (
-    <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-        <Ionicons name="arrow-back" size={24} color="#000" />
-      </TouchableOpacity>
-      <Text style={styles.headerTitle}>User Profile</Text>
-      <TouchableOpacity style={styles.shareIcon} onPress={handleShare}>
-        <Ionicons name="share-outline" size={24} color="#666" />
-      </TouchableOpacity>
-    </View>
+    <LightHeader
+      title="User Profile"
+      onBack={() => router.back()}
+      right={
+        <TouchableOpacity
+          style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}
+          onPress={handleShare}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="share-outline" size={20} color="#FFFFFF" />
+        </TouchableOpacity>
+      }
+    />
   );
 };
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  backIcon: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#000',
-  },
-  shareIcon: {
-    padding: 4,
-  },
-});

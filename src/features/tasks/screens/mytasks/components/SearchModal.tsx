@@ -25,14 +25,14 @@ export default function SearchBar({ visible, searchText, onChangeText, onClose }
       isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }
     ]}>
       <TouchableOpacity onPress={onClose} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={isTablet ? 34 : 24} color={isDarkMode ? '#F8FAFC' : '#000'} />
+        <Ionicons name="arrow-back" size={isTablet ? 34 : 24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
       </TouchableOpacity>
       
       <View style={[
         styles.searchInputContainer,
         isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }
       ]}>
-        <Ionicons name="search" size={isTablet ? 26 : 20} color={isDarkMode ? '#94A3B8' : '#666'} style={styles.searchIcon} />
+        <Ionicons name="search" size={isTablet ? 26 : 20} color={isDarkMode ? '#94A3B8' : '#003399'} style={styles.searchIcon} />
         <TextInput
           style={[
             styles.searchBar,
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     paddingTop: isTablet ? hp('1.5%') : hp('1.2%'),
-    paddingBottom: isTablet ? hp('1.5%') : hp('1.2%'),
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e5e5',
     shadowColor: '#000',
@@ -85,9 +85,10 @@ const styles = StyleSheet.create({
   backButton: {
     marginBottom: isTablet ? hp('1.2%') : hp('1%'),
     padding: 4,
-    borderRadius: 20,
-    width: isTablet ? 40 : 32,
-    height: isTablet ? 40 : 32,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    width: isTablet ? 40 : 36,
+    height: isTablet ? 40 : 36,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -95,11 +96,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    paddingHorizontal: isTablet ? wp('2%') : wp('3%'),
-    height: isTablet ? hp('4%') : hp('5.5%'),
-    borderWidth: 1,
-    borderColor: '#e8e8e8',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: isTablet ? 52 : 48,
+    borderWidth: 1.5,
+    borderColor: '#DCE3F2',
   },
   searchIcon: {
     marginRight: 10,

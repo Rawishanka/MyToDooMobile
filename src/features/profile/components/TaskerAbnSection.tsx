@@ -82,8 +82,8 @@ export default function TaskerAbnSection({
   if (loading) {
     return (
       <View style={[styles.card, variant === 'compact' && styles.cardCompact, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
-        <ActivityIndicator color="#003399" />
-        <Text style={styles.loadingText}>Loading ABN status...</Text>
+        <ActivityIndicator color={isDarkMode ? '#38BDF8' : '#003399'} />
+        <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading ABN status...</Text>
       </View>
     );
   }
@@ -94,9 +94,9 @@ export default function TaskerAbnSection({
     return (
       <View style={[styles.card, variant === 'compact' && styles.cardCompact, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <View style={styles.verifiedHeader}>
-          <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Australian Business Number (ABN)</Text>
+          <Text style={[styles.title, styles.titleFlex, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={2}>Australian Business Number (ABN)</Text>
           <View style={styles.verifiedBadge}>
-            <Ionicons name="checkmark-circle" size={14} color="#16a34a" />
+            <Ionicons name="checkmark-circle" size={14} color="#16A34A" />
             <Text style={styles.verifiedBadgeText}>Verified</Text>
           </View>
         </View>
@@ -107,7 +107,7 @@ export default function TaskerAbnSection({
           </Text>
         )}
         {status.abnVerifiedAt && (
-          <Text style={styles.metaText}>
+          <Text style={[styles.metaText, isDarkMode && { color: '#94A3B8' }]}>
             Verified {new Date(status.abnVerifiedAt).toLocaleDateString('en-AU')}{' '}
             {status.verificationMethod === 'abr_api' ? '(ABR Verified)' : '(manual validation)'}
           </Text>
@@ -135,7 +135,7 @@ export default function TaskerAbnSection({
         value={abnInput}
         onChangeText={(text) => setAbnInput(formatAbnInput(text))}
         placeholder="XX XXX XXX XXX"
-        placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
+        placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
         keyboardType="number-pad"
         maxLength={14}
         autoCorrect={false}
@@ -145,6 +145,7 @@ export default function TaskerAbnSection({
         style={[styles.primaryButton, saving && styles.primaryButtonDisabled]}
         onPress={handleSave}
         disabled={saving}
+        activeOpacity={0.85}
       >
         {saving ? (
           <ActivityIndicator color="#fff" />
@@ -158,95 +159,111 @@ export default function TaskerAbnSection({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   cardCompact: {
-    marginBottom: 12,
-    padding: 14,
+    marginBottom: 14,
+    padding: 16,
   },
   loadingText: {
     marginTop: 8,
     fontSize: RFValue(13),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
   },
   title: {
-    fontSize: RFValue(15),
-    fontWeight: '600',
-    color: '#111827',
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 6,
   },
+  titleFlex: {
+    flex: 1,
+    marginRight: 10,
+    marginBottom: 0,
+  },
   description: {
-    fontSize: RFValue(13),
-    color: '#6b7280',
-    lineHeight: RFValue(18),
-    marginBottom: 12,
+    fontSize: 13,
+    color: '#64748B',
+    lineHeight: 19,
+    marginBottom: 14,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: RFValue(15),
-    color: '#111827',
-    backgroundColor: '#f9fafb',
+    borderColor: '#E8ECF4',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 48,
+    fontSize: 15,
+    color: '#0F172A',
+    backgroundColor: '#F8FAFC',
     marginBottom: 12,
   },
   primaryButton: {
-    backgroundColor: '#003399',
-    borderRadius: 8,
-    paddingVertical: 12,
+    backgroundColor: '#ff6b35',
+    borderRadius: 14,
+    height: 50,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#ff6b35',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   primaryButtonDisabled: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
   primaryButtonText: {
-    color: '#fff',
-    fontSize: RFValue(14),
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
   },
   errorText: {
-    color: '#dc2626',
-    fontSize: RFValue(12),
+    color: '#DC2626',
+    fontSize: 12,
     marginBottom: 8,
   },
   verifiedHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   verifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#dcfce7',
-    paddingHorizontal: 8,
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   verifiedBadgeText: {
-    color: '#16a34a',
-    fontSize: RFValue(11),
-    fontWeight: '600',
+    color: '#16A34A',
+    fontSize: 11,
+    fontWeight: '700',
   },
   maskedAbn: {
-    fontSize: RFValue(18),
+    fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
+    color: '#003399',
     letterSpacing: 1,
     marginBottom: 4,
   },
   metaText: {
-    fontSize: RFValue(12),
-    color: '#6b7280',
+    fontSize: 12,
+    color: '#64748B',
   },
   linkButton: {
     marginTop: 10,
@@ -254,7 +271,7 @@ const styles = StyleSheet.create({
   },
   linkButtonText: {
     color: '#003399',
-    fontSize: RFValue(13),
+    fontSize: 13,
     fontWeight: '600',
   },
 });

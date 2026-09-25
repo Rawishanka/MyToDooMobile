@@ -325,7 +325,12 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       return (
         <View style={styles.imageGallery}>
           <Text style={styles.imageGalleryTitle}>Photos (0)</Text>
-          <Text style={styles.noImagesText}>No photos were found with this task</Text>
+          <View style={styles.noImagesPanel}>
+            <View style={styles.iconChip}>
+              <Ionicons name="camera-outline" size={18} color={CARD_TEXT} />
+            </View>
+            <Text style={styles.noImagesText}>No photos were found with this task</Text>
+          </View>
         </View>
       );
     }
@@ -350,7 +355,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       return (
         <View style={styles.imageGallery}>
           <Text style={styles.imageGalleryTitle}>Photos (0)</Text>
-          <Text style={styles.noImagesText}>No displayable photos found</Text>
+          <View style={styles.noImagesPanel}><Text style={[styles.noImagesText, { marginLeft: 0 }]}>No displayable photos found</Text></View>
         </View>
       );
     }
@@ -499,9 +504,9 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       return (
         <View style={styles.imageGallery}>
           <Text style={styles.imageGalleryTitle}>Photos ({imageDataToProcess.length} found, 0 displayable)</Text>
-          <Text style={styles.noImagesText}>
+          <View style={styles.noImagesPanel}><Text style={[styles.noImagesText, { marginLeft: 0 }]}>
             Images found but could not be displayed. Check console for details.
-          </Text>
+          </Text></View>
           {__DEV__ && (
             <Text style={[styles.noImagesText, { fontSize: RFValue(10), color: CARD_TEXT_MUTED }]}>
               DEV: {JSON.stringify(imageDataToProcess[0], null, 2).substring(0, 200)}...
@@ -543,11 +548,11 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       return (
         <View style={styles.imageGallery}>
           <Text style={styles.imageGalleryTitle}>Photos ({imageDataToProcess?.length || 0})</Text>
-          <Text style={styles.noImagesText}>
+          <View style={styles.noImagesPanel}><Text style={[styles.noImagesText, { marginLeft: 0 }]}>
             {imageDataToProcess?.length > 0 
               ? `Found ${imageDataToProcess.length} images but couldn't display them. Format may be unsupported.`
               : 'No photos were saved with this task'}
-          </Text>
+          </Text></View>
         </View>
       );
     }
@@ -631,8 +636,8 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                     
                     {hasError && (
                       <View style={styles.thumbnailImageError}>
-                        <Ionicons name="image-outline" size={24} color="#999" />
-                        <Text style={{ fontSize: RFValue(10), color: '#999', marginTop: 4 }}>
+                        <Ionicons name="image-outline" size={24} color={CARD_TEXT_MUTED} />
+                        <Text style={{ fontSize: 11, color: CARD_TEXT_MUTED, marginTop: 4 }}>
                           Load Error
                         </Text>
                       </View>
@@ -640,7 +645,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                     
                     {isLoading && !hasError && (
                       <View style={styles.imageLoadingOverlay}>
-                        <ActivityIndicator size="small" color="#0057FF" />
+                        <ActivityIndicator size="small" color="#003399" />
                       </View>
                     )}
                   </View>
@@ -741,11 +746,14 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
     );
   };
 
+  const chipStyle = [styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }];
+  const chipIconColor = isDarkMode ? '#38BDF8' : CARD_TEXT;
+
   return (
     <View style={[styles.taskCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
       {/* User Avatar */}
       <View style={styles.avatarContainer}>
-        <View style={styles.avatar}>
+        <View style={[styles.avatar, isDarkMode && { borderColor: '#334155' }]}>
           <Image 
             source={{ 
               uri: (() => {
@@ -782,18 +790,22 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       <Text style={[styles.taskTitle, isDarkMode && { color: '#F8FAFC' }]}>{task.title}</Text>
 
       {/* Poster Info */}
-      <View style={styles.posterInfo}>
-        <Ionicons name="person-outline" size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED} />
-        <Text style={[styles.posterName, isDarkMode && { color: '#94A3B8' }]}>
+      <View style={styles.detailRow}>
+        <View style={chipStyle}>
+          <Ionicons name="person-outline" size={18} color={chipIconColor} />
+        </View>
+        <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
           {formatUserName(task.createdBy?.firstName, task.createdBy?.lastName)}
         </Text>
       </View>
 
       {/* Task Creation Date */}
       {task.createdAt && (
-        <View style={styles.dateRow}>
-          <Ionicons name="calendar-outline" size={16} color={isDarkMode ? '#64748B' : CARD_TEXT_MUTED} />
-          <Text style={[styles.dateText, isDarkMode && { color: '#64748B' }]}>
+        <View style={styles.detailRow}>
+          <View style={chipStyle}>
+            <Ionicons name="calendar-outline" size={18} color={chipIconColor} />
+          </View>
+          <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
             Posted {new Date(task.createdAt).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
@@ -805,7 +817,9 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
       {/* Location */}
       <View style={styles.detailRow}>
-        <Ionicons name={getLocationIcon()} size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED} />
+        <View style={chipStyle}>
+          <Ionicons name={getLocationIcon()} size={18} color={chipIconColor} />
+        </View>
         <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
           {(() => {
             const address = parsedLocation?.address || 'Location not specified';
@@ -836,7 +850,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         };
         return (
           <TouchableOpacity style={[styles.viewOnMapButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 }]} onPress={handleViewOnMap} activeOpacity={0.7}>
-            <Ionicons name="map-outline" size={14} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+            <Ionicons name="map-outline" size={16} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
             <Text style={[styles.viewOnMapText, isDarkMode && { color: '#38BDF8' }]}>View on Map</Text>
           </TouchableOpacity>
         );
@@ -845,7 +859,9 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {/* Date */}
       {dateDisplay && (
         <View style={styles.detailRow}>
-          <Ionicons name="calendar-outline" size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED} />
+          <View style={chipStyle}>
+            <Ionicons name="calendar-outline" size={18} color={chipIconColor} />
+          </View>
           <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
             {dateDisplay}
           </Text>
@@ -854,7 +870,9 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
       {/* Timing */}
       <View style={styles.detailRow}>
-        <Ionicons name="time-outline" size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED} />
+        <View style={chipStyle}>
+          <Ionicons name="time-outline" size={18} color={chipIconColor} />
+        </View>
         <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
           {getTimeDisplay().replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())}
         </Text>
@@ -863,7 +881,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {/* Modern 2026 Budget Card */}
       <View style={[styles.budgetCard, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
         <View style={[styles.budgetIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-          <Ionicons name="wallet-outline" size={24} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+          <Ionicons name="wallet-outline" size={22} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
         </View>
         <View style={styles.budgetInfoCol}>
           <Text style={[styles.budgetAmountText, isDarkMode && { color: '#38BDF8' }]}>
@@ -885,7 +903,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
       {/* Category Badge */}
       {task.categories && task.categories.length > 0 && (
         <View style={[styles.categoryBadge, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
-          <Ionicons name="pricetag-outline" size={13} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+          <Ionicons name="pricetag-outline" size={14} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
           <Text style={[styles.categoryText, isDarkMode && { color: '#38BDF8' }]}>{task.categories[0]}</Text>
         </View>
       )}
@@ -917,26 +935,35 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 const styles = StyleSheet.create({
   taskCard: {
     backgroundColor: CARD_BG,
-    padding: isTablet ? wp('4%') : wp('5%'),
-    marginBottom: hp('2%'),
+    padding: 20,
+    marginBottom: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  iconChip: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: CARD_CHIP_BG,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   budgetCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CARD_CHIP_BG,
-    padding: isTablet ? wp('3%') : wp('4%'),
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: CARD_DIVIDER,
-    marginBottom: hp('2%'),
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    marginTop: 4,
+    marginBottom: 16,
   },
   budgetIconCircle: {
     width: 44,
@@ -945,19 +972,19 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_CHIP_BG,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: wp('3%'),
+    marginRight: 12,
   },
   budgetInfoCol: {
     flex: 1,
   },
   budgetAmountText: {
-    fontSize: RFValue(isTablet ? 22 : 22),
+    fontSize: 28,
     fontWeight: '800',
     color: CARD_TEXT,
     letterSpacing: -0.5,
   },
   budgetSublabel: {
-    fontSize: RFValue(10.5),
+    fontSize: 12,
     fontWeight: '700',
     color: CARD_TEXT_MUTED,
     letterSpacing: 0.8,
@@ -965,57 +992,60 @@ const styles = StyleSheet.create({
   },
   budgetStatusPill: {
     backgroundColor: CARD_CHIP_BG,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
   },
   budgetStatusText: {
-    fontSize: RFValue(10),
+    fontSize: 11,
     fontWeight: '700',
     color: CARD_TEXT,
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
   categoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     backgroundColor: CARD_CHIP_BG,
-    paddingHorizontal: wp('3%'),
-    paddingVertical: hp('0.8%'),
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 14,
     alignSelf: 'flex-start',
-    marginBottom: hp('2%'),
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: 'rgba(255,255,255,0.14)',
   },
   categoryText: {
-    fontSize: RFValue(12),
+    fontSize: 13,
     fontWeight: '700',
     color: CARD_TEXT,
   },
   avatarContainer: {
     alignItems: 'center',
-    marginBottom: hp('1.5%'),
+    marginBottom: 14,
   },
   avatar: {
-    width: isTablet ? 80 : 60,
-    height: isTablet ? 80 : 60,
-    borderRadius: isTablet ? 40 : 30,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+    borderWidth: 3,
+    borderColor: 'rgba(255,255,255,0.85)',
   },
   avatarImage: {
-    width: isTablet ? 80 : 60,
-    height: isTablet ? 80 : 60,
-    borderRadius: isTablet ? 40 : 30,
+    width: 62,
+    height: 62,
+    borderRadius: 31,
   },
   taskTitle: {
-    fontSize: RFValue(isTablet ? 18 : 18),
+    fontSize: 22,
+    lineHeight: 28,
     fontWeight: '700',
     color: CARD_TEXT,
-    marginBottom: hp('1.5%'),
+    marginBottom: 18,
     textAlign: 'center',
   },
   posterInfo: {
@@ -1055,12 +1085,13 @@ const styles = StyleSheet.create({
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: hp('1.5%'),
+    marginBottom: 12,
   },
   detailText: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: 14,
+    lineHeight: 20,
     color: CARD_TEXT_MUTED,
-    marginLeft: wp('2%'),
+    marginLeft: 12,
     flex: 1,
   },
   viewOnMapButton: {
@@ -1068,14 +1099,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     backgroundColor: CARD_CHIP_BG,
-    paddingHorizontal: wp('3%'),
-    paddingVertical: hp('0.7%'),
-    borderRadius: 8,
-    marginBottom: hp('1.5%'),
-    gap: wp('1.5%'),
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 14,
+    marginLeft: 46,
+    marginTop: -2,
+    marginBottom: 14,
+    gap: 6,
   },
   viewOnMapText: {
-    fontSize: RFValue(isTablet ? 11 : 12),
+    fontSize: 13,
     color: CARD_TEXT,
     fontWeight: '600',
   },
@@ -1110,10 +1143,10 @@ const styles = StyleSheet.create({
     marginBottom: hp('1.5%'),
   },
   description: {
-    fontSize: RFValue(isTablet ? 12 : 12),
+    fontSize: 15,
     color: CARD_TEXT,
-    lineHeight: RFValue(isTablet ? 18 : 18),
-    marginBottom: hp('1.5%'),
+    lineHeight: 22,
+    marginBottom: 16,
   },
   note: {
     fontSize: RFValue(11),
@@ -1125,22 +1158,29 @@ const styles = StyleSheet.create({
   },
   // Image Gallery Styles
   imageGallery: {
-    marginBottom: hp('1.5%'),
+    marginBottom: 0,
   },
   imageGalleryTitle: {
-    fontSize: RFValue(14),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: CARD_TEXT,
-    marginBottom: hp('1%'),
+    marginBottom: 10,
   },
   noImagesText: {
-    fontSize: RFValue(12),
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
     color: CARD_TEXT_MUTED,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    padding: isTablet ? wp('3%') : wp('4%'),
-    backgroundColor: CARD_CHIP_BG,
-    borderRadius: 8,
+    marginLeft: 12,
+  },
+  noImagesPanel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
   },
   imageRow: {
     flexDirection: 'row',

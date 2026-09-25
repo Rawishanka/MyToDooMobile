@@ -1,5 +1,4 @@
 import { ZENDESK_CONFIG } from '@/src/config/zendesk.config';
-import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
@@ -12,7 +11,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { RFValue } from '@/src/shared/utils/responsive';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
+import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 interface ZendeskHelpProps {
   visible: boolean;
@@ -38,14 +37,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
       onRequestClose={onClose}
     >
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color={CARD_TEXT} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Help & Support</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <LightHeader title="Help & Support" onBack={onClose} backIcon="close" topPadding={Platform.OS === 'ios' ? 18 : 24} />
 
         {/* Loading Indicator */}
         {loading && (
@@ -87,40 +79,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 50 : 20,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-    backgroundColor: BRAND_BLUE,
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  closeButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
-    color: CARD_TEXT,
-  },
-  placeholder: {
-    width: 32,
+    backgroundColor: '#F4F6FB',
   },
   webview: {
     flex: 1,
@@ -134,13 +93,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
     zIndex: 1,
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
   },
 });
 

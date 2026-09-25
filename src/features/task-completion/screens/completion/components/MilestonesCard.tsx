@@ -38,7 +38,7 @@ export default function MilestonesCard({ milestones, formatDate }: MilestonesCar
                   { backgroundColor: milestone.completed ? '#4ADE80' : CARD_DIVIDER },
                 ]}
               >
-                {milestone.completed && <Ionicons name="checkmark" size={16} color="#fff" />}
+                {milestone.completed && <Ionicons name="checkmark" size={14} color="#fff" />}
               </View>
               {index < totalCount - 1 && (
                 <View
@@ -71,21 +71,23 @@ export default function MilestonesCard({ milestones, formatDate }: MilestonesCar
 const styles = StyleSheet.create({
   card: {
     backgroundColor: CARD_BG,
-    marginHorizontal: 20,
-    marginBottom: 20,
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginHorizontal: 16,
+    marginBottom: 14,
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   title: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     color: CARD_TEXT,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   progress: {
     marginBottom: 20,
@@ -117,9 +119,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   circle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     justifyContent: 'center',
     alignItems: 'center',
   },

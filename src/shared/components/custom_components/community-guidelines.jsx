@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import { useState } from 'react';
 import {
     Image,
@@ -27,19 +28,10 @@ const CommunityGuidelines = ({ visible, onClose }) => {
   };
 
   const renderHeader = (title, showBack = true) => (
-    <View style={styles.header}>
-      {showBack ? (
-        <TouchableOpacity onPress={() => setCurrentView('main')} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#333" />
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity onPress={onClose} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#333" />
-        </TouchableOpacity>
-      )}
-      <Text style={styles.headerTitle}>{title}</Text>
-      <View style={styles.headerSpacer} />
-    </View>
+    <LightHeader
+      title={title}
+      onBack={showBack ? () => setCurrentView('main') : onClose}
+    />
   );
 
   const renderMainScreen = () => (
@@ -52,7 +44,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
           onPress={() => setCurrentView('posting')}
         >
           <Text style={styles.guidelineTitle}>Posting tasks as a Customer</Text>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+          <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -60,7 +52,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
           onPress={() => setCurrentView('earning')}
         >
           <Text style={styles.guidelineTitle}>Earning money as a Tasker</Text>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+          <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -68,7 +60,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
           onPress={() => setCurrentView('cancellation')}
         >
           <Text style={styles.guidelineTitle}>Cancellation Policy</Text>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+          <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -146,7 +138,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <Ionicons 
           name={expandedSections.connectionFee ? "chevron-up" : "chevron-down"} 
           size={20} 
-          color="#007AFF" 
+          color="#003399" 
         />
       </TouchableOpacity>
 
@@ -159,7 +151,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
             This fee helps to cover the administrative costs and compensate taskers for their time spent preparing for your task.
           </Text>
           <View style={styles.feeInfoBox}>
-            <Ionicons name="information-circle" size={20} color="#007AFF" />
+            <Ionicons name="information-circle" size={20} color="#003399" />
             <Text style={styles.feeInfoText}>
               Connection fee: AUD $5.00 per cancellation
             </Text>
@@ -176,7 +168,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <Ionicons 
           name={expandedSections.repeatedCancellations ? "chevron-up" : "chevron-down"} 
           size={20} 
-          color="#007AFF" 
+          color="#003399" 
         />
       </TouchableOpacity>
 
@@ -199,7 +191,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
             </View>
           </View>
           <View style={styles.warningBox}>
-            <Ionicons name="warning" size={20} color="#FF9500" />
+            <Ionicons name="warning" size={20} color="#D97706" />
             <Text style={styles.warningText}>
               3 or more cancellations in 30 days may result in account review
             </Text>
@@ -224,7 +216,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <Ionicons 
           name={expandedSections.connectionFee ? "chevron-up" : "chevron-down"} 
           size={20} 
-          color="#007AFF" 
+          color="#003399" 
         />
       </TouchableOpacity>
 
@@ -237,7 +229,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
             This fee compensates customers for the inconvenience and helps maintain trust in our platform.
           </Text>
           <View style={styles.feeInfoBox}>
-            <Ionicons name="information-circle" size={20} color="#007AFF" />
+            <Ionicons name="information-circle" size={20} color="#003399" />
             <Text style={styles.feeInfoText}>
               Cancellation fee: AUD $10.00 per task
             </Text>
@@ -257,7 +249,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <Ionicons 
           name={expandedSections.repeatedCancellations ? "chevron-up" : "chevron-down"} 
           size={20} 
-          color="#007AFF" 
+          color="#003399" 
         />
       </TouchableOpacity>
 
@@ -284,7 +276,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
             </View>
           </View>
           <View style={styles.warningBox}>
-            <Ionicons name="warning" size={20} color="#FF9500" />
+            <Ionicons name="warning" size={20} color="#D97706" />
             <Text style={styles.warningText}>
               2 or more cancellations in 30 days will trigger an account review
             </Text>
@@ -301,7 +293,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <Ionicons 
           name={expandedSections.taskerResponsibilities ? "chevron-up" : "chevron-down"} 
           size={20} 
-          color="#007AFF" 
+          color="#003399" 
         />
       </TouchableOpacity>
 
@@ -309,7 +301,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <View style={styles.expandedContent}>
           {/* Understanding the task */}
           <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#34C759" style={styles.checkIcon} />
+            <Ionicons name="checkmark-circle" size={24} color="#16A34A" style={styles.checkIcon} />
             <View style={styles.responsibilityTextContainer}>
               <Text style={styles.responsibilityTitle}>Understanding the task</Text>
               <Text style={styles.responsibilityDescription}>
@@ -320,7 +312,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
           {/* Commitment */}
           <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#34C759" style={styles.checkIcon} />
+            <Ionicons name="checkmark-circle" size={24} color="#16A34A" style={styles.checkIcon} />
             <View style={styles.responsibilityTextContainer}>
               <Text style={styles.responsibilityTitle}>Honor your commitment</Text>
               <Text style={styles.responsibilityDescription}>
@@ -331,7 +323,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
           {/* Communication */}
           <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#34C759" style={styles.checkIcon} />
+            <Ionicons name="checkmark-circle" size={24} color="#16A34A" style={styles.checkIcon} />
             <View style={styles.responsibilityTextContainer}>
               <Text style={styles.responsibilityTitle}>Clear communication</Text>
               <Text style={styles.responsibilityDescription}>
@@ -342,7 +334,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
           {/* Professional conduct */}
           <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#34C759" style={styles.checkIcon} />
+            <Ionicons name="checkmark-circle" size={24} color="#16A34A" style={styles.checkIcon} />
             <View style={styles.responsibilityTextContainer}>
               <Text style={styles.responsibilityTitle}>Professional conduct</Text>
               <Text style={styles.responsibilityDescription}>
@@ -446,48 +438,20 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e1e4e8',
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    textAlign: 'center',
-    marginHorizontal: 16,
-  },
-  headerSpacer: {
-    width: 32,
+    backgroundColor: '#F4F6FB',
   },
   content: {
     flex: 1,
   },
   contentPadding: {
-    padding: 20,
+    padding: 16,
     paddingBottom: 40,
   },
   cancellationScrollContent: {
     paddingBottom: 40,
   },
   blueHeaderSection: {
-    backgroundColor: '#0a2d5c',
+    backgroundColor: '#003399',
     paddingTop: 40,
     paddingHorizontal: 24,
     paddingBottom: 40,
@@ -546,50 +510,57 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
-    backgroundColor: '#fff',
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   guidelineTitle: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#1a1a1a',
+    fontWeight: '600',
+    color: '#0F172A',
     flex: 1,
   },
   bodyText: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#333',
+    color: '#334155',
     marginBottom: 16,
   },
   descriptionText: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#4a4a4a',
+    color: '#334155',
     marginBottom: 20,
     backgroundColor: '#fff',
     padding: 16,
     borderRadius: 12,
     borderLeftWidth: 3,
-    borderLeftColor: '#007AFF',
+    borderLeftColor: '#003399',
   },
   linkText: {
-    color: '#007AFF',
+    color: '#003399',
     fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#0F172A',
     marginTop: 24,
     marginBottom: 16,
   },
   bulletPoint: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#334155',
     marginTop: 16,
     marginBottom: 8,
   },
@@ -602,10 +573,10 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#003399',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#007AFF',
+    shadowColor: '#003399',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -653,11 +624,11 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#DC2626',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
-    shadowColor: '#FF3B30',
+    shadowColor: '#DC2626',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -672,7 +643,7 @@ const styles = StyleSheet.create({
   noteTitle: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#0F172A',
     textAlign: 'center',
     marginBottom: 16,
     marginTop: 8,
@@ -680,8 +651,8 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     marginVertical: 24,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     padding: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -693,14 +664,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: 12,
   },
   activeTab: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#003399',
   },
   tabText: {
     fontSize: 14,
-    color: '#8e8e93',
+    color: '#64748B',
     fontWeight: '600',
   },
   activeTabText: {
@@ -710,10 +681,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 18,
+    paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     marginTop: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -724,12 +695,12 @@ const styles = StyleSheet.create({
   expandableTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#0F172A',
     flex: 1,
   },
   expandedContent: {
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 20,
     padding: 16,
     marginTop: 8,
     marginBottom: 12,
@@ -737,31 +708,31 @@ const styles = StyleSheet.create({
   expandedText: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#4a4a4a',
+    color: '#334155',
     marginBottom: 12,
   },
   feeInfoBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F4FF',
+    backgroundColor: 'rgba(0,51,153,0.08)',
     padding: 14,
-    borderRadius: 10,
+    borderRadius: 14,
     marginTop: 8,
     marginBottom: 12,
     borderLeftWidth: 3,
-    borderLeftColor: '#007AFF',
+    borderLeftColor: '#003399',
   },
   feeInfoText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#007AFF',
+    color: '#003399',
     marginLeft: 10,
     flex: 1,
   },
   noticeText: {
     fontSize: 13,
     lineHeight: 18,
-    color: '#8e8e93',
+    color: '#64748B',
     fontStyle: 'italic',
     marginTop: 8,
   },
@@ -779,45 +750,46 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#003399',
     marginRight: 12,
   },
   suspensionText: {
     fontSize: 15,
-    color: '#4a4a4a',
+    color: '#334155',
     flex: 1,
     lineHeight: 20,
   },
   warningBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF8E1',
+    backgroundColor: '#FEF3C7',
     padding: 14,
-    borderRadius: 10,
+    borderRadius: 14,
     marginTop: 8,
     borderLeftWidth: 3,
-    borderLeftColor: '#FF9500',
+    borderLeftColor: '#D97706',
   },
   warningText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#FF9500',
+    color: '#D97706',
     marginLeft: 10,
     flex: 1,
     lineHeight: 20,
   },
   understandButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    paddingVertical: 16,
+    backgroundColor: '#ff6b35',
+    borderRadius: 14,
+    height: 52,
+    justifyContent: 'center',
     alignItems: 'center',
     marginTop: 32,
     marginBottom: 20,
-    shadowColor: '#007AFF',
+    shadowColor: '#ff6b35',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowRadius: 10,
+    elevation: 3,
   },
   understandButtonText: {
     color: '#fff',
@@ -841,13 +813,13 @@ const styles = StyleSheet.create({
   responsibilityTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#0F172A',
     marginBottom: 6,
   },
   responsibilityDescription: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#666',
+    color: '#64748B',
   },
 });
 

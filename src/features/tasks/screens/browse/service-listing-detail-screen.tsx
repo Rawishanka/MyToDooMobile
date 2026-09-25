@@ -13,7 +13,10 @@ import {
   BRAND_BLUE,
   BRAND_ORANGE,
   CARD_BG,
+  CARD_CHIP_BG,
   CARD_DIVIDER,
+  CARD_PRICE_BG,
+  CARD_PRICE_TEXT,
   CARD_TEXT,
   CARD_TEXT_MUTED,
 } from '@/src/shared/theme/brandColors';
@@ -145,12 +148,13 @@ export default function ServiceListingDetailScreen({
           },
         ]}
       >
-        <TouchableOpacity onPress={onBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+        <TouchableOpacity onPress={onBack} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} activeOpacity={0.75}>
+          <Ionicons name="chevron-back" size={22} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
           Service Details
         </Text>
+        <View style={styles.headerSpacer} />
       </View>
 
       {isLoading && !listing ? (
@@ -159,47 +163,62 @@ export default function ServiceListingDetailScreen({
         </View>
       ) : !listing ? (
         <View style={styles.loadingWrap}>
-          <Text style={[styles.emptyText, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>
-            Listing not found.
+          <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+            <Ionicons name="search-outline" size={40} color="#FFFFFF" />
+          </View>
+          <Text style={[styles.emptyText, { color: isDarkMode ? '#F8FAFC' : '#0F172A' }]}>
+            Listing not found
           </Text>
+          <Text style={[styles.emptySub, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>
+            This service may have been removed.
+          </Text>
+          <TouchableOpacity style={styles.emptyButton} onPress={onBack} activeOpacity={0.85}>
+            <Text style={styles.bookText}>Go Back</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E293B' : CARD_BG, borderColor: isDarkMode ? '#334155' : CARD_BG }]}>
+          <View style={[styles.card, isDarkMode ? styles.cardDark : styles.cardBlue]}>
             <Text style={[styles.title, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
               {listing.title}
             </Text>
             
             <View style={styles.priceRow}>
-              <Text style={[styles.price, { color: isDarkMode ? '#38BDF8' : CARD_TEXT }]}>
-                ${Number(listing.price).toFixed(0)}
-              </Text>
-              <Text style={[styles.currency, { color: isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED }]}>
-                {listing.currency || 'AUD'}
-              </Text>
+              <View style={[styles.pricePill, isDarkMode ? { backgroundColor: '#0F172A' } : { backgroundColor: CARD_PRICE_BG }]}>
+                <Text style={[styles.price, { color: isDarkMode ? '#38BDF8' : CARD_PRICE_TEXT }]}>
+                  ${Number(listing.price).toFixed(0)}
+                </Text>
+                <Text style={[styles.currency, { color: isDarkMode ? '#94A3B8' : CARD_PRICE_TEXT }]}>
+                  {listing.currency || 'AUD'}
+                </Text>
+              </View>
             </View>
 
             <View style={styles.metaRow}>
-              <Ionicons name="location-outline" size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT} />
-              <Text style={[styles.metaText, { color: isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED }]}>
+              <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                <Ionicons name="location-outline" size={18} color={isDarkMode ? '#94A3B8' : CARD_TEXT} />
+              </View>
+              <Text style={[styles.metaText, { color: isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED }]} numberOfLines={2}>
                 {listing.suburb}
                 {listing.radiusKm ? ` · within ${listing.radiusKm} km` : ''}
               </Text>
             </View>
 
             <View style={styles.metaRow}>
-              <Ionicons name="person-outline" size={16} color={isDarkMode ? '#94A3B8' : CARD_TEXT} />
-              <Text style={[styles.taskerText, { color: isDarkMode ? '#CBD5E1' : CARD_TEXT_MUTED }]}>
+              <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                <Ionicons name="person-outline" size={18} color={isDarkMode ? '#94A3B8' : CARD_TEXT} />
+              </View>
+              <Text numberOfLines={2} style={[styles.taskerText, { color: isDarkMode ? '#CBD5E1' : CARD_TEXT_MUTED }]}>
                 Offered by <Text style={{ fontWeight: '600', color: isDarkMode ? undefined : CARD_TEXT }}>{taskerName}</Text>
               </Text>
             </View>
 
             <View style={[styles.divider, { backgroundColor: isDarkMode ? '#334155' : CARD_DIVIDER }]} />
 
-            <Text style={[styles.sectionHeading, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
+            <Text style={[styles.sectionHeading, { color: isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED }]}>
               Description
             </Text>
             <Text style={[styles.description, { color: isDarkMode ? '#CBD5E1' : CARD_TEXT }]}>
@@ -208,10 +227,15 @@ export default function ServiceListingDetailScreen({
           </View>
 
           {/* Booking Section */}
-          <View style={[styles.card, { backgroundColor: isDarkMode ? '#1E293B' : CARD_BG, borderColor: isDarkMode ? '#334155' : CARD_BG, marginTop: 16 }]}>
-            <Text style={[styles.sectionHeading, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT, marginBottom: 12 }]}>
-              Book this Service
-            </Text>
+          <View style={[styles.card, isDarkMode ? styles.cardDark : styles.cardBlue, { marginTop: 16 }]}>
+            <View style={styles.sectionHeaderRow}>
+              <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                <Ionicons name="calendar-outline" size={18} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+              </View>
+              <Text style={[styles.sectionTitle, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
+                Book this Service
+              </Text>
+            </View>
 
             <Text style={[styles.label, { color: isDarkMode ? '#E2E8F0' : CARD_TEXT }]}>
               Agreed Offer Amount ($)
@@ -221,7 +245,7 @@ export default function ServiceListingDetailScreen({
                 styles.input,
                 {
                   backgroundColor: isDarkMode ? '#0F172A' : '#ffffff',
-                  borderColor: isDarkMode ? '#334155' : '#cbd5e1',
+                  borderColor: isDarkMode ? '#334155' : 'rgba(255,255,255,0.6)',
                   color: isDarkMode ? '#F8FAFC' : '#0F172A',
                 },
               ]}
@@ -232,7 +256,7 @@ export default function ServiceListingDetailScreen({
               placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
             />
 
-            <Text style={[styles.label, { color: isDarkMode ? '#E2E8F0' : CARD_TEXT, marginTop: 14 }]}>
+            <Text style={[styles.label, { color: isDarkMode ? '#E2E8F0' : CARD_TEXT, marginTop: 16 }]}>
               Message for Tasker (Optional)
             </Text>
             <TextInput
@@ -241,7 +265,7 @@ export default function ServiceListingDetailScreen({
                 styles.textArea,
                 {
                   backgroundColor: isDarkMode ? '#0F172A' : '#ffffff',
-                  borderColor: isDarkMode ? '#334155' : '#cbd5e1',
+                  borderColor: isDarkMode ? '#334155' : 'rgba(255,255,255,0.6)',
                   color: isDarkMode ? '#F8FAFC' : '#0F172A',
                 },
               ]}
@@ -280,74 +304,153 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingBottom: 12,
+    paddingBottom: 14,
     borderBottomWidth: 1,
   },
-  backButton: { padding: 4 },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerSpacer: { width: 36 },
   headerTitle: {
+    flex: 1,
+    textAlign: 'center',
     fontSize: RFValue(18),
     fontWeight: '700',
-    marginLeft: 8,
   },
-  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { fontSize: RFValue(14) },
-  content: { padding: 16, paddingBottom: 50 },
-  card: {
+  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 },
+  stateIconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: BRAND_BLUE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  emptyText: { fontSize: RFValue(18), fontWeight: '700', textAlign: 'center' },
+  emptySub: { fontSize: RFValue(14), textAlign: 'center', marginTop: 8, marginBottom: 24 },
+  emptyButton: {
+    backgroundColor: BRAND_ORANGE,
+    minHeight: 48,
+    paddingHorizontal: 28,
     borderRadius: 14,
-    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 48 },
+  card: {
+    borderRadius: 20,
+    padding: 18,
     borderWidth: 1,
   },
-  title: { fontSize: RFValue(20), fontWeight: '700' },
+  cardBlue: {
+    backgroundColor: CARD_BG,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  cardDark: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  iconChip: {
+    width: 34,
+    height: 34,
+    borderRadius: 11,
+    backgroundColor: CARD_CHIP_BG,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
+  },
+  sectionTitle: { fontSize: RFValue(18), fontWeight: '700', flexShrink: 1 },
+  title: { fontSize: RFValue(20), fontWeight: '700', lineHeight: RFValue(26) },
   priceRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  pricePill: {
+    flexDirection: 'row',
     alignItems: 'baseline',
-    marginTop: 8,
     gap: 6,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
   },
   price: { fontSize: RFValue(22), fontWeight: '800' },
-  currency: { fontSize: RFValue(14), fontWeight: '600' },
+  currency: { fontSize: RFValue(13), fontWeight: '600' },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
-    gap: 6,
+    marginTop: 12,
+    gap: 10,
   },
-  metaText: { fontSize: RFValue(13) },
-  taskerText: { fontSize: RFValue(13) },
+  metaText: { fontSize: RFValue(14), flex: 1 },
+  taskerText: { fontSize: RFValue(14), flex: 1 },
   divider: {
     height: 1,
-    marginVertical: 14,
+    marginVertical: 16,
   },
   sectionHeading: {
-    fontSize: RFValue(15),
+    fontSize: RFValue(12),
     fontWeight: '700',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
   description: {
-    fontSize: RFValue(14),
-    lineHeight: 22,
-    marginTop: 8,
+    fontSize: RFValue(15),
+    lineHeight: 23,
+    marginTop: 10,
   },
   label: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   input: {
-    borderRadius: 10,
-    borderWidth: 1,
+    borderRadius: 14,
+    borderWidth: 1.5,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 13,
     fontSize: RFValue(15),
   },
-  textArea: { minHeight: 90 },
+  textArea: { minHeight: 100 },
   bookButton: {
-    marginTop: 20,
+    marginTop: 24,
     backgroundColor: BRAND_ORANGE,
-    borderRadius: 10,
-    paddingVertical: 14,
+    borderRadius: 14,
+    height: 52,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: BRAND_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  bookDisabled: { opacity: 0.7 },
+  bookDisabled: { opacity: 0.6 },
   bookText: { color: '#fff', fontSize: RFValue(16), fontWeight: '700' },
 });

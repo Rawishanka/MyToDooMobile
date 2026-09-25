@@ -173,6 +173,9 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
             </View>
           ) : (
             <View style={styles.emptyListContent}>
+              <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                <Ionicons name="document-text-outline" size={40} color={isDarkMode ? '#94A3B8' : '#003399'} />
+              </View>
               <Text style={[styles.emptyText, isDarkMode && { color: '#94A3B8' }]}>{getEmptyMessage()}</Text>
               <TouchableOpacity onPress={onRefresh} style={styles.refreshButton}>
                 <Text style={styles.refreshButtonText}>Refresh</Text>
@@ -267,7 +270,7 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
   return (
     <>
       {/* Tab Bar */}
-      <View style={[topTabStyles.tabBarContainer, isDarkMode && { backgroundColor: '#0F172A', borderBottomColor: '#334155' }]}>
+      <View style={[topTabStyles.tabBarContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <ScrollView
           ref={scrollRef}
           horizontal
@@ -277,7 +280,11 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
           {tabs.map((tab, index) => (
             <TouchableOpacity
               key={tab.key}
-              style={[topTabStyles.tabItem, index === activeIndex && topTabStyles.tabItemActive]}
+              style={[
+                topTabStyles.tabItem,
+                isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                index === activeIndex && topTabStyles.tabItemActive,
+              ]}
               onPress={() => setActiveIndex(index)}
               activeOpacity={0.7}
             >
@@ -311,34 +318,44 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
 
 const topTabStyles = StyleSheet.create({
   tabBarContainer: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8ECF4',
+    backgroundColor: 'transparent',
+    paddingTop: 4,
+    paddingBottom: 12,
   },
   tabBarContent: {
     flexDirection: 'row',
-    paddingHorizontal: isTablet ? 0 : 4,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    gap: 8,
     flexGrow: 1,
-    justifyContent: isTablet ? 'space-around' : 'flex-start',
+    justifyContent: isTablet ? 'center' : 'flex-start',
   },
   tabItem: {
-    paddingHorizontal: isTablet ? wp('2%') : 14,
-    paddingVertical: isTablet ? 14 : 10,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-    flex: isTablet ? 1 : undefined,
-    alignItems: isTablet ? 'center' : undefined,
+    paddingHorizontal: isTablet ? 20 : 16,
+    height: isTablet ? 42 : 36,
+    justifyContent: 'center',
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DCE3F2',
   },
   tabItemActive: {
-    borderBottomColor: '#ff6b35',
+    backgroundColor: '#ff6b35',
+    borderColor: '#ff6b35',
+    shadowColor: '#ff6b35',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.28,
+    shadowRadius: 6,
+    elevation: 3,
   },
   tabLabel: {
-    fontSize: isTablet ? 18 : 13,
+    fontSize: isTablet ? 16 : 13,
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#4B5563',
   },
   tabLabelActive: {
-    color: '#ff6b35',
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
 });
 
@@ -1170,17 +1187,17 @@ export default function MyTasksScreen() {
             setSearchText('');
             setSearchVisible(false);
           }}>
-            <Ionicons name="close-circle" size={20} color="#666" />
+            <Ionicons name="close-circle" size={22} color="#003399" />
           </TouchableOpacity>
         </View>
       )}
 
       {/* Role Selector */}
-      <View style={[styles.roleSelectorContainer, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
+      <View style={[styles.roleSelectorContainer, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#0B1120' }]}>
         <TouchableOpacity
           style={[
             styles.roleButton,
-            isDarkMode && { backgroundColor: '#1E293B' },
+            isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
             userRole === 'Tasker' && (isDarkMode ? { backgroundColor: '#003399' } : styles.activeRole)
           ]}
           onPress={() => {
@@ -1194,7 +1211,7 @@ export default function MyTasksScreen() {
         <TouchableOpacity
           style={[
             styles.roleButton,
-            isDarkMode && { backgroundColor: '#1E293B' },
+            isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
             userRole === 'Poster' && (isDarkMode ? { backgroundColor: '#003399' } : styles.activeRole)
           ]}
           onPress={() => {
@@ -1262,12 +1279,12 @@ const styles = StyleSheet.create({
   },
   tabContent: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F4F6FB',
     width: '100%',
     alignSelf: 'center',
   },
   flatListContent: {
-    paddingVertical: hp('2%'),
+    paddingTop: 4,
     paddingBottom: TAB_BAR_CLEARANCE,
     paddingHorizontal: isTablet ? wp('12.5%') : wp('0%'),
   },
@@ -1278,22 +1295,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp('5%'),
     paddingVertical: hp('8%'),
   },
+  emptyIconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
   emptyText: {
     fontSize: RFValue(isTablet ? 16 : 14),
-    color: '#666',
+    color: '#5B6472',
     textAlign: 'center',
-    marginBottom: hp('2%'),
+    marginBottom: 20,
+    lineHeight: 21,
   },
   refreshButton: {
-    paddingHorizontal: wp('5%'),
-    paddingVertical: hp('1.2%'),
-    backgroundColor: '#003399',
-    borderRadius: 20,
+    paddingHorizontal: 32,
+    height: 48,
+    justifyContent: 'center',
+    backgroundColor: '#ff6b35',
+    borderRadius: 14,
+    shadowColor: '#ff6b35',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 3,
   },
   refreshButtonText: {
     color: '#fff',
-    fontSize: RFValue(isTablet ? 14 : 12),
-    fontWeight: '600',
+    fontSize: RFValue(15),
+    fontWeight: '700',
   },
   smartReviewCard: {
     backgroundColor: CARD_BG,
@@ -1302,12 +1335,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 16,
     borderWidth: 1,
-    borderColor: CARD_BG,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
     shadowRadius: 12,
-    elevation: 3,
+    elevation: 4,
   },
   smartReviewIconBadge: {
     width: 56,
@@ -1340,8 +1373,8 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: BRAND_ORANGE,
     borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 22,
+    height: 50,
+    paddingHorizontal: 24,
     shadowColor: BRAND_ORANGE,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -1357,44 +1390,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingVertical: hp('0.8%'),
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8ECF4',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 16,
+    backgroundColor: '#F4F6FB',
   },
   roleButton: {
-    paddingHorizontal: isTablet ? wp('2.5%') : wp('4%'),
-    paddingVertical: isTablet ? hp('0.5%') : hp('0.8%'),
-    marginHorizontal: wp('0.5%'),
-    borderRadius: 16,
-    backgroundColor: '#F4F6FB',
+    flex: 1,
+    maxWidth: 200,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DCE3F2',
+    marginHorizontal: 4,
   },
   activeRole: {
     backgroundColor: '#003399',
+    borderColor: '#003399',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   roleText: {
-    fontSize: RFValue(12),
+    fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#4B5563',
   },
   activeRoleText: {
     color: '#fff',
+    fontWeight: '700',
   },
   searchResultsInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
-    paddingVertical: hp('1.5%'),
+    paddingVertical: 12,
     backgroundColor: '#EEF2FF',
     borderBottomWidth: 1,
-    borderBottomColor: '#E8ECF4',
-    shadowColor: '#003399',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    elevation: 1,
+    borderBottomColor: '#DCE3F2',
   },
   searchResultsText: {
     fontSize: RFValue(isTablet ? 14 : 12),
@@ -1434,10 +1473,10 @@ const styles = StyleSheet.create({
     left: wp('4%'),
     right: wp('4%'),
     bottom: TAB_BAR_CLEARANCE + hp('2%'),
-    backgroundColor: 'rgba(33, 33, 33, 0.92)',
-    borderRadius: 10,
-    paddingVertical: hp('1.4%'),
-    paddingHorizontal: wp('4%'),
+    backgroundColor: 'rgba(0, 26, 102, 0.96)',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     zIndex: 100,
   },
   completionToastText: {

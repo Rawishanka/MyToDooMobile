@@ -1,22 +1,21 @@
 import type { CreditLedgerEntry } from '@/src/api/credits-api';
 import { useGetCreditsBalance, useGetCreditsLedger, useGetCreditsSettings } from '@/src/shared/hooks/useCreditsApi';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  Platform,
   RefreshControl,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { router } from 'expo-router';
 import InviteFriendsScreen from './invite-friends-screen';
 import { useTheme } from '@/src/shared/theme';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 interface CreditsScreenProps {
   onBack: () => void;
@@ -58,7 +57,6 @@ function formatReason(reason?: string | null, isCredit: boolean = true) {
 
 export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScreenProps) {
   const { isDarkMode } = useTheme();
-  const insets = useSafeAreaInsets();
   const [showInvite, setShowInvite] = React.useState(false);
 
   // Unconditional hook calls at top-level (Fix React Rules of Hooks crash)
@@ -90,12 +88,12 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
         <View style={[styles.iconCircle, isCredit ? styles.creditIconBg : (isDarkMode ? { backgroundColor: '#0F172A' } : styles.debitIconBg)]}>
           <Ionicons
             name={isCredit ? 'gift-outline' : 'cart-outline'}
-            size={20}
-            color={isCredit ? '#10B981' : '#64748B'}
+            size={19}
+            color={isCredit ? '#16A34A' : '#003399'}
           />
         </View>
         <View style={styles.ledgerBody}>
-          <Text style={[styles.ledgerReason, isDarkMode && { color: '#F8FAFC' }]}>{formatReason(item.reason, isCredit)}</Text>
+          <Text style={[styles.ledgerReason, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={2}>{formatReason(item.reason, isCredit)}</Text>
           <View style={styles.metaRow}>
             <Text style={[styles.ledgerDate, isDarkMode && { color: '#94A3B8' }]}>{formatDate(item.createdAt)}</Text>
             {item.expiresAt && (
@@ -116,24 +114,19 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
 
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      {/* 2026 Modern Top Navigation */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 46 }, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#334155' }]}>
-        <TouchableOpacity onPress={onBack} style={[styles.backButton, isDarkMode && { backgroundColor: '#1E293B' }]} activeOpacity={0.7}>
-          <Ionicons name="arrow-back" size={22} color={isDarkMode ? '#F8FAFC' : '#0F172A'} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>My Credits & Rewards</Text>
-        <TouchableOpacity
-          style={styles.headerRightBtn}
-          onPress={() => onBack()}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="help-circle-outline" size={22} color="#64748B" />
-        </TouchableOpacity>
-      </View>
+      <LightHeader
+        title="My Credits & Rewards"
+        onBack={onBack}
+        right={
+          <TouchableOpacity style={styles.headerRightBtn} onPress={() => onBack()} activeOpacity={0.7}>
+            <Ionicons name="help-circle-outline" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+        }
+      />
 
       {(balanceLoading || ledgerLoading) && !balanceData ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color="#003399" />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
         </View>
       ) : (
         <FlatList
@@ -149,29 +142,28 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
                 refetchBalance();
                 refetchLedger();
               }}
-              tintColor="#003399"
+              tintColor={isDarkMode ? '#38BDF8' : '#003399'}
             />
           }
           ListHeaderComponent={
             <View style={styles.headerSection}>
               {/* Premium 2026 Balance Card */}
-              <View style={styles.heroCard}>
-                <View style={styles.cardDecorativeGlow} />
+              <View style={[styles.heroCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
                 <View style={styles.cardHeaderRow}>
                   <View style={styles.cardTagPill}>
-                    <Ionicons name="sparkles" size={13} color="#FBBF24" />
+                    <Ionicons name="sparkles" size={13} color="#D97706" />
                     <Text style={styles.cardTagText}>PROMO BALANCE</Text>
                   </View>
-                  <MaterialCommunityIcons name="wallet-giftcard" size={28} color="rgba(255,255,255,0.7)" />
+                  <IconChip name="wallet-outline" size={40} />
                 </View>
 
                 <View style={styles.balanceRow}>
-                  <Text style={styles.currencySymbol}>$</Text>
-                  <Text style={styles.balanceValue}>{balance.toFixed(0)}</Text>
-                  <Text style={styles.creditsUnitText}>AUD</Text>
+                  <Text style={[styles.currencySymbol, isDarkMode && { color: '#38BDF8' }]}>$</Text>
+                  <Text style={[styles.balanceValue, isDarkMode && { color: '#F8FAFC' }]}>{balance.toFixed(0)}</Text>
+                  <Text style={[styles.creditsUnitText, isDarkMode && { color: '#94A3B8' }]}>AUD</Text>
                 </View>
 
-                <Text style={styles.balanceHint}>
+                <Text style={[styles.balanceHint, isDarkMode && { color: '#94A3B8' }]}>
                   Promo credits automatically offset eligible service fees on task amounts of
                   {settings?.minTaskAmountForCreditSpend
                     ? ` $${settings.minTaskAmountForCreditSpend}+`
@@ -180,7 +172,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
                 </Text>
 
                 {/* Quick Action: Invite Friends */}
-                <View style={styles.cardDivider} />
+                <View style={[styles.cardDivider, isDarkMode && { backgroundColor: '#334155' }]} />
                 <TouchableOpacity
                   style={styles.cardActionBtn}
                   activeOpacity={0.85}
@@ -196,7 +188,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
                     <Ionicons name="gift-outline" size={17} color="#FFFFFF" />
                     <Text style={styles.cardActionBtnText}>Invite Friends & Earn +$10 Credits</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.8)" />
+                  <Ionicons name="chevron-forward" size={16} color="#FFFFFF" />
                 </TouchableOpacity>
               </View>
 
@@ -212,7 +204,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
               <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
-                <Ionicons name="wallet-outline" size={36} color={isDarkMode ? '#38BDF8' : '#94A3B8'} />
+                <Ionicons name="wallet-outline" size={36} color={isDarkMode ? '#38BDF8' : '#003399'} />
               </View>
               <Text style={[styles.emptyTitle, isDarkMode && { color: '#F8FAFC' }]}>No credit activity yet</Text>
               <Text style={[styles.emptySubtitle, isDarkMode && { color: '#94A3B8' }]}>
@@ -227,34 +219,12 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8FAFC' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-  },
-  backButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: '#F1F5F9',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: RFValue(17),
-    fontWeight: '700',
-    color: '#0F172A',
-  },
+  container: { flex: 1, backgroundColor: '#F4F6FB' },
   headerRightBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.18)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -264,26 +234,17 @@ const styles = StyleSheet.create({
 
   // Hero Card
   heroCard: {
-    backgroundColor: '#003399',
-    borderRadius: 22,
-    padding: 22,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    padding: 20,
     marginBottom: 24,
-    shadowColor: '#003399',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.28,
-    shadowRadius: 18,
-    elevation: 8,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  cardDecorativeGlow: {
-    position: 'absolute',
-    top: -40,
-    right: -40,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: 'rgba(56, 189, 248, 0.25)',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -295,13 +256,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    backgroundColor: '#FEF3C7',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
   },
   cardTagText: {
-    color: '#FFFFFF',
+    color: '#B45309',
     fontSize: RFValue(11),
     fontWeight: '700',
     letterSpacing: 0.6,
@@ -312,42 +273,47 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   currencySymbol: {
-    color: '#93C5FD',
+    color: '#003399',
     fontSize: RFValue(24),
     fontWeight: '700',
     marginRight: 4,
   },
   balanceValue: {
-    color: '#FFFFFF',
+    color: '#003399',
     fontSize: RFValue(42),
     fontWeight: '800',
     letterSpacing: -1,
   },
   creditsUnitText: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#64748B',
     fontSize: RFValue(14),
     fontWeight: '600',
     marginLeft: 8,
   },
   balanceHint: {
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: '#64748B',
     fontSize: RFValue(12.5),
     lineHeight: 18,
     marginBottom: 14,
   },
   cardDivider: {
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    backgroundColor: '#E8ECF4',
     marginBottom: 12,
   },
   cardActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    backgroundColor: '#ff6b35',
     borderRadius: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    height: 48,
+    paddingHorizontal: 16,
+    shadowColor: '#ff6b35',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   actionBtnContent: {
     flexDirection: 'row',
@@ -384,32 +350,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 14,
-    marginBottom: 10,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
     elevation: 2,
   },
   iconCircle: {
-    width: 42,
-    height: 42,
+    width: 38,
+    height: 38,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   creditIconBg: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: '#DCFCE7',
   },
   debitIconBg: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(0,51,153,0.08)',
   },
-  ledgerBody: { flex: 1 },
+  ledgerBody: { flex: 1, minWidth: 0 },
   ledgerReason: {
     fontSize: RFValue(14),
     fontWeight: '600',
@@ -444,7 +410,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(16),
     fontWeight: '800',
   },
-  creditText: { color: '#059669' },
+  creditText: { color: '#16A34A' },
   debitText: { color: '#64748B' },
 
   // Empty Wrap
@@ -457,7 +423,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(0,51,153,0.08)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 14,

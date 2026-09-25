@@ -171,16 +171,16 @@ export default function FilterModal({
       <View style={[styles.filterModal, isDarkMode && { backgroundColor: '#0B1120' }]}>
         {/* Header */}
         <View style={styles.filterHeader}>
-          <TouchableOpacity onPress={onClose}>
-            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          <TouchableOpacity onPress={onClose} style={styles.headerBackChip} activeOpacity={0.75}>
+            <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.filterTitle}>Filter</Text>
-          <TouchableOpacity onPress={onResetFilters}>
+          <TouchableOpacity onPress={onResetFilters} style={styles.resetChip} activeOpacity={0.75}>
             <Text style={styles.resetText}>Reset</Text>
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.filterContent}>
+        <ScrollView style={styles.filterContent} contentContainerStyle={styles.filterContentInner} showsVerticalScrollIndicator={false}>
           {/* Category Filter */}
           <View style={[styles.filterSection, { zIndex: categoryDropdownVisible ? 1000 : 1 }, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Categories</Text>
@@ -199,8 +199,8 @@ export default function FilterModal({
               </Text>
               <MaterialCommunityIcons 
                 name={categoryDropdownVisible ? "chevron-up" : "chevron-down"}
-                size={20} 
-                color="#666" 
+ size={20} 
+                color={isDarkMode ? '#94A3B8' : '#003399'} 
               />
             </TouchableOpacity>
             
@@ -347,7 +347,7 @@ export default function FilterModal({
                 <Text style={[styles.priceBoxLabel, isDarkMode && { color: '#94A3B8' }]}>Min</Text>
                 <Text style={[styles.priceBoxValue, isDarkMode && { color: '#38BDF8' }]}>{currencySymbol}{priceRange[0].toLocaleString()}</Text>
               </View>
-              <Text style={styles.priceSeparator}>-</Text>
+              <Text style={[styles.priceSeparator, isDarkMode && { color: '#64748B' }]}>-</Text>
               <View style={[styles.priceBox, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
                 <Text style={[styles.priceBoxLabel, isDarkMode && { color: '#94A3B8' }]}>Max</Text>
                 <Text style={[styles.priceBoxValue, isDarkMode && { color: '#38BDF8' }]}>{currencySymbol}{priceRange[1].toLocaleString()}</Text>
@@ -393,8 +393,8 @@ export default function FilterModal({
                 </View>
               </View>
               <View style={styles.sliderLabels}>
-                <Text style={styles.sliderLabel}>{currencySymbol}0</Text>
-                <Text style={styles.sliderLabel}>{currencySymbol}{MAX_PRICE.toLocaleString()}+</Text>
+                <Text style={[styles.sliderLabel, isDarkMode && { color: '#94A3B8' }]}>{currencySymbol}0</Text>
+                <Text style={[styles.sliderLabel, isDarkMode && { color: '#94A3B8' }]}>{currencySymbol}{MAX_PRICE.toLocaleString()}+</Text>
               </View>
             </View>
           </View>
@@ -430,9 +430,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 14,
     backgroundColor: '#003399',
+  },
+  headerBackChip: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resetChip: {
+    height: 36,
+    paddingHorizontal: 16,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterTitle: {
     fontSize: RFValue(18),
@@ -440,26 +460,29 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   resetText: {
-    color: '#ff6b35',
+    color: '#FFFFFF',
     fontSize: RFValue(14),
     fontWeight: '700',
   },
   filterContent: {
     flex: 1,
+  },
+  filterContentInner: {
     padding: 16,
+    paddingBottom: 32,
   },
   filterSection: {
     marginBottom: 16,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 18,
     borderWidth: 1,
     borderColor: '#E8ECF4',
-    shadowColor: '#003399',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
   },
   sectionTitle: {
     fontSize: RFValue(12),
@@ -472,8 +495,8 @@ const styles = StyleSheet.create({
   radiusLabel: {
     fontSize: RFValue(12),
     color: '#6B7280',
-    marginTop: 4,
-    marginBottom: 8,
+    marginTop: 16,
+    marginBottom: 10,
     fontWeight: '600',
   },
   radiusChips: {
@@ -482,16 +505,22 @@ const styles = StyleSheet.create({
   },
   radiusChip: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
+    height: 44,
+    justifyContent: 'center',
+    borderRadius: 14,
     alignItems: 'center',
     backgroundColor: '#F4F6FB',
     borderWidth: 1.5,
-    borderColor: '#E8ECF4',
+    borderColor: '#DCE3F5',
   },
   radiusChipSelected: {
     backgroundColor: '#003399',
     borderColor: '#003399',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
   },
   radiusChipText: {
     fontSize: RFValue(14),
@@ -503,19 +532,21 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   radiusHint: {
-    marginTop: 10,
+    marginTop: 12,
     fontSize: RFValue(12),
+    lineHeight: 18,
     color: '#6B7280',
   },
   categorySelector: {
     backgroundColor: '#F4F6FB',
-    padding: 14,
-    borderRadius: 12,
+    paddingHorizontal: 14,
+    minHeight: 48,
+    borderRadius: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E8ECF4',
+    borderColor: '#DCE3F5',
   },
   categorySelectorText: {
     fontSize: RFValue(15),
@@ -525,8 +556,8 @@ const styles = StyleSheet.create({
   },
   categoryDropdown: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    marginTop: 6,
+    borderRadius: 14,
+    marginTop: 8,
     maxHeight: 300,
     borderWidth: 1,
     borderColor: '#E8ECF4',
@@ -642,7 +673,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEF2FF',
     paddingVertical: 12,
     paddingHorizontal: 18,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#C7D2FE',
     minWidth: 100,
@@ -753,11 +784,12 @@ const styles = StyleSheet.create({
   },
   resetButton: {
     flex: 1,
-    paddingVertical: 15,
+    height: 52,
+    justifyContent: 'center',
     borderRadius: 14,
     alignItems: 'center',
-    backgroundColor: '#F4F6FB',
-    borderWidth: 2,
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
     borderColor: '#003399',
   },
   resetButtonText: {
@@ -767,7 +799,8 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     flex: 2,
-    paddingVertical: 15,
+    height: 52,
+    justifyContent: 'center',
     borderRadius: 14,
     alignItems: 'center',
     backgroundColor: '#ff6b35',

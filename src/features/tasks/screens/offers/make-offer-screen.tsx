@@ -94,7 +94,7 @@ export default function MakeOfferScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingTop: 16, paddingBottom: 24 }}
         >
           <TaskSummarySection task={task} />
 
@@ -161,16 +161,16 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   warningContainer: {
     backgroundColor: '#FFF3CD',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#FFC107',
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: 0,
+    marginBottom: 16,
     shadowColor: '#FFC107',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -185,26 +185,33 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
+    paddingHorizontal: 16,
+    paddingTop: 14,
     backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#CBD5E1',
   },
   submitButton: {
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: 16,
-    borderRadius: 8,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: BRAND_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 3,
   },
   disabledButton: {
     backgroundColor: '#cccccc',
     opacity: 0.6,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

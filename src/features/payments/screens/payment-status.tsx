@@ -58,13 +58,13 @@ export default function PaymentStatusScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-          <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
+          <Ionicons name="chevron-back" size={22} color={CARD_TEXT} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Payment Status</Text>
         <TouchableOpacity style={styles.helpIcon}>
           <Ionicons
             name="help-circle-outline"
-            size={24}
+            size={20}
             color={CARD_TEXT}
             onPress={() => {
               Alert.alert(
@@ -114,25 +114,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 15,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
     backgroundColor: BRAND_BLUE,
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE,
   },
   backIcon: {
-    padding: 5,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: CARD_TEXT,
   },
   helpIcon: {
-    padding: 5,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   listContent: {
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingTop: 2,
     paddingBottom: 100,
   },
 });

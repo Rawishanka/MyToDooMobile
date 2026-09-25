@@ -59,7 +59,7 @@ export const TaskCardSkeleton: React.FC<TaskCardSkeletonProps> = ({ delay = 0 })
             borderColor: '#334155',
             shadowColor: '#000000',
           }
-        : { backgroundColor: CARD_BG, borderColor: CARD_BG },
+        : { backgroundColor: CARD_BG, borderColor: 'rgba(255,255,255,0.14)', shadowColor: '#001A66', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.18, shadowRadius: 12, elevation: 4 },
     ]}>
       {/* Left accent stripe */}
       <Animated.View style={[
@@ -146,14 +146,14 @@ export const TaskCardSkeletonList: React.FC<{ count?: number }> = ({ count = 4 }
 const styles = StyleSheet.create({
   listContainer: {
     paddingHorizontal: isTablet ? wp('12.5%') : 0,
-    paddingTop: 8,
+    paddingTop: 4,
     paddingBottom: 40,
   },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    marginHorizontal: isTablet ? 0 : wp('4.5%'),
-    marginBottom: 12,
+    marginHorizontal: isTablet ? 0 : wp('4%'),
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: '#EBF0F5',
     flexDirection: 'row',
@@ -172,7 +172,8 @@ const styles = StyleSheet.create({
   },
   cardBody: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
   headerRow: {
     flexDirection: 'row',
@@ -210,12 +211,12 @@ const styles = StyleSheet.create({
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   iconDot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 9,
   },
   locDot: {
     backgroundColor: '#E0F2FE',
@@ -237,22 +238,22 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   tagPill: {
-    height: 22,
-    borderRadius: 11,
+    height: 26,
+    borderRadius: 14,
     backgroundColor: '#F1F5F9',
   },
   footerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 8,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#F8FAFC',
   },
   offerPill: {
-    width: 72,
-    height: 22,
-    borderRadius: 11,
+    width: 84,
+    height: 26,
+    borderRadius: 14,
     backgroundColor: '#FFF1E6',
   },
   userSection: {
@@ -261,9 +262,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   avatarCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: '#1E3A8A',
   },
   userNameLine: {

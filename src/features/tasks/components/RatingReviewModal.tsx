@@ -297,7 +297,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                       <Ionicons
                         name={star <= rating ? 'star' : 'star-outline'}
                         size={40}
-                        color={star <= rating ? '#ff6b35' : (isDarkMode ? '#475569' : '#D1D5DB')}
+                        color={star <= rating ? '#ff6b35' : (isDarkMode ? '#475569' : 'rgba(255,255,255,0.45)')}
                       />
                     </TouchableOpacity>
                   ))}
@@ -347,7 +347,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                     onPress={pickImage}
                     disabled={isSubmitting || attachments.length >= 5}
                   >
-                    <Ionicons name="image-outline" size={24} color={isDarkMode ? "#38BDF8" : "#007AFF"} />
+                    <Ionicons name="image-outline" size={24} color={isDarkMode ? "#38BDF8" : "#003399"} />
                     <Text style={[styles.attachmentButtonText, isDarkMode && { color: '#F8FAFC' }]}>Add Photos</Text>
                   </TouchableOpacity>
 
@@ -356,7 +356,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                     onPress={pickDocument}
                     disabled={isSubmitting || attachments.length >= 5}
                   >
-                    <Ionicons name="document-outline" size={24} color={isDarkMode ? "#38BDF8" : "#007AFF"} />
+                    <Ionicons name="document-outline" size={24} color={isDarkMode ? "#38BDF8" : "#003399"} />
                     <Text style={[styles.attachmentButtonText, isDarkMode && { color: '#F8FAFC' }]}>Add Documents</Text>
                   </TouchableOpacity>
                 </View>
@@ -373,7 +373,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                           />
                         ) : (
                           <View style={styles.attachmentDoc}>
-                            <Ionicons name="document" size={40} color="#007AFF" />
+                            <Ionicons name="document" size={40} color="#003399" />
                           </View>
                         )}
                         <Text style={styles.attachmentName} numberOfLines={1}>
@@ -489,11 +489,14 @@ const styles = StyleSheet.create({
 
   // ── Task Info Banner ─────────────────────────────────────────
   taskInfo: {
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    marginTop: 16,
+    marginHorizontal: 16,
     backgroundColor: CARD_BG,
-    borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
   },
   taskLabel: {
     fontSize: RFValue(10),
@@ -516,16 +519,16 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     alignItems: 'center',
     backgroundColor: CARD_BG,
-    marginTop: 12,
+    marginTop: 14,
     marginHorizontal: 16,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
-    shadowColor: '#003399',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   sectionLabel: {
     fontSize: RFValue(13),
@@ -560,7 +563,7 @@ const styles = StyleSheet.create({
   reviewInput: {
     borderWidth: 1.5,
     borderColor: '#E0E7FF',
-    borderRadius: 16,
+    borderRadius: 14,
     padding: 14,
     fontSize: RFValue(14),
     color: '#1A1D2E',
@@ -576,7 +579,7 @@ const styles = StyleSheet.create({
   },
   attachmentHint: {
     fontSize: RFValue(11),
-    color: '#9CA3AF',
+    color: '#64748B',
     marginBottom: 14,
     lineHeight: RFValue(16),
   },
@@ -590,7 +593,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 13,
+    paddingVertical: 14,
     paddingHorizontal: 16,
     backgroundColor: '#EEF2FF',
     borderRadius: 14,
@@ -655,8 +658,9 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: 16,
-    borderRadius: 16,
+    height: 52,
+    justifyContent: 'center',
+    borderRadius: 14,
     alignItems: 'center',
     shadowColor: BRAND_ORANGE,
     shadowOffset: { width: 0, height: 4 },
@@ -677,7 +681,8 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     backgroundColor: 'transparent',
-    paddingVertical: 14,
+    height: 48,
+    justifyContent: 'center',
     borderRadius: 14,
     alignItems: 'center',
     marginTop: 10,

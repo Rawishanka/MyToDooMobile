@@ -187,6 +187,7 @@ export default function TaskDetailScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           removeClippedSubviews={false}
+          contentContainerStyle={styles.scrollContent}
         >
         {/* Only show Make Offer section to taskers (not the task creator) */}
         {/* Hide if user is assigned to this task (Todoo Tasks or Completed) */}
@@ -313,8 +314,13 @@ const styles = StyleSheet.create({
     alignSelf: isTablet ? 'center' : 'auto',
     width: isTablet ? '100%' : 'auto',
   },
+  scrollContent: {
+    paddingTop: 16,
+    paddingBottom: 48,
+  },
   tabContent: {
     flex: 1,
+    gap: 14,
   },
   bottomSafeArea: {
     position: 'absolute',

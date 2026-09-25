@@ -14,7 +14,7 @@ interface ErrorStateProps {
 export default function ErrorState({ title, subtitle, onRetry, onGoBack }: ErrorStateProps) {
   return (
     <View style={styles.errorContainer}>
-      <Ionicons name="alert-circle-outline" size={64} color="#ff4444" />
+      <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
       <Text style={styles.errorTitle}>{title}</Text>
       <Text style={styles.errorSubtitle}>{subtitle}</Text>
       {onRetry && (
@@ -38,23 +38,24 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0D1B2A',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
   },
   retryButton: {
     backgroundColor: BRAND_ORANGE,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: 32,
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 14,
     marginBottom: 12,
   },
   retryButtonText: {
@@ -67,8 +68,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#007bff',
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    color: '#003399',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

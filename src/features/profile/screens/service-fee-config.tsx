@@ -16,6 +16,7 @@ import {
     View
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 interface ServiceFeeConfigScreenProps {
   onBackToAccount: () => void;
@@ -112,15 +113,9 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flex: 1 }}>
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={onBackToAccount}>
-          <Ionicons name="chevron-back" size={24} color="#003399" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Service Fee Configuration</Text>
-      </View>
+      <LightHeader title="Service Fee Configuration" onBack={onBackToAccount} />
 
-      <ScrollView style={styles.content}>
+      <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#003399" />
@@ -128,7 +123,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
           </View>
         ) : error && (error as any)?.message?.includes('Admin access required') ? (
           <View style={styles.errorContainer}>
-            <Ionicons name="lock-closed" size={48} color="#FF6B35" />
+            <View style={styles.errorCircle}><Ionicons name="lock-closed" size={36} color="#D97706" /></View>
             <Text style={styles.errorTitle}>Admin Access Required</Text>
             <Text style={styles.errorText}>
               This feature is only available to administrators. Service fee configuration requires elevated permissions.
@@ -139,7 +134,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
-            <Ionicons name="alert-circle-outline" size={48} color="#FF6B35" />
+            <View style={styles.errorCircle}><Ionicons name="alert-circle-outline" size={38} color="#DC2626" /></View>
             <Text style={styles.errorTitle}>Failed to Load Configuration</Text>
             <Text style={styles.errorText}>
               {(error as any)?.message || 'Unable to fetch service fee configuration.'}
@@ -152,7 +147,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
           <>
             {/* Info Box */}
             <View style={styles.infoBox}>
-              <Ionicons name="information-circle-outline" size={20} color="#003399" />
+              <IconChip name="information-circle-outline" style={{ marginRight: 12 }} />
               <Text style={styles.infoText}>
                 Configure the service fee settings that apply to all transactions on the platform.
               </Text>
@@ -194,7 +189,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
                   value={basePercentage}
                   onChangeText={setBasePercentage}
                   placeholder="Enter percentage (e.g., 10 for 10%)"
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#94A3B8"
                   keyboardType="decimal-pad"
                   editable={!updateConfigMutation.isPending}
                 />
@@ -210,7 +205,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
                   value={minFeeUsd}
                   onChangeText={setMinFeeUsd}
                   placeholder="Enter minimum fee (e.g., 5.00)"
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#94A3B8"
                   keyboardType="decimal-pad"
                   editable={!updateConfigMutation.isPending}
                 />
@@ -226,7 +221,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
                   value={maxFeeUsd}
                   onChangeText={setMaxFeeUsd}
                   placeholder="Enter maximum fee (e.g., 50.00)"
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#94A3B8"
                   keyboardType="decimal-pad"
                   editable={!updateConfigMutation.isPending}
                 />
@@ -251,7 +246,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
                   disabled={updateConfigMutation.isPending}
                 >
                   {updateConfigMutation.isPending ? (
-                    <ActivityIndicator size="small" color="#FFF" />
+                    <ActivityIndicator size="small" color="#FFFFFF" />
                   ) : (
                     <Text style={styles.saveButtonText}>Save Changes</Text>
                   )}
@@ -286,32 +281,30 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
   );
 };
 
+const CARD = {
+  backgroundColor: '#FFFFFF',
+  borderRadius: 20,
+  borderWidth: 1,
+  borderColor: '#E8ECF4',
+  shadowColor: '#0F172A',
+  shadowOpacity: 0.07,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 2,
+} as const;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-  },
-  backButton: {
-    marginRight: 12,
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#333',
+    backgroundColor: '#F4F6FB',
   },
   content: {
     flex: 1,
-    padding: 16,
+  },
+  contentInner: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 40,
   },
   loadingContainer: {
     flex: 1,
@@ -322,7 +315,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
   },
   errorContainer: {
     flex: 1,
@@ -331,63 +324,74 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     paddingHorizontal: 24,
   },
+  errorCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   errorTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
     marginTop: 16,
     marginBottom: 8,
   },
   errorText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 24,
   },
   retryButton: {
-    backgroundColor: '#003399',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#ff6b35',
+    paddingHorizontal: 28,
+    height: 48,
+    justifyContent: 'center',
+    borderRadius: 14,
+    shadowColor: '#ff6b35',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   retryButtonText: {
-    color: '#FFF',
-    fontSize: RFValue(14),
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
   },
   infoBox: {
+    ...CARD,
     flexDirection: 'row',
-    backgroundColor: '#E3F2FD',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    alignItems: 'flex-start',
+    padding: 14,
+    marginBottom: 14,
+    alignItems: 'center',
   },
   infoText: {
     flex: 1,
-    fontSize: RFValue(13),
-    color: '#003399',
-    marginLeft: 8,
-    lineHeight: 18,
+    fontSize: 13,
+    color: '#64748B',
+    lineHeight: 19,
   },
   section: {
-    backgroundColor: '#FFF',
+    ...CARD,
     padding: 16,
-    borderRadius: 8,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   sectionTitle: {
-    fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 14,
   },
   currentConfigBox: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: '#F8FAFC',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#E8ECF4',
   },
   configRow: {
     flexDirection: 'row',
@@ -396,36 +400,38 @@ const styles = StyleSheet.create({
   },
   configLabel: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#64748B',
+    flexShrink: 1,
+    marginRight: 8,
   },
   configValue: {
     fontSize: RFValue(14),
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#003399',
   },
   formGroup: {
     marginBottom: 16,
   },
   label: {
-    fontSize: RFValue(14),
+    fontSize: 13,
     fontWeight: '600',
-    color: '#333',
+    color: '#334155',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    borderColor: '#E8ECF4',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 48,
     fontSize: RFValue(14),
-    color: '#333',
+    color: '#0F172A',
   },
   helperText: {
-    fontSize: RFValue(12),
-    color: '#999',
-    marginTop: 4,
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 6,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -434,38 +440,43 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
+    height: 50,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
   resetButton: {
-    backgroundColor: '#F5F5F5',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#003399',
   },
   resetButtonText: {
-    color: '#666',
-    fontSize: RFValue(14),
-    fontWeight: '600',
+    color: '#003399',
+    fontSize: 15,
+    fontWeight: '700',
   },
   saveButton: {
-    backgroundColor: '#003399',
+    backgroundColor: '#ff6b35',
+    shadowColor: '#ff6b35',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   saveButtonText: {
-    color: '#FFF',
-    fontSize: RFValue(14),
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   currencyBox: {
-    backgroundColor: '#F9F9F9',
+    backgroundColor: '#F8FAFC',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#E8ECF4',
     marginBottom: 8,
   },
   currencyRow: {
@@ -475,12 +486,12 @@ const styles = StyleSheet.create({
   },
   currencyLabel: {
     fontSize: RFValue(13),
-    color: '#666',
+    color: '#64748B',
     fontWeight: '600',
   },
   currencyValue: {
     fontSize: RFValue(13),
-    color: '#333',
+    color: '#0F172A',
   },
 });
 

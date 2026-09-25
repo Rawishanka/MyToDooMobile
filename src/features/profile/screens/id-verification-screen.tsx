@@ -14,6 +14,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import { useSubmitFaceVerification, useGetVerificationStatus } from '@/src/shared/hooks/useFaceVerificationApi';
 import { useGetUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 
@@ -152,18 +153,12 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
   if (isAlreadyVerified && step === 'overview') {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <View style={[styles.header, isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]}>
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>ID Verification</Text>
-          <View style={{ width: 40 }} />
-        </View>
+        <LightHeader title="ID Verification" onBack={onBack} />
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={[styles.verifiedCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#10B981' }]}>
+          <View style={[styles.verifiedCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#16A34A' }]}>
             <View style={styles.verifiedIconLarge}>
-              <MaterialIcons name="verified" size={60} color="#10B981" />
+              <MaterialIcons name="verified" size={60} color="#16A34A" />
             </View>
             <Text style={[styles.verifiedHeading, isDarkMode && { color: '#F8FAFC' }]}>Identity Verified</Text>
             <Text style={[styles.verifiedSubtitle, isDarkMode && { color: '#94A3B8' }]}>
@@ -174,7 +169,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
               <View style={styles.metaRow}>
                 <Text style={[styles.metaLabel, isDarkMode && { color: '#94A3B8' }]}>Status:</Text>
                 <View style={styles.badgePill}>
-                  <Ionicons name="checkmark-circle" size={14} color="#10B981" />
+                  <Ionicons name="checkmark-circle" size={14} color="#16A34A" />
                   <Text style={styles.badgePillText}>Verified</Text>
                 </View>
               </View>
@@ -184,12 +179,12 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
               </View>
               <View style={styles.metaRow}>
                 <Text style={[styles.metaLabel, isDarkMode && { color: '#94A3B8' }]}>Confidence Score:</Text>
-                <Text style={[styles.metaValue, { color: '#10B981', fontWeight: '700' }]}>94% Match</Text>
+                <Text style={[styles.metaValue, { color: '#16A34A', fontWeight: '700' }]}>94% Match</Text>
               </View>
             </View>
 
             <TouchableOpacity
-              style={[styles.startVerifyBtn, { marginTop: 12, width: "100%", backgroundColor: "#0EA5E9" }]}
+              style={[styles.startVerifyBtn, { marginTop: 12, width: "100%", backgroundColor: "#ff6b35" }]}
               onPress={() => {
                 setDocumentImage(null);
                 setFrontSelfie(null);
@@ -216,7 +211,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
   if (step === 'processing') {
     return (
       <View style={[styles.container, styles.centerContent, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
+        <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
         <Text style={[styles.processingTitle, isDarkMode && { color: '#F8FAFC' }]}>
           Analyzing Biometric Verification...
         </Text>
@@ -232,7 +227,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
     return (
       <View style={[styles.container, styles.centerContent, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <View style={styles.successIconRing}>
-          <Ionicons name="checkmark-circle" size={72} color="#10B981" />
+          <Ionicons name="checkmark-circle" size={72} color="#16A34A" />
         </View>
         <Text style={[styles.successTitle, isDarkMode && { color: '#F8FAFC' }]}>
           Verification Successful!
@@ -241,7 +236,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
           Your face scan matched your government ID with {Math.round(similarityResult * 100)}% accuracy.
         </Text>
         <View style={styles.badgePreviewCard}>
-          <MaterialIcons name="verified-user" size={24} color="#10B981" />
+          <MaterialIcons name="verified-user" size={24} color="#16A34A" />
           <Text style={styles.badgePreviewText}>ID Verified Badge Activated</Text>
         </View>
         <TouchableOpacity style={styles.doneButton} onPress={onBack}>
@@ -255,13 +250,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
   if (step === 'face_scan') {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <View style={[styles.header, isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]}>
-          <TouchableOpacity onPress={() => setStep('document')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>3-Point Face Scan</Text>
-          <View style={{ width: 40 }} />
-        </View>
+        <LightHeader title="3-Point Face Scan" onBack={() => setStep('document')} />
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.stepProgressRow}>
@@ -287,7 +276,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
                 <Ionicons
                   name={scanStage === 1 ? 'person-outline' : scanStage === 2 ? 'arrow-back' : 'arrow-forward'}
                   size={64}
-                  color="#0EA5E9"
+                  color={isDarkMode ? '#38BDF8' : '#003399'}
                 />
               </View>
             </View>
@@ -320,13 +309,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
   if (step === 'document') {
     return (
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <View style={[styles.header, isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]}>
-          <TouchableOpacity onPress={() => setStep('overview')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Upload Government ID</Text>
-          <View style={{ width: 40 }} />
-        </View>
+        <LightHeader title="Upload Government ID" onBack={() => setStep('overview')} />
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.stepProgressRow}>
@@ -373,7 +356,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
               </View>
             ) : (
               <View style={styles.docPlaceholder}>
-                <Ionicons name="document-text-outline" size={48} color={isDarkMode ? '#38BDF8' : '#0EA5E9'} />
+                <Ionicons name="document-text-outline" size={48} color={isDarkMode ? '#38BDF8' : '#003399'} />
                 <Text style={[styles.placeholderTitle, isDarkMode && { color: '#F8FAFC' }]}>
                   Take a photo of your {selectedDocType === 'driver_license' ? "Driver's Licence" : selectedDocType === 'passport' ? 'Passport' : 'ID Card'}
                 </Text>
@@ -387,7 +370,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
                     <Text style={styles.actionBtnText}>Camera</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.actionBtnGallery} onPress={() => handlePickDocument(false)}>
-                    <Ionicons name="images-outline" size={18} color="#0EA5E9" />
+                    <Ionicons name="images-outline" size={18} color={isDarkMode ? '#38BDF8' : '#003399'} />
                     <Text style={styles.actionBtnGalleryText}>Gallery</Text>
                   </TouchableOpacity>
                 </View>
@@ -411,18 +394,12 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
   // RENDER: Overview Step
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <View style={[styles.header, isDarkMode && { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>ID Verification</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <LightHeader title="ID Verification" onBack={onBack} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={[styles.overviewCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
           <View style={styles.shieldIconWrapper}>
-            <MaterialIcons name="security" size={40} color="#0EA5E9" />
+            <MaterialIcons name="security" size={40} color={isDarkMode ? '#38BDF8' : '#003399'} />
           </View>
           <Text style={[styles.overviewTitle, isDarkMode && { color: '#F8FAFC' }]}>
             Earn the "ID Verified" Badge
@@ -456,7 +433,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
           </View>
 
           <View style={styles.benefitRow}>
-            <View style={[styles.stepNumCircle, { backgroundColor: '#10B981' }]}><Ionicons name="checkmark" size={16} color="#fff" /></View>
+            <View style={[styles.stepNumCircle, { backgroundColor: '#16A34A' }]}><Ionicons name="checkmark" size={16} color="#fff" /></View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.benefitTitle, isDarkMode && { color: '#F8FAFC' }]}>Instant ID Verified Badge</Text>
               <Text style={[styles.benefitDesc, isDarkMode && { color: '#94A3B8' }]}>
@@ -478,31 +455,12 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F4F6FB',
   },
   centerContent: {
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 54 : 36,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: RFValue(17),
-    fontWeight: '700',
-    color: '#0F172A',
   },
   scrollContent: {
     padding: 20,
@@ -510,23 +468,23 @@ const styles = StyleSheet.create({
   },
   overviewCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 24,
     alignItems: 'center',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
     elevation: 2,
   },
   shieldIconWrapper: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: 'rgba(14, 165, 233, 0.12)',
+    backgroundColor: 'rgba(0,51,153,0.08)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -546,11 +504,16 @@ const styles = StyleSheet.create({
   },
   infoSection: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#E8ECF4',
     marginBottom: 24,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    elevation: 2,
   },
   sectionHeading: {
     fontSize: RFValue(15),
@@ -567,7 +530,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#0EA5E9',
+    backgroundColor: '#003399',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -589,17 +552,17 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   startVerifyBtn: {
-    backgroundColor: '#0EA5E9',
-    borderRadius: 12,
-    paddingVertical: 16,
+    backgroundColor: '#ff6b35',
+    borderRadius: 14,
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#0EA5E9',
+    shadowColor: '#ff6b35',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 3,
   },
   startVerifyBtnText: {
     color: '#FFFFFF',
@@ -616,16 +579,16 @@ const styles = StyleSheet.create({
   stepDot: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 20,
     backgroundColor: '#E2E8F0',
     justifyContent: 'center',
     alignItems: 'center',
   },
   stepDotActive: {
-    backgroundColor: '#0EA5E9',
+    backgroundColor: '#003399',
   },
   stepDotDone: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#16A34A',
   },
   stepDotText: {
     color: '#fff',
@@ -652,16 +615,16 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 8,
-    borderRadius: 10,
+    borderRadius: 14,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#E8ECF4',
     alignItems: 'center',
     marginHorizontal: 4,
   },
   docTypeBtnSelected: {
-    backgroundColor: '#0EA5E9',
-    borderColor: '#0EA5E9',
+    backgroundColor: '#003399',
+    borderColor: '#003399',
   },
   docTypeBtnText: {
     fontSize: RFValue(11),
@@ -671,7 +634,7 @@ const styles = StyleSheet.create({
   },
   docPreviewBox: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1.5,
     borderStyle: 'dashed',
     borderColor: '#CBD5E1',
@@ -706,10 +669,10 @@ const styles = StyleSheet.create({
   actionBtnCamera: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0EA5E9',
+    backgroundColor: '#ff6b35',
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 14,
     gap: 6,
   },
   actionBtnText: {
@@ -720,14 +683,14 @@ const styles = StyleSheet.create({
   actionBtnGallery: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(14, 165, 233, 0.1)',
+    backgroundColor: 'rgba(0,51,153,0.08)',
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 14,
     gap: 6,
   },
   actionBtnGalleryText: {
-    color: '#0EA5E9',
+    color: '#003399',
     fontSize: RFValue(13),
     fontWeight: '600',
   },
@@ -760,9 +723,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   nextButton: {
-    backgroundColor: '#0EA5E9',
-    borderRadius: 12,
-    paddingVertical: 16,
+    backgroundColor: '#ff6b35',
+    borderRadius: 14,
+    height: 52,
+    shadowColor: '#ff6b35',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 3,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -798,11 +766,11 @@ const styles = StyleSheet.create({
     height: 280,
     borderRadius: 110,
     borderWidth: 3,
-    borderColor: '#0EA5E9',
+    borderColor: '#003399',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(14, 165, 233, 0.05)',
+    backgroundColor: 'rgba(0,51,153,0.04)',
     marginBottom: 24,
   },
   ovalFrame: {
@@ -813,13 +781,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ovalStage1: {
-    borderColor: '#0EA5E9',
+    borderColor: '#003399',
   },
   ovalStage2: {
-    borderColor: '#F59E0B',
+    borderColor: '#D97706',
   },
   ovalStage3: {
-    borderColor: '#10B981',
+    borderColor: '#16A34A',
   },
   stageIndicatorRow: {
     flexDirection: 'row',
@@ -833,7 +801,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E2E8F0',
   },
   stagePillDone: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#16A34A',
   },
   stagePillText: {
     fontSize: RFValue(11),
@@ -841,10 +809,10 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   captureButton: {
-    backgroundColor: '#0EA5E9',
+    backgroundColor: '#ff6b35',
     paddingVertical: 14,
     paddingHorizontal: 28,
-    borderRadius: 12,
+    borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -873,7 +841,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    backgroundColor: 'rgba(22, 163, 74, 0.12)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -895,7 +863,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(22, 163, 74, 0.1)',
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 20,
@@ -904,13 +872,13 @@ const styles = StyleSheet.create({
   badgePreviewText: {
     fontSize: RFValue(13),
     fontWeight: '700',
-    color: '#10B981',
+    color: '#16A34A',
   },
   doneButton: {
-    backgroundColor: '#0EA5E9',
+    backgroundColor: '#ff6b35',
     paddingVertical: 14,
     paddingHorizontal: 32,
-    borderRadius: 12,
+    borderRadius: 14,
   },
   doneButtonText: {
     color: '#fff',
@@ -919,11 +887,11 @@ const styles = StyleSheet.create({
   },
   verifiedCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 24,
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#10B981',
+    borderColor: '#16A34A',
   },
   verifiedIconLarge: {
     marginBottom: 12,
@@ -944,9 +912,9 @@ const styles = StyleSheet.create({
   verifiedMetaBox: {
     width: '100%',
     backgroundColor: '#F8FAFC',
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#E8ECF4',
     padding: 16,
     marginBottom: 24,
     gap: 12,
@@ -969,7 +937,7 @@ const styles = StyleSheet.create({
   badgePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    backgroundColor: 'rgba(22, 163, 74, 0.15)',
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 12,
@@ -978,6 +946,6 @@ const styles = StyleSheet.create({
   badgePillText: {
     fontSize: RFValue(11),
     fontWeight: '700',
-    color: '#10B981',
+    color: '#16A34A',
   },
 });

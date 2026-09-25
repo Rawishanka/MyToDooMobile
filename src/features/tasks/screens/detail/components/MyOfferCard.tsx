@@ -37,7 +37,9 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
   return (
     <View style={[styles.container, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#38BDF8" }]}>
       <View style={[styles.header, isDarkMode && { borderBottomColor: "#334155" }]}>
-        <Ionicons name="document-text" size={20} color={isDarkMode ? "#38BDF8" : CARD_TEXT} />
+        <View style={[styles.headerChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
+          <Ionicons name="document-text-outline" size={18} color={isDarkMode ? "#38BDF8" : CARD_TEXT} />
+        </View>
         <Text style={[styles.headerText, isDarkMode && { color: "#38BDF8" }]}>
           {isViewingOthersOffer ? 'Offer' : 'Your Offer'}
         </Text>
@@ -94,7 +96,7 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
 
         {/* Status Info */}
         <View style={[styles.infoContainer, isDarkMode && { backgroundColor: "#0F172A" }]}>
-          <Ionicons name="information-circle-outline" size={16} color={CARD_TEXT_MUTED} />
+          <Ionicons name="information-circle-outline" size={18} color={isDarkMode ? "#94A3B8" : CARD_TEXT_MUTED} />
           <Text style={[styles.infoText, isDarkMode && { color: "#94A3B8" }]}>
             {status === 'completed'
               ? isViewingOthersOffer
@@ -117,25 +119,38 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
 const styles = StyleSheet.create({
   container: {
     backgroundColor: CARD_BG,
-    borderWidth: 2,
-    borderColor: CARD_DIVIDER,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  headerChip: {
+    width: 34,
+    height: 34,
     borderRadius: 12,
-    padding: isTablet ? wp('3%') : wp('4%'),
-    marginBottom: hp('2%'),
+    backgroundColor: CARD_CHIP_BG,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: hp('1.5%'),
-    paddingBottom: hp('1.5%'),
+    marginBottom: 14,
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: CARD_DIVIDER,
   },
   headerText: {
-    fontSize: RFValue(14),
+    fontSize: 16,
     fontWeight: '700',
     color: CARD_TEXT,
-    marginLeft: wp('2%'),
+    marginLeft: 10,
     flex: 1,
   },
   acceptedBadge: {
@@ -185,25 +200,27 @@ const styles = StyleSheet.create({
   },
   amountContainer: {
     backgroundColor: CARD_CHIP_BG,
-    padding: isTablet ? wp('2%') : wp('3%'),
-    borderRadius: 8,
+    padding: 14,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: 'rgba(255,255,255,0.14)',
   },
   amountLabel: {
-    fontSize: RFValue(11),
+    fontSize: 12,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
     color: CARD_TEXT_MUTED,
-    marginBottom: hp('0.5%'),
+    marginBottom: 4,
   },
   amount: {
-    fontSize: RFValue(isTablet ? 26 : 22),
+    fontSize: 26,
     fontWeight: '700',
     color: CARD_TEXT,
   },
   messageContainer: {
     backgroundColor: CARD_CHIP_BG,
-    padding: 12,
-    borderRadius: 8,
+    padding: 14,
+    borderRadius: 14,
   },
   messageLabel: {
     fontSize: RFValue(12),
@@ -220,8 +237,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     backgroundColor: CARD_CHIP_BG,
-    padding: 10,
-    borderRadius: 8,
+    padding: 12,
+    borderRadius: 14,
   },
   infoText: {
     fontSize: RFValue(12),
@@ -232,10 +249,16 @@ const styles = StyleSheet.create({
   },
   acceptOfferButton: {
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: 14,
+    height: 50,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    borderRadius: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: BRAND_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 3,
   },
   acceptOfferButtonText: {
     color: '#fff',

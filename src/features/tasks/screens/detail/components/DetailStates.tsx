@@ -1,4 +1,4 @@
-import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -10,7 +10,7 @@ export const LoadingState: React.FC = () => {
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#4CAF50'} />
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading task details...</Text>
     </View>
   );
@@ -35,7 +35,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ onRetry }) => {
         <Text style={styles.retryButtonText}>Try Again</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={[styles.backButton, isDarkMode && { borderColor: '#334155', borderWidth: 1, borderRadius: 8 }]}
+        style={[styles.backButton, isDarkMode && { borderColor: '#334155', borderWidth: 1, borderRadius: 14 }]}
         onPress={() => router.back()}
       >
         <Text style={[styles.backButtonText, isDarkMode && { color: '#38BDF8' }]}>Go Back</Text>
@@ -78,9 +78,10 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     backgroundColor: BRAND_ORANGE,
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: 40,
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 14,
     marginBottom: 12,
   },
   retryButtonText: {
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#007bff',
+    color: BRAND_BLUE,
     fontSize: RFValue(16),
     fontWeight: '600',
   },

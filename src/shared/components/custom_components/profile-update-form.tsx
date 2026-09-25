@@ -1,5 +1,6 @@
 import { useTheme } from '@/src/shared/theme';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED, CARD_DIVIDER, CARD_CHIP_BG } from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
 // components/custom_components/profile-update-form.tsx
 import { User } from '@/src/api/types/user';
 import { UserProfile } from '@/src/api/user-profile-api';
@@ -298,18 +299,11 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
   
   return (
     <KeyboardAvoidingView 
-      style={styles.container}
+      style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Profile</Text>
-        <View style={styles.placeholder} />
-      </View>
+      <LightHeader title="Edit Profile" onBack={onBack} />
       
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.contentWrapper}>
@@ -320,37 +314,38 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.form}>
-          <Text style={styles.sectionTitle}>Personal Information</Text>
+          <View style={[styles.formCard, isDarkMode && styles.formCardDark]}>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Personal Information</Text>
           
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>First Name</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#E2E8F0' }]}>First Name</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, isDarkMode && styles.inputDark]}
               value={firstName}
               onChangeText={setFirstName}
               placeholder="Enter your first name"
               autoCapitalize="words"
-              placeholderTextColor="#999"
+              placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
               maxLength={50}
             />
           </View>
           
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Last Name</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#E2E8F0' }]}>Last Name</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, isDarkMode && styles.inputDark]}
               value={lastName}
               onChangeText={setLastName}
               placeholder="Enter your last name"
               autoCapitalize="words"
-              placeholderTextColor="#999"
+              placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
               maxLength={50}
             />
           </View>
           
           <View style={styles.inputGroup}>
             <View style={styles.phoneLabelRow}>
-              <Text style={styles.label}>Phone Number</Text>
+              <Text style={[styles.label, isDarkMode && { color: '#E2E8F0' }]}>Phone Number</Text>
               <TouchableOpacity
                 style={styles.changePhoneBadge}
                 activeOpacity={0.8}
@@ -367,12 +362,12 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
               </TouchableOpacity>
             </View>
             <TextInput
-              style={[styles.input, styles.disabledInput]}
+              style={[styles.input, styles.disabledInput, isDarkMode && styles.inputDark]}
               value={phone || 'No phone number added'}
               editable={false}
               placeholder="Enter your phone number"
               keyboardType="phone-pad"
-              placeholderTextColor="#999"
+              placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
               maxLength={20}
             />
             <Text style={styles.phoneSecurityHint}>
@@ -381,29 +376,29 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           </View>
           
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Location</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#E2E8F0' }]}>Location</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, isDarkMode && styles.inputDark]}
               value={location}
               onChangeText={setLocation}
               placeholder="Sydney, NSW, Australia"
               autoCapitalize="words"
-              placeholderTextColor="#999"
+              placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
               maxLength={100}
             />
           </View>
           
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Bio</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#E2E8F0' }]}>Bio</Text>
             <TextInput
-              style={[styles.input, styles.textArea, bio.length > 280 && styles.inputNearLimit]}
+              style={[styles.input, styles.textArea, bio.length > 280 && styles.inputNearLimit, isDarkMode && styles.inputDark]}
               value={bio}
               onChangeText={setBio}
               placeholder="Tell others about yourself"
               multiline
               numberOfLines={4}
               textAlignVertical="top"
-              placeholderTextColor="#999"
+              placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
               maxLength={300}
             />
             <Text style={[styles.charCount, bio.length > 280 && styles.charCountWarning]}>
@@ -411,19 +406,22 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
             </Text>
           </View>
           
+          </View>
+
           {/* Skills Section */}
-          <Text style={styles.sectionTitle}>Skills</Text>
+          <View style={[styles.formCard, isDarkMode && styles.formCardDark]}>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Skills</Text>
           
           {/* What are you good at? — opens animated AddSkillsModal */}
           <View style={styles.skillGroup}>
-            <Text style={styles.label}>What are you good at?</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#E2E8F0' }]}>What are you good at?</Text>
 
             {/* Selected skills preview chips */}
             {goodAt.length > 0 && (
               <View style={styles.skillsTagsContainer}>
                 {goodAt.map((skill, index) => (
-                  <View key={index} style={styles.skillTag}>
-                    <Text style={styles.skillTagText}>{skill}</Text>
+                  <View key={index} style={[styles.skillTag, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                    <Text style={[styles.skillTagText, isDarkMode && { color: '#38BDF8' }]}>{skill}</Text>
                   </View>
                 ))}
               </View>
@@ -431,7 +429,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
 
             {/* Tap to open modal */}
             <TouchableOpacity
-              style={styles.openSkillsBtn}
+              style={[styles.openSkillsBtn, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#38BDF8' }]}
               onPress={() => setShowSkillsModal(true)}
               activeOpacity={0.75}
             >
@@ -456,7 +454,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           
           {/* How do you get around? */}
           <View style={styles.skillGroup}>
-            <Text style={styles.label}>How do you get around?</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#E2E8F0' }]}>How do you get around?</Text>
             <View style={styles.transportOptions}>
               {['Bicycle', 'Car', 'Online', 'Scooter', 'Truck', 'Walk'].map((option) => (
                 <TouchableOpacity
@@ -484,24 +482,24 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           
           {/* Languages */}
           <View style={styles.skillGroup}>
-            <Text style={styles.label}>What languages can you speak/write?</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#E2E8F0' }]}>What languages can you speak/write?</Text>
             <View style={styles.skillsTagsContainer}>
               {languages.map((lang, index) => (
-                <View key={index} style={styles.skillTag}>
-                  <Text style={styles.skillTagText}>{lang}</Text>
+                <View key={index} style={[styles.skillTag, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                  <Text style={[styles.skillTagText, isDarkMode && { color: '#38BDF8' }]}>{lang}</Text>
                   <TouchableOpacity onPress={() => setLanguages(languages.filter((_, i) => i !== index))}>
-                    <Ionicons name="close-circle" size={18} color="#666" />
+                    <Ionicons name="close-circle" size={18} color="#64748B" />
                   </TouchableOpacity>
                 </View>
               ))}
             </View>
             <View style={styles.addSkillContainer}>
               <TextInput
-                style={styles.addSkillInput}
+                style={[styles.addSkillInput, isDarkMode && styles.inputDark]}
                 value={newLanguage}
                 onChangeText={setNewLanguage}
                 placeholder="Add a language..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
                 maxLength={50}
               />
               <TouchableOpacity
@@ -520,24 +518,24 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           
           {/* Qualifications */}
           <View style={styles.skillGroup}>
-            <Text style={styles.label}>What qualifications do you have?</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#E2E8F0' }]}>What qualifications do you have?</Text>
             <View style={styles.skillsTagsContainer}>
               {qualifications.map((qual, index) => (
-                <View key={index} style={styles.skillTag}>
-                  <Text style={styles.skillTagText}>{qual}</Text>
+                <View key={index} style={[styles.skillTag, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                  <Text style={[styles.skillTagText, isDarkMode && { color: '#38BDF8' }]}>{qual}</Text>
                   <TouchableOpacity onPress={() => setQualifications(qualifications.filter((_, i) => i !== index))}>
-                    <Ionicons name="close-circle" size={18} color="#666" />
+                    <Ionicons name="close-circle" size={18} color="#64748B" />
                   </TouchableOpacity>
                 </View>
               ))}
             </View>
             <View style={styles.addSkillContainer}>
               <TextInput
-                style={styles.addSkillInput}
+                style={[styles.addSkillInput, isDarkMode && styles.inputDark]}
                 value={newQualification}
                 onChangeText={setNewQualification}
                 placeholder="Add a qualification..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
                 maxLength={100}
               />
               <TouchableOpacity
@@ -556,24 +554,24 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           
           {/* Work Experience */}
           <View style={styles.skillGroup}>
-            <Text style={styles.label}>What's your work experience?</Text>
+            <Text style={[styles.label, isDarkMode && { color: '#E2E8F0' }]}>What's your work experience?</Text>
             <View style={styles.skillsTagsContainer}>
               {experience.map((exp, index) => (
-                <View key={index} style={styles.skillTag}>
-                  <Text style={styles.skillTagText}>{exp}</Text>
+                <View key={index} style={[styles.skillTag, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                  <Text style={[styles.skillTagText, isDarkMode && { color: '#38BDF8' }]}>{exp}</Text>
                   <TouchableOpacity onPress={() => setExperience(experience.filter((_, i) => i !== index))}>
-                    <Ionicons name="close-circle" size={18} color="#666" />
+                    <Ionicons name="close-circle" size={18} color="#64748B" />
                   </TouchableOpacity>
                 </View>
               ))}
             </View>
             <View style={styles.addSkillContainer}>
               <TextInput
-                style={styles.addSkillInput}
+                style={[styles.addSkillInput, isDarkMode && styles.inputDark]}
                 value={newExperience}
                 onChangeText={setNewExperience}
                 placeholder="Add work experience..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
               />
               <TouchableOpacity
                 style={styles.addButton}
@@ -589,15 +587,18 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
             </View>
           </View>
           
+          </View>
+
           {/* Notification Preferences */}
-          <Text style={styles.sectionTitle}>Notification Preferences</Text>
+          <View style={[styles.formCard, isDarkMode && styles.formCardDark]}>
+          <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Notification Preferences</Text>
           
-          <View style={styles.notifCard}>
+          <View style={[styles.notifCard, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
             {/* Register as a Tasker */}
             <View style={styles.notifRow}>
               <View style={styles.notifTextBlock}>
-                <Text style={styles.notifLabel}>Register as a Tasker</Text>
-                <Text style={styles.notifDesc}>Receive notifications when new tasks are posted on the platform.</Text>
+                <Text style={[styles.notifLabel, isDarkMode && { color: '#F8FAFC' }]}>Register as a Tasker</Text>
+                <Text style={[styles.notifDesc, isDarkMode && { color: '#94A3B8' }]}>Receive notifications when new tasks are posted on the platform.</Text>
               </View>
               <Switch
                 value={notifyNewTask}
@@ -605,7 +606,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                   setNotifyNewTask(val);
                   if (!val) setNotifySkillMatch(false);
                 }}
-                trackColor={{ false: '#ddd', true: BRAND_ORANGE }}
+                trackColor={{ false: '#CBD5E1', true: BRAND_ORANGE }}
                 thumbColor={notifyNewTask ? '#fff' : '#f4f3f4'}
               />
             </View>
@@ -622,10 +623,12 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                 value={notifySkillMatch && notifyNewTask}
                 onValueChange={(val) => { if (notifyNewTask) setNotifySkillMatch(val); }}
                 disabled={!notifyNewTask}
-                trackColor={{ false: '#ddd', true: BRAND_ORANGE }}
+                trackColor={{ false: '#CBD5E1', true: BRAND_ORANGE }}
                 thumbColor={(notifySkillMatch && notifyNewTask) ? '#fff' : '#f4f3f4'}
               />
             </View>
+          </View>
+
           </View>
 
           {/* Extra padding to ensure fields are visible above keyboard */}
@@ -636,7 +639,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
       </TouchableWithoutFeedback>
       
       {/* Save Button */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, isDarkMode && { backgroundColor: '#0B1120', borderTopColor: '#334155' }]}>
         <TouchableOpacity
           style={[styles.saveButton, updateProfile.isPending && styles.saveButtonDisabled]}
           onPress={handleSaveProfile}
@@ -791,27 +794,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: BRAND_BLUE, backgroundColor: BRAND_BLUE,
-},
-  backButton: {
-    padding: 5,
-  },
-  headerTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
-    color: CARD_TEXT,
-  },
-  placeholder: {
-    width: 34, // Same as back button to center the title
+    backgroundColor: '#F4F6FB',
   },
   content: {
     flex: 1,
@@ -823,67 +806,98 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   form: {
-    padding: 20,
+    padding: 16,
+  },
+  formCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    padding: 16,
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+  formCardDark: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
+  },
+  inputDark: {
+    backgroundColor: '#0F172A',
+    borderColor: '#334155',
+    color: '#F8FAFC',
   },
   sectionTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 20,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 16,
   },
   inputGroup: {
     marginBottom: 20,
   },
   label: {
-    fontSize: RFValue(14),
-    fontWeight: '500',
-    color: '#333',
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#334155',
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    borderColor: '#E8ECF4',
+    borderRadius: 14,
+    paddingHorizontal: 14,
     paddingVertical: 12,
-    fontSize: RFValue(16),
-    backgroundColor: '#f9f9f9',
+    fontSize: RFValue(15),
+    color: '#0F172A',
+    backgroundColor: '#F8FAFC',
   },
   textArea: {
     height: 100,
     paddingTop: 12,
   },
   inputNearLimit: {
-    borderColor: '#e67e22',
+    borderColor: '#D97706',
   },
   charCount: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: '#64748B',
     textAlign: 'right',
     marginTop: 4,
   },
   charCountWarning: {
-    color: '#e67e22',
+    color: '#D97706',
     fontWeight: '600',
   },
   footer: {
-    padding: 20,
+    padding: 16,
+    paddingBottom: 28,
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: '#E8ECF4',
   },
   saveButton: {
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: 16,
-    borderRadius: 8,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: BRAND_ORANGE,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   saveButtonDisabled: {
-    backgroundColor: '#ccc',
+    opacity: 0.6,
   },
   saveButtonText: {
-    color: '#fff',
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
   },
   // Modal Styles
   modalOverlay: {
@@ -915,14 +929,14 @@ const styles = StyleSheet.create({
   },
   modalMessage: {
     fontSize: RFValue(15),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 8,
     lineHeight: 22,
   },
   modalSubMessage: {
     fontSize: RFValue(13),
-    color: '#999',
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -942,7 +956,7 @@ const styles = StyleSheet.create({
   modalCancelText: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#666',
+    color: '#64748B',
   },
   modalSendButton: {
     flex: 1,
@@ -1008,7 +1022,7 @@ const styles = StyleSheet.create({
   },
   modalFooterText: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: '#64748B',
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -1025,10 +1039,10 @@ const styles = StyleSheet.create({
   skillTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#e3f2fd',
+    backgroundColor: 'rgba(0,51,153,0.08)',
     paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 16,
+    borderRadius: 14,
     gap: 6,
   },
   skillTagText: {
@@ -1042,11 +1056,11 @@ const styles = StyleSheet.create({
     gap: 8,
     borderWidth: 1.5,
     borderColor: '#003399',
-    borderRadius: 10,
+    borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 14,
     marginTop: 8,
-    backgroundColor: '#f0f6ff',
+    backgroundColor: '#FFFFFF',
   },
   openSkillsBtnText: {
     fontSize: RFValue(15),
@@ -1060,18 +1074,19 @@ const styles = StyleSheet.create({
   addSkillInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    borderColor: '#E8ECF4',
+    borderRadius: 14,
+    paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: RFValue(15),
-    backgroundColor: '#f9f9f9',
+    color: '#0F172A',
+    backgroundColor: '#F8FAFC',
   },
   addButton: {
-    backgroundColor: '#003399',
+    backgroundColor: '#ff6b35',
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1088,10 +1103,10 @@ const styles = StyleSheet.create({
   transportOption: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#f9f9f9',
+    borderColor: '#E8ECF4',
+    backgroundColor: '#F8FAFC',
   },
   transportOptionSelected: {
     backgroundColor: '#003399',
@@ -1099,28 +1114,28 @@ const styles = StyleSheet.create({
   },
   transportOptionText: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: '#334155',
   },
   transportOptionTextSelected: {
     color: '#fff',
     fontWeight: '600',
   },
   disabledInput: {
-    backgroundColor: '#f0f0f0',
-    color: '#888',
+    backgroundColor: '#F1F5F9',
+    color: '#94A3B8',
   },
   webOnlyMessage: {
     fontSize: RFValue(12),
-    color: '#dc3545',
+    color: '#DC2626',
     marginTop: 4,
   },
   // Notification Preferences Styles
   notifCard: {
-    backgroundColor: CARD_BG,
-    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
-    marginBottom: 24,
+    borderColor: '#E8ECF4',
+    marginBottom: 4,
     overflow: 'hidden',
   },
   notifRow: {
@@ -1139,20 +1154,20 @@ const styles = StyleSheet.create({
   notifLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: CARD_TEXT,
+    color: '#0F172A',
     marginBottom: 3,
   },
   notifLabelDisabled: {
-    color: CARD_TEXT_MUTED,
+    color: '#94A3B8',
   },
   notifDesc: {
     fontSize: RFValue(12),
-    color: CARD_TEXT_MUTED,
+    color: '#64748B',
     lineHeight: 17,
   },
   notifDivider: {
     height: 1,
-    backgroundColor: CARD_DIVIDER,
+    backgroundColor: '#E8ECF4',
     marginHorizontal: 16,
   },
   phoneLabelRow: {
@@ -1165,12 +1180,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "#EFF6FF",
+    backgroundColor: "rgba(0,51,153,0.08)",
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#BFDBFE",
+    borderColor: "#E8ECF4",
   },
   changePhoneBadgeText: {
     fontSize: RFValue(11.5),
@@ -1179,7 +1194,7 @@ const styles = StyleSheet.create({
   },
   phoneSecurityHint: {
     fontSize: RFValue(11.5),
-    color: "#059669",
+    color: "#16A34A",
     marginTop: 4,
     fontWeight: "500",
   },
@@ -1318,7 +1333,7 @@ const styles = StyleSheet.create({
     flex: 1.6,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: "#003399",
+    backgroundColor: "#ff6b35",
     alignItems: "center",
     justifyContent: "center",
   },

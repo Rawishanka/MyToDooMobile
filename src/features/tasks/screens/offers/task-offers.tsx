@@ -94,7 +94,7 @@ export default function TaskOffersScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backIcon}>
-          <Ionicons name="arrow-back" size={24} color={CARD_TEXT} />
+          <Ionicons name="chevron-back" size={22} color={CARD_TEXT} />
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerTitle}>Offers</Text>
@@ -106,11 +106,13 @@ export default function TaskOffersScreen() {
       </View>
 
       {/* Task Summary */}
+      <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
       <TaskSummaryHeader
         title={task.title}
         budget={displayBudget}
         offerCount={task.offerCount || offers.length}
       />
+      </View>
 
       {/* Offers List */}
       {offers.length === 0 ? (
@@ -120,7 +122,7 @@ export default function TaskOffersScreen() {
           data={offers}
           keyExtractor={(item) => item._id}
           renderItem={renderOffer}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingTop: 2, paddingBottom: 24 }}
           showsVerticalScrollIndicator={false}
           refreshing={isLoading}
           onRefresh={refetch}
@@ -139,23 +141,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 60 : 50,
-    paddingBottom: 15,
+    paddingBottom: 14,
     backgroundColor: BRAND_BLUE,
-    borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
   },
   backIcon: {
-    padding: 5,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTextContainer: {
     flex: 1,
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: CARD_TEXT,
   },
   headerSubtitle: {
@@ -164,6 +169,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   headerRight: {
-    width: 34,
+    width: 36,
   },
 });

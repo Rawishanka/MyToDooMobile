@@ -6,7 +6,8 @@ import { useCreateServiceListing } from '@/src/shared/hooks/useServiceListingApi
 import { validateContactContent } from '@/src/shared/utils/contactModeration';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -221,18 +222,7 @@ export default function CreateServiceScreen({
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 20 : 0}
     >
-      <View
-        style={[
-          styles.header,
-          { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 },
-          isDarkMode && { backgroundColor: '#0F172A', borderBottomColor: '#334155' },
-        ]}
-      >
-        <TouchableOpacity onPress={handleBack} style={styles.backButton} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Offer a Service</Text>
-      </View>
+      <LightHeader title="Offer a Service" onBack={handleBack} />
 
       <ScrollView
         contentContainerStyle={[styles.content, suburbDropdownOpen && { paddingBottom: 380 }]}
@@ -244,7 +234,7 @@ export default function CreateServiceScreen({
           <View>
             {/* Info Banner */}
             <View style={[styles.infoBanner, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
-              <MaterialCommunityIcons name="shield-check-outline" size={20} color="#0284C7" style={{ marginTop: 2 }} />
+              <IconChip name="shield-checkmark-outline" />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.infoBannerTitle, isDarkMode && { color: '#F8FAFC' }]}>List your skills on MyToDoo</Text>
                 <Text style={[styles.infoBannerSub, isDarkMode && { color: '#94A3B8' }]}>
@@ -253,6 +243,7 @@ export default function CreateServiceScreen({
               </View>
             </View>
 
+            <View style={[styles.formCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             {/* Category Picker */}
             <View style={styles.labelRow}>
               <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Category *</Text>
@@ -287,6 +278,7 @@ export default function CreateServiceScreen({
                     style={{ marginRight: 10 }}
                   />
                   <Text
+                    numberOfLines={1}
                     style={[
                       styles.categorySelectorValue,
                       isDarkMode && { color: '#F8FAFC' },
@@ -411,7 +403,7 @@ export default function CreateServiceScreen({
                 if (errors.title) setErrors((prev) => ({ ...prev, title: '' }));
               }}
               placeholder="e.g. Professional Lawn Mowing & Edging"
-              placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
+              placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
               maxLength={80}
             />
             {errors.title ? <Text style={styles.errorText}>{errors.title}</Text> : null}
@@ -446,7 +438,7 @@ export default function CreateServiceScreen({
                 if (errors.description) setErrors((prev) => ({ ...prev, description: '' }));
               }}
               placeholder="Describe your service in detail..."
-              placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
+              placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
               multiline
               textAlignVertical="top"
               maxLength={1000}
@@ -470,7 +462,7 @@ export default function CreateServiceScreen({
                     if (errors.price) setErrors((prev) => ({ ...prev, price: '' }));
                   }}
                   placeholder="e.g. 80"
-                  placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
+                  placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
                   keyboardType="decimal-pad"
                 />
                 {errors.price ? <Text style={styles.errorText}>{errors.price}</Text> : null}
@@ -491,7 +483,7 @@ export default function CreateServiceScreen({
                     if (errors.radius) setErrors((prev) => ({ ...prev, radius: '' }));
                   }}
                   placeholder="30"
-                  placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
+                  placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
                   keyboardType="number-pad"
                   maxLength={3}
                 />
@@ -521,10 +513,12 @@ export default function CreateServiceScreen({
             {errors.suburb ? <Text style={styles.errorText}>{errors.suburb}</Text> : null}
             {suburb ? (
               <View style={styles.selectedLocBadge}>
-                <Ionicons name="location" size={14} color="#0284C7" />
-                <Text style={[styles.selectedLocation, isDarkMode && { color: '#38BDF8' }]}>{suburb}</Text>
+                <Ionicons name="location" size={14} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                <Text style={[styles.selectedLocation, isDarkMode && { color: '#38BDF8' }]} numberOfLines={1}>{suburb}</Text>
               </View>
             ) : null}
+
+            </View>
 
             {/* Submit */}
             <TouchableOpacity
@@ -547,44 +541,46 @@ export default function CreateServiceScreen({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8f9fa' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+  container: { flex: 1, backgroundColor: '#F4F6FB' },
+  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 60 },
+  formCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    padding: 16,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
-  backButton: { padding: 4 },
-  headerTitle: {
-    fontSize: RFValue(17),
-    fontWeight: '700',
-    color: '#003399',
-    marginLeft: 10,
-  },
-  content: { padding: 16, paddingBottom: 60 },
   infoBanner: {
     flexDirection: 'row',
-    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: '#E8ECF4',
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   infoBannerTitle: {
-    fontSize: RFValue(13),
+    fontSize: 15,
     fontWeight: '700',
-    color: '#1E3A8A',
+    color: '#0F172A',
     marginBottom: 3,
   },
   infoBannerSub: {
-    fontSize: RFValue(11),
-    color: '#3B82F6',
-    lineHeight: RFValue(16),
+    fontSize: 12,
+    color: '#64748B',
+    lineHeight: 17,
   },
   labelRow: {
     flexDirection: 'row',
@@ -603,11 +599,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   charCounterWarning: {
-    color: '#F59E0B',
+    color: '#D97706',
     fontWeight: '600',
   },
   charCounterSuccess: {
-    color: '#10B981',
+    color: '#16A34A',
     fontWeight: '600',
   },
   helperText: {
@@ -621,32 +617,32 @@ const styles = StyleSheet.create({
     color: '#003399',
   },
   input: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#E8ECF4',
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 13,
     fontSize: RFValue(14),
-    color: '#1E293B',
+    color: '#0F172A',
   },
   inputError: {
-    borderColor: '#EF4444',
+    borderColor: '#DC2626',
     borderWidth: 1.5,
   },
   errorText: {
-    color: '#EF4444',
-    fontSize: RFValue(11),
+    color: '#DC2626',
+    fontSize: RFValue(12),
     marginTop: 4,
     marginLeft: 2,
   },
   textArea: { minHeight: 100 },
   row: { flexDirection: 'row' },
   categorySelectorBox: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#E8ECF4',
     paddingHorizontal: 14,
     paddingVertical: 13,
     flexDirection: 'row',
@@ -660,20 +656,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   categorySelectorValue: {
+    flex: 1,
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#1E293B',
+    color: '#0F172A',
   },
   categoryDropdownMenu: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     marginTop: 6,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
     elevation: 5,
     overflow: 'hidden',
   },
@@ -684,12 +681,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: '#F8FAFC',
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: '#E8ECF4',
   },
   categorySearchInput: {
     flex: 1,
     fontSize: RFValue(13.5),
-    color: '#1E293B',
+    color: '#0F172A',
     paddingVertical: 2,
   },
   categoryDropdownItem: {
@@ -702,7 +699,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F1F5F9',
   },
   categoryItemActive: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: 'rgba(0,51,153,0.08)',
   },
   categoryDropdownItemText: {
     fontSize: RFValue(13.5),
@@ -715,22 +712,24 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   selectedLocation: {
-    color: '#0284C7',
+    flexShrink: 1,
+    color: '#003399',
     fontSize: RFValue(12),
     fontWeight: '600',
   },
   submitButton: {
-    marginTop: 26,
-    backgroundColor: '#003399',
-    borderRadius: 12,
-    paddingVertical: 15,
+    marginTop: 20,
+    backgroundColor: '#ff6b35',
+    borderRadius: 14,
+    height: 52,
     alignItems: 'center',
-    shadowColor: '#003399',
+    justifyContent: 'center',
+    shadowColor: '#ff6b35',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  submitDisabled: { opacity: 0.7 },
-  submitText: { color: '#fff', fontSize: RFValue(15), fontWeight: '700' },
+  submitDisabled: { opacity: 0.6 },
+  submitText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
 });

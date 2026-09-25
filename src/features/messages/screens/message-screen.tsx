@@ -323,6 +323,7 @@ const MessageScreen: React.FC = () => {
         <TouchableOpacity
           onPress={() => setShowNotifications(true)}
           style={styles.notificationButton}
+          activeOpacity={0.7}
         >
           <Ionicons name="notifications-outline" size={24} color="#fff" />
           {notificationCount > 0 && (
@@ -370,10 +371,21 @@ const MessageScreen: React.FC = () => {
           }
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>
-              <Ionicons name="chatbubbles-outline" size={64} color={isDarkMode ? '#334155' : '#ccc'} />
-              <Text style={[styles.emptyText, isDarkMode && { color: '#94A3B8' }]}>
+              <View style={[styles.emptyIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
+                <Ionicons
+                  name={chatError ? 'cloud-offline-outline' : 'chatbubbles-outline'}
+                  size={40}
+                  color={isDarkMode ? '#38BDF8' : '#003399'}
+                />
+              </View>
+              <Text style={[styles.emptyText, isDarkMode && { color: '#F8FAFC' }]}>
                 {chatError ? 'Failed to load chats' : 'No messages yet'}
               </Text>
+              {!chatError && (
+                <Text style={[styles.emptySubText, isDarkMode && { color: '#94A3B8' }]}>
+                  Conversations with taskers and posters will appear here.
+                </Text>
+              )}
               {chatError && (
                 <TouchableOpacity onPress={handleRefresh} style={styles.retryButton}>
                   <Text style={styles.retryButtonText}>Try Again</Text>
@@ -432,17 +444,24 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   notificationButton: {
-    padding: isTablet ? 10 : 8,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
     position: 'relative',
   },
   notificationBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: -4,
+    right: -4,
     backgroundColor: '#ff6b35',
     borderRadius: 10,
     minWidth: 20,
     height: 20,
+    borderWidth: 1.5,
+    borderColor: '#003399',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
@@ -454,6 +473,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     flexGrow: 1,
+    paddingTop: 4,
     paddingBottom: TAB_BAR_CLEARANCE,
   },
   loadingContainer: {
@@ -464,8 +484,8 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(isTablet ? 18 : 16),
-    color: '#8E8E93',
-    marginTop: isTablet ? hp('1.5%') : hp('1.2%'),
+    color: '#64748B',
+    marginTop: 12,
   },
   emptyContainer: {
     flex: 1,
@@ -473,23 +493,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: isTablet ? hp('8%') : hp('7.5%'),
   },
+  emptyIconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(0,51,153,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emptyText: {
-    fontSize: RFValue(isTablet ? 18 : 16),
-    color: '#8E8E93',
-    marginTop: isTablet ? hp('2%') : hp('2%'),
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginTop: 16,
     textAlign: 'center',
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: '#64748B',
+    marginTop: 6,
+    textAlign: 'center',
+    paddingHorizontal: 32,
   },
   retryButton: {
     marginTop: isTablet ? hp('2%') : hp('2%'),
     paddingHorizontal: isTablet ? wp('5%') : wp('5%'),
     paddingVertical: isTablet ? hp('1.5%') : hp('1.2%'),
-    backgroundColor: '#003399',
-    borderRadius: isTablet ? 10 : 8,
+    backgroundColor: '#ff6b35',
+    borderRadius: 14,
+    height: 48,
+    justifyContent: 'center',
+    shadowColor: '#ff6b35',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   retryButtonText: {
     color: '#fff',
-    fontSize: RFValue(isTablet ? 16 : 16),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
 

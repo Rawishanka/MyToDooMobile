@@ -7,7 +7,7 @@ interface LoadingStateProps {}
 
 export const LoadingState: React.FC<LoadingStateProps> = () => (
   <View style={styles.loadingContainer}>
-    <ActivityIndicator size="large" color="#007bff" />
+    <ActivityIndicator size="large" color="#003399" />
     <Text style={styles.loadingText}>Loading task details...</Text>
   </View>
 );
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
   },
   errorContainer: {
     flex: 1,
@@ -54,14 +54,14 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     fontSize: RFValue(20),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0D1B2A',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#64748B',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -70,8 +70,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#007bff',
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    color: '#003399',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

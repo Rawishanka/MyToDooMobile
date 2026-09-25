@@ -96,7 +96,7 @@ const TaskMapModal: React.FC<TaskMapModalProps> = ({ visible, onClose, task }) =
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.backButton} activeOpacity={0.7}>
-            <Ionicons name="chevron-back" size={24} color={CARD_TEXT} />
+            <Ionicons name="chevron-back" size={22} color={CARD_TEXT} />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerTitle} numberOfLines={1}>
@@ -134,22 +134,26 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: CARD_DIVIDER,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 0,
     backgroundColor: BRAND_BLUE,
   },
   backButton: {
-    padding: 6,
-    marginRight: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
   headerTitleContainer: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     color: CARD_TEXT,
   },
   headerSubtitle: {

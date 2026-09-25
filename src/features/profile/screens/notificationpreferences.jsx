@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -8,13 +7,12 @@ import {
   TouchableOpacity,
   View,
   Switch,
-  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUpdateUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 import { useTheme } from '@/src/shared/theme';
 import { AppAlert } from '@/src/shared/components/AppAlert';
-import { RFValue } from '@/src/shared/utils/responsive';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 export default function NotificationPreferences({ onBack, userData }) {
   const { isDarkMode } = useTheme();
@@ -45,68 +43,51 @@ export default function NotificationPreferences({ onBack, userData }) {
     }
   };
 
+  const trackOff = isDarkMode ? '#475569' : '#CBD5E1';
+
   return (
-    <ScrollView
-      style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}
-      contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
-    >
-      {/* Header */}
-      <View
-        style={[
-          styles.header,
-          { paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 16 },
-          isDarkMode && { backgroundColor: '#0F172A', borderBottomColor: '#334155' },
-        ]}
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <LightHeader
+        title="Tasker Preferences"
+        onBack={onBack}
+        right={
+          <TouchableOpacity onPress={handleSave} disabled={saving} style={styles.saveBtn} activeOpacity={0.7}>
+            {saving ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.saveText}>Save</Text>
+            )}
+          </TouchableOpacity>
+        }
+      />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: insets.bottom + 32 }}
+        showsVerticalScrollIndicator={false}
       >
-        <TouchableOpacity
-          onPress={onBack}
-          style={styles.backButton}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        {/* Info Banner */}
+        <View
+          style={[
+            styles.infoBanner,
+            isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
+          ]}
         >
-          <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>
-          Tasker Preferences
-        </Text>
-        <TouchableOpacity onPress={handleSave} disabled={saving} style={styles.saveBtn}>
-          {saving ? (
-            <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#003399'} />
-          ) : (
-            <Text style={[styles.saveText, isDarkMode && { color: '#38BDF8' }]}>Save</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+          <IconChip name="information-circle-outline" size={36} />
+          <Text style={[styles.infoText, isDarkMode && { color: '#94A3B8' }]}>
+            Control how you get notified about new tasks on the platform.
+          </Text>
+        </View>
 
-      {/* Info Banner */}
-      <View
-        style={[
-          styles.infoBanner,
-          isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
-        ]}
-      >
-        <Ionicons
-          name="information-circle-outline"
-          size={18}
-          color={isDarkMode ? '#38BDF8' : '#003399'}
-        />
-        <Text style={[styles.infoText, isDarkMode && { color: '#94A3B8' }]}>
-          Control how you get notified about new tasks on the platform.
-        </Text>
-      </View>
+        {/* Tasker Section */}
+        <Text style={[styles.sectionLabel, isDarkMode && { color: '#94A3B8' }]}>TASK NOTIFICATIONS</Text>
 
-      {/* Tasker Section */}
-      <View
-        style={[
-          styles.section,
-          isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' },
-        ]}
-      >
-        <Text style={[styles.sectionTitle, isDarkMode && { color: '#94A3B8' }]}>
-          TASK NOTIFICATIONS
-        </Text>
-
-        {/* Register as Tasker toggle */}
-        <View style={[styles.row, isDarkMode && { borderTopColor: '#334155' }]}>
+        <View
+          style={[
+            styles.row,
+            isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
+          ]}
+        >
+          <IconChip name="notifications-outline" style={styles.rowIcon} />
           <View style={styles.rowContent}>
             <Text style={[styles.rowLabel, isDarkMode && { color: '#F8FAFC' }]}>
               Register as a Tasker
@@ -121,36 +102,24 @@ export default function NotificationPreferences({ onBack, userData }) {
               setNotifyNewTask(val);
               if (!val) setNotifySkillMatch(false);
             }}
-            trackColor={{ false: isDarkMode ? '#475569' : '#ccc', true: '#003399' }}
+            trackColor={{ false: trackOff, true: '#ff6b35' }}
             thumbColor="#fff"
           />
         </View>
 
-        {/* Skillset only toggle */}
         <View
           style={[
             styles.row,
-            isDarkMode && { borderTopColor: '#334155' },
+            isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
             !notifyNewTask && styles.rowDisabled,
           ]}
         >
+          <IconChip name="options-outline" style={styles.rowIcon} />
           <View style={styles.rowContent}>
-            <Text
-              style={[
-                styles.rowLabel,
-                isDarkMode && { color: '#F8FAFC' },
-                !notifyNewTask && styles.labelDisabled,
-              ]}
-            >
+            <Text style={[styles.rowLabel, isDarkMode && { color: '#F8FAFC' }]}>
               Only notify tasks in my skillset
             </Text>
-            <Text
-              style={[
-                styles.rowDesc,
-                isDarkMode && { color: '#94A3B8' },
-                !notifyNewTask && styles.labelDisabled,
-              ]}
-            >
+            <Text style={[styles.rowDesc, isDarkMode && { color: '#94A3B8' }]}>
               Filter notifications to tasks that match your skills only.
             </Text>
           </View>
@@ -160,138 +129,128 @@ export default function NotificationPreferences({ onBack, userData }) {
               if (notifyNewTask) setNotifySkillMatch(val);
             }}
             disabled={!notifyNewTask}
-            trackColor={{ false: isDarkMode ? '#475569' : '#ccc', true: '#003399' }}
+            trackColor={{ false: trackOff, true: '#ff6b35' }}
             thumbColor="#fff"
           />
         </View>
-      </View>
 
-      {/* Save Button */}
-      <TouchableOpacity
-        style={[styles.saveButton, saving && styles.saveButtonDisabled]}
-        onPress={handleSave}
-        disabled={saving}
-        activeOpacity={0.85}
-      >
-        {saving ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.saveButtonText}>Save Preferences</Text>
-        )}
-      </TouchableOpacity>
-    </ScrollView>
+        {/* Save Button */}
+        <TouchableOpacity
+          style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+          onPress={handleSave}
+          disabled={saving}
+          activeOpacity={0.85}
+        >
+          {saving ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.saveButtonText}>Save Preferences</Text>
+          )}
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F4F6FB',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    justifyContent: 'space-between',
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: RFValue(17),
-    fontWeight: '700',
-    color: '#003399',
-    flex: 1,
-    textAlign: 'center',
-  },
+  scroll: { flex: 1 },
   saveBtn: {
     minWidth: 44,
     alignItems: 'flex-end',
   },
   saveText: {
-    fontSize: RFValue(15),
-    color: '#003399',
-    fontWeight: '600',
+    fontSize: 15,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   infoBanner: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#EEF4FF',
-    margin: 16,
-    padding: 12,
-    borderRadius: 10,
-    gap: 8,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    marginBottom: 20,
+    padding: 14,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#D0E4FF',
+    borderColor: '#E8ECF4',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   infoText: {
     flex: 1,
-    fontSize: RFValue(13),
-    color: '#003399',
-    lineHeight: 18,
+    marginLeft: 12,
+    fontSize: 13,
+    color: '#64748B',
+    lineHeight: 19,
   },
-  section: {
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: RFValue(12),
-    color: '#999',
-    fontWeight: '600',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-    letterSpacing: 0.5,
+  sectionLabel: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    marginBottom: 10,
+    marginLeft: 4,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-    gap: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E8ECF4',
+    padding: 14,
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.07,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
+  rowIcon: { marginRight: 12 },
   rowDisabled: {
-    opacity: 0.45,
+    opacity: 0.5,
   },
   rowContent: {
     flex: 1,
+    minWidth: 0,
+    marginRight: 10,
   },
   rowLabel: {
-    fontSize: RFValue(14),
+    fontSize: 15,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#0F172A',
     marginBottom: 2,
   },
   rowDesc: {
-    fontSize: RFValue(12),
-    color: '#666',
+    fontSize: 12,
+    color: '#64748B',
     lineHeight: 17,
   },
-  labelDisabled: {
-    color: '#aaa',
-  },
   saveButton: {
-    backgroundColor: '#003399',
-    marginHorizontal: 16,
-    borderRadius: 12,
-    paddingVertical: 15,
+    backgroundColor: '#ff6b35',
+    borderRadius: 14,
+    height: 52,
+    marginTop: 6,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#ff6b35',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   saveButtonDisabled: {
     opacity: 0.6,
   },
   saveButtonText: {
-    color: '#fff',
-    fontSize: RFValue(15),
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '700',
   },
 });

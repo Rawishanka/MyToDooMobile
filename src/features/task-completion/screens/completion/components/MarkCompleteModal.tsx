@@ -43,7 +43,7 @@ export default function MarkCompleteModal({
           <View style={[styles.header, !isDarkMode && styles.headerBand]}>
             <Text style={[styles.title, !isDarkMode && { color: CARD_TEXT }, isDarkMode && { color: '#F8FAFC' }]}>Mark Task Complete</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={isDarkMode ? "#666" : CARD_TEXT} />
+              <Ionicons name="close" size={24} color={isDarkMode ? "#94A3B8" : CARD_TEXT} />
             </TouchableOpacity>
           </View>
 
@@ -54,7 +54,7 @@ export default function MarkCompleteModal({
           <TextInput
             style={[styles.input, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
             placeholder="Completion notes..."
-            placeholderTextColor="#999"
+            placeholderTextColor="#94A3B8"
             value={completionNotes}
             onChangeText={setCompletionNotes}
             multiline={true}
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   },
   content: {
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 20,
     overflow: 'hidden',
     padding: 20,
     width: '100%',
@@ -104,12 +104,12 @@ const styles = StyleSheet.create({
     marginHorizontal: -20,
     marginTop: -20,
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingVertical: 16,
   },
   title: {
-    fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#000',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0D1B2A',
   },
   description: {
     fontSize: RFValue(14),
@@ -117,12 +117,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: RFValue(16),
-    height: 80,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF',
+    color: '#0D1B2A',
+    borderRadius: 14,
+    padding: 14,
+    fontSize: 16,
+    height: 96,
     textAlignVertical: 'top',
     marginBottom: 20,
   },
@@ -132,27 +134,34 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    paddingVertical: 12,
-    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 14,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#666',
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    color: '#475569',
+    fontSize: 16,
+    fontWeight: '700',
   },
   confirmButton: {
     flex: 1,
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: 12,
-    borderRadius: 8,
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 14,
     alignItems: 'center',
+    shadowColor: BRAND_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 3,
   },
   confirmButtonText: {
     color: '#fff',
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

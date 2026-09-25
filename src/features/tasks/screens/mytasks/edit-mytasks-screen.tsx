@@ -838,7 +838,7 @@ Please remove phone numbers and addresses from the image.`,
         {/* Fixed Header */}
         <View style={[styles.header, isDarkMode && darkStyles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
         </TouchableOpacity>
 
         <View style={styles.headerContent}>
@@ -863,7 +863,7 @@ Please remove phone numbers and addresses from the image.`,
           bounces={true}
         >
         {/* SECTION 1: TASK DETAILS */}
-        <View style={styles.section}>
+        <View style={[styles.section, isDarkMode && darkStyles.section, { zIndex: 4 }]}>
           {/* Category Selection */}
           <View style={styles.fieldContainer}>
             <Text style={[styles.label, isDarkMode && darkStyles.label]}>
@@ -904,7 +904,7 @@ Please remove phone numbers and addresses from the image.`,
 
                 <ScrollView style={styles.categoriesList} nestedScrollEnabled>
                   {loadingCategories ? (
-                    <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#0057FF'} style={styles.loader} />
+                    <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#003399'} style={styles.loader} />
                   ) : categories.length === 0 ? (
                     <Text style={styles.noResultsText}>No categories found</Text>
                   ) : (
@@ -929,7 +929,7 @@ Please remove phone numbers and addresses from the image.`,
                           >
                             {categoryName}
                           </Text>
-                          {selectedCategory === categoryName && <Ionicons name="checkmark" size={20} color={isDarkMode ? '#38BDF8' : '#0057FF'} />}
+                          {selectedCategory === categoryName && <Ionicons name="checkmark" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />}
                         </TouchableOpacity>
                       );
                     })
@@ -1002,8 +1002,13 @@ Please remove phone numbers and addresses from the image.`,
         <View style={[styles.divider, isDarkMode && darkStyles.divider]} />
 
         {/* SECTION 2: PHOTOS & LOCATION */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDarkMode && darkStyles.text]}>Photos & Location</Text>
+        <View style={[styles.section, isDarkMode && darkStyles.section, { zIndex: 3 }]}>
+          <View style={styles.sectionHeaderRow}>
+            <View style={[styles.sectionIconChip, isDarkMode && darkStyles.sectionIconChip]}>
+              <Ionicons name="images-outline" size={18} color={isDarkMode ? '#38BDF8' : '#003399'} />
+            </View>
+            <Text style={[styles.sectionTitle, isDarkMode && darkStyles.text]}>Photos & Location</Text>
+          </View>
           <Text style={[styles.sectionSubtitle, isDarkMode && darkStyles.subtleText]}>Help taskers understand what needs doing ({images.length}/{MAX_TASK_PHOTOS} photos)</Text>
 
           <View style={styles.imageSection}>
@@ -1027,15 +1032,15 @@ Please remove phone numbers and addresses from the image.`,
               >
                 {isProcessing || isOCRProcessing ? (
                   <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#467FFF'} />
+                    <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#003399'} />
                     {isOCRProcessing && (
                       <Text style={styles.loadingText}>Checking...</Text>
                     )}
                   </View>
                 ) : (
                   <>
-                    <Ionicons name="camera" size={24} color={isDarkMode ? '#38BDF8' : '#467FFF'} />
-                    <Ionicons name="add" size={16} color={isDarkMode ? '#38BDF8' : '#467FFF'} style={styles.addIcon} />
+                    <Ionicons name="camera" size={24} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                    <Ionicons name="add" size={16} color={isDarkMode ? '#38BDF8' : '#003399'} style={styles.addIcon} />
                   </>
                 )}
               </TouchableOpacity>
@@ -1067,7 +1072,7 @@ Please remove phone numbers and addresses from the image.`,
 
             {selectedLocation && (
               <View style={[styles.selectedLocationContainer, isDarkMode && darkStyles.selectedLocationContainer]}>
-                <Ionicons name="location" size={20} color={isDarkMode ? '#38BDF8' : '#0057FF'} />
+                <Ionicons name="location" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
                 <Text style={[styles.selectedLocationText, isDarkMode && darkStyles.selectedLocationText]} numberOfLines={2}>
                   {selectedLocation.address}
                 </Text>
@@ -1085,10 +1090,15 @@ Please remove phone numbers and addresses from the image.`,
         <View style={[styles.divider, isDarkMode && darkStyles.divider]} />
 
         {/* SECTION 3: WHEN */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDarkMode && darkStyles.text]}>
+        <View style={[styles.section, isDarkMode && darkStyles.section, { zIndex: 2 }]}>
+          <View style={styles.sectionHeaderRow}>
+            <View style={[styles.sectionIconChip, isDarkMode && darkStyles.sectionIconChip]}>
+              <Ionicons name="calendar-outline" size={18} color={isDarkMode ? '#38BDF8' : '#003399'} />
+            </View>
+            <Text style={[styles.sectionTitle, isDarkMode && darkStyles.text]}>
             When <Text style={styles.required}>*</Text>
           </Text>
+          </View>
           <Text style={[styles.sectionSubtitle, isDarkMode && darkStyles.subtleText]}>When do you need this done?</Text>
 
           {/* Date/Time Options - Match Create Task */}
@@ -1197,8 +1207,13 @@ Please remove phone numbers and addresses from the image.`,
         <View style={[styles.divider, isDarkMode && darkStyles.divider]} />
 
         {/* SECTION 4: BUDGET (Read-Only - Cannot be changed after task creation) */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, isDarkMode && darkStyles.text]}>Budget</Text>
+        <View style={[styles.section, isDarkMode && darkStyles.section, { zIndex: 1 }]}>
+          <View style={styles.sectionHeaderRow}>
+            <View style={[styles.sectionIconChip, isDarkMode && darkStyles.sectionIconChip]}>
+              <Ionicons name="cash-outline" size={18} color={isDarkMode ? '#38BDF8' : '#003399'} />
+            </View>
+            <Text style={[styles.sectionTitle, isDarkMode && darkStyles.text]}>Budget</Text>
+          </View>
           <Text style={[styles.sectionSubtitle, isDarkMode && darkStyles.subtleText]}>How much are you willing to pay?</Text>
 
           <View style={[styles.budgetInputContainer, isDarkMode && darkStyles.surface, styles.budgetReadOnly, isDarkMode && darkStyles.budgetReadOnly]}>
@@ -1253,7 +1268,7 @@ Please remove phone numbers and addresses from the image.`,
               <Text style={styles.saveButtonText}>Saving...</Text>
             </View>
           ) : (
-            <Text style={styles.saveButtonText}>Save Changes</Text>
+            <Text style={[styles.saveButtonText, !isFormValid && styles.saveButtonTextInactive]}>Save Changes</Text>
           )}
         </TouchableOpacity>
       )}
@@ -1269,11 +1284,11 @@ Please remove phone numbers and addresses from the image.`,
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
   },
   header: {
     // paddingTop is applied dynamically via insets.top for iOS notch support
@@ -1283,16 +1298,23 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   backButton: {
-    marginBottom: 15,
+    marginBottom: 12,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
   },
   headerContent: {
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: RFValue(22),
+    fontSize: RFValue(20),
     fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 5,
+    marginBottom: 4,
     textAlign: 'center',
   },
   headerSubtitle: {
@@ -1304,34 +1326,63 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     paddingBottom: 140,
   },
   section: {
-    marginBottom: 20,
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E4E9F4',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#001A66',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+      },
+      default: {},
+    }),
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 6,
+  },
+  sectionIconChip: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,51,153,0.10)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sectionTitle: {
-    fontSize: RFValue(22),
+    fontSize: RFValue(19),
     fontWeight: '700',
     color: '#1C1C1E',
-    marginBottom: 5,
+    flexShrink: 1,
   },
   sectionSubtitle: {
-    fontSize: RFValue(14),
-    color: '#8E8E93',
-    marginBottom: 20,
+    fontSize: RFValue(13),
+    color: '#6B7280',
+    marginBottom: 16,
+    lineHeight: 19,
   },
   divider: {
-    height: 1,
-    backgroundColor: '#E5E5EA',
-    marginVertical: 24,
+    height: 0,
+    marginVertical: 0,
+    backgroundColor: 'transparent',
   },
   fieldContainer: {
     marginBottom: 20,
   },
   label: {
-    fontSize: RFValue(16),
+    fontSize: RFValue(15),
     fontWeight: '600',
     color: '#1C1C1E',
     marginBottom: 8,
@@ -1361,12 +1412,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F7',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: '#E1E6F0',
   },
   categorySelectorText: {
     fontSize: RFValue(16),
@@ -1440,18 +1491,18 @@ const styles = StyleSheet.create({
     color: '#1C1C1E',
   },
   categoryItemTextSelected: {
-    color: '#0057FF',
+    color: '#003399',
     fontWeight: '600',
   },
   input: {
     backgroundColor: '#F2F2F7',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     fontSize: RFValue(16),
     color: '#000',
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: '#E1E6F0',
   },
   inputError: {
     borderColor: '#FF3B30',
@@ -1465,12 +1516,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F7',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     fontSize: RFValue(16),
     color: '#000',
     height: 120,
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: '#E1E6F0',
   },
   imageSection: {
     marginBottom: 20,
@@ -1480,12 +1531,12 @@ const styles = StyleSheet.create({
   imageWrapper: {
     position: 'relative',
     marginRight: 10,
-    marginBottom: 30,
+    marginBottom: 12,
   },
   uploadedImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 10,
+    width: 80,
+    height: 80,
+    borderRadius: 14,
   },
   deleteBtn: {
     position: 'absolute',
@@ -1502,10 +1553,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   uploadBox: {
-    width: 70,
-    height: 70,
+    width: 80,
+    height: 80,
     backgroundColor: '#F2F4F7',
-    borderRadius: 10,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -1524,7 +1575,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(9),
-    color: '#467FFF',
+    color: '#003399',
     marginTop: 4,
     fontWeight: '500',
   },
@@ -1540,17 +1591,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F0F5FF',
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 14,
     marginTop: 10,
   },
   selectedLocationText: {
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(14),
-    color: '#0057FF',
+    color: '#003399',
   },
   dateSection: {
-    marginBottom: 30,
+    marginBottom: 16,
   },
   dateSectionTitle: {
     fontSize: RFValue(18),
@@ -1564,8 +1615,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
+    backgroundColor: '#F4F6FB',
+    borderRadius: 14,
     marginBottom: 12,
   },
   optionText: {
@@ -1583,8 +1634,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   radioOuterSelected: {
-    borderColor: '#0057FF',
-    backgroundColor: '#0057FF',
+    borderColor: '#003399',
+    backgroundColor: '#003399',
   },
   radioInner: {
     width: 8,
@@ -1597,7 +1648,7 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
   },
   dateText: {
-    color: '#0057FF',
+    color: '#003399',
     fontSize: RFValue(14),
     fontWeight: '500',
   },
@@ -1607,9 +1658,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    marginBottom: 20,
+    backgroundColor: '#F4F6FB',
+    borderRadius: 14,
+    marginBottom: 16,
   },
   toggleText: {
     fontSize: RFValue(16),
@@ -1632,7 +1683,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   switchActive: {
-    backgroundColor: '#0057FF',
+    backgroundColor: '#003399',
   },
   switchDisabled: {
     backgroundColor: '#F2F2F7',
@@ -1661,7 +1712,7 @@ const styles = StyleSheet.create({
     width: '48%',
     backgroundColor: '#F5F5F5',
     padding: 15,
-    borderRadius: 12,
+    borderRadius: 14,
     marginVertical: 6,
     borderWidth: 2,
     borderColor: 'transparent',
@@ -1697,9 +1748,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F7',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: '#E1E6F0',
   },
   budgetReadOnly: {
     backgroundColor: '#E8E8ED',
@@ -1724,19 +1775,27 @@ const styles = StyleSheet.create({
   saveButton: {
     position: 'absolute',
     bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: '#D1D1D6',
-    paddingVertical: 16,
-    borderRadius: 25,
+    left: 16,
+    right: 16,
+    backgroundColor: '#E2E8F0',
+    height: 52,
+    justifyContent: 'center',
+    borderRadius: 14,
     alignItems: 'center',
   },
   saveButtonEnabled: {
     backgroundColor: BRAND_ORANGE,
+    shadowColor: BRAND_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   saveButtonDisabled: {
-    backgroundColor: '#aaa',
     opacity: 0.7,
+  },
+  saveButtonTextInactive: {
+    color: '#64748B',
   },
   saveButtonContent: {
     flexDirection: 'row',
@@ -1745,7 +1804,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#fff',
     fontSize: RFValue(16),
-    fontWeight: '600',
+    fontWeight: '700',
   },
   validationTextContainer: {
     position: 'absolute',
@@ -1792,7 +1851,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: Platform.OS === 'android' ? 48 : 0,
-    backgroundColor: '#fff',
+    backgroundColor: '#F4F6FB',
   },
 });
 
@@ -1804,6 +1863,13 @@ const darkStyles = StyleSheet.create({
   },
   container: {
     backgroundColor: '#0B1120',
+  },
+  section: {
+    backgroundColor: '#0F172A',
+    borderColor: '#1E293B',
+  },
+  sectionIconChip: {
+    backgroundColor: '#1E293B',
   },
   header: {
     backgroundColor: BRAND_BLUE,
@@ -1853,7 +1919,7 @@ const darkStyles = StyleSheet.create({
     color: '#38BDF8',
   },
   divider: {
-    backgroundColor: '#1E293B',
+    backgroundColor: 'transparent',
   },
   radioOuter: {
     borderColor: '#334155',
@@ -1871,6 +1937,7 @@ const darkStyles = StyleSheet.create({
     backgroundColor: '#1E293B',
   },
   budgetReadOnly: {
+    backgroundColor: '#1E293B',
     opacity: 0.7,
   },
   saveButton: {

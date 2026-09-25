@@ -391,8 +391,10 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
     <View style={styles.container}>
       <View style={styles.questionsHeader}>
         <View style={styles.questionsCount}>
-          <Ionicons name="chatbubble-outline" size={16} color="#666" />
-          <Text style={[styles.questionsCountText, isDarkMode && { color: "#94A3B8" }]}>
+          <View style={[styles.headerChip, isDarkMode && { backgroundColor: '#1E293B' }]}>
+            <Ionicons name="chatbubbles-outline" size={18} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+          </View>
+          <Text style={[styles.questionsCountText, isDarkMode && { color: "#F8FAFC" }]}>
             Questions about this task ({questions.length})
           </Text>
         </View>
@@ -400,12 +402,14 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
 
       {isLoading ? (
         <View style={styles.loadingState}>
-          <ActivityIndicator size="small" color="#4CAF50" />
+          <ActivityIndicator size="small" color={isDarkMode ? "#38BDF8" : "#003399"} />
           <Text style={[styles.loadingStateText, isDarkMode && { color: "#94A3B8" }]}>Loading questions...</Text>
         </View>
       ) : questions.length === 0 ? (
         <View style={styles.emptyState}>
-          <Ionicons name="help-circle-outline" size={48} color={isDarkMode ? "#475569" : "#ccc"} />
+          <View style={[styles.emptyIconChip, isDarkMode && { backgroundColor: '#1E293B' }]}>
+            <Ionicons name="help-circle-outline" size={30} color={isDarkMode ? "#38BDF8" : "#FFFFFF"} />
+          </View>
           <Text style={[styles.emptyStateText, isDarkMode && { color: "#F8FAFC" }]}>No questions yet</Text>
           <Text style={[styles.emptyStateSubtext, isDarkMode && { color: "#94A3B8" }]}>Be the first to ask a question!</Text>
         </View>
@@ -414,6 +418,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           data={questions}
           scrollEnabled={false}
           keyExtractor={(item: any) => item._id}
+          ItemSeparatorComponent={() => <View style={{ height: 14 }} />}
           contentContainerStyle={{ paddingBottom: 16 }}
           renderItem={({ item: question }: { item: any }) => (
             <View style={[styles.questionCard, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
@@ -738,17 +743,34 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   questionsHeader: {
-    marginBottom: 16,
+    marginBottom: 14,
+  },
+  headerChip: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: CARD_BG,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyIconChip: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: CARD_BG,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   questionsCount: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   questionsCountText: {
-    fontSize: RFValue(14),
-    fontWeight: '600',
-    color: '#666',
-    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0D1B2A',
+    marginLeft: 10,
+    flex: 1,
   },
   loadingState: {
     paddingVertical: 40,
@@ -760,33 +782,32 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   emptyState: {
-    paddingVertical: 60,
+    paddingVertical: 48,
     alignItems: 'center',
     marginBottom: 20,
   },
   emptyStateText: {
-    fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#666',
-    marginTop: 12,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#0D1B2A',
+    marginTop: 14,
   },
   emptyStateSubtext: {
-    fontSize: RFValue(14),
-    color: '#999',
+    fontSize: 14,
+    color: '#64748B',
     marginTop: 4,
   },
   questionCard: {
     backgroundColor: CARD_BG,
     padding: 16,
-    marginBottom: 16,
-    borderRadius: 12,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   questionHeader: {
     flexDirection: 'row',
@@ -804,20 +825,22 @@ const styles = StyleSheet.create({
     width: isTablet ? 50 : 40,
     height: isTablet ? 50 : 40,
     borderRadius: isTablet ? 25 : 20,
-    marginRight: wp('3%'),
+    marginRight: 12,
     backgroundColor: '#f0f0f0',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.7)',
   },
   questionUserInfo: {
     flex: 1,
   },
   questionUserName: {
-    fontSize: RFValue(isTablet ? 12 : 12),
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
     color: CARD_TEXT,
     marginBottom: 2,
   },
   questionTime: {
-    fontSize: RFValue(12),
+    fontSize: 13,
     color: CARD_TEXT_MUTED,
   },
   questionText: {
@@ -830,12 +853,12 @@ const styles = StyleSheet.create({
   answerSection: {
     backgroundColor: CARD_CHIP_BG,
     padding: 14,
-    borderRadius: 10,
+    borderRadius: 14,
     borderLeftWidth: 4,
     borderLeftColor: '#4ADE80',
-    marginTop: 16,
+    marginTop: 4,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: 'rgba(255,255,255,0.14)',
   },
   answerLabel: {
     fontSize: RFValue(13),
@@ -851,30 +874,27 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   askQuestionButtonContainer: {
-    marginTop: 24,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    backgroundColor: '#fff',
+    marginTop: 8,
+    paddingTop: 8,
     marginBottom: 30,
   },
   askQuestionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    height: 52,
     backgroundColor: BRAND_ORANGE,
-    borderRadius: 10,
+    borderRadius: 14,
     shadowColor: BRAND_ORANGE,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
     elevation: 3,
   },
   askQuestionButtonText: {
-    fontSize: RFValue(16),
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.4,
     color: '#fff',
     marginLeft: 8,
   },
@@ -914,15 +934,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: BRAND_ORANGE,
-    paddingVertical: 12,
+    height: 48,
     paddingHorizontal: 16,
-    borderRadius: 8,
-    marginTop: 16,
+    borderRadius: 14,
+    marginTop: 4,
     shadowColor: BRAND_ORANGE,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 3,
   },
   answerButtonText: {
     fontSize: RFValue(15),
@@ -934,10 +954,10 @@ const styles = StyleSheet.create({
     backgroundColor: CARD_CHIP_BG,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 8,
-    marginTop: 16,
+    borderRadius: 14,
+    marginTop: 4,
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: 'rgba(255,255,255,0.14)',
     alignItems: 'center',
   },
   noAnswerText: {
@@ -966,7 +986,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     padding: 12,
     backgroundColor: CARD_CHIP_BG,
-    borderRadius: 10,
+    borderRadius: 14,
     borderLeftWidth: 4,
     borderLeftColor: CARD_TEXT,
     borderWidth: 1,
@@ -986,7 +1006,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 8,
-    borderRadius: 8,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: CARD_DIVIDER,
   },
@@ -1018,7 +1038,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 8,
-    borderRadius: 8,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: CARD_DIVIDER,
   },

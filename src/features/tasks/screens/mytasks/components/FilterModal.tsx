@@ -38,8 +38,8 @@ export default function FilterModal({
           <View style={styles.content}>
             <View style={styles.header}>
               <Text style={styles.title}>Filter Tasks</Text>
-              <Pressable onPress={onClose}>
-                <Ionicons name="close" size={24} color="#333" />
+              <Pressable onPress={onClose} style={styles.closeBtn}>
+                <Ionicons name="close" size={18} color="#FFFFFF" />
               </Pressable>
             </View>
 
@@ -58,7 +58,7 @@ export default function FilterModal({
                   {filter}
                 </Text>
                 {selectedFilter === filter && (
-                  <Ionicons name="checkmark" size={20} color="#002A5C" />
+                  <Ionicons name="checkmark-circle" size={22} color="#003399" />
                 )}
               </TouchableOpacity>
             ))}
@@ -77,12 +77,13 @@ const styles = StyleSheet.create({
   },
   content: {
     backgroundColor: 'white',
-    marginHorizontal: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    marginHorizontal: 16,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 8,
     maxHeight: '60%',
   },
@@ -91,21 +92,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingVertical: 14,
+    backgroundColor: '#003399',
+  },
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#002A5C',
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   option: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 15,
     borderBottomWidth: 0.5,
     borderBottomColor: '#f0f0f0',
   },
@@ -114,7 +122,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   selectedOptionText: {
-    color: '#002A5C',
-    fontWeight: '600',
+    color: '#003399',
+    fontWeight: '700',
   },
 });

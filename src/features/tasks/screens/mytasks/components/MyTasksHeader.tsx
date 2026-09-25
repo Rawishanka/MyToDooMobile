@@ -38,7 +38,7 @@ export default function MyTasksHeader({
           onPress={() => router.push('/payment-summary' as any)}
           style={styles.iconButton}
         >
-          <Ionicons name="card-outline" size={isTablet ? 26 : 20} color="#ff6b35" />
+          <Ionicons name="card-outline" size={isTablet ? 26 : 20} color="#FFFFFF" />
         </TouchableOpacity>
         
         {/* Notification Button */}
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: isTablet ? wp('12.5%') : wp('4%'),
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingBottom: hp('1.5%'),
+    paddingBottom: 12,
     backgroundColor: '#003399',
   },
   headerSpacer: {
@@ -87,24 +87,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   iconButton: {
-    marginLeft: isTablet ? wp('3%') : wp('4%'),
+    marginLeft: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
     position: 'relative',
   },
   notificationBadge: {
     position: 'absolute',
-    top: -8,
-    right: -8,
+    top: -6,
+    right: -6,
     backgroundColor: '#ff6b35',
     borderRadius: 10,
     minWidth: 20,
     height: 20,
+    borderWidth: 1.5,
+    borderColor: '#003399',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
   },
   badgeText: {
     color: '#FFFFFF',
-    fontSize: RFValue(isTablet ? 13 : 12),
+    fontSize: 11,
     fontWeight: 'bold',
   },
 });

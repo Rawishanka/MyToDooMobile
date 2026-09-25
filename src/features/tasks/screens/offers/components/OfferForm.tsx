@@ -99,7 +99,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
   }, [offerAmount, currency]);
 
   return (
-    <View style={styles.formContainer}>
+    <View style={[styles.formContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
       <Text style={[styles.sectionTitle, isDarkMode && { color: "#F8FAFC" }]}>Your Offer</Text>
 
       <View style={styles.inputContainer}>
@@ -119,7 +119,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
             value={offerAmount}
             onChangeText={onAmountChange}
             onFocus={onAmountFocus}
-            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+            placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
           />
         </View>
         {validationError ? (
@@ -130,9 +130,9 @@ export const OfferForm: React.FC<OfferFormProps> = ({
           </Text>
         )}
         {(feeLoading || feePreview) && (
-          <View style={[styles.feePreviewBox, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
+          <View style={[styles.feePreviewBox, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#334155" }]}>
             {feeLoading ? (
-              <ActivityIndicator size="small" color={BRAND_ORANGE} />
+              <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <>
                 <Text style={[styles.feePreviewTitle, isDarkMode && { color: "#38BDF8" }]}>As you type</Text>
@@ -180,7 +180,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
           value={message}
           onChangeText={onMessageChange}
           onFocus={onMessageFocus}
-          placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+          placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
           textAlignVertical="top"
         />
         {messageError ? (
@@ -197,86 +197,102 @@ export const OfferForm: React.FC<OfferFormProps> = ({
 
 const styles = StyleSheet.create({
   formContainer: {
-    marginTop: 24,
+    marginTop: 16,
+    marginBottom: 16,
+    padding: 18,
+    borderRadius: 20,
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 4,
   },
   sectionTitle: {
-    fontSize: RFValue(20),
+    fontSize: 18,
     fontWeight: '700',
-    color: BRAND_BLUE,
-    marginBottom: 20,
+    color: CARD_TEXT,
+    marginBottom: 16,
   },
   inputContainer: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   inputLabel: {
-    fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    color: CARD_TEXT,
     marginBottom: 8,
   },
   amountInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    borderRadius: 14,
     backgroundColor: '#fff',
+    overflow: 'hidden',
   },
   currencySymbol: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: RFValue(16),
-    color: '#666',
-    backgroundColor: '#f8f9fa',
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
+    paddingVertical: 15,
+    fontSize: 16,
+    fontWeight: '700',
+    color: BRAND_BLUE,
+    backgroundColor: '#EEF2FF',
   },
   amountInput: {
     flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 16,
-    fontSize: RFValue(16),
-    color: '#000',
+    paddingHorizontal: 14,
+    paddingVertical: 15,
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#0D1B2A',
   },
   messageInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: RFValue(15),
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    fontSize: 15,
     minHeight: 120,
     backgroundColor: '#fff',
-    color: '#000',
+    color: '#0D1B2A',
   },
   inputHint: {
-    marginTop: 6,
-    fontSize: RFValue(12),
-    color: '#888',
+    marginTop: 8,
+    fontSize: 12,
+    lineHeight: 17,
+    color: CARD_TEXT_MUTED,
   },
   errorText: {
-    marginTop: 6,
-    fontSize: RFValue(12),
-    color: '#dc3545',
+    marginTop: 8,
+    fontSize: 12,
+    color: '#FCA5A5',
+    fontWeight: '600',
   },
   errorBorder: {
-    borderColor: '#dc3545',
+    borderColor: '#F87171',
   },
   feePreviewBox: {
-    marginTop: 12,
+    marginTop: 14,
     padding: 14,
-    borderRadius: 12,
-    backgroundColor: CARD_BG,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderWidth: 1,
-    borderColor: CARD_DIVIDER,
+    borderColor: 'rgba(255,255,255,0.14)',
   },
   feePreviewTitle: {
-    fontSize: RFValue(12),
+    fontSize: 12,
     fontWeight: '700',
     color: CARD_TEXT,
     marginBottom: 8,
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.8,
   },
   feeRow: {
     flexDirection: 'row',
@@ -289,12 +305,12 @@ const styles = StyleSheet.create({
     color: CARD_TEXT,
   },
   feeReceiveLabel: {
-    fontSize: RFValue(14),
+    fontSize: 15,
     fontWeight: '700',
     color: CARD_TEXT,
   },
   feeReceiveValue: {
-    fontSize: RFValue(14),
+    fontSize: 16,
     fontWeight: '700',
     color: '#4ADE80',
   },

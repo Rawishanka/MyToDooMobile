@@ -74,11 +74,11 @@ export default function UserProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <StatusBar barStyle="light-content" backgroundColor="#003399" />
 
       <UserProfileHeader />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <UserInfoCard 
           user={userData.user} 
           formatDate={formatDate} 
@@ -149,12 +149,12 @@ export default function UserProfileScreen() {
       {/* Action Buttons */}
       <View style={styles.actionContainer}>
         <TouchableOpacity style={styles.messageButton} onPress={handleMessage}>
-          <Ionicons name="mail-outline" size={20} color="#007bff" />
+          <Ionicons name="mail-outline" size={20} color="#003399" />
           <Text style={styles.messageButtonText}>Message</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.reportButton} onPress={handleReport}>
-          <Ionicons name="flag-outline" size={20} color="#dc3545" />
+          <Ionicons name="flag-outline" size={20} color="#DC2626" />
           <Text style={styles.reportButtonText}>Report</Text>
         </TouchableOpacity>
       </View>
@@ -165,20 +165,24 @@ export default function UserProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F4F6FB',
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
+    paddingBottom: 24,
   },
   actionContainer: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 12,
+    paddingBottom: 28,
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: '#E8ECF4',
     gap: 12,
   },
   messageButton: {
@@ -186,29 +190,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#e3f2fd',
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#003399',
+    height: 50,
+    borderRadius: 14,
     gap: 8,
   },
   messageButtonText: {
     fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#007bff',
+    fontWeight: '700',
+    color: '#003399',
   },
   reportButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fef0f0',
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#DC2626',
+    height: 50,
+    borderRadius: 14,
     gap: 8,
   },
   reportButtonText: {
     fontSize: RFValue(16),
-    fontWeight: '600',
-    color: '#dc3545',
+    fontWeight: '700',
+    color: '#DC2626',
   },
 });

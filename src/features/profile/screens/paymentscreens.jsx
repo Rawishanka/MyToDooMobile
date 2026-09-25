@@ -1,8 +1,9 @@
-import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { useEffect, useState, useRef } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getAbnStatus } from '@/src/api/abn-api';
 import { useTheme } from '@/src/shared/theme';
+import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import TaskerAbnSection from '@/src/features/profile/components/TaskerAbnSection';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import PayoutAccountScreen from './payout-account-screen';
@@ -30,15 +31,7 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false })
 
   return (
   <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-    <View style={[styles.header, isDarkMode && { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
-      <TouchableOpacity 
-        style={styles.backButton}
-        onPress={onBackToAccount}
-      >
-        <Ionicons name="chevron-back" size={24} color={isDarkMode ? '#F8FAFC' : '#003399'} />
-      </TouchableOpacity>
-      <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Payment options</Text>
-    </View>
+    <LightHeader title="Payment options" onBack={onBackToAccount} />
     
     <ScrollView ref={scrollRef} style={[styles.content, isDarkMode && { backgroundColor: '#0B1120' }]} contentContainerStyle={styles.contentContainer}>
       {isTasker && (
@@ -49,7 +42,7 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false })
       )}
 
       {isTasker && !abnVerified && (
-        <Text style={[styles.abnGateNote, isDarkMode && { color: '#F59E0B' }]}>
+        <Text style={[styles.abnGateNote, isDarkMode && { color: '#FBBF24' }]}>
           Verify your ABN above before setting up a payment account.
         </Text>
       )}
@@ -57,12 +50,14 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false })
       <TouchableOpacity 
         style={[
           styles.menuItem,
-          isDarkMode && { borderBottomColor: '#334155' },
+          isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
           isTasker && !abnVerified && styles.menuItemDisabled
         ]}
+        activeOpacity={0.8}
         onPress={() => onNavigate('payoutAccount')}
         disabled={isTasker && !abnVerified}
       >
+        <IconChip name="card-outline" style={{ marginRight: 12 }} />
         <Text style={[
           styles.menuText,
           isDarkMode && { color: '#F8FAFC' },
@@ -70,7 +65,7 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false })
         ]}>
           Setup Payout Account
         </Text>
-        <Ionicons name="chevron-forward" size={20} color={isTasker && !abnVerified ? '#64748B' : (isDarkMode ? '#94A3B8' : '#999')} />
+        <Ionicons name="chevron-forward" size={20} color={isTasker && !abnVerified ? '#64748B' : '#94A3B8'} />
       </TouchableOpacity>
     </ScrollView>
   </View>
@@ -82,15 +77,7 @@ const PaymentHistoryScreen = ({ onNavigate }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => onNavigate('paymentOptions')}
-        >
-          <Ionicons name="chevron-back" size={24} color="#003399" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Payment history</Text>
-      </View>
+      <LightHeader title="Payment history" onBack={() => onNavigate('paymentOptions')} />
 
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -115,7 +102,7 @@ const PaymentHistoryScreen = ({ onNavigate }) => {
         {activeTab === 'earned' ? (
           <>
             <View style={styles.warningBox}>
-              <Ionicons name="warning" size={20} color="#FF6B35" style={styles.warningIcon} />
+              <Ionicons name="warning" size={20} color="#D97706" style={styles.warningIcon} />
               <View style={styles.warningContent}>
                 <Text style={styles.warningTitle}>You have remaining fees</Text>
                 <Text style={styles.warningText}>
@@ -147,7 +134,7 @@ const PaymentHistoryScreen = ({ onNavigate }) => {
               <View style={styles.earningsRow}>
                 <Text style={styles.earningsAmount}>A$1,127.87</Text>
                 <TouchableOpacity style={styles.downloadButton}>
-                  <Ionicons name="download-outline" size={20} color="#666" />
+                  <Ionicons name="download-outline" size={20} color="#003399" />
                   <Text style={styles.downloadText}>CSV file</Text>
                 </TouchableOpacity>
               </View>
@@ -176,7 +163,7 @@ const PaymentHistoryScreen = ({ onNavigate }) => {
         ) : (
           <View style={styles.emptyContainer}>
             <View style={styles.warningBox}>
-              <Ionicons name="warning" size={20} color="#FF6B35" style={styles.warningIcon} />
+              <Ionicons name="warning" size={20} color="#D97706" style={styles.warningIcon} />
               <View style={styles.warningContent}>
                 <Text style={styles.warningTitle}>You have remaining fees</Text>
                 <Text style={styles.warningText}>
@@ -217,15 +204,7 @@ const PaymentMethodsScreen = ({ onNavigate }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => onNavigate('paymentOptions')}
-        >
-          <Ionicons name="chevron-back" size={24} color="#003399" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit payment methods</Text>
-      </View>
+      <LightHeader title="Edit payment methods" onBack={() => onNavigate('paymentOptions')} />
 
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -249,27 +228,27 @@ const PaymentMethodsScreen = ({ onNavigate }) => {
       <ScrollView style={styles.content}>
         {activeTab === 'make' ? (
           <TouchableOpacity style={styles.addPaymentMethod}>
-            <Ionicons name="add-circle-outline" size={24} color="#003399" />
+            <IconChip name="add-circle-outline" style={{ marginRight: 12 }} />
             <Text style={styles.addPaymentText}>Add credit card</Text>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
+            <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
           </TouchableOpacity>
         ) : (
           <>
             <View style={styles.paymentMethodItem}>
-              <Ionicons name="location-outline" size={20} color="#666" />
+              <IconChip name="location-outline" />
               <View style={styles.paymentMethodContent}>
                 <Text style={styles.addressText}>6 Balcombe Court, Narre Warren,</Text>
                 <Text style={styles.addressText}>Victoria, 3805, Australia</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
+              <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
             </View>
             
             <View style={styles.paymentMethodItem}>
-              <MaterialIcons name="payment" size={20} color="#666" />
+              <IconChip name="card-outline" />
               <View style={styles.paymentMethodContent}>
                 <Text style={styles.cardText}>••••4183</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
+              <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
             </View>
           </>
         )}
@@ -319,94 +298,92 @@ const PaymentScreensApp = ({ onBackToAccount, focusAbn = false }) => {
 
 export default PaymentScreensApp;
 
+const CARD = {
+  backgroundColor: '#FFFFFF',
+  borderRadius: 20,
+  borderWidth: 1,
+  borderColor: '#E8ECF4',
+  shadowColor: '#0F172A',
+  shadowOpacity: 0.07,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 2,
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: Platform.OS === 'ios' ? 60 : 50,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  backButton: {
-    marginRight: 16,
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#003399',
+    backgroundColor: '#F4F6FB',
   },
   content: {
     flex: 1,
     paddingHorizontal: 16,
   },
   contentContainer: {
-    paddingBottom: 24,
+    paddingTop: 16,
+    paddingBottom: 32,
   },
   abnGateNote: {
     fontSize: 13,
-    color: '#b45309',
-    marginBottom: 12,
+    color: '#B45309',
+    marginBottom: 14,
     lineHeight: 18,
   },
   menuItemDisabled: {
     opacity: 0.55,
   },
   menuTextDisabled: {
-    color: '#999',
+    color: '#64748B',
   },
   menuItem: {
+    ...CARD,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    padding: 14,
+    marginBottom: 14,
   },
   menuText: {
+    flex: 1,
     fontSize: 16,
-    color: '#333',
+    fontWeight: '600',
+    color: '#0F172A',
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#E8ECF4',
     marginHorizontal: 16,
     marginTop: 16,
-    borderRadius: 25,
+    borderRadius: 24,
     padding: 4,
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
+    height: 40,
+    justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 20,
   },
   activeTab: {
-    backgroundColor: '#1a2951',
+    backgroundColor: '#003399',
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#666',
+    fontWeight: '600',
+    color: '#64748B',
   },
   activeTabText: {
-    color: '#fff',
+    color: '#FFFFFF',
   },
   warningBox: {
+    ...CARD,
     flexDirection: 'row',
-    backgroundColor: '#fff3f0',
+    backgroundColor: '#FEF3C7',
+    borderColor: '#FDE68A',
     padding: 16,
     marginTop: 16,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#FF6B35',
+    borderRadius: 14,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   warningIcon: {
     marginRight: 12,
@@ -417,13 +394,13 @@ const styles = StyleSheet.create({
   },
   warningTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: '#0F172A',
     marginBottom: 4,
   },
   warningText: {
     fontSize: 14,
-    color: '#666',
+    color: '#64748B',
     lineHeight: 20,
   },
   linkText: {
@@ -442,22 +419,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#003399',
-    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
   },
   filterText: {
     color: '#003399',
     marginLeft: 6,
     marginRight: 6,
     fontSize: 14,
+    fontWeight: '600',
   },
   spacer: {
     flex: 1,
   },
   filterLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#64748B',
     marginRight: 4,
   },
   infoButton: {
@@ -465,21 +444,18 @@ const styles = StyleSheet.create({
   },
   transactionCount: {
     fontSize: 12,
-    color: '#999',
+    color: '#64748B',
     marginTop: 16,
   },
   earningsContainer: {
-    marginTop: 20,
-    marginBottom: 20,
-    backgroundColor: '#f8f9fa',
+    ...CARD,
+    marginTop: 14,
+    marginBottom: 14,
     padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
   },
   earningsLabel: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 13,
+    color: '#64748B',
     marginBottom: 8,
   },
   earningsRow: {
@@ -489,7 +465,7 @@ const styles = StyleSheet.create({
   },
   earningsAmount: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '800',
     color: '#003399',
   },
   downloadButton: {
@@ -498,14 +474,15 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   downloadText: {
-    color: '#666',
+    color: '#003399',
     marginLeft: 4,
     fontSize: 14,
+    fontWeight: '600',
   },
   transactionItem: {
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    ...CARD,
+    padding: 16,
+    marginBottom: 14,
   },
   transactionHeader: {
     flexDirection: 'row',
@@ -514,61 +491,64 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   transactionDate: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 13,
+    color: '#64748B',
   },
   creditedText: {
     fontSize: 12,
-    color: '#4CAF50',
-    fontWeight: '500',
+    color: '#16A34A',
+    fontWeight: '700',
   },
   transactionTitle: {
     fontSize: 16,
-    color: '#333',
+    fontWeight: '600',
+    color: '#0F172A',
     marginBottom: 8,
-    lineHeight: 20,
+    lineHeight: 21,
   },
   transactionAmount: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '800',
+    color: '#003399',
     marginBottom: 4,
   },
   transactionPoster: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 13,
+    color: '#64748B',
   },
   addPaymentMethod: {
+    ...CARD,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    padding: 14,
     marginTop: 16,
   },
   addPaymentText: {
     flex: 1,
     fontSize: 16,
+    fontWeight: '600',
     color: '#003399',
-    marginLeft: 12,
   },
   paymentMethodItem: {
+    ...CARD,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    padding: 14,
+    marginTop: 14,
   },
   paymentMethodContent: {
     flex: 1,
     marginLeft: 12,
   },
   addressText: {
-    fontSize: 16,
-    color: '#333',
+    fontSize: 15,
+    color: '#0F172A',
     lineHeight: 20,
   },
   cardText: {
     fontSize: 16,
-    color: '#333',
+    fontWeight: '600',
+    color: '#0F172A',
   },
   emptyContainer: {
     flex: 1,
@@ -581,7 +561,7 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: '#999',
+    color: '#64748B',
     textAlign: 'center',
   },
   navItem: {
