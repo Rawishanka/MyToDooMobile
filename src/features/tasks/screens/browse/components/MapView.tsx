@@ -16,14 +16,27 @@ interface Task {
   offerCount?: number;
 }
 
+export interface ServiceMapItem {
+  _id: string;
+  title: string;
+  price: number;
+  currency: string;
+  suburb?: string;
+  radiusKm?: number;
+  lat?: number | null;
+  lng?: number | null;
+}
+
 interface MapViewProps {
   tasks: Task[];
+  /** When provided, the map renders service listings instead of tasks. */
+  services?: ServiceMapItem[];
   iconUrl?: string;
   focusTaskId?: string | null;
   onMapAction?: (action: string, taskId: string) => void;
 }
 
-export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: MapViewProps) {
+export default function MapView({ tasks, services, iconUrl, focusTaskId, onMapAction }: MapViewProps) {
   const { isDarkMode } = useTheme();
   console.log('🗺️ MapView Props Received:', {
     tasksCount: tasks.length,
@@ -33,6 +46,28 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
   });
 
   const generateMapHTML = () => {
+    if (services) {
+      const serviceMarkers = services
+        .filter(
+          (s) =>
+            typeof s.lat === 'number' && typeof s.lng === 'number' &&
+            Number.isFinite(s.lat) && Number.isFinite(s.lng) &&
+            Math.abs(s.lat) <= 90 && Math.abs(s.lng) <= 180 &&
+            !(s.lat === 0 && s.lng === 0)
+        )
+        .map((s) => ({
+          id: s._id,
+          lat: s.lat as number,
+          lng: s.lng as number,
+          title: s.title || 'Service',
+          price: `${s.currency || 'AUD'} ${s.price}`,
+          location: s.suburb || 'Location not specified',
+          status: 'service',
+          offers: 0,
+          radiusKm: s.radiusKm && s.radiusKm > 0 ? s.radiusKm : 0,
+        }));
+      return generateHTMLContent(serviceMarkers);
+    }
     console.log('🗺️ MapView Debug - Detailed Task Analysis:', {
       totalTasks: tasks.length,
       tasksWithLocationData: tasks.filter(t => t.location).length,
@@ -713,7 +748,9 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
     location: string;
     status: string;
     offers: number;
+    radiusKm?: number;
   }[]) => {
+    const isServiceMap = !!services;
     console.log('🗺️ Final Map Markers:', {
       totalMarkers: markers.length,
       markers: markers.slice(0, 3).map(m => ({
@@ -1026,7 +1063,8 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
             price: '${marker.price}',
             location: '${marker.location.replace(/'/g, "\\'")}',
             status: '${marker.status}',
-            offers: ${marker.offers}
+            offers: ${marker.offers},
+            radiusKm: ${marker.radiusKm || 0}
           }`).join(',')}
         ];
 
@@ -1082,22 +1120,34 @@ export default function MapView({ tasks, iconUrl, focusTaskId, onMapAction }: Ma
               <div class="marker-title">\${markerData.title}</div>
               <div class="marker-price">\${markerData.price}</div>
               <div class="marker-location">\${markerData.location}</div>
-              <div class="marker-meta">
+              ${isServiceMap ? `<div class="marker-meta">
+                <span>\${markerData.radiusKm ? 'Serves within ' + markerData.radiusKm + ' km' : 'Service listing'}</span>
+              </div>` : `<div class="marker-meta">
                 <span>Status: \${markerData.status}</span>
                 <span>Offers: \${markerData.offers}</span>
-              </div>
+              </div>`}
               <div class="marker-actions">
                 <button class="action-btn" onclick="handleAction('viewDetails', '\${markerData.id}')">
-                  View Details
+                  ${isServiceMap ? 'View Service' : 'View Details'}
                 </button>
-                <button class="action-btn" onclick="handleAction('openInMaps', '\${markerData.id}')">
+                ${isServiceMap ? '' : `<button class="action-btn" onclick="handleAction('openInMaps', '\${markerData.id}')">
                   Open in Maps
-                </button>
+                </button>`}
               </div>
             </div>
           \`;
           
           marker.bindPopup(popupContent);
+          ${isServiceMap ? `if (markerData.radiusKm > 0) {
+            L.circle([markerData.lat, markerData.lng], {
+              radius: markerData.radiusKm * 1000,
+              color: '#003399',
+              weight: 1,
+              fillColor: '#003399',
+              fillOpacity: 0.06,
+              interactive: false
+            }).addTo(map);
+          }` : ''}
         });
 
         // Auto-fit map view based on markers

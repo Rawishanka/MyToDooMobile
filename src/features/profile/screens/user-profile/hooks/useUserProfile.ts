@@ -79,7 +79,10 @@ export const useUserProfile = () => {
           rating: ratingStatsData?.averageRating ?? 0,
           totalReviews: ratingStatsData?.totalReviews ?? 0,
           verified: true,
-          joinedDate: new Date().toISOString(),
+          // Real join date only if the API provides it; empty string hides it in the UI
+          joinedDate: (Array.isArray(userTasksData.data)
+            ? (userTasksData.data as Task[]).find((t) => t?.createdBy?._id === userId && t.createdBy.createdAt)?.createdBy?.createdAt
+            : undefined) || '',
           lastActive: new Date().toISOString(),
           // Count completed tasks from the tasks array
           completedTasks: Array.isArray(userTasksData.data) 

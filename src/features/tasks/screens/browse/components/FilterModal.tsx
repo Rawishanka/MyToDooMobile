@@ -2,12 +2,14 @@ import { LocationAutocomplete, type LocationData } from '@/src/shared/components
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { getCurrencySymbol, getMaxPriceForCurrency } from '@/src/shared/utils/currency';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useMemo, useState } from 'react';
 import {
     Modal,
     PanResponder,
     Platform,
     ScrollView,
+    StatusBar,
     StyleSheet,
     Switch,
     Text,
@@ -169,6 +171,14 @@ export default function FilterModal({
       onRequestClose={onClose}
     >
       <View style={[styles.filterModal, isDarkMode && { backgroundColor: '#0B1120' }]}>
+        {visible && <StatusBar barStyle="light-content" />}
+        {!isDarkMode && (
+          <LinearGradient
+            pointerEvents="none"
+            colors={['#003399', '#00287A']}
+            style={StyleSheet.absoluteFill}
+          />
+        )}
         {/* Header */}
         <View style={styles.filterHeader}>
           <TouchableOpacity onPress={onClose} style={styles.headerBackChip} activeOpacity={0.75}>
@@ -281,7 +291,7 @@ export default function FilterModal({
             )}
             
             {categoriesError && (
-              <Text style={styles.categoryErrorText}>
+              <Text style={[styles.categoryErrorText, !isDarkMode && { color: '#FCA5A5' }]}>
                 Failed to load categories. Using defaults.
               </Text>
             )}
@@ -297,6 +307,7 @@ export default function FilterModal({
               placeholder="Search suburb or city..."
               country="AU"
               allowManualFallback={false}
+              buttonStyle={!isDarkMode ? { backgroundColor: 'rgba(255,255,255,0.16)', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.7)', shadowOpacity: 0, elevation: 0 } : undefined}
             />
             <Text style={[styles.radiusLabel, isDarkMode && { color: '#94A3B8' }]}>
               Radius{suburb ? ` around ${suburb}` : ''}
@@ -324,6 +335,7 @@ export default function FilterModal({
                         styles.radiusChipText,
                         isDarkMode && { color: '#CBD5E1' },
                         selected && styles.radiusChipTextSelected,
+                        selected && isDarkMode && { color: '#FFFFFF' },
                       ]}
                     >
                       {km} km
@@ -355,12 +367,13 @@ export default function FilterModal({
             </View>
             <View style={styles.sliderContainer}>
               <View
-                style={styles.sliderTrack}
+                style={[styles.sliderTrack, isDarkMode && { backgroundColor: '#E8ECF4' }]}
                 onLayout={(event) => setSliderWidth(event.nativeEvent.layout.width)}
               >
                 <View 
                   style={[
                     styles.sliderFill,
+                    isDarkMode && { backgroundColor: '#003399' },
                     {
                       left: `${(priceRange[0] / MAX_PRICE) * 100}%`,
                       width: `${((priceRange[1] - priceRange[0]) / MAX_PRICE) * 100}%`
@@ -473,28 +486,23 @@ const styles = StyleSheet.create({
   },
   filterSection: {
     marginBottom: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   sectionTitle: {
     fontSize: RFValue(12),
     fontWeight: '800',
-    color: '#003399',
+    color: '#FFFFFF',
     marginBottom: 14,
     letterSpacing: 0.8,
     textTransform: 'uppercase' as const,
   },
   radiusLabel: {
     fontSize: RFValue(12),
-    color: '#6B7280',
+    color: 'rgba(255,255,255,0.8)',
     marginTop: 16,
     marginBottom: 10,
     fontWeight: '600',
@@ -509,33 +517,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 14,
     alignItems: 'center',
-    backgroundColor: '#F4F6FB',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderWidth: 1.5,
-    borderColor: '#DCE3F5',
+    borderColor: 'rgba(255,255,255,0.30)',
   },
   radiusChipSelected: {
-    backgroundColor: '#003399',
-    borderColor: '#003399',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: '#FFFFFF',
+    borderColor: '#FFFFFF',
   },
   radiusChipText: {
     fontSize: RFValue(14),
-    color: '#1A1D2E',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   radiusChipTextSelected: {
-    color: '#FFFFFF',
+    color: '#003399',
     fontWeight: '800',
   },
   radiusHint: {
     marginTop: 12,
     fontSize: RFValue(12),
     lineHeight: 18,
-    color: '#6B7280',
+    color: 'rgba(255,255,255,0.75)',
   },
   categorySelector: {
     backgroundColor: '#F4F6FB',
@@ -703,14 +706,14 @@ const styles = StyleSheet.create({
   },
   sliderTrack: {
     height: 6,
-    backgroundColor: '#E8ECF4',
+    backgroundColor: 'rgba(255,255,255,0.28)',
     borderRadius: 3,
     position: 'relative',
     marginVertical: 20,
   },
   sliderFill: {
     height: 6,
-    backgroundColor: '#003399',
+    backgroundColor: '#ff6b35',
     borderRadius: 3,
     position: 'absolute',
   },
@@ -750,7 +753,7 @@ const styles = StyleSheet.create({
   },
   sliderLabel: {
     fontSize: RFValue(12),
-    color: '#6B7280',
+    color: 'rgba(255,255,255,0.8)',
     fontWeight: '600',
   },
   toggleRow: {
@@ -779,8 +782,8 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E8ECF4',
-    backgroundColor: '#FFFFFF',
+    borderTopColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'transparent',
   },
   resetButton: {
     flex: 1,
@@ -788,13 +791,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 14,
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderWidth: 1.5,
-    borderColor: '#003399',
+    borderColor: 'rgba(255,255,255,0.7)',
   },
   resetButtonText: {
     fontSize: RFValue(15),
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '700',
   },
   applyButton: {

@@ -261,6 +261,7 @@ export interface Task {
     verified?: boolean;
     avatar?: string; // Base64 image data
     profilePicture?: string;
+    createdAt?: string; // user join date, when the API includes it
   };
   statusHistory: any[];
   createdAt: string;

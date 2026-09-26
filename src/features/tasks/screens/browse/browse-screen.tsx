@@ -523,14 +523,10 @@ export default function BrowseTasksScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        {browseMode === 'tasks' ? (
-          <ViewModeToggle 
-            viewMode={viewMode} 
-            onToggle={() => setViewMode(viewMode === 'list' ? 'map' : 'list')} 
-          />
-        ) : (
-          <View style={{ width: 36 }} />
-        )}
+        <ViewModeToggle 
+          viewMode={viewMode} 
+          onToggle={() => setViewMode(viewMode === 'list' ? 'map' : 'list')} 
+        />
         <Text style={styles.headerTitle}>
           {browseMode === 'tasks' ? 'Browse Tasks' : 'Browse Services'}
         </Text>
@@ -590,7 +586,6 @@ export default function BrowseTasksScreen() {
             activeOpacity={0.85}
             onPress={() => {
               setBrowseMode('services');
-              setViewMode('list');
             }}
           >
             <Ionicons
@@ -690,6 +685,36 @@ export default function BrowseTasksScreen() {
             <Text style={[styles.emptySubtext, isDarkMode && { color: '#94A3B8' }]}>
               Try widening your radius or searching a different suburb.
             </Text>
+          </View>
+        ) : viewMode === 'map' ? (
+          <View style={styles.mapContainer}>
+            <MapView
+              tasks={[]}
+              services={serviceListings}
+              iconUrl={markerIconUri}
+              onMapAction={(action, id) => {
+                if (action === 'viewDetails') {
+                  const listing = serviceListings.find((l) => l._id === id) || null;
+                  setSelectedServiceListing(listing);
+                  setSelectedServiceId(id);
+                }
+              }}
+            />
+            {serviceListings.every((l) => typeof l.lat !== 'number' || typeof l.lng !== 'number') && (
+              <View style={styles.mapNote} pointerEvents="none">
+                <Text style={styles.mapNoteText}>
+                  None of these services have a map location. Switch to list view to see them.
+                </Text>
+              </View>
+            )}
+            {serviceListings.some((l) => typeof l.lat !== 'number' || typeof l.lng !== 'number') &&
+              serviceListings.some((l) => typeof l.lat === 'number' && typeof l.lng === 'number') && (
+              <View style={styles.mapNote} pointerEvents="none">
+                <Text style={styles.mapNoteText}>
+                  Some services have no location and are only shown in list view.
+                </Text>
+              </View>
+            )}
           </View>
         ) : (
           <FlatList
@@ -1237,6 +1262,23 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 12,
     backgroundColor: 'transparent',
+  },
+  mapNote: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,26,102,0.82)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+  },
+  mapNoteText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    textAlign: 'center',
   },
   mapContainer: {
     flex: 1,

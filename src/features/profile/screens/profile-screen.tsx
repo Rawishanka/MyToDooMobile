@@ -1119,6 +1119,17 @@ export default function AccountScreen() {
           </Text>
         ) : null}
         
+        {/* Member since (month + year) */}
+        {(() => {
+          const created = userData?.createdAt ? new Date(userData.createdAt) : null;
+          if (!created || isNaN(created.getTime())) return null;
+          return (
+            <Text style={styles.memberSinceText}>
+              Member since {created.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </Text>
+          );
+        })()}
+
         {/* Rating and Stats */}
         {userData && (
           <View style={styles.statsRow}>
@@ -2208,6 +2219,13 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.75)',
     marginTop: 2,
     marginBottom: 6,
+  },
+  memberSinceText: {
+    fontSize: RFValue(12),
+    color: 'rgba(255, 255, 255, 0.75)',
+    textAlign: 'center',
+    marginBottom: 6,
+    fontWeight: '500',
   },
   bioHeaderText: {
     fontSize: RFValue(13),

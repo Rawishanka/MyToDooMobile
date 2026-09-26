@@ -58,12 +58,12 @@ export default function SortModal({
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <View style={[styles.headerIconWrap, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                <Ionicons name="funnel-outline" size={18} color="#003399" />
+                <Ionicons name="funnel-outline" size={18} color={isDarkMode ? '#003399' : '#FFFFFF'} />
               </View>
               <Text style={[styles.headerTitle, isDarkMode && { color: '#F8FAFC' }]}>Sort By</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={[styles.closeBtn, isDarkMode && { backgroundColor: '#0F172A' }]}>
-              <Ionicons name="close" size={20} color="#6B7280" />
+              <Ionicons name="close" size={20} color={isDarkMode ? '#6B7280' : '#FFFFFF'} />
             </TouchableOpacity>
           </View>
 
@@ -101,7 +101,7 @@ export default function SortModal({
                     <Ionicons
                       name={iconName as any}
                       size={18}
-                      color={isActive ? '#fff' : (isDarkMode ? '#94A3B8' : '#6B7280')}
+                      color={isActive ? '#fff' : (isDarkMode ? '#94A3B8' : '#FFFFFF')}
                     />
                   </View>
                   <Text style={[
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     maxHeight: '75%',
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#E8ECF4',
+    backgroundColor: 'rgba(255,255,255,0.4)',
     alignSelf: 'center',
     marginTop: 12,
     marginBottom: 8,
@@ -169,27 +169,27 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 10,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#1A1D2E',
+    color: '#FFFFFF',
     letterSpacing: -0.3,
   },
   closeBtn: {
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   divider: {
     height: 1,
-    backgroundColor: '#F0F2F8',
+    backgroundColor: 'rgba(255,255,255,0.18)',
     marginHorizontal: 20,
   },
   scroll: {
@@ -208,19 +208,19 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginVertical: 3,
     gap: 14,
-    backgroundColor: '#FAFBFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderWidth: 1,
-    borderColor: '#F0F2F8',
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   optionActive: {
-    backgroundColor: '#EEF2FF',
-    borderColor: '#C7D2FE',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#FFFFFF',
   },
   optionIconWrap: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#F0F2F8',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   optionText: {
     flex: 1,
     fontSize: RFValue(15),
-    color: '#4B5563',
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   optionTextActive: {

@@ -58,7 +58,7 @@ export default function FilterModal({
                   {filter}
                 </Text>
                 {selectedFilter === filter && (
-                  <Ionicons name="checkmark-circle" size={22} color="#003399" />
+                  <Ionicons name="checkmark-circle" size={22} color="#ff6b35" />
                 )}
               </TouchableOpacity>
             ))}
@@ -76,7 +76,9 @@ const styles = StyleSheet.create({
     paddingTop: 100,
   },
   content: {
-    backgroundColor: 'white',
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
     marginHorizontal: 16,
     borderRadius: 20,
     overflow: 'hidden',
@@ -93,7 +95,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 14,
-    backgroundColor: '#003399',
+    backgroundColor: 'rgba(255,255,255,0.10)',
   },
   closeBtn: {
     width: 32,
@@ -115,14 +117,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: 'rgba(255,255,255,0.15)',
   },
   optionText: {
     fontSize: RFValue(16),
-    color: '#333',
+    color: '#FFFFFF',
   },
   selectedOptionText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '700',
   },
 });

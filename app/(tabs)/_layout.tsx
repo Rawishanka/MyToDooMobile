@@ -81,7 +81,7 @@ function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   if (keyboardVisible && Platform.OS === 'android') return null;
 
   return (
-    <View style={[tabStyles.wrapper, { paddingBottom: Math.max(insets.bottom, 10) }, isDarkMode && { backgroundColor: '#0B1120' }]}>
+    <View style={[tabStyles.wrapper, { paddingBottom: Math.max(insets.bottom, 10) }, isDarkMode && { backgroundColor: '#0B1120' }, !isDarkMode && state.routes[state.index]?.name === 'index' && { backgroundColor: '#003399' }]}>
       <View style={[
         tabStyles.pill,
         isDarkMode && {

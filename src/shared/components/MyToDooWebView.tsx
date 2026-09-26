@@ -114,9 +114,12 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
   const BASE_URL = process.env.EXPO_PUBLIC_WEBVIEW_BASE_URL || 'https://webview.mytodoo.com';
   
   // Build URL - pass token as query param for protected routes (most reliable on iOS)
-  const fullUrl = requiresAuth && authToken
+  const themeParam = isDarkMode ? 'dark' : 'light';
+  const baseWithAuth = requiresAuth && authToken
     ? `${BASE_URL}${endpoint}?token=${encodeURIComponent(authToken)}`
     : `${BASE_URL}${endpoint}`;
+  const fullUrl = `${baseWithAuth}${baseWithAuth.includes('?') ? '&' : '?'}theme=${themeParam}`;
+  const webViewBg = isDarkMode ? '#0B1120' : '#003399';
   
   const handleBackPress = () => {
     if (onBack) {
@@ -127,8 +130,14 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
   };
   
   const getInjectedJavaScript = () => {
+    const themeJs = `window.APP_THEME = '${themeParam}';`;
     if (!requiresAuth || !authToken) {
-      return '';
+      return `
+      (function() {
+        ${themeJs}
+      })();
+      true;
+    `;
     }
     
     // Inject token BOTH ways for maximum compatibility:
@@ -136,6 +145,7 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
     // 2. document cookie as backup
     return `
       (function() {
+        ${themeJs}
         window.APP_AUTH_TOKEN = '${authToken}';
         try {
           document.cookie = 'APP_AUTH_TOKEN=${encodeURIComponent(authToken)}; path=/';
@@ -159,8 +169,8 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
           <View style={styles.headerSpacer} />
         </View>
         <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-          <ActivityIndicator size="large" color={isDarkMode ? "#ff6b35" : "#003399"} />
-          <Text style={[styles.loadingText, isDarkMode && { color: "#94A3B8" }]}>Loading {title}...</Text>
+          <ActivityIndicator size="large" color={isDarkMode ? "#ff6b35" : "#ffffff"} />
+          <Text style={[styles.loadingText, { color: isDarkMode ? "#94A3B8" : "#ffffff" }]}>Loading {title}...</Text>
         </View>
       </SafeAreaView>
     );
@@ -185,8 +195,8 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
       {/* Loading Indicator */}
       {loading && (
         <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-          <ActivityIndicator size="large" color={isDarkMode ? "#ff6b35" : "#003399"} />
-          <Text style={[styles.loadingText, isDarkMode && { color: "#94A3B8" }]}>Loading {title}...</Text>
+          <ActivityIndicator size="large" color={isDarkMode ? "#ff6b35" : "#ffffff"} />
+          <Text style={[styles.loadingText, { color: isDarkMode ? "#94A3B8" : "#ffffff" }]}>Loading {title}...</Text>
         </View>
       )}
       
@@ -194,7 +204,9 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
       <WebView
         source={{ uri: fullUrl }}
         key={fullUrl}
-        style={styles.webview}
+        style={[styles.webview, { backgroundColor: webViewBg }]}
+        containerStyle={{ backgroundColor: webViewBg }}
+        backgroundColor={webViewBg}
         onLoadStart={() => setLoading(true)}
         onLoadEnd={() => setLoading(false)}
         onError={(syntheticEvent) => {

@@ -85,10 +85,12 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user, formatDate, ac
           </View>
 
           <View style={styles.userMeta}>
-            <Text style={styles.metaText}>
-              <Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.7)" /> Joined{' '}
-              {formatDate(user.joinedDate)}
-            </Text>
+            {!!user.joinedDate && (
+              <Text style={styles.metaText}>
+                <Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.7)" /> Joined{' '}
+                {formatDate(user.joinedDate)}
+              </Text>
+            )}
             <Text style={styles.metaText}>
               <Ionicons name="time-outline" size={14} color="rgba(255,255,255,0.7)" /> Last active{' '}
               {formatDate(user.lastActive)}

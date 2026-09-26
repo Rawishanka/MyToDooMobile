@@ -352,7 +352,7 @@ export default function WelcomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={[{ flex: 1, backgroundColor: '#f8f9fa' }, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <View style={[{ flex: 1, backgroundColor: '#003399' }, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{
@@ -430,7 +430,7 @@ export default function WelcomeScreen() {
             }}
             activeOpacity={0.85}
           >
-            <MaterialCommunityIcons name="briefcase-outline" size={18} color={isDarkMode ? '#38BDF8' : '#003399'} />
+            <MaterialCommunityIcons name="briefcase-outline" size={18} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
             <Text style={[styles.offerServiceText, isDarkMode && { color: '#38BDF8' }]}>Offer a service</Text>
           </TouchableOpacity>
           
@@ -544,7 +544,9 @@ export default function WelcomeScreen() {
                 key={index}
                 style={[
                   styles.paginationDot,
+                  isDarkMode && { backgroundColor: 'rgba(0, 51, 153, 0.3)' },
                   Math.floor(currentIndex / 3) === index && styles.paginationDotActive,
+                  Math.floor(currentIndex / 3) === index && isDarkMode && { backgroundColor: '#003399' },
                 ]}
               />
             ))}
@@ -849,7 +851,7 @@ const styles = StyleSheet.create({
     marginHorizontal: wp('2%'),
   },
   offerServiceButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#7ED957',
     borderWidth: 0,
     borderRadius: 8,
     paddingVertical: hp('1.3%'),
@@ -865,9 +867,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   offerServiceText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: RFValue(13),
-    fontWeight: '600',
+    fontWeight: '700',
   },
   tagRow: {
     flexDirection: 'row',
@@ -897,7 +899,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(isTablet ? 17 : 18),
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginTop: hp('2%'),
     marginBottom: hp('0.8%'),
@@ -991,7 +993,7 @@ const styles = StyleSheet.create({
   carouselLabel: {
     fontSize: RFValue(isTablet ? 9 : 10),
     fontWeight: '700',
-    color: '#1A237E',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginTop: hp('0.8%'),
     lineHeight: RFValue(isTablet ? 11 : 13),
@@ -1010,10 +1012,10 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: 'rgba(0, 51, 153, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
   paginationDotActive: {
-    backgroundColor: '#003399',
+    backgroundColor: '#FFFFFF',
     width: 18,
   },
   // 2026 Community Card Styles
@@ -1215,10 +1217,10 @@ const styles = StyleSheet.create({
     width: isTablet ? 48 : 42,
     height: isTablet ? 48 : 42,
     borderRadius: isTablet ? 24 : 21,
-    backgroundColor: '#003399',
+    backgroundColor: '#ff6b35',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#003399',
+    shadowColor: '#ff6b35',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 8,
