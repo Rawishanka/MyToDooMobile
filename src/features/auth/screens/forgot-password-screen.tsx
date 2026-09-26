@@ -1,7 +1,7 @@
-import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
 import { forgotPassword } from '@/src/api/auth-api';
 import { FORM_MAX_WIDTH, RFValue, isTablet } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { AuthArtHeader, AuthSheet } from '../components/AuthArtHeader';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -28,6 +28,7 @@ export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
 
   const handleResetPassword = async () => {
     const trimmedEmail = email.trim();
@@ -80,17 +81,7 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      {/* Sleek 2026 Back button */}
-      <TouchableOpacity
-        style={[styles.backButton, { top: insets.top + 10 }, isDarkMode && { backgroundColor: '#1E293B' }]}
-        onPress={() => router.back()}
-        hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="arrow-back" size={20} color={isDarkMode ? '#F8FAFC' : '#0F172A'} />
-      </TouchableOpacity>
-
+    <SafeAreaView edges={['left', 'right']} style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
@@ -99,39 +90,32 @@ export default function ForgotPasswordScreen() {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.contentWrapper}>
             <ScrollView
-              contentContainerStyle={[
-                styles.scrollContent,
-                { paddingBottom: Math.max(insets.bottom, 24) },
-              ]}
+              contentContainerStyle={styles.scrollContent}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
               bounces={false}
             >
-              <View style={[styles.innerContainer, isTablet && styles.innerContainerTablet]}>
-                {/* Header - EXACT SAME logo frame and dimensions as LoginScreen */}
-                <View style={styles.header}>
-                  <View style={styles.logoContainer}>
-                    <View style={styles.logoBackground}>
-                      <MyToDooLogo width={50} height={50} />
-                    </View>
-                  </View>
-                  <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Forgot Password?</Text>
-                  <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>
-                    Enter your email address and we'll send{'\n'}you a password reset link.
-                  </Text>
-                </View>
-
+              <View style={styles.innerContainer}>
+                <AuthArtHeader
+                  title="Forgot Password?"
+                  subtitle={<>Enter your email address and we'll send{'\n'}you a password reset link.</>}
+                  showBack
+                  onBack={() => router.back()}
+                />
+                <AuthSheet>
                 {/* Form Section */}
                 <View style={styles.form}>
                   <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Email Address</Text>
-                  <View style={[styles.inputWrapper, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
-                    <Ionicons name="mail-outline" size={19} color="#64748B" style={styles.inputIcon} />
+                  <View style={[styles.inputWrapper, emailFocused && styles.inputWrapperFocused, isDarkMode && { backgroundColor: '#1E293B', borderColor: emailFocused ? '#38BDF8' : '#334155' }]}>
+                    <Ionicons name="mail-outline" size={19} color={isDarkMode ? '#94A3B8' : '#003399'} style={styles.inputIcon} />
                     <TextInput
                       style={[styles.input, isDarkMode && { color: '#F8FAFC' }]}
                       value={email}
                       onChangeText={setEmail}
+                      onFocus={() => setEmailFocused(true)}
+                      onBlur={() => setEmailFocused(false)}
                       placeholder="Enter your email"
-                      placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
+                      placeholderTextColor={isDarkMode ? "#64748B" : "#8A9BC4"}
                       keyboardType="email-address"
                       autoCapitalize="none"
                       autoFocus
@@ -177,9 +161,10 @@ export default function ForgotPasswordScreen() {
                   onPress={() => router.back()}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="arrow-back-outline" size={17} color={isDarkMode ? "#F8FAFC" : "#0F172A"} style={styles.backIcon} />
+                  <Ionicons name="arrow-back-outline" size={17} color={isDarkMode ? "#F8FAFC" : "#003399"} style={styles.backIcon} />
                   <Text style={[styles.backToLoginText, isDarkMode && { color: '#F8FAFC' }]}>Back to Login</Text>
                 </TouchableOpacity>
+                </AuthSheet>
               </View>
             </ScrollView>
           </View>
@@ -192,7 +177,7 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -202,15 +187,14 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
   },
   innerContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 50,
-    paddingBottom: 30,
+    flexGrow: 1,
     width: '100%',
-    maxWidth: 440,
-    alignSelf: 'center',
+  },
+  inputWrapperFocused: {
+    borderColor: '#003399',
+    backgroundColor: '#FFFFFF',
   },
   innerContainerTablet: {
     maxWidth: FORM_MAX_WIDTH,
@@ -274,7 +258,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: RFValue(13),
-    color: '#334155',
+    color: '#0B1F4D',
     marginBottom: 8,
     fontWeight: '600',
   },
@@ -282,9 +266,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#D6E2FF',
     borderRadius: 14,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F4F7FF',
     paddingHorizontal: 14,
     marginBottom: 18,
   },
@@ -295,20 +279,20 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     fontSize: RFValue(15),
-    color: '#0F172A',
+    color: '#0B1F4D',
   },
   resetButton: {
-    backgroundColor: '#FF914D',
-    paddingVertical: 15,
-    borderRadius: 16,
+    backgroundColor: '#ff6b35',
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    shadowColor: '#FF914D',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: '#ff6b35',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.32,
+    shadowRadius: 10,
+    elevation: 5,
   },
   resetButtonDisabled: {
     backgroundColor: '#CBD5E1',
@@ -333,7 +317,7 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#D6E2FF',
   },
   dividerText: {
     marginHorizontal: 14,
@@ -349,13 +333,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#D6E2FF',
   },
   backIcon: {
     marginRight: 8,
   },
   backToLoginText: {
-    color: '#0F172A',
+    color: '#003399',
     fontSize: RFValue(15),
     fontWeight: '600',
   },

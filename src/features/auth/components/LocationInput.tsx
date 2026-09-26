@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(14),
     fontWeight: '600',
     marginBottom: 8,
-    color: '#333',
+    color: '#0B1F4D',
   },
   selectedLocationContainer: {
     flexDirection: 'row',

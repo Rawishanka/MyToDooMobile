@@ -14,7 +14,7 @@ export default function AuthLayout() {
           presentation: 'modal',
           animation: 'slide_from_bottom',
           contentStyle: {
-            backgroundColor: isDarkMode ? '#0B1120' : '#ffffff',
+            backgroundColor: isDarkMode ? '#0B1120' : '#003399',
           },
         }}
       >

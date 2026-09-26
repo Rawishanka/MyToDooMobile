@@ -82,11 +82,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E8ECF4',
+    borderColor: '#D6E2FF',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 14,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#F4F7FF',
     marginBottom: 4,
   },
   dropdownError: {
@@ -108,12 +108,12 @@ const styles = StyleSheet.create({
   },
   dropdownText: {
     fontSize: RFValue(15),
-    color: '#1A1D2E',
+    color: '#0B1F4D',
     fontWeight: '600',
   },
   dropdownList: {
     borderWidth: 1.5,
-    borderColor: '#E8ECF4',
+    borderColor: '#D6E2FF',
     borderRadius: 12,
     backgroundColor: '#FFF',
     marginBottom: 16,
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: RFValue(15),
-    color: '#333',
+    color: '#0B1F4D',
     fontWeight: '500',
   },
   dropdownItemTextSelected: {

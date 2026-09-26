@@ -48,6 +48,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
 import { FORM_MAX_WIDTH, RFValue, isTablet } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { AuthArtHeader, AuthSheet } from '../components/AuthArtHeader';
 
 export default function LoginScreen() {
   const { isDarkMode } = useTheme();
@@ -59,6 +60,7 @@ export default function LoginScreen() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
   const [canUseBiometrics, setCanUseBiometrics] = useState(false);
   const [biometricTypeLabel, setBiometricTypeLabel] = useState<BiometricTypeLabel>("Biometrics");
@@ -1075,46 +1077,31 @@ export default function LoginScreen() {
   // ========================================
 
   return (
-    <SafeAreaView style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      {/* Cross icon in top right */}
-      <TouchableOpacity
-        style={[styles.closeIcon, { top: insets.top + 8 }, isDarkMode && { backgroundColor: '#1E293B' }]}
-        onPress={() => {
-          // Clear pending action if user cancels login
-          if (pendingAction) {
-            const { clearPendingAction } = usePendingActionStore.getState();
-            clearPendingAction();
-            console.log("🔄 Cleared pending action due to login cancellation");
-          }
-          router.replace('/');
-        }}
-        hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
-      >
-        <Ionicons name="close" size={28} color={isDarkMode ? '#F8FAFC' : '#333'} />
-      </TouchableOpacity>
+    <SafeAreaView edges={['left', 'right']} style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={[styles.innerContainer, isDarkMode && { backgroundColor: '#0B1120' }]}
       >
         <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            { paddingBottom: Math.max(insets.bottom, 20) },
-          ]}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={[styles.contentWrapper, isTablet && styles.contentWrapperTablet]}>
-        <View style={styles.header}>
-          {/* MyToDoo SVG Logo in Blue Container */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoBackground}>
-              <MyToDooLogo width={50} height={50} />
-            </View>
-          </View>
-          <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>Welcome Back</Text>
-          <Text style={[styles.subtitle, isDarkMode && { color: '#94A3B8' }]}>Sign in to your account</Text>
+            <View style={styles.contentWrapper}>
+        <AuthArtHeader
+          title="Welcome Back"
+          subtitle="Sign in to your account"
+          onClose={() => {
+            // Clear pending action if user cancels login
+            if (pendingAction) {
+              const { clearPendingAction } = usePendingActionStore.getState();
+              clearPendingAction();
+              console.log("🔄 Cleared pending action due to login cancellation");
+            }
+            router.replace('/');
+          }}
+        >
           {pendingAction && (
             <View style={styles.pendingActionBanner}>
               <Ionicons name="information-circle" size={16} color="#003399" />
@@ -1126,28 +1113,33 @@ export default function LoginScreen() {
               </Text>
             </View>
           )}
-        </View>
+        </AuthArtHeader>
+        <AuthSheet>
 
         <View style={styles.form}>
           <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Email</Text>
           <TextInput
-            style={[styles.input, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
+            style={[styles.input, focusedField === 'email' && styles.inputFocused, isDarkMode && { backgroundColor: '#1E293B', borderColor: focusedField === 'email' ? '#38BDF8' : '#334155', color: '#F8FAFC' }]}
+            onFocus={() => setFocusedField('email')}
+            onBlur={() => setFocusedField(null)}
             value={email}
             onChangeText={setEmail}
             placeholder="Enter your email"
-            placeholderTextColor={isDarkMode ? "#64748B" : "#9CA3AF"}
+            placeholderTextColor={isDarkMode ? "#64748B" : "#8A9BC4"}
             keyboardType="email-address"
             autoCapitalize="none"
           />
 
           <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Password</Text>
-          <View style={[styles.passwordContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+          <View style={[styles.passwordContainer, focusedField === 'password' && styles.inputFocused, isDarkMode && { backgroundColor: '#1E293B', borderColor: focusedField === 'password' ? '#38BDF8' : '#334155' }]}>
             <TextInput
               style={[styles.passwordInput, isDarkMode && { color: '#F8FAFC' }]}
+              onFocus={() => setFocusedField('password')}
+              onBlur={() => setFocusedField(null)}
               value={password}
               onChangeText={setPassword}
               placeholder="Enter your password"
-              placeholderTextColor={isDarkMode ? "#64748B" : "#9CA3AF"}
+              placeholderTextColor={isDarkMode ? "#64748B" : "#8A9BC4"}
               secureTextEntry={!showPassword}
               textContentType="password"
               autoComplete="password"
@@ -1161,7 +1153,7 @@ export default function LoginScreen() {
               <Ionicons 
                 name={showPassword ? 'eye-off-outline' : 'eye-outline'} 
                 size={22} 
-                color="#666" 
+                color={isDarkMode ? '#94A3B8' : '#003399'} 
               />
             </TouchableOpacity>
           </View>
@@ -1285,6 +1277,7 @@ export default function LoginScreen() {
             <Text style={styles.registerText}>Sign Up</Text>
           </TouchableOpacity>
         </View>
+        </AuthSheet>
             </View>
           </TouchableWithoutFeedback>
         </ScrollView>
@@ -1320,19 +1313,21 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   innerContainer: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
   },
   contentWrapper: {
     width: '100%',
+    flexGrow: 1,
+  },
+  inputFocused: {
+    borderColor: '#003399',
+    backgroundColor: '#FFFFFF',
   },
   contentWrapperTablet: {
     maxWidth: FORM_MAX_WIDTH,
@@ -1373,35 +1368,36 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: '#0B1F4D',
+    fontWeight: '600',
     marginBottom: 6,
   },
   input: {
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#D6E2FF',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 13,
     marginBottom: 14,
-    color: '#0F172A',
-    backgroundColor: '#F8FAFC',
+    color: '#0B1F4D',
+    backgroundColor: '#F4F7FF',
     fontSize: RFValue(15),
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#D6E2FF',
     borderRadius: 14,
     marginBottom: 14,
     paddingRight: 8,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F4F7FF',
   },
   passwordInput: {
     flex: 1,
     paddingHorizontal: 14,
     paddingVertical: 13,
-    color: '#0F172A',
+    color: '#0B1F4D',
     fontSize: RFValue(15),
   },
   passwordToggle: {
@@ -1419,7 +1415,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
-    borderColor: '#E8ECF4',
+    borderColor: '#B8C9F5',
     borderRadius: 4,
     marginRight: 10,
     justifyContent: 'center',
@@ -1432,19 +1428,20 @@ const styles = StyleSheet.create({
   },
   rememberMeText: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: '#0B1F4D',
   },
   forgotPassword: {
     color: '#003399',
     textAlign: 'right',
     marginBottom: 16,
     fontSize: RFValue(14),
+    fontWeight: '600',
   },
   biometricButton: {
     backgroundColor: 'rgba(14, 165, 233, 0.08)',
     borderWidth: 1.5,
     borderColor: '#0EA5E9',
-    borderRadius: 8,
+    borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1462,15 +1459,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   loginButton: {
-    backgroundColor: '#FF914D',
-    paddingVertical: 14,
-    borderRadius: 16,
+    backgroundColor: '#ff6b35',
+    height: 52,
+    justifyContent: 'center',
+    borderRadius: 14,
     alignItems: 'center',
-    shadowColor: '#FF914D',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: '#ff6b35',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.32,
+    shadowRadius: 10,
+    elevation: 5,
   },
   loginButtonText: {
     color: '#fff',
@@ -1485,11 +1483,11 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: '#D6E2FF',
   },
   dividerText: {
     marginHorizontal: 10,
-    color: '#666',
+    color: '#5B6B99',
     fontSize: RFValue(14),
     fontWeight: '500',
   },
@@ -1499,9 +1497,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
     paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#D6E2FF',
     marginBottom: 8,
   },
   googleIcon: {
@@ -1510,7 +1508,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   googleButtonText: {
-    color: '#333',
+    color: '#0B1F4D',
     fontWeight: '600',
     fontSize: RFValue(15),
   },
@@ -1520,7 +1518,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#000',
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     marginBottom: 8,
   },
   appleIcon: {
@@ -1536,10 +1534,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   footerText: {
-    color: '#666',
+    color: '#5B6B99',
   },
   registerText: {
-    color: '#ff6b35',
+    color: '#003399',
     fontWeight: 'bold',
   },
   closeIcon: {
@@ -1554,6 +1552,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#EEF2FF',
+    alignSelf: 'stretch',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,

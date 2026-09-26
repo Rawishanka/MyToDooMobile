@@ -19,6 +19,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RFValue, FORM_MAX_WIDTH, isTablet } from '@/src/shared/utils/responsive';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AuthArtHeader, AuthSheet } from '../components/AuthArtHeader';
 
 export default function SetNewPasswordScreen() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function SetNewPasswordScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState<'email' | 'password' | 'confirm' | null>(null);
 
   // Initialize email from params if available
   useEffect(() => {
@@ -195,42 +197,33 @@ export default function SetNewPasswordScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <TouchableOpacity
-        style={[styles.backButton, { top: insets.top + 8 }]}
-        onPress={() => router.back()}
-        hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
-      >
-        <Ionicons name="arrow-back" size={28} color="#333" />
-      </TouchableOpacity>
-
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.innerContainer}
         keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top : 0}
       >
         <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            { paddingBottom: Math.max(insets.bottom, 24) },
-          ]}
+          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={[styles.contentWrapper, isTablet && styles.contentWrapperTablet]}>
-        <View style={styles.header}>
-          <Ionicons name="key-outline" size={64} color="#007BFF" style={styles.keyIcon} />
-          <Text style={styles.title}>Set New Password</Text>
-          <Text style={styles.subtitle}>
-            Create a strong password for your account.
-          </Text>
-        </View>
+            <View style={styles.contentWrapper}>
+        <AuthArtHeader
+          title="Set New Password"
+          subtitle="Create a strong password for your account."
+          showBack
+          onBack={() => router.back()}
+        />
+        <AuthSheet forceLight>
 
         <View style={styles.form}>
           <Text style={styles.label}>Email Address</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, focusedField === 'email' && styles.inputFocused]}
+            onFocus={() => setFocusedField('email')}
+            onBlur={() => setFocusedField(null)}
             value={email}
             onChangeText={setEmail}
             placeholder="Enter your email"
@@ -241,9 +234,11 @@ export default function SetNewPasswordScreen() {
           />
 
           <Text style={styles.label}>New Password</Text>
-          <View style={styles.passwordContainer}>
+          <View style={[styles.passwordContainer, focusedField === 'password' && styles.inputFocused]}>
             <TextInput
               style={styles.passwordInput}
+              onFocus={() => setFocusedField('password')}
+              onBlur={() => setFocusedField(null)}
               value={password}
               onChangeText={setPassword}
               placeholder="Enter new password"
@@ -265,9 +260,11 @@ export default function SetNewPasswordScreen() {
           </View>
 
           <Text style={styles.label}>Confirm Password</Text>
-          <View style={styles.passwordContainer}>
+          <View style={[styles.passwordContainer, focusedField === 'confirm' && styles.inputFocused]}>
             <TextInput
               style={styles.passwordInput}
+              onFocus={() => setFocusedField('confirm')}
+              onBlur={() => setFocusedField(null)}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder="Confirm new password"
@@ -345,6 +342,7 @@ export default function SetNewPasswordScreen() {
             )}
           </TouchableOpacity>
         </View>
+        </AuthSheet>
           </View>
         </TouchableWithoutFeedback>
         </ScrollView>
@@ -356,18 +354,21 @@ export default function SetNewPasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
+  },
+  inputFocused: {
+    borderColor: '#003399',
+    backgroundColor: '#FFFFFF',
   },
   innerContainer: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 56,
   },
   contentWrapper: {
     width: '100%',
+    flexGrow: 1,
   },
   contentWrapperTablet: {
     maxWidth: FORM_MAX_WIDTH,
@@ -407,33 +408,37 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: '#0B1F4D',
     marginBottom: 8,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#D6E2FF',
+    backgroundColor: '#F4F7FF',
+    color: '#0B1F4D',
+    borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 13,
     fontSize: RFValue(16),
     marginBottom: 16,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#D6E2FF',
+    backgroundColor: '#F4F7FF',
+    borderRadius: 14,
     marginBottom: 16,
     paddingRight: 8,
   },
   passwordInput: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 13,
     fontSize: RFValue(16),
+    color: '#0B1F4D',
   },
   passwordToggle: {
     padding: 8,
@@ -441,15 +446,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   requirementsContainer: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F4F7FF',
+    borderWidth: 1,
+    borderColor: '#D6E2FF',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 14,
     marginBottom: 24,
   },
   requirementsTitle: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#333',
+    color: '#0B1F4D',
     marginBottom: 10,
   },
   requirement: {
@@ -467,13 +474,21 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   resetButton: {
-    backgroundColor: '#007BFF',
-    paddingVertical: 14,
-    borderRadius: 8,
+    backgroundColor: '#ff6b35',
+    height: 52,
+    justifyContent: 'center',
+    borderRadius: 14,
     alignItems: 'center',
+    shadowColor: '#ff6b35',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.32,
+    shadowRadius: 10,
+    elevation: 5,
   },
   resetButtonDisabled: {
-    backgroundColor: '#99c9ff',
+    backgroundColor: '#FFB79C',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   resetButtonText: {
     color: '#fff',

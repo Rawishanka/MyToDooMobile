@@ -19,7 +19,8 @@ import { SignupForm } from '../components/SignupForm';
 import { useSignup } from '../components/useSignup';
 import { FORM_MAX_WIDTH, RFValue, isTablet } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AuthArtHeader, AUTH_SHEET_OVERLAP } from '../components/AuthArtHeader';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -50,29 +51,14 @@ export default function SignUpScreen() {
   return (
     <View style={styles.wrapper}>
       <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         {/* Fixed Header Section */}
-        <View style={styles.fixedHeader}>
-        {!signup.verificationStep && (
-          <TouchableOpacity
-            style={styles.closeIcon}
-            onPress={() => router.replace('/')}
-            hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
-          >
-            <Ionicons name="close" size={28} color="#fff" />
-          </TouchableOpacity>
-        )}
-        
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <View style={styles.logoBackground}>
-              <MyToDooLogo width={50} height={50} />
-            </View>
-          </View>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up to get started</Text>
-        </View>
-      </View>
+        <AuthArtHeader
+          compact
+          title="Create Account"
+          subtitle="Sign up to get started"
+          onClose={!signup.verificationStep ? () => router.replace('/') : undefined}
+        />
 
       {/* Scrollable Form Section */}
       <KeyboardAvoidingView
@@ -172,7 +158,7 @@ export default function SignUpScreen() {
         handleSendPhoneOtp={signup.handleSendPhoneOtp}
         onClose={signup.handleCloseVerification}
       />
-      </SafeAreaView>
+      </View>
       {/* Bottom Safe Area for System Navigation Bar */}
       <View style={styles.bottomSafeArea} />
     </View>
@@ -229,14 +215,15 @@ const styles = StyleSheet.create({
   innerContainer: {
     flex: 1,
     backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    marginTop: -AUTH_SHEET_OVERLAP,
     overflow: 'hidden',
   },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingTop: 28,
     paddingBottom: 60,
   },
   scrollContentTablet: {
@@ -262,11 +249,11 @@ const styles = StyleSheet.create({
     marginBottom: 32, // Added margin to avoid overlay with system navigation
   },
   footerText: {
-    color: '#666',
+    color: '#5B6B99',
     fontSize: RFValue(14),
   },
   registerText: {
-    color: '#ff6b35',
+    color: '#003399',
     fontWeight: '600',
     fontSize: RFValue(14),
   },

@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(14),
     fontWeight: '600',
     marginBottom: 8,
-    color: '#333',
+    color: '#0B1F4D',
   },
   subLabel: {
     fontSize: RFValue(12),
@@ -114,11 +114,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#D6E2FF',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F4F7FF',
   },
   dateInputError: {
     borderColor: '#DC2626',
@@ -129,11 +129,11 @@ const styles = StyleSheet.create({
   },
   dateInputTextPlaceholder: {
     fontSize: RFValue(15),
-    color: '#999',
+    color: '#8A9BC4',
   },
   dateInputTextSelected: {
     fontSize: RFValue(15),
-    color: '#000',
+    color: '#0B1F4D',
     fontWeight: '500',
   },
   datePickerModalOverlay: {
@@ -143,8 +143,8 @@ const styles = StyleSheet.create({
   },
   datePickerModalContent: {
     backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     paddingBottom: 20,
   },
   datePickerHeader: {
@@ -154,16 +154,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#D6E2FF',
   },
   datePickerTitle: {
     fontSize: RFValue(17),
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: '700',
+    color: '#003399',
   },
   datePickerCancelText: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: '#5B6B99',
   },
   datePickerDoneText: {
     fontSize: RFValue(16),

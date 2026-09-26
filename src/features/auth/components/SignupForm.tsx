@@ -562,7 +562,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             }}
             onBlur={() => handleBlur('firstName')}
             placeholder="Enter first name"
-            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+            placeholderTextColor={isDarkMode ? "#64748B" : "#8A9BC4"}
             autoCapitalize="words"
             maxLength={50}
             returnKeyType="next"
@@ -599,7 +599,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             }}
             onBlur={() => handleBlur('lastName')}
             placeholder="Enter last name"
-            placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+            placeholderTextColor={isDarkMode ? "#64748B" : "#8A9BC4"}
             autoCapitalize="words"
             maxLength={50}
             returnKeyType="next"
@@ -634,7 +634,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         }}
         onBlur={() => handleBlur('email')}
         placeholder="Enter your email"
-        placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+        placeholderTextColor={isDarkMode ? "#64748B" : "#8A9BC4"}
         keyboardType="email-address"
         autoCapitalize="none"
         returnKeyType="next"
@@ -721,7 +721,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           }}
           onBlur={() => handleBlur('phone')}
           placeholder="Mobile number"
-          placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+          placeholderTextColor={isDarkMode ? "#64748B" : "#8A9BC4"}
           keyboardType="phone-pad"
           returnKeyType="next"
           onSubmitEditing={() => passwordRef.current?.focus()}
@@ -755,7 +755,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           }}
           onBlur={() => handleBlur('password')}
           placeholder="Create a password"
-          placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+          placeholderTextColor={isDarkMode ? "#64748B" : "#8A9BC4"}
           secureTextEntry={!showPassword}
           textContentType="newPassword"
           autoComplete="password-new"
@@ -803,7 +803,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           }}
           onBlur={() => handleBlur('confirmPassword')}
           placeholder="Confirm your password"
-          placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+          placeholderTextColor={isDarkMode ? "#64748B" : "#8A9BC4"}
           secureTextEntry={!showConfirmPassword}
           textContentType="newPassword"
           autoComplete="password-new"
@@ -873,7 +873,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
               value={abnInput}
               onChangeText={(text) => setAbnInput(formatAbnInput(text))}
               placeholder="XX XXX XXX XXX"
-              placeholderTextColor={isDarkMode ? "#64748B" : "#999"}
+              placeholderTextColor={isDarkMode ? "#64748B" : "#8A9BC4"}
               keyboardType="number-pad"
               maxLength={14}
               autoCorrect={false}
@@ -1009,7 +1009,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(14),
     fontWeight: '600',
     marginBottom: 8,
-    color: '#333',
+    color: '#0B1F4D',
   },
   required: {
     color: '#DC2626',
@@ -1017,14 +1017,14 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#D6E2FF',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: RFValue(15),
     marginBottom: 4,
-    backgroundColor: '#F8FAFC',
-    color: '#0F172A',
+    backgroundColor: '#F4F7FF',
+    color: '#0B1F4D',
   },
   inputError: {
     borderColor: '#DC2626',
@@ -1044,43 +1044,44 @@ const styles = StyleSheet.create({
   },
   phonePrefix: {
     borderWidth: 1.5,
-    borderColor: '#E0E0E0',
+    borderColor: '#D6E2FF',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#E8EFFF',
     justifyContent: 'center',
   },
   phonePrefixText: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#333',
+    color: '#003399',
   },
   phoneInput: {
     flex: 1,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#D6E2FF',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: RFValue(15),
-    backgroundColor: '#F8FAFC',
-    color: '#0F172A',
+    backgroundColor: '#F4F7FF',
+    color: '#0B1F4D',
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#D6E2FF',
     borderRadius: 14,
     paddingHorizontal: 16,
     marginBottom: 4,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F4F7FF',
   },
   passwordInput: {
     flex: 1,
     paddingVertical: 12,
     fontSize: RFValue(15),
+    color: '#0B1F4D',
   },
   passwordToggle: {
     padding: 8,
@@ -1100,7 +1101,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   signUpButtonDisabled: {
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#D6E2FF',
     shadowOpacity: 0,
     elevation: 0,
   },
@@ -1110,7 +1111,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   signUpButtonTextDisabled: {
-    color: '#666666',
+    color: '#5B6B99',
   },
   termsContainer: {
     flexDirection: 'row',
@@ -1127,14 +1128,14 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#CBD5E1',
+    borderColor: '#B8C9F5',
     backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#ff6b35',
-    borderColor: '#ff6b35',
+    backgroundColor: '#003399',
+    borderColor: '#003399',
   },
   termsTextContainer: {
     flex: 1,
@@ -1144,7 +1145,7 @@ const styles = StyleSheet.create({
   },
   termsText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: '#5B6B99',
     lineHeight: 20,
   },
   termsLink: {
@@ -1161,11 +1162,11 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: '#D6E2FF',
   },
   dividerText: {
     marginHorizontal: 10,
-    color: '#666',
+    color: '#5B6B99',
     fontSize: RFValue(14),
     fontWeight: '500',
   },
@@ -1177,7 +1178,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#D6E2FF',
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -1191,7 +1192,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   googleButtonText: {
-    color: '#333',
+    color: '#0B1F4D',
     fontWeight: '600',
     fontSize: RFValue(15),
   },
@@ -1223,11 +1224,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: '#D6E2FF',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F4F7FF',
     marginBottom: 16,
     gap: 10,
   },
@@ -1241,7 +1242,7 @@ const styles = StyleSheet.create({
   },
   countryDisplayText: {
     fontSize: RFValue(15),
-    color: '#1A1D2E',
+    color: '#0B1F4D',
     fontWeight: '600',
   },
   // Tasker Preferences Section
@@ -1320,18 +1321,18 @@ const styles = StyleSheet.create({
   abnLabel: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#333',
+    color: '#0B1F4D',
     marginBottom: 8,
   },
   abnInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
+    borderColor: '#D6E2FF',
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: RFValue(15),
-    color: '#333',
-    backgroundColor: '#fff',
+    color: '#0B1F4D',
+    backgroundColor: '#F4F7FF',
   },
   abnHelper: {
     fontSize: RFValue(12),
