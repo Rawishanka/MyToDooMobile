@@ -29,9 +29,12 @@ import {
 import { useCompletionStatus } from './completion/hooks';
 import { BRAND_BLUE, BRAND_ORANGE, CARD_TEXT } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
+import { useTheme } from '@/src/shared/theme';
 
 export default function TaskCompletionStatusScreen() {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
   const [showMarkCompleteModal, setShowMarkCompleteModal] = useState(false);
@@ -59,7 +62,8 @@ export default function TaskCompletionStatusScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <BlueBackdrop />
       <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
 
       {/* Header */}
@@ -154,7 +158,7 @@ export default function TaskCompletionStatusScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: BRAND_BLUE,
   },
   header: {
     flexDirection: 'row',
@@ -162,7 +166,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 14,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: 'transparent',
   },
   backIcon: {
     width: 36,
@@ -192,9 +196,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 20,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#CBD5E1',
+    borderTopColor: 'rgba(255,255,255,0.2)',
   },
   completeButton: {
     flexDirection: 'row',

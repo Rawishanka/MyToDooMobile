@@ -4,6 +4,7 @@ import {
   useBookServiceListing,
   useGetServiceListing,
 } from '@/src/shared/hooks/useServiceListingApi';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { useTheme } from '@/src/shared/theme';
 import { validateContactContent } from '@/src/shared/utils/contactModeration';
 import { RFValue } from '@/src/shared/utils/responsive';
@@ -12,7 +13,6 @@ import { formatUserName } from '@/src/utils/formatUserName';
 import {
   BRAND_BLUE,
   BRAND_ORANGE,
-  CARD_BG,
   CARD_CHIP_BG,
   CARD_DIVIDER,
   CARD_PRICE_BG,
@@ -28,6 +28,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -134,17 +135,19 @@ export default function ServiceListingDetailScreen({
     <KeyboardAvoidingView
       style={[
         styles.container,
-        { backgroundColor: isDarkMode ? '#0B1120' : '#f8fafc' },
+        { backgroundColor: isDarkMode ? '#0B1120' : BRAND_BLUE },
       ]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
+      <BlueBackdrop />
+      <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : BRAND_BLUE} />
       <View
         style={[
           styles.header,
           {
             paddingTop: Platform.OS === 'ios' ? insets.top + 8 : 45,
-            backgroundColor: isDarkMode ? '#1E293B' : BRAND_BLUE,
-            borderBottomColor: isDarkMode ? '#334155' : BRAND_BLUE,
+            backgroundColor: isDarkMode ? '#1E293B' : 'transparent',
+            borderBottomColor: isDarkMode ? '#334155' : 'transparent',
           },
         ]}
       >
@@ -159,17 +162,17 @@ export default function ServiceListingDetailScreen({
 
       {isLoading && !listing ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         </View>
       ) : !listing ? (
         <View style={styles.loadingWrap}>
           <View style={[styles.stateIconCircle, isDarkMode && { backgroundColor: '#1E293B' }]}>
             <Ionicons name="search-outline" size={40} color="#FFFFFF" />
           </View>
-          <Text style={[styles.emptyText, { color: isDarkMode ? '#F8FAFC' : '#0F172A' }]}>
+          <Text style={[styles.emptyText, { color: isDarkMode ? '#F8FAFC' : '#FFFFFF' }]}>
             Listing not found
           </Text>
-          <Text style={[styles.emptySub, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>
+          <Text style={[styles.emptySub, { color: isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.75)' }]}>
             This service may have been removed.
           </Text>
           <TouchableOpacity style={styles.emptyButton} onPress={onBack} activeOpacity={0.85}>
@@ -246,7 +249,7 @@ export default function ServiceListingDetailScreen({
                 {
                   backgroundColor: isDarkMode ? '#0F172A' : '#ffffff',
                   borderColor: isDarkMode ? '#334155' : 'rgba(255,255,255,0.6)',
-                  color: isDarkMode ? '#F8FAFC' : '#0F172A',
+                  color: isDarkMode ? '#F8FAFC' : '#0B1B4D',
                 },
               ]}
               value={amount}
@@ -266,7 +269,7 @@ export default function ServiceListingDetailScreen({
                 {
                   backgroundColor: isDarkMode ? '#0F172A' : '#ffffff',
                   borderColor: isDarkMode ? '#334155' : 'rgba(255,255,255,0.6)',
-                  color: isDarkMode ? '#F8FAFC' : '#0F172A',
+                  color: isDarkMode ? '#F8FAFC' : '#0B1B4D',
                 },
               ]}
               value={message}
@@ -331,7 +334,7 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: 'rgba(255,255,255,0.14)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
@@ -353,13 +356,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   cardBlue: {
-    backgroundColor: CARD_BG,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   cardDark: {
     backgroundColor: '#1E293B',

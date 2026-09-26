@@ -1,4 +1,5 @@
-import { CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import {CARD_TEXT, CARD_TEXT_MUTED} from '@/src/shared/theme/brandColors';
+import { GLASS_BG } from '../detailTheme';
 import React from 'react';
 import { useTheme } from '@/src/shared/theme';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -50,19 +51,14 @@ export const TabsSection: React.FC<TabsSectionProps> = ({ activeTab, onTabChange
 const styles = StyleSheet.create({
   tabsContainer: {
     flexDirection: 'row',
-    backgroundColor: CARD_BG,
+    backgroundColor: GLASS_BG,
     borderRadius: 16,
     padding: 5,
     marginTop: 16,
     marginBottom: 16,
     gap: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   tabBtn: {
     flex: 1,

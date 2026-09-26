@@ -23,6 +23,7 @@ import { ErrorState, LoadingState } from '../../components/shared';
 import TermsConditionsScreen from '@/src/features/legal/screens/TermsConditionsScreen';
 import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 
 export default function AcceptOfferScreen() {
   const router = useRouter();
@@ -112,6 +113,7 @@ export default function AcceptOfferScreen() {
   if (offers.length === 0) {
     return (
       <View style={styles.container}>
+        <BlueBackdrop />
         <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
         
         {/* Header */}
@@ -124,7 +126,7 @@ export default function AcceptOfferScreen() {
         </View>
 
         <View style={styles.emptyContainer}>
-          <Ionicons name="document-outline" size={64} color="#94A3B8" />
+          <Ionicons name="document-outline" size={64} color="rgba(255,255,255,0.6)" />
           <Text style={styles.emptyTitle}>No Offers Yet</Text>
           <Text style={styles.emptySubtitle}>
             No offers have been submitted for this task yet. Check back later!
@@ -136,6 +138,7 @@ export default function AcceptOfferScreen() {
 
   return (
     <View style={styles.container}>
+      <BlueBackdrop />
       <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
       
       {/* Header */}
@@ -248,7 +251,7 @@ export default function AcceptOfferScreen() {
           </View>
 
           <Modal visible={showTermsWebView} animationType="slide" presentationStyle="pageSheet">
-            <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+            <SafeAreaView style={{ flex: 1, backgroundColor: '#003399' }}>
               <TermsConditionsScreen onBack={() => setShowTermsWebView(false)} />
             </SafeAreaView>
           </Modal>
@@ -281,7 +284,7 @@ export default function AcceptOfferScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   loadingContainer: {
     flex: 1,
@@ -291,7 +294,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
   },
   errorContainer: {
     flex: 1,
@@ -302,13 +305,13 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '600',
-    color: '#333',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -317,7 +320,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },
@@ -328,7 +331,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 60 : 50,
     paddingBottom: 14,
-    backgroundColor: BRAND_BLUE,
   },
   backIcon: {
     width: 36,
@@ -351,17 +353,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   taskSummary: {
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 20,
     padding: 18,
     marginTop: 0,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   taskTitle: {
     fontSize: 20,
@@ -379,26 +376,21 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: '#FFFFFF',
     marginBottom: 14,
   },
   offerCard: {
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 20,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   selectedOfferCard: {
     borderWidth: 2,
     borderColor: BRAND_ORANGE,
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
   offerHeader: {
     flexDirection: 'row',
@@ -468,17 +460,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   selectionInfo: {
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 20,
     padding: 18,
     marginTop: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   selectionTitle: {
     fontSize: 16,
@@ -510,17 +497,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   termsContainer: {
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 20,
     padding: 18,
     marginTop: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
 
   },
   termsTitle: {
@@ -548,21 +530,21 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
   },
   buttonContainer: {
     paddingHorizontal: 16,
     paddingVertical: 14,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#CBD5E1',
+    borderTopColor: 'rgba(255,255,255,0.22)',
   },
   acceptButton: {
     backgroundColor: BRAND_ORANGE,

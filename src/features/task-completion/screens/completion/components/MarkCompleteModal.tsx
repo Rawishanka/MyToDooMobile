@@ -3,7 +3,7 @@ import { appAlert } from '@/src/shared/components/AppAlert';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { BRAND_BLUE, BRAND_ORANGE, CARD_TEXT } from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface MarkCompleteModalProps {
@@ -41,9 +41,9 @@ export default function MarkCompleteModal({
       <View style={styles.overlay}>
         <View style={[styles.content, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
           <View style={[styles.header, !isDarkMode && styles.headerBand]}>
-            <Text style={[styles.title, !isDarkMode && { color: CARD_TEXT }, isDarkMode && { color: '#F8FAFC' }]}>Mark Task Complete</Text>
+            <Text style={[styles.title, !isDarkMode && { color: '#FFFFFF' }, isDarkMode && { color: '#F8FAFC' }]}>Mark Task Complete</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={isDarkMode ? "#94A3B8" : CARD_TEXT} />
+              <Ionicons name="close" size={24} color={isDarkMode ? "#94A3B8" : "#FFFFFF"} />
             </TouchableOpacity>
           </View>
 
@@ -80,14 +80,16 @@ export default function MarkCompleteModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
   },
   content: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 24,
     overflow: 'hidden',
     padding: 20,
     width: '100%',
@@ -100,7 +102,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   headerBand: {
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: 'rgba(255,255,255,0.08)',
     marginHorizontal: -20,
     marginTop: -20,
     paddingHorizontal: 20,
@@ -109,11 +111,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: '#FFFFFF',
   },
   description: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.78)',
     marginBottom: 12,
   },
   input: {
@@ -135,14 +137,15 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     borderWidth: 1.5,
-    borderColor: '#CBD5E1',
+    borderColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     height: 50,
     justifyContent: 'center',
     borderRadius: 14,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#475569',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
   },

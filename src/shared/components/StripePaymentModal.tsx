@@ -355,7 +355,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#003399" />
+        <ActivityIndicator size="large" color="#FFFFFF" />
         <Text style={styles.loadingText}>Preparing secure payment...</Text>
       </View>
     </View>
@@ -367,7 +367,7 @@ const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: RFValue(16),
-    color: '#666',
+    color: 'rgba(255,255,255,0.85)',
     fontWeight: '500',
   },
   header: {

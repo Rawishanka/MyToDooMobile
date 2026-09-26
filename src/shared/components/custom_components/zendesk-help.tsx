@@ -42,7 +42,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
         {/* Loading Indicator */}
         {loading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#003399" />
+            <ActivityIndicator size="large" color="#FFFFFF" />
             <Text style={styles.loadingText}>Loading Help Center...</Text>
           </View>
         )}
@@ -67,7 +67,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
           // Show loading view
           renderLoading={() => (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#003399" />
+              <ActivityIndicator size="large" color="#FFFFFF" />
             </View>
           )}
         />
@@ -79,11 +79,11 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   webview: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   loadingContainer: {
     position: 'absolute',
@@ -93,13 +93,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
     zIndex: 1,
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
 });
 

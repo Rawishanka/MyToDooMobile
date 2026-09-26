@@ -24,6 +24,7 @@ import {
 
 // Hooks
 import { usePaymentForm } from './hooks';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 export default function CompletePaymentScreen() {
@@ -75,6 +76,7 @@ export default function CompletePaymentScreen() {
 
   return (
     <View style={styles.container}>
+      <BlueBackdrop />
       <StatusBar barStyle="light-content" backgroundColor="#003399" />
       
       {/* Header */}
@@ -141,7 +143,7 @@ export default function CompletePaymentScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   header: {
     flexDirection: 'row',
@@ -149,7 +151,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 14,
-    backgroundColor: '#003399',
   },
   backIcon: {
     width: 36,
@@ -176,9 +177,9 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#CBD5E1',
+    borderTopColor: 'rgba(255,255,255,0.22)',
   },
   submitButton: {
     backgroundColor: '#ff6b35',

@@ -39,6 +39,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // Responsive utilities
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import { BS } from '@/src/shared/theme/blueSheet';
+import { VerifiedBadges } from '@/src/features/tasks/screens/detail/components/VerifiedBadges';
 import {
   BRAND_ORANGE,
   CARD_CHIP_BG,
@@ -2183,12 +2185,12 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 }}
                 style={styles.closeButton}
               >
-                <MaterialIcons name="close" size={24} color="#333" />
+                <MaterialIcons name="close" size={22} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
 
             <View style={styles.warningContainer}>
-              <MaterialIcons name="info-outline" size={20} color="#ff8c00" />
+              <MaterialIcons name="info-outline" size={20} color="#FCD34D" />
               <Text style={styles.warningText}>
                 Cancelling tasks will incur fees.{' '}
                 <Text style={styles.warningLink}>
@@ -2200,7 +2202,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
             {loadingReasons ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#1a237e" />
+                <ActivityIndicator size="large" color="#FFFFFF" />
                 <Text style={styles.loadingText}>Loading cancellation reasons...</Text>
               </View>
             ) : cancellationReasons.length === 0 ? (
@@ -2285,12 +2287,12 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 }}
                 style={styles.closeButton}
               >
-                <MaterialIcons name="close" size={24} color="#333" />
+                <MaterialIcons name="close" size={22} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
 
             <View style={styles.warningContainer}>
-              <MaterialIcons name="info-outline" size={20} color="#ff8c00" />
+              <MaterialIcons name="info-outline" size={20} color="#FCD34D" />
               <Text style={styles.warningText}>
                 Please select a reason for cancelling this task.
               </Text>
@@ -2298,7 +2300,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
             {loadingReasons ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#1a237e" />
+                <ActivityIndicator size="large" color="#FFFFFF" />
                 <Text style={styles.loadingText}>Loading cancellation reasons...</Text>
               </View>
             ) : cancellationReasons.length === 0 ? (
@@ -2370,7 +2372,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         <View style={styles.modalOverlay}>
           <View style={styles.deleteModalContent}>
             <View style={styles.deleteIconContainer}>
-              <MaterialIcons name="delete-forever" size={48} color="#dc3545" />
+              <MaterialIcons name="delete-forever" size={48} color="#FCA5A5" />
             </View>
             
             <Text style={styles.deleteModalTitle}>Delete Task?</Text>
@@ -2415,7 +2417,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         <View style={styles.modalOverlay}>
           <View style={[styles.withdrawModalCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
             <View style={[styles.withdrawIconContainer, isDarkMode && { backgroundColor: '#450A0A', borderColor: '#7F1D1D', borderWidth: 1 }]}>
-              <Ionicons name="trash-outline" size={32} color={isDarkMode ? '#F87171' : '#EF4444'} />
+              <Ionicons name="trash-outline" size={32} color={isDarkMode ? '#F87171' : '#FCA5A5'} />
             </View>
 
             <Text style={[styles.withdrawModalTitle, isDarkMode && { color: '#F8FAFC' }]}>Withdraw Offer?</Text>
@@ -2484,7 +2486,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         <View style={styles.modalOverlay}>
           <View style={styles.deleteModalContent}>
             <View style={styles.deleteIconContainer}>
-              <MaterialIcons name="cancel" size={48} color="#ff8c00" />
+              <MaterialIcons name="cancel" size={48} color="#FCD34D" />
             </View>
             
             <Text style={styles.deleteModalTitle}>Cancellation Request</Text>
@@ -2496,7 +2498,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
             {pendingCancellationRequest?.reason && (
               <View style={styles.warningContainer}>
-                <MaterialIcons name="info-outline" size={20} color="#ff8c00" />
+                <MaterialIcons name="info-outline" size={20} color="#FCD34D" />
                 <Text style={styles.warningText}>
                   <Text style={{ fontWeight: 'bold' }}>Reason: </Text>
                   {pendingCancellationRequest.reason}
@@ -2547,7 +2549,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         onRequestClose={() => setShowOffersModal(false)}
       >
         <View style={styles.offersModalOverlay}>
-          <View style={styles.offersModalContent}>
+          <View style={[styles.offersModalContent, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             <View style={styles.offersModalHeader}>
               <Text style={styles.offersModalTitle}>
                 Offers for &quot;{task.title}&quot;
@@ -2556,7 +2558,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 style={styles.offersCloseButton}
                 onPress={() => setShowOffersModal(false)}
               >
-                <MaterialIcons name="close" size={24} color="#666" />
+                <MaterialIcons name="close" size={24} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
 
@@ -2603,6 +2605,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                             {offer.taskTaker?.rating?.toFixed(1) || offer.taskTakerId?.rating?.toFixed(1) || '0.0'}
                           </Text>
                         </View>
+                        <VerifiedBadges badges={(offer as any).user?.badges ?? (offerUser as any)?.badges} />
                       </View>
                     </View>
                     <View style={styles.offerAmount}>
@@ -2872,7 +2875,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: wp('5%'),
@@ -2891,13 +2894,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: RFValue(20),
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF',
     marginBottom: 12,
     textAlign: 'center',
   },
   modalMessage: {
     fontSize: RFValue(15),
-    color: '#666',
+    color: 'rgba(255,255,255,0.72)',
     textAlign: 'center',
     marginBottom: 8,
     lineHeight: 22,
@@ -2917,11 +2920,11 @@ const styles = StyleSheet.create({
   modalNoButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-    alignItems: 'center',
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: 'rgba(255,255,255,0.4)',
+    alignItems: 'center',
   },
   modalNoText: {
     fontSize: RFValue(16),
@@ -2931,8 +2934,8 @@ const styles = StyleSheet.create({
   modalYesButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 8,
-    backgroundColor: '#dc3545',
+    borderRadius: 14,
+    backgroundColor: '#EF4444',
     alignItems: 'center',
   },
   modalYesText: {
@@ -3125,13 +3128,15 @@ const styles = StyleSheet.create({
   },
   posterCancelOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'flex-end',
   },
   posterCancelContent: {
-    backgroundColor: '#f5f5f9',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: '#003399',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
     maxHeight: '88%',
     flexDirection: 'column',
   },
@@ -3147,35 +3152,35 @@ const styles = StyleSheet.create({
   cancelModalFooter: {
     paddingHorizontal: 20,
     paddingTop: 12,
-    backgroundColor: '#fff',
+    backgroundColor: '#00287A',
     borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+    borderTopColor: 'rgba(255,255,255,0.18)',
   },
   radioButton: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#94a3b8',
+    borderColor: 'rgba(255,255,255,0.6)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
     marginTop: 2,
   },
   radioButtonSelected: {
-    borderColor: '#003399',
+    borderColor: '#ff6b35',
   },
   radioButtonInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#003399',
+    backgroundColor: '#ff6b35',
   },
   reasonNumberSelected: {
-    color: '#003399',
+    color: '#FFFFFF',
   },
   reasonTextSelected: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   posterCancelHeader: {
@@ -3184,40 +3189,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: 'transparent',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   posterCancelTitle: {
     fontSize: RFValue(20),
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF',
   },
   closeButton: {
-    padding: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   warningContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#fff8e1',
+    backgroundColor: 'rgba(252,211,77,0.15)',
     padding: 16,
     marginHorizontal: 20,
     marginTop: 16,
-    borderRadius: 8,
+    borderRadius: 14,
     borderLeftWidth: 4,
-    borderLeftColor: '#ff8c00',
+    borderLeftColor: '#FCD34D',
   },
   warningText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: '#333',
+    color: 'rgba(255,255,255,0.92)',
     marginLeft: 12,
     lineHeight: 20,
   },
   warningLink: {
-    color: '#003399',
+    color: '#FFFFFF',
     textDecorationLine: 'underline',
     fontWeight: '500',
   },
@@ -3233,7 +3243,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.72)',
   },
   emptyReasonsContainer: {
     paddingVertical: 40,
@@ -3242,47 +3252,47 @@ const styles = StyleSheet.create({
   },
   emptyReasonsText: {
     fontSize: RFValue(14),
-    color: '#999',
+    color: 'rgba(255,255,255,0.72)',
     textAlign: 'center',
   },
   reasonItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 18,
     marginBottom: 12,
     borderWidth: 1.5,
-    borderColor: '#cbd5e1',
+    borderColor: 'rgba(255,255,255,0.22)',
   },
   reasonItemSelected: {
-    backgroundColor: '#eff6ff',
-    borderColor: '#003399',
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    borderColor: '#ff6b35',
     borderWidth: 2,
   },
   reasonNumber: {
     fontSize: RFValue(16),
     fontWeight: 'bold',
-    color: '#333',
+    color: 'rgba(255,255,255,0.85)',
     marginRight: 8,
     minWidth: 24,
   },
   reasonText: {
     flex: 1,
     fontSize: RFValue(15),
-    color: '#333',
+    color: 'rgba(255,255,255,0.92)',
     lineHeight: 22,
   },
   confirmCancelButton: {
-    backgroundColor: '#dc3545',
+    backgroundColor: '#EF4444',
     marginHorizontal: 20,
     marginTop: 20,
     paddingVertical: 16,
-    borderRadius: 8,
+    borderRadius: 14,
     alignItems: 'center',
   },
   confirmCancelButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: 'rgba(255,255,255,0.25)',
     opacity: 0.6,
   },
   confirmCancelButtonText: {
@@ -3325,7 +3335,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(252,165,165,0.5)',
   },
   withdrawModalCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
     borderRadius: 24,
     padding: 24,
     width: '88%',
@@ -3341,7 +3353,7 @@ const styles = StyleSheet.create({
     width: 68,
     height: 68,
     borderRadius: 34,
-    backgroundColor: '#FEE2E2',
+    backgroundColor: 'rgba(239,68,68,0.22)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -3349,13 +3361,13 @@ const styles = StyleSheet.create({
   withdrawModalTitle: {
     fontSize: RFValue(20),
     fontWeight: '800',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 8,
     textAlign: 'center',
   },
   withdrawModalMessage: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.72)',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 22,
@@ -3370,14 +3382,16 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderRadius: 14,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   withdrawCancelButtonText: {
     fontSize: RFValue(14),
     fontWeight: '700',
-    color: '#475569',
+    color: '#FFFFFF',
   },
   withdrawConfirmButton: {
     flex: 1.2,
@@ -3401,8 +3415,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   deleteModalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 24,
     padding: 24,
     width: '85%',
     maxWidth: 400,
@@ -3412,7 +3428,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#fee',
+    backgroundColor: 'rgba(239,68,68,0.22)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -3446,7 +3462,7 @@ const styles = StyleSheet.create({
   deleteCancelButtonText: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#333',
+    color: '#FFFFFF',
   },
   deleteConfirmButton: {
     flex: 1,
@@ -3456,7 +3472,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   deleteConfirmButtonDisabled: {
-    backgroundColor: '#aaa',
+    backgroundColor: 'rgba(255,255,255,0.25)',
     opacity: 0.7,
   },
   deleteConfirmButtonText: {
@@ -3516,13 +3532,15 @@ const styles = StyleSheet.create({
   // Offers modal styles
   offersModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: BS.overlay,
     justifyContent: 'flex-end',
   },
   offersModalContent: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: BS.surface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    borderColor: BS.glassBorder,
     maxHeight: '80%',
     paddingTop: 20,
   },
@@ -3533,30 +3551,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: BS.divider,
   },
   offersModalTitle: {
     fontSize: RFValue(18),
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
+    color: BS.title,
     flex: 1,
     marginRight: 16,
   },
   offersCloseButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: BS.glassStrong,
   },
   offersListContent: {
     padding: 20,
   },
   offerItem: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 12,
+    backgroundColor: BS.glass,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: BS.glassBorder,
     padding: 16,
     marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#003399',
   },
   offerHeader: {
     flexDirection: 'row',
@@ -3581,7 +3599,7 @@ const styles = StyleSheet.create({
   offerUserName: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#333',
+    color: BS.title,
     marginBottom: 2,
   },
   offerRating: {
@@ -3590,7 +3608,7 @@ const styles = StyleSheet.create({
   },
   offerRatingText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: BS.muted,
     marginLeft: 4,
   },
   offerAmount: {
@@ -3598,12 +3616,12 @@ const styles = StyleSheet.create({
   },
   offerPrice: {
     fontSize: RFValue(18),
-    fontWeight: '700',
-    color: '#003399',
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
   offerMessage: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: BS.text,
     fontStyle: 'italic',
     marginBottom: 12,
     lineHeight: 20,
@@ -3615,7 +3633,7 @@ const styles = StyleSheet.create({
   },
   offerDate: {
     fontSize: RFValue(12),
-    color: '#999',
+    color: BS.muted,
   },
   acceptOfferButton: {
     backgroundColor: '#ff6b35',
@@ -3626,7 +3644,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   acceptOfferDisabledButton: {
-    backgroundColor: '#ccc',
+    backgroundColor: 'rgba(255,255,255,0.25)',
   },
   acceptOfferText: {
     color: '#fff',

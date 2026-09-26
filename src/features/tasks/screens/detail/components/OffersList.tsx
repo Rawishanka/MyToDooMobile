@@ -17,7 +17,9 @@ import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
-import { BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import {BRAND_ORANGE, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED} from '@/src/shared/theme/brandColors';
+import { GLASS_BG } from '../detailTheme';
+import { VerifiedBadges } from './VerifiedBadges';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -340,6 +342,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                       {userName}
                     </Text>
                   </View>
+                  <VerifiedBadges badges={(offer as any).user?.badges} />
 
                   {/* Offer Amount and Status - Hide status for other taskers viewing offers */}
                   <OfferAmountStatus 
@@ -456,7 +459,7 @@ const styles = StyleSheet.create({
   loadingStateText: {
     marginTop: 8,
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.72)',
   },
   emptyState: {
     paddingVertical: 48,
@@ -466,33 +469,28 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: CARD_BG,
+    backgroundColor: GLASS_BG,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyStateText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: '#FFFFFF',
     marginTop: 14,
   },
   emptyStateSubtext: {
     fontSize: 14,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.72)',
     marginTop: 4,
     textAlign: 'center',
   },
   offerCard: {
-    backgroundColor: CARD_BG,
+    backgroundColor: GLASS_BG,
     padding: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   taskTitleContainer: {
     flexDirection: 'row',
@@ -601,12 +599,12 @@ const styles = StyleSheet.create({
   },
   statDivider: {
     fontSize: RFValue(13),
-    color: '#999',
+    color: 'rgba(255,255,255,0.72)',
     marginHorizontal: 4,
   },
   offerTasksCount: {
     fontSize: RFValue(13),
-    color: '#666',
+    color: 'rgba(255,255,255,0.72)',
   },
   completionRateRow: {
     flexDirection: 'row',

@@ -22,6 +22,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppAlert } from '@/src/shared/components/AppAlert';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { useTheme } from '@/src/shared/theme';
 
 export default function AskQuestionScreen() {
@@ -128,7 +129,8 @@ export default function AskQuestionScreen() {
   if (isLoading) {
     return (
       <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <ActivityIndicator size="large" color="#003399" />
+        <BlueBackdrop />
+        <ActivityIndicator size="large" color="#FFFFFF" />
         <Text style={styles.loadingText}>Loading task details...</Text>
       </View>
     );
@@ -137,7 +139,8 @@ export default function AskQuestionScreen() {
   if (!task) {
     return (
       <View style={[styles.errorContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+        <BlueBackdrop />
+        <Ionicons name="alert-circle-outline" size={64} color="#FCA5A5" />
         <Text style={styles.errorTitle}>Task Not Found</Text>
         <Text style={styles.errorSubtitle}>Could not load task details.</Text>
         <TouchableOpacity 
@@ -156,6 +159,7 @@ export default function AskQuestionScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
+      <BlueBackdrop />
       <StatusBar barStyle="light-content" backgroundColor="#003399" />
       
       {/* Header */}
@@ -264,36 +268,36 @@ export default function AskQuestionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -302,7 +306,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '700',
   },
@@ -312,7 +316,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 14,
-    backgroundColor: '#003399',
   },
   backIcon: {
     width: 36,
@@ -335,15 +338,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   taskSummary: {
-    backgroundColor: '#003399',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
     borderRadius: 20,
     padding: 16,
     marginTop: 20,
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
   },
   taskTitle: {
     fontSize: RFValue(18),
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 20,
   },
   inputContainer: {
@@ -379,13 +379,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: RFValue(16),
-    color: '#0F172A',
+    color: '#0B1B4D',
     minHeight: 120,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
   },
   characterCount: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'right',
     marginTop: 4,
   },
@@ -395,46 +395,46 @@ const styles = StyleSheet.create({
   suggestionsTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 12,
   },
   suggestionItem: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   suggestionText: {
     fontSize: RFValue(14),
-    color: '#334155',
+    color: '#FFFFFF',
   },
   guidelinesContainer: {
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderWidth: 1,
-    borderColor: 'rgba(0,51,153,0.18)',
+    borderColor: 'rgba(255,255,255,0.20)',
     borderRadius: 16,
     padding: 16,
   },
   guidelinesTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#003399',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   guideline: {
     fontSize: RFValue(12),
-    color: '#003399',
+    color: 'rgba(255,255,255,0.85)',
     marginBottom: 4,
   },
   buttonContainer: {
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#CBD5E1',
+    borderTopColor: 'rgba(255,255,255,0.22)',
   },
   submitButton: {
     backgroundColor: '#ff6b35',

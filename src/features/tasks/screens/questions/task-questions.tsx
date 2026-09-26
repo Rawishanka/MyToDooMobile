@@ -19,6 +19,8 @@ import { ErrorState, LoadingState } from '../../components/shared';
 import EmptyQuestionsState from './components/EmptyQuestionsState';
 import QuestionCard from './components/QuestionCard';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
+import { BS } from '@/src/shared/theme/blueSheet';
 
 interface QuestionItem {
   _id: string;
@@ -104,6 +106,7 @@ export default function TaskQuestionsScreen() {
       style={styles.container} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <BlueBackdrop />
       <StatusBar barStyle="light-content" backgroundColor="#003399" />
       
       {/* Header */}
@@ -168,14 +171,14 @@ export default function TaskQuestionsScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Ask a Question</Text>
               <TouchableOpacity onPress={() => setShowAddQuestion(false)}>
-                <Ionicons name="close" size={24} color="#64748B" />
+                <Ionicons name="close" size={24} color="rgba(255,255,255,0.75)" />
               </TouchableOpacity>
             </View>
             
             <TextInput
               style={styles.questionInput}
               placeholder="What would you like to know about this task?"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={BS.placeholder}
               value={newQuestion}
               onChangeText={setNewQuestion}
               multiline={true}
@@ -219,7 +222,7 @@ export default function TaskQuestionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   loadingContainer: {
     flex: 1,
@@ -229,7 +232,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   errorContainer: {
     flex: 1,
@@ -240,13 +243,13 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -268,7 +271,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },
@@ -278,7 +281,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 14,
-    backgroundColor: '#003399',
   },
   backIcon: {
     width: 36,
@@ -303,7 +305,6 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#003399',
     paddingHorizontal: 20,
     paddingTop: 4,
     paddingBottom: 18,
@@ -334,13 +335,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: RFValue(20),
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -357,16 +358,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   questionCard: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
     marginHorizontal: 20,
     marginBottom: 12,
-    borderRadius: 12,
+    borderRadius: 20,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
   questionSection: {
     marginBottom: 12,
@@ -385,19 +383,19 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#000',
+    color: '#FFFFFF',
   },
   questionDate: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   questionText: {
     fontSize: RFValue(16),
-    color: '#0F172A',
+    color: '#FFFFFF',
     lineHeight: 22,
   },
   answerSection: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 8,
     padding: 12,
     borderLeftWidth: 3,
@@ -412,15 +410,15 @@ const styles = StyleSheet.create({
   answeredBy: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#28a745',
+    color: '#7ED957',
   },
   answerDate: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   answerText: {
     fontSize: RFValue(15),
-    color: '#0F172A',
+    color: '#FFFFFF',
     lineHeight: 20,
   },
   pendingAnswer: {
@@ -431,7 +429,7 @@ const styles = StyleSheet.create({
   },
   pendingText: {
     fontSize: RFValue(14),
-    color: '#ffc107',
+    color: '#FCD34D',
     fontStyle: 'italic',
   },
   modalOverlay: {
@@ -446,7 +444,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
     borderRadius: 20,
     padding: 20,
     width: '100%',
@@ -461,14 +461,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
   },
   questionInput: {
     borderWidth: 1,
     borderColor: '#CBD5E1',
     borderRadius: 14,
     padding: 12,
-    color: '#0F172A',
+    color: '#0B1B4D',
     backgroundColor: '#FFFFFF',
     fontSize: RFValue(16),
     height: 120,
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   },
   characterText: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   modalActions: {
     flexDirection: 'row',
@@ -490,14 +490,14 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: 'rgba(255,255,255,0.35)',
     height: 48,
     justifyContent: 'center',
     borderRadius: 14,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     fontSize: RFValue(16),
     fontWeight: '600',
   },

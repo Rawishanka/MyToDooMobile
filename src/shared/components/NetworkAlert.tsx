@@ -40,7 +40,7 @@ export const NetworkAlert: React.FC<NetworkAlertProps> = ({
         <View style={[styles.alertContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
           {/* Icon */}
           <View style={styles.iconContainer}>
-            <Ionicons name="cloud-offline" size={48} color="#DC2626" />
+            <Ionicons name="cloud-offline" size={48} color={isDarkMode ? '#DC2626' : '#FCA5A5'} />
           </View>
 
           {/* Title */}
@@ -68,14 +68,16 @@ export const NetworkAlert: React.FC<NetworkAlertProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   alertContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 24,
     padding: 24,
     width: '100%',
     maxWidth: 400,
@@ -95,13 +97,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#003399',
+    color: '#FFFFFF',
     marginBottom: 12,
     textAlign: 'center',
   },
   message: {
     fontSize: RFValue(15),
-    color: '#475569',
+    color: 'rgba(255,255,255,0.78)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,

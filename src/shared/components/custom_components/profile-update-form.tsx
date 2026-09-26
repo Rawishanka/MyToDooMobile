@@ -357,7 +357,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                   setShowPhoneModal(true);
                 }}
               >
-                <Ionicons name="create-outline" size={13} color="#003399" />
+                <Ionicons name="create-outline" size={13} color="#FFFFFF" />
                 <Text style={styles.changePhoneBadgeText}>Change</Text>
               </TouchableOpacity>
             </View>
@@ -433,11 +433,11 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
               onPress={() => setShowSkillsModal(true)}
               activeOpacity={0.75}
             >
-              <Ionicons name="add-circle-outline" size={18} color="#003399" />
+              <Ionicons name="add-circle-outline" size={18} color="#FFFFFF" />
               <Text style={styles.openSkillsBtnText}>
                 {goodAt.length === 0 ? 'Add Skills' : `Edit Skills (${goodAt.length})`}
               </Text>
-              <Ionicons name="chevron-forward" size={16} color="#003399" style={{ marginLeft: 'auto' }} />
+              <Ionicons name="chevron-forward" size={16} color="#FFFFFF" style={{ marginLeft: 'auto' }} />
             </TouchableOpacity>
 
             {/* Add Skills Modal */}
@@ -672,7 +672,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                 <Ionicons
                   name={phoneStep === 'input' ? 'call-outline' : 'shield-checkmark-outline'}
                   size={24}
-                  color={isDarkMode ? '#60A5FA' : '#003399'}
+                  color={isDarkMode ? '#60A5FA' : '#FFFFFF'}
                 />
               </View>
               <Text style={[styles.phoneModalTitle, isDarkMode && { color: '#F8FAFC' }]}>
@@ -690,7 +690,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                 styles.phoneErrorBanner,
                 isDarkMode && { backgroundColor: '#450A0A', borderColor: '#7F1D1D' }
               ]}>
-                <Ionicons name="alert-circle" size={16} color={isDarkMode ? "#F87171" : "#DC2626"} />
+                <Ionicons name="alert-circle" size={16} color={isDarkMode ? "#F87171" : "#FCA5A5"} />
                 <Text style={[styles.phoneErrorBannerText, isDarkMode && { color: '#FCA5A5' }]}>{phoneError}</Text>
               </View>
             )}
@@ -794,7 +794,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   content: {
     flex: 1,
@@ -809,13 +809,13 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   formCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.18)',
     padding: 16,
     marginBottom: 14,
-    shadowColor: '#0F172A',
+    shadowColor: '#00114D',
     shadowOpacity: 0.07,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
@@ -833,7 +833,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 16,
   },
   inputGroup: {
@@ -842,42 +842,42 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#334155',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'transparent',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: RFValue(15),
     color: '#0F172A',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
   },
   textArea: {
     height: 100,
     paddingTop: 12,
   },
   inputNearLimit: {
-    borderColor: '#D97706',
+    borderColor: '#FBBF24',
   },
   charCount: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.7)',
     textAlign: 'right',
     marginTop: 4,
   },
   charCountWarning: {
-    color: '#D97706',
+    color: '#FBBF24',
     fontWeight: '600',
   },
   footer: {
     padding: 16,
     paddingBottom: 28,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
     borderTopWidth: 1,
-    borderTopColor: '#E8ECF4',
+    borderTopColor: 'rgba(255,255,255,0.2)',
   },
   saveButton: {
     backgroundColor: BRAND_ORANGE,
@@ -1039,7 +1039,7 @@ const styles = StyleSheet.create({
   skillTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.16)',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 14,
@@ -1047,7 +1047,7 @@ const styles = StyleSheet.create({
   },
   skillTagText: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: '#FFFFFF',
   },
   // "Add Skills" / "Edit Skills" tap row for goodAt
   openSkillsBtn: {
@@ -1055,7 +1055,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     borderWidth: 1.5,
-    borderColor: '#003399',
+    borderColor: 'rgba(255,255,255,0.10)',
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 14,
@@ -1064,7 +1064,7 @@ const styles = StyleSheet.create({
   },
   openSkillsBtnText: {
     fontSize: RFValue(15),
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   addSkillContainer: {
@@ -1074,13 +1074,13 @@ const styles = StyleSheet.create({
   addSkillInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'transparent',
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: RFValue(15),
     color: '#0F172A',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
   },
   addButton: {
     backgroundColor: '#ff6b35',
@@ -1105,19 +1105,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    backgroundColor: '#F8FAFC',
+    borderColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.10)',
   },
   transportOptionSelected: {
-    backgroundColor: '#003399',
-    borderColor: '#003399',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#FFFFFF',
   },
   transportOptionText: {
     fontSize: RFValue(14),
-    color: '#334155',
+    color: '#FFFFFF',
   },
   transportOptionTextSelected: {
-    color: '#fff',
+    color: '#003399',
     fontWeight: '600',
   },
   disabledInput: {
@@ -1126,15 +1126,15 @@ const styles = StyleSheet.create({
   },
   webOnlyMessage: {
     fontSize: RFValue(12),
-    color: '#DC2626',
+    color: '#FCA5A5',
     marginTop: 4,
   },
   // Notification Preferences Styles
   notifCard: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.18)',
     marginBottom: 4,
     overflow: 'hidden',
   },
@@ -1154,20 +1154,20 @@ const styles = StyleSheet.create({
   notifLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 3,
   },
   notifLabelDisabled: {
-    color: '#94A3B8',
+    color: 'rgba(255,255,255,0.5)',
   },
   notifDesc: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.72)',
     lineHeight: 17,
   },
   notifDivider: {
     height: 1,
-    backgroundColor: '#E8ECF4',
+    backgroundColor: 'rgba(255,255,255,0.18)',
     marginHorizontal: 16,
   },
   phoneLabelRow: {
@@ -1180,27 +1180,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "rgba(0,51,153,0.08)",
+    backgroundColor: "rgba(255,255,255,0.16)",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E8ECF4",
+    borderColor: "rgba(255,255,255,0.22)",
   },
   changePhoneBadgeText: {
     fontSize: RFValue(11.5),
     fontWeight: "700",
-    color: "#003399",
+    color: "#FFFFFF",
   },
   phoneSecurityHint: {
     fontSize: RFValue(11.5),
-    color: "#16A34A",
+    color: "#4ADE80",
     marginTop: 4,
     fontWeight: "500",
   },
   phoneModalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(15, 23, 42, 0.6)",
+    backgroundColor: "rgba(0, 12, 48, 0.6)",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
@@ -1208,7 +1208,9 @@ const styles = StyleSheet.create({
   phoneModalCard: {
     width: "100%",
     maxWidth: 380,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#003399",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.22)",
     borderRadius: 24,
     padding: 22,
     shadowColor: "#000",
@@ -1225,7 +1227,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: "#EFF6FF",
+    backgroundColor: "rgba(255,255,255,0.2)",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
@@ -1233,12 +1235,12 @@ const styles = StyleSheet.create({
   phoneModalTitle: {
     fontSize: RFValue(18),
     fontWeight: "800",
-    color: "#0F172A",
+    color: "#FFFFFF",
     marginBottom: 6,
   },
   phoneModalSubtitle: {
     fontSize: RFValue(13),
-    color: "#64748B",
+    color: "rgba(255,255,255,0.78)",
     textAlign: "center",
     lineHeight: 18,
   },
@@ -1246,7 +1248,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#FEF2F2",
+    backgroundColor: "rgba(239,68,68,0.22)",
     borderRadius: 10,
     padding: 10,
     marginBottom: 14,
@@ -1256,7 +1258,7 @@ const styles = StyleSheet.create({
   phoneErrorBannerText: {
     flex: 1,
     fontSize: RFValue(12),
-    color: "#DC2626",
+    color: "#FECACA",
     fontWeight: "500",
   },
   phoneStepBody: {
@@ -1265,35 +1267,35 @@ const styles = StyleSheet.create({
   phoneFieldLabel: {
     fontSize: RFValue(12.5),
     fontWeight: "700",
-    color: "#334155",
+    color: "rgba(255,255,255,0.92)",
     marginBottom: 6,
   },
   phoneModalInput: {
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "#FFFFFF",
     borderWidth: 1.5,
     borderColor: "#CBD5E1",
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: RFValue(16),
-    color: "#0F172A",
+    color: "#0B1B4D",
     fontWeight: "600",
   },
   phoneOtpInput: {
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "#FFFFFF",
     borderWidth: 2,
-    borderColor: "#003399",
+    borderColor: "#ff6b35",
     borderRadius: 14,
     paddingVertical: 14,
     fontSize: RFValue(24),
     fontWeight: "800",
-    color: "#0F172A",
+    color: "#0B1B4D",
     textAlign: "center",
     letterSpacing: 10,
   },
   phoneFieldNote: {
     fontSize: RFValue(11.5),
-    color: "#64748B",
+    color: "rgba(255,255,255,0.7)",
     marginTop: 6,
     lineHeight: 16,
   },
@@ -1303,12 +1305,12 @@ const styles = StyleSheet.create({
   },
   phoneResendTimerText: {
     fontSize: RFValue(12.5),
-    color: "#94A3B8",
+    color: "rgba(255,255,255,0.65)",
     fontWeight: "500",
   },
   phoneResendActionText: {
     fontSize: RFValue(13),
-    color: "#003399",
+    color: "#FFFFFF",
     fontWeight: "700",
   },
   phoneModalBtnRow: {
@@ -1320,14 +1322,16 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.5)",
     alignItems: "center",
     justifyContent: "center",
   },
   phoneModalCancelBtnText: {
     fontSize: RFValue(14),
     fontWeight: "600",
-    color: "#64748B",
+    color: "#FFFFFF",
   },
   phoneModalSubmitBtn: {
     flex: 1.6,

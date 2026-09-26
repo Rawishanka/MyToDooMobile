@@ -196,7 +196,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="close" size={24} color="#333" />
+            <Ionicons name="close" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <View style={styles.headerTitleContainer}>
             <Text style={styles.headerTitle}>Request a Review</Text>
@@ -216,7 +216,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
               <Ionicons 
                 name="mail" 
                 size={20} 
-                color={method === 'email' ? '#007AFF' : '#666'} 
+                color={method === 'email' ? '#FFFFFF' : 'rgba(255,255,255,0.65)'} 
               />
               <Text style={[styles.methodText, method === 'email' && styles.methodTextActive]}>
                 Email
@@ -230,7 +230,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
               <Ionicons 
                 name="chatbubble" 
                 size={20} 
-                color={method === 'sms' ? '#007AFF' : '#666'} 
+                color={method === 'sms' ? '#FFFFFF' : 'rgba(255,255,255,0.65)'} 
               />
               <Text style={[styles.methodText, method === 'sms' && styles.methodTextActive]}>
                 SMS
@@ -254,7 +254,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
                   value={recipient}
                   onChangeText={setRecipient}
                   placeholder={detectedCountry === 'LK' ? '754640658' : '123456789'}
-                  placeholderTextColor="#999"
+                  placeholderTextColor="#94A3B8"
                   keyboardType="phone-pad"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -268,7 +268,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
               value={recipient}
               onChangeText={setRecipient}
               placeholder="Enter email address"
-              placeholderTextColor="#999"
+              placeholderTextColor="#94A3B8"
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -282,7 +282,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
             value={message}
             onChangeText={setMessage}
             placeholder="Hi! I'd love to get your feedback on our experience working together..."
-            placeholderTextColor="#999"
+            placeholderTextColor="#94A3B8"
             multiline
             numberOfLines={6}
             textAlignVertical="top"
@@ -299,7 +299,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
               <Text style={styles.sendButtonText}>Sending...</Text>
             ) : (
               <>
-                <Ionicons name="send" size={18} color="#fff" />
+                <Ionicons name="send" size={18} color="#FFFFFF" />
                 <Text style={styles.sendButtonText}>
                   Send {method === 'email' ? 'Email' : 'SMS'} Request
                 </Text>
@@ -309,7 +309,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
 
           {/* Info */}
           <View style={styles.infoContainer}>
-            <Ionicons name="information-circle" size={16} color="#666" />
+            <Ionicons name="information-circle" size={16} color="rgba(255,255,255,0.75)" />
             <Text style={styles.infoText}>
               {method === 'email' 
                 ? 'An email will be sent with a link to review your profile' 
@@ -328,7 +328,7 @@ export const RequestReviewModal: React.FC<RequestReviewModalProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   header: {
     flexDirection: 'row',
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
     paddingTop: Platform.OS === 'ios' ? 60 : 15,
   },
   headerTitleContainer: {
@@ -347,12 +347,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#333',
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   headerSubtitle: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.72)',
     marginTop: 4,
     textAlign: 'center',
   },
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#333',
+    color: '#FFFFFF',
     marginBottom: 12,
     marginTop: 20,
   },
@@ -384,38 +384,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    backgroundColor: '#F8F9FA',
+    borderColor: 'rgba(255,255,255,0.22)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
   methodButtonActive: {
-    borderColor: '#007AFF',
-    backgroundColor: '#E6F3FF',
+    borderColor: '#ff6b35',
+    backgroundColor: 'rgba(255,107,53,0.22)',
   },
   methodText: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: 'rgba(255,255,255,0.72)',
     marginLeft: 8,
   },
   methodTextActive: {
-    color: '#007AFF',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
+    borderColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 12,
     padding: 12,
     fontSize: RFValue(16),
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#FFFFFF',
+    color: '#0B1B4D',
   },
   messageInput: {
     minHeight: 120,
   },
   messageInfoText: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: 'rgba(255,255,255,0.7)',
     marginTop: 6,
     fontStyle: 'italic',
   },
@@ -423,14 +424,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#28A745',
+    backgroundColor: '#ff6b35',
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderRadius: 8,
     marginTop: 30,
   },
   sendButtonDisabled: {
-    backgroundColor: '#CCE5D4',
+    backgroundColor: 'rgba(255,107,53,0.45)',
   },
   sendButtonText: {
     color: '#fff',
@@ -443,14 +444,14 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginTop: 20,
     padding: 15,
-    backgroundColor: '#F0F8FF',
-    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 12,
     borderLeftWidth: 3,
-    borderLeftColor: '#007AFF',
+    borderLeftColor: '#ff6b35',
   },
   infoText: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.8)',
     marginLeft: 10,
     flex: 1,
     lineHeight: 20,
@@ -459,23 +460,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    backgroundColor: '#fff',
+    borderColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
   },
   countryCodeContainer: {
     paddingHorizontal: 12,
     paddingVertical: 15,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#E8ECF4',
     borderTopLeftRadius: 8,
     borderBottomLeftRadius: 8,
     borderRightWidth: 1,
-    borderRightColor: '#E0E0E0',
+    borderRightColor: '#CBD5E1',
   },
   countryCodeText: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#333',
+    color: '#0B1B4D',
   },
   phoneInput: {
     flex: 1,
@@ -487,7 +488,7 @@ const styles = StyleSheet.create({
   },
   phoneHintText: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: 'rgba(255,255,255,0.7)',
     marginTop: 4,
     marginLeft: 8,
   },

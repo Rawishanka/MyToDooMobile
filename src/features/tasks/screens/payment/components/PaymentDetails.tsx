@@ -71,19 +71,20 @@ export default function PaymentDetails({
 const styles = StyleSheet.create({
   container: {
     marginTop: 24,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#000',
+    color: '#FFFFFF',
     marginBottom: 20,
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   row: {
     flexDirection: 'row',
@@ -93,19 +94,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
     flex: 1,
   },
   value: {
     fontSize: RFValue(14),
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: '500',
     flex: 1,
     textAlign: 'right',
   },
   amount: {
     fontSize: RFValue(18),
-    color: '#28a745',
+    color: '#7ED957',
     fontWeight: '700',
   },
 });

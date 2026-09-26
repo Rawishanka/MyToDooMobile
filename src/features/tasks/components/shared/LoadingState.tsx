@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
 import { useTheme } from '@/src/shared/theme';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface LoadingStateProps {
@@ -11,9 +11,10 @@ interface LoadingStateProps {
 export default function LoadingState({ message = 'Loading...' }: LoadingStateProps) {
   const { isDarkMode } = useTheme();
   return (
-    <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
-      <Text style={[styles.loadingText, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>{message}</Text>
+    <View style={[styles.loadingContainer, !isDarkMode && { backgroundColor: '#003399' }]}>
+      <BlueBackdrop />
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+      <Text style={[styles.loadingText, { color: isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.75)' }]}>{message}</Text>
     </View>
   );
 }

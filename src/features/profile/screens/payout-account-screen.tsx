@@ -277,8 +277,8 @@ const PayoutAccountScreen = ({ navigation }: any) => {
           startInLoadingState
           renderLoading={() => (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#003399" />
-              <Text style={[styles.loadingText, { color: '#64748B' }]}>Loading Stripe...</Text>
+              <ActivityIndicator size="large" color="#FFFFFF" />
+              <Text style={styles.loadingText}>Loading Stripe...</Text>
             </View>
           )}
         />

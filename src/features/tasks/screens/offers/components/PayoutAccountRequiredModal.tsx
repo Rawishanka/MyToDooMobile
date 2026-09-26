@@ -9,7 +9,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { BRAND_ORANGE, CARD_BG, CARD_TEXT } from '@/src/shared/theme/brandColors';
+import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface PayoutAccountRequiredModalProps {
@@ -49,7 +49,7 @@ export default function PayoutAccountRequiredModal({
         <View style={[styles.modalContainer, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
           {/* Icon */}
           <View style={styles.iconContainer}>
-            <MaterialIcons name="account-balance-wallet" size={56} color="#003399" />
+            <MaterialIcons name="account-balance-wallet" size={56} color={isDarkMode ? '#003399' : '#FFFFFF'} />
           </View>
 
           {/* Title */}
@@ -112,7 +112,7 @@ export default function PayoutAccountRequiredModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -120,8 +120,10 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: width * 0.9,
     maxWidth: 400,
-    backgroundColor: '#fff',
-    borderRadius: 20,
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 24,
     padding: 24,
     alignItems: 'center',
     shadowColor: '#000',
@@ -134,7 +136,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: '#E3F2FD',
+    backgroundColor: 'rgba(255,255,255,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -142,13 +144,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(22),
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 12,
   },
   description: {
     fontSize: RFValue(15),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.72)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -156,8 +158,10 @@ const styles = StyleSheet.create({
   },
   stepsContainer: {
     width: '100%',
-    backgroundColor: CARD_BG,
-    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 18,
     padding: 16,
     marginBottom: 24,
   },
@@ -183,7 +187,7 @@ const styles = StyleSheet.create({
   stepText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: CARD_TEXT,
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   buttonsContainer: {
@@ -214,11 +218,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#fff',
+    borderColor: 'rgba(255,255,255,0.5)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
   secondaryButtonText: {
-    color: '#475569',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
     textAlign: 'center',

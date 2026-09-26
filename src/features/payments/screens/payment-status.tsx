@@ -26,9 +26,12 @@ import {
 import { usePaymentStatus } from './status/hooks';
 import { BRAND_BLUE, CARD_TEXT } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
+import { useTheme } from '@/src/shared/theme';
 
 export default function PaymentStatusScreen() {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
 
   const {
@@ -52,7 +55,8 @@ export default function PaymentStatusScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <BlueBackdrop />
       <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
 
       {/* Header */}
@@ -108,7 +112,7 @@ export default function PaymentStatusScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: BRAND_BLUE,
   },
   header: {
     flexDirection: 'row',
@@ -116,7 +120,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 14,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: 'transparent',
   },
   backIcon: {
     width: 36,

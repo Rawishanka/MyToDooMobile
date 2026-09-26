@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { useTheme } from '@/src/shared/theme';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface EmptyStateProps {
@@ -22,12 +23,13 @@ export default function EmptyState({
 }: EmptyStateProps) {
   const { isDarkMode } = useTheme();
   return (
-    <View style={styles.emptyContainer}>
-      <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? '#1E293B' : BRAND_BLUE }]}>
+    <View style={[styles.emptyContainer, !isDarkMode && { backgroundColor: '#003399' }]}>
+      <BlueBackdrop />
+      <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? '#1E293B' : 'rgba(255,255,255,0.14)' }]}>
         <Ionicons name={icon} size={38} color="#FFFFFF" />
       </View>
-      <Text style={[styles.emptyTitle, { color: isDarkMode ? '#F8FAFC' : '#0F172A' }]}>{title}</Text>
-      <Text style={[styles.emptySubtitle, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>{subtitle}</Text>
+      <Text style={[styles.emptyTitle, { color: isDarkMode ? '#F8FAFC' : '#FFFFFF' }]}>{title}</Text>
+      <Text style={[styles.emptySubtitle, { color: isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.75)' }]}>{subtitle}</Text>
       {actionText && onAction && (
         <TouchableOpacity style={styles.actionButton} onPress={onAction} activeOpacity={0.85}>
           <Text style={styles.actionButtonText}>{actionText}</Text>

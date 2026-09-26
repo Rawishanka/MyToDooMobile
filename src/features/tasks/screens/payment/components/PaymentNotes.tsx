@@ -27,7 +27,7 @@ export default function PaymentNotes({
           multiline
           numberOfLines={4}
           textAlignVertical="top"
-          placeholderTextColor="#999"
+          placeholderTextColor="#94A3B8"
           maxLength={maxLength}
         />
         <Text style={styles.characterCount}>
@@ -37,7 +37,7 @@ export default function PaymentNotes({
 
       {/* Security Notice */}
       <View style={styles.securityNotice}>
-        <Ionicons name="shield-checkmark" size={20} color="#28a745" />
+        <Ionicons name="shield-checkmark" size={20} color="#7ED957" />
         <Text style={styles.securityText}>
           Your payment information is secure. This confirmation helps both parties 
           track payment completion for the task.
@@ -66,57 +66,59 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#333',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   notesInput: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
+    borderColor: 'transparent',
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: RFValue(16),
-    color: '#000',
+    color: '#0B1B4D',
     minHeight: 80,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
   },
   characterCount: {
     fontSize: RFValue(12),
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'right',
     marginTop: 4,
   },
   securityNotice: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#e8f5e8',
-    borderRadius: 8,
+    backgroundColor: 'rgba(126,217,87,0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(126,217,87,0.4)',
+    borderRadius: 14,
     padding: 12,
     marginBottom: 20,
   },
   securityText: {
     flex: 1,
     fontSize: RFValue(14),
-    color: '#2e7d32',
+    color: '#FFFFFF',
     marginLeft: 8,
     lineHeight: 20,
   },
   importantNotes: {
-    backgroundColor: '#fff3cd',
-    borderRadius: 8,
+    backgroundColor: 'rgba(251,191,36,0.15)',
+    borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#ffeaa7',
+    borderColor: 'rgba(251,191,36,0.5)',
   },
   notesTitle: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#856404',
+    color: '#FCD34D',
     marginBottom: 8,
   },
   noteItem: {
     fontSize: RFValue(12),
-    color: '#856404',
+    color: '#FEF3C7',
     marginBottom: 4,
   },
 });

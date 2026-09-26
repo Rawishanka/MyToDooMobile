@@ -133,13 +133,13 @@ export default function TaskerDashboard({ onBack }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#003399',
+    backgroundColor: 'transparent',
     paddingHorizontal: 16,
     paddingBottom: 14,
   },
@@ -167,7 +167,9 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   section: {
-    backgroundColor: '#003399',
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
     borderRadius: 20,
     padding: 18,
     marginBottom: 16,
@@ -238,7 +240,9 @@ const styles = StyleSheet.create({
     marginVertical: 0,
   },
   earningsSection: {
-    backgroundColor: '#003399',
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
     borderRadius: 20,
     padding: 18,
     marginBottom: 16,

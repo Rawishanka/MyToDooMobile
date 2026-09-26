@@ -45,7 +45,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
           onPress={() => setCurrentView('posting')}
         >
           <Text style={styles.guidelineTitle}>Posting tasks as a Customer</Text>
-          <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+          <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.6)" />
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -53,7 +53,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
           onPress={() => setCurrentView('earning')}
         >
           <Text style={styles.guidelineTitle}>Earning money as a Tasker</Text>
-          <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+          <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.6)" />
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -61,7 +61,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
           onPress={() => setCurrentView('cancellation')}
         >
           <Text style={styles.guidelineTitle}>Cancellation Policy</Text>
-          <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+          <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.6)" />
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -139,7 +139,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <Ionicons 
           name={expandedSections.connectionFee ? "chevron-up" : "chevron-down"} 
           size={20} 
-          color="#003399" 
+          color="#FFFFFF" 
         />
       </TouchableOpacity>
 
@@ -152,7 +152,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
             This fee helps to cover the administrative costs and compensate taskers for their time spent preparing for your task.
           </Text>
           <View style={styles.feeInfoBox}>
-            <Ionicons name="information-circle" size={20} color="#003399" />
+            <Ionicons name="information-circle" size={20} color="#FFFFFF" />
             <Text style={styles.feeInfoText}>
               Connection fee: AUD $5.00 per cancellation
             </Text>
@@ -169,7 +169,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <Ionicons 
           name={expandedSections.repeatedCancellations ? "chevron-up" : "chevron-down"} 
           size={20} 
-          color="#003399" 
+          color="#FFFFFF" 
         />
       </TouchableOpacity>
 
@@ -192,7 +192,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
             </View>
           </View>
           <View style={styles.warningBox}>
-            <Ionicons name="warning" size={20} color="#D97706" />
+            <Ionicons name="warning" size={20} color="#FBBF24" />
             <Text style={styles.warningText}>
               3 or more cancellations in 30 days may result in account review
             </Text>
@@ -217,7 +217,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <Ionicons 
           name={expandedSections.connectionFee ? "chevron-up" : "chevron-down"} 
           size={20} 
-          color="#003399" 
+          color="#FFFFFF" 
         />
       </TouchableOpacity>
 
@@ -230,7 +230,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
             This fee compensates customers for the inconvenience and helps maintain trust in our platform.
           </Text>
           <View style={styles.feeInfoBox}>
-            <Ionicons name="information-circle" size={20} color="#003399" />
+            <Ionicons name="information-circle" size={20} color="#FFFFFF" />
             <Text style={styles.feeInfoText}>
               Cancellation fee: AUD $10.00 per task
             </Text>
@@ -250,7 +250,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <Ionicons 
           name={expandedSections.repeatedCancellations ? "chevron-up" : "chevron-down"} 
           size={20} 
-          color="#003399" 
+          color="#FFFFFF" 
         />
       </TouchableOpacity>
 
@@ -277,7 +277,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
             </View>
           </View>
           <View style={styles.warningBox}>
-            <Ionicons name="warning" size={20} color="#D97706" />
+            <Ionicons name="warning" size={20} color="#FBBF24" />
             <Text style={styles.warningText}>
               2 or more cancellations in 30 days will trigger an account review
             </Text>
@@ -294,7 +294,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <Ionicons 
           name={expandedSections.taskerResponsibilities ? "chevron-up" : "chevron-down"} 
           size={20} 
-          color="#003399" 
+          color="#FFFFFF" 
         />
       </TouchableOpacity>
 
@@ -302,7 +302,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
         <View style={styles.expandedContent}>
           {/* Understanding the task */}
           <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#16A34A" style={styles.checkIcon} />
+            <Ionicons name="checkmark-circle" size={24} color="#4ADE80" style={styles.checkIcon} />
             <View style={styles.responsibilityTextContainer}>
               <Text style={styles.responsibilityTitle}>Understanding the task</Text>
               <Text style={styles.responsibilityDescription}>
@@ -313,7 +313,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
           {/* Commitment */}
           <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#16A34A" style={styles.checkIcon} />
+            <Ionicons name="checkmark-circle" size={24} color="#4ADE80" style={styles.checkIcon} />
             <View style={styles.responsibilityTextContainer}>
               <Text style={styles.responsibilityTitle}>Honor your commitment</Text>
               <Text style={styles.responsibilityDescription}>
@@ -324,7 +324,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
           {/* Communication */}
           <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#16A34A" style={styles.checkIcon} />
+            <Ionicons name="checkmark-circle" size={24} color="#4ADE80" style={styles.checkIcon} />
             <View style={styles.responsibilityTextContainer}>
               <Text style={styles.responsibilityTitle}>Clear communication</Text>
               <Text style={styles.responsibilityDescription}>
@@ -335,7 +335,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 
           {/* Professional conduct */}
           <View style={styles.responsibilityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#16A34A" style={styles.checkIcon} />
+            <Ionicons name="checkmark-circle" size={24} color="#4ADE80" style={styles.checkIcon} />
             <View style={styles.responsibilityTextContainer}>
               <Text style={styles.responsibilityTitle}>Professional conduct</Text>
               <Text style={styles.responsibilityDescription}>
@@ -439,7 +439,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   content: {
     flex: 1,
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   blueHeaderSection: {
-    backgroundColor: '#003399',
+    backgroundColor: 'transparent',
     paddingTop: 40,
     paddingHorizontal: 24,
     paddingBottom: 40,
@@ -499,11 +499,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   whiteContentSection: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    marginTop: -20,
-    paddingTop: 30,
+    backgroundColor: 'transparent',
+    paddingTop: 10,
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
@@ -516,9 +513,9 @@ const styles = StyleSheet.create({
     marginTop: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#0F172A',
+    borderColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    shadowColor: '#00114D',
     shadowOpacity: 0.07,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
@@ -527,41 +524,41 @@ const styles = StyleSheet.create({
   guidelineTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
     flex: 1,
   },
   bodyText: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#334155',
+    color: 'rgba(255,255,255,0.88)',
     marginBottom: 16,
   },
   descriptionText: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#334155',
+    color: 'rgba(255,255,255,0.88)',
     marginBottom: 20,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     padding: 16,
     borderRadius: 12,
     borderLeftWidth: 3,
-    borderLeftColor: '#003399',
+    borderLeftColor: '#FFFFFF',
   },
   linkText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginTop: 24,
     marginBottom: 16,
   },
   bulletPoint: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#334155',
+    color: 'rgba(255,255,255,0.88)',
     marginTop: 16,
     marginBottom: 8,
   },
@@ -644,7 +641,7 @@ const styles = StyleSheet.create({
   noteTitle: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 16,
     marginTop: 8,
@@ -652,7 +649,7 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     marginVertical: 24,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 16,
     padding: 4,
     shadowColor: '#000',
@@ -668,15 +665,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   activeTab: {
-    backgroundColor: '#003399',
+    backgroundColor: '#FFFFFF',
   },
   tabText: {
     fontSize: 14,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.85)',
     fontWeight: '600',
   },
   activeTabText: {
-    color: '#fff',
+    color: '#003399',
   },
   expandableSection: {
     flexDirection: 'row',
@@ -684,7 +681,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     marginTop: 12,
     shadowColor: '#000',
@@ -696,11 +693,11 @@ const styles = StyleSheet.create({
   expandableTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
     flex: 1,
   },
   expandedContent: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     padding: 16,
     marginTop: 8,
@@ -709,31 +706,31 @@ const styles = StyleSheet.create({
   expandedText: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#334155',
+    color: 'rgba(255,255,255,0.88)',
     marginBottom: 12,
   },
   feeInfoBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     padding: 14,
     borderRadius: 14,
     marginTop: 8,
     marginBottom: 12,
     borderLeftWidth: 3,
-    borderLeftColor: '#003399',
+    borderLeftColor: '#FFFFFF',
   },
   feeInfoText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#003399',
+    color: '#FFFFFF',
     marginLeft: 10,
     flex: 1,
   },
   noticeText: {
     fontSize: 13,
     lineHeight: 18,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     fontStyle: 'italic',
     marginTop: 8,
   },
@@ -751,29 +748,29 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#003399',
+    backgroundColor: '#FFFFFF',
     marginRight: 12,
   },
   suspensionText: {
     fontSize: 15,
-    color: '#334155',
+    color: 'rgba(255,255,255,0.88)',
     flex: 1,
     lineHeight: 20,
   },
   warningBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(251,191,36,0.18)',
     padding: 14,
     borderRadius: 14,
     marginTop: 8,
     borderLeftWidth: 3,
-    borderLeftColor: '#D97706',
+    borderLeftColor: '#FBBF24',
   },
   warningText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#D97706',
+    color: '#FBBF24',
     marginLeft: 10,
     flex: 1,
     lineHeight: 20,
@@ -814,13 +811,13 @@ const styles = StyleSheet.create({
   responsibilityTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 6,
   },
   responsibilityDescription: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
 });
 

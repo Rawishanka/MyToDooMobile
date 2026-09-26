@@ -32,7 +32,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     // paddingTop is applied dynamically via insets.top for iOS notch support
     paddingBottom: 14,
-    backgroundColor: BRAND_BLUE,
     borderBottomWidth: 0,
   },
   backIcon: {

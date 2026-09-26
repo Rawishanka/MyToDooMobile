@@ -15,7 +15,7 @@ export function CompletionLoadingState({
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#003399'} />
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>{message}</Text>
     </View>
   );
@@ -30,7 +30,7 @@ export function CompletionErrorState({ onRetry, onBack }: ErrorStateProps) {
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.errorContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+      <Ionicons name="alert-circle-outline" size={64} color={isDarkMode ? '#EF4444' : '#FCA5A5'} />
       <Text style={[styles.errorTitle, isDarkMode && { color: '#F8FAFC' }]}>Failed to load completion status</Text>
       <Text style={[styles.errorSubtitle, isDarkMode && { color: '#94A3B8' }]}>
         Could not load task completion information. Please check your connection and try again.
@@ -49,7 +49,7 @@ export function CompletionEmptyState() {
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.emptyContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <MaterialIcons name="assignment" size={64} color={isDarkMode ? '#475569' : '#94A3B8'} />
+      <MaterialIcons name="assignment" size={64} color={isDarkMode ? '#475569' : 'rgba(255,255,255,0.6)'} />
       <Text style={[styles.emptyTitle, isDarkMode && { color: '#F8FAFC' }]}>No completion data</Text>
       <Text style={[styles.emptySubtitle, isDarkMode && { color: '#94A3B8' }]}>
         This task doesn't have completion tracking enabled or hasn't been started yet.
@@ -63,30 +63,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },
@@ -119,18 +119,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 40,
     paddingVertical: 100,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   emptyTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
   },

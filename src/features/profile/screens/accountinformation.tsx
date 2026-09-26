@@ -775,7 +775,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
             {existingDeleteRequest ? (
               // Already has a pending request
               <View style={styles.pendingRequestInfo}>
-                <Ionicons name="hourglass-outline" size={20} color="#D97706" />
+                <Ionicons name="hourglass-outline" size={20} color="#FCD34D" />
                 <Text style={styles.pendingRequestText}>
                   You already have a pending deletion request submitted on {new Date(existingDeleteRequest.created_at).toLocaleDateString()}. It is currently under admin review.
                 </Text>
@@ -1124,14 +1124,16 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 24,
     padding: 24,
     width: '100%',
     maxWidth: 400,
@@ -1139,13 +1141,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 16,
     textAlign: 'center',
   },
   modalText: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.78)',
     lineHeight: 20,
     marginBottom: 24,
     textAlign: 'center',
@@ -1156,14 +1158,16 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
     borderRadius: 14,
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#334155',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -1188,29 +1192,29 @@ const styles = StyleSheet.create({
   reasonLabel: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#334155',
+    color: 'rgba(255,255,255,0.92)',
     marginBottom: 6,
   },
   reasonInput: {
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.3)',
     borderRadius: 14,
     padding: 12,
     fontSize: RFValue(14),
-    color: '#0F172A',
-    backgroundColor: '#F8FAFC',
+    color: '#0B1B4D',
+    backgroundColor: '#FFFFFF',
     minHeight: 80,
   },
   reasonCharCount: {
     fontSize: RFValue(11),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.65)',
     textAlign: 'right',
     marginTop: 2,
   },
   pendingRequestInfo: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(252,211,77,0.18)',
     borderRadius: 14,
     padding: 12,
     marginTop: 12,
@@ -1219,7 +1223,7 @@ const styles = StyleSheet.create({
   pendingRequestText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: '#92400E',
+    color: '#FDE68A',
     lineHeight: 18,
   },
   loadingContainer: {

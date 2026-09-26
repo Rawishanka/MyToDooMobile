@@ -284,6 +284,7 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     task,
     user,
     taskOffers, // Offers for this specific task only
+    taskWithOffers: taskOffersData?.data, // createdBy/assignedTo here carry verification badges
     myOffer,
     questions,
     isLoading,

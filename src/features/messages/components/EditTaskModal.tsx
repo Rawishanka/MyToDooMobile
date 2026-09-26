@@ -35,12 +35,12 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.editContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        <StatusBar barStyle="light-content" backgroundColor="#003399" />
         
         {/* Header */}
         <View style={styles.editHeader}>
           <TouchableOpacity onPress={onClose} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#000" />
+            <Ionicons name="chevron-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.editHeaderTitle}>Edit task</Text>
           <View style={styles.placeholder} />
@@ -55,7 +55,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
               value={taskTitle}
               onChangeText={setTaskTitle}
               placeholder="Enter task title"
-              placeholderTextColor="#999"
+              placeholderTextColor="#94A3B8"
             />
           </View>
 
@@ -130,7 +130,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
               <Ionicons 
                 name="location-outline" 
                 size={24} 
-                color={!isOnline ? "#fff" : "#666"} 
+                color={!isOnline ? "#fff" : "rgba(255,255,255,0.8)"} 
                 style={styles.locationIcon}
               />
               <Text style={[
@@ -157,7 +157,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
               <Ionicons 
                 name="phone-portrait-outline" 
                 size={24} 
-                color={isOnline ? "#fff" : "#666"}
+                color={isOnline ? "#fff" : "rgba(255,255,255,0.8)"}
                 style={styles.locationIcon}
               />
               <Text style={[
@@ -188,7 +188,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
 const styles = StyleSheet.create({
   editContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   editHeader: {
     flexDirection: 'row',
@@ -198,8 +198,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingTop: (StatusBar.currentHeight || 0) + 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e8e8e8',
-    backgroundColor: '#fff',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: '#003399',
   },
   backButton: {
     padding: 4,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   editHeaderTitle: {
     fontSize: RFValue(24),
     fontWeight: '700',
-    color: '#003399',
+    color: '#fff',
     textAlign: 'center',
     flex: 1,
   },
@@ -222,34 +222,34 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#2c3e50',
+    color: '#fff',
     marginBottom: 10,
     marginTop: 25,
   },
   inputContainer: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   textInput: {
     fontSize: RFValue(16),
-    color: '#2c3e50',
+    color: '#0B1B4D',
     minHeight: 20,
   },
   dateOption: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     paddingVertical: 14,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginBottom: 8,
   },
   dateOptionSelected: {
-    backgroundColor: '#003399',
+    backgroundColor: 'rgba(255,255,255,0.28)',
   },
   dateOptionText: {
     fontSize: RFValue(16),
-    color: '#2c3e50',
+    color: '#fff',
     textAlign: 'center',
     fontWeight: '500',
   },
@@ -266,19 +266,19 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderWidth: 2,
-    borderColor: '#ddd',
+    borderColor: 'rgba(255,255,255,0.5)',
     borderRadius: 3,
     marginRight: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#003399',
-    borderColor: '#003399',
+    backgroundColor: '#ff6b35',
+    borderColor: '#ff6b35',
   },
   checkboxLabel: {
     fontSize: RFValue(14),
-    color: '#2c3e50',
+    color: '#fff',
   },
   locationContainer: {
     flexDirection: 'row',
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   },
   locationOption: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     paddingVertical: 20,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     minHeight: 120,
   },
   locationOptionSelected: {
-    backgroundColor: '#003399',
+    backgroundColor: 'rgba(255,255,255,0.28)',
   },
   locationIcon: {
     marginBottom: 8,
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
   locationTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#2c3e50',
+    color: '#fff',
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   },
   locationDescription: {
     fontSize: RFValue(12),
-    color: '#7f8c8d',
+    color: 'rgba(255,255,255,0.72)',
     textAlign: 'center',
     lineHeight: 16,
   },

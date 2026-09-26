@@ -25,17 +25,12 @@ export default function ImportantNotes() {
 
 const styles = StyleSheet.create({
   notesContainer: {
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     padding: 16,
     marginTop: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   notesTitle: {
     fontSize: 15,

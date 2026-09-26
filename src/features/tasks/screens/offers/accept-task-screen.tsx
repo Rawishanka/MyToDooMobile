@@ -22,6 +22,7 @@ import TaskSummaryCard from './components/TaskSummaryCard';
 import TermsCheckbox from './components/TermsCheckbox';
 import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_PRICE_BG, CARD_PRICE_TEXT, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 export default function AcceptTaskScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -93,6 +94,7 @@ export default function AcceptTaskScreen() {
 
   return (
     <View style={styles.container}>
+      <BlueBackdrop />
       <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
       
       {/* Header */}
@@ -173,7 +175,7 @@ export default function AcceptTaskScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   header: {
     flexDirection: 'row',
@@ -181,7 +183,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 14,
-    backgroundColor: BRAND_BLUE,
   },
   backIcon: {
     width: 36,
@@ -210,15 +211,10 @@ const styles = StyleSheet.create({
   contactContainer: {
     marginTop: 16,
     padding: 18,
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   contactTitle: {
     fontSize: 17,
@@ -250,9 +246,9 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingHorizontal: 16,
     paddingTop: 14,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#CBD5E1',
+    borderTopColor: 'rgba(255,255,255,0.22)',
   },
   acceptButton: {
     backgroundColor: BRAND_ORANGE,

@@ -10,7 +10,7 @@ export const LoadingState: React.FC = () => {
   const { isDarkMode } = useTheme();
   return (
     <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading task details...</Text>
     </View>
   );
@@ -49,30 +49,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#666',
+    color: 'rgba(255,255,255,0.85)',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
   },
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '600',
-    color: '#333',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#666',
+    color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: BRAND_BLUE,
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },

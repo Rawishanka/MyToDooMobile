@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -11,7 +12,8 @@ interface EmptyOffersStateProps {
 export default function EmptyOffersState({ onRefresh }: EmptyOffersStateProps) {
   return (
     <View style={styles.emptyContainer}>
-      <Ionicons name="clipboard-outline" size={64} color="#94A3B8" />
+      <BlueBackdrop />
+      <Ionicons name="clipboard-outline" size={64} color="rgba(255,255,255,0.6)" />
       <Text style={styles.emptyTitle}>No offers yet</Text>
       <Text style={styles.emptySubtitle}>
         Your task is live! Offers will appear here when taskers make bids.
@@ -29,6 +31,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
+    backgroundColor: '#003399',
   },
   emptyTitle: {
     fontSize: RFValue(20),
@@ -39,7 +42,7 @@ const styles = StyleSheet.create({
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,

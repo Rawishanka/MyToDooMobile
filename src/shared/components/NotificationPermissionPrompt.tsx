@@ -101,7 +101,7 @@ export const NotificationPermissionPrompt: React.FC<NotificationPermissionPrompt
       <View style={styles.overlay}>
         <View style={styles.container}>
           <View style={styles.iconContainer}>
-            <Ionicons name="notifications" size={60} color="#003399" />
+            <Ionicons name="notifications" size={60} color="#FFFFFF" />
           </View>
 
           <Text style={styles.title}>Stay Updated!</Text>
@@ -112,7 +112,7 @@ export const NotificationPermissionPrompt: React.FC<NotificationPermissionPrompt
 
           <View style={styles.features}>
             <View style={styles.feature}>
-              <Ionicons name="chatbubble" size={20} color="#003399" />
+              <Ionicons name="chatbubble" size={20} color="#FFFFFF" />
               <Text style={styles.featureText}>New messages</Text>
             </View>
             <View style={styles.feature}>
@@ -120,7 +120,7 @@ export const NotificationPermissionPrompt: React.FC<NotificationPermissionPrompt
               <Text style={styles.featureText}>New offers</Text>
             </View>
             <View style={styles.feature}>
-              <Ionicons name="checkmark-circle" size={20} color="#003399" />
+              <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
               <Text style={styles.featureText}>Task updates</Text>
             </View>
           </View>
@@ -151,14 +151,16 @@ export const NotificationPermissionPrompt: React.FC<NotificationPermissionPrompt
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   container: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 24,
     padding: 24,
     width: '100%',
     maxWidth: 400,
@@ -175,13 +177,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: RFValue(24),
     fontWeight: 'bold',
-    color: '#003399',
+    color: '#FFFFFF',
     marginBottom: 12,
     textAlign: 'center',
   },
   message: {
     fontSize: RFValue(16),
-    color: '#475569',
+    color: 'rgba(255,255,255,0.78)',
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 22,
@@ -198,7 +200,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     fontSize: RFValue(15),
-    color: '#333',
+    color: 'rgba(255,255,255,0.92)',
     marginLeft: 12,
   },
   button: {
@@ -221,10 +223,10 @@ const styles = StyleSheet.create({
   notNowButton: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: '#003399',
+    borderColor: 'rgba(255,255,255,0.7)',
   },
   notNowButtonText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },

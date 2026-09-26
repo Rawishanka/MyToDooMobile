@@ -900,11 +900,11 @@ Please remove phone numbers and addresses from the image.`,
             {showCategoryDropdown && (
               <View style={[styles.categoryDropdown, isDarkMode && darkStyles.surface]}>
                 <View style={[styles.searchContainer, isDarkMode && darkStyles.searchContainer]}>
-                  <Ionicons name="search" size={18} color={isDarkMode ? '#94A3B8' : '#999'} />
+                  <Ionicons name="search" size={18} color={isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.72)'} />
                   <TextInput
                     style={[styles.searchInput, isDarkMode && darkStyles.text]}
                     placeholder="Search categories..."
-                    placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
+                    placeholderTextColor={isDarkMode ? '#64748B' : 'rgba(255,255,255,0.6)'}
                     value={categorySearchQuery}
                     onChangeText={setCategorySearchQuery}
                   />
@@ -912,7 +912,7 @@ Please remove phone numbers and addresses from the image.`,
 
                 <ScrollView style={styles.categoriesList} nestedScrollEnabled>
                   {loadingCategories ? (
-                    <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#003399'} style={styles.loader} />
+                    <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} style={styles.loader} />
                   ) : categories.length === 0 ? (
                     <Text style={styles.noResultsText}>No categories found</Text>
                   ) : (
@@ -937,7 +937,7 @@ Please remove phone numbers and addresses from the image.`,
                           >
                             {categoryName}
                           </Text>
-                          {selectedCategory === categoryName && <Ionicons name="checkmark" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />}
+                          {selectedCategory === categoryName && <Ionicons name="checkmark" size={20} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />}
                         </TouchableOpacity>
                       );
                     })
@@ -1251,6 +1251,7 @@ Please remove phone numbers and addresses from the image.`,
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             onChange={handleDateChange}
             minimumDate={new Date()}
+            textColor="#FFFFFF"
           />
         )}
       </KeyboardAvoidingView>
@@ -1427,10 +1428,10 @@ const styles = StyleSheet.create({
   },
   categoryDropdown: {
     marginTop: 8,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    backgroundColor: '#003399',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: 'rgba(255,255,255,0.22)',
     maxHeight: 300,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -1443,13 +1444,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   searchInput: {
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(16),
-    color: '#0F172A',
+    color: '#FFFFFF',
   },
   categoriesList: {
     maxHeight: 250,
@@ -1469,7 +1470,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   noResultsText: {
-    color: '#8E8E93',
+    color: 'rgba(255,255,255,0.72)',
     padding: 20,
     textAlign: 'center',
   },
@@ -1480,17 +1481,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF1F6',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   categoryItemSelected: {
-    backgroundColor: '#F0F5FF',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   categoryItemText: {
     fontSize: RFValue(16),
-    color: '#1C1C1E',
+    color: '#FFFFFF',
   },
   categoryItemTextSelected: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   input: {

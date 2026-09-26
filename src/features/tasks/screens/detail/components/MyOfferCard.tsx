@@ -3,7 +3,9 @@ import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import {BRAND_ORANGE, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED} from '@/src/shared/theme/brandColors';
+import { GLASS_BG } from '../detailTheme';
+import { VerifiedBadges } from './VerifiedBadges';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -64,6 +66,7 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
       </View>
 
       <View style={styles.content}>
+        <VerifiedBadges badges={(offer as any).user?.badges} style={{ marginTop: 0, marginBottom: 12 }} />
         {/* Offer Amount */}
         <View style={[styles.amountContainer, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#38BDF8" }]}>
           <Text style={[styles.amountLabel, isDarkMode && { color: "#94A3B8" }]}>
@@ -118,17 +121,12 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: CARD_BG,
+    backgroundColor: GLASS_BG,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: 'rgba(255,255,255,0.20)',
     borderRadius: 20,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
   },
   headerChip: {
     width: 34,
@@ -203,7 +201,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   amountLabel: {
     fontSize: 12,

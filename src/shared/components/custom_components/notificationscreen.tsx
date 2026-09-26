@@ -119,11 +119,11 @@ const styles = StyleSheet.create({
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'flex-end',
   },
   modalContainer: {
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     overflow: 'hidden',
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 14,
-    backgroundColor: '#003399',
+    backgroundColor: 'transparent',
   },
   backButton: {
     width: 40,
@@ -166,13 +166,13 @@ const styles = StyleSheet.create({
     padding: 14,
     marginHorizontal: 16,
     marginBottom: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.22)',
     alignItems: 'center',
     shadowColor: '#0F172A',
-    shadowOpacity: 0.07,
+    shadowOpacity: 0,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
@@ -189,16 +189,16 @@ const styles = StyleSheet.create({
   },
   notificationText: {
     fontSize: RFValue(14),
-    color: '#0F172A',
+    color: 'rgba(255,255,255,0.92)',
     lineHeight: 19,
     marginBottom: 4,
   },
   username: {
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
   },
   timeText: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.65)',
   },
 });

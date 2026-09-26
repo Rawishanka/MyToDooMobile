@@ -11,7 +11,7 @@ interface LoadingStateProps {
 export function PaymentLoadingState({ message = 'Loading payment status...' }: LoadingStateProps) {
   return (
     <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#003399" />
+      <ActivityIndicator size="large" color="#FFFFFF" />
       <Text style={styles.loadingText}>{message}</Text>
     </View>
   );
@@ -25,7 +25,7 @@ interface ErrorStateProps {
 export function PaymentErrorState({ onRetry, onBack }: ErrorStateProps) {
   return (
     <View style={styles.errorContainer}>
-      <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+      <Ionicons name="alert-circle-outline" size={64} color="#FCA5A5" />
       <Text style={styles.errorTitle}>Failed to load payments</Text>
       <Text style={styles.errorSubtitle}>
         Could not load payment information. Please check your connection and try again.
@@ -43,7 +43,7 @@ export function PaymentErrorState({ onRetry, onBack }: ErrorStateProps) {
 export function PaymentEmptyState() {
   return (
     <View style={styles.emptyContainer}>
-      <MaterialIcons name="payment" size={64} color="#94A3B8" />
+      <MaterialIcons name="payment" size={64} color="rgba(255,255,255,0.6)" />
       <Text style={styles.emptyTitle}>No Payments Yet</Text>
       <Text style={styles.emptySubtitle}>
         Your payment history will appear here once you complete transactions.
@@ -57,28 +57,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#003399',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
+    backgroundColor: '#003399',
   },
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -101,7 +103,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: RFValue(16),
     fontWeight: '600',
   },
@@ -115,13 +117,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
   },

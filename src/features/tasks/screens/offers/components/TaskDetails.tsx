@@ -41,15 +41,10 @@ const styles = StyleSheet.create({
   detailsContainer: {
     marginTop: 16,
     padding: 18,
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   sectionTitle: {
     fontSize: 17,

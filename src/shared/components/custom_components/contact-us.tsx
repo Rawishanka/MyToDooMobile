@@ -321,7 +321,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
           {/* Support Token Card */}
           <View style={[styles.tokenCard, isDarkMode && { backgroundColor: '#0F172A' }]}>
             <View style={styles.tokenHeader}>
-              <Ionicons name="ticket-outline" size={20} color="#003399" />
+              <Ionicons name="ticket-outline" size={20} color="#FFFFFF" />
               <Text style={styles.tokenLabel}>Support Token</Text>
             </View>
             <Text style={[styles.tokenValue, isDarkMode && { color: '#F8FAFC' }]}>{supportToken}</Text>
@@ -330,7 +330,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
           {/* Email Confirmation */}
           <View style={[styles.emailConfirmation, isDarkMode && { backgroundColor: '#064E3B' }]}>
-            <Ionicons name="checkmark-circle" size={20} color="#16A34A" />
+            <Ionicons name="checkmark-circle" size={20} color="#7ED957" />
             <Text style={[styles.emailConfirmationText, isDarkMode && { color: '#A7F3D0' }]}>
               We'll respond to <Text style={styles.emailBold}>{submittedEmail}</Text> as soon as possible
             </Text>
@@ -338,7 +338,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
 
           {/* Response Time */}
           <View style={styles.responseTimeContainer}>
-            <Ionicons name="time-outline" size={18} color="#64748B" />
+            <Ionicons name="time-outline" size={18} color="rgba(255,255,255,0.7)" />
             <Text style={[styles.responseTimeText, isDarkMode && { color: '#94A3B8' }]}>
               We typically respond within 24 hours during business days
             </Text>
@@ -377,7 +377,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
               style={styles.closeButton}
               onPress={() => setShowStatusModal(false)}
             >
-              <Ionicons name="close" size={24} color={isDarkMode ? '#F8FAFC' : '#334155'} />
+              <Ionicons name="close" size={24} color={'#F8FAFC'} />
             </TouchableOpacity>
           </View>
 
@@ -390,7 +390,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {/* Token */}
                 <View style={styles.statusSection}>
                   <View style={styles.statusSectionHeader}>
-                    <Ionicons name="ticket-outline" size={18} color="#003399" />
+                    <Ionicons name="ticket-outline" size={18} color="#FFFFFF" />
                     <Text style={styles.statusSectionLabel}>Support Token</Text>
                   </View>
                   <Text style={[styles.statusTokenValue, isDarkMode && { color: '#F8FAFC' }]}>{statusData.supportToken}</Text>
@@ -399,7 +399,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {/* Status Badge */}
                 <View style={styles.statusSection}>
                   <View style={styles.statusSectionHeader}>
-                    <Ionicons name="flag-outline" size={18} color="#003399" />
+                    <Ionicons name="flag-outline" size={18} color="#FFFFFF" />
                     <Text style={styles.statusSectionLabel}>Status</Text>
                   </View>
                   <View style={[styles.statusBadge, { backgroundColor: getStatusColor(statusData.status) + '20' }]}>
@@ -413,7 +413,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {/* Category */}
                 <View style={styles.statusSection}>
                   <View style={styles.statusSectionHeader}>
-                    <Ionicons name="folder-outline" size={18} color="#003399" />
+                    <Ionicons name="folder-outline" size={18} color="#FFFFFF" />
                     <Text style={styles.statusSectionLabel}>Category</Text>
                   </View>
                   <Text style={[styles.statusValue, isDarkMode && { color: '#E2E8F0' }]}>{statusData.category}</Text>
@@ -422,7 +422,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {/* Subject */}
                 <View style={styles.statusSection}>
                   <View style={styles.statusSectionHeader}>
-                    <Ionicons name="text-outline" size={18} color="#003399" />
+                    <Ionicons name="text-outline" size={18} color="#FFFFFF" />
                     <Text style={styles.statusSectionLabel}>Subject</Text>
                   </View>
                   <Text style={[styles.statusValue, isDarkMode && { color: '#E2E8F0' }]}>{statusData.subject}</Text>
@@ -432,7 +432,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {statusData.message && (
                   <View style={styles.statusSection}>
                     <View style={styles.statusSectionHeader}>
-                      <Ionicons name="chatbubble-outline" size={18} color="#003399" />
+                      <Ionicons name="chatbubble-outline" size={18} color="#FFFFFF" />
                       <Text style={styles.statusSectionLabel}>Your Message</Text>
                     </View>
                     <View style={[styles.messageBox, isDarkMode && { backgroundColor: '#0F172A', borderLeftColor: '#334155' }]}>
@@ -445,8 +445,8 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {statusData.adminResponse && (
                   <View style={styles.statusSection}>
                     <View style={styles.statusSectionHeader}>
-                      <Ionicons name="chatbubbles" size={18} color="#16A34A" />
-                      <Text style={[styles.statusSectionLabel, { color: '#16A34A' }]}>Support Response</Text>
+                      <Ionicons name="chatbubbles" size={18} color="#7ED957" />
+                      <Text style={[styles.statusSectionLabel, { color: '#7ED957' }]}>Support Response</Text>
                     </View>
                     <View style={styles.responseBox}>
                       <Text style={styles.responseText}>{statusData.adminResponse}</Text>
@@ -462,7 +462,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {/* Dates */}
                 <View style={styles.statusSection}>
                   <View style={styles.statusSectionHeader}>
-                    <Ionicons name="calendar-outline" size={18} color="#003399" />
+                    <Ionicons name="calendar-outline" size={18} color="#FFFFFF" />
                     <Text style={styles.statusSectionLabel}>Submitted</Text>
                   </View>
                   <Text style={[styles.statusValue, isDarkMode && { color: '#E2E8F0' }]}>{formatDate(statusData.createdAt)}</Text>
@@ -471,7 +471,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 {statusData.resolvedAt && (
                   <View style={styles.statusSection}>
                     <View style={styles.statusSectionHeader}>
-                      <Ionicons name="checkmark-circle-outline" size={18} color="#16A34A" />
+                      <Ionicons name="checkmark-circle-outline" size={18} color="#7ED957" />
                       <Text style={styles.statusSectionLabel}>Resolved</Text>
                     </View>
                     <Text style={[styles.statusValue, isDarkMode && { color: '#E2E8F0' }]}>{formatDate(statusData.resolvedAt)}</Text>
@@ -778,7 +778,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
       {/* FAQ Screen */}
       {showFAQ && (
         <Modal visible={showFAQ} animationType="slide" presentationStyle="pageSheet">
-          <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+          <SafeAreaView style={{ flex: 1, backgroundColor: '#003399' }}>
             <FAQScreen visible={true} onClose={() => setShowFAQ(false)} />
           </SafeAreaView>
         </Modal>
@@ -1125,15 +1125,17 @@ const styles = StyleSheet.create({
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   // Success Modal
   successModalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 24,
     padding: 24,
     width: '100%',
     maxWidth: 360,
@@ -1151,24 +1153,24 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: RFValue(22),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 8,
     textAlign: 'center',
   },
   successSubtitle: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.78)',
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 20,
   },
   tokenCard: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 14,
     padding: 16,
     width: '100%',
     borderLeftWidth: 4,
-    borderLeftColor: '#003399',
+    borderLeftColor: '#ff6b35',
     marginBottom: 16,
   },
   tokenHeader: {
@@ -1179,25 +1181,25 @@ const styles = StyleSheet.create({
   tokenLabel: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#003399',
+    color: 'rgba(255,255,255,0.85)',
     marginLeft: 8,
   },
   tokenValue: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     marginBottom: 4,
   },
   tokenHint: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.65)',
     fontStyle: 'italic',
   },
   emailConfirmation: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#DCFCE7',
+    backgroundColor: 'rgba(126,217,87,0.18)',
     padding: 12,
     borderRadius: 10,
     width: '100%',
@@ -1206,7 +1208,7 @@ const styles = StyleSheet.create({
   emailConfirmationText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: '#166534',
+    color: '#D9F7C8',
     marginLeft: 8,
     lineHeight: 18,
   },
@@ -1220,7 +1222,7 @@ const styles = StyleSheet.create({
   },
   responseTimeText: {
     fontSize: RFValue(12),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.7)',
     marginLeft: 8,
   },
   doneButton: {
@@ -1239,8 +1241,10 @@ const styles = StyleSheet.create({
   },
   // Status Modal
   statusModalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 24,
     width: '100%',
     maxWidth: 400,
     maxHeight: '85%',
@@ -1253,12 +1257,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8ECF4',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   statusModalTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
   },
   closeButton: {
     padding: 4,
@@ -1278,7 +1282,7 @@ const styles = StyleSheet.create({
   statusSectionLabel: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#003399',
+    color: 'rgba(255,255,255,0.85)',
     marginLeft: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -1286,7 +1290,7 @@ const styles = StyleSheet.create({
   statusTokenValue: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   statusBadge: {
@@ -1309,37 +1313,37 @@ const styles = StyleSheet.create({
   },
   statusValue: {
     fontSize: RFValue(15),
-    color: '#334155',
+    color: 'rgba(255,255,255,0.92)',
     lineHeight: 22,
   },
   messageBox: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     padding: 14,
     borderRadius: 14,
     borderLeftWidth: 3,
-    borderLeftColor: '#E8ECF4',
+    borderLeftColor: 'rgba(255,255,255,0.35)',
   },
   messageText: {
     fontSize: RFValue(14),
-    color: '#334155',
+    color: 'rgba(255,255,255,0.92)',
     lineHeight: 20,
   },
   responseBox: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: 'rgba(126,217,87,0.18)',
     padding: 14,
     borderRadius: 14,
     borderLeftWidth: 3,
-    borderLeftColor: '#16A34A',
+    borderLeftColor: '#7ED957',
   },
   responseText: {
     fontSize: RFValue(14),
-    color: '#166534',
+    color: '#D9F7C8',
     lineHeight: 20,
     marginBottom: 8,
   },
   responseTime: {
     fontSize: RFValue(12),
-    color: '#166534',
+    color: '#D9F7C8',
     fontStyle: 'italic',
   },
   statusCloseButton: {

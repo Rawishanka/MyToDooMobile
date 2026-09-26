@@ -152,7 +152,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
           {/* Loading State */}
           {loading && (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#003399" />
+              <ActivityIndicator size="large" color="#FFFFFF" />
               <Text style={styles.loadingText}>Loading help articles...</Text>
             </View>
           )}
@@ -160,7 +160,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
           {/* Error State */}
           {error && !loading && (
             <View style={styles.errorContainer}>
-              <Ionicons name="alert-circle" size={48} color="#DC2626" />
+              <Ionicons name="alert-circle" size={48} color="#FCA5A5" />
               <Text style={styles.errorText}>{error}</Text>
               <TouchableOpacity style={styles.retryButton} onPress={loadHelpArticles}>
                 <Text style={styles.retryButtonText}>Retry</Text>
@@ -183,7 +183,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
                 <Ionicons
                   name={expandedCategory === category.id ? "chevron-up" : "chevron-down"}
                   size={22}
-                  color="#94A3B8"
+                  color="rgba(255,255,255,0.7)"
                 />
               </TouchableOpacity>
 
@@ -199,7 +199,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
                         <Ionicons
                           name={expandedQuestion === item.id ? "chevron-up" : "chevron-down"}
                           size={20}
-                          color="#94A3B8"
+                          color="rgba(255,255,255,0.7)"
                         />
                       </TouchableOpacity>
 
@@ -218,7 +218,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
           {/* No Results */}
           {!loading && !error && helpCategories.length === 0 && searchQuery.length > 0 && (
             <View style={styles.noResults}>
-              <Ionicons name="search" size={48} color="#94A3B8" />
+              <Ionicons name="search" size={48} color="rgba(255,255,255,0.6)" />
               <Text style={styles.noResultsText}>No results found for "{searchQuery}"</Text>
               <Text style={styles.noResultsSubtext}>Try different keywords or browse categories</Text>
             </View>
@@ -227,7 +227,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
           {/* Empty State (No Articles) */}
           {!loading && !error && articles.length === 0 && searchQuery.length === 0 && (
             <View style={styles.noResults}>
-              <Ionicons name="document-text-outline" size={48} color="#94A3B8" />
+              <Ionicons name="document-text-outline" size={48} color="rgba(255,255,255,0.6)" />
               <Text style={styles.noResultsText}>No help articles available</Text>
               <Text style={styles.noResultsSubtext}>Please check back later or contact support</Text>
             </View>
@@ -261,7 +261,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   infoBanner: {
     paddingTop: 20,
@@ -275,13 +275,13 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 6,
     textAlign: 'center',
   },
   infoSubtitle: {
     fontSize: 14,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 20,
     paddingHorizontal: 12,
@@ -289,15 +289,15 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     marginHorizontal: 16,
     marginBottom: 14,
     paddingHorizontal: 16,
     height: 48,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
-    shadowColor: '#0F172A',
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#00114D',
     shadowOpacity: 0.07,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 16,
   },
   errorContainer: {
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: RFValue(16),
-    color: '#DC2626',
+    color: '#FCA5A5',
     marginTop: 16,
     marginBottom: 16,
     textAlign: 'center',
@@ -352,13 +352,13 @@ const styles = StyleSheet.create({
   },
   categoryContainer: {
     marginBottom: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.18)',
     marginHorizontal: 16,
     overflow: 'hidden',
-    shadowColor: '#0F172A',
+    shadowColor: '#00114D',
     shadowOpacity: 0.07,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
@@ -369,7 +369,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 14,
-    backgroundColor: '#FFFFFF',
   },
   categoryTitleContainer: {
     flexDirection: 'row',
@@ -380,21 +379,21 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontSize: 16,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginLeft: 12,
   },
   questionCount: {
     fontSize: 12,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     marginLeft: 8,
   },
   questionsContainer: {
     borderTopWidth: 1,
-    borderTopColor: '#E8ECF4',
+    borderTopColor: 'rgba(255,255,255,0.18)',
   },
   questionItem: {
     borderBottomWidth: 1,
-    borderBottomColor: '#E8ECF4',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   questionHeader: {
     flexDirection: 'row',
@@ -406,7 +405,7 @@ const styles = StyleSheet.create({
   questionText: {
     flex: 1,
     fontSize: RFValue(15),
-    color: '#0F172A',
+    color: '#FFFFFF',
     fontWeight: '600',
     marginRight: 8,
   },
@@ -414,11 +413,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 2,
     paddingBottom: 16,
-    backgroundColor: 'rgba(0,51,153,0.04)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   answerText: {
     fontSize: RFValue(14),
-    color: '#334155',
+    color: 'rgba(255,255,255,0.88)',
     lineHeight: 22,
   },
   noResults: {
@@ -429,25 +428,25 @@ const styles = StyleSheet.create({
   noResultsText: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 16,
   },
   noResultsSubtext: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 8,
   },
   contactContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.10)',
     marginHorizontal: 16,
     marginTop: 4,
     marginBottom: 32,
     padding: 20,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.18)',
     alignItems: 'center',
-    shadowColor: '#0F172A',
+    shadowColor: '#00114D',
     shadowOpacity: 0.07,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
@@ -456,12 +455,12 @@ const styles = StyleSheet.create({
   contactTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   contactText: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -487,7 +486,7 @@ const styles = StyleSheet.create({
   },
   contactEmail: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
 });

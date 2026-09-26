@@ -9,3 +9,4 @@ export { QuestionsList } from './QuestionsList';
 export { TabsSection } from './TabsSection';
 export { TaskInfoCard } from './TaskInfoCard';
 
+export { VerifiedBadges } from './VerifiedBadges';

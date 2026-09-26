@@ -107,7 +107,7 @@ export function AppAlertHost() {
 
   const type = payload.type || 'info';
   const accent =
-    type === 'success' ? BRAND_GREEN : type === 'error' ? '#DC2626' : type === 'warning' ? BRAND_ORANGE : BRAND_BLUE;
+    type === 'success' ? BRAND_GREEN : type === 'error' ? '#DC2626' : type === 'warning' ? BRAND_ORANGE : 'rgba(255,255,255,0.22)';
   const icon = type === 'success' ? '✓' : type === 'error' ? '!' : type === 'warning' ? '!' : 'i';
 
   const close = (btn?: AppAlertButton) => {
@@ -170,13 +170,15 @@ export function AppAlertHost() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(13, 27, 42, 0.55)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'center',
     paddingHorizontal: 28,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 24,
     overflow: 'hidden',
     paddingHorizontal: 22,
     paddingTop: 28,
@@ -198,7 +200,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   title: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: 20,
     fontWeight: '700',
     textAlign: 'center',
@@ -206,7 +208,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   message: {
-    color: '#475569',
+    color: 'rgba(255,255,255,0.78)',
     fontSize: 15,
     lineHeight: 22,
     textAlign: 'center',
@@ -232,7 +234,7 @@ const styles = StyleSheet.create({
   buttonGhost: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: '#003399',
+    borderColor: 'rgba(255,255,255,0.7)',
   },
   buttonDanger: {
     backgroundColor: '#DC2626',
@@ -240,18 +242,18 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: BRAND_BLUE,
+    color: '#FFFFFF',
     letterSpacing: 0,
   },
   buttonGhostText: {
-    color: '#003399',
+    color: '#FFFFFF',
   },
   buttonPrimaryText: {
     color: '#FFFFFF',
   },
   autoHint: {
     textAlign: 'center',
-    color: '#94A3B8',
+    color: 'rgba(255,255,255,0.6)',
     fontSize: 12,
     paddingBottom: 6,
     letterSpacing: 0,

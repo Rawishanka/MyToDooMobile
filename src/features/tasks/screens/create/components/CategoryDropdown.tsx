@@ -97,11 +97,11 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
           ]}>
             {/* Search Input */}
             <View style={styles.categorySearchContainer}>
-              <Ionicons name="search" size={18} color="#999" style={styles.searchIcon} />
+              <Ionicons name="search" size={18} color="rgba(255,255,255,0.72)" style={styles.searchIcon} />
               <TextInput
                 style={styles.categorySearchInput}
                 placeholder="Search categories..."
-                placeholderTextColor="#999"
+                placeholderTextColor="rgba(255,255,255,0.6)"
                 value={searchQuery}
                 onChangeText={onSearchChange}
                 autoFocus={false}
@@ -111,7 +111,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                   onPress={() => onSearchChange('')}
                   style={styles.clearSearchButton}
                 >
-                  <Ionicons name="close-circle" size={18} color="#999" />
+                  <Ionicons name="close-circle" size={18} color="rgba(255,255,255,0.72)" />
                 </TouchableOpacity>
               )}
             </View>
@@ -147,7 +147,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
                         {category}
                       </Text>
                       {selectedCategory === category && (
-                        <Ionicons name="checkmark" size={20} color="#0057FF" />
+                        <Ionicons name="checkmark" size={20} color="#FFFFFF" />
                       )}
                     </TouchableOpacity>
                   );
@@ -250,10 +250,10 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   dropdownList: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
+    backgroundColor: '#003399',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#E1E1E1',
+    borderColor: 'rgba(255,255,255,0.22)',
     maxHeight: 250,
     shadowColor: '#000',
     shadowOffset: {
@@ -267,11 +267,12 @@ const styles = StyleSheet.create({
   categorySearchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F9F9F9',
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E1E1E1',
+    backgroundColor: '#00287A',
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
@@ -281,7 +282,7 @@ const styles = StyleSheet.create({
   categorySearchInput: {
     flex: 1,
     fontSize: RFValue(15),
-    color: '#333',
+    color: '#FFFFFF',
     paddingVertical: 6,
   },
   clearSearchButton: {
@@ -294,7 +295,7 @@ const styles = StyleSheet.create({
   },
   noResultsText: {
     fontSize: RFValue(14),
-    color: '#999',
+    color: 'rgba(255,255,255,0.72)',
     textAlign: 'center',
   },
   dropdownItem: {
@@ -304,23 +305,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
     minHeight: 54,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
   },
   selectedDropdownItem: {
-    backgroundColor: '#F0F8FF',
+    backgroundColor: 'rgba(255,255,255,0.18)',
     borderLeftWidth: 3,
     borderLeftColor: '#ff6b35',
   },
   dropdownItemText: {
     fontSize: RFValue(15),
-    color: '#333',
+    color: '#FFFFFF',
     flex: 1,
     lineHeight: 20,
   },
   selectedDropdownItemText: {
-    color: '#0057FF',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
 });

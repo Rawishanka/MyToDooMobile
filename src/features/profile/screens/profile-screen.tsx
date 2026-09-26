@@ -1708,7 +1708,7 @@ export default function AccountScreen() {
             
             {requestError && (
               <View style={styles.modalErrorContainer}>
-                <Ionicons name="alert-circle" size={16} color="#dc3545" />
+                <Ionicons name="alert-circle" size={16} color="#FCA5A5" />
                 <Text style={styles.modalErrorText}>{requestError}</Text>
               </View>
             )}
@@ -1751,7 +1751,7 @@ export default function AccountScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.pendingIconContainer}>
-              <Ionicons name="hourglass-outline" size={48} color="#9b59b6" />
+              <Ionicons name="hourglass-outline" size={48} color="#FFFFFF" />
             </View>
             
             <Text style={styles.modalTitle}>Request Sent!</Text>
@@ -1829,7 +1829,7 @@ export default function AccountScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.pendingIconContainer}>
-              <Ionicons name="shield-checkmark" size={48} color="#003399" />
+              <Ionicons name="shield-checkmark" size={48} color="#FFFFFF" />
             </View>
             
             <Text style={styles.modalTitle}>Verification Request Sent!</Text>
@@ -1869,7 +1869,7 @@ export default function AccountScreen() {
             <View style={[styles.bankDetailsHeader, isDarkMode && { borderBottomColor: '#334155' }]}>
               <View style={styles.bankDetailsHeaderLeft}>
                 <View style={[styles.bankDetailsIconLarge, isDarkMode && { backgroundColor: '#0F172A' }]}>
-                  <MaterialIcons name="account-balance" size={32} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                  <MaterialIcons name="account-balance" size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.bankDetailsTitle, isDarkMode && { color: '#F8FAFC' }]} numberOfLines={1}>
@@ -1883,7 +1883,7 @@ export default function AccountScreen() {
                 style={styles.bankDetailsCloseButton}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Ionicons name="close" size={24} color={isDarkMode ? '#F8FAFC' : '#666'} />
+                <Ionicons name="close" size={24} color={isDarkMode ? '#F8FAFC' : '#FFFFFF'} />
               </TouchableOpacity>
             </View>
 
@@ -1945,7 +1945,7 @@ export default function AccountScreen() {
                   <View style={[styles.bankDetailsDivider, isDarkMode && { backgroundColor: "#334155" }]} />
 
                   <View style={styles.bankDetailsInfoBox}>
-                    <Ionicons name="information-circle-outline" size={20} color="#003399" />
+                    <Ionicons name="information-circle-outline" size={20} color="#FFFFFF" />
                     <Text style={[styles.bankDetailsInfoText, isDarkMode && { color: "#94A3B8" }]}>
                       This is your payout account. Payments will be transferred to this bank account.
                     </Text>
@@ -1968,10 +1968,10 @@ export default function AccountScreen() {
                 )}
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.bankDetailsButton, { backgroundColor: '#f5f5f5' }]}
+                style={[styles.bankDetailsButton, { backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' }]}
                 onPress={() => setShowBankAccountModal(false)}
               >
-                <Text style={[styles.bankDetailsButtonText, { color: '#333' }]}>Close</Text>
+                <Text style={[styles.bankDetailsButtonText, { color: '#FFFFFF' }]}>Close</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -2449,7 +2449,9 @@ const styles = StyleSheet.create({
   },
   // Bank Account Details Modal
   bankDetailsModalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     width: '100%',
@@ -2462,7 +2464,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   bankDetailsHeaderLeft: {
     flexDirection: 'row',
@@ -2474,19 +2476,19 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 16,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   bankDetailsTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#000',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   bankDetailsSubtitle: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.72)',
   },
   bankDetailsCloseButton: {
     padding: 4,
@@ -2502,33 +2504,33 @@ const styles = StyleSheet.create({
   },
   bankDetailsLabel: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.72)',
     flex: 1,
   },
   bankDetailsValue: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#000',
+    color: '#FFFFFF',
     flex: 1,
     textAlign: 'right',
   },
   bankDetailsValueMono: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#000',
+    color: '#FFFFFF',
     flex: 1,
     textAlign: 'right',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   bankDetailsDivider: {
     height: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: 'rgba(255,255,255,0.18)',
     marginVertical: 12,
   },
   bankDetailsInfoBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     padding: 12,
     borderRadius: 8,
     marginTop: 8,
@@ -2537,7 +2539,7 @@ const styles = StyleSheet.create({
   bankDetailsInfoText: {
     flex: 1,
     fontSize: RFValue(13),
-    color: '#003399',
+    color: 'rgba(255,255,255,0.85)',
     lineHeight: 18,
   },
   bankDetailsFooter: {
@@ -2545,7 +2547,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 24,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: 'rgba(255,255,255,0.18)',
     gap: 10,
   },
   bankDetailsButton: {
@@ -2628,14 +2630,16 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 24,
     padding: 24,
     width: '100%',
     maxWidth: 400,
@@ -2644,20 +2648,20 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 12,
     textAlign: 'center',
   },
   modalMessage: {
     fontSize: RFValue(15),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.78)',
     textAlign: 'center',
     marginBottom: 8,
     lineHeight: 22,
   },
   modalSubMessage: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: 'rgba(255,255,255,0.9)',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -2671,12 +2675,14 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: 'center',
     borderRadius: 14,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
     alignItems: 'center',
   },
   modalCancelText: {
     fontSize: RFValue(16),
-    color: '#334155',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   modalSendButton: {
@@ -2740,24 +2746,24 @@ const styles = StyleSheet.create({
   pendingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.14)',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
     marginVertical: 20,
     borderWidth: 1,
-    borderColor: '#003399',
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   pendingDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#D97706',
+    backgroundColor: '#FCD34D',
     marginRight: 8,
   },
   pendingText: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.85)',
     fontWeight: '500',
   },
   backToProfileButton: {
@@ -2765,19 +2771,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 32,
     borderRadius: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderWidth: 1.5,
-    borderColor: '#003399',
+    borderColor: 'rgba(255,255,255,0.6)',
     marginBottom: 12,
   },
   backToProfileText: {
     fontSize: RFValue(16),
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '700',
   },
   modalFooterText: {
     fontSize: RFValue(13),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.65)',
     textAlign: 'center',
   },
   modalButtonDisabled: {
@@ -2786,7 +2792,7 @@ const styles = StyleSheet.create({
   modalErrorContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEE2E2',
+    backgroundColor: 'rgba(239,68,68,0.22)',
     padding: 12,
     borderRadius: 14,
     marginBottom: 16,
@@ -2794,7 +2800,7 @@ const styles = StyleSheet.create({
   },
   modalErrorText: {
     fontSize: RFValue(14),
-    color: '#dc3545',
+    color: '#FECACA',
     marginLeft: 8,
     flex: 1,
   },

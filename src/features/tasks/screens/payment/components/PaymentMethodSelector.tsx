@@ -33,7 +33,7 @@ export default function PaymentMethodSelector({
             <Text style={styles.methodDescription}>{method.description}</Text>
           </View>
           {selectedMethod === method.id && (
-            <Ionicons name="checkmark-circle" size={24} color="#28a745" />
+            <Ionicons name="checkmark-circle" size={24} color="#7ED957" />
           )}
         </TouchableOpacity>
       ))}
@@ -48,23 +48,24 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#000',
+    color: '#FFFFFF',
     marginBottom: 20,
   },
   methodCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 20,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: 'rgba(255,255,255,0.20)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   selectedCard: {
-    borderColor: '#28a745',
-    backgroundColor: '#f8fff9',
+    borderColor: '#ff6b35',
+    borderWidth: 2,
+    backgroundColor: 'rgba(255,255,255,0.20)',
   },
   methodContent: {
     flex: 1,
@@ -72,11 +73,11 @@ const styles = StyleSheet.create({
   methodLabel: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#000',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   methodDescription: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
   },
 });

@@ -1227,7 +1227,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
         {isUploading && (
           <View style={styles.uploadOverlay}>
             <View style={styles.uploadOverlayContent}>
-              <Ionicons name="cloud-upload" size={44} color={BRAND_BLUE} />
+              <Ionicons name="cloud-upload" size={44} color="#FFFFFF" />
               <Text style={styles.uploadOverlayText}>{uploadProgressText || 'Uploading...'}</Text>
             </View>
           </View>
@@ -1250,7 +1250,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
               {isConfirmingDelete ? (
                 <View style={styles.confirmDeleteCard}>
                   <View style={styles.confirmDeleteIconWrap}>
-                    <Ionicons name="trash" size={26} color="#DC2626" />
+                    <Ionicons name="trash" size={26} color="#FCA5A5" />
                   </View>
                   <Text style={styles.confirmDeleteTitle}>
                     Delete {selectedMessageForAction?.messageType === 'image' ? 'Photo' : 'Message'}?
@@ -1309,8 +1309,8 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                         style={[styles.actionMenuItem, isDarkMode && { borderBottomColor: '#334155' }]}
                         onPress={handleDeleteSelectedMessage}
                       >
-                        <Ionicons name="trash-outline" size={22} color="#DC2626" />
-                        <Text style={[styles.actionMenuText, { color: '#DC2626' }]}>
+                        <Ionicons name="trash-outline" size={22} color={isDarkMode ? '#DC2626' : '#FCA5A5'} />
+                        <Text style={[styles.actionMenuText, { color: isDarkMode ? '#DC2626' : '#FCA5A5' }]}>
                           Delete {selectedMessageForAction?.messageType === 'image' ? 'Photo' : 'Message'}
                         </Text>
                       </TouchableOpacity>
@@ -1328,7 +1328,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                         }
                       }}
                     >
-                      <Ionicons name="information-circle-outline" size={22} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+                      <Ionicons name="information-circle-outline" size={22} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
                       <Text style={[styles.actionMenuText, isDarkMode && { color: '#F8FAFC' }]}>Info</Text>
                     </TouchableOpacity>
 
@@ -1336,7 +1336,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                       style={[styles.actionMenuItem, { borderBottomWidth: 0 }]}
                       onPress={() => setIsActionMenuVisible(false)}
                     >
-                      <Ionicons name="close-circle-outline" size={22} color={isDarkMode ? '#94A3B8' : '#64748B'} />
+                      <Ionicons name="close-circle-outline" size={22} color={isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.8)'} />
                       <Text style={[styles.actionMenuText, isDarkMode && { color: '#94A3B8' }]}>Cancel</Text>
                     </TouchableOpacity>
                   </View>
@@ -1667,7 +1667,9 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   uploadOverlayContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
@@ -1677,11 +1679,11 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#333',
+    color: '#FFFFFF',
   },
   previewModalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    backgroundColor: 'rgba(0, 12, 48, 0.96)',
   },
   previewModalBackground: {
     flex: 1,
@@ -1699,7 +1701,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(255,255,255,0.22)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1709,7 +1711,7 @@ const styles = StyleSheet.create({
   },
   actionModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
@@ -1722,7 +1724,9 @@ const styles = StyleSheet.create({
   },
   reactionsBar: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
     borderRadius: 32,
     paddingHorizontal: 14,
     paddingVertical: 8,
@@ -1759,7 +1763,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(13),
   },
   reactionBtnSelected: {
-    backgroundColor: 'rgba(0, 82, 162, 0.15)',
+    backgroundColor: 'rgba(255,255,255,0.25)',
     borderRadius: 16,
   },
   reactionBtn: {
@@ -1769,7 +1773,9 @@ const styles = StyleSheet.create({
     fontSize: RFValue(22),
   },
   confirmDeleteCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
     borderRadius: 20,
     paddingHorizontal: 22,
     paddingTop: 24,
@@ -1786,7 +1792,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#FEE2E2',
+    backgroundColor: 'rgba(239,68,68,0.22)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
@@ -1794,13 +1800,13 @@ const styles = StyleSheet.create({
   confirmDeleteTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 8,
     textAlign: 'center',
   },
   confirmDeleteMessage: {
     fontSize: 14,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.72)',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 20,
@@ -1814,14 +1820,16 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 13,
     borderRadius: 12,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   confirmCancelText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#475569',
+    color: '#FFFFFF',
   },
   confirmDeleteBtn: {
     flex: 1,
@@ -1838,7 +1846,9 @@ const styles = StyleSheet.create({
   },
   actionMenuCard: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
     borderRadius: 18,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -1854,11 +1864,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 18,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   actionMenuText: {
     fontSize: RFValue(15),
     fontWeight: '600',
-    color: '#1E293B',
+    color: '#FFFFFF',
   },
 });

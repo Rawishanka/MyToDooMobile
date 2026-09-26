@@ -1,13 +1,15 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { RFValue } from '@/src/shared/utils/responsive';
 
 interface LoadingStateProps {}
 
 export const LoadingState: React.FC<LoadingStateProps> = () => (
   <View style={styles.loadingContainer}>
-    <ActivityIndicator size="large" color="#003399" />
+    <BlueBackdrop />
+    <ActivityIndicator size="large" color="#FFFFFF" />
     <Text style={styles.loadingText}>Loading task details...</Text>
   </View>
 );
@@ -21,6 +23,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ error }) => {
 
   return (
     <View style={styles.errorContainer}>
+      <BlueBackdrop />
       <Text style={styles.errorTitle}>Unable to Load Task</Text>
       <Text style={styles.errorSubtitle}>{error}</Text>
       <TouchableOpacity
@@ -38,19 +41,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: '#fff',
+    backgroundColor: '#003399',
   },
   errorTitle: {
     fontSize: RFValue(20),
@@ -61,7 +64,7 @@ const styles = StyleSheet.create({
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -70,7 +73,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
   },

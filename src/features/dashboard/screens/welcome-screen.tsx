@@ -625,7 +625,7 @@ export default function WelcomeScreen() {
                 }}
               >
                 <Text style={[styles.socialMenuLabel, isDarkMode && { color: '#38BDF8' }]}>Share App</Text>
-                <View style={[styles.socialMenuIconCircle, { backgroundColor: isDarkMode ? '#0369A1' : '#003399' }]}>
+                <View style={[styles.socialMenuIconCircle, { backgroundColor: isDarkMode ? '#0369A1' : '#ff6b35' }]}>
                   <Ionicons name="share-social" size={17} color="#FFFFFF" />
                 </View>
               </TouchableOpacity>
@@ -643,7 +643,7 @@ export default function WelcomeScreen() {
                   youtube:   { icon: 'logo-youtube',   bg: '#FF0000', name: 'YouTube' },
                   pinterest: { icon: 'logo-pinterest', bg: '#E60023', name: 'Pinterest' },
                 };
-                const config = iconMap[platform] || { icon: 'globe-outline', bg: '#003399', name: account.platform };
+                const config = iconMap[platform] || { icon: 'globe-outline', bg: '#ff6b35', name: account.platform };
 
                 return (
                   <TouchableOpacity
@@ -1169,7 +1169,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#000',
+    backgroundColor: '#000C30',
     zIndex: 9998,
   },
   floatingSocialContainer: {
@@ -1187,13 +1187,13 @@ const styles = StyleSheet.create({
   socialMenuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
     paddingVertical: 6,
     paddingLeft: 14,
     paddingRight: 6,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: 'rgba(255,255,255,0.35)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
@@ -1204,7 +1204,7 @@ const styles = StyleSheet.create({
   socialMenuLabel: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#1E293B',
+    color: '#FFFFFF',
   },
   socialMenuIconCircle: {
     width: 32,

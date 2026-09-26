@@ -1155,13 +1155,13 @@ Please remove phone numbers and addresses from the image.`,
                 />
                 <View style={[styles.categoryDropdown, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
                   <View style={[styles.searchContainer, isDarkMode && { borderBottomColor: '#334155' }]}>
-                    <Ionicons name="search" size={18} color="#94A3B8" />
+                    <Ionicons name="search" size={18} color={isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.72)'} />
                     <TextInput
                       style={[styles.searchInput, isDarkMode && { color: '#F8FAFC' }]}
                       placeholder="Search categories..."
                       value={categorySearchQuery}
                       onChangeText={setCategorySearchQuery}
-                      placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
+                      placeholderTextColor={isDarkMode ? '#64748B' : 'rgba(255,255,255,0.6)'}
                     />
                   </View>
 
@@ -1171,7 +1171,7 @@ Please remove phone numbers and addresses from the image.`,
                     keyboardShouldPersistTaps="handled"
                   >
                   {loadingCategories ? (
-                    <ActivityIndicator size="small" color="#0057FF" style={styles.loader} />
+                    <ActivityIndicator size="small" color={isDarkMode ? '#0057FF' : '#FFFFFF'} style={styles.loader} />
                   ) : categoriesError ? (
                     <Text style={styles.errorText}>Failed to load categories</Text>
                   ) : categories.length === 0 ? (
@@ -1199,7 +1199,7 @@ Please remove phone numbers and addresses from the image.`,
                         >
                           {category}
                         </Text>
-                        {selectedCategory === category && <Ionicons name="checkmark-circle" size={20} color="#0057FF" />}
+                        {selectedCategory === category && <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#0057FF' : '#FFFFFF'} />}
                       </TouchableOpacity>
                     ))
                   )}
@@ -1428,6 +1428,7 @@ Please remove phone numbers and addresses from the image.`,
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             onChange={handleDateChange}
             minimumDate={new Date()}
+            textColor="#FFFFFF"
           />
         )}
       </KeyboardAvoidingView>
@@ -1606,12 +1607,12 @@ const styles = StyleSheet.create({
   },
   categoryDropdown: {
     marginTop: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
     position: 'relative',
     zIndex: 999,
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: 'rgba(255,255,255,0.22)',
     maxHeight: 300,
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 6 },
@@ -1624,13 +1625,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   searchInput: {
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(14),
-    color: '#0F172A',
+    color: '#FFFFFF',
   },
   categoriesList: {
     maxHeight: 250,
@@ -1639,7 +1640,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#EF4444',
+    color: '#FCA5A5',
     padding: 8,
     textAlign: 'center',
     fontSize: RFValue(12),
@@ -1651,7 +1652,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   noResultsText: {
-    color: '#94A3B8',
+    color: 'rgba(255,255,255,0.72)',
     padding: 20,
     textAlign: 'center',
   },
@@ -1662,18 +1663,18 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F8FAFC',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   categoryItemSelected: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   categoryItemText: {
     fontSize: RFValue(14),
-    color: '#1E293B',
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   categoryItemTextSelected: {
-    color: '#0057FF',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   inputWrapper: {

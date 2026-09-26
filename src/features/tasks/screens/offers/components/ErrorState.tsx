@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -14,7 +15,8 @@ interface ErrorStateProps {
 export default function ErrorState({ title, subtitle, onRetry, onGoBack }: ErrorStateProps) {
   return (
     <View style={styles.errorContainer}>
-      <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+      <BlueBackdrop />
+      <Ionicons name="alert-circle-outline" size={64} color="#FCA5A5" />
       <Text style={styles.errorTitle}>{title}</Text>
       <Text style={styles.errorSubtitle}>{subtitle}</Text>
       {onRetry && (
@@ -35,6 +37,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
+    backgroundColor: '#003399',
   },
   errorTitle: {
     fontSize: RFValue(20),
@@ -45,7 +48,7 @@ const styles = StyleSheet.create({
   },
   errorSubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -68,7 +71,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButtonText: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
   },

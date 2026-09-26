@@ -1,5 +1,6 @@
 import { useGetAllPublicQuestions } from '@/src/shared/hooks/useTaskApi';
 import { formatUserName } from '@/src/utils/formatUserName';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -144,7 +145,8 @@ export default function PublicQuestionsScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#003399" />
+        <BlueBackdrop />
+        <ActivityIndicator size="large" color="#FFFFFF" />
         <Text style={styles.loadingText}>Loading public questions...</Text>
       </View>
     );
@@ -153,7 +155,8 @@ export default function PublicQuestionsScreen() {
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle-outline" size={64} color="#EF4444" />
+        <BlueBackdrop />
+        <Ionicons name="alert-circle-outline" size={64} color="#FCA5A5" />
         <Text style={styles.errorTitle}>Failed to Load Questions</Text>
         <Text style={styles.errorSubtitle}>Please check your connection and try again.</Text>
         <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
@@ -165,6 +168,7 @@ export default function PublicQuestionsScreen() {
 
   return (
     <View style={styles.container}>
+      <BlueBackdrop />
       <StatusBar barStyle="light-content" backgroundColor="#003399" />
       
       {/* Header */}
@@ -225,7 +229,7 @@ export default function PublicQuestionsScreen() {
       {filteredQuestions.length === 0 ? (
         <View style={styles.emptyState}>
           <View style={styles.emptyIconChip}>
-            <Ionicons name="help-circle-outline" size={40} color="#003399" />
+            <Ionicons name="help-circle-outline" size={40} color="#FFFFFF" />
           </View>
           <Text style={styles.emptyStateTitle}>
             {searchText || filterCategory !== 'all' ? 'No matching questions' : 'No questions yet'}
@@ -255,35 +259,35 @@ export default function PublicQuestionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   loadingText: {
     marginTop: 12,
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
   },
   errorTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginTop: 16,
   },
   errorSubtitle: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     marginTop: 8,
   },
@@ -305,7 +309,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 12,
-    backgroundColor: '#003399',
   },
   backButton: {
     width: 36,
@@ -331,7 +334,6 @@ const styles = StyleSheet.create({
   searchSection: {
     paddingHorizontal: 16,
     paddingBottom: 16,
-    backgroundColor: '#003399',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -346,7 +348,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(16),
-    color: '#0F172A',
+    color: '#0B1B4D',
   },
   categoryFilter: {
     flexGrow: 0,
@@ -373,14 +375,11 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   questionCard: {
-    backgroundColor: '#003399',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
     borderRadius: 20,
     marginBottom: 16,
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
     overflow: 'hidden',
   },
   taskContext: {
@@ -511,20 +510,20 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: 38,
-    backgroundColor: '#E3EAF8',
+    backgroundColor: 'rgba(255,255,255,0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyStateTitle: {
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginTop: 16,
     textAlign: 'center',
   },
   emptyStateSubtitle: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 8,
     textAlign: 'center',
   },

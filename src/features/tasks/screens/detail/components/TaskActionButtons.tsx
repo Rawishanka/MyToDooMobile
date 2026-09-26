@@ -1,4 +1,5 @@
-import { BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_PRICE_BG, CARD_PRICE_TEXT, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import {BRAND_ORANGE, CARD_DIVIDER, CARD_PRICE_BG, CARD_PRICE_TEXT, CARD_TEXT, CARD_TEXT_MUTED} from '@/src/shared/theme/brandColors';
+import { GLASS_BG } from '../detailTheme';
 import TaskAPI from '@/src/api/task-api';
 import { ChatWindow } from '@/src/features/messages/components/ChatWindow';
 import type { Message } from '@/src/features/messages/components/message-types';
@@ -612,15 +613,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     marginBottom: 16,
-    backgroundColor: CARD_BG,
+    backgroundColor: GLASS_BG,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   successToast: {
     marginBottom: 10,
@@ -730,13 +726,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: '#FFFFFF',
     marginBottom: 8,
     textAlign: 'center',
   },
   modalSubtitle: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.72)',
     marginBottom: 20,
     textAlign: 'center',
     lineHeight: 20,
@@ -752,13 +748,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: CARD_DIVIDER,
     borderRadius: 14,
-    backgroundColor: CARD_BG,
+    backgroundColor: GLASS_BG,
     marginBottom: 10,
     paddingVertical: 14,
   },
   reasonItemSelected: {
     borderColor: BRAND_ORANGE,
-    backgroundColor: CARD_BG,
+    backgroundColor: GLASS_BG,
   },
   radioButton: {
     width: 20,

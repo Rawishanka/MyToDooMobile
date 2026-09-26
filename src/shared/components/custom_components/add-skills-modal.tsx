@@ -82,7 +82,7 @@ const AnimatedSkillTag = ({
     <Animated.View style={[styles.skillTag, { transform: [{ scale }], opacity }]}>
       <Text style={styles.skillTagText}>{skill}</Text>
       <TouchableOpacity onPress={handleRemove} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-        <Ionicons name="close" size={14} color="#003399" />
+        <Ionicons name="close" size={14} color="#FFFFFF" />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -213,7 +213,7 @@ export default function AddSkillsModal({
               {/* ── Header (fixed, not scrolled) ── */}
               <View style={styles.header}>
                 <TouchableOpacity onPress={handleClose} style={styles.headerBtn}>
-                  <Ionicons name="close" size={20} color="#0F172A" />
+                  <Ionicons name="close" size={20} color="#FFFFFF" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Add Skills</Text>
                 <TouchableOpacity onPress={handleSave} style={styles.headerBtn}>
@@ -261,7 +261,7 @@ export default function AddSkillsModal({
                   <Ionicons
                     name="add"
                     size={24}
-                    color={inputText.trim() ? '#003399' : '#94A3B8'}
+                    color={inputText.trim() ? '#FFFFFF' : 'rgba(255,255,255,0.4)'}
                   />
                 </TouchableOpacity>
               </View>
@@ -317,7 +317,7 @@ export default function AddSkillsModal({
 
                 {categoriesLoading ? (
                   <View style={styles.loadingRow}>
-                    <ActivityIndicator size="small" color="#003399" />
+                    <ActivityIndicator size="small" color="#FFFFFF" />
                     <Text style={styles.loadingText}>Loading categories...</Text>
                   </View>
                 ) : filteredSuggestions.length === 0 && !inputText.trim() ? (
@@ -347,16 +347,18 @@ export default function AddSkillsModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.5)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'flex-end',
   },
   avoidingView: {
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#003399',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
     paddingHorizontal: 20,
     paddingTop: 8,
     maxHeight: '90%',
@@ -369,7 +371,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8ECF4',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
     marginBottom: 4,
   },
   headerBtn: {
@@ -379,7 +381,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: RFValue(17),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     textAlign: 'center',
     flex: 1,
   },
@@ -393,7 +395,7 @@ const styles = StyleSheet.create({
   // Description
   description: {
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.78)',
     lineHeight: 20,
     marginTop: 10,
     marginBottom: 16,
@@ -410,12 +412,12 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     borderWidth: 1.5,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.3)',
     borderRadius: 14,
     paddingHorizontal: 16,
     fontSize: RFValue(15),
-    backgroundColor: '#F8FAFC',
-    color: '#0F172A',
+    backgroundColor: '#FFFFFF',
+    color: '#0B1B4D',
   },
   addBtn: {
     width: 48,
@@ -423,10 +425,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: '#ff6b35',
   },
   addBtnDisabled: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(255,255,255,0.14)',
   },
 
   // Dropdown
@@ -452,7 +454,7 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: RFValue(14),
-    color: '#0F172A',
+    color: '#0B1B4D',
   },
   dropdownSeparator: {
     height: 1,
@@ -467,16 +469,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: RFValue(16),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 12,
   },
   sectionCount: {
     fontWeight: '500',
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.7)',
   },
   emptyHint: {
     fontSize: RFValue(13),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.7)',
     marginTop: 2,
   },
 
@@ -490,16 +492,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0,51,153,0.18)',
+    borderColor: 'rgba(255,255,255,0.3)',
     borderRadius: 14,
     paddingVertical: 7,
     paddingHorizontal: 14,
     gap: 6,
-    backgroundColor: 'rgba(0,51,153,0.08)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   skillTagText: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
 
@@ -513,19 +515,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.22)',
     borderRadius: 14,
     paddingVertical: 7,
     paddingHorizontal: 14,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
   suggestedChipText: {
     fontSize: RFValue(14),
-    color: '#334155',
+    color: 'rgba(255,255,255,0.92)',
   },
   suggestedChipPlus: {
     fontSize: RFValue(14),
-    color: '#003399',
+    color: '#ff6b35',
     fontWeight: '700',
   },
 
@@ -538,6 +540,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: RFValue(13),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.7)',
   },
 });

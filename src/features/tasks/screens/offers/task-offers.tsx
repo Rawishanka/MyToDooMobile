@@ -20,6 +20,7 @@ import OfferCard from './components/OfferCard';
 import TaskSummaryHeader from './components/TaskSummaryHeader';
 import { BRAND_BLUE, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 
 interface Offer {
   _id: string;
@@ -89,6 +90,7 @@ export default function TaskOffersScreen() {
 
   return (
     <View style={styles.container}>
+      <BlueBackdrop />
       <StatusBar barStyle="light-content" backgroundColor={BRAND_BLUE} />
       
       {/* Header */}
@@ -135,7 +137,7 @@ export default function TaskOffersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#003399',
   },
   header: {
     flexDirection: 'row',
@@ -144,7 +146,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 60 : 50,
     paddingBottom: 14,
-    backgroundColor: BRAND_BLUE,
   },
   backIcon: {
     width: 36,

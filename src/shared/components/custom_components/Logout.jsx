@@ -92,7 +92,7 @@ export default function LogoutPopup({ onBack }) {
         >
           {/* Red/Coral Soft Icon Badge */}
           <View style={[styles.iconBadge, isDarkMode && { backgroundColor: '#450A0A', borderColor: '#7F1D1D', borderWidth: 1 }]}>
-            <Ionicons name="log-out-outline" size={32} color={isDarkMode ? "#F87171" : "#DC2626"} />
+            <Ionicons name="log-out-outline" size={32} color={isDarkMode ? "#F87171" : "#FCA5A5"} />
           </View>
 
           {/* Heading */}
@@ -136,14 +136,16 @@ export default function LogoutPopup({ onBack }) {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 24,
     paddingTop: 28,
     paddingBottom: 22,
     paddingHorizontal: 24,
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#FEE2E2',
+    backgroundColor: 'rgba(239,68,68,0.22)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -168,13 +170,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 14,
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.78)',
     textAlign: 'center',
     lineHeight: 21,
     marginBottom: 24,
@@ -188,14 +190,16 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     borderRadius: 14,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.5)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelBtnText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#475569',
+    color: '#FFFFFF',
   },
   logoutBtn: {
     flex: 1,

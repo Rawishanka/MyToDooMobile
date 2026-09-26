@@ -262,7 +262,9 @@ export interface Task {
     avatar?: string; // Base64 image data
     profilePicture?: string;
     createdAt?: string; // user join date, when the API includes it
+    badges?: UserBadges; // only present on GET /tasks/:id/offers
   };
+  assignedTo?: { _id?: string; name?: string; avatar?: string; badges?: UserBadges; [key: string]: any } | null;
   statusHistory: any[];
   createdAt: string;
   updatedAt: string;
@@ -304,8 +306,17 @@ export interface TaskActions {
 }
 
 // 🔥 *TASK OFFER INTERFACE*
+export interface UserBadges {
+  mobile: boolean;
+  email: boolean;
+  abn: boolean;
+  stripe: boolean;
+}
+
 export interface TaskOffer {
   _id: string;
+  /** Offer maker as returned by GET /tasks/:id/offers */
+  user?: { _id?: string; badges?: UserBadges; [key: string]: any };
   taskId: string;
   taskCreatorId?: {
     _id: string;

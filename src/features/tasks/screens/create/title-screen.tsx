@@ -217,20 +217,20 @@ export default function TitleInputScreen() {
             <View style={styles.categoryDropdown}>
               {/* Search Input */}
               <View style={styles.searchContainer}>
-                <Ionicons name="search" size={18} color="#999" />
+                <Ionicons name="search" size={18} color="rgba(255,255,255,0.72)" />
                 <TextInput
                   style={styles.searchInput}
                   placeholder="Search categories..."
                   value={categorySearchQuery}
                   onChangeText={setCategorySearchQuery}
-                  placeholderTextColor="#999"
+                  placeholderTextColor="rgba(255,255,255,0.6)"
                 />
               </View>
 
               {/* Categories List */}
               <ScrollView style={styles.categoriesList} nestedScrollEnabled>
                 {loadingCategories ? (
-                  <ActivityIndicator size="small" color="#0057FF" style={styles.loader} />
+                  <ActivityIndicator size="small" color="#FFFFFF" style={styles.loader} />
                 ) : categoriesError ? (
                   <Text style={styles.errorText}>Failed to load categories</Text>
                 ) : categories.length === 0 ? (
@@ -256,7 +256,7 @@ export default function TitleInputScreen() {
                         {category}
                       </Text>
                       {selectedCategory === category && (
-                        <Ionicons name="checkmark" size={20} color="#0057FF" />
+                        <Ionicons name="checkmark" size={20} color="#FFFFFF" />
                       )}
                     </TouchableOpacity>
                   ))
@@ -390,10 +390,10 @@ const styles = StyleSheet.create({
   },
   categoryDropdown: {
     marginTop: 8,
-    backgroundColor: '#fff',
-    borderRadius: 14,
+    backgroundColor: '#003399',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#E5E5EA',
+    borderColor: 'rgba(255,255,255,0.22)',
     maxHeight: 300,
     shadowColor: '#000',
     shadowOffset: {
@@ -409,13 +409,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   searchInput: {
     flex: 1,
     marginLeft: 8,
     fontSize: RFValue(16),
-    color: '#000',
+    color: '#FFFFFF',
   },
   categoriesList: {
     maxHeight: 250,
@@ -424,12 +424,12 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    color: '#FF3B30',
+    color: '#FCA5A5',
     padding: 20,
     textAlign: 'center',
   },
   noResultsText: {
-    color: '#8E8E93',
+    color: 'rgba(255,255,255,0.72)',
     padding: 20,
     textAlign: 'center',
   },
@@ -440,17 +440,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F7',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
   },
   categoryItemSelected: {
-    backgroundColor: '#F0F5FF',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   categoryItemText: {
     fontSize: RFValue(16),
-    color: '#1C1C1E',
+    color: '#FFFFFF',
   },
   categoryItemTextSelected: {
-    color: '#0057FF',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   input: {

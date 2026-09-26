@@ -945,17 +945,17 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
         >
           <View style={[styles.phoneModalCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
             <View style={{ alignItems: "center", marginBottom: 16 }}>
-              <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: isDarkMode ? "#0F172A" : "#EFF6FF", borderWidth: isDarkMode ? 1 : 0, borderColor: "#334155", justifyContent: "center", alignItems: "center", marginBottom: 12 }}>
+              <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: isDarkMode ? "#0F172A" : "rgba(255,255,255,0.2)", borderWidth: isDarkMode ? 1 : 0, borderColor: "#334155", justifyContent: "center", alignItems: "center", marginBottom: 12 }}>
                 <Ionicons
                   name={phoneStep === "input" ? "call-outline" : "shield-checkmark-outline"}
                   size={24}
-                  color={isDarkMode ? "#60A5FA" : "#003399"}
+                  color={isDarkMode ? "#60A5FA" : "#FFFFFF"}
                 />
               </View>
-              <Text style={{ fontSize: 18, fontWeight: "800", color: isDarkMode ? "#F8FAFC" : "#0F172A", marginBottom: 6 }}>
+              <Text style={{ fontSize: 18, fontWeight: "800", color: isDarkMode ? "#F8FAFC" : "#FFFFFF", marginBottom: 6 }}>
                 {phoneStep === "input" ? "Update Phone Number" : "Verify SMS Code"}
               </Text>
-              <Text style={{ fontSize: 13, color: isDarkMode ? "#94A3B8" : "#64748B", textAlign: "center", lineHeight: 18 }}>
+              <Text style={{ fontSize: 13, color: isDarkMode ? "#94A3B8" : "rgba(255,255,255,0.78)", textAlign: "center", lineHeight: 18 }}>
                 {phoneStep === "input"
                   ? "Enter your new phone number to receive a 6-digit verification code."
                   : "Enter the 6-digit verification code sent via SMS to " + newPhoneInput}
@@ -967,23 +967,23 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 8,
-                backgroundColor: isDarkMode ? "#450A0A" : "#FEF2F2",
+                backgroundColor: isDarkMode ? "#450A0A" : "rgba(239,68,68,0.22)",
                 borderRadius: 10,
                 padding: 10,
                 marginBottom: 14,
                 borderWidth: 1,
                 borderColor: isDarkMode ? "#7F1D1D" : "#FCA5A5",
               }}>
-                <Ionicons name="alert-circle" size={16} color={isDarkMode ? "#F87171" : "#DC2626"} />
-                <Text style={{ flex: 1, fontSize: 12, color: isDarkMode ? "#FCA5A5" : "#DC2626", fontWeight: "500" }}>{phoneError}</Text>
+                <Ionicons name="alert-circle" size={16} color={isDarkMode ? "#F87171" : "#FCA5A5"} />
+                <Text style={{ flex: 1, fontSize: 12, color: isDarkMode ? "#FCA5A5" : "#FECACA", fontWeight: "500" }}>{phoneError}</Text>
               </View>
             )}
 
             {phoneStep === "input" ? (
               <View style={{ width: "100%" }}>
-                <Text style={{ fontSize: 12.5, fontWeight: "700", color: isDarkMode ? "#E2E8F0" : "#334155", marginBottom: 6 }}>New Phone Number</Text>
+                <Text style={{ fontSize: 12.5, fontWeight: "700", color: isDarkMode ? "#E2E8F0" : "rgba(255,255,255,0.92)", marginBottom: 6 }}>New Phone Number</Text>
                 <TextInput
-                  style={{ backgroundColor: isDarkMode ? "#0F172A" : "#F8FAFC", borderWidth: 1.5, borderColor: isDarkMode ? "#334155" : "#CBD5E1", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, color: isDarkMode ? "#F8FAFC" : "#0F172A", fontWeight: "600" }}
+                  style={{ backgroundColor: isDarkMode ? "#0F172A" : "#FFFFFF", borderWidth: 1.5, borderColor: isDarkMode ? "#334155" : "#CBD5E1", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, color: isDarkMode ? "#F8FAFC" : "#0B1B4D", fontWeight: "600" }}
                   value={newPhoneInput}
                   onChangeText={setNewPhoneInput}
                   placeholder="+61 400 000 000"
@@ -991,17 +991,17 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                   keyboardType="phone-pad"
                   autoFocus={true}
                 />
-                <Text style={{ fontSize: 11.5, color: isDarkMode ? "#94A3B8" : "#64748B", marginTop: 6, lineHeight: 16 }}>
+                <Text style={{ fontSize: 11.5, color: isDarkMode ? "#94A3B8" : "rgba(255,255,255,0.7)", marginTop: 6, lineHeight: 16 }}>
                   Include country code (e.g. +61 for Australia) or enter standard Australian mobile (04...).
                 </Text>
 
                 <View style={{ flexDirection: "row", gap: 10, marginTop: 18 }}>
                   <TouchableOpacity
-                    style={{ flex: 1, paddingVertical: 12, borderRadius: 14, backgroundColor: isDarkMode ? "#0F172A" : "#F1F5F9", borderWidth: isDarkMode ? 1 : 0, borderColor: "#334155", alignItems: "center", justifyContent: "center" }}
+                    style={{ flex: 1, paddingVertical: 12, borderRadius: 14, backgroundColor: isDarkMode ? "#0F172A" : "rgba(255,255,255,0.12)", borderWidth: 1, borderColor: isDarkMode ? "#334155" : "rgba(255,255,255,0.5)", alignItems: "center", justifyContent: "center" }}
                     onPress={() => setShowPhoneModal(false)}
                     disabled={phoneLoading}
                   >
-                    <Text style={{ fontSize: 14, fontWeight: "600", color: isDarkMode ? "#94A3B8" : "#64748B" }}>Cancel</Text>
+                    <Text style={{ fontSize: 14, fontWeight: "600", color: isDarkMode ? "#94A3B8" : "#FFFFFF" }}>Cancel</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={{ flex: 1.6, paddingVertical: 12, borderRadius: 14, backgroundColor: "#ff6b35", alignItems: "center", justifyContent: "center" }}
@@ -1018,13 +1018,13 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
               </View>
             ) : (
               <View style={{ width: "100%" }}>
-                <Text style={{ fontSize: 12.5, fontWeight: "700", color: isDarkMode ? "#E2E8F0" : "#334155", marginBottom: 6 }}>6-Digit Verification Code</Text>
+                <Text style={{ fontSize: 12.5, fontWeight: "700", color: isDarkMode ? "#E2E8F0" : "rgba(255,255,255,0.92)", marginBottom: 6 }}>6-Digit Verification Code</Text>
                 <TextInput
-                  style={{ backgroundColor: isDarkMode ? "#0F172A" : "#F8FAFC", borderWidth: 2, borderColor: isDarkMode ? "#60A5FA" : "#003399", borderRadius: 14, paddingVertical: 14, fontSize: 24, fontWeight: "800", color: isDarkMode ? "#F8FAFC" : "#0F172A", textAlign: "center", letterSpacing: 10 }}
+                  style={{ backgroundColor: isDarkMode ? "#0F172A" : "#FFFFFF", borderWidth: 2, borderColor: isDarkMode ? "#60A5FA" : "#ff6b35", borderRadius: 14, paddingVertical: 14, fontSize: 24, fontWeight: "800", color: isDarkMode ? "#F8FAFC" : "#0B1B4D", textAlign: "center", letterSpacing: 10 }}
                   value={phoneOtpCode}
                   onChangeText={setPhoneOtpCode}
                   placeholder="000000"
-                  placeholderTextColor={isDarkMode ? "#475569" : "#CBD5E1"}
+                  placeholderTextColor={isDarkMode ? "#475569" : "#94A3B8"}
                   keyboardType="number-pad"
                   maxLength={6}
                   autoFocus={true}
@@ -1032,7 +1032,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
 
                 <View style={{ alignItems: "center", marginVertical: 12 }}>
                   {phoneResendTimer > 0 ? (
-                    <Text style={{ fontSize: 12.5, color: "#94A3B8", fontWeight: "500" }}>
+                    <Text style={{ fontSize: 12.5, color: "rgba(255,255,255,0.65)", fontWeight: "500" }}>
                       Resend code in {phoneResendTimer}s
                     </Text>
                   ) : (
@@ -1040,18 +1040,18 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                       onPress={handleRequestPhoneOtp}
                       disabled={phoneLoading}
                     >
-                      <Text style={{ fontSize: 13, color: isDarkMode ? "#60A5FA" : "#003399", fontWeight: "700" }}>Resend Code</Text>
+                      <Text style={{ fontSize: 13, color: isDarkMode ? "#60A5FA" : "#FFFFFF", fontWeight: "700" }}>Resend Code</Text>
                     </TouchableOpacity>
                   )}
                 </View>
 
                 <View style={{ flexDirection: "row", gap: 10, marginTop: 18 }}>
                   <TouchableOpacity
-                    style={{ flex: 1, paddingVertical: 12, borderRadius: 14, backgroundColor: isDarkMode ? "#0F172A" : "#F1F5F9", borderWidth: isDarkMode ? 1 : 0, borderColor: "#334155", alignItems: "center", justifyContent: "center" }}
+                    style={{ flex: 1, paddingVertical: 12, borderRadius: 14, backgroundColor: isDarkMode ? "#0F172A" : "rgba(255,255,255,0.12)", borderWidth: 1, borderColor: isDarkMode ? "#334155" : "rgba(255,255,255,0.5)", alignItems: "center", justifyContent: "center" }}
                     onPress={() => setPhoneStep("input")}
                     disabled={phoneLoading}
                   >
-                    <Text style={{ fontSize: 14, fontWeight: "600", color: isDarkMode ? "#94A3B8" : "#64748B" }}>Back</Text>
+                    <Text style={{ fontSize: 14, fontWeight: "600", color: isDarkMode ? "#94A3B8" : "#FFFFFF" }}>Back</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={{ flex: 1.6, paddingVertical: 12, borderRadius: 14, backgroundColor: "#ff6b35", alignItems: "center", justifyContent: "center" }}
@@ -1317,14 +1317,16 @@ const styles = StyleSheet.create({
   // Modal styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'flex-end',
     paddingBottom: 0, // Ensure it goes to the very bottom
   },
   modalBottom: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: '#003399',
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingBottom: 40,
     paddingTop: 10,
   },
@@ -1334,20 +1336,20 @@ const styles = StyleSheet.create({
   },
   modalOptionText: {
     fontSize: 17,
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   modalDivider: {
     height: 1,
-    backgroundColor: '#E8ECF4',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   cancelOption: {
     marginTop: 10,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255,255,255,0.12)',
   },
   cancelOptionText: {
     fontSize: 17,
-    color: '#DC2626',
+    color: '#FCA5A5',
     fontWeight: '600',
   },
   // Photo Selection Screen styles
@@ -1549,14 +1551,16 @@ const styles = StyleSheet.create({
   },
 phoneModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   phoneModalCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: '#003399',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 24,
     padding: 24,
     width: '100%',
     maxWidth: 400,

@@ -12,13 +12,19 @@ import { ActivityIndicator, Alert, Dimensions, Image, Modal, ScrollView, StyleSh
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import TaskMapModal from './TaskMapModal';
 import { useTheme } from '@/src/shared/theme';
-import { CARD_BG, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import {CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED} from '@/src/shared/theme/brandColors';
+import { GLASS_BG } from '../detailTheme';
+import { VerifiedBadges, VerifiedBadgesData } from './VerifiedBadges';
 
 interface TaskInfoCardProps {
   task: Task;
   getLocationIcon: () => 'location-outline' | 'desktop-outline' | 'car-outline';
   getTimeDisplay: () => string;
   refetch?: () => void; // Added refetch function
+  /** Verification badges of the poster (from GET /tasks/:id/offers) */
+  posterBadges?: VerifiedBadgesData | null;
+  /** Assigned tasker (from GET /tasks/:id/offers), incl. badges */
+  assignee?: { _id?: string; name?: string; firstName?: string; lastName?: string; badges?: VerifiedBadgesData } | null;
 }
 
 export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
@@ -26,6 +32,8 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   getLocationIcon,
   getTimeDisplay,
   refetch, // Added refetch prop
+  posterBadges,
+  assignee,
 }) => {
   const { isDarkMode } = useTheme();
   
@@ -794,10 +802,28 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         <View style={chipStyle}>
           <Ionicons name="person-outline" size={18} color={chipIconColor} />
         </View>
-        <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
-          {formatUserName(task.createdBy?.firstName, task.createdBy?.lastName)}
-        </Text>
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={[styles.detailText, { marginLeft: 0, flex: 0 }, isDarkMode && { color: '#94A3B8' }]}>
+            Posted by {formatUserName(task.createdBy?.firstName, task.createdBy?.lastName)}
+          </Text>
+          <VerifiedBadges badges={posterBadges ?? (task.createdBy as any)?.badges} />
+        </View>
       </View>
+
+      {/* Assigned Tasker */}
+      {(task.assignedTo || assignee) && (
+        <View style={styles.detailRow}>
+          <View style={chipStyle}>
+            <Ionicons name="construct-outline" size={18} color={chipIconColor} />
+          </View>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={[styles.detailText, { marginLeft: 0, flex: 0 }, isDarkMode && { color: '#94A3B8' }]}>
+              Tasker: {assignee?.name || [assignee?.firstName, assignee?.lastName].filter(Boolean).join(' ') || (task.assignedTo as any)?.name || 'Assigned tasker'}
+            </Text>
+            <VerifiedBadges badges={assignee?.badges ?? (task.assignedTo as any)?.badges} />
+          </View>
+        </View>
+      )}
 
       {/* Task Creation Date */}
       {task.createdAt && (
@@ -884,7 +910,12 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
           <Ionicons name="wallet-outline" size={22} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
         </View>
         <View style={styles.budgetInfoCol}>
-          <Text style={[styles.budgetAmountText, isDarkMode && { color: '#38BDF8' }]}>
+          <Text
+            style={[styles.budgetAmountText, isDarkMode && { color: '#38BDF8' }]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
             {(() => {
               const budget = resolveTaskBudget(task);
               const taskCurrency = task.currency || 'AUD';
@@ -896,7 +927,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
           <Text style={[styles.budgetSublabel, isDarkMode && { color: '#94A3B8' }]}>TASK BUDGET</Text>
         </View>
         <View style={[styles.budgetStatusPill, isDarkMode && { backgroundColor: '#1E293B' }]}>
-          <Text style={[styles.budgetStatusText, isDarkMode && { color: '#38BDF8' }]}>ESTIMATED</Text>
+          <Text style={[styles.budgetStatusText, isDarkMode && { color: '#38BDF8' }]} numberOfLines={1} adjustsFontSizeToFit>ESTIMATED</Text>
         </View>
       </View>
 
@@ -934,17 +965,12 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
 const styles = StyleSheet.create({
   taskCard: {
-    backgroundColor: CARD_BG,
+    backgroundColor: GLASS_BG,
     padding: 20,
     marginBottom: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   iconChip: {
     width: 34,
@@ -961,7 +987,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: 'rgba(255,255,255,0.20)',
     marginTop: 4,
     marginBottom: 16,
   },
@@ -976,9 +1002,10 @@ const styles = StyleSheet.create({
   },
   budgetInfoCol: {
     flex: 1,
+    minWidth: 0,
   },
   budgetAmountText: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '800',
     color: CARD_TEXT,
     letterSpacing: -0.5,
@@ -995,6 +1022,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 10,
+    flexShrink: 1,
+    maxWidth: 96,
+    marginLeft: 8,
   },
   budgetStatusText: {
     fontSize: 11,
@@ -1013,7 +1043,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   categoryText: {
     fontSize: 13,
@@ -1180,7 +1210,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   imageRow: {
     flexDirection: 'row',

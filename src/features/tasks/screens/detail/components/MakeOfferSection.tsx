@@ -1,4 +1,5 @@
-import { BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
+import {BRAND_ORANGE, CARD_TEXT, CARD_TEXT_MUTED} from '@/src/shared/theme/brandColors';
+import { GLASS_BG } from '../detailTheme';
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import React from 'react';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
@@ -36,17 +37,12 @@ export const MakeOfferSection: React.FC<MakeOfferSectionProps> = ({ onMakeOffer,
 
 const styles = StyleSheet.create({
   makeOfferSection: {
-    backgroundColor: CARD_BG,
+    backgroundColor: GLASS_BG,
     padding: 18,
     marginBottom: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   makeOfferTitle: {
     fontSize: 17,

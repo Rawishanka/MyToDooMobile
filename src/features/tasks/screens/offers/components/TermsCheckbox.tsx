@@ -35,7 +35,7 @@ export default function TermsCheckbox({ agreed, onToggle }: TermsCheckboxProps) 
       </TouchableOpacity>
 
       <Modal visible={showTerms} animationType="slide" presentationStyle="pageSheet">
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#003399' }}>
           <TermsConditionsScreen onBack={() => setShowTerms(false)} />
         </SafeAreaView>
       </Modal>
@@ -47,15 +47,10 @@ const styles = StyleSheet.create({
   termsContainer: {
     marginTop: 16,
     padding: 18,
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   termsCheckbox: {
     flexDirection: 'row',
@@ -66,6 +61,7 @@ const styles = StyleSheet.create({
     height: 24,
     borderWidth: 2,
     borderColor: CARD_TEXT_MUTED,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     borderRadius: 8,
     marginRight: 12,
     alignItems: 'center',

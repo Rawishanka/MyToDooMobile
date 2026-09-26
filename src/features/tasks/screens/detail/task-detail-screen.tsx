@@ -1,4 +1,5 @@
 import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
+import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
@@ -64,6 +65,7 @@ export default function TaskDetailScreen() {
   const {
     task,
     taskOffers,
+    taskWithOffers,
     myOffer,
     questions,
     isLoading,
@@ -175,6 +177,7 @@ export default function TaskDetailScreen() {
 
   return (
     <View style={[styles.wrapper, isDarkMode && { backgroundColor: '#0B1120' }]}>
+      <BlueBackdrop />
       <OfflineBanner />
       <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : BRAND_BLUE} />
@@ -204,6 +207,8 @@ export default function TaskDetailScreen() {
           getLocationIcon={getLocationIcon}
           getTimeDisplay={getTimeDisplay}
           refetch={refetch}
+          posterBadges={(taskWithOffers as any)?.createdBy?.badges}
+          assignee={(taskWithOffers as any)?.assignedTo}
         />
 
         {/* Action Buttons for Poster in Accepted Tasks */}
@@ -301,11 +306,11 @@ export default function TaskDetailScreen() {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
   },
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: 'transparent',
   },
   content: {
     flex: 1,
@@ -328,6 +333,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: Platform.OS === 'android' ? 48 : 0,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
   },
 });

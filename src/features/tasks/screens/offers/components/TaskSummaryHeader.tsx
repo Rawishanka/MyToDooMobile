@@ -27,17 +27,12 @@ export default function TaskSummaryHeader({ title, budget, offerCount }: TaskSum
 const styles = StyleSheet.create({
   taskSummary: {
     flexDirection: 'row',
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     padding: 18,
     marginBottom: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: 'rgba(255,255,255,0.20)',
   },
   taskInfo: {
     flex: 1,

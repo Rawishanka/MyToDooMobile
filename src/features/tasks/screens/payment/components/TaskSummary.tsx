@@ -22,19 +22,22 @@ export default function TaskSummary({ title, location }: TaskSummaryProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
+    borderRadius: 20,
     padding: 16,
     marginTop: 20,
+    marginHorizontal: 20,
   },
   title: {
     fontSize: RFValue(18),
     fontWeight: '600',
-    color: '#000',
+    color: '#FFFFFF',
     marginBottom: 8,
   },
   location: {
     fontSize: RFValue(14),
-    color: '#666',
+    color: 'rgba(255,255,255,0.75)',
   },
 });

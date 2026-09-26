@@ -320,7 +320,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                   multiline
                   numberOfLines={6}
                   placeholder="Share your experience..."
-                  placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
+                  placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
                   value={reviewText}
                   onChangeText={setReviewText}
                   onFocus={() => {
@@ -347,7 +347,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                     onPress={pickImage}
                     disabled={isSubmitting || attachments.length >= 5}
                   >
-                    <Ionicons name="image-outline" size={24} color={isDarkMode ? "#38BDF8" : "#003399"} />
+                    <Ionicons name="image-outline" size={24} color={isDarkMode ? "#38BDF8" : "#FFFFFF"} />
                     <Text style={[styles.attachmentButtonText, isDarkMode && { color: '#F8FAFC' }]}>Add Photos</Text>
                   </TouchableOpacity>
 
@@ -356,7 +356,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                     onPress={pickDocument}
                     disabled={isSubmitting || attachments.length >= 5}
                   >
-                    <Ionicons name="document-outline" size={24} color={isDarkMode ? "#38BDF8" : "#003399"} />
+                    <Ionicons name="document-outline" size={24} color={isDarkMode ? "#38BDF8" : "#FFFFFF"} />
                     <Text style={[styles.attachmentButtonText, isDarkMode && { color: '#F8FAFC' }]}>Add Documents</Text>
                   </TouchableOpacity>
                 </View>
@@ -373,7 +373,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                           />
                         ) : (
                           <View style={styles.attachmentDoc}>
-                            <Ionicons name="document" size={40} color="#003399" />
+                            <Ionicons name="document" size={40} color="#FFFFFF" />
                           </View>
                         )}
                         <Text style={styles.attachmentName} numberOfLines={1}>
@@ -422,14 +422,16 @@ const styles = StyleSheet.create({
   // ── Backdrop + Container ───────────────────────────────────────────
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(10, 14, 60, 0.65)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
     justifyContent: 'flex-end',
   },
   keyboardView: {
     width: '100%',
   },
   modalContent: {
-    backgroundColor: '#FAFBFF',
+    backgroundColor: '#003399',
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     maxHeight: '92%',
@@ -446,7 +448,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 18,
-    backgroundColor: '#003399',
+    backgroundColor: '#00287A',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
   },
@@ -493,14 +495,14 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginTop: 16,
     marginHorizontal: 16,
-    backgroundColor: CARD_BG,
-    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: 'rgba(255,255,255,0.22)',
   },
   taskLabel: {
     fontSize: RFValue(10),
-    color: CARD_TEXT_MUTED,
+    color: 'rgba(255,255,255,0.72)',
     marginBottom: 4,
     textTransform: 'uppercase',
     fontWeight: '700',
@@ -518,12 +520,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 24,
     alignItems: 'center',
-    backgroundColor: CARD_BG,
+    backgroundColor: 'rgba(255,255,255,0.12)',
     marginTop: 14,
     marginHorizontal: 16,
-    borderRadius: 20,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: 'rgba(255,255,255,0.22)',
     shadowColor: '#001A66',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,
@@ -533,7 +535,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: RFValue(13),
     fontWeight: '700',
-    color: '#374151',
+    color: '#FFFFFF',
     marginBottom: 14,
     alignSelf: 'flex-start',
     textTransform: 'uppercase',
@@ -579,7 +581,7 @@ const styles = StyleSheet.create({
   },
   attachmentHint: {
     fontSize: RFValue(11),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.72)',
     marginBottom: 14,
     lineHeight: RFValue(16),
   },
@@ -595,16 +597,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#C7D2FE',
+    borderColor: 'rgba(255,255,255,0.4)',
     gap: 8,
   },
   attachmentButtonText: {
     fontSize: RFValue(13),
     fontWeight: '600',
-    color: '#003399',
+    color: '#FFFFFF',
   },
   attachmentsList: {
     flexDirection: 'row',
@@ -626,15 +628,15 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 12,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#C7D2FE',
+    borderColor: 'rgba(255,255,255,0.4)',
   },
   attachmentName: {
     fontSize: RFValue(10),
-    color: '#6B7280',
+    color: 'rgba(255,255,255,0.72)',
     marginTop: 5,
     textAlign: 'center',
     width: '100%',
@@ -653,8 +655,8 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: Platform.OS === 'ios' ? 8 : 16,
     borderTopWidth: 1,
-    borderTopColor: '#E8ECF4',
-    backgroundColor: '#FAFBFF',
+    borderTopColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: '#00287A',
   },
   submitButton: {
     backgroundColor: BRAND_ORANGE,
@@ -669,7 +671,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   submitButtonDisabled: {
-    backgroundColor: '#CBD5E1',
+    backgroundColor: 'rgba(255,255,255,0.25)',
     shadowOpacity: 0,
     elevation: 0,
   },
@@ -687,11 +689,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
     borderWidth: 1.5,
-    borderColor: '#E0E7FF',
+    borderColor: 'rgba(255,255,255,0.4)',
   },
   skipButtonText: {
     fontSize: RFValue(14),
     fontWeight: '600',
-    color: '#6B7280',
+    color: '#FFFFFF',
   },
 });

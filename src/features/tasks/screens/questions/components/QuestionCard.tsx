@@ -96,16 +96,13 @@ export default function QuestionCard({ question, onAnswerPress }: QuestionCardPr
 
 const styles = StyleSheet.create({
   questionCard: {
-    backgroundColor: '#003399',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
     marginHorizontal: 20,
     marginBottom: 14,
     borderRadius: 20,
     padding: 16,
-    shadowColor: '#001A66',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
   },
   questionHeader: {
     flexDirection: 'row',

@@ -258,7 +258,7 @@ const TimeSelectScreen = () => {
                 onChange={handleDateChange}
                 minimumDate={new Date()}
                 style={styles.iosPicker}
-                textColor="#1C1C1E"
+                textColor="#FFFFFF"
               />
             </View>
           </View>
@@ -355,15 +355,17 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
   },
   modalOverlay: {
     flex: 1,
   },
   pickerSheet: {
-    backgroundColor: '#F2F2F7',
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
+    backgroundColor: '#003399',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
   },
   pickerToolbar: {
     flexDirection: 'row',
@@ -372,10 +374,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#C7C7CC',
-    backgroundColor: '#F2F2F7',
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
+    borderBottomColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'transparent',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
   pickerToolbarBtn: {
     minWidth: 60,
@@ -383,20 +385,20 @@ const styles = StyleSheet.create({
   pickerTitle: {
     fontSize: RFValue(16),
     fontWeight: '600',
-    color: '#1C1C1E',
+    color: '#FFFFFF',
   },
   pickerCancelText: {
     fontSize: RFValue(16),
-    color: '#8E8E93',
+    color: 'rgba(255,255,255,0.72)',
   },
   pickerDoneText: {
     fontSize: RFValue(16),
-    color: '#0057FF',
+    color: '#ff6b35',
     fontWeight: '600',
     textAlign: 'right',
   },
   iosPicker: {
     height: 220,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: '#003399',
   },
 });

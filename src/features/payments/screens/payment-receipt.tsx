@@ -153,14 +153,14 @@ export default function PaymentReceiptScreen() {
 
       {loadState === 'loading' && (
         <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color="#003399" />
+          <ActivityIndicator size="large" color="#FFFFFF" />
           <Text style={styles.loadingText}>Loading receipt PDF...</Text>
         </View>
       )}
 
       {loadState === 'error' && (
         <View style={styles.centerContent}>
-          <Ionicons name="document-text-outline" size={48} color="#94A3B8" />
+          <Ionicons name="document-text-outline" size={48} color="rgba(255,255,255,0.6)" />
           <Text style={styles.errorTitle}>Receipt unavailable</Text>
           <Text style={styles.errorMessage}>{errorMessage}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={loadReceipt}>
@@ -177,7 +177,7 @@ export default function PaymentReceiptScreen() {
           startInLoadingState
           renderLoading={() => (
             <View style={styles.webViewLoading}>
-              <ActivityIndicator size="large" color="#003399" />
+              <ActivityIndicator size="large" color="#FFFFFF" />
             </View>
           )}
           allowFileAccess
@@ -200,14 +200,14 @@ export default function PaymentReceiptScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: BRAND_BLUE,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 14,
-    backgroundColor: BRAND_BLUE,
+    backgroundColor: 'transparent',
   },
   backButton: {
     width: 36,
@@ -252,19 +252,19 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: RFValue(15),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
   },
   errorTitle: {
     marginTop: 16,
     fontSize: RFValue(18),
     fontWeight: '700',
-    color: '#0D1B2A',
+    color: '#FFFFFF',
     textAlign: 'center',
   },
   errorMessage: {
     marginTop: 8,
     fontSize: RFValue(14),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   },
   webView: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: BRAND_BLUE,
   },
   webViewLoading: {
     position: 'absolute',
@@ -293,6 +293,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: BRAND_BLUE,
   },
 });

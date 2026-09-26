@@ -218,11 +218,11 @@ export default function FilterModal({
               <View style={[styles.categoryDropdown, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
                 {/* Search Input */}
                 <View style={[styles.categorySearchContainer, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
-                  <Ionicons name="search-outline" size={18} color="#999" style={styles.searchIcon} />
+                  <Ionicons name="search-outline" size={18} color="rgba(255,255,255,0.72)" style={styles.searchIcon} />
                   <TextInput
                     style={[styles.categorySearchInput, isDarkMode && { color: '#F8FAFC' }]}
                     placeholder="Search categories..."
-                    placeholderTextColor={isDarkMode ? '#64748B' : '#999'}
+                    placeholderTextColor={isDarkMode ? '#64748B' : 'rgba(255,255,255,0.6)'}
                     value={categorySearchText}
                     onChangeText={setCategorySearchText}
                     autoFocus={false}
@@ -232,7 +232,7 @@ export default function FilterModal({
                       onPress={() => setCategorySearchText('')}
                       style={styles.clearSearchIcon}
                     >
-                      <Ionicons name="close-circle" size={18} color="#999" />
+                      <Ionicons name="close-circle" size={18} color="rgba(255,255,255,0.72)" />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -275,13 +275,13 @@ export default function FilterModal({
                           {cat}
                         </Text>
                         {selectedCategory === cat && (
-                          <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#38BDF8' : '#003399'} />
+                          <Ionicons name="checkmark-circle" size={20} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
                         )}
                       </TouchableOpacity>
                     ))
                   ) : (
                     <View style={styles.noResultsContainer}>
-                      <Ionicons name="search-outline" size={32} color="#ccc" />
+                      <Ionicons name="search-outline" size={32} color="rgba(255,255,255,0.6)" />
                       <Text style={styles.noResultsText}>No categories found</Text>
                       <Text style={styles.noResultsSubtext}>Try a different search term</Text>
                     </View>
@@ -436,7 +436,7 @@ export default function FilterModal({
 const styles = StyleSheet.create({
   filterModal: {
     flex: 1,
-    backgroundColor: '#F4F6FB',
+    backgroundColor: '#003399',
     paddingTop: Platform.OS === 'ios' ? 60 : 50,
   },
   filterHeader: {
@@ -558,12 +558,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   categoryDropdown: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
+    backgroundColor: '#00287A',
+    borderRadius: 18,
     marginTop: 8,
     maxHeight: 300,
     borderWidth: 1,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.22)',
     shadowColor: '#003399',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -578,8 +578,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F2F8',
-    backgroundColor: '#F4F6FB',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
   searchIcon: {
     marginRight: 8,
@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
   categorySearchInput: {
     flex: 1,
     fontSize: RFValue(14),
-    color: '#333',
+    color: '#FFFFFF',
     paddingVertical: 4,
   },
   clearSearchIcon: {
@@ -603,19 +603,19 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F4F6FB',
-    backgroundColor: '#fff',
+    borderBottomColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'transparent',
   },
   categoryOptionSelected: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   categoryOptionText: {
     fontSize: RFValue(14),
-    color: '#333',
+    color: '#FFFFFF',
     flex: 1,
   },
   categoryOptionTextSelected: {
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '700',
   },
   noResultsContainer: {
@@ -626,13 +626,13 @@ const styles = StyleSheet.create({
   },
   noResultsText: {
     fontSize: RFValue(15),
-    color: '#666',
+    color: 'rgba(255,255,255,0.85)',
     fontWeight: '600',
     marginTop: 12,
   },
   noResultsSubtext: {
     fontSize: RFValue(13),
-    color: '#999',
+    color: 'rgba(255,255,255,0.65)',
     marginTop: 4,
   },
   categoryErrorText: {
@@ -645,24 +645,24 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   taskTypeBtn: {
-    backgroundColor: '#F4F6FB',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E8ECF4',
+    borderColor: 'rgba(255,255,255,0.30)',
   },
   taskTypeBtnActive: {
-    backgroundColor: '#003399',
-    borderColor: '#003399',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#FFFFFF',
   },
   taskTypeBtnText: {
     fontSize: RFValue(14),
-    color: '#6B7280',
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   taskTypeBtnTextActive: {
-    color: '#fff',
+    color: '#003399',
     fontWeight: '700',
   },
   priceRangeDisplay: {
@@ -673,18 +673,18 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   priceBox: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#C7D2FE',
+    borderColor: 'rgba(255,255,255,0.30)',
     minWidth: 100,
     alignItems: 'center',
   },
   priceBoxLabel: {
     fontSize: RFValue(10),
-    color: '#6B7280',
+    color: 'rgba(255,255,255,0.75)',
     marginBottom: 4,
     fontWeight: '700',
     textTransform: 'uppercase' as const,
@@ -692,12 +692,12 @@ const styles = StyleSheet.create({
   },
   priceBoxValue: {
     fontSize: RFValue(18),
-    color: '#003399',
+    color: '#FFFFFF',
     fontWeight: '800',
   },
   priceSeparator: {
     fontSize: RFValue(20),
-    color: '#9CA3AF',
+    color: 'rgba(255,255,255,0.6)',
     fontWeight: '300',
   },
   sliderContainer: {
@@ -768,13 +768,13 @@ const styles = StyleSheet.create({
   },
   toggleLabel: {
     fontSize: RFValue(15),
-    color: '#1A1D2E',
+    color: '#FFFFFF',
     fontWeight: '600',
     marginBottom: 3,
   },
   toggleSubtitle: {
     fontSize: RFValue(13),
-    color: '#6B7280',
+    color: 'rgba(255,255,255,0.75)',
   },
   filterFooter: {
     flexDirection: 'row',

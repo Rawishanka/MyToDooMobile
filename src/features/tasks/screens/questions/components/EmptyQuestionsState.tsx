@@ -11,7 +11,7 @@ export default function EmptyQuestionsState({ onAskQuestion }: EmptyQuestionsSta
   return (
     <View style={styles.emptyContainer}>
       <View style={styles.iconChip}>
-        <Ionicons name="help-circle-outline" size={40} color="#003399" />
+        <Ionicons name="help-circle-outline" size={40} color="#FFFFFF" />
       </View>
       <Text style={styles.emptyTitle}>No questions yet</Text>
       <Text style={styles.emptySubtitle}>
@@ -36,20 +36,20 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: 38,
-    backgroundColor: '#E3EAF8',
+    backgroundColor: 'rgba(255,255,255,0.14)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyTitle: {
     fontSize: RFValue(20),
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: RFValue(16),
-    color: '#64748B',
+    color: 'rgba(255,255,255,0.75)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
