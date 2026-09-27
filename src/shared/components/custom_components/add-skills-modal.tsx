@@ -8,7 +8,6 @@ import { RFValue } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Animated,
   FlatList,
   Keyboard,
@@ -24,6 +23,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 // ─── Types ────────────────────────────────────────────────
 interface AddSkillsModalProps {
@@ -317,7 +317,7 @@ export default function AddSkillsModal({
 
                 {categoriesLoading ? (
                   <View style={styles.loadingRow}>
-                    <ActivityIndicator size="small" color="#FFFFFF" />
+                    <AppLoader size={22} color="#FFFFFF" />
                     <Text style={styles.loadingText}>Loading categories...</Text>
                   </View>
                 ) : filteredSuggestions.length === 0 && !inputText.trim() ? (

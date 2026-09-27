@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Video from 'react-native-video';
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface VideoCategoryCardProps {
   videoUrl: string;
@@ -48,7 +49,7 @@ export const VideoCategoryCard: React.FC<VideoCategoryCardProps> = ({
       <View style={styles.videoContainer}>
         {!isReady && !hasError && (
           <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="small" color="#003399" />
+            <AppLoader size={22} color="#003399" />
           </View>
         )}
 

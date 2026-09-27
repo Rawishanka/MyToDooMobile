@@ -9,7 +9,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Image,
   Platform,
@@ -23,6 +22,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export default function PostTaskScreen() {
   const router = useRouter();
@@ -227,7 +227,7 @@ export default function PostTaskScreen() {
       <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
         <FlowBackground isDarkMode={isDarkMode} />
-        <ActivityIndicator size="large" color="#FFFFFF" />
+        <AppLoader size={32} color="#FFFFFF" />
         <Text style={styles.loadingText}>
           {uploadProgress || 'Posting your task...'}
         </Text>

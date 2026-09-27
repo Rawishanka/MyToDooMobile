@@ -4,7 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Platform,
   SafeAreaView,
   StatusBar,
@@ -16,6 +15,7 @@ import {
 import { WebView } from 'react-native-webview';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface MyToDooWebViewProps {
   /**
@@ -169,7 +169,7 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
           <View style={styles.headerSpacer} />
         </View>
         <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-          <ActivityIndicator size="large" color={isDarkMode ? "#ff6b35" : "#ffffff"} />
+          <AppLoader size={32} color={isDarkMode ? "#ff6b35" : "#ffffff"} />
           <Text style={[styles.loadingText, { color: isDarkMode ? "#94A3B8" : "#ffffff" }]}>Loading {title}...</Text>
         </View>
       </SafeAreaView>
@@ -195,7 +195,7 @@ const MyToDooWebView: React.FC<MyToDooWebViewProps> = ({
       {/* Loading Indicator */}
       {loading && (
         <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-          <ActivityIndicator size="large" color={isDarkMode ? "#ff6b35" : "#ffffff"} />
+          <AppLoader size={32} color={isDarkMode ? "#ff6b35" : "#ffffff"} />
           <Text style={[styles.loadingText, { color: isDarkMode ? "#94A3B8" : "#ffffff" }]}>Loading {title}...</Text>
         </View>
       )}

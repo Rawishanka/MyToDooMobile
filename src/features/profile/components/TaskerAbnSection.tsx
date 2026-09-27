@@ -10,7 +10,6 @@ import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   StyleSheet,
   Text,
@@ -18,6 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export interface TaskerAbnSectionProps {
   variant?: 'default' | 'compact';
@@ -82,7 +82,7 @@ export default function TaskerAbnSection({
   if (loading) {
     return (
       <View style={[styles.card, variant === 'compact' && styles.cardCompact, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
-        <ActivityIndicator color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+        <AppLoader color={isDarkMode ? '#38BDF8' : '#FFFFFF'} size={22} />
         <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading ABN status...</Text>
       </View>
     );
@@ -148,7 +148,7 @@ export default function TaskerAbnSection({
         activeOpacity={0.85}
       >
         {saving ? (
-          <ActivityIndicator color="#fff" />
+          <AppLoader color="#fff" size={22} />
         ) : (
           <Text style={styles.primaryButtonText}>Verify & Save ABN</Text>
         )}

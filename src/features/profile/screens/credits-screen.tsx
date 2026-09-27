@@ -3,7 +3,6 @@ import { useGetCreditsBalance, useGetCreditsLedger, useGetCreditsSettings } from
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -16,6 +15,7 @@ import { router } from 'expo-router';
 import InviteFriendsScreen from './invite-friends-screen';
 import { useTheme } from '@/src/shared/theme';
 import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface CreditsScreenProps {
   onBack: () => void;
@@ -127,7 +127,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
 
       {(balanceLoading || ledgerLoading) && !balanceData ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+          <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         </View>
       ) : (
         <FlatList

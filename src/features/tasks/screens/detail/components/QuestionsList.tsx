@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import {BRAND_ORANGE, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED} from '@/src/shared/theme/brandColors';
 import { GLASS_BG } from '../detailTheme';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
-import { ActivityIndicator, Dimensions, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { formatUserName } from '@/src/utils/formatUserName';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 import { normalizeCDNUrl } from '@/src/api/cdn-api';
 import { isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
@@ -403,7 +404,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
 
       {isLoading ? (
         <View style={styles.loadingState}>
-          <ActivityIndicator size="small" color={isDarkMode ? "#38BDF8" : "#003399"} />
+          <AppLoader size={22} color={isDarkMode ? "#38BDF8" : "#003399"} />
           <Text style={[styles.loadingStateText, isDarkMode && { color: "#94A3B8" }]}>Loading questions...</Text>
         </View>
       ) : questions.length === 0 ? (

@@ -24,7 +24,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -36,6 +35,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface ServiceListingDetailScreenProps {
   listingId: string;
@@ -162,7 +162,7 @@ export default function ServiceListingDetailScreen({
 
       {isLoading && !listing ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+          <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         </View>
       ) : !listing ? (
         <View style={styles.loadingWrap}>
@@ -290,7 +290,7 @@ export default function ServiceListingDetailScreen({
               activeOpacity={0.85}
             >
               {bookMutation.isPending ? (
-                <ActivityIndicator color="#fff" />
+                <AppLoader color="#fff" />
               ) : (
                 <Text style={styles.bookText}>Confirm & Book Service</Text>
               )}

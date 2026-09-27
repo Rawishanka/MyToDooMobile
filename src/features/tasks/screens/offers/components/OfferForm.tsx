@@ -3,8 +3,9 @@ import * as PaymentAPI from '@/src/api/payment-api';
 import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '@/src/shared/theme';
-import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface OfferFormProps {
   offerAmount: string;
@@ -132,7 +133,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
         {(feeLoading || feePreview) && (
           <View style={[styles.feePreviewBox, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#334155" }]}>
             {feeLoading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <AppLoader size={22} color="#FFFFFF" />
             ) : (
               <>
                 <Text style={[styles.feePreviewTitle, isDarkMode && { color: "#38BDF8" }]}>As you type</Text>

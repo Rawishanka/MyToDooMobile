@@ -3,9 +3,10 @@ import { useGetUserReviews } from '@/src/shared/hooks/useUserProfileApi';
 import { formatUserName } from '@/src/utils/formatUserName';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface Review {
   _id: string;
@@ -360,7 +361,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
       <View style={styles.footer}>
         {isLoading && (
           <>
-            <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+            <AppLoader size={22} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
             <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading reviews...</Text>
           </>
         )}

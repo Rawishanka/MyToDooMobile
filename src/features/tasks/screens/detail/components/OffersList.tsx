@@ -21,8 +21,9 @@ import {BRAND_ORANGE, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED} from '@/src/shar
 import { GLASS_BG } from '../detailTheme';
 import { VerifiedBadges } from './VerifiedBadges';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
-import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface OffersListProps {
   offers: any[];
@@ -90,7 +91,7 @@ export const OffersList: React.FC<OffersListProps> = ({
   if (isLoading) {
     return (
       <View style={styles.loadingState}>
-        <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#003399'} />
+        <AppLoader size={22} color={isDarkMode ? '#38BDF8' : '#003399'} />
         <Text style={[styles.loadingStateText, isDarkMode && { color: '#94A3B8' }]}>Loading offers...</Text>
       </View>
     );
@@ -354,7 +355,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                   {/* Rating and Stats Row */}
                   <View style={styles.offerStatsRow}>
                     {isLoadingRatingStats ? (
-                      <ActivityIndicator size="small" color="#FBBF24" />
+                      <AppLoader size={22} color="#FBBF24" />
                     ) : (
                       <>
                         <View style={styles.offerRatingContainer}>

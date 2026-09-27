@@ -3,7 +3,6 @@ import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
-    ActivityIndicator,
     ScrollView,
     StatusBar,
     StyleSheet,
@@ -24,6 +23,7 @@ import {
 import { useOfferSubmission } from './hooks/useOfferSubmission';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export default function MakeOfferScreen() {
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
@@ -144,7 +144,7 @@ export default function MakeOfferScreen() {
             disabled={isSubmitting || userHasExistingOffer || isLoadingOffers || !!validationError}
           >
             {isSubmitting || isLoadingOffers ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <AppLoader size={22} color="#FFFFFF" />
             ) : (
               <Text style={styles.submitButtonText}>
                 {userHasExistingOffer 

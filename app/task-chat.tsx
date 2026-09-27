@@ -26,7 +26,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -43,6 +42,7 @@ import {
 import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/shared/theme';
+import AppLoader from '@/src/shared/components/AppLoader';
 import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -737,7 +737,7 @@ export default function TaskChatScreen() {
           </View>
         </View>
         <View style={[{ flex: 1 }, styles.centerContent]}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+          <AppLoader size={32} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading chat...</Text>
         </View>
       </GestureHandlerRootView>
@@ -806,7 +806,7 @@ export default function TaskChatScreen() {
           ListHeaderComponent={
             messagesLoading ? (
               <View style={styles.loadingHeader}>
-                <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+                <AppLoader size={22} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
                 <Text style={[styles.loadingHeaderText, isDarkMode && { color: '#94A3B8' }]}>Loading messages...</Text>
               </View>
             ) : null
@@ -871,7 +871,7 @@ export default function TaskChatScreen() {
             disabled={!messageText.trim() || sendMessageMutation.isPending || isUploading}
           >
             {sendMessageMutation.isPending || isUploading ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <AppLoader size={22} color="#fff" />
             ) : (
               <MaterialIcons name="send" size={20} color="#fff" />
             )}
@@ -882,7 +882,7 @@ export default function TaskChatScreen() {
         {isUploading && (
           <View style={styles.uploadOverlay}>
             <View style={[styles.uploadOverlayContent, isDarkMode && { backgroundColor: "#1E293B" }]}>
-              <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
+              <AppLoader size={32} color={isDarkMode ? '#38BDF8' : BRAND_BLUE} />
               <Text style={[styles.uploadOverlayText, isDarkMode && { color: "#F8FAFC" }]}>Uploading...</Text>
             </View>
           </View>

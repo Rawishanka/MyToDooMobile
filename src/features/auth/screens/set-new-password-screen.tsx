@@ -3,7 +3,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Keyboard,
     KeyboardAvoidingView,
@@ -20,6 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RFValue, FORM_MAX_WIDTH, isTablet } from '@/src/shared/utils/responsive';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AuthArtHeader, AuthSheet } from '../components/AuthArtHeader';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export default function SetNewPasswordScreen() {
   const router = useRouter();
@@ -336,7 +336,7 @@ export default function SetNewPasswordScreen() {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <AppLoader color="#fff" size={22} />
             ) : (
               <Text style={styles.resetButtonText}>Reset Password</Text>
             )}

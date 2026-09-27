@@ -13,7 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
     FlatList,
     RefreshControl,
     StatusBar,
@@ -22,6 +21,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 // Import components
 import { ChatWindow } from '@/src/features/messages/components/ChatWindow';
@@ -348,7 +348,7 @@ const MessageScreen: React.FC = () => {
       {/* Messages List */}
       {isLoadingChats ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+          <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading chats...</Text>
         </View>
       ) : (

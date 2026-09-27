@@ -5,7 +5,6 @@ import axios from 'axios';
 import * as Location from 'expo-location';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   StyleSheet,
@@ -15,6 +14,7 @@ import {
   View
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export interface Coordinates {
   lat: number;
@@ -529,7 +529,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         disabled={detectingLocation || isDetectingCountry}
       >
         {detectingLocation ? (
-          <ActivityIndicator size="small" color="#4285F4" />
+          <AppLoader size={22} color="#4285F4" />
         ) : (
           <Ionicons 
             name="locate" 
@@ -565,7 +565,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           }}
         />
         {loading ? (
-          <ActivityIndicator size="small" color="#4285F4" style={styles.loadingIcon} />
+          <AppLoader size={22} color="#4285F4" style={styles.loadingIcon} />
         ) : query.length > 0 ? (
           <TouchableOpacity
             onPress={() => {

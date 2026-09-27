@@ -20,8 +20,9 @@ import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { AppAlert } from '@/src/shared/components/AppAlert';
-import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface TaskActionButtonsProps {
   task: any;
@@ -466,7 +467,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
           >
             {(isProcessing || confirmTaskCompletionMutation.isPending) ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                <AppLoader size={22} color="#fff" style={{ marginRight: 8 }} />
                 <Text style={styles.confirmCompletionButtonText}>Releasing...</Text>
               </View>
             ) : (
@@ -488,7 +489,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
           >
             {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                <AppLoader size={22} color="#fff" style={{ marginRight: 8 }} />
                 <Text style={styles.completedButtonText}>Completing...</Text>
               </View>
             ) : (
@@ -524,7 +525,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
 
             <ScrollView style={styles.reasonsList} showsVerticalScrollIndicator={false}>
               {loadingReasons ? (
-                <ActivityIndicator size="large" color="#003399" style={{ marginTop: 20 }} />
+                <AppLoader size={32} color="#003399" style={{ marginTop: 20 }} />
               ) : (
                 cancellationReasons.map((reason: any) => (
                   <TouchableOpacity
@@ -579,7 +580,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
                 activeOpacity={0.7}
               >
                 {createCancellationRequestMutation.isPending ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <AppLoader size={22} color="#fff" />
                 ) : (
                   <Text style={styles.modalButtonTextConfirm}>Submit Request</Text>
                 )}

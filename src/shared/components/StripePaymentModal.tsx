@@ -2,7 +2,6 @@ import { StripeProvider, usePaymentSheet } from '@stripe/stripe-react-native';
 import { router } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Dimensions,
     Modal,
@@ -16,6 +15,7 @@ import { useAuthStore } from '../../store/auth-task-store';
 import { useCreatePaymentIntent } from '../hooks/usePaymentApi';
 import { useAcceptOffer } from '../hooks/useTaskApi';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface StripePaymentModalProps {
   visible: boolean;
@@ -355,7 +355,7 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FFFFFF" />
+        <AppLoader size={32} color="#FFFFFF" />
         <Text style={styles.loadingText}>Preparing secure payment...</Text>
       </View>
     </View>

@@ -11,11 +11,12 @@ import { useAuthStore } from '@/src/store/auth-task-store';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface AccountInformationProps {
   onBack: () => void;
@@ -409,7 +410,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
         <BlueBackdrop />
         <LightHeader title="Account information" onBack={onBack} />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+          <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading account information...</Text>
         </View>
       </View>
@@ -541,7 +542,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
             disabled={updateProfileMutation.isPending}
           >
             {updateProfileMutation.isPending ? (
-              <ActivityIndicator color="#fff" />
+              <AppLoader color="#fff" size={22} />
             ) : (
               <Text style={styles.saveButtonText}>Save Changes</Text>
             )}
@@ -624,7 +625,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
               disabled={phoneBusy}
             >
               {phoneBusy ? (
-                <ActivityIndicator color="#fff" />
+                <AppLoader color="#fff" size={22} />
               ) : (
                 <Text style={styles.saveMobileButtonText}>
                   {phoneOtpSent ? 'Verify phone' : 'Send verification code'}
@@ -687,7 +688,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
               disabled={emailBusy}
             >
               {emailBusy ? (
-                <ActivityIndicator color="#fff" />
+                <AppLoader color="#fff" size={22} />
               ) : (
                 <Text style={styles.saveMobileButtonText}>
                   {emailOtpSent ? 'Verify email' : 'Send verification code'}
@@ -814,7 +815,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
                   disabled={isDeleting || !deleteReason.trim()}
                 >
                   {isDeleting ? (
-                    <ActivityIndicator color="#fff" />
+                    <AppLoader color="#fff" size={22} />
                   ) : (
                     <Text style={styles.deleteButtonText}>Yes, delete</Text>
                   )}

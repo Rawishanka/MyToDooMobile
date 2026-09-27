@@ -23,9 +23,10 @@ import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { AppAlert } from '@/src/shared/components/AppAlert';
-import { ActivityIndicator, Alert, Image, Linking, Modal, Platform, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Linking, Modal, Platform, ScrollView, StatusBar, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 // Import rating components
 import { GetMoreReviewsSection } from './user-profile/components/GetMoreReviewsSection';
@@ -531,7 +532,7 @@ export default function AccountScreen() {
     console.log("⏳ Loading profile data...");
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FFFFFF" />
+        <AppLoader size={32} color="#FFFFFF" />
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
@@ -626,7 +627,7 @@ export default function AccountScreen() {
   if (isLoadingProfile && !userData && isAuthenticated && token) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FFFFFF" />
+        <AppLoader size={32} color="#FFFFFF" />
         <Text style={styles.loadingText}>Loading profile...</Text>
       </View>
     );
@@ -645,7 +646,7 @@ export default function AccountScreen() {
       console.log("⏳ Auth error detected - waiting for auto-logout redirect...");
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#FFFFFF" />
+          <AppLoader size={32} color="#FFFFFF" />
           <Text style={styles.loadingText}>Signing out...</Text>
         </View>
       );
@@ -1002,7 +1003,7 @@ export default function AccountScreen() {
             />
             {isUploadingAvatar && (
               <View style={styles.uploadingOverlay}>
-                <ActivityIndicator size="large" color="#fff" />
+                <AppLoader size={32} color="#fff" />
               </View>
             )}
             <View style={styles.cameraIconContainer}>
@@ -1265,7 +1266,7 @@ export default function AccountScreen() {
         >
           {ratingLoading && !ratingData ? (
             <View style={styles.ratingLoadingContainer}>
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <AppLoader size={22} color="#FFFFFF" />
               <Text style={styles.ratingLoadingText}>Loading ratings...</Text>
             </View>
           ) : ratingData ? (
@@ -1732,7 +1733,7 @@ export default function AccountScreen() {
                 disabled={isSendingRequest}
               >
                 {isSendingRequest ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <AppLoader size={22} color="#fff" />
                 ) : (
                   <Text style={styles.modalSendText}>Send Request</Text>
                 )}
@@ -1810,7 +1811,7 @@ export default function AccountScreen() {
                 disabled={isSendingRequest}
               >
                 {isSendingRequest ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <AppLoader size={22} color="#fff" />
                 ) : (
                   <Text style={styles.modalSendText}>Send Request</Text>
                 )}
@@ -1963,7 +1964,7 @@ export default function AccountScreen() {
                 disabled={isUpdatingBank}
               >
                 {isUpdatingBank ? (
-                  <ActivityIndicator color="#fff" size="small" />
+                  <AppLoader color="#fff" size={22} />
                 ) : (
                   <Text style={[styles.bankDetailsButtonText, { color: '#fff' }]}>Update Bank Account</Text>
                 )}

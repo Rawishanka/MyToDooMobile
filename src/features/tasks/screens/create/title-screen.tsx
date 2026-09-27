@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   BackHandler,
   KeyboardAvoidingView,
@@ -21,6 +20,7 @@ import { TaskTitleSuggestions } from './components/TaskTitleSuggestions';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface Category {
   _id: string;
@@ -230,7 +230,7 @@ export default function TitleInputScreen() {
               {/* Categories List */}
               <ScrollView style={styles.categoriesList} nestedScrollEnabled>
                 {loadingCategories ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" style={styles.loader} />
+                  <AppLoader size={22} color="#FFFFFF" style={styles.loader} />
                 ) : categoriesError ? (
                   <Text style={styles.errorText}>Failed to load categories</Text>
                 ) : categories.length === 0 ? (

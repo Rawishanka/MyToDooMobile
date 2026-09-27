@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
   Alert,
   Platform,
 } from 'react-native';
@@ -16,6 +15,7 @@ import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { BlueBackdrop, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import { useSubmitFaceVerification, useGetVerificationStatus } from '@/src/shared/hooks/useFaceVerificationApi';
+import AppLoader from '@/src/shared/components/AppLoader';
 import { useGetUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 
 interface IDVerificationScreenProps {
@@ -213,7 +213,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
     return (
       <View style={[styles.container, styles.centerContent, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <BlueBackdrop />
-        <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+        <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         <Text style={[styles.processingTitle, isDarkMode && { color: '#F8FAFC' }]}>
           Analyzing Biometric Verification...
         </Text>

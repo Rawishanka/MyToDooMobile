@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Modal, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { Ionicons } from '@expo/vector-icons';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface VideoPlayerModalProps {
   visible: boolean;
@@ -82,7 +83,7 @@ const VideoPlayerContent: React.FC<{ videoUrl: string; categoryName: string; onC
         <View style={[styles.videoWrapper, { width: videoSize, height: videoSize }]}>
           {isLoading && (
             <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#fff" />
+              <AppLoader size={32} color="#fff" />
               <Text style={styles.loadingText}>Loading video...</Text>
             </View>
           )}

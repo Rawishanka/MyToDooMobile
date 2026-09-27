@@ -4,7 +4,6 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useState, useRef, useEffect } from 'react';
 import {
-    ActivityIndicator,
     Image,
     KeyboardAvoidingView,
     Modal,
@@ -20,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface RatingReviewModalProps {
   visible: boolean;
@@ -405,7 +405,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                 disabled={rating === 0 || isSubmitting}
               >
                 {isSubmitting ? (
-                  <ActivityIndicator color="#FFF" />
+                  <AppLoader color="#FFF" />
                 ) : (
                   <Text style={styles.submitButtonText}>Submit Review</Text>
                 )}

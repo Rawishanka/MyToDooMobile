@@ -8,7 +8,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
   Modal,
   Pressable,
   StyleSheet,
@@ -16,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export default function LogoutPopup({ onBack }) {
   const { isDarkMode } = useTheme();
@@ -121,7 +121,7 @@ export default function LogoutPopup({ onBack }) {
               activeOpacity={0.85}
             >
               {isLoggingOut ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
+                <AppLoader size={22} color="#FFFFFF" />
               ) : (
                 <Text style={styles.logoutBtnText}>Log Out</Text>
               )}

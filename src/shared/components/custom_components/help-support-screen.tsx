@@ -2,7 +2,6 @@ import { getHelpArticles, groupArticlesByCategory, HelpArticle, searchHelpArticl
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     Modal,
     Platform,
     ScrollView,
@@ -15,6 +14,7 @@ import {
 import { RFValue } from '@/src/shared/utils/responsive';
 import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface HelpSupportProps {
   visible: boolean;
@@ -152,7 +152,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
           {/* Loading State */}
           {loading && (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#FFFFFF" />
+              <AppLoader size={32} color="#FFFFFF" />
               <Text style={styles.loadingText}>Loading help articles...</Text>
             </View>
           )}

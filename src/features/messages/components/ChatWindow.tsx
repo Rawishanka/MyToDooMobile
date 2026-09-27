@@ -17,7 +17,6 @@ import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
   ActionSheetIOS,
-  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -33,6 +32,7 @@ import {
   View
 } from 'react-native';
 import { GestureHandlerRootView, PanGestureHandler, State } from 'react-native-gesture-handler';
+import AppLoader from '@/src/shared/components/AppLoader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ChatMessage, Message } from './message-types';
 import { RFValue } from '@/src/shared/utils/responsive';
@@ -1063,7 +1063,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
           ListEmptyComponent={() => (
             isLoadingMessages ? (
               <View style={styles.emptyContainer}>
-                <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+                <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
                 <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading messages...</Text>
               </View>
             ) : (
@@ -1276,7 +1276,7 @@ export const ChatWindow: React.FC<ChatScreenProps> = ({
                       disabled={isDeletingMessage}
                     >
                       {isDeletingMessage ? (
-                        <ActivityIndicator size="small" color="#FFFFFF" />
+                        <AppLoader size={22} color="#FFFFFF" />
                       ) : (
                         <Text style={styles.confirmDeleteBtnText}>Delete</Text>
                       )}

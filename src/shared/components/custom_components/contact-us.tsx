@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Keyboard,
     KeyboardAvoidingView,
@@ -18,6 +17,7 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
+import AppLoader from '@/src/shared/components/AppLoader';
 import {
     getSupportCategories,
     getSupportStatus,
@@ -614,7 +614,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                   <View style={[styles.dropdownMenu, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
                     {loadingCategories ? (
                       <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#003399'} />
+                        <AppLoader size={22} color={isDarkMode ? '#38BDF8' : '#003399'} />
                         <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading categories...</Text>
                       </View>
                     ) : (
@@ -700,7 +700,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                 activeOpacity={0.8}
               >
                 {isSubmitting ? (
-                  <ActivityIndicator color="#fff" size="small" />
+                  <AppLoader color="#fff" size={22} />
                 ) : (
                   <>
                     <Ionicons name="send" size={20} color="#fff" />
@@ -744,7 +744,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
                   disabled={isCheckingToken}
                 >
                   {isCheckingToken ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <AppLoader size={22} color="#fff" />
                   ) : (
                     <Ionicons name="search" size={20} color="#fff" />
                   )}

@@ -9,7 +9,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Image,
     Keyboard,
@@ -28,6 +27,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OCRAPI } from '@/src/api/ocr-api';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import AppLoader from '@/src/shared/components/AppLoader';
 import { BRAND_BLUE, BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 
 const MAX_TASK_PHOTOS = 5;
@@ -912,7 +912,7 @@ Please remove phone numbers and addresses from the image.`,
 
                 <ScrollView style={styles.categoriesList} nestedScrollEnabled>
                   {loadingCategories ? (
-                    <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} style={styles.loader} />
+                    <AppLoader size={22} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} style={styles.loader} />
                   ) : categories.length === 0 ? (
                     <Text style={styles.noResultsText}>No categories found</Text>
                   ) : (
@@ -1040,7 +1040,7 @@ Please remove phone numbers and addresses from the image.`,
               >
                 {isProcessing || isOCRProcessing ? (
                   <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+                    <AppLoader size={22} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
                     {isOCRProcessing && (
                       <Text style={styles.loadingText}>Checking...</Text>
                     )}
@@ -1273,7 +1273,7 @@ Please remove phone numbers and addresses from the image.`,
         >
           {(updateTaskMutation.isPending || updateTaskWithImagesMutation.isPending) ? (
             <View style={styles.saveButtonContent}>
-              <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
+              <AppLoader size={22} color="#FFFFFF" style={{ marginRight: 8 }} />
               <Text style={styles.saveButtonText}>Saving...</Text>
             </View>
           ) : (

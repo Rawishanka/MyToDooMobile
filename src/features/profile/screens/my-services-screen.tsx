@@ -8,7 +8,6 @@ import { useTheme } from '@/src/shared/theme';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   RefreshControl,
@@ -17,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface MyServicesScreenProps {
   onBack: () => void;
@@ -79,7 +79,7 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
 
       {isLoading && data.length === 0 ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+          <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         </View>
       ) : (
         <FlatList

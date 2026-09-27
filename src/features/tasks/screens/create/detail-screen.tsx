@@ -13,7 +13,6 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React from 'react';
 import {
-    ActivityIndicator,
     Alert,
     ScrollView,
     StatusBar,
@@ -23,6 +22,7 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 type ListItemProps = {
   icon: React.ReactNode;
@@ -422,7 +422,7 @@ export default function DetailScreen() {
       >
         {postTaskMutation.isPending ? (
           <View style={styles.postingContainer}>
-            <ActivityIndicator size="small" color="#fff" />
+            <AppLoader size={22} color="#fff" />
             <Text style={[styles.continueText, { marginLeft: 8 }]}>Posting Task...</Text>
           </View>
         ) : (

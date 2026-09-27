@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface PaymentLoadingStateProps {
   message?: string;
@@ -14,7 +15,7 @@ export function PaymentLoadingState({ message = 'Loading payment details...' }: 
   return (
     <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <BlueBackdrop />
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+      <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>{message}</Text>
     </View>
   );

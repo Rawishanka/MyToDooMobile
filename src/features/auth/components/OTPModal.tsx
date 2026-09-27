@@ -4,7 +4,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Keyboard,
   KeyboardAvoidingView,
@@ -23,6 +22,7 @@ import {
 import type { VerificationStep } from './signup-types';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface OTPModalProps {
   // Modal visibility
@@ -288,7 +288,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                     activeOpacity={0.8}
                   >
                     {verifyLoading ? (
-                      <ActivityIndicator color="#fff" size="small" />
+                      <AppLoader color="#fff" size={22} />
                     ) : (
                       <>
                         <Text style={styles.verifyButtonText}>Verify & Continue</Text>
@@ -386,7 +386,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                       activeOpacity={0.8}
                     >
                       {verifyLoading ? (
-                        <ActivityIndicator color="#fff" size="small" />
+                        <AppLoader color="#fff" size={22} />
                       ) : (
                         <>
                           <Text style={styles.verifyButtonText}>Send SMS Code</Text>
@@ -510,7 +510,7 @@ export const OTPModal: React.FC<OTPModalProps> = ({
                     activeOpacity={0.8}
                   >
                     {verifyLoading ? (
-                      <ActivityIndicator color="#fff" size="small" />
+                      <AppLoader color="#fff" size={22} />
                     ) : smsVerified ? (
                       <>
                         <Ionicons name="checkmark-circle" size={20} color="#fff" />

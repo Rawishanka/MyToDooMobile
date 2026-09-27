@@ -11,7 +11,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     Platform,
     StatusBar,
     StyleSheet,
@@ -20,6 +19,7 @@ import {
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export default function BudgetScreen() {
   const { isDarkMode } = useTheme();
@@ -215,7 +215,7 @@ export default function BudgetScreen() {
       <View style={[styles.wrapper, styles.centerContent, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? '#0B1120' : FLOW.blue} />
         <FlowBackground isDarkMode={isDarkMode} />
-        <ActivityIndicator size="large" color="#FFFFFF" />
+        <AppLoader size={32} color="#FFFFFF" />
         <Text style={styles.loadingText}>Detecting your location...</Text>
       </View>
     );

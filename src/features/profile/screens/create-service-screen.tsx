@@ -10,7 +10,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
   BackHandler,
   Keyboard,
   KeyboardAvoidingView,
@@ -23,6 +22,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import AppLoader from '@/src/shared/components/AppLoader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface CreateServiceScreenProps {
@@ -543,7 +543,7 @@ export default function CreateServiceScreen({
               activeOpacity={0.85}
             >
               {createMutation.isPending ? (
-                <ActivityIndicator color="#fff" />
+                <AppLoader color="#fff" size={22} />
               ) : (
                 <Text style={styles.submitText}>Publish Service</Text>
               )}

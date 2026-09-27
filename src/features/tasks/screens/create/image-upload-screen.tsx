@@ -7,7 +7,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Image,
     KeyboardAvoidingView,
@@ -23,6 +22,7 @@ import {
 // ✅ NEW: Use OCR API for sensitive data detection
 import { OCRAPI } from '@/src/api/ocr-api';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FLOW, FlowBackground, primaryShadow } from './flowTheme';
 
@@ -334,7 +334,7 @@ export default function SnapPhotoScreen() {
               >
                 {(isProcessing || validatingImages.size > 0) ? (
                   <View style={styles.uploadingContainer}>
-                    <ActivityIndicator size="small" color="#FFFFFF" />
+                    <AppLoader size={22} color="#FFFFFF" />
                     <Text style={styles.uploadingText}>
                       {validatingImages.size > 0 ? 'Validating...' : 'Processing...'}
                     </Text>
@@ -358,7 +358,7 @@ export default function SnapPhotoScreen() {
               {/* Loading overlay for validating images */}
               {isValidating && (
                 <View style={styles.validatingOverlay}>
-                  <ActivityIndicator size="large" color="#467FFF" />
+                  <AppLoader size={32} color="#467FFF" />
                   <Text style={styles.validatingText}>Checking...</Text>
                 </View>
               )}

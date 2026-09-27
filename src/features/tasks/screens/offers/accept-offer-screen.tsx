@@ -7,7 +7,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Modal,
     SafeAreaView,
@@ -23,6 +22,7 @@ import { ErrorState, LoadingState } from '../../components/shared';
 import TermsConditionsScreen from '@/src/features/legal/screens/TermsConditionsScreen';
 import { BRAND_BLUE, BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 
 export default function AcceptOfferScreen() {
@@ -266,7 +266,7 @@ export default function AcceptOfferScreen() {
           disabled={!selectedOfferId || isSubmitting}
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <AppLoader size={22} color="#fff" />
           ) : (
             <>
               <Ionicons name="checkmark-circle" size={20} color="#fff" />

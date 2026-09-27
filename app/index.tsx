@@ -11,7 +11,6 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect, useMemo, useState } from 'react';
 import {
   StatusBar,
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,6 +19,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 const IndexHeroVideo = require('@/assets/index_screen/mian_index.mp4');
 
@@ -194,7 +194,7 @@ export default function WelcomeScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: MYTDOO_BRAND_BLUE }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#fff" />
+          <AppLoader size={32} color="#fff" />
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
       </SafeAreaView>

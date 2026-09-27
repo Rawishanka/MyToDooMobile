@@ -2,7 +2,6 @@ import { useGetServiceFeeConfig, useUpdateServiceFeeConfig } from '@/src/shared/
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Keyboard,
     KeyboardAvoidingView,
@@ -17,6 +16,7 @@ import {
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface ServiceFeeConfigScreenProps {
   onBackToAccount: () => void;
@@ -119,7 +119,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
       <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#FFFFFF" />
+            <AppLoader size={32} color="#FFFFFF" />
             <Text style={styles.loadingText}>Loading configuration...</Text>
           </View>
         ) : error && (error as any)?.message?.includes('Admin access required') ? (
@@ -247,7 +247,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
                   disabled={updateConfigMutation.isPending}
                 >
                   {updateConfigMutation.isPending ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
+                    <AppLoader size={22} color="#FFFFFF" />
                   ) : (
                     <Text style={styles.saveButtonText}>Save Changes</Text>
                   )}

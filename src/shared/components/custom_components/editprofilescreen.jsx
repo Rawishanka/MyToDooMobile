@@ -7,7 +7,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Image,
     KeyboardAvoidingView,
@@ -25,6 +24,7 @@ import { LocationAutocomplete } from '@/src/shared/components/LocationAutocomple
 import { uploadUserAvatar } from '@/src/api/user-profile-api';
 import OCRAPI from '@/src/api/ocr-api';
 import { requestPhoneOtp, verifyPhoneOtp } from '@/src/api/contact-change-api';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 const formatToE164 = (input) => {
   if (!input) return '';
@@ -507,7 +507,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
               />
               {isUploadingPhoto && (
                 <View style={styles.uploadingOverlay}>
-                  <ActivityIndicator size="small" color="#fff" />
+                  <AppLoader size={22} color="#fff" />
                 </View>
               )}
             </View>
@@ -907,7 +907,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
             <View style={styles.suggestedSkillsSection}>
               <Text style={[styles.suggestedSkillsTitle, isDarkMode && { color: '#F8FAFC' }]}>Suggested Skills</Text>
               {categoriesLoading ? (
-                <ActivityIndicator size="small" color="#FFFFFF" style={{ marginTop: 8 }} />
+                <AppLoader size={22} color="#FFFFFF" style={{ marginTop: 8 }} />
               ) : (
                 <View style={styles.skillsContainer}>
                   {categoryNames.filter(cat => !skills.includes(cat) && (newSkill.trim() === '' || cat.toLowerCase().includes(newSkill.toLowerCase()))).map((skill) => (
@@ -1009,7 +1009,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                     disabled={phoneLoading}
                   >
                     {phoneLoading ? (
-                      <ActivityIndicator size="small" color="#FFFFFF" />
+                      <AppLoader size={22} color="#FFFFFF" />
                     ) : (
                       <Text style={{ fontSize: 14, fontWeight: "700", color: "#FFFFFF" }}>Send Code</Text>
                     )}
@@ -1059,7 +1059,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
                     disabled={phoneLoading}
                   >
                     {phoneLoading ? (
-                      <ActivityIndicator size="small" color="#FFFFFF" />
+                      <AppLoader size={22} color="#FFFFFF" />
                     ) : (
                       <Text style={{ fontSize: 14, fontWeight: "700", color: "#FFFFFF" }}>Verify & Save</Text>
                     )}

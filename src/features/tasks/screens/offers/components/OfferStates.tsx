@@ -1,15 +1,16 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface LoadingStateProps {}
 
 export const LoadingState: React.FC<LoadingStateProps> = () => (
   <View style={styles.loadingContainer}>
     <BlueBackdrop />
-    <ActivityIndicator size="large" color="#FFFFFF" />
+    <AppLoader size={32} color="#FFFFFF" />
     <Text style={styles.loadingText}>Loading task details...</Text>
   </View>
 );

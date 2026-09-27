@@ -33,8 +33,9 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 // Responsive utilities
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
@@ -1842,7 +1843,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                       >
                         {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
                           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                            <AppLoader size={22} color="#fff" style={{ marginRight: 8 }} />
                             <Text style={styles.completedButtonText}>
                               Completing...
                             </Text>
@@ -1931,7 +1932,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 >
                   {(isProcessing || completeTaskMutation.isPending || completeTaskPaymentMutation.isPending) ? (
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                      <AppLoader size={22} color="#fff" style={{ marginRight: 8 }} />
                       <Text style={styles.completedButtonText}>Completing...</Text>
                     </View>
                   ) : (
@@ -1960,7 +1961,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 >
                   {(isProcessing || confirmTaskCompletionMutation.isPending) ? (
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                      <AppLoader size={22} color="#fff" style={{ marginRight: 8 }} />
                       <Text style={styles.acceptCompletionButtonText}>Releasing...</Text>
                     </View>
                   ) : (
@@ -2032,7 +2033,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 >
                   {(isProcessing || confirmTaskCompletionMutation.isPending) ? (
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                      <AppLoader size={22} color="#fff" style={{ marginRight: 8 }} />
                       <Text style={styles.acceptCompletionButtonText}>Releasing...</Text>
                     </View>
                   ) : (
@@ -2138,7 +2139,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           >
             {(isProcessing || reopenUnservicedTaskMutation.isPending) ? (
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                <AppLoader size={22} color="#fff" style={{ marginRight: 8 }} />
                 <Text style={styles.acceptCompletionButtonText}>Reopening...</Text>
               </View>
             ) : (
@@ -2202,7 +2203,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
             {loadingReasons ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#FFFFFF" />
+                <AppLoader size={32} color="#FFFFFF" />
                 <Text style={styles.loadingText}>Loading cancellation reasons...</Text>
               </View>
             ) : cancellationReasons.length === 0 ? (
@@ -2300,7 +2301,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
 
             {loadingReasons ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#FFFFFF" />
+                <AppLoader size={32} color="#FFFFFF" />
                 <Text style={styles.loadingText}>Loading cancellation reasons...</Text>
               </View>
             ) : cancellationReasons.length === 0 ? (
@@ -2466,7 +2467,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 }}
               >
                 {deleteOfferMutation.isPending ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <AppLoader size={22} color="#FFFFFF" />
                 ) : (
                   <Text style={styles.withdrawConfirmButtonText}>Withdraw Offer</Text>
                 )}
@@ -2639,7 +2640,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                         disabled={acceptOfferMutation.isPending || isProcessing}
                       >
                         {acceptOfferMutation.isPending || isProcessing ? (
-                          <ActivityIndicator size="small" color="#fff" />
+                          <AppLoader size={22} color="#fff" />
                         ) : (
                           <Text style={styles.acceptOfferText}>Accept Offer</Text>
                         )}

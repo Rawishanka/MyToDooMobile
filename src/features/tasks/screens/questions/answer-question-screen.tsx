@@ -4,7 +4,6 @@ import { formatUserName } from '@/src/utils/formatUserName';import { moderateCon
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Platform,
     ScrollView,
@@ -19,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { useTheme } from '@/src/shared/theme';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export default function AnswerQuestionScreen() {
   const { isDarkMode } = useTheme();
@@ -135,7 +135,7 @@ export default function AnswerQuestionScreen() {
     return (
       <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <BlueBackdrop />
-        <ActivityIndicator size="large" color="#FFFFFF" />
+        <AppLoader size={32} color="#FFFFFF" />
         <Text style={styles.loadingText}>Loading question details...</Text>
       </View>
     );
@@ -258,7 +258,7 @@ export default function AnswerQuestionScreen() {
           disabled={isSubmitting || !canSubmitAnswer}
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <AppLoader size={22} color="#FFFFFF" />
           ) : (
             <>
               <Ionicons name="chatbubble" size={20} color="#FFFFFF" />

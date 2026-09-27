@@ -10,7 +10,6 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Platform,
   StatusBar,
@@ -23,6 +22,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { BRAND_BLUE, BRAND_ORANGE, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 type LoadState = 'loading' | 'ready' | 'error';
 
@@ -141,7 +141,7 @@ export default function PaymentReceiptScreen() {
             accessibilityLabel="Share receipt PDF"
           >
             {isSharing ? (
-              <ActivityIndicator size="small" color={CARD_TEXT} />
+              <AppLoader size={22} color={CARD_TEXT} />
             ) : (
               <Ionicons name="share-outline" size={20} color={CARD_TEXT} />
             )}
@@ -153,7 +153,7 @@ export default function PaymentReceiptScreen() {
 
       {loadState === 'loading' && (
         <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color="#FFFFFF" />
+          <AppLoader size={32} color="#FFFFFF" />
           <Text style={styles.loadingText}>Loading receipt PDF...</Text>
         </View>
       )}
@@ -177,7 +177,7 @@ export default function PaymentReceiptScreen() {
           startInLoadingState
           renderLoading={() => (
             <View style={styles.webViewLoading}>
-              <ActivityIndicator size="large" color="#FFFFFF" />
+              <AppLoader size={32} color="#FFFFFF" />
             </View>
           )}
           allowFileAccess

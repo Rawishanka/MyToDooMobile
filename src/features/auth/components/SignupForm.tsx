@@ -5,7 +5,6 @@ import { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Image,
     Modal,
@@ -26,6 +25,7 @@ import type { CountryData, LocationData } from './signup-types';
 import { formatAbnInput } from '@/src/shared/utils/abnValidation';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface ValidationErrors {
   firstName?: string;
@@ -933,7 +933,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         disabled={loading || !termsAccepted}
       >
         {loading ? (
-          <ActivityIndicator color="#fff" />
+          <AppLoader color="#fff" size={22} />
         ) : (
           <Text style={[styles.signUpButtonText, !termsAccepted && styles.signUpButtonTextDisabled]}>
             Create Account
@@ -957,7 +957,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             disabled={googleLoading || loading || appleLoading}
           >
             {googleLoading ? (
-              <ActivityIndicator color="#666" />
+              <AppLoader color="#666" size={22} />
             ) : (
               <>
                 <Image 
@@ -977,7 +977,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
               disabled={appleLoading || loading || googleLoading}
             >
               {appleLoading ? (
-                <ActivityIndicator color="#fff" />
+                <AppLoader color="#fff" size={22} />
               ) : (
                 <>
                   <Ionicons name="logo-apple" size={20} color="#fff" style={styles.appleIcon} />

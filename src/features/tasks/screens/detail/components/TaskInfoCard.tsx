@@ -6,7 +6,8 @@ import { resolveTaskBudget } from '@/src/shared/utils/resolveTaskBudget';
 import { TaskImageDebug } from '@/src/shared/utils/task-image-debug';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 // Responsive utilities
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
@@ -653,7 +654,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                     
                     {isLoading && !hasError && (
                       <View style={styles.imageLoadingOverlay}>
-                        <ActivityIndicator size="small" color="#003399" />
+                        <AppLoader size={22} color="#003399" />
                       </View>
                     )}
                   </View>

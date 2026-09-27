@@ -10,7 +10,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     BackHandler,
     Image,
@@ -26,6 +25,7 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 // ✅ NEW: Use OCR API for sensitive data detection
 import { OCRAPI } from '@/src/api/ocr-api';
@@ -858,7 +858,7 @@ Please remove phone numbers and addresses from the image.`,
               >
                 {isProcessing || isOCRProcessing ? (
                   <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="small" color={isDarkMode ? "#60A5FA" : "#FFFFFF"} />
+                    <AppLoader size={22} color={isDarkMode ? "#60A5FA" : "#FFFFFF"} />
                     {isOCRProcessing && (
                       <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Checking image...</Text>
                     )}
@@ -1171,7 +1171,7 @@ Please remove phone numbers and addresses from the image.`,
                     keyboardShouldPersistTaps="handled"
                   >
                   {loadingCategories ? (
-                    <ActivityIndicator size="small" color={isDarkMode ? '#0057FF' : '#FFFFFF'} style={styles.loader} />
+                    <AppLoader size={22} color={isDarkMode ? '#0057FF' : '#FFFFFF'} style={styles.loader} />
                   ) : categoriesError ? (
                     <Text style={styles.errorText}>Failed to load categories</Text>
                   ) : categories.length === 0 ? (

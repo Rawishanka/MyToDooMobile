@@ -3,7 +3,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-    ActivityIndicator,
   Platform,
   ScrollView,
   StatusBar,
@@ -26,6 +25,7 @@ import {
 import { usePaymentForm } from './hooks';
 import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export default function CompletePaymentScreen() {
   const router = useRouter();
@@ -125,7 +125,7 @@ export default function CompletePaymentScreen() {
           disabled={isSubmitting || !paymentMethod}
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <AppLoader size={22} color="#FFFFFF" />
           ) : (
             <>
               <Ionicons name="card" size={20} color="#FFFFFF" />

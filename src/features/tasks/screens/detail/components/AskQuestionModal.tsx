@@ -1,11 +1,12 @@
 import { AttachmentItem, AttachmentPicker } from '@/src/shared/components/AttachmentPicker';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, useWindowDimensions, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BRAND_ORANGE, CARD_BG, CARD_TEXT, CARD_TEXT_MUTED } from '@/src/shared/theme/brandColors';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface AskQuestionModalProps {
   visible: boolean;
@@ -162,7 +163,7 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
             disabled={!questionText.trim() || isSubmitting}
           >
             {isSubmitting ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <AppLoader size={22} color="#fff" />
             ) : (
               <Text style={styles.submitQuestionButtonText}>Submit Question</Text>
             )}

@@ -1,8 +1,9 @@
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface LoadingStateProps {
   message?: string;
@@ -11,7 +12,7 @@ interface LoadingStateProps {
 export function PaymentLoadingState({ message = 'Loading payment status...' }: LoadingStateProps) {
   return (
     <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#FFFFFF" />
+      <AppLoader size={32} color="#FFFFFF" />
       <Text style={styles.loadingText}>{message}</Text>
     </View>
   );

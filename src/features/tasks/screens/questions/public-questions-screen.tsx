@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-    ActivityIndicator,
     FlatList,
     Platform,
     StatusBar,
@@ -17,6 +16,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface PublicQuestion {
   _id: string;
@@ -146,7 +146,7 @@ export default function PublicQuestionsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <BlueBackdrop />
-        <ActivityIndicator size="large" color="#FFFFFF" />
+        <AppLoader size={32} color="#FFFFFF" />
         <Text style={styles.loadingText}>Loading public questions...</Text>
       </View>
     );

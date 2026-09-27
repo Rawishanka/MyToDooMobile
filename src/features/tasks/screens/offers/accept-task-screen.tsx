@@ -3,7 +3,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Platform,
     ScrollView,
@@ -14,6 +13,7 @@ import {
     View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppLoader from '@/src/shared/components/AppLoader';
 import { ErrorState, LoadingState } from '../../components/shared';
 import CommitmentSection from './components/CommitmentSection';
 import ImportantNotes from './components/ImportantNotes';
@@ -159,7 +159,7 @@ export default function AcceptTaskScreen() {
           disabled={!agreedToTerms || isSubmitting}
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <AppLoader size={22} color="#fff" />
           ) : (
             <>
               <Ionicons name="hand-left-outline" size={20} color="#fff" />

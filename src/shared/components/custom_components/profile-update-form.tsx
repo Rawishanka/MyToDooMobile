@@ -8,7 +8,6 @@ import { useUpdateUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   Modal,
   Alert,
   Keyboard,
@@ -27,6 +26,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RFValue } from '@/src/shared/utils/responsive';
 import AddSkillsModal from '@/src/shared/components/custom_components/add-skills-modal';
 import { requestPhoneOtp, verifyPhoneOtp } from '@/src/api/contact-change-api';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export function formatToE164(input: string): string {
   if (!input) return '';
@@ -646,7 +646,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
           disabled={updateProfile.isPending}
         >
           {updateProfile.isPending ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <AppLoader size={22} color="#fff" />
           ) : (
             <Text style={styles.saveButtonText}>Save Changes</Text>
           )}
@@ -725,7 +725,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                     disabled={phoneLoading}
                   >
                     {phoneLoading ? (
-                      <ActivityIndicator size="small" color="#FFFFFF" />
+                      <AppLoader size={22} color="#FFFFFF" />
                     ) : (
                       <Text style={styles.phoneModalSubmitBtnText}>Send Code</Text>
                     )}
@@ -775,7 +775,7 @@ export default function ProfileUpdateForm({ onBack, userData }: ProfileUpdateFor
                     disabled={phoneLoading}
                   >
                     {phoneLoading ? (
-                      <ActivityIndicator size="small" color="#FFFFFF" />
+                      <AppLoader size={22} color="#FFFFFF" />
                     ) : (
                       <Text style={styles.phoneModalSubmitBtnText}>Verify & Save</Text>
                     )}

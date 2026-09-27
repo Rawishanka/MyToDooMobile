@@ -7,7 +7,6 @@ import { formatUserName } from '@/src/utils/formatUserName';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Modal,
@@ -20,6 +19,7 @@ import {
   View,
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface AnswerQuestionModalProps {
   visible: boolean;
@@ -238,7 +238,7 @@ export const AnswerQuestionModal: React.FC<AnswerQuestionModalProps> = ({
             disabled={!canSubmitAnswer || answerQuestionMutation.isPending}
           >
             {answerQuestionMutation.isPending ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <AppLoader size={22} color="#fff" />
             ) : (
               <>
                 <Ionicons name="send" size={20} color="#fff" />

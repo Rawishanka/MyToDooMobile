@@ -2,7 +2,6 @@ import { useGetPayoutHistory } from '@/src/shared/hooks/useStripeConnectApi';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-    ActivityIndicator,
     FlatList,
     RefreshControl,
     StyleSheet,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 import { BlueBackdrop, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 import { useTheme } from '@/src/shared/theme';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface PayoutHistoryScreenProps {
   onNavigate: (screen: string) => void;
@@ -122,7 +122,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
       <BlueBackdrop />
         <LightHeader title="Payout History" onBack={() => onNavigate('paymentOptions')} />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={accent} />
+          <AppLoader size={32} color={accent} />
           <Text style={[styles.loadingText, mutedText]}>Loading payout history...</Text>
         </View>
       </View>

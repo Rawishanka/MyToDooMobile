@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-    ActivityIndicator,
     ScrollView,
     StyleSheet,
     Text,
@@ -10,6 +9,7 @@ import {
     View,
 } from 'react-native';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface Category {
   _id: string;
@@ -57,7 +57,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
       <Text style={styles.label}>Category</Text>
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color="#FFFFFF" />
+          <AppLoader size={22} color="#FFFFFF" />
           <Text style={styles.loadingText}>Loading categories from database...</Text>
         </View>
       ) : hasError ? (

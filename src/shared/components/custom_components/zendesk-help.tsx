@@ -1,7 +1,6 @@
 import { ZENDESK_CONFIG } from '@/src/config/zendesk.config';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
     Modal,
     Platform,
     StyleSheet,
@@ -12,6 +11,7 @@ import {
 import { WebView } from 'react-native-webview';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface ZendeskHelpProps {
   visible: boolean;
@@ -42,7 +42,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
         {/* Loading Indicator */}
         {loading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#FFFFFF" />
+            <AppLoader size={32} color="#FFFFFF" />
             <Text style={styles.loadingText}>Loading Help Center...</Text>
           </View>
         )}
@@ -67,7 +67,7 @@ const ZendeskHelp: React.FC<ZendeskHelpProps> = ({ visible, onClose }) => {
           // Show loading view
           renderLoading={() => (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#FFFFFF" />
+              <AppLoader size={32} color="#FFFFFF" />
             </View>
           )}
         />

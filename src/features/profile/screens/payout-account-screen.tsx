@@ -10,7 +10,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     Platform,
     StyleSheet,
@@ -21,6 +20,7 @@ import {
 import { WebView } from 'react-native-webview';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { BlueBackdrop, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 const PayoutAccountScreen = ({ navigation }: any) => {
   const { isDarkMode } = useTheme();
@@ -277,7 +277,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
           startInLoadingState
           renderLoading={() => (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#FFFFFF" />
+              <AppLoader size={32} color="#FFFFFF" />
               <Text style={styles.loadingText}>Loading Stripe...</Text>
             </View>
           )}
@@ -293,7 +293,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
       <BlueBackdrop />
         <LightHeader title="Payout Account" onBack={() => navigation.goBack()} />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+          <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading account status...</Text>
         </View>
       </View>
@@ -339,7 +339,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
               disabled={!abnVerified || createAccount.isPending || getAccountLink.isPending}
             >
               {createAccount.isPending || getAccountLink.isPending ? (
-                <ActivityIndicator color="#fff" />
+                <AppLoader color="#fff" size={22} />
               ) : (
                 <>
                   <Ionicons name="add-circle-outline" size={20} color="#fff" />
@@ -429,7 +429,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
                   disabled={!abnVerified || getAccountLink.isPending}
                 >
                   {getAccountLink.isPending ? (
-                    <ActivityIndicator color="#fff" />
+                    <AppLoader color="#fff" size={22} />
                   ) : (
                     <>
                       <Ionicons name="arrow-forward-circle-outline" size={20} color="#fff" />
@@ -456,7 +456,7 @@ const PayoutAccountScreen = ({ navigation }: any) => {
                 disabled={deleteAccount.isPending}
               >
                 {deleteAccount.isPending ? (
-                  <ActivityIndicator color="#FCA5A5" />
+                  <AppLoader color="#FCA5A5" size={22} />
                 ) : (
                   <>
                     <Ionicons name="trash-outline" size={20} color="#FCA5A5" />

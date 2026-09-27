@@ -30,7 +30,6 @@ import { OTPModal } from '../components/OTPModal';
 import type { VerificationStep } from '../components/signup-types';
 import { requestPhoneOtp, verifyPhoneOtp } from '@/src/api/contact-change-api';
 import {
-    ActivityIndicator,
     Alert,
     Image,
     Keyboard,
@@ -49,6 +48,7 @@ import MyToDooLogo from '@/assets/images/MyToDoo_logo.svg';
 import { FORM_MAX_WIDTH, RFValue, isTablet } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
 import { AuthArtHeader, AuthSheet } from '../components/AuthArtHeader';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export default function LoginScreen() {
   const { isDarkMode } = useTheme();
@@ -1193,7 +1193,7 @@ export default function LoginScreen() {
 
           <TouchableOpacity style={styles.loginButton} onPress={() => handleLogin()} disabled={loading || biometricLoading}>
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <AppLoader color="#fff" size={22} />
             ) : (
               <Text style={styles.loginButtonText}>Login</Text>
             )}
@@ -1210,7 +1210,7 @@ export default function LoginScreen() {
               activeOpacity={0.8}
             >
               {biometricLoading ? (
-                <ActivityIndicator color="#0EA5E9" size="small" />
+                <AppLoader color="#0EA5E9" size={22} />
               ) : (
                 <View style={styles.biometricButtonContent}>
                   <Ionicons
@@ -1240,7 +1240,7 @@ export default function LoginScreen() {
             disabled={googleLoading || loading || appleLoading}
           >
             {googleLoading ? (
-              <ActivityIndicator color={isDarkMode ? "#38BDF8" : "#666"} />
+              <AppLoader color={isDarkMode ? "#38BDF8" : "#666"} size={22} />
             ) : (
               <>
                 <Image 
@@ -1260,7 +1260,7 @@ export default function LoginScreen() {
               disabled={appleLoading || loading || googleLoading}
             >
               {appleLoading ? (
-                <ActivityIndicator color="#fff" />
+                <AppLoader color="#fff" size={22} />
               ) : (
                 <>
                   <Ionicons name="logo-apple" size={20} color="#fff" style={styles.appleIcon} />

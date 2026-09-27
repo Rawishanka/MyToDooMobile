@@ -2,7 +2,6 @@ import { useGetMyReferral } from '@/src/shared/hooks/useReferralApi';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   Share,
   StyleSheet,
@@ -13,6 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 import { BlueBackdrop, LightHeader } from '@/src/shared/components/custom_components/lightCard';
 
 interface InviteFriendsScreenProps {
@@ -47,7 +47,7 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
 
       {isLoading && !data ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+          <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading referral details...</Text>
         </View>
       ) : error && !data ? (

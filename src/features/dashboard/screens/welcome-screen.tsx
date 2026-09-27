@@ -2,6 +2,7 @@
 import { getSocialMediaAccounts, SocialMediaAccount } from '@/src/api/user-profile-api';
 import MyToDooBrandLogo from '@/src/shared/components/MyToDooBrandLogo';
 import { AnimatedFireFlame } from '@/src/shared/components/AnimatedFireFlame';
+import AppLoader from '@/src/shared/components/AppLoader';
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
 import { useGetCategoriesWithCarouselImages } from '@/src/shared/hooks/useCategoriesApi';
 import { useMergedUnreadCount } from '@/src/shared/hooks/useNotifications';
@@ -14,7 +15,6 @@ import { useFocusEffect, useRouter } from 'expo-router';
 // Using @expo/vector-icons for better iOS production build compatibility
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
     Animated,
     FlatList,
     Image,
@@ -445,7 +445,7 @@ export default function WelcomeScreen() {
           {/* Database Categories Tags */}
           {loadingCategories ? (
             <View style={styles.tagsLoadingContainer}>
-              <ActivityIndicator size="small" color="#fff" />
+              <AppLoader size={22} color="#fff" />
               <Text style={styles.tagsLoadingText}>Loading categories...</Text>
             </View>
           ) : categoriesError ? (

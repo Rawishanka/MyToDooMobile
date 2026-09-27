@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,6 +12,7 @@ import { useUpdateUserProfile } from '@/src/shared/hooks/useUserProfileApi';
 import { useTheme } from '@/src/shared/theme';
 import { AppAlert } from '@/src/shared/components/AppAlert';
 import { BlueBackdrop, IconChip, LightHeader } from '@/src/shared/components/custom_components/lightCard';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export default function NotificationPreferences({ onBack, userData }) {
   const { isDarkMode } = useTheme();
@@ -54,7 +54,7 @@ export default function NotificationPreferences({ onBack, userData }) {
         right={
           <TouchableOpacity onPress={handleSave} disabled={saving} style={styles.saveBtn} activeOpacity={0.7}>
             {saving ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <AppLoader size={22} color="#FFFFFF" />
             ) : (
               <Text style={styles.saveText}>Save</Text>
             )}
@@ -143,7 +143,7 @@ export default function NotificationPreferences({ onBack, userData }) {
           activeOpacity={0.85}
         >
           {saving ? (
-            <ActivityIndicator color="#fff" />
+            <AppLoader color="#fff" size={22} />
           ) : (
             <Text style={styles.saveButtonText}>Save Preferences</Text>
           )}

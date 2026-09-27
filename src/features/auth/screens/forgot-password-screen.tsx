@@ -6,7 +6,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Keyboard,
   KeyboardAvoidingView,
@@ -20,6 +19,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export default function ForgotPasswordScreen() {
   const { isDarkMode } = useTheme();
@@ -131,7 +131,7 @@ export default function ForgotPasswordScreen() {
                     activeOpacity={0.85}
                   >
                     {loading ? (
-                      <ActivityIndicator color="#FFFFFF" size="small" />
+                      <AppLoader color="#FFFFFF" size={22} />
                     ) : (
                       <>
                         <Ionicons

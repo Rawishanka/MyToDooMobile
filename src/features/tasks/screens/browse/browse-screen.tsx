@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
     Alert,
     FlatList,
     Linking,
@@ -13,6 +12,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 // API and Hooks
 import { Task } from '@/src/api/types/tasks';
@@ -893,7 +893,7 @@ export default function BrowseTasksScreen() {
               ListFooterComponent={() => 
                 isLoadingMore ? (
                   <View style={{ padding: 20, alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+                    <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
                     <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading more tasks...</Text>
                   </View>
                 ) : null

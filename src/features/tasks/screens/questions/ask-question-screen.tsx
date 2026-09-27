@@ -6,7 +6,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-    ActivityIndicator,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -24,6 +23,7 @@ import { AppAlert } from '@/src/shared/components/AppAlert';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { useTheme } from '@/src/shared/theme';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 export default function AskQuestionScreen() {
   const { isDarkMode } = useTheme();
@@ -130,7 +130,7 @@ export default function AskQuestionScreen() {
     return (
       <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
         <BlueBackdrop />
-        <ActivityIndicator size="large" color="#FFFFFF" />
+        <AppLoader size={32} color="#FFFFFF" />
         <Text style={styles.loadingText}>Loading task details...</Text>
       </View>
     );
@@ -252,7 +252,7 @@ export default function AskQuestionScreen() {
           disabled={isSubmitting || question.trim().length < 10}
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
+            <AppLoader size={22} color="#FFFFFF" />
           ) : (
             <>
               <Ionicons name="help-circle" size={20} color="#FFFFFF" />

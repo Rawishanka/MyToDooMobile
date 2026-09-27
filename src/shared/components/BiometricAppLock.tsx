@@ -7,13 +7,13 @@ import {
   AppState,
   AppStateStatus,
   StatusBar,
-  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@/src/store/auth-task-store';
 import { useTheme } from '@/src/shared/theme';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 import {
   isBiometricLoginEnabled,
   getBiometricCapability,
@@ -216,7 +216,7 @@ export const BiometricAppLock: React.FC<BiometricAppLockProps> = ({ children }) 
           activeOpacity={0.8}
         >
           {isChecking ? (
-            <ActivityIndicator color="#fff" size="small" />
+            <AppLoader color="#fff" size={22} />
           ) : (
             <>
               <Ionicons

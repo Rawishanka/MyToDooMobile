@@ -1,8 +1,9 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/src/shared/theme';
 import { BlueBackdrop } from '@/src/shared/components/custom_components/lightCard';
 import { RFValue } from '@/src/shared/utils/responsive';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 interface LoadingStateProps {
   message?: string;
@@ -13,7 +14,7 @@ export default function LoadingState({ message = 'Loading...' }: LoadingStatePro
   return (
     <View style={[styles.loadingContainer, !isDarkMode && { backgroundColor: '#003399' }]}>
       <BlueBackdrop />
-      <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+      <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
       <Text style={[styles.loadingText, { color: isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.75)' }]}>{message}</Text>
     </View>
   );

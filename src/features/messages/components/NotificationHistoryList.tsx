@@ -8,7 +8,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -19,6 +18,7 @@ import {
 import type { StoredNotification } from '@/src/services/notification-storage';
 import { useTheme } from '@/src/shared/theme';
 import { BRAND_BLUE } from '@/src/shared/theme/brandColors';
+import AppLoader from '@/src/shared/components/AppLoader';
 
 function normalizeNotificationType(item: StoredNotification): string {
   const raw =
@@ -196,7 +196,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
   if (loading && notifications.length === 0) {
     return (
       <View style={[styles.loadingContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <ActivityIndicator size="large" color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+        <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading notifications...</Text>
       </View>
     );
