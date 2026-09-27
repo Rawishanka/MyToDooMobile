@@ -1,7 +1,6 @@
 // app/(tabs)/welcome-screen.tsx - Welcome dashboard with API category carousel
 import { getSocialMediaAccounts, SocialMediaAccount } from '@/src/api/user-profile-api';
 import MyToDooBrandLogo from '@/src/shared/components/MyToDooBrandLogo';
-import { AnimatedFireFlame } from '@/src/shared/components/AnimatedFireFlame';
 import AppLoader from '@/src/shared/components/AppLoader';
 import NotificationModal from '@/src/features/messages/screens/notification-screen-api';
 import { useGetCategoriesWithCarouselImages } from '@/src/shared/hooks/useCategoriesApi';
@@ -368,19 +367,12 @@ export default function WelcomeScreen() {
           <View style={styles.titleContainer}>
             <Text
               style={[styles.title, { width: '100%' }]}
-              numberOfLines={1}
+              numberOfLines={2}
               adjustsFontSizeToFit
               minimumFontScale={0.6}
             >
-              Let&apos;s knock those tasks off your
+              Let&apos;s knock those tasks off your list! 🔥
             </Text>
-            <View style={styles.titleSecondLine}>
-              <Text style={styles.title}>list!</Text>
-              <AnimatedFireFlame
-                size={RFValue(isTablet ? 22 : 24)}
-                style={styles.titleFlame}
-              />
-            </View>
           </View>
           <Text style={styles.subtitle}>
             Tell us what you need help with—taskers are waiting!
