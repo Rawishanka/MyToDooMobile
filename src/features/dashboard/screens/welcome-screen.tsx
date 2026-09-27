@@ -336,7 +336,7 @@ export default function WelcomeScreen() {
         <View style={styles.logoPlaceholder} />
         
         <View style={styles.logoCenter}>
-          <MyToDooBrandLogo size="lg" style={styles.logoBrandWrap} />
+          <MyToDooBrandLogo size="xl" style={styles.logoBrandWrap} />
         </View>
         
         <TouchableOpacity 
@@ -366,7 +366,14 @@ export default function WelcomeScreen() {
         {/* Blue Section with Input */}
         <View style={styles.blueSection}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>Let&apos;s knock those tasks off your</Text>
+            <Text
+              style={[styles.title, { width: '100%' }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.6}
+            >
+              Let&apos;s knock those tasks off your
+            </Text>
             <View style={styles.titleSecondLine}>
               <Text style={styles.title}>list!</Text>
               <AnimatedFireFlame
@@ -727,7 +734,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: isTablet ? 96 : 76,
+    minHeight: isTablet ? 116 : 92,
   },
   logoPlaceholder: {
     width: isTablet ? 28 : 24,
@@ -742,7 +749,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   logoBrandWrap: {
-    maxWidth: isTablet ? 300 : 240,
+    maxWidth: isTablet ? 340 : 280,
   },
   notificationButton: {
     position: 'relative',
@@ -854,7 +861,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#7ED957',
     borderWidth: 0,
     borderRadius: 8,
-    paddingVertical: hp('1.3%'),
+    paddingVertical: hp('1.5%'),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

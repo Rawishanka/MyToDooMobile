@@ -1086,6 +1086,7 @@ export default function AccountScreen() {
               { key: 'email', label: 'Email', on: !!userData.badges.email },
               { key: 'abn', label: 'ABN', on: !!userData.badges.abn },
               { key: 'stripe', label: 'Stripe', on: !!userData.badges.stripe },
+              { key: 'id', label: 'ID Verified', on: !!userData.badges.id },
             ].map((badge) => (
               <View
                 key={badge.key}

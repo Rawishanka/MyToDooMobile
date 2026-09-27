@@ -8,6 +8,7 @@ export interface VerifiedBadgesData {
   email?: boolean;
   abn?: boolean;
   stripe?: boolean;
+  id?: boolean;
 }
 
 interface VerifiedBadgesProps {
@@ -25,6 +26,7 @@ export const VerifiedBadges: React.FC<VerifiedBadgesProps> = ({ badges, align = 
     { key: 'email', label: 'Email', on: !!badges.email },
     { key: 'abn', label: 'ABN', on: !!badges.abn },
     { key: 'stripe', label: 'Stripe', on: !!badges.stripe },
+    { key: 'id', label: 'ID Verified', on: !!badges.id },
   ];
   return (
     <View style={[styles.row, align === 'center' && styles.center, style]}>

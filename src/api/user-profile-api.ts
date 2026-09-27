@@ -43,7 +43,7 @@ export interface UserProfile {
   ageRange?: string;
   notifyNewTask?: boolean;
   notifySkillMatch?: boolean;
-  badges?: { mobile: boolean; email: boolean; abn: boolean; stripe: boolean };
+  badges?: { mobile: boolean; email: boolean; abn: boolean; stripe: boolean; id?: boolean };
   creditsBalance?: number;
   referralCode?: string | null;
 }

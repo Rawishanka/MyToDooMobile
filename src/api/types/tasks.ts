@@ -311,6 +311,7 @@ export interface UserBadges {
   email: boolean;
   abn: boolean;
   stripe: boolean;
+  id?: boolean;
 }
 
 export interface TaskOffer {
