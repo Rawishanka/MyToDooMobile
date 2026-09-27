@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import AppLoader from './AppLoader';
 
 interface AnimatedLoadingProps {
   size?: 'small' | 'medium' | 'large';
@@ -6,70 +6,17 @@ interface AnimatedLoadingProps {
   style?: any;
 }
 
-export default function AnimatedLoading({ 
-  size = 'medium', 
+const SIZE_PX: Record<'small' | 'medium' | 'large', number> = {
+  small: 26,
+  medium: 34,
+  large: 44,
+};
+
+/** Same brand three-dot animation as AppLoader, kept under this name for existing call sites. */
+export default function AnimatedLoading({
+  size = 'medium',
   color = '#004aad',
-  style 
+  style,
 }: AnimatedLoadingProps) {
-  const sizeConfig = {
-    small: { dotSize: 8, spacing: 6 },
-    medium: { dotSize: 12, spacing: 8 },
-    large: { dotSize: 16, spacing: 12 },
-  };
-
-  const { dotSize, spacing } = sizeConfig[size];
-
-  return (
-    <View style={[styles.container, style]}>
-      <View
-        style={[
-          styles.dot,
-          { 
-            width: dotSize, 
-            height: dotSize, 
-            borderRadius: dotSize / 2,
-            backgroundColor: color,
-            marginHorizontal: spacing / 2,
-          }
-        ]}
-      />
-      <View
-        style={[
-          styles.dot,
-          { 
-            width: dotSize, 
-            height: dotSize, 
-            borderRadius: dotSize / 2,
-            backgroundColor: color,
-            marginHorizontal: spacing / 2,
-            opacity: 0.8,
-          }
-        ]}
-      />
-      <View
-        style={[
-          styles.dot,
-          { 
-            width: dotSize, 
-            height: dotSize, 
-            borderRadius: dotSize / 2,
-            backgroundColor: color,
-            marginHorizontal: spacing / 2,
-            opacity: 0.6,
-          }
-        ]}
-      />
-    </View>
-  );
+  return <AppLoader size={SIZE_PX[size]} color={color} style={style} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dot: {
-    // Base dot styles are applied inline
-  },
-});

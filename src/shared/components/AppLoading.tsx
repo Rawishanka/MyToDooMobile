@@ -1,4 +1,4 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import AnimatedLoading from './AnimatedLoading';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
@@ -21,7 +21,7 @@ export default function AppLoading({
   if (variant === 'minimal') {
     return (
       <View style={styles.minimalContainer}>
-        <ActivityIndicator size={size === 'small' ? 'small' : 'large'} color={isDarkMode ? '#38BDF8' : '#004aad'} />
+        <AnimatedLoading size={size} color={isDarkMode ? '#38BDF8' : '#004aad'} />
       </View>
     );
   }

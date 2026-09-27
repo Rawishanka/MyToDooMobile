@@ -734,7 +734,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: isTablet ? 116 : 92,
+    minHeight: isTablet ? 106 : 84,
   },
   logoPlaceholder: {
     width: isTablet ? 28 : 24,
@@ -1182,7 +1182,7 @@ const styles = StyleSheet.create({
   floatingSocialContainer: {
     position: 'absolute',
     right: isTablet ? wp('4%') : 18,
-    bottom: isTablet ? 18 : 10,
+    bottom: isTablet ? 28 : 20,
     zIndex: 9999,
     alignItems: 'flex-end',
   },
