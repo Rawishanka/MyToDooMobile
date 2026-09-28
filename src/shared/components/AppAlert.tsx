@@ -71,7 +71,16 @@ export const AppAlert = {
     message?: string,
     buttons?: AppAlertButton[],
     _options?: unknown,
-  ) => appAlert(title, message, buttons),
+  ) => {
+    // Success confirmations (posted/submitted/updated/etc.) close themselves
+    // after 10s so the user isn't stuck behind a popup. Errors/warnings never
+    // auto-close — those need to be read and acted on.
+    const type = inferType(title);
+    appAlert(title, message, buttons, {
+      type,
+      autoCloseMs: type === 'success' ? 10000 : undefined,
+    });
+  },
 };
 
 Alert.alert = ((title: string, message?: string, buttons?: any[]) => {
@@ -115,8 +124,6 @@ export function AppAlertHost() {
     btn?.onPress?.();
   };
 
-  const hideOk = payload.autoCloseMs && payload.buttons?.length === 1;
-
   return (
     <Modal visible transparent animationType="fade" onRequestClose={() => close()}>
       <Pressable style={styles.overlay} onPress={() => {}}>
@@ -126,41 +133,40 @@ export function AppAlertHost() {
           </View>
           <Text style={[styles.title, isDarkMode && { color: '#F8FAFC' }]}>{payload.title}</Text>
           {payload.message ? <Text style={[styles.message, isDarkMode && { color: '#94A3B8' }]}>{payload.message}</Text> : null}
-          {!hideOk ? (
-            <View style={styles.actions}>
-              {(payload.buttons || [{ text: 'OK' }]).map((btn, i) => {
-                const isCancel = btn.style === 'cancel';
-                const isDestructive = btn.style === 'destructive';
-                const isPrimary =
-                  !isCancel && (i === (payload.buttons?.length || 1) - 1 || btn.style === 'default');
-                return (
-                  <TouchableOpacity
-                    key={`${btn.text}-${i}`}
+          <View style={styles.actions}>
+            {(payload.buttons || [{ text: 'OK' }]).map((btn, i) => {
+              const isCancel = btn.style === 'cancel';
+              const isDestructive = btn.style === 'destructive';
+              const isPrimary =
+                !isCancel && (i === (payload.buttons?.length || 1) - 1 || btn.style === 'default');
+              return (
+                <TouchableOpacity
+                  key={`${btn.text}-${i}`}
+                  style={[
+                    styles.button,
+                    isPrimary && !isDestructive && { backgroundColor: type === 'success' ? BRAND_GREEN : BRAND_ORANGE },
+                    isCancel && (isDarkMode ? { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' } : styles.buttonGhost),
+                    isDestructive && styles.buttonDanger,
+                  ]}
+                  onPress={() => close(btn)}
+                  activeOpacity={0.85}
+                >
+                  <Text
                     style={[
-                      styles.button,
-                      isPrimary && !isDestructive && { backgroundColor: type === 'success' ? BRAND_GREEN : BRAND_ORANGE },
-                      isCancel && (isDarkMode ? { backgroundColor: '#0F172A', borderWidth: 1, borderColor: '#334155' } : styles.buttonGhost),
-                      isDestructive && styles.buttonDanger,
+                      styles.buttonText,
+                      isCancel && (isDarkMode ? { color: '#94A3B8' } : styles.buttonGhostText),
+                      (isPrimary || isDestructive) && styles.buttonPrimaryText,
                     ]}
-                    onPress={() => close(btn)}
-                    activeOpacity={0.85}
                   >
-                    <Text
-                      style={[
-                        styles.buttonText,
-                        isCancel && (isDarkMode ? { color: '#94A3B8' } : styles.buttonGhostText),
-                        (isPrimary || isDestructive) && styles.buttonPrimaryText,
-                      ]}
-                    >
-                      {btn.text}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          ) : (
+                    {btn.text}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          {payload.autoCloseMs ? (
             <Text style={styles.autoHint}>This message closes automatically</Text>
-          )}
+          ) : null}
         </View>
       </Pressable>
     </Modal>
