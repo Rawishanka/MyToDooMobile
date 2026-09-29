@@ -10,10 +10,8 @@
  */
 
 import { removeFCMToken, saveFCMToken } from '@/src/api/fcm-api';
-import { navigateFromNotificationData } from '@/src/shared/utils/notification-navigation';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import { router } from 'expo-router';
 import { PermissionsAndroid, Platform } from 'react-native';
 import { saveNotification, getUnreadCount } from './notification-storage';
 
@@ -382,32 +380,6 @@ export const setupNotificationHandlers = (queryClient?: any) => {
 };
 
 /**
- * Navigate to the relevant in-app screen when a push notification is opened.
- */
-const handleNotificationNavigation = (
-  data?: Record<string, any>,
-  meta?: { title?: string; body?: string },
-  delayMs = 500
-) => {
-  if (!data) return;
-
-  const navigate = () => {
-    try {
-      navigateFromNotificationData(router, data, meta);
-    } catch (error) {
-      console.error('❌ Push notification navigation failed:', error);
-    }
-  };
-
-  if (delayMs > 0) {
-    setTimeout(navigate, delayMs);
-    return;
-  }
-
-  navigate();
-};
-
-/**
  * Invalidate React Query caches based on notification type for real-time sync
  */
 const handleNotificationDataRefresh = (notificationType: string, queryClient: any) => {
@@ -523,14 +495,11 @@ const setupFirebaseHandlers = (queryClient?: any) => {
         handleNotificationDataRefresh(String(data.type), queryClient);
       }
 
-      handleNotificationNavigation(
-        data,
-        {
-          title: content?.title,
-          body: content?.body,
-        },
-        delayMs
-      );
+      // Navigation on tap is handled solely by NotificationNavigationHandler
+      // (mounted in app/_layout.tsx) — calling it here too raced against that
+      // handler using an early, not-yet-ready module-level router reference,
+      // which is why cold-start taps were landing on Home instead of the
+      // target screen. Do not re-add a navigation call here.
     };
 
     Notifications.addNotificationResponseReceivedListener((response: any) => {
@@ -636,10 +605,9 @@ const setupFirebaseHandlers = (queryClient?: any) => {
       handleNotificationDataRefresh(remoteMessage.data.type, queryClient);
     }
 
-    handleNotificationNavigation(remoteMessage.data, {
-      title: remoteMessage.notification?.title,
-      body: remoteMessage.notification?.body,
-    });
+    // Navigation on tap is handled solely by NotificationNavigationHandler
+    // (mounted in app/_layout.tsx) — see comment above for why a duplicate
+    // call here caused cold-start taps to land on Home instead.
   });
 
   // Quit state notification opened - User tapped notification while app was closed
@@ -671,14 +639,9 @@ const setupFirebaseHandlers = (queryClient?: any) => {
           handleNotificationDataRefresh(remoteMessage.data.type, queryClient);
         }
 
-        handleNotificationNavigation(
-          remoteMessage.data,
-          {
-            title: remoteMessage.notification?.title,
-            body: remoteMessage.notification?.body,
-          },
-          500
-        );
+        // Navigation on tap is handled solely by NotificationNavigationHandler
+        // (mounted in app/_layout.tsx) — see comment above for why a duplicate
+        // call here caused cold-start taps to land on Home instead.
       }
     });
 

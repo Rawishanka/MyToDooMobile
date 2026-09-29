@@ -3673,9 +3673,9 @@ export const TaskAPI = {
   getTaskOffers,
   getAllOffers,
   createOffer,
+  updateOffer,
   acceptOffer,
   rejectOtherOffers,
-  updateOffer,
   deleteOffer,
   
   // Phase 4: Completion Flow

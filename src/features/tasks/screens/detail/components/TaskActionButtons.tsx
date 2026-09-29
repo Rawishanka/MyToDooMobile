@@ -1,4 +1,4 @@
-import {BRAND_ORANGE, CARD_DIVIDER, CARD_PRICE_BG, CARD_PRICE_TEXT, CARD_TEXT, CARD_TEXT_MUTED} from '@/src/shared/theme/brandColors';
+import {BRAND_ORANGE, CARD_BG, CARD_DIVIDER, CARD_PRICE_BG, CARD_PRICE_TEXT, CARD_TEXT, CARD_TEXT_MUTED} from '@/src/shared/theme/brandColors';
 import { GLASS_BG } from '../detailTheme';
 import TaskAPI from '@/src/api/task-api';
 import { ChatWindow } from '@/src/features/messages/components/ChatWindow';
@@ -717,7 +717,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: CARD_BG,
     borderRadius: 20,
     padding: 22,
     width: '100%',

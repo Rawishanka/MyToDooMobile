@@ -2,31 +2,69 @@ import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { formatCurrency, getCurrencyFromUserLocation } from '@/src/shared/utils/currency';
 import { hp, isTablet, RFValue, wp } from '@/src/shared/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import {BRAND_ORANGE, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED} from '@/src/shared/theme/brandColors';
+import React, { useState } from 'react';
+import {BRAND_ORANGE, CARD_BG, CARD_CHIP_BG, CARD_DIVIDER, CARD_TEXT, CARD_TEXT_MUTED} from '@/src/shared/theme/brandColors';
 import { GLASS_BG } from '../detailTheme';
 import { VerifiedBadges } from './VerifiedBadges';
 import { useTheme } from '@/src/shared/theme/ThemeContext';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AppAlert } from '@/src/shared/components/AppAlert';
+import { AppLoader } from '@/src/shared/components/AppLoader';
+import { useUpdateOffer } from '@/src/shared/hooks/useTaskApi';
+import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface MyOfferCardProps {
   offer: any;
   isTaskPoster?: boolean;
   onAcceptOffer?: (offerId: string) => void;
   taskLocation?: { address?: string };
+  taskId?: string;
+  onOfferUpdated?: () => void;
 }
 
-export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, onAcceptOffer, taskLocation }) => {
+export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, onAcceptOffer, taskLocation, taskId, onOfferUpdated }) => {
   const { isDarkMode } = useTheme();
   // Use user's current location for currency display (auto geo-location)
   const { countryInfo } = useLocationCountry();
   const currencyInfo = getCurrencyFromUserLocation(countryInfo || { currency: 'AUD' });
-  
+
   // Handle both nested and flat offer structures
   const offerAmount = offer.offer?.amount || offer.amount || 0;
   const offerCurrency = offer.offer?.currency || offer.currency || 'SGD';
   const offerMessage = offer.offer?.message || offer.message || '';
   const status = offer.status || 'pending';
+
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editAmount, setEditAmount] = useState(String(offerAmount || ''));
+  const [editMessage, setEditMessage] = useState(offerMessage);
+  const updateOfferMutation = useUpdateOffer();
+  const isSaving = updateOfferMutation.isPending;
+
+  const openEditModal = () => {
+    setEditAmount(String(offerAmount || ''));
+    setEditMessage(offerMessage);
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async () => {
+    const numericAmount = Number(editAmount);
+    if (!editAmount || Number.isNaN(numericAmount) || numericAmount <= 0) {
+      AppAlert.alert('Invalid Amount', 'Please enter a valid offer amount.');
+      return;
+    }
+    if (!taskId) return;
+    try {
+      await updateOfferMutation.mutateAsync({
+        taskId,
+        offerId: offer._id,
+        updates: { amount: numericAmount, message: editMessage },
+      });
+      setShowEditModal(false);
+      AppAlert.alert('Offer Updated', 'Your offer has been updated.');
+      onOfferUpdated?.();
+    } catch (err: any) {
+      AppAlert.alert('Update Failed', err?.response?.data?.error || err?.message || 'Could not update your offer. Please try again.');
+    }
+  };
   
   // Debug logging to see what we're actually getting
   console.log('MyOfferCard - Raw offer data:', JSON.stringify(offer, null, 2));
@@ -62,6 +100,15 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
             <Ionicons name="time" size={16} color="#FFA500" />
             <Text style={styles.pendingText}>Pending</Text>
           </View>
+        )}
+        {!isViewingOthersOffer && status === 'pending' && taskId && (
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={openEditModal}
+            accessibilityLabel="Edit your offer"
+          >
+            <Ionicons name="pencil" size={16} color={CARD_TEXT} />
+          </TouchableOpacity>
         )}
       </View>
 
@@ -115,6 +162,52 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
           </Text>
         </View>
       </View>
+
+      <Modal visible={showEditModal} transparent animationType="fade" onRequestClose={() => setShowEditModal(false)}>
+        <View style={styles.editOverlay}>
+          <View style={styles.editModalContent}>
+            <Text style={styles.editModalTitle}>Edit Your Offer</Text>
+            <Text style={styles.editModalSubtitle}>You can update this while it's still pending.</Text>
+
+            <Text style={styles.editLabel}>Amount</Text>
+            <TextInput
+              style={styles.editInput}
+              value={editAmount}
+              onChangeText={setEditAmount}
+              keyboardType="decimal-pad"
+              placeholder="Amount"
+              placeholderTextColor="#94A3B8"
+            />
+
+            <Text style={styles.editLabel}>Message</Text>
+            <TextInput
+              style={[styles.editInput, styles.editMessageInput]}
+              value={editMessage}
+              onChangeText={setEditMessage}
+              placeholder="Message to the poster (optional)"
+              placeholderTextColor="#94A3B8"
+              multiline
+            />
+
+            <View style={styles.editButtonsRow}>
+              <TouchableOpacity
+                style={[styles.editActionButton, styles.editCancelButton]}
+                onPress={() => setShowEditModal(false)}
+                disabled={isSaving}
+              >
+                <Text style={styles.editCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.editActionButton, styles.editSaveButton]}
+                onPress={handleSaveEdit}
+                disabled={isSaving}
+              >
+                {isSaving ? <AppLoader size={20} color="#fff" /> : <Text style={styles.editSaveButtonText}>Save</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -261,6 +354,95 @@ const styles = StyleSheet.create({
   acceptOfferButtonText: {
     color: '#fff',
     fontSize: RFValue(16),
+    fontWeight: '700',
+  },
+  editButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  editOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 12, 48, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  editModalContent: {
+    backgroundColor: CARD_BG,
+    borderRadius: 20,
+    padding: 22,
+    width: '100%',
+    maxWidth: 420,
+  },
+  editModalTitle: {
+    fontSize: 19,
+    fontWeight: '700',
+    color: CARD_TEXT,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  editModalSubtitle: {
+    fontSize: RFValue(13),
+    color: CARD_TEXT_MUTED,
+    marginBottom: 18,
+    textAlign: 'center',
+  },
+  editLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: CARD_TEXT_MUTED,
+    marginBottom: 6,
+    marginTop: 10,
+  },
+  editInput: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#D6E2FF',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#0B1B4D',
+  },
+  editMessageInput: {
+    minHeight: 90,
+    textAlignVertical: 'top',
+  },
+  editButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 20,
+  },
+  editActionButton: {
+    flex: 1,
+    height: 50,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  editCancelButton: {
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+  },
+  editCancelButtonText: {
+    color: CARD_TEXT,
+    fontSize: RFValue(15),
+    fontWeight: '600',
+  },
+  editSaveButton: {
+    backgroundColor: BRAND_ORANGE,
+  },
+  editSaveButtonText: {
+    color: '#fff',
+    fontSize: RFValue(15),
     fontWeight: '700',
   },
 });

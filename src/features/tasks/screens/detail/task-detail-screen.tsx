@@ -224,11 +224,13 @@ export default function TaskDetailScreen() {
 
         {/* Show user's own offer if they made one (Tasker only) */}
         {myOffer && task?.createdBy?._id !== currentUser?._id && (
-          <MyOfferCard 
-            offer={myOffer} 
+          <MyOfferCard
+            offer={myOffer}
             isTaskPoster={false}
             onAcceptOffer={handleAcceptOffer}
             taskLocation={task?.location}
+            taskId={taskId}
+            onOfferUpdated={refetch}
           />
         )}
 
