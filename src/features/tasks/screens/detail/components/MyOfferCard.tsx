@@ -10,7 +10,7 @@ import { useTheme } from '@/src/shared/theme/ThemeContext';
 import { AppAlert } from '@/src/shared/components/AppAlert';
 import { AppLoader } from '@/src/shared/components/AppLoader';
 import { useUpdateOffer } from '@/src/shared/hooks/useTaskApi';
-import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 interface MyOfferCardProps {
   offer: any;
@@ -164,49 +164,59 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
       </View>
 
       <Modal visible={showEditModal} transparent animationType="fade" onRequestClose={() => setShowEditModal(false)}>
-        <View style={styles.editOverlay}>
-          <View style={styles.editModalContent}>
-            <Text style={styles.editModalTitle}>Edit Your Offer</Text>
-            <Text style={styles.editModalSubtitle}>You can update this while it's still pending.</Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.editOverlay}
+        >
+          <TouchableWithoutFeedback onPress={() => setShowEditModal(false)}>
+            <View style={styles.editOverlayTouchable} />
+          </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={[styles.editModalContent, isDarkMode && { backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#334155' }]}>
+              <Text style={[styles.editModalTitle, isDarkMode && { color: '#F8FAFC' }]}>Edit Your Offer</Text>
+              <Text style={[styles.editModalSubtitle, isDarkMode && { color: '#94A3B8' }]}>You can update this while it's still pending.</Text>
 
-            <Text style={styles.editLabel}>Amount</Text>
-            <TextInput
-              style={styles.editInput}
-              value={editAmount}
-              onChangeText={setEditAmount}
-              keyboardType="decimal-pad"
-              placeholder="Amount"
-              placeholderTextColor="#94A3B8"
-            />
+              <Text style={[styles.editLabel, isDarkMode && { color: '#94A3B8' }]}>Amount</Text>
+              <TextInput
+                style={[styles.editInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
+                value={editAmount}
+                onChangeText={setEditAmount}
+                keyboardType="decimal-pad"
+                placeholder="Amount"
+                placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
+                returnKeyType="done"
+              />
 
-            <Text style={styles.editLabel}>Message</Text>
-            <TextInput
-              style={[styles.editInput, styles.editMessageInput]}
-              value={editMessage}
-              onChangeText={setEditMessage}
-              placeholder="Message to the poster (optional)"
-              placeholderTextColor="#94A3B8"
-              multiline
-            />
+              <Text style={[styles.editLabel, isDarkMode && { color: '#94A3B8' }]}>Message</Text>
+              <TextInput
+                style={[styles.editInput, styles.editMessageInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
+                value={editMessage}
+                onChangeText={setEditMessage}
+                placeholder="Message to the poster (optional)"
+                placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
+                multiline
+                blurOnSubmit
+              />
 
-            <View style={styles.editButtonsRow}>
-              <TouchableOpacity
-                style={[styles.editActionButton, styles.editCancelButton]}
-                onPress={() => setShowEditModal(false)}
-                disabled={isSaving}
-              >
-                <Text style={styles.editCancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.editActionButton, styles.editSaveButton]}
-                onPress={handleSaveEdit}
-                disabled={isSaving}
-              >
-                {isSaving ? <AppLoader size={20} color="#fff" /> : <Text style={styles.editSaveButtonText}>Save</Text>}
-              </TouchableOpacity>
+              <View style={styles.editButtonsRow}>
+                <TouchableOpacity
+                  style={[styles.editActionButton, styles.editCancelButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}
+                  onPress={() => setShowEditModal(false)}
+                  disabled={isSaving}
+                >
+                  <Text style={[styles.editCancelButtonText, isDarkMode && { color: '#F8FAFC' }]}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.editActionButton, styles.editSaveButton]}
+                  onPress={handleSaveEdit}
+                  disabled={isSaving}
+                >
+                  {isSaving ? <AppLoader size={20} color="#fff" /> : <Text style={styles.editSaveButtonText}>Save</Text>}
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -373,6 +383,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+  },
+  editOverlayTouchable: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   editModalContent: {
     backgroundColor: CARD_BG,
