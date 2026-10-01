@@ -433,8 +433,29 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
     );
   }, [task, isTaskCreator, currentUserId, confirmTaskCompletionMutation, onTaskCompleted, isProcessing, router]);
 
-  if (!shouldShowButtons) {
+  // Poster can edit their own task while it's still open (no offer accepted
+  // yet) -- same rule the backend enforces. Previously this was only
+  // reachable from the My Tasks list card; posters viewing the task detail
+  // screen itself had no way to find it.
+  const canEditOpenTask = isTaskCreator && task?.status === 'open';
+
+  if (!shouldShowButtons && !canEditOpenTask) {
     return null;
+  }
+
+  if (canEditOpenTask) {
+    return (
+      <View style={[styles.container, isDarkMode && { backgroundColor: "#1E293B", borderColor: "#334155" }]}>
+        <TouchableOpacity
+          style={[styles.editTaskButton, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}
+          onPress={() => router.push({ pathname: '/edit-task', params: { taskId: task._id, task: JSON.stringify(task) } } as any)}
+          activeOpacity={0.7}
+        >
+          <MaterialIcons name="edit" size={18} color={isDarkMode ? '#38BDF8' : CARD_PRICE_TEXT} style={{ marginRight: 8 }} />
+          <Text style={[styles.editTaskButtonText, isDarkMode && { color: '#F8FAFC' }]}>Edit Task</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   return (
@@ -650,6 +671,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+  },
+  editTaskButton: {
+    flex: 1,
+    flexDirection: 'row',
+    height: 48,
+    backgroundColor: CARD_PRICE_BG,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#001A66',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  editTaskButtonText: {
+    color: CARD_PRICE_TEXT,
+    fontSize: RFValue(15),
+    fontWeight: '700',
   },
   completedButton: {
     flex: 1,

@@ -10,6 +10,8 @@
  */
 
 import { removeFCMToken, saveFCMToken } from '@/src/api/fcm-api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { PermissionsAndroid, Platform } from 'react-native';
@@ -224,19 +226,35 @@ export const getDeviceType = (): 'android' | 'ios' | 'web' => {
   return 'web';
 };
 
+const DEVICE_ID_STORAGE_KEY = '@mytodoo/stable_device_id';
+
 /**
- * Get unique device ID
+ * Get unique device ID.
+ *
+ * `Constants.installationId` was removed from expo-constants in current SDK
+ * versions, so it was always undefined here -- every call silently fell
+ * through to a `Date.now()`-based fallback, meaning this "device ID" was
+ * actually a NEW random value on every app launch / token refresh. The
+ * backend used to register a separate fcmTokens entry per "device" it saw,
+ * so the same physical device kept piling up entries and received every
+ * push notification once per stale entry still able to deliver -- this is
+ * what showed up as duplicate notification banners.
+ *
+ * Fix: generate a UUID once per install and persist it, so the same device
+ * always reports the same ID and the backend can safely replace its old
+ * token entry instead of appending a new one.
  */
 export const getDeviceId = async (): Promise<string> => {
   try {
     const deviceType = Platform.OS;
-    const deviceModel = Constants.deviceName || 'unknown';
-    const installationId = Constants.installationId || '';
+    let stableId = await AsyncStorage.getItem(DEVICE_ID_STORAGE_KEY);
 
-    const deviceId = installationId
-      ? `${deviceType}-${installationId}`
-      : `${deviceType}-${deviceModel}-${Date.now()}`.replace(/\s/g, '-');
+    if (!stableId) {
+      stableId = Crypto.randomUUID();
+      await AsyncStorage.setItem(DEVICE_ID_STORAGE_KEY, stableId);
+    }
 
+    const deviceId = `${deviceType}-${stableId}`;
     console.log('🆔 Device ID:', deviceId);
     return deviceId;
   } catch (error) {
