@@ -24,6 +24,7 @@ import {
     useReopenUnservicedTask,
     useSubmitReview
 } from '@/src/shared/hooks/useTaskApi';
+import { useRespondToServiceNegotiation } from '@/src/shared/hooks/useServiceListingApi';
 import { useGetUserChats } from '@/src/shared/hooks/useTaskChat';
 import { formatCurrency, getCurrencySymbol } from '@/src/shared/utils/currency';
 import { resolveTaskBudget } from '@/src/shared/utils/resolveTaskBudget';
@@ -158,6 +159,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   // API hooks
   const deleteTaskMutation = useDeleteTask();
   const deleteOfferMutation = useDeleteOffer();
+  const respondToNegotiationMutation = useRespondToServiceNegotiation();
   const cancelTaskMutation = useCancelTask(); // Legacy: Pre-payment cancellation
   const createCancellationRequestMutation = useCreateCancellationRequest(); // NEW: Post-payment cancellation request
   const respondToCancellationRequestMutation = useRespondToCancellationRequest(); // NEW: Respond to request
@@ -704,7 +706,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
     } else {
       // Pre-payment task (open/posted) - use legacy direct cancellation
       console.log('❌ Pre-payment task - showing direct cancellation modal');
-      if (userRole === 'Poster' && (status === 'open' || status === 'posted' || !status)) {
+      if (userRole === 'Poster' && (status === 'open' || status === 'posted' || status === 'make_payment' || !status)) {
         setShowPosterCancelModal(true);
       } else {
         console.log('❌ Tasker cancelling task:', task._id);
@@ -712,6 +714,42 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
       }
     }
   }, [userRole, status, task._id, isProcessing, isValidMongoId, isPostPaymentTask]);
+
+  const handleRespondToNegotiation = useCallback((action: 'approve' | 'reject') => {
+    if (!myOffer?._id || respondToNegotiationMutation.isPending) return;
+
+    const amount = myOffer?.offer?.amount ?? myOffer?.amount;
+    AppAlert.alert(
+      action === 'approve' ? 'Approve Price Request?' : 'Decline Price Request?',
+      action === 'approve'
+        ? `Approve the $${amount} offer? The poster will be able to pay and confirm this booking.`
+        : `Decline the $${amount} offer? The poster will be notified and can edit their offer.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: action === 'approve' ? 'Approve' : 'Decline',
+          style: action === 'approve' ? 'default' : 'destructive',
+          onPress: async () => {
+            try {
+              await respondToNegotiationMutation.mutateAsync({ taskId: task._id, offerId: myOffer._id, action });
+              AppAlert.alert(
+                action === 'approve' ? 'Approved' : 'Declined',
+                action === 'approve'
+                  ? 'The poster can now pay to confirm this booking.'
+                  : 'The poster has been notified.'
+              );
+              onOfferDeleted?.(myOffer._id);
+            } catch (error: any) {
+              AppAlert.alert(
+                'Could Not Respond',
+                error?.response?.data?.message || error?.message || 'Please try again.'
+              );
+            }
+          },
+        },
+      ]
+    );
+  }, [myOffer, respondToNegotiationMutation, task._id, onOfferDeleted]);
 
   const handleDeleteTask = useCallback(() => {
     console.log('🔥 Delete button touched!'); // Debug log
@@ -1761,6 +1799,28 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           ) : status === 'cancelled' || status === 'overdue' ? (
             // Cancelled tab or Overdue tab: No action buttons
             null
+          ) : status === 'open' && userRole === 'Tasker' && myOffer?.status === 'countered' ? (
+            // Negotiated price request awaiting this tasker's approve/reject
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: isTablet ? 10 : 8, flex: 1 }}>
+              <TouchableOpacity
+                style={[styles.declineOfferBtn, respondToNegotiationMutation.isPending && styles.disabledButton]}
+                activeOpacity={0.8}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                disabled={respondToNegotiationMutation.isPending}
+                onPress={() => handleRespondToNegotiation('reject')}
+              >
+                <Text style={styles.declineOfferBtnText}>Decline</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.approveOfferBtn, respondToNegotiationMutation.isPending && styles.disabledButton]}
+                activeOpacity={0.85}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                disabled={respondToNegotiationMutation.isPending}
+                onPress={() => handleRespondToNegotiation('approve')}
+              >
+                <Text style={styles.approveOfferBtnText}>Approve</Text>
+              </TouchableOpacity>
+            </View>
           ) : status === 'open' && userRole === 'Tasker' ? (
             // Tasker Open Tasks: Delete Offer button + Delete Task button
             posterHasRequestedCancellation ? null : (
@@ -2042,6 +2102,38 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 </TouchableOpacity>
               )}
             </>
+          ) : status === 'make_payment' ? (
+            // Make Payment tab (Poster): service booking ready to pay -- Pay Now + Cancel
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: isTablet ? 12 : 8, flex: 1 }}>
+              <TouchableOpacity
+                style={[styles.payNowButton, isProcessing && styles.disabledButton]}
+                activeOpacity={0.85}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                disabled={isProcessing}
+                onPress={() => {
+                  router.push({
+                    pathname: '/task-detail',
+                    params: { taskId: task._id, fromUserRole: userRole, fromStatus: status },
+                  } as any);
+                }}
+              >
+                <Ionicons name="card" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={styles.payNowButtonText}>Pay Now</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.actionButton,
+                  isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1 },
+                  isProcessing && styles.disabledButton,
+                ]}
+                activeOpacity={0.6}
+                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                onPress={handleCancelTask}
+                disabled={isProcessing}
+              >
+                <MaterialIcons name="cancel" size={20} color={isProcessing ? 'rgba(252,165,165,0.4)' : '#FCA5A5'} />
+              </TouchableOpacity>
+            </View>
           ) : (
             // Posted tab or other tabs: Edit + Delete + Cancel (except Cancel for Poster in Posted tab)
             <>
@@ -2842,6 +2934,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   acceptCompletionButtonText: {
+    color: '#fff',
+    fontSize: RFValue(13),
+    fontWeight: '700',
+  },
+  approveOfferBtn: {
+    flex: 1,
+    backgroundColor: '#00A651',
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  approveOfferBtnText: {
+    color: '#fff',
+    fontSize: RFValue(13),
+    fontWeight: '700',
+  },
+  declineOfferBtn: {
+    flex: 1,
+    backgroundColor: 'rgba(252,165,165,0.18)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(252,165,165,0.5)',
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  declineOfferBtnText: {
+    color: '#FCA5A5',
+    fontSize: RFValue(13),
+    fontWeight: '700',
+  },
+  payNowButton: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: BRAND_ORANGE,
+    height: 42,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: BRAND_ORANGE,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  payNowButtonText: {
     color: '#fff',
     fontSize: RFValue(13),
     fontWeight: '700',

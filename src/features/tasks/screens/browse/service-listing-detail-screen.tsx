@@ -60,16 +60,19 @@ export default function ServiceListingDetailScreen({
   );
 
   const listing = data || initialListing;
+  const isNegotiable = listing?.pricingType === 'negotiable';
   const taskerName = useMemo(() => {
     if (!listing?.tasker || typeof listing.tasker === 'string') return 'Tasker';
     return formatUserName(listing.tasker.firstName, listing.tasker.lastName) || 'Tasker';
   }, [listing]);
 
   React.useEffect(() => {
-    if (listing?.price != null && !amount) {
+    if (listing?.price == null) return;
+    // Fixed listings always book at the listed price -- keep the field locked to it.
+    if (!isNegotiable || !amount) {
       setAmount(String(listing.price));
     }
-  }, [listing?.price, amount]);
+  }, [listing?.price, isNegotiable]);
 
   const handleBook = async () => {
     if (!isAuthenticated || !token) {
@@ -83,6 +86,11 @@ export default function ServiceListingDetailScreen({
     const numericAmount = Number(amount);
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
       AppAlert.alert('Invalid Amount', 'Please enter a valid booking amount.');
+      return;
+    }
+
+    if (isNegotiable && listing?.price != null && numericAmount < listing.price && numericAmount < 20) {
+      AppAlert.alert('Amount Too Low', 'Negotiated offers must be at least $20.');
       return;
     }
 
@@ -106,9 +114,12 @@ export default function ServiceListingDetailScreen({
         },
       });
       const taskId = result.data?.taskId;
+      const isNegotiating = result.data?.negotiating === true;
       AppAlert.alert(
-        'Booking Created',
-        'A task and pending offer have been created. Accept and pay using the standard offer flow to confirm.',
+        isNegotiating ? 'Price Request Sent' : 'Booking Created',
+        isNegotiating
+          ? `Your offer of $${numericAmount} was sent to ${taskerName} for approval. You'll be notified once they respond.`
+          : 'Your booking is ready — go to Make Payment in My Tasks to confirm and pay.',
         [
           {
             text: 'View Task',
@@ -198,6 +209,12 @@ export default function ServiceListingDetailScreen({
                   {listing.currency || 'AUD'}
                 </Text>
               </View>
+              {isNegotiable ? (
+                <View style={styles.negotiableBadge}>
+                  <Ionicons name="swap-horizontal" size={12} color="#FFFFFF" />
+                  <Text style={styles.negotiableBadgeText}>Negotiable</Text>
+                </View>
+              ) : null}
             </View>
 
             <View style={styles.metaRow}>
@@ -241,19 +258,31 @@ export default function ServiceListingDetailScreen({
             </View>
 
             <Text style={[styles.label, { color: isDarkMode ? '#E2E8F0' : CARD_TEXT }]}>
-              Agreed Offer Amount ($)
+              {isNegotiable ? 'Your Offer ($)' : 'Price ($)'}
             </Text>
+            {isNegotiable ? (
+              <Text style={[styles.helperNote, { color: isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.75)' }]}>
+                This tasker accepts offers below the listed price (min $20). Offering ${listing.price} or more books instantly — a lower offer goes to the tasker for approval.
+              </Text>
+            ) : null}
             <TextInput
               style={[
                 styles.input,
-                {
-                  backgroundColor: isDarkMode ? '#0F172A' : '#ffffff',
-                  borderColor: isDarkMode ? '#334155' : 'rgba(255,255,255,0.6)',
-                  color: isDarkMode ? '#F8FAFC' : '#0B1B4D',
-                },
+                isNegotiable
+                  ? {
+                      backgroundColor: isDarkMode ? '#0F172A' : '#ffffff',
+                      borderColor: isDarkMode ? '#334155' : 'rgba(255,255,255,0.6)',
+                      color: isDarkMode ? '#F8FAFC' : '#0B1B4D',
+                    }
+                  : {
+                      backgroundColor: isDarkMode ? '#1E293B' : 'rgba(255,255,255,0.5)',
+                      borderColor: isDarkMode ? '#334155' : 'rgba(255,255,255,0.4)',
+                      color: isDarkMode ? '#94A3B8' : CARD_TEXT_MUTED,
+                    },
               ]}
               value={amount}
-              onChangeText={setAmount}
+              onChangeText={isNegotiable ? setAmount : undefined}
+              editable={isNegotiable}
               keyboardType="decimal-pad"
               placeholder="Amount"
               placeholderTextColor={isDarkMode ? '#64748B' : '#94A3B8'}
@@ -292,7 +321,11 @@ export default function ServiceListingDetailScreen({
               {bookMutation.isPending ? (
                 <AppLoader color="#fff" />
               ) : (
-                <Text style={styles.bookText}>Confirm & Book Service</Text>
+                <Text style={styles.bookText}>
+                  {isNegotiable && listing?.price != null && Number(amount) < listing.price
+                    ? 'Send Price Request'
+                    : 'Confirm & Book Service'}
+                </Text>
               )}
             </TouchableOpacity>
           </View>
@@ -400,6 +433,21 @@ const styles = StyleSheet.create({
   },
   price: { fontSize: RFValue(22), fontWeight: '800' },
   currency: { fontSize: RFValue(13), fontWeight: '600' },
+  negotiableBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ff6b35',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginLeft: 10,
+  },
+  negotiableBadgeText: {
+    color: '#FFFFFF',
+    fontSize: RFValue(11),
+    fontWeight: '700',
+  },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -427,6 +475,12 @@ const styles = StyleSheet.create({
     fontSize: RFValue(13),
     fontWeight: '600',
     marginBottom: 8,
+  },
+  helperNote: {
+    fontSize: RFValue(12),
+    lineHeight: 17,
+    marginBottom: 8,
+    marginTop: -4,
   },
   input: {
     borderRadius: 14,

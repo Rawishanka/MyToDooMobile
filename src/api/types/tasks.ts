@@ -271,7 +271,9 @@ export interface Task {
   __v: number;
   offerCount?: number;
   offers?: TaskOffer[];
-  
+  /** Set when this task was created via Offer-a-Service booking (book()) */
+  serviceListingId?: string;
+
   // Extended fields from API responses
   formattedDate?: string;
   formattedBudget?: string;

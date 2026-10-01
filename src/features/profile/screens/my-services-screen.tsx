@@ -56,7 +56,14 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
         <Text style={[styles.meta, isDarkMode && { color: '#94A3B8' }]} numberOfLines={1}>
           ${Number(item.price).toFixed(0)} {item.currency || 'AUD'} · {item.suburb}
         </Text>
-        <Text style={[styles.status, isDarkMode && { color: '#94A3B8' }]}>Status: {item.status}</Text>
+        <View style={styles.tagRow}>
+          <Text style={[styles.status, isDarkMode && { color: '#94A3B8' }]}>Status: {item.status}</Text>
+          {item.pricingType === 'negotiable' ? (
+            <View style={styles.negotiableTag}>
+              <Text style={styles.negotiableTagText}>Negotiable</Text>
+            </View>
+          ) : null}
+        </View>
       </View>
       <TouchableOpacity onPress={() => confirmDelete(item)} style={styles.deleteButton} activeOpacity={0.7}>
         <Ionicons name="trash-outline" size={18} color={isDarkMode ? '#DC2626' : '#FCA5A5'} />
@@ -139,6 +146,15 @@ const styles = StyleSheet.create({
   title: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
   meta: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 4 },
   status: { fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 4, textTransform: 'capitalize' },
+  tagRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  negotiableTag: {
+    backgroundColor: 'rgba(255,107,53,0.22)',
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    marginTop: 4,
+  },
+  negotiableTagText: { color: '#ff6b35', fontSize: 11, fontWeight: '700' },
   deleteButton: {
     width: 36,
     height: 36,

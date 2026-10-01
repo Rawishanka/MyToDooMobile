@@ -52,6 +52,8 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
         return 'No open tasks available';
       case 'assigned':
         return 'No tasks assigned to you';
+      case 'make_payment':
+        return 'No bookings waiting for payment';
       case 'accepted':
         return 'No accepted offers yet';
       case 'pending_payment':
@@ -220,7 +222,7 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
   // Reset to first tab when role changes (only if no initial tab was requested)
   useEffect(() => { if (!initialTabKey) setActiveIndex(0); }, [userRole, initialTabKey]);
 
-  const tabs: TopTabDef[] = useMemo(() => {
+  const allTabs: TopTabDef[] = useMemo(() => {
     if (userRole === 'Tasker') {
       return [
         { key: 'open', label: 'Open Offers', status: 'open', tasks: categorizedData.openTasks, offersMap: myOffersMap },
@@ -234,6 +236,7 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
     }
     return [
       { key: 'posted', label: 'Posted', tasks: categorizedData.postedTasks },
+      { key: 'make_payment', label: 'Make Payment', status: 'make_payment', tasks: categorizedData.makePaymentTasks || [] },
       { key: 'accepted', label: 'Accepted', status: 'accepted', tasks: categorizedData.acceptedTasks },
       { key: 'pending_payment', label: 'Release Payment', status: 'pending_payment', tasks: categorizedData.pendingPaymentTasks },
       { key: 'review_required', label: 'Review Required', status: 'review_required', tasks: categorizedData.reviewRequiredTasks },
@@ -243,6 +246,37 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
       { key: 'cancelled', label: 'Cancelled', status: 'cancelled', tasks: categorizedData.cancelledTasks },
     ];
   }, [userRole, categorizedData, myOffersMap]);
+
+  // Tracks the currently-active tab's key across renders (written after each
+  // render below) so the filter can tell "the tab the user is looking at"
+  // apart from "a tab that's merely empty" without an index-space mismatch
+  // between the full tab list and the filtered one.
+  const activeKeyRef = useRef<string | undefined>(undefined);
+
+  // Hide tabs with zero tasks so the tab bar only shows what's actionable --
+  // except "Open Offers"/"Posted" (the role's default landing tab, always
+  // shown even when empty) and the currently-active tab (never hide the one
+  // the user is looking at out from under them).
+  const tabs: TopTabDef[] = useMemo(() => {
+    const defaultKey = userRole === 'Tasker' ? 'open' : 'posted';
+    const activeKey = activeKeyRef.current;
+    const visible = allTabs.filter(
+      (tab) => tab.tasks.length > 0 || tab.key === defaultKey || tab.key === activeKey
+    );
+    return visible.length > 0 ? visible : allTabs.slice(0, 1);
+  }, [allTabs, userRole]);
+
+  useEffect(() => {
+    activeKeyRef.current = tabs[activeIndex]?.key;
+  }, [tabs, activeIndex]);
+
+  // Keep activeIndex valid as the visible tab set changes (e.g. a tab the
+  // user was on empties out and gets hidden, or role switches).
+  useEffect(() => {
+    if (activeIndex >= tabs.length) {
+      setActiveIndex(0);
+    }
+  }, [tabs.length, activeIndex]);
 
   const activeTab = tabs[activeIndex] || tabs[0];
 
@@ -640,7 +674,10 @@ export default function MyTasksScreen() {
       // Each offer has the task data populated in offer.taskId (object) or as an ID
       // We build the open offers list from myOffers, NOT from allTasks filter.
       // This ensures tasks show up even if allTasks pagination missed them.
-      const pendingOfferStatuses = ['pending', 'payment_pending', 'payment_failed'];
+      // "countered" = a negotiated price request on a service booking awaiting
+      // this tasker's approve/reject -- surfaced in Open Offers alongside normal
+      // pending offers so the tasker doesn't miss it.
+      const pendingOfferStatuses = ['pending', 'payment_pending', 'payment_failed', 'countered'];
 
       const openTasksFromOffers: Task[] = myOffers
         .filter((offer: any) => pendingOfferStatuses.includes(offer.status))
@@ -925,6 +962,7 @@ export default function MyTasksScreen() {
         overdueTasks,
         cancelledTasks: finalCancelledTasks,
         postedTasks: [],
+        makePaymentTasks: [],
         acceptedTasks: [],
         unservicedTasks: [],
         oppositeReviewCount: posterPendingCount,
@@ -1031,6 +1069,16 @@ export default function MyTasksScreen() {
     // Only show real cancelled tasks from API - no hardcoded dummy data
     const finalCancelledTasks = filterBySearch(cancelledTasks);
 
+    // Offer-a-Service bookings that are ready for the poster to pay (a single
+    // "pending" offer tied to a serviceListingId). These are pulled out of
+    // Posted into their own "Make Payment" tab -- Posted stays for ordinary
+    // open marketplace tasks (and bookings still awaiting tasker negotiation
+    // approval, whose offer is "countered", not yet "pending").
+    const isReadyServiceBookingPayment = (task: Task): boolean => {
+      if (!task.serviceListingId) return false;
+      return (task.offers || []).some((o: any) => o.status === 'pending');
+    };
+
     // For Poster role - tasks they've posted (sorted by creation date, newest first)
     // Posted tab shows only PRE-PAYMENT tasks that are waiting for offers
     // Once payment is made, task moves to Accepted tab with status: assigned/accepted/todo/in_progress
@@ -1040,7 +1088,18 @@ export default function MyTasksScreen() {
           const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
           // Only show open/active tasks (pre-payment) - NOT assigned (post-payment)
           const isPostedStatus = task.status === 'open' || task.status === 'active';
-          return isUsersTask && isPostedStatus;
+          return isUsersTask && isPostedStatus && !isReadyServiceBookingPayment(task);
+        })
+      )
+    );
+
+    // Make Payment tab: service bookings with a tasker-ready offer awaiting the poster's payment
+    const makePaymentTasks = sortByCreatedDate(
+      filterBySearch(
+        allTasks.filter((task: Task) => {
+          const isUsersTask = currentUserId ? task.createdBy?._id === currentUserId : false;
+          const isPostedStatus = task.status === 'open' || task.status === 'active';
+          return isUsersTask && isPostedStatus && isReadyServiceBookingPayment(task);
         })
       )
     );
@@ -1110,6 +1169,7 @@ export default function MyTasksScreen() {
       overdueTasks,
       cancelledTasks: finalCancelledTasks,
       postedTasks,
+      makePaymentTasks,
       acceptedTasks: acceptedTasks,
       unservicedTasks,
       oppositeReviewCount: taskerPendingCount,

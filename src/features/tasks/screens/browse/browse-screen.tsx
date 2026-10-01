@@ -430,6 +430,12 @@ export default function BrowseTasksScreen() {
                     </Text>
                   </View>
                 ) : null}
+                {item.pricingType === 'negotiable' ? (
+                  <View style={styles.negotiableChip}>
+                    <Ionicons name="swap-horizontal" size={11} color="#ff6b35" />
+                    <Text style={styles.negotiableChipText}>Negotiable</Text>
+                  </View>
+                ) : null}
               </View>
 
               {/* Description */}
@@ -1153,6 +1159,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
+  },
+  negotiableChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(255,107,53,0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,107,53,0.3)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  negotiableChipText: {
+    fontSize: RFValue(11),
+    color: '#ff6b35',
+    fontWeight: '700',
   },
   radiusText: {
     fontSize: RFValue(11.5),

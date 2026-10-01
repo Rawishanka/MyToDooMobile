@@ -53,6 +53,7 @@ export default function CreateServiceScreen({
     return categoryNames.filter((c: string) => c.toLowerCase().includes(q));
   }, [categoryNames, categorySearchQuery]);
   const [price, setPrice] = useState('');
+  const [pricingType, setPricingType] = useState<'fixed' | 'negotiable'>('fixed');
   const [radiusKm, setRadiusKm] = useState('30');
   const [suburb, setSuburb] = useState('');
   const [suburbDropdownOpen, setSuburbDropdownOpen] = useState(false);
@@ -174,6 +175,7 @@ export default function CreateServiceScreen({
         description: trimmedDescription,
         price: numericPrice,
         currency: 'AUD',
+        pricingType,
         radiusKm: numericRadius,
         suburb: suburb.trim(),
         lat: lat!,
@@ -460,7 +462,9 @@ export default function CreateServiceScreen({
             <View style={[styles.row, { marginTop: 14 }]}>
               <View style={{ flex: 1, marginRight: 10 }}>
                 <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>Price (AUD) <Text style={styles.required}>*</Text></Text>
-                <Text style={[styles.helperText, isDarkMode && { color: '#94A3B8' }]}>Fixed package price</Text>
+                <Text style={[styles.helperText, isDarkMode && { color: '#94A3B8' }]}>
+                  {pricingType === 'negotiable' ? 'Your asking price' : 'Fixed package price'}
+                </Text>
                 <TextInput
                   style={[
                     styles.input,
@@ -504,6 +508,64 @@ export default function CreateServiceScreen({
                 />
                 {errors.radius ? <Text style={styles.errorText}>{errors.radius}</Text> : null}
               </View>
+            </View>
+
+            {/* Pricing Type */}
+            <Text style={[styles.label, { marginTop: 14 }, isDarkMode && { color: '#F8FAFC' }]}>Pricing Type</Text>
+            <Text style={[styles.helperText, isDarkMode && { color: '#94A3B8' }]}>
+              {pricingType === 'fixed'
+                ? 'Customers book and pay exactly this price — no negotiation.'
+                : 'Customers can offer less than this price (min $20). You approve or decline each request.'}
+            </Text>
+            <View style={styles.pricingTypeRow}>
+              <TouchableOpacity
+                style={[
+                  styles.pricingTypeOption,
+                  isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                  pricingType === 'fixed' && styles.pricingTypeOptionActive,
+                ]}
+                onPress={() => setPricingType('fixed')}
+                activeOpacity={0.85}
+              >
+                <Ionicons
+                  name="pricetag"
+                  size={16}
+                  color={pricingType === 'fixed' ? '#FFFFFF' : isDarkMode ? '#94A3B8' : '#003399'}
+                />
+                <Text
+                  style={[
+                    styles.pricingTypeText,
+                    isDarkMode && { color: '#F8FAFC' },
+                    pricingType === 'fixed' && styles.pricingTypeTextActive,
+                  ]}
+                >
+                  Fixed Price
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.pricingTypeOption,
+                  isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                  pricingType === 'negotiable' && styles.pricingTypeOptionActive,
+                ]}
+                onPress={() => setPricingType('negotiable')}
+                activeOpacity={0.85}
+              >
+                <Ionicons
+                  name="swap-horizontal"
+                  size={16}
+                  color={pricingType === 'negotiable' ? '#FFFFFF' : isDarkMode ? '#94A3B8' : '#003399'}
+                />
+                <Text
+                  style={[
+                    styles.pricingTypeText,
+                    isDarkMode && { color: '#F8FAFC' },
+                    pricingType === 'negotiable' && styles.pricingTypeTextActive,
+                  ]}
+                >
+                  Negotiable
+                </Text>
+              </TouchableOpacity>
             </View>
 
             {/* Location */}
@@ -719,6 +781,35 @@ const styles = StyleSheet.create({
   categoryDropdownItemText: {
     fontSize: RFValue(13.5),
     color: '#334155',
+  },
+  pricingTypeRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 4,
+  },
+  pricingTypeOption: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    paddingVertical: 12,
+  },
+  pricingTypeOptionActive: {
+    backgroundColor: '#003399',
+    borderColor: '#ff6b35',
+  },
+  pricingTypeText: {
+    fontSize: RFValue(13.5),
+    fontWeight: '600',
+    color: '#0F172A',
+  },
+  pricingTypeTextActive: {
+    color: '#FFFFFF',
   },
   selectedLocBadge: {
     flexDirection: 'row',

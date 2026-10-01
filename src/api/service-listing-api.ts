@@ -12,12 +12,15 @@ export interface ServiceListingTasker {
   rating?: number;
 }
 
+export type ServiceListingPricingType = 'fixed' | 'negotiable';
+
 export interface ServiceListing {
   _id: string;
   title: string;
   description: string;
   categories: string[];
   price: number;
+  pricingType: ServiceListingPricingType;
   currency: string;
   radiusKm: number;
   suburb: string;
@@ -39,6 +42,7 @@ export interface ServiceListingInput {
   categories?: string[];
   currency?: string;
   radiusKm?: number;
+  pricingType?: ServiceListingPricingType;
   status?: 'active' | 'paused';
 }
 
@@ -65,6 +69,16 @@ export interface ServiceListingBookResult {
   offerId: string;
   amount: number;
   currency: string;
+  negotiating?: boolean;
+  status?: 'pending' | 'countered';
+}
+
+export type OfferNegotiationStatus = 'pending' | 'countered' | 'rejected';
+
+export interface OfferNegotiationResult {
+  offerId: string;
+  status: OfferNegotiationStatus;
+  amount?: number;
 }
 
 export interface ApiListResponse<T> {
@@ -168,6 +182,38 @@ export async function bookServiceListing(
   }
 }
 
+export async function respondToServiceNegotiation(
+  taskId: string,
+  offerId: string,
+  action: 'approve' | 'reject'
+): Promise<ApiListResponse<OfferNegotiationResult>> {
+  try {
+    const response = await api.post(`/service-listings/negotiations/${taskId}/${offerId}/respond`, { action });
+    return response.data;
+  } catch (error: any) {
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn('⚠️ Respond to service negotiation failed:', error?.response?.status || error?.message);
+    }
+    throw error;
+  }
+}
+
+export async function reCounterServiceOffer(
+  taskId: string,
+  offerId: string,
+  input: { amount: number; message?: string }
+): Promise<ApiListResponse<OfferNegotiationResult>> {
+  try {
+    const response = await api.put(`/service-listings/negotiations/${taskId}/${offerId}/recounter`, input);
+    return response.data;
+  } catch (error: any) {
+    if (!isNetworkError(error) && __DEV__) {
+      console.warn('⚠️ Re-counter service offer failed:', error?.response?.status || error?.message);
+    }
+    throw error;
+  }
+}
+
 export function isAbnRequiredListingError(error: any): boolean {
   const code = error?.response?.data?.code || error?.code || error?.response?.data?.details?.code;
   const message = String(error?.response?.data?.message || error?.message || '').toLowerCase();
@@ -185,5 +231,7 @@ export const ServiceListingAPI = {
   updateServiceListing,
   deleteServiceListing,
   bookServiceListing,
+  respondToServiceNegotiation,
+  reCounterServiceOffer,
   isAbnRequiredListingError,
 };

@@ -87,3 +87,45 @@ export function useBookServiceListing() {
     },
   });
 }
+
+export function useRespondToServiceNegotiation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      offerId,
+      action,
+    }: {
+      taskId: string;
+      offerId: string;
+      action: 'approve' | 'reject';
+    }) => ServiceListingAPI.respondToServiceNegotiation(taskId, offerId, action),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['my-tasks'] });
+    },
+  });
+}
+
+export function useReCounterServiceOffer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      taskId,
+      offerId,
+      amount,
+      message,
+    }: {
+      taskId: string;
+      offerId: string;
+      amount: number;
+      message?: string;
+    }) => ServiceListingAPI.reCounterServiceOffer(taskId, offerId, { amount, message }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['my-tasks'] });
+    },
+  });
+}
