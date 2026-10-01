@@ -114,12 +114,25 @@ export default function ServiceListingDetailScreen({
         },
       });
       const taskId = result.data?.taskId;
+      const offerId = result.data?.offerId;
       const isNegotiating = result.data?.negotiating === true;
+
+      if (!isNegotiating && taskId && offerId) {
+        // Ready to pay immediately -- go straight into the task detail
+        // screen and open the payment modal, instead of making the poster
+        // come back later to find "Accept Offer" themselves.
+        router.push({
+          pathname: '/task-detail',
+          params: { taskId, autoPayOfferId: offerId },
+        });
+        return;
+      }
+
       AppAlert.alert(
         isNegotiating ? 'Price Request Sent' : 'Booking Created',
         isNegotiating
           ? `Your offer of $${numericAmount} was sent to ${taskerName} for approval. You'll be notified once they respond.`
-          : 'Your booking is ready — go to Make Payment in My Tasks to confirm and pay.',
+          : 'Your booking is ready to pay.',
         [
           {
             text: 'View Task',

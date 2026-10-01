@@ -2111,9 +2111,15 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 disabled={isProcessing}
                 onPress={() => {
+                  const payableOffer = (task.offers || []).find((o: any) => o.status === 'pending');
                   router.push({
                     pathname: '/task-detail',
-                    params: { taskId: task._id, fromUserRole: userRole, fromStatus: status },
+                    params: {
+                      taskId: task._id,
+                      fromUserRole: userRole,
+                      fromStatus: status,
+                      ...(payableOffer ? { autoPayOfferId: payableOffer._id } : {}),
+                    },
                   } as any);
                 }}
               >

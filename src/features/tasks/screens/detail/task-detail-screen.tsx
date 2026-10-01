@@ -30,15 +30,17 @@ import { useTaskDetail } from './hooks/useTaskDetail';
 
 export default function TaskDetailScreen() {
   const { isDarkMode } = useTheme();
-  const params = useLocalSearchParams<{ 
-    taskId?: string; 
+  const params = useLocalSearchParams<{
+    taskId?: string;
     id?: string;
-    fromUserRole?: string; 
+    fromUserRole?: string;
     fromStatus?: string;
     tab?: string | string[];
+    autoPayOfferId?: string;
   }>();
   const taskId = (params.taskId || params.id || "") as string;
-  const { fromUserRole, fromStatus, tab } = params;
+  const { fromUserRole, fromStatus, tab, autoPayOfferId } = params;
+  const autoPayTriggeredRef = useRef(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const tabsSectionRef = useRef<View>(null);
   
@@ -97,6 +99,18 @@ export default function TaskDetailScreen() {
     showPayoutModal,
     setShowPayoutModal,
   } = useTaskDetail({ taskId: taskId! });
+
+  // Coming straight from "Confirm & Book Service" on a ready-to-pay listing
+  // (fixed price, or a same-or-higher offer on a negotiable one) -- open the
+  // payment modal immediately instead of making the poster find and tap
+  // "Accept Offer" themselves on a separate visit.
+  useEffect(() => {
+    if (!autoPayOfferId || autoPayTriggeredRef.current || isLoading) return;
+    const offerExists = taskOffers.some((o: any) => o._id === autoPayOfferId);
+    if (!offerExists) return;
+    autoPayTriggeredRef.current = true;
+    handleAcceptOffer(autoPayOfferId);
+  }, [autoPayOfferId, isLoading, taskOffers, handleAcceptOffer]);
 
   // Open Questions tab when navigated from Q&A notification
   useEffect(() => {
