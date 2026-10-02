@@ -53,7 +53,7 @@ export default function ServiceListingDetailScreen({
   const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { isAuthenticated, token } = useAuthStore();
+  const { isAuthenticated, token, user: currentUser } = useAuthStore();
   const { data, isLoading } = useGetServiceListing(listingId, !!listingId);
   const bookMutation = useBookServiceListing();
   const [message, setMessage] = useState('');
@@ -93,6 +93,11 @@ export default function ServiceListingDetailScreen({
 
   const listing = data || initialListing;
   const isNegotiable = listing?.pricingType === 'negotiable';
+  const isOwnListing = !!(
+    currentUser?._id &&
+    listing?.tasker &&
+    (typeof listing.tasker === 'string' ? listing.tasker : listing.tasker._id) === currentUser._id
+  );
   const taskerName = useMemo(() => {
     if (!listing?.tasker || typeof listing.tasker === 'string') return 'Tasker';
     return formatUserName(listing.tasker.firstName, listing.tasker.lastName) || 'Tasker';
@@ -315,8 +320,27 @@ export default function ServiceListingDetailScreen({
             </Text>
           </View>
 
+          {/* Own listing -- can't book your own service (same as every other
+              marketplace), so show a clear state instead of a dead-end
+              booking form that would just fail on submit. */}
+          {isOwnListing && (
+            <View style={[styles.card, isDarkMode ? styles.cardDark : styles.cardBlue, { marginTop: 16 }]}>
+              <View style={styles.sectionHeaderRow}>
+                <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                  <Ionicons name="information-circle-outline" size={18} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+                </View>
+                <Text style={[styles.sectionTitle, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
+                  This Is Your Listing
+                </Text>
+              </View>
+              <Text style={[styles.helperNote, { color: isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.75)', marginTop: -8 }]}>
+                You can't book your own service. Go to My Services to edit or manage it.
+              </Text>
+            </View>
+          )}
+
           {/* When -- only for listings the tasker marked as needing a booking date */}
-          {listing.bookingRequired && (
+          {!isOwnListing && listing.bookingRequired && (
             <View style={[styles.card, isDarkMode ? styles.cardDark : styles.cardBlue, { marginTop: 16 }]}>
               <View style={styles.sectionHeaderRow}>
                 <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
@@ -347,6 +371,7 @@ export default function ServiceListingDetailScreen({
           )}
 
           {/* Booking Section */}
+          {!isOwnListing && (
           <View style={[styles.card, isDarkMode ? styles.cardDark : styles.cardBlue, { marginTop: 16 }]}>
             <View style={styles.sectionHeaderRow}>
               <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
@@ -429,6 +454,7 @@ export default function ServiceListingDetailScreen({
               )}
             </TouchableOpacity>
           </View>
+          )}
         </ScrollView>
       )}
 
