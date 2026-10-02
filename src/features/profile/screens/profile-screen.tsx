@@ -59,6 +59,7 @@ export default function AccountScreen() {
     taskId?: string;
   }>();
   const [currentScreen, setCurrentScreen] = useState('account');
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [biometricSupported, setBiometricSupported] = useState(false);
   const [biometricTypeLabel, setBiometricTypeLabel] = useState<BiometricTypeLabel>("Biometrics");
   const [biometricEnabled, setBiometricEnabled] = useState(false);
@@ -696,6 +697,11 @@ export default function AccountScreen() {
     setCurrentScreen('my-services');
   };
 
+  const navigateToEditService = (listingId: string) => {
+    setEditingServiceId(listingId);
+    setCurrentScreen('edit-service');
+  };
+
   const navigateToAccountInfo = () => {
     setCurrentScreen('account-info');
   };
@@ -885,6 +891,18 @@ export default function AccountScreen() {
       <MyServicesScreen
         onBack={navigateToAccount}
         onCreate={navigateToCreateService}
+        onEdit={navigateToEditService}
+      />
+    );
+  }
+
+  if (currentScreen === 'edit-service' && editingServiceId) {
+    return (
+      <CreateServiceScreen
+        listingId={editingServiceId}
+        onBack={() => setCurrentScreen('my-services')}
+        onCreated={() => setCurrentScreen('my-services')}
+        onNeedAbn={() => setCurrentScreen('payment')}
       />
     );
   }

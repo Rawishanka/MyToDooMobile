@@ -2,7 +2,11 @@ import { isAbnRequiredListingError } from '@/src/api/service-listing-api';
 import { AppAlert } from '@/src/shared/components/AppAlert';
 import { LocationAutocomplete } from '@/src/shared/components/LocationAutocomplete';
 import { useGetCategoryNames } from '@/src/shared/hooks/useCategoriesApi';
-import { useCreateServiceListing } from '@/src/shared/hooks/useServiceListingApi';
+import {
+  useCreateServiceListing,
+  useGetServiceListing,
+  useUpdateServiceListing,
+} from '@/src/shared/hooks/useServiceListingApi';
 import { validateContactContent } from '@/src/shared/utils/contactModeration';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
@@ -29,16 +33,23 @@ interface CreateServiceScreenProps {
   onBack: () => void;
   onCreated?: () => void;
   onNeedAbn?: () => void;
+  /** When provided, the screen edits this existing listing instead of creating a new one. */
+  listingId?: string;
 }
 
 export default function CreateServiceScreen({
   onBack,
   onCreated,
   onNeedAbn,
+  listingId,
 }: CreateServiceScreenProps) {
   const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
+  const isEdit = !!listingId;
   const createMutation = useCreateServiceListing();
+  const updateMutation = useUpdateServiceListing();
+  const saveMutation = isEdit ? updateMutation : createMutation;
+  const { data: existingListing, isLoading: isLoadingListing } = useGetServiceListing(listingId || '', isEdit);
   const { data: categoryNames = [] } = useGetCategoryNames();
 
   const [title, setTitle] = useState('');
@@ -60,6 +71,23 @@ export default function CreateServiceScreen({
   const [suburbDropdownOpen, setSuburbDropdownOpen] = useState(false);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
+
+  // Prefill the form once the existing listing loads (edit mode only)
+  const prefilledRef = React.useRef(false);
+  React.useEffect(() => {
+    if (!isEdit || !existingListing || prefilledRef.current) return;
+    prefilledRef.current = true;
+    setTitle(existingListing.title || '');
+    setDescription(existingListing.description || '');
+    setSelectedCategory(existingListing.categories?.[0] || '');
+    setPrice(existingListing.price != null ? String(existingListing.price) : '');
+    setPricingType(existingListing.pricingType === 'negotiable' ? 'negotiable' : 'fixed');
+    setBookingRequired(!!existingListing.bookingRequired);
+    setRadiusKm(existingListing.radiusKm != null ? String(existingListing.radiusKm) : '30');
+    setSuburb(existingListing.suburb || '');
+    setLat(existingListing.lat ?? null);
+    setLng(existingListing.lng ?? null);
+  }, [isEdit, existingListing]);
 
   // Field errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -170,33 +198,45 @@ export default function CreateServiceScreen({
     const numericPrice = Number(price);
     const numericRadius = Number(radiusKm) || 30;
 
-    try {
-      await createMutation.mutateAsync({
-        title: trimmedTitle,
-        description: trimmedDescription,
-        price: numericPrice,
-        currency: 'AUD',
-        pricingType,
-        bookingRequired,
-        radiusKm: numericRadius,
-        suburb: suburb.trim(),
-        lat: lat!,
-        lng: lng!,
-        categories: selectedCategory ? [selectedCategory] : [],
-      });
+    const payload = {
+      title: trimmedTitle,
+      description: trimmedDescription,
+      price: numericPrice,
+      currency: 'AUD',
+      pricingType,
+      bookingRequired,
+      radiusKm: numericRadius,
+      suburb: suburb.trim(),
+      lat: lat!,
+      lng: lng!,
+      categories: selectedCategory ? [selectedCategory] : [],
+    };
 
-      AppAlert.alert('Service Published! 🎉', 'Your service offering is now live for customers to discover and book.', [
-        {
-          text: 'View My Services',
-          onPress: () => {
-            if (onCreated) {
-              onCreated();
-            } else {
-              onBack();
-            }
+    try {
+      if (isEdit && listingId) {
+        await updateMutation.mutateAsync({ id: listingId, input: payload });
+      } else {
+        await createMutation.mutateAsync(payload);
+      }
+
+      AppAlert.alert(
+        isEdit ? 'Service Updated' : 'Service Published! 🎉',
+        isEdit
+          ? 'Your changes have been saved.'
+          : 'Your service offering is now live for customers to discover and book.',
+        [
+          {
+            text: 'View My Services',
+            onPress: () => {
+              if (onCreated) {
+                onCreated();
+              } else {
+                onBack();
+              }
+            },
           },
-        },
-      ]);
+        ]
+      );
     } catch (error: any) {
       if (isAbnRequiredListingError(error)) {
         AppAlert.alert(
@@ -217,7 +257,7 @@ export default function CreateServiceScreen({
       }
 
       AppAlert.alert(
-        'Could Not Create Service',
+        isEdit ? 'Could Not Save Changes' : 'Could Not Create Service',
         error?.response?.data?.message || error?.message || 'Something went wrong. Please try again.'
       );
     }
@@ -226,6 +266,15 @@ export default function CreateServiceScreen({
   const titleLength = title.trim().length;
   const descLength = description.trim().length;
 
+  if (isEdit && isLoadingListing) {
+    return (
+      <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }, { alignItems: 'center', justifyContent: 'center' }]}>
+        <BlueBackdrop />
+        <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView
       style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}
@@ -233,7 +282,7 @@ export default function CreateServiceScreen({
       keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 20 : 0}
     >
       <BlueBackdrop />
-      <LightHeader title="Offer a Service" onBack={handleBack} />
+      <LightHeader title={isEdit ? 'Edit Service' : 'Offer a Service'} onBack={handleBack} />
 
       <ScrollView
         contentContainerStyle={[styles.content, suburbDropdownOpen && { paddingBottom: 380 }]}
@@ -618,15 +667,15 @@ export default function CreateServiceScreen({
 
             {/* Submit */}
             <TouchableOpacity
-              style={[styles.submitButton, createMutation.isPending && styles.submitDisabled]}
+              style={[styles.submitButton, saveMutation.isPending && styles.submitDisabled]}
               onPress={handleSubmit}
-              disabled={createMutation.isPending}
+              disabled={saveMutation.isPending}
               activeOpacity={0.85}
             >
-              {createMutation.isPending ? (
+              {saveMutation.isPending ? (
                 <AppLoader color="#fff" size={22} />
               ) : (
-                <Text style={styles.submitText}>Publish Service</Text>
+                <Text style={styles.submitText}>{isEdit ? 'Save Changes' : 'Publish Service'}</Text>
               )}
             </TouchableOpacity>
           </View>

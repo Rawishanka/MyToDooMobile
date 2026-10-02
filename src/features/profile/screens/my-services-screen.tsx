@@ -21,9 +21,10 @@ import AppLoader from '@/src/shared/components/AppLoader';
 interface MyServicesScreenProps {
   onBack: () => void;
   onCreate: () => void;
+  onEdit?: (listingId: string) => void;
 }
 
-export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenProps) {
+export default function MyServicesScreen({ onBack, onCreate, onEdit }: MyServicesScreenProps) {
   const { isDarkMode } = useTheme();
   const { data = [], isLoading, refetch, isRefetching } = useGetMyServiceListings();
   const deleteMutation = useDeleteServiceListing();
@@ -70,6 +71,11 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
           ) : null}
         </View>
       </View>
+      {onEdit && (
+        <TouchableOpacity onPress={() => onEdit(item._id)} style={styles.editButton} activeOpacity={0.7}>
+          <Ionicons name="create-outline" size={18} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
+        </TouchableOpacity>
+      )}
       <TouchableOpacity onPress={() => confirmDelete(item)} style={styles.deleteButton} activeOpacity={0.7}>
         <Ionicons name="trash-outline" size={18} color={isDarkMode ? '#DC2626' : '#FCA5A5'} />
       </TouchableOpacity>
@@ -168,6 +174,15 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   bookingRequiredTagText: { color: '#38BDF8', fontSize: 11, fontWeight: '700' },
+  editButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
   deleteButton: {
     width: 36,
     height: 36,

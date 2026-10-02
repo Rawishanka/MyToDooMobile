@@ -63,6 +63,20 @@ export function useCreateServiceListing() {
   });
 }
 
+export function useUpdateServiceListing() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Partial<ServiceListingInput> }) =>
+      ServiceListingAPI.updateServiceListing(id, input),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: SERVICE_LISTING_QUERY_KEYS.mine() });
+      queryClient.invalidateQueries({ queryKey: SERVICE_LISTING_QUERY_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: SERVICE_LISTING_QUERY_KEYS.detail(variables.id) });
+    },
+  });
+}
+
 export function useDeleteServiceListing() {
   const queryClient = useQueryClient();
 
