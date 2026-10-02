@@ -123,6 +123,7 @@ export default function CreateTaskScreen() {
   const [isOCRProcessing, setIsOCRProcessing] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<LocationData | null>(null);
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+  const [locationSuggestionCount, setLocationSuggestionCount] = useState(0);
   const [isTitleFocused, setIsTitleFocused] = useState(false);
   const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
 
@@ -778,10 +779,13 @@ Please remove phone numbers and addresses from the image.`,
     }
   };
 
-  const handleLocationDropdownOpen = (isOpen: boolean) => {
+  const handleLocationDropdownOpen = (isOpen: boolean, suggestionCount?: number) => {
     setIsLocationDropdownOpen(isOpen);
+    if (suggestionCount !== undefined) {
+      setLocationSuggestionCount(suggestionCount);
+    }
     if (isOpen && section2Ref.current && scrollViewRef.current) {
-      // After spacer renders (260px), scroll so dropdown is visible
+      // After spacer renders, scroll so dropdown is visible
       setTimeout(() => {
         section2Ref.current?.measureLayout(
           scrollViewRef.current as any,
@@ -1327,9 +1331,9 @@ Please remove phone numbers and addresses from the image.`,
               placeholder="Enter address or suburb"
               buttonStyle={isDarkMode ? undefined : styles.locateButtonOutline}
               initialValue={selectedLocation?.address}
-              onDropdownStateChange={(isOpen) => {
-                console.log('📍 Dropdown state changed:', isOpen);
-                handleLocationDropdownOpen(isOpen);
+              onDropdownStateChange={(isOpen, suggestionCount) => {
+                console.log('📍 Dropdown state changed:', isOpen, suggestionCount);
+                handleLocationDropdownOpen(isOpen, suggestionCount);
               }}
             />
 
@@ -1364,9 +1368,11 @@ Please remove phone numbers and addresses from the image.`,
             )}
           </View>
 
-          {/* Spacer to prevent dropdown overlap when dropdown is open */}
+          {/* Spacer to prevent dropdown overlap when dropdown is open -- sized to
+              the actual number of suggestions instead of a fixed guess, so a
+              1-result dropdown doesn't leave a large empty gap underneath it. */}
           {isLocationDropdownOpen && (
-            <View style={{ height: 260 }} />
+            <View style={{ height: Math.min(Math.max(locationSuggestionCount, 1) * 62 + 8, 260) }} />
           )}
         </View>
 

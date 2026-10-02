@@ -23,6 +23,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -36,6 +37,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppLoader from '@/src/shared/components/AppLoader';
+import { DateOptionSelector } from '@/src/features/tasks/screens/create/components/DateOptionSelector';
 
 interface ServiceListingDetailScreenProps {
   listingId: string;
@@ -58,6 +60,36 @@ export default function ServiceListingDetailScreen({
   const [amount, setAmount] = useState(
     initialListing?.price != null ? String(initialListing.price) : ''
   );
+
+  // "When" -- only shown for listings the tasker marked as bookingRequired.
+  // Same Easy/DoneBy/DoneOn choices (as "Flexible"/"On Date"/"Before Date")
+  // as posting a task, including the native date picker wiring.
+  const [whenOption, setWhenOption] = useState('');
+  const [touchedWhen, setTouchedWhen] = useState(false);
+  const [onDate, setOnDate] = useState<Date | null>(null);
+  const [beforeDate, setBeforeDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [activePickerOption, setActivePickerOption] = useState('');
+
+  const whenOptions = [
+    { label: 'On Date', value: 'on_time' },
+    { label: 'Before Date', value: 'before' },
+    { label: 'Flexible', value: 'no_rush' },
+  ];
+
+  const handleOpenPicker = (pickerType: string) => {
+    setActivePickerOption(pickerType);
+    setShowDatePicker(true);
+  };
+
+  const handleDateChange = (_event: DateTimePickerEvent, date?: Date) => {
+    setShowDatePicker(false);
+    if (date) {
+      if (activePickerOption === 'on_time') setOnDate(date);
+      else if (activePickerOption === 'before') setBeforeDate(date);
+    }
+    setActivePickerOption('');
+  };
 
   const listing = data || initialListing;
   const isNegotiable = listing?.pricingType === 'negotiable';
@@ -94,6 +126,29 @@ export default function ServiceListingDetailScreen({
       return;
     }
 
+    let dateType: 'Easy' | 'DoneBy' | 'DoneOn' | undefined;
+    let whenDate: Date | null = null;
+    if (listing?.bookingRequired) {
+      if (!whenOption) {
+        setTouchedWhen(true);
+        AppAlert.alert('When?', 'Please select when you need this service.');
+        return;
+      }
+      if (whenOption === 'no_rush') {
+        dateType = 'Easy';
+      } else if (whenOption === 'on_time') {
+        dateType = 'DoneOn';
+        whenDate = onDate;
+      } else if (whenOption === 'before') {
+        dateType = 'DoneBy';
+        whenDate = beforeDate;
+      }
+      if (dateType !== 'Easy' && !whenDate) {
+        AppAlert.alert('Date Required', 'Please select a date.');
+        return;
+      }
+    }
+
     if (message.trim()) {
       const moderation = validateContactContent(message);
       if (!moderation.isClean) {
@@ -111,6 +166,7 @@ export default function ServiceListingDetailScreen({
         input: {
           amount: numericAmount,
           message: message.trim() || undefined,
+          ...(dateType ? { dateType, date: whenDate ? whenDate.toISOString() : undefined } : {}),
         },
       });
       const taskId = result.data?.taskId;
@@ -129,9 +185,9 @@ export default function ServiceListingDetailScreen({
       }
 
       AppAlert.alert(
-        isNegotiating ? 'Price Request Sent' : 'Booking Created',
+        isNegotiating ? 'Booking Request Sent' : 'Booking Created',
         isNegotiating
-          ? `Your offer of $${numericAmount} was sent to ${taskerName} for approval. You'll be notified once they respond.`
+          ? `Your request was sent to ${taskerName} for approval. You'll be notified once they respond.`
           : 'Your booking is ready to pay.',
         [
           {
@@ -259,6 +315,37 @@ export default function ServiceListingDetailScreen({
             </Text>
           </View>
 
+          {/* When -- only for listings the tasker marked as needing a booking date */}
+          {listing.bookingRequired && (
+            <View style={[styles.card, isDarkMode ? styles.cardDark : styles.cardBlue, { marginTop: 16 }]}>
+              <View style={styles.sectionHeaderRow}>
+                <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                  <Ionicons name="time-outline" size={18} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+                </View>
+                <Text style={[styles.sectionTitle, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
+                  When <Text style={{ color: '#FCA5A5' }}>*</Text>
+                </Text>
+              </View>
+              <Text style={[styles.helperNote, { color: isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.75)', marginTop: -8 }]}>
+                Flexible books instantly. A specific date needs the tasker's approval first.
+              </Text>
+              <DateOptionSelector
+                options={whenOptions}
+                selectedOption={whenOption}
+                onSelectOption={(option) => {
+                  setWhenOption(option);
+                  setTouchedWhen(true);
+                }}
+                onTimeDate={onDate}
+                beforeDate={beforeDate}
+                onOpenPicker={handleOpenPicker}
+              />
+              {touchedWhen && !whenOption && (
+                <Text style={styles.validationText}>Please select when you need this service</Text>
+              )}
+            </View>
+          )}
+
           {/* Booking Section */}
           <View style={[styles.card, isDarkMode ? styles.cardDark : styles.cardBlue, { marginTop: 16 }]}>
             <View style={styles.sectionHeaderRow}>
@@ -343,6 +430,23 @@ export default function ServiceListingDetailScreen({
             </TouchableOpacity>
           </View>
         </ScrollView>
+      )}
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={
+            activePickerOption === 'on_time'
+              ? onDate || new Date()
+              : activePickerOption === 'before'
+              ? beforeDate || new Date()
+              : new Date()
+          }
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={handleDateChange}
+          minimumDate={new Date()}
+          textColor="#FFFFFF"
+        />
       )}
     </KeyboardAvoidingView>
   );
@@ -494,6 +598,11 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     marginBottom: 8,
     marginTop: -4,
+  },
+  validationText: {
+    color: '#FCA5A5',
+    fontSize: RFValue(12),
+    marginTop: 4,
   },
   input: {
     borderRadius: 14,

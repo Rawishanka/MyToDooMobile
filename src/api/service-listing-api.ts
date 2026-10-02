@@ -21,6 +21,8 @@ export interface ServiceListing {
   categories: string[];
   price: number;
   pricingType: ServiceListingPricingType;
+  /** When true, booking requires a When (Easy/DoneBy/DoneOn) date choice. */
+  bookingRequired: boolean;
   currency: string;
   radiusKm: number;
   suburb: string;
@@ -43,6 +45,7 @@ export interface ServiceListingInput {
   currency?: string;
   radiusKm?: number;
   pricingType?: ServiceListingPricingType;
+  bookingRequired?: boolean;
   status?: 'active' | 'paused';
 }
 
@@ -59,7 +62,10 @@ export interface ServiceListingSearchParams {
 export interface ServiceListingBookInput {
   amount?: number;
   message?: string;
-  dateType?: string;
+  /** Required when the listing has bookingRequired: true. */
+  dateType?: 'Easy' | 'DoneBy' | 'DoneOn';
+  /** Required for DoneBy/DoneOn -- the specific date chosen. */
+  date?: string;
   dateEnd?: string;
   time?: string;
 }

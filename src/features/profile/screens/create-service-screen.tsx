@@ -54,6 +54,7 @@ export default function CreateServiceScreen({
   }, [categoryNames, categorySearchQuery]);
   const [price, setPrice] = useState('');
   const [pricingType, setPricingType] = useState<'fixed' | 'negotiable'>('fixed');
+  const [bookingRequired, setBookingRequired] = useState(false);
   const [radiusKm, setRadiusKm] = useState('30');
   const [suburb, setSuburb] = useState('');
   const [suburbDropdownOpen, setSuburbDropdownOpen] = useState(false);
@@ -176,6 +177,7 @@ export default function CreateServiceScreen({
         price: numericPrice,
         currency: 'AUD',
         pricingType,
+        bookingRequired,
         radiusKm: numericRadius,
         suburb: suburb.trim(),
         lat: lat!,
@@ -568,6 +570,23 @@ export default function CreateServiceScreen({
               </TouchableOpacity>
             </View>
 
+            {/* Booking Required */}
+            <TouchableOpacity
+              style={styles.checkboxRow}
+              onPress={() => setBookingRequired((prev) => !prev)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, bookingRequired && styles.checkboxChecked]}>
+                {bookingRequired && <Ionicons name="checkmark" size={16} color="#FFFFFF" />}
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.checkboxLabel, isDarkMode && { color: '#F8FAFC' }]}>Booking required</Text>
+                <Text style={[styles.helperText, { marginBottom: 0 }, isDarkMode && { color: '#94A3B8' }]}>
+                  Customers must choose a date for this service. If they pick a specific date (not flexible), you'll need to approve it before they pay.
+                </Text>
+              </View>
+            </TouchableOpacity>
+
             {/* Location */}
             <Text style={[styles.label, { marginTop: 14 }, isDarkMode && { color: '#F8FAFC' }]}>Suburb / Service Area <Text style={styles.required}>*</Text></Text>
             <Text style={[styles.helperText, isDarkMode && { color: '#94A3B8' }]}>Base suburb where you provide this service</Text>
@@ -810,6 +829,32 @@ const styles = StyleSheet.create({
   },
   pricingTypeTextActive: {
     color: '#FFFFFF',
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginTop: 16,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  checkboxChecked: {
+    backgroundColor: '#ff6b35',
+    borderColor: '#ff6b35',
+  },
+  checkboxLabel: {
+    fontSize: RFValue(14),
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 2,
   },
   selectedLocBadge: {
     flexDirection: 'row',

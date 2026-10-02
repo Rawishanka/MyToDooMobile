@@ -44,7 +44,8 @@ interface LocationAutocompleteProps {
   /** Optional extra style for the "Use Current Location" button (visual only; default none). */
   buttonStyle?: any;
   country?: string; // ISO country code - AUSTRALIA-ONLY APP: Always 'AU'
-  onDropdownStateChange?: (isOpen: boolean) => void;
+  /** `suggestionCount` lets the caller size any layout spacer to the dropdown's actual content instead of a fixed guess. */
+  onDropdownStateChange?: (isOpen: boolean, suggestionCount?: number) => void;
   /** Called when the user clears the input with the X button. */
   onClear?: () => void;
   /** When false, a network failure does NOT offer a fake (Sydney-centred) manual entry. Default true. */
@@ -327,7 +328,8 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       // Limit to top 5 results after filtering
       features = features.slice(0, 5);
       setSuggestions(features);
-      
+      onDropdownStateChange?.(true, features.length);
+
       if (features.length === 0) {
         console.log('   No Australian suburbs found after filtering');
         setError("No suburbs found. Try a different search term.");
@@ -361,13 +363,15 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       }
       
       // Provide fallback manual input
-      setSuggestions(!allowManualFallback ? [] : [{
+      const fallback = !allowManualFallback ? [] : [{
         id: 'manual-fallback',
         place_name: `${searchQuery} (enter manually)`,
-        center: [151.2093, -33.8688],
+        center: [151.2093, -33.8688] as [number, number],
         text: searchQuery,
         place_type: ['manual']
-      }]);
+      }];
+      setSuggestions(fallback);
+      onDropdownStateChange?.(true, fallback.length);
     } finally {
       setLoading(false);
     }

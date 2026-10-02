@@ -63,6 +63,11 @@ export default function MyServicesScreen({ onBack, onCreate }: MyServicesScreenP
               <Text style={styles.negotiableTagText}>Negotiable</Text>
             </View>
           ) : null}
+          {item.bookingRequired ? (
+            <View style={styles.bookingRequiredTag}>
+              <Text style={styles.bookingRequiredTagText}>Booking Required</Text>
+            </View>
+          ) : null}
         </View>
       </View>
       <TouchableOpacity onPress={() => confirmDelete(item)} style={styles.deleteButton} activeOpacity={0.7}>
@@ -155,6 +160,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   negotiableTagText: { color: '#ff6b35', fontSize: 11, fontWeight: '700' },
+  bookingRequiredTag: {
+    backgroundColor: 'rgba(56,189,248,0.22)',
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    marginTop: 4,
+  },
+  bookingRequiredTagText: { color: '#38BDF8', fontSize: 11, fontWeight: '700' },
   deleteButton: {
     width: 36,
     height: 36,
