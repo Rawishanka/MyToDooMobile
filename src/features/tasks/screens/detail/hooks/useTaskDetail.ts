@@ -201,11 +201,14 @@ export const useTaskDetail = ({ taskId }: UseTaskDetailProps) => {
     
     // Small delay to ensure UI updates before navigation
     setTimeout(() => {
-      // Navigate to My Tasks → Poster → Todo tab (where in-progress/assigned tasks appear)
-      console.log('🧭 Navigating to My Tasks - Poster - Todo tab (in-progress tasks)');
+      // Navigate to My Tasks → Poster → Accepted tab (where in-progress/
+      // assigned tasks appear). The poster's tab key is "accepted" -- "Todo"
+      // isn't a real tab key on the Poster side (only the Tasker role has a
+      // "Todoo Tasks" tab), so this previously failed to switch tabs at all.
+      console.log('🧭 Navigating to My Tasks - Poster - Accepted tab (in-progress tasks)');
       router.push({
         pathname: '/(tabs)/my-tasks' as any,
-        params: { role: 'Poster', tab: 'Todo' }
+        params: { role: 'Poster', tab: 'Accepted' }
       });
     }, 500);
   };

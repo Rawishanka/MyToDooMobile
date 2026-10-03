@@ -232,9 +232,13 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
           text: 'View My Tasks',
           onPress: () => {
             onSuccess();
+            // The poster's tab key is "accepted" (labelled "Accepted" in the
+            // UI) -- "Todo" isn't a real tab key, so using it here silently
+            // failed to switch tabs and left the poster on whatever tab they
+            // were already on.
             router.push({
               pathname: '/(tabs)/my-tasks' as any,
-              params: { role: 'Poster', tab: 'Todo' }
+              params: { role: 'Poster', tab: 'Accepted' }
             });
           }
         }]
