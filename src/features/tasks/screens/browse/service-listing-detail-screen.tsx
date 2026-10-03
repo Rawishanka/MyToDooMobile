@@ -111,6 +111,16 @@ export default function ServiceListingDetailScreen({
     }
   }, [listing?.price, isNegotiable]);
 
+  // Default "When" to Flexible once a bookingRequired listing loads -- most
+  // bookings don't need a specific date, and Flexible is what books
+  // instantly, so it should be pre-selected rather than forcing every poster
+  // to make an extra tap before they can book.
+  React.useEffect(() => {
+    if (listing?.bookingRequired && !whenOption) {
+      setWhenOption('no_rush');
+    }
+  }, [listing?.bookingRequired]);
+
   const handleBook = async () => {
     if (!isAuthenticated || !token) {
       AppAlert.alert('Login Required', 'Please log in or sign up to book this service.', [

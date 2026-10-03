@@ -7,6 +7,7 @@ import {
     Modal,
     StyleSheet,
     Text,
+    TouchableOpacity,
     View
 } from 'react-native';
 import API_CONFIG from '../../api/config';
@@ -351,13 +352,23 @@ const PaymentForm: React.FC<StripePaymentModalProps> = ({
 
   // Payment is now handled immediately in initializeAndPresentPaymentSheet
 
-  // Show minimal loading UI - Stripe sheet will open immediately
+  // Show minimal loading UI - Stripe sheet will open immediately.
+  // Always offer a way out: if payment setup hangs (slow/dropped network,
+  // Stripe sheet failing to present) the user must never be stuck on this
+  // screen with no escape.
   return (
     <View style={styles.container}>
       <View style={styles.loadingContainer}>
         <AppLoader size={32} color="#FFFFFF" />
         <Text style={styles.loadingText}>Preparing secure payment...</Text>
       </View>
+      <TouchableOpacity
+        style={styles.cancelLoadingButton}
+        onPress={onClose}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.cancelLoadingText}>Cancel</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -380,6 +391,21 @@ const styles = StyleSheet.create({
     fontSize: RFValue(16),
     color: 'rgba(255,255,255,0.85)',
     fontWeight: '500',
+  },
+  cancelLoadingButton: {
+    position: 'absolute',
+    bottom: 48,
+    alignSelf: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+  },
+  cancelLoadingText: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: RFValue(14),
+    fontWeight: '600',
   },
   header: {
     flexDirection: 'row',

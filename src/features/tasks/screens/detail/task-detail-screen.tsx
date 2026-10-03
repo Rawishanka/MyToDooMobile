@@ -6,7 +6,7 @@ import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { InteractionManager, Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
 import { PayoutAccountRequiredModal } from '../offers/components';
 
@@ -104,12 +104,25 @@ export default function TaskDetailScreen() {
   // (fixed price, or a same-or-higher offer on a negotiable one) -- open the
   // payment modal immediately instead of making the poster find and tap
   // "Accept Offer" themselves on a separate visit.
+  //
+  // IMPORTANT: this screen was just pushed onto the navigation stack, and
+  // that push transition is still animating when this effect first runs.
+  // Presenting Stripe's native PaymentSheet while the screen's own entrance
+  // transition is mid-flight causes it to flash and immediately dismiss on
+  // iOS (two native modal presentations racing). InteractionManager defers
+  // the trigger until the transition/animation queue is idle, which is the
+  // standard RN fix for "modal presented right after navigation" races.
   useEffect(() => {
     if (!autoPayOfferId || autoPayTriggeredRef.current || isLoading) return;
     const offerExists = taskOffers.some((o: any) => o._id === autoPayOfferId);
     if (!offerExists) return;
+    // Set the guard synchronously (before the deferred callback runs) so a
+    // taskOffers refetch that lands while we're waiting can't re-enter this
+    // effect and schedule a second trigger.
     autoPayTriggeredRef.current = true;
-    handleAcceptOffer(autoPayOfferId);
+    InteractionManager.runAfterInteractions(() => {
+      handleAcceptOffer(autoPayOfferId);
+    });
   }, [autoPayOfferId, isLoading, taskOffers, handleAcceptOffer]);
 
   // Open Questions tab when navigated from Q&A notification

@@ -56,7 +56,7 @@ export default function NotificationPreferences({ onBack, userData }) {
             {saving ? (
               <AppLoader size={22} color="#FFFFFF" />
             ) : (
-              <Text style={styles.saveText}>Save</Text>
+              <Text style={styles.saveText} numberOfLines={1} maxFontSizeMultiplier={1.3}>Save</Text>
             )}
           </TouchableOpacity>
         }
