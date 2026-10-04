@@ -319,8 +319,11 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                 style={styles.reviewSection}
                 onLayout={(e) => { reviewSectionY.current = e.nativeEvent.layout.y; }}
               >
-                <Text style={[styles.sectionLabel, isDarkMode && { color: '#F8FAFC' }]}>Your Review (Optional)</Text>
+                <Text maxFontSizeMultiplier={1.3} style={[styles.sectionLabel, isDarkMode && { color: '#F8FAFC' }]}>Your Review (Optional)</Text>
                 <TextInput
+                  // Cap text scaling so a large system font size can't blow the box up past the
+                  // space left above the keyboard (the box still scales, just within limits)
+                  maxFontSizeMultiplier={1.3}
                   style={[styles.reviewInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
                   multiline
                   numberOfLines={6}

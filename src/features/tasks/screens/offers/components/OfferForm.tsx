@@ -182,6 +182,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
             messageError ? styles.errorBorder : undefined
           ]}
           placeholder="Why are you the best person for this task?"
+          maxFontSizeMultiplier={1.3}
           multiline
           numberOfLines={5}
           value={message}

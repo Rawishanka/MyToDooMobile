@@ -117,6 +117,7 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
               <TextInput
                 style={[styles.questionInput, isDarkMode && { backgroundColor: "#0F172A", borderColor: "#334155", color: "#F8FAFC" }]}
                 placeholder="Type your question here..."
+                maxFontSizeMultiplier={1.3}
                 placeholderTextColor={isDarkMode ? "#64748B" : "#94A3B8"}
                 value={questionText}
                 onChangeText={(text) => onChangeText(text.slice(0, 500))}
