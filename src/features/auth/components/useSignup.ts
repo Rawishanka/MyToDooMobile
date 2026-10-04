@@ -22,7 +22,7 @@ import * as SecureStore from 'expo-secure-store';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, BackHandler, Platform, TextInput } from 'react-native';
 import { validateAbn } from '@/src/shared/utils/abnValidation';
-import { extractCityFromAddress, extractRegionFromAddress, formatDateForAPI, validateForm } from './signup-helpers';
+import { extractCityFromAddress, extractRegionFromAddress, formatDateForAPI, normalizeAuMobile, validateForm } from './signup-helpers';
 import type { CountryData, LocationData, VerificationStep } from './signup-types';
 import { COUNTRIES } from './signup-types';
 
@@ -64,7 +64,11 @@ export const useSignup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhoneState] = useState('');
+  // Every phone entry point (signup form, social-signup phone step) goes
+  // through this setter, so a typed/pasted leading 0 or +61 never reaches the
+  // value we validate, send for verification, or save.
+  const setPhone = useCallback((value: string) => setPhoneState(normalizeAuMobile(value)), []);
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

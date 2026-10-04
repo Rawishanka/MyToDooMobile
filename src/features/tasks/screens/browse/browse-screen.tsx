@@ -436,6 +436,14 @@ export default function BrowseTasksScreen() {
                     <Text style={styles.negotiableChipText}>Negotiable</Text>
                   </View>
                 ) : null}
+                {item.myBooking ? (
+                  <View style={styles.negotiableChip}>
+                    <Ionicons name="time-outline" size={11} color="#ff6b35" />
+                    <Text style={styles.negotiableChipText}>
+                      {item.myBooking.status === 'countered' ? 'Awaiting approval' : 'Awaiting payment'}
+                    </Text>
+                  </View>
+                ) : null}
               </View>
 
               {/* Description */}

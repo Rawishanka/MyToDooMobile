@@ -56,6 +56,18 @@ let isCacheLoaded = false;
   }
 })();
 
+// Native location calls (GPS fix, reverse geocode) have no timeout of their
+// own. Without one a device that can't get a fix leaves isDetecting true
+// forever, and anything gated on it appears frozen.
+const withTimeout = <T,>(promise: Promise<T>, ms: number): Promise<T> =>
+  new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Location request timed out')), ms);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (err) => { clearTimeout(timer); reject(err); }
+    );
+  });
+
 export const useLocationCountry = () => {
   // CRITICAL FIX: Don't initialize with DEFAULT_COUNTRY until cache is fully loaded
   // This prevents currency symbol flickering from $ (AUD) to Rs (LKR)
@@ -143,10 +155,10 @@ export const useLocationCountry = () => {
       console.log('✅ Location permission granted, getting current position...');
 
       // Get current location with timeout
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-        timeInterval: 15000, // 15 seconds timeout
-      });
+      const location = await withTimeout(
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+        10000
+      );
 
       console.log('📍 Current location coordinates:', {
         lat: location.coords.latitude,
@@ -156,10 +168,13 @@ export const useLocationCountry = () => {
       });
 
       // Reverse geocode to get country
-      const reverseGeocodeResult = await Location.reverseGeocodeAsync({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
+      const reverseGeocodeResult = await withTimeout(
+        Location.reverseGeocodeAsync({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        }),
+        8000
+      );
 
       console.log('🔍 Reverse geocode result:', reverseGeocodeResult);
 

@@ -71,7 +71,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 }) => {
   const { isDarkMode } = useTheme();
   // AUSTRALIA-ONLY APP: Always use Australia regardless of detection
-  const { countryInfo, isDetecting: isDetectingCountry } = useLocationCountry();
+  const { countryInfo } = useLocationCountry();
   // Always use 'AU' for Australia-only app
   const effectiveCountry = 'AU';
 
@@ -97,17 +97,19 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const checkLocationPermission = async () => {
     try {
       const { status } = await Location.getForegroundPermissionsAsync();
-      setPermissionStatus(status === 'granted' ? 'granted' : 'denied');
+      // 'undetermined' means we simply haven't asked yet -- don't label that as denied
+      setPermissionStatus(status === 'granted' ? 'granted' : status === 'denied' ? 'denied' : 'unknown');
     } catch (error) {
       console.log('Error checking permission:', error);
       setPermissionStatus('unknown');
     }
   };
 
-  // Show country detection status in placeholder when detecting
-  const dynamicPlaceholder = isDetectingCountry 
-    ? "Detecting your location..." 
-    : countryInfo ? `${placeholder} (${countryInfo.countryName})` : placeholder;
+  // Country detection (GPS + reverse geocode) runs in the background and must
+  // never lock or relabel the field -- this is an Australia-only app, and a
+  // customer whose location permission is denied (or whose GPS never gets a
+  // fix) would otherwise sit on "Detecting your location..." unable to type.
+  const dynamicPlaceholder = countryInfo ? `${placeholder} (${countryInfo.countryName})` : placeholder;
 
   console.log('🌍 Using country for location search:', {
     provided: country,
@@ -186,11 +188,22 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         return;
       }
 
-      // Get current location
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-        timeInterval: 10000, // 10 seconds timeout
-      });
+      // Get current location. getCurrentPositionAsync has no timeout of its
+      // own (timeInterval only applies to watchers), so without this race a
+      // device that can't get a fix leaves the field locked forever.
+      let location: Location.LocationObject | null = null;
+      try {
+        location = await Promise.race([
+          Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(Object.assign(new Error('timeout'), { code: 'E_LOCATION_TIMEOUT' })), 12000)
+          ),
+        ]);
+      } catch (positionError: any) {
+        // Fall back to the last known fix before giving up
+        location = await Location.getLastKnownPositionAsync();
+        if (!location) throw positionError;
+      }
 
       const coords: Coordinates = {
         lat: location.coords.latitude,
@@ -530,7 +543,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       <TouchableOpacity
         onPress={getCurrentLocation}
         style={[getLocationButtonStyle(), buttonStyle]}
-        disabled={detectingLocation || isDetectingCountry}
+        disabled={detectingLocation}
       >
         {detectingLocation ? (
           <AppLoader size={22} color="#4285F4" />
@@ -561,7 +574,7 @@ export const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           autoCorrect={false}
           autoCapitalize="words"
           returnKeyType="search"
-          editable={!detectingLocation && !isDetectingCountry}
+          editable={!detectingLocation}
           onFocus={() => {
             console.log('📍 Location input focused');
             onFocus?.();

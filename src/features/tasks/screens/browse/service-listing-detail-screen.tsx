@@ -1,5 +1,5 @@
 import type { ServiceListing } from '@/src/api/service-listing-api';
-import { AppAlert } from '@/src/shared/components/AppAlert';
+import { AppAlert, appAlert } from '@/src/shared/components/AppAlert';
 import {
   useBookServiceListing,
   useGetServiceListing,
@@ -54,7 +54,7 @@ export default function ServiceListingDetailScreen({
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isAuthenticated, token, user: currentUser } = useAuthStore();
-  const { data, isLoading } = useGetServiceListing(listingId, !!listingId);
+  const { data, isLoading, refetch } = useGetServiceListing(listingId, !!listingId);
   const bookMutation = useBookServiceListing();
   const [message, setMessage] = useState('');
   const [amount, setAmount] = useState(
@@ -66,8 +66,15 @@ export default function ServiceListingDetailScreen({
   // as posting a task, including the native date picker wiring.
   const [whenOption, setWhenOption] = useState('');
   const [touchedWhen, setTouchedWhen] = useState(false);
-  const [onDate, setOnDate] = useState<Date | null>(null);
-  const [beforeDate, setBeforeDate] = useState<Date | null>(null);
+  // Pre-filled exactly like Post Task: "On Date" starts at today and "Before
+  // Date" five days out, so picking either shows a real date straight away
+  // instead of an empty "Select date".
+  const [onDate, setOnDate] = useState<Date | null>(() => new Date());
+  const [beforeDate, setBeforeDate] = useState<Date | null>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 5);
+    return d;
+  });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [activePickerOption, setActivePickerOption] = useState('');
 
@@ -93,6 +100,11 @@ export default function ServiceListingDetailScreen({
 
   const listing = data || initialListing;
   const isNegotiable = listing?.pricingType === 'negotiable';
+  // The viewer already has an unresolved booking on this listing: either it
+  // is awaiting the provider's approval, or it is approved/ready and waiting
+  // on the poster's payment. Either way they can't send another request.
+  const myBooking = listing?.myBooking || null;
+  const awaitingApproval = myBooking?.status === 'countered';
   const isOwnListing = !!(
     currentUser?._id &&
     listing?.tasker &&
@@ -219,11 +231,32 @@ export default function ServiceListingDetailScreen({
         ]
       );
     } catch (error: any) {
+      const data = error?.response?.data;
+      if (data?.code === 'DUPLICATE_BOOKING_REQUEST') {
+        // Refresh so the button flips to its disabled/awaiting state, and tell
+        // the poster why -- the notice closes itself after a few seconds.
+        refetch();
+        appAlert(
+          'Booking Request Pending',
+          data.message,
+          [{ text: 'OK' }],
+          { type: 'warning', autoCloseMs: 6000 }
+        );
+        return;
+      }
       AppAlert.alert(
         'Booking Failed',
-        error?.response?.data?.message || error?.message || 'Please try again.'
+        data?.message || error?.message || 'Please try again.'
       );
     }
+  };
+
+  const handleCompletePayment = () => {
+    if (!myBooking) return;
+    router.push({
+      pathname: '/task-detail',
+      params: { taskId: String(myBooking.taskId), autoPayOfferId: String(myBooking.offerId) },
+    });
   };
 
   return (
@@ -350,7 +383,7 @@ export default function ServiceListingDetailScreen({
           )}
 
           {/* When -- only for listings the tasker marked as needing a booking date */}
-          {!isOwnListing && listing.bookingRequired && (
+          {!isOwnListing && !myBooking && listing.bookingRequired && (
             <View style={[styles.card, isDarkMode ? styles.cardDark : styles.cardBlue, { marginTop: 16 }]}>
               <View style={styles.sectionHeaderRow}>
                 <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
@@ -380,8 +413,47 @@ export default function ServiceListingDetailScreen({
             </View>
           )}
 
+          {/* Existing booking -- the poster can't send a second request, so the
+              Book button is replaced by a disabled "awaiting approval" state
+              (or a way to finish paying once the provider has approved). */}
+          {!isOwnListing && myBooking && (
+            <View style={[styles.card, isDarkMode ? styles.cardDark : styles.cardBlue, { marginTop: 16 }]}>
+              <View style={styles.sectionHeaderRow}>
+                <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>
+                  <Ionicons
+                    name={awaitingApproval ? 'time-outline' : 'card-outline'}
+                    size={18}
+                    color={isDarkMode ? '#38BDF8' : CARD_TEXT}
+                  />
+                </View>
+                <Text style={[styles.sectionTitle, { color: isDarkMode ? '#F8FAFC' : CARD_TEXT }]}>
+                  {awaitingApproval ? 'Booking Request Sent' : 'Booking Awaiting Payment'}
+                </Text>
+              </View>
+              <Text style={[styles.helperNote, { color: isDarkMode ? '#94A3B8' : 'rgba(255,255,255,0.75)', marginTop: -8 }]}>
+                {awaitingApproval
+                  ? `You've already sent a booking request${myBooking.amount != null ? ` of $${Number(myBooking.amount).toFixed(0)}` : ''} for this service. You'll be notified as soon as ${taskerName} responds.`
+                  : `Your booking${myBooking.amount != null ? ` of $${Number(myBooking.amount).toFixed(0)}` : ''} is ready. Complete the payment to confirm it.`}
+              </Text>
+              <TouchableOpacity
+                style={[styles.bookButton, awaitingApproval && styles.bookDisabled]}
+                onPress={handleCompletePayment}
+                disabled={awaitingApproval}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.bookText}>
+                  {awaitingApproval
+                    ? 'Awaiting approval from provider'
+                    : myBooking.status === 'payment_failed'
+                    ? 'Retry Payment'
+                    : 'Complete Payment'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           {/* Booking Section */}
-          {!isOwnListing && (
+          {!isOwnListing && !myBooking && (
           <View style={[styles.card, isDarkMode ? styles.cardDark : styles.cardBlue, { marginTop: 16 }]}>
             <View style={styles.sectionHeaderRow}>
               <View style={[styles.iconChip, isDarkMode && { backgroundColor: '#0F172A' }]}>

@@ -22,6 +22,7 @@ import PrivacyPolicyScreen from '@/src/features/legal/screens/PrivacyPolicyScree
 import { DatePickerInput } from './DatePickerInput';
 import { LocationInput } from './LocationInput';
 import type { CountryData, LocationData } from './signup-types';
+import { normalizeAuMobile } from './signup-helpers';
 import { formatAbnInput } from '@/src/shared/utils/abnValidation';
 import { RFValue } from '@/src/shared/utils/responsive';
 import { useTheme } from '@/src/shared/theme';
@@ -707,7 +708,10 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           style={[styles.phoneInput, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', color: '#F8FAFC' }]}
           value={phone}
           onChangeText={(text) => {
-            setPhone(text);
+            // Drops a typed/pasted leading 0 (or +61) -- the +61 prefix is
+            // already shown beside the field
+            const normalizedPhone = normalizeAuMobile(text);
+            setPhone(normalizedPhone);
             // Clear 'Required' error if user starts typing
             if (errors.phone === 'Required') {
               const newErrors = { ...errors };
@@ -715,8 +719,8 @@ export const SignupForm: React.FC<SignupFormProps> = ({
               setErrors(newErrors);
             }
             // Validate format if field was touched
-            if (touched.phone && text.trim() !== '') {
-              validateField('phone', text, true);
+            if (touched.phone && normalizedPhone !== '') {
+              validateField('phone', normalizedPhone, true);
             }
           }}
           onBlur={() => handleBlur('phone')}

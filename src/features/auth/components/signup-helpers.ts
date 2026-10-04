@@ -74,6 +74,23 @@ export const extractRegionFromAddress = (address: string): string => {
 };
 
 /**
+ * Reduce whatever the customer typed or pasted into the 9-digit Australian
+ * mobile that follows the +61 prefix.
+ *
+ * Customers naturally type the domestic trunk "0" (0412 345 678), and some
+ * paste the international form (+61 412 345 678 / 0061...). The +61 prefix is
+ * already shown next to the field, so the leading 0 (and any pasted country
+ * code) is dropped automatically rather than treated as an error.
+ */
+export const normalizeAuMobile = (raw: string): string => {
+  let digits = (raw || '').replace(/\D/g, '');
+  if (digits.startsWith('0061')) digits = digits.slice(4);
+  else if (digits.startsWith('61') && digits.length > 9) digits = digits.slice(2);
+  digits = digits.replace(/^0+/, '');
+  return digits.slice(0, 9);
+};
+
+/**
  * Validate signup form data
  */
 export const validateForm = (formData: SignupFormData): boolean => {
@@ -127,46 +144,26 @@ export const validateForm = (formData: SignupFormData): boolean => {
     return false;
   }
 
-  // Phone validation - basic format check
+  // Phone validation. The leading 0 is dropped automatically (see
+  // normalizeAuMobile) so a customer typing 0412 345 678 is accepted.
   const phoneRegex = /^[0-9+\-\s()]+$/;
   if (!phoneRegex.test(formData.phone)) {
     Alert.alert('Invalid Mobile Number', 'Please enter a valid Australian mobile number');
     return false;
   }
 
-  // Get phone digits only for length validation
-  const phoneDigits = formData.phone.replace(/[^0-9]/g, '');
-  
-  // AUSTRALIA-ONLY: Australian phone validation
-  // Australian mobile numbers start with 04 when dialed domestically
-  // In international format (+61), the leading 0 is removed, so it's just 4xxxxxxxx
-  
-  // Check for leading 0 (common mistake when entering Australian mobile)
-  if (formData.phone.startsWith('0')) {
-    Alert.alert(
-      'Invalid Mobile Number', 
-      'For Australia (+61), please enter your mobile number without the leading 0.\n\nExample: Enter 412345678 instead of 0412345678'
-    );
+  const phoneDigits = normalizeAuMobile(formData.phone);
+
+  // AUSTRALIA-ONLY: mobile numbers are 9 digits after +61, starting with 4
+  if (phoneDigits.length !== 9) {
+    Alert.alert('Invalid Mobile Number', 'Australian mobile numbers must be 9 digits after +61 (e.g., 412345678)');
     return false;
   }
 
-  // AUSTRALIA-ONLY: Australian mobile numbers are 9 digits (without leading 0)
-  // Format: 4XX XXX XXX (must start with 4 for mobile)
-  const minLength = 9;
-  const maxLength = 9;
-  const lengthErrorMessage = 'Australian mobile numbers must be 9 digits (e.g., 412345678)';
-
-  // Validate phone number length
-  if (phoneDigits.length < minLength || phoneDigits.length > maxLength) {
-    Alert.alert('Invalid Mobile Number', lengthErrorMessage);
-    return false;
-  }
-
-  // Validate that Australian mobile starts with 4
   if (!phoneDigits.startsWith('4')) {
     Alert.alert(
       'Invalid Mobile Number',
-      'Australian mobile numbers must start with 4.\n\nExample: 412345678'
+      'Australian mobile numbers must start with 4 (or 04).\n\nExample: 0412 345 678'
     );
     return false;
   }
@@ -183,7 +180,7 @@ export const prepareSignupData = (formData: SignupFormData) => {
     lastName: formData.lastName,
     email: formData.email,
     password: formData.password,
-    phone: formData.phone,
+    phone: normalizeAuMobile(formData.phone),
     dateOfBirth: formData.dateOfBirth ? formatDateForAPI(formData.dateOfBirth) : '',
     country: formData.selectedCountry.name,
     countryCode: formData.selectedCountry.code,

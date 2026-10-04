@@ -14,6 +14,16 @@ export interface ServiceListingTasker {
 
 export type ServiceListingPricingType = 'fixed' | 'negotiable';
 
+/** The viewing user's own unresolved booking on a listing (null when none). */
+export interface ServiceListingMyBooking {
+  taskId: string;
+  offerId: string;
+  /** countered = awaiting the tasker's approval; pending/payment_pending/payment_failed = awaiting payment */
+  status: 'countered' | 'pending' | 'payment_pending' | 'payment_failed';
+  amount?: number;
+  currency?: string;
+}
+
 export interface ServiceListing {
   _id: string;
   title: string;
@@ -30,6 +40,7 @@ export interface ServiceListing {
   lng?: number | null;
   status: 'active' | 'paused' | 'deleted';
   tasker?: ServiceListingTasker | string;
+  myBooking?: ServiceListingMyBooking | null;
   createdAt?: string;
   updatedAt?: string;
 }

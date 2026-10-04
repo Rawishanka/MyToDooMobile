@@ -47,7 +47,11 @@ export function useGetServiceListing(id: string, enabled = true) {
     queryFn: () => ServiceListingAPI.getServiceListing(id),
     enabled: enabled && !!id,
     select: (response) => response.data,
-    staleTime: 30 * 1000,
+    // Always re-check on open: the listing carries the viewer's own pending
+    // booking (myBooking), which changes whenever the tasker responds or the
+    // poster pays/cancels elsewhere in the app.
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 
@@ -98,6 +102,8 @@ export function useBookServiceListing() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['my-tasks'] });
+      // The listing now carries the new pending booking (myBooking)
+      queryClient.invalidateQueries({ queryKey: SERVICE_LISTING_QUERY_KEYS.all });
     },
   });
 }
