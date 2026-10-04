@@ -21,8 +21,8 @@ import {
   CARD_TEXT_MUTED,
 } from '@/src/shared/theme/brandColors';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useMemo, useState } from 'react';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import {
   KeyboardAvoidingView,
@@ -56,6 +56,15 @@ export default function ServiceListingDetailScreen({
   const { isAuthenticated, token, user: currentUser } = useAuthStore();
   const { data, isLoading, refetch } = useGetServiceListing(listingId, !!listingId);
   const bookMutation = useBookServiceListing();
+
+  // Re-check the viewer's pending booking whenever this screen regains focus
+  // (e.g. after paying or cancelling the booking from My Tasks) so the Book /
+  // "Awaiting approval" button never shows a stale state.
+  useFocusEffect(
+    useCallback(() => {
+      if (listingId) refetch();
+    }, [listingId, refetch])
+  );
   const [message, setMessage] = useState('');
   const [amount, setAmount] = useState(
     initialListing?.price != null ? String(initialListing.price) : ''
