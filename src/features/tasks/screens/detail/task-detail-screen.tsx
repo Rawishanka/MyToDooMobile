@@ -273,6 +273,7 @@ export default function TaskDetailScreen() {
               taskCreatorId={task?.createdBy?._id}
               currentUserId={currentUser?._id}
               onAcceptOffer={handleAcceptOffer}
+              isServiceBooking={!!(task as any)?.serviceListingId}
               excludeOfferId={myOffer?._id}
               taskLocation={task?.location}
             />

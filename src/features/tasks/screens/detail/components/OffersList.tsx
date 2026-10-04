@@ -31,6 +31,8 @@ interface OffersListProps {
   taskCreatorId?: string;
   currentUserId?: string;
   onAcceptOffer?: (offerId: string) => void;
+  /** True for a service booking: the offer is the provider's, so "accepting" it means paying to confirm the booking. */
+  isServiceBooking?: boolean;
   excludeOfferId?: string; // Offer ID to exclude (shown in MyOfferCard)
   taskLocation?: { address?: string };
 }
@@ -62,6 +64,7 @@ export const OffersList: React.FC<OffersListProps> = ({
   taskCreatorId, 
   currentUserId,
   onAcceptOffer,
+  isServiceBooking,
   excludeOfferId,
   taskLocation
 }) => {
@@ -124,6 +127,7 @@ export const OffersList: React.FC<OffersListProps> = ({
           taskCreatorId={taskCreatorId}
           currentUserId={currentUserId}
           onAcceptOffer={onAcceptOffer}
+          isServiceBooking={isServiceBooking}
           hasAcceptedOffer={hasAcceptedOffer}
           isTaskPoster={currentUserId === taskCreatorId}
         />
@@ -210,11 +214,12 @@ interface OfferCardProps {
   taskCreatorId?: string;
   currentUserId?: string;
   onAcceptOffer?: (offerId: string) => void;
+  isServiceBooking?: boolean;
   hasAcceptedOffer?: boolean;
   isTaskPoster?: boolean;
 }
 
-const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUserId, onAcceptOffer, hasAcceptedOffer, isTaskPoster }) => {
+const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUserId, onAcceptOffer, isServiceBooking, hasAcceptedOffer, isTaskPoster }) => {
   const { isDarkMode } = useTheme();
   const taskTitle = offer.taskId?.title || 'Task';
   
@@ -431,7 +436,7 @@ const OfferCard: React.FC<OfferCardProps> = ({ offer, taskCreatorId, currentUser
                 style={styles.acceptOfferButton}
                 onPress={() => onAcceptOffer(offer._id)}
               >
-                <Text style={styles.acceptOfferButtonText}>Accept Offer</Text>
+                <Text style={styles.acceptOfferButtonText}>{isServiceBooking ? 'Pay & Confirm Booking' : 'Accept Offer'}</Text>
               </TouchableOpacity>
             )}
 

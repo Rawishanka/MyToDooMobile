@@ -37,6 +37,8 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
   assignee,
 }) => {
   const { isDarkMode } = useTheme();
+  // A booking made from a service listing (not a task the poster wrote)
+  const isServiceBooking = !!(task as any)?.serviceListingId;
   
   // Helper: Format date for display
   const formatTaskDate = (date: string | undefined) => {
@@ -797,6 +799,12 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
 
       {/* Task Title */}
       <Text style={[styles.taskTitle, isDarkMode && { color: '#F8FAFC' }]}>{task.title}</Text>
+      {isServiceBooking && (
+        <View style={[styles.categoryBadge, { alignSelf: 'center', marginBottom: 12 }, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+          <Ionicons name="calendar-outline" size={14} color={isDarkMode ? '#38BDF8' : CARD_TEXT} />
+          <Text style={[styles.categoryText, isDarkMode && { color: '#38BDF8' }]}>Service booking</Text>
+        </View>
+      )}
 
       {/* Poster Info */}
       <View style={styles.detailRow}>
@@ -805,7 +813,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
         </View>
         <View style={{ flex: 1, marginLeft: 12 }}>
           <Text style={[styles.detailText, { marginLeft: 0, flex: 0 }, isDarkMode && { color: '#94A3B8' }]}>
-            Posted by {formatUserName(task.createdBy?.firstName, task.createdBy?.lastName)}
+            {isServiceBooking ? 'Booked by' : 'Posted by'} {formatUserName(task.createdBy?.firstName, task.createdBy?.lastName)}
           </Text>
           <VerifiedBadges badges={posterBadges ?? (task.createdBy as any)?.badges} />
         </View>
@@ -833,7 +841,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
             <Ionicons name="calendar-outline" size={18} color={chipIconColor} />
           </View>
           <Text style={[styles.detailText, isDarkMode && { color: '#94A3B8' }]}>
-            Posted {new Date(task.createdAt).toLocaleDateString('en-US', {
+            {isServiceBooking ? 'Booked' : 'Posted'} {new Date(task.createdAt).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric'
@@ -925,10 +933,10 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
               return budget ? formatCurrency(budget, currencyInfo) : `${symbol}0.00`;
             })()}
           </Text>
-          <Text style={[styles.budgetSublabel, isDarkMode && { color: '#94A3B8' }]}>TASK BUDGET</Text>
+          <Text style={[styles.budgetSublabel, isDarkMode && { color: '#94A3B8' }]}>{isServiceBooking ? 'BOOKING PRICE' : 'TASK BUDGET'}</Text>
         </View>
         <View style={[styles.budgetStatusPill, isDarkMode && { backgroundColor: '#1E293B' }]}>
-          <Text style={[styles.budgetStatusText, isDarkMode && { color: '#38BDF8' }]} numberOfLines={1} adjustsFontSizeToFit>ESTIMATED</Text>
+          <Text style={[styles.budgetStatusText, isDarkMode && { color: '#38BDF8' }]} numberOfLines={1} adjustsFontSizeToFit>{isServiceBooking ? 'SERVICE' : 'ESTIMATED'}</Text>
         </View>
       </View>
 

@@ -16,12 +16,13 @@ interface MyOfferCardProps {
   offer: any;
   isTaskPoster?: boolean;
   onAcceptOffer?: (offerId: string) => void;
+  isServiceBooking?: boolean;
   taskLocation?: { address?: string };
   taskId?: string;
   onOfferUpdated?: () => void;
 }
 
-export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, onAcceptOffer, taskLocation, taskId, onOfferUpdated }) => {
+export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, onAcceptOffer, isServiceBooking, taskLocation, taskId, onOfferUpdated }) => {
   const { isDarkMode } = useTheme();
   // Use user's current location for currency display (auto geo-location)
   const { countryInfo } = useLocationCountry();
@@ -140,7 +141,7 @@ export const MyOfferCard: React.FC<MyOfferCardProps> = ({ offer, isTaskPoster, o
             style={styles.acceptOfferButton}
             onPress={() => onAcceptOffer && onAcceptOffer(offer._id)}
           >
-            <Text style={styles.acceptOfferButtonText}>Accept Offer</Text>
+            <Text style={styles.acceptOfferButtonText}>{isServiceBooking ? 'Pay & Confirm Booking' : 'Accept Offer'}</Text>
           </TouchableOpacity>
         )}
 

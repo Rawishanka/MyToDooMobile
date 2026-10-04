@@ -437,7 +437,10 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
   // yet) -- same rule the backend enforces. Previously this was only
   // reachable from the My Tasks list card; posters viewing the task detail
   // screen itself had no way to find it.
-  const canEditOpenTask = isTaskCreator && task?.status === 'open';
+  // A service booking mirrors the listing that was booked (title, price,
+  // location come from it), so it isn't editable like a task the poster wrote.
+  const isServiceBooking = !!(task as any)?.serviceListingId;
+  const canEditOpenTask = isTaskCreator && task?.status === 'open' && !isServiceBooking;
 
   if (!shouldShowButtons && !canEditOpenTask) {
     return null;

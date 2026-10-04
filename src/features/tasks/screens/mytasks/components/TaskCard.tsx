@@ -1658,9 +1658,12 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
             </View>
           )}
 
-          {/* Offer Count Display - Same as Browse screen */}
+          {/* Offer Count Display - Same as Browse screen. A service booking's single
+              offer is just the provider's own, so label it as a booking instead. */}
           <Text style={styles.offerCountText}>
-            {task.status === 'accepted' || task.status === 'completed' || 
+            {(task as any).serviceListingId
+              ? 'Service booking'
+              : task.status === 'accepted' || task.status === 'completed' || 
              task.status === 'assigned' || task.status === 'in_progress' || task.status === 'in-progress'
               ? task.status.charAt(0).toUpperCase() + task.status.slice(1).replace('_', ' ').replace('-', ' ')
               : (() => {
@@ -2143,7 +2146,8 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
           ) : (
             // Posted tab or other tabs: Edit + Delete + Cancel (except Cancel for Poster in Posted tab)
             <>
-              {/* Edit Button */}
+              {/* Edit Button -- a service booking mirrors the booked listing, so it isn't editable */}
+              {!(task as any).serviceListingId && (
               <TouchableOpacity 
                 style={[
                   styles.actionButton,
@@ -2177,6 +2181,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                   color={(isProcessing || deleteTaskMutation.isPending) ? "rgba(255,255,255,0.4)" : "#FFFFFF"} 
                 />
               </TouchableOpacity>
+              )}
             
               {/* Delete Button */}
               <TouchableOpacity 
