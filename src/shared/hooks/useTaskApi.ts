@@ -29,8 +29,15 @@ export const TASK_QUERY_KEYS = {
   },
   details: () => [...TASK_QUERY_KEYS.all, 'detail'] as const,
   detail: (id: string) => [...TASK_QUERY_KEYS.details(), id] as const,
-  myTasks: (params?: MyTasksParams) => [...TASK_QUERY_KEYS.all, 'my-tasks', params] as const,
-  myOffers: (params?: MyTasksParams) => [...TASK_QUERY_KEYS.all, 'my-offers', params] as const,
+  // NB: when no params are given the key must be just the prefix. A trailing
+  // `undefined` element does NOT prefix-match queries stored with real params
+  // (react-query compares it to the params object), which made every
+  // invalidateQueries/refetchQueries({ queryKey: myTasks() }) after a
+  // mutation (review, release payment, accept, cancel...) silently refresh nothing.
+  myTasks: (params?: MyTasksParams) =>
+    (params === undefined ? [...TASK_QUERY_KEYS.all, 'my-tasks'] : [...TASK_QUERY_KEYS.all, 'my-tasks', params]) as readonly unknown[],
+  myOffers: (params?: MyTasksParams) =>
+    (params === undefined ? [...TASK_QUERY_KEYS.all, 'my-offers'] : [...TASK_QUERY_KEYS.all, 'my-offers', params]) as readonly unknown[],
   offers: (taskId: string) => [...TASK_QUERY_KEYS.detail(taskId), 'offers'] as const,
   allOffers: (taskId?: string) => taskId 
     ? [...TASK_QUERY_KEYS.all, 'all-offers', taskId] as const
@@ -41,8 +48,10 @@ export const TASK_QUERY_KEYS = {
   userTasks: (userId: string) => [...TASK_QUERY_KEYS.all, 'user', userId] as const,
   categories: () => [...TASK_QUERY_KEYS.all, 'categories'] as const,
   reviews: (taskId: string) => [...TASK_QUERY_KEYS.detail(taskId), 'reviews'] as const,
-  taskerReviews: (params?: any) => ['reviews', 'tasker', params] as const,
-  posterReviews: (params?: any) => ['reviews', 'poster', params] as const,
+  taskerReviews: (params?: any) =>
+    (params === undefined ? ['reviews', 'tasker'] : ['reviews', 'tasker', params]) as readonly unknown[],
+  posterReviews: (params?: any) =>
+    (params === undefined ? ['reviews', 'poster'] : ['reviews', 'poster', params]) as readonly unknown[],
 };
 
 // 🌟 **PHASE 1: CORE TASK FEATURES - QUERY HOOKS**

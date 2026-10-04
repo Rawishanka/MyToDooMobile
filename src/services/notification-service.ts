@@ -431,6 +431,19 @@ const handleNotificationDataRefresh = (notificationType: string, queryClient: an
         console.log('✅ Invalidated offers, tasks, and service listings cache');
         break;
 
+      case 'OFFER_NEGOTIATION_REQUESTED':
+      case 'OFFER_NEGOTIATION_APPROVED':
+      case 'OFFER_NEGOTIATION_REJECTED':
+      case 'OFFER_UPDATED':
+        // A service booking changed state (approved / declined / re-sent): refresh
+        // My Tasks, offers AND the service listing so an open "Awaiting approval"
+        // screen flips straight away instead of waiting for a manual refresh.
+        queryClient.invalidateQueries({ queryKey: ['offers'] });
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        queryClient.invalidateQueries({ queryKey: ['service-listings'] });
+        console.log('✅ Invalidated offers, tasks and service listings cache (negotiation)');
+        break;
+
       case 'OFFER_ACCEPTED':
       case 'OFFER_REJECTED':
         // Invalidate offers and my tasks

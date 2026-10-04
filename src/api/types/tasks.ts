@@ -251,6 +251,10 @@ export interface Task {
   status: string;
   /** Set after payment release / completion; cleared when both parties reviewed */
   reviewStatus?: 'none' | 'review_required' | 'reviews_complete';
+  /** Completed tasks, from /tasks/my-tasks: has the CURRENT user already submitted their review? */
+  myReviewDone?: boolean;
+  /** Completed tasks, from /tasks/my-tasks: has the OTHER party already reviewed? */
+  otherReviewDone?: boolean;
   createdBy: {
     _id: string;
     firstName: string;

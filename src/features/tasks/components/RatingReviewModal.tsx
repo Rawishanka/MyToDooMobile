@@ -91,7 +91,7 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
       setTimeout(() => {
         AppAlert.alert(
           'Success',
-          'Your review has been submitted successfully!'
+          'Thank you! Your review has been submitted. You can find this job under the Completed tab.'
         );
       }, 300);
     } catch (error: any) {

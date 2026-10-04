@@ -651,10 +651,17 @@ export default function MyTasksScreen() {
       });
     };
 
-    // Helper: completed tasks still awaiting one or both reviews
+    // Helper: completed tasks where THIS user still owes a review.
+    // task.reviewStatus alone can't decide it: it only flips once BOTH sides have
+    // reviewed (and is missing on older jobs), so a job I had already reviewed sat
+    // in Review Required with no review button and Completed stayed empty/hidden.
+    // The backend now tells us whether I've reviewed (myReviewDone); once I have,
+    // the job belongs under Completed (where the card shows the review status).
     const isReviewRequired = (task: Task): boolean => {
       if (task.status !== 'completed') return false;
+      if (task.myReviewDone === true) return false;
       const rs = task.reviewStatus;
+      if (rs === 'reviews_complete') return false;
       return rs === 'review_required' || rs === 'none' || !rs;
     };
 

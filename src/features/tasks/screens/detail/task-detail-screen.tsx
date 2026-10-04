@@ -4,9 +4,10 @@ import { NetworkAlert } from '@/src/shared/components/NetworkAlert';
 import { OfflineBanner } from '@/src/shared/components/OfflineBanner';
 import { useLocationCountry } from '@/src/shared/hooks/useLocationCountry';
 import { useNetworkStatus } from '@/src/shared/hooks/useNetworkStatus';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { InteractionManager, Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { InteractionManager, Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCheckCanReview } from '@/src/shared/hooks/useTaskApi';
 import StripePaymentModal from '../../../../shared/components/StripePaymentModal';
 import { PayoutAccountRequiredModal } from '../offers/components';
 
@@ -99,6 +100,16 @@ export default function TaskDetailScreen() {
     showPayoutModal,
     setShowPayoutModal,
   } = useTaskDetail({ taskId: taskId! });
+
+  // Completed job: tell the poster/tasker where their review stands (Task Details
+  // used to have no review control at all, so people looked here and found nothing).
+  const isJobParticipant =
+    !!currentUser?._id &&
+    (task?.createdBy?._id === currentUser._id || (task as any)?.assignedTo?._id === currentUser._id);
+  const isCompletedJob = task?.status === 'completed' && isJobParticipant;
+  const { data: canReviewData } = useCheckCanReview(taskId, isCompletedJob);
+  const needsMyReview = isCompletedJob && canReviewData?.data?.canReview === true;
+  const alreadyReviewed = isCompletedJob && canReviewData?.data?.canReview === false;
 
   // Coming straight from "Confirm & Book Service" on a ready-to-pay listing
   // (fixed price, or a same-or-higher offer on a negotiable one) -- open the
@@ -249,6 +260,34 @@ export default function TaskDetailScreen() {
           }}
         />
 
+        {needsMyReview && (
+          <View style={styles.reviewCard}>
+            <Text style={styles.reviewCardTitle}>How did it go?</Text>
+            <Text style={styles.reviewCardText}>This job is complete. Leave a review for the other person.</Text>
+            <TouchableOpacity
+              style={styles.reviewCardButton}
+              activeOpacity={0.85}
+              onPress={() =>
+                router.push({
+                  pathname: '/(tabs)/my-tasks' as any,
+                  params: {
+                    role: task?.createdBy?._id === currentUser?._id ? 'Poster' : 'Tasker',
+                    promptReviewTaskId: taskId,
+                  },
+                })
+              }
+            >
+              <Text style={styles.reviewCardButtonText}>Leave a review</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {alreadyReviewed && (
+          <View style={styles.reviewCard}>
+            <Text style={styles.reviewCardTitle}>Review submitted</Text>
+            <Text style={styles.reviewCardText}>You have already reviewed this job. You can see it under Completed in My Tasks.</Text>
+          </View>
+        )}
+
         {/* Show user's own offer if they made one (Tasker only) */}
         {myOffer && task?.createdBy?._id !== currentUser?._id && (
           <MyOfferCard
@@ -334,6 +373,25 @@ export default function TaskDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  reviewCard: {
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 12,
+  },
+  reviewCardTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  reviewCardText: { color: 'rgba(255,255,255,0.8)', fontSize: 13, lineHeight: 18 },
+  reviewCardButton: {
+    marginTop: 12,
+    backgroundColor: '#ff6b35',
+    borderRadius: 12,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewCardButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
   wrapper: {
     flex: 1,
     backgroundColor: BRAND_BLUE,

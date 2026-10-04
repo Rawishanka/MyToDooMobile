@@ -181,6 +181,30 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
   const taskReviews = taskReviewsData?.data || [];
   const lockedPeerReview = taskReviews.find((r: any) => r?.locked === true);
 
+  // Review status line for a completed job the user has already reviewed:
+  // what they rated, and whether the other person has reviewed back.
+  const reviewSummary = (() => {
+    if (!isCompletedTask) return '';
+    const myId = String(currentUser?._id || currentUser?.id || '');
+    const reviewerIdOf = (r: any) => String(r?.reviewerId?._id || r?.reviewerId || '');
+    const myReview = taskReviews.find((r: any) => !r?.locked && reviewerIdOf(r) === myId);
+    const theirReview = taskReviews.find((r: any) => reviewerIdOf(r) !== myId);
+    const otherParty: any = userRole === 'Poster' ? task.assignedTo : task.createdBy;
+    const otherName = formatUserName(otherParty?.firstName, otherParty?.lastName) || 'the other person';
+    if (myReview) {
+      const mine = `You rated ${otherName} ★${myReview.rating}`;
+      if (theirReview && !theirReview.locked) return `${mine}  ·  ${otherName} rated you ★${theirReview.rating}`;
+      if (theirReview) return `${mine}  ·  ${otherName} has reviewed you`;
+      return `${mine}  ·  Waiting for ${otherName}'s review`;
+    }
+    if ((task as any).myReviewDone) {
+      return (task as any).otherReviewDone
+        ? `You and ${otherName} have both reviewed this job`
+        : `You've reviewed this job  ·  Waiting for ${otherName}'s review`;
+    }
+    return '';
+  })();
+
 
   const handleReopenUnserviced = useCallback(async () => {
     if (isProcessing || reopenUnservicedTaskMutation.isPending) return;
@@ -1720,6 +1744,14 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
         </TouchableOpacity>
       )}
 
+      {/* Already reviewed: show what happened to the review instead of a bare card */}
+      {isCompletedTask && !!reviewSummary && (
+        <View style={styles.reviewSummaryRow}>
+          <MaterialIcons name="star-rate" size={18} color="#FBBF24" />
+          <Text style={styles.reviewSummaryText}>{reviewSummary}</Text>
+        </View>
+      )}
+
       {/* Footer: Offers affordance (left) + action buttons (right) on ONE row */}
       <View style={[styles.footerRow, footerHasPrimaryAction && styles.footerRowStacked, !showFooterDivider && styles.footerRowNoDivider]} pointerEvents="box-none">
         {/* Offers Section - Show offer count for all roles when offers exist */}
@@ -2835,6 +2867,24 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#fff',
     fontSize: RFValue(12),
+    fontWeight: '600',
+  },
+  reviewSummaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+  },
+  reviewSummaryText: {
+    flex: 1,
+    fontSize: RFValue(12),
+    color: CARD_TEXT,
     fontWeight: '600',
   },
   peerReviewLockBanner: {
