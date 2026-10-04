@@ -3,6 +3,8 @@ import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     StatusBar,
     StyleSheet,
@@ -39,6 +41,9 @@ export default function MakeOfferScreen() {
   const insets = useSafeAreaInsets();
   const { isDarkMode } = useTheme();
   const scrollRef = React.useRef<ScrollView>(null);
+  // y offsets used to scroll the message box into view (scrollToEnd pushed it out of sight)
+  const offerFormY = React.useRef(0);
+  const messageY = React.useRef(0);
 
   const {
     offerAmount,
@@ -93,7 +98,11 @@ export default function MakeOfferScreen() {
         />
       )}
       
-      <View style={{ flex: 1 }}>
+      {/* Without this the keyboard covered the message box and the Submit button */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <OfferFormHeader />
 
         <ScrollView
@@ -106,6 +115,7 @@ export default function MakeOfferScreen() {
         >
           <TaskSummarySection task={task} />
 
+          <View onLayout={(e) => { offerFormY.current = e.nativeEvent.layout.y; }}>
           <OfferForm
             offerAmount={offerAmount}
             message={message}
@@ -117,10 +127,18 @@ export default function MakeOfferScreen() {
             onAmountFocus={handleOfferAmountFocus}
             onMessageFocus={() => {
               handleMessageFocus();
-              scrollRef.current?.scrollToEnd({ animated: true });
+              // Scroll to the message box itself, not to the very end of the screen
+              setTimeout(() => {
+                scrollRef.current?.scrollTo({
+                  y: Math.max(0, offerFormY.current + messageY.current - 16),
+                  animated: true,
+                });
+              }, 300);
             }}
+            onMessageLayout={(y) => { messageY.current = y; }}
             onMessageChange={setMessage}
           />
+          </View>
 
           <TipsSection />
           
@@ -157,7 +175,7 @@ export default function MakeOfferScreen() {
             )}
           </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }

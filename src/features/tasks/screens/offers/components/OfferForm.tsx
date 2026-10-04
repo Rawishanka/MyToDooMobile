@@ -19,6 +19,8 @@ interface OfferFormProps {
   onMessageChange: (text: string) => void;
   onAmountFocus?: () => void;
   onMessageFocus?: () => void;
+  /** Reports the message box's y offset inside the form, so the screen can scroll to it. */
+  onMessageLayout?: (y: number) => void;
 }
 
 interface FeePreview {
@@ -40,6 +42,7 @@ export const OfferForm: React.FC<OfferFormProps> = ({
   onMessageChange,
   onAmountFocus,
   onMessageFocus,
+  onMessageLayout,
 }) => {
   const { isDarkMode } = useTheme();
   const [feePreview, setFeePreview] = useState<FeePreview | null>(null);
@@ -167,7 +170,10 @@ export const OfferForm: React.FC<OfferFormProps> = ({
         )}
       </View>
 
-      <View style={styles.inputContainer}>
+      <View
+        style={styles.inputContainer}
+        onLayout={(e) => onMessageLayout?.(e.nativeEvent.layout.y)}
+      >
         <Text style={[styles.inputLabel, isDarkMode && { color: "#F8FAFC" }]}>Your Message *</Text>
         <TextInput
           style={[

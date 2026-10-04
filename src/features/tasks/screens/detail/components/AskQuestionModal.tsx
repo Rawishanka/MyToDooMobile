@@ -126,8 +126,9 @@ export const AskQuestionModal: React.FC<AskQuestionModalProps> = ({
                 textAlignVertical="top"
                 scrollEnabled={false}
                 onFocus={() => {
+                  // Keep the question box in view (scrollToEnd jumped past it to the tips below)
                   setTimeout(() => {
-                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
                   }, 300);
                 }}
               />

@@ -43,6 +43,8 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
   const { isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
+  // Where the review box sits inside the scroll content, so focusing it can scroll TO it
+  const reviewSectionY = useRef(0);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [attachments, setAttachments] = useState<any[]>([]);
@@ -313,7 +315,10 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
               </View>
 
               {/* Review Text */}
-              <View style={styles.reviewSection}>
+              <View
+                style={styles.reviewSection}
+                onLayout={(e) => { reviewSectionY.current = e.nativeEvent.layout.y; }}
+              >
                 <Text style={[styles.sectionLabel, isDarkMode && { color: '#F8FAFC' }]}>Your Review (Optional)</Text>
                 <TextInput
                   style={[styles.reviewInput, isDarkMode && { backgroundColor: '#0F172A', borderColor: '#334155', color: '#F8FAFC' }]}
@@ -324,9 +329,12 @@ export const RatingReviewModal: React.FC<RatingReviewModalProps> = ({
                   value={reviewText}
                   onChangeText={setReviewText}
                   onFocus={() => {
+                    // Scroll the review box itself to the top of the visible area. This used to
+                    // scrollToEnd(), which jumped past the box to Attachments/Submit, so with the
+                    // keyboard open people could not see what they were typing.
                     setTimeout(() => {
-                      scrollRef.current?.scrollToEnd({ animated: true });
-                    }, 250);
+                      scrollRef.current?.scrollTo({ y: Math.max(0, reviewSectionY.current - 8), animated: true });
+                    }, 300);
                   }}
                   textAlignVertical="top"
                   editable={!isSubmitting}
@@ -570,6 +578,8 @@ const styles = StyleSheet.create({
     fontSize: RFValue(14),
     color: '#1A1D2E',
     minHeight: 120,
+    // Long reviews scroll inside the box so it never outgrows the space above the keyboard
+    maxHeight: 180,
     backgroundColor: '#FFFFFF',
     lineHeight: RFValue(21),
   },
