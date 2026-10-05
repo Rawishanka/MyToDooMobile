@@ -39,7 +39,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
     <View style={styles.container}>
       {renderHeader('Community guidelines', false)}
       
-      <ScrollView style={styles.content}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.content}>
         <TouchableOpacity 
           style={styles.guidelineItem} 
           onPress={() => setCurrentView('posting')}
@@ -71,7 +71,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
     <View style={styles.container}>
       {renderHeader('Posting tasks as a Customer')}
       
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentPadding}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.content} contentContainerStyle={styles.contentPadding}>
         <Text style={styles.bodyText}>
           We love connecting people who need work done (you!) with members of the local community who want to work. Our community is growing every day and it's important to us that all of you have a safe and enjoyable experience on Airtasker. That's why we have these{' '}
           <Text style={styles.linkText}>Community Guidelines</Text>, to share the values and standards of behaviour we expect everyone to follow.
@@ -97,7 +97,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
     <View style={styles.container}>
       {renderHeader('Earning money as a Tasker')}
       
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentPadding}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.content} contentContainerStyle={styles.contentPadding}>
         <Text style={styles.bodyText}>
           not be shared in any public areas of the site including in any comments and attachments. Private contact details and third party links include, but are not limited to, business websites, Facebook, LinkedIn, Twitter, personal emails, phone numbers, addresses or personal websites.
         </Text>
@@ -352,7 +352,7 @@ const CommunityGuidelines = ({ visible, onClose }) => {
     <View style={styles.container}>
       {renderHeader('Cancellation Policy')}
       
-      <ScrollView style={styles.content} contentContainerStyle={styles.cancellationScrollContent}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.content} contentContainerStyle={styles.cancellationScrollContent}>
         {/* Blue header section with logo */}
         <View style={styles.blueHeaderSection}>
           <View style={styles.logoContainerCancellation}>

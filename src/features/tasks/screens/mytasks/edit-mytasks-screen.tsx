@@ -910,7 +910,7 @@ Please remove phone numbers and addresses from the image.`,
                   />
                 </View>
 
-                <ScrollView style={styles.categoriesList} nestedScrollEnabled>
+                <ScrollView keyboardShouldPersistTaps="handled" style={styles.categoriesList} nestedScrollEnabled>
                   {loadingCategories ? (
                     <AppLoader size={22} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} style={styles.loader} />
                   ) : categories.length === 0 ? (

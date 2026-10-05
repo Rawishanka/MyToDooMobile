@@ -87,7 +87,7 @@ export const UserTasksList: React.FC<UserTasksListProps> = ({ tasks, formatDate,
   }
 
   return (
-    <FlatList
+    <FlatList keyboardShouldPersistTaps="handled"
       data={tasks}
       keyExtractor={(item) => item._id}
       renderItem={renderTaskItem}

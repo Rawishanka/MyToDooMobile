@@ -115,7 +115,7 @@ export const OffersList: React.FC<OffersListProps> = ({
   }
 
   return (
-    <FlatList
+    <FlatList keyboardShouldPersistTaps="handled"
       data={otherOffers}
       scrollEnabled={false}
       keyExtractor={(item: any) => item._id}

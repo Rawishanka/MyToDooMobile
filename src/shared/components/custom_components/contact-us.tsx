@@ -381,7 +381,7 @@ const ContactUs = ({ onBack }: ContactUsProps) => {
             </TouchableOpacity>
           </View>
 
-          <ScrollView 
+          <ScrollView keyboardShouldPersistTaps="handled" 
             style={styles.statusModalScroll}
             showsVerticalScrollIndicator={false}
           >

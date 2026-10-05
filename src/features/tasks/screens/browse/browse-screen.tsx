@@ -731,7 +731,7 @@ export default function BrowseTasksScreen() {
             )}
           </View>
         ) : (
-          <FlatList
+          <FlatList keyboardShouldPersistTaps="handled"
             data={serviceListings}
             keyExtractor={(item) => item._id}
             renderItem={renderServiceCard}
@@ -875,7 +875,7 @@ export default function BrowseTasksScreen() {
               )}
             </View>
           ) : (
-            <FlatList
+            <FlatList keyboardShouldPersistTaps="handled"
               ref={flatListRef}
               data={filteredAndSortedTasks}
               keyExtractor={(item) => item._id}

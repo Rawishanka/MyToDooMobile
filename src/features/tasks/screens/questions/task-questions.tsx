@@ -147,7 +147,7 @@ export default function TaskQuestionsScreen() {
             </View>
           </View>
 
-          <FlatList
+          <FlatList keyboardShouldPersistTaps="handled"
             data={questions}
             keyExtractor={(item) => item._id}
             renderItem={renderQuestionItem}

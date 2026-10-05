@@ -88,7 +88,7 @@ export default function PaymentStatusScreen() {
       {payments.length === 0 ? (
         <PaymentEmptyState />
       ) : (
-        <FlatList
+        <FlatList keyboardShouldPersistTaps="handled"
           data={payments}
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (

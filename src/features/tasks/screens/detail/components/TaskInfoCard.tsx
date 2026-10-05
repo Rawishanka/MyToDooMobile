@@ -727,7 +727,7 @@ export const TaskInfoCard: React.FC<TaskInfoCardProps> = ({
                 <Ionicons name="close" size={30} color="#fff" />
               </TouchableOpacity>
               
-              <ScrollView 
+              <ScrollView keyboardShouldPersistTaps="handled" 
                 horizontal 
                 pagingEnabled 
                 showsHorizontalScrollIndicator={false}

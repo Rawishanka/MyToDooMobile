@@ -61,7 +61,7 @@ export default function NotificationPreferences({ onBack, userData }) {
           </TouchableOpacity>
         }
       />
-      <ScrollView
+      <ScrollView keyboardShouldPersistTaps="handled"
         style={styles.scroll}
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: insets.bottom + 32 }}
         showsVerticalScrollIndicator={false}

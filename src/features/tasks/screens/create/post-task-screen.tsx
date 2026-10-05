@@ -254,7 +254,7 @@ export default function PostTaskScreen() {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
         {/* Task Summary Card */}
         <View style={[styles.summaryCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
           <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Task Summary</Text>
@@ -306,7 +306,7 @@ export default function PostTaskScreen() {
           {(myTask.photos && myTask.photos.length > 0) && (
             <View style={styles.summaryItem}>
               <Text style={[styles.label, isDarkMode && { color: '#94A3B8' }]}>Images ({myTask.photos.length})</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageContainer}>
+              <ScrollView keyboardShouldPersistTaps="handled" horizontal showsHorizontalScrollIndicator={false} style={styles.imageContainer}>
                 {myTask.photos.map((uri, index) => (
                   <Image 
                     key={index} 

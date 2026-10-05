@@ -366,7 +366,7 @@ export default function DetailScreen() {
       <Text style={styles.title}>Ready to get offers?</Text>
       <Text style={styles.subtitle}>Post the task when you&apos;re ready</Text>
 
-      <ScrollView contentContainerStyle={styles.list} removeClippedSubviews={false}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.list} removeClippedSubviews={false}>
         <ListItem
           icon={<MaterialIcons name="drive-file-rename-outline" size={22} color="#FFFFFF" />}
           text="Task Title"

@@ -228,7 +228,7 @@ export default function TitleInputScreen() {
               </View>
 
               {/* Categories List */}
-              <ScrollView style={styles.categoriesList} nestedScrollEnabled>
+              <ScrollView keyboardShouldPersistTaps="handled" style={styles.categoriesList} nestedScrollEnabled>
                 {loadingCategories ? (
                   <AppLoader size={22} color="#FFFFFF" style={styles.loader} />
                 ) : categoriesError ? (

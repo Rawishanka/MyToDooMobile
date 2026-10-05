@@ -34,7 +34,7 @@ const PaymentOptionsScreen = ({ onNavigate, onBackToAccount, focusAbn = false })
       <BlueBackdrop />
     <LightHeader title="Payment options" onBack={onBackToAccount} />
     
-    <ScrollView ref={scrollRef} style={[styles.content, isDarkMode && { backgroundColor: '#0B1120' }]} contentContainerStyle={styles.contentContainer}>
+    <ScrollView keyboardShouldPersistTaps="handled" ref={scrollRef} style={[styles.content, isDarkMode && { backgroundColor: '#0B1120' }]} contentContainerStyle={styles.contentContainer}>
       {isTasker && (
         <TaskerAbnSection
           variant="compact"
@@ -100,7 +100,7 @@ const PaymentHistoryScreen = ({ onNavigate }) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.content}>
         {activeTab === 'earned' ? (
           <>
             <View style={styles.warningBox}>
@@ -228,7 +228,7 @@ const PaymentMethodsScreen = ({ onNavigate }) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.content}>
         {activeTab === 'make' ? (
           <TouchableOpacity style={styles.addPaymentMethod}>
             <IconChip name="add-circle-outline" style={{ marginRight: 12 }} />

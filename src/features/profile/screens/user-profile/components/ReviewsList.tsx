@@ -207,7 +207,7 @@ const ReviewItem: React.FC<{ review: Review }> = ({ review }) => {
       {review.attachments && review.attachments.length > 0 && (
         <View style={styles.attachmentsContainer}>
           <Text style={[styles.attachmentsLabel, isDarkMode && { color: '#F8FAFC' }]}>Attachments:</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.attachmentsScroll}>
+          <ScrollView keyboardShouldPersistTaps="handled" horizontal showsHorizontalScrollIndicator={false} style={styles.attachmentsScroll}>
             {review.attachments.map((attachment, index) => (
               <TouchableOpacity 
                 key={index} 
@@ -453,7 +453,7 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
       {reviews.length === 0 && !isLoading ? (
         renderEmptyState()
       ) : (
-        <ScrollView 
+        <ScrollView keyboardShouldPersistTaps="handled" 
           style={styles.listContainer}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}

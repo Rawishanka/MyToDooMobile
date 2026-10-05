@@ -118,8 +118,29 @@ const NotificationModalWithAPI: React.FC<NotificationModalProps> = ({
       // Merge local FCM notifications (deduplicate by id)
       if (localResult.status === 'fulfilled' && localResult.value.length > 0) {
         console.log('🔔 Local FCM notifications:', localResult.value.length);
+        // The server already stores every push we receive, and the device keeps its own copy
+        // under a different id (notif_<time>_<rand>), so an id check never matches and each
+        // notification showed up twice. Match by content + time instead, one local copy per
+        // server record (so two genuinely identical messages still show as two).
+        const MATCH_WINDOW_MS = 30 * 60 * 1000;
+        const claimed = new Set<string>();
         const backendIds = new Set(merged.map(n => n.id));
-        const uniqueLocal = localResult.value.filter(n => !backendIds.has(n.id));
+        const uniqueLocal = localResult.value.filter(local => {
+          if (backendIds.has(local.id)) return false;
+          const localTime = new Date(local.createdAt).getTime();
+          const twin = merged.find(
+            b =>
+              !claimed.has(b.id) &&
+              b.title === local.title &&
+              b.body === local.body &&
+              Math.abs(new Date(b.createdAt).getTime() - localTime) <= MATCH_WINDOW_MS,
+          );
+          if (twin) {
+            claimed.add(twin.id);
+            return false;
+          }
+          return true;
+        });
         merged = [...merged, ...uniqueLocal];
       }
 

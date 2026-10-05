@@ -78,7 +78,7 @@ const LegalScreen = ({ onBack }) => {
         title="Terms & conditions"
       />
       
-      <ScrollView style={styles.scrollContent} contentContainerStyle={styles.docScroll} showsVerticalScrollIndicator={true}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.scrollContent} contentContainerStyle={styles.docScroll} showsVerticalScrollIndicator={true}>
         <View style={[styles.docCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <Text style={[styles.mainTitle, isDarkMode && { color: '#38BDF8' }]}>MyToDoo Terms and Conditions</Text>
         
@@ -327,7 +327,7 @@ const LegalScreen = ({ onBack }) => {
       <BlueBackdrop />
       <LightHeader title="Privacy policy" onBack={() => setCurrentScreen('main')} />
 
-      <ScrollView style={styles.scrollContent} contentContainerStyle={styles.docScroll}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.scrollContent} contentContainerStyle={styles.docScroll}>
         <View style={[styles.docCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
         <View style={styles.brandContainer}>
           <Text style={styles.brandText}>Airtasker</Text>

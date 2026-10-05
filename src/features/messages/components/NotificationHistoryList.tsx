@@ -203,7 +203,7 @@ export const NotificationHistoryList: React.FC<NotificationHistoryListProps> = (
   }
 
   return (
-    <FlatList
+    <FlatList keyboardShouldPersistTaps="handled"
       data={notifications}
       renderItem={renderNotification}
       keyExtractor={(item) => item.id}

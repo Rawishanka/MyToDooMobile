@@ -178,7 +178,7 @@ export default function OnboardingCarousel() {
       {renderDots()}
 
       {/* Slides */}
-      <Animated.FlatList
+      <Animated.FlatList keyboardShouldPersistTaps="handled"
         ref={flatListRef}
         data={slides}
         renderItem={renderItem}

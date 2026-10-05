@@ -156,7 +156,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
         <BlueBackdrop />
         <LightHeader title="ID Verification" onBack={onBack} />
 
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollContent}>
           <View style={[styles.verifiedCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#16A34A' }]}>
             <View style={styles.verifiedIconLarge}>
               <MaterialIcons name="verified" size={60} color="#4ADE80" />
@@ -256,7 +256,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
         <BlueBackdrop />
         <LightHeader title="3-Point Face Scan" onBack={() => setStep('document')} />
 
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollContent}>
           <View style={styles.stepProgressRow}>
             <View style={[styles.stepDot, styles.stepDotDone]}><Text style={styles.stepDotText}>✓</Text></View>
             <View style={styles.stepLine} />
@@ -316,7 +316,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
         <BlueBackdrop />
         <LightHeader title="Upload Government ID" onBack={() => setStep('overview')} />
 
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollContent}>
           <View style={styles.stepProgressRow}>
             <View style={[styles.stepDot, styles.stepDotActive]}><Text style={styles.stepDotText}>1</Text></View>
             <View style={styles.stepLine} />
@@ -402,7 +402,7 @@ export default function IDVerificationScreen({ onBack, userData }: IDVerificatio
         <BlueBackdrop />
       <LightHeader title="ID Verification" onBack={onBack} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollContent}>
         <View style={[styles.overviewCard, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
           <View style={styles.shieldIconWrapper}>
             <MaterialIcons name="security" size={40} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />

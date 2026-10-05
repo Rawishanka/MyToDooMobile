@@ -93,6 +93,8 @@ export default function CreateTaskScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const section1Ref = useRef<View>(null);
   const section2Ref = useRef<View>(null);
+  const titleFieldRef = useRef<View>(null);
+  const descriptionFieldRef = useRef<View>(null);
   const section3Ref = useRef<View>(null);
 
   // Section 1: Title & Description
@@ -759,6 +761,18 @@ Please remove phone numbers and addresses from the image.`,
     console.log('   Location state updated');
   };
 
+  // Bring a focused text field to the top of the visible area so people can see what they type
+  const scrollFieldIntoView = (fieldRef: React.RefObject<View | null>) => {
+    setTimeout(() => {
+      if (!fieldRef.current || !scrollViewRef.current) return;
+      fieldRef.current.measureLayout(
+        scrollViewRef.current as any,
+        (_x, y) => scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 12), animated: true }),
+        () => {}
+      );
+    }, 350);
+  };
+
   const handleLocationFocus = () => {
     console.log('📍 Location field focused - scrolling into view');
     if (section2Ref.current && scrollViewRef.current) {
@@ -1214,7 +1228,7 @@ Please remove phone numbers and addresses from the image.`,
           </View>
 
           {/* Title Input */}
-          <View style={styles.fieldContainer}>
+          <View ref={titleFieldRef} collapsable={false} style={styles.fieldContainer}>
             <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
               Title <Text style={styles.required}>*</Text>
             </Text>
@@ -1229,7 +1243,10 @@ Please remove phone numbers and addresses from the image.`,
                 placeholder="e.g. Move my couch"
                 value={title}
                 onChangeText={handleTitleChange}
-                onFocus={() => setIsTitleFocused(true)}
+                onFocus={() => {
+                  setIsTitleFocused(true);
+                  scrollFieldIntoView(titleFieldRef);
+                }}
                 onBlur={() => {
                   setIsTitleFocused(false);
                   handleTitleBlur();
@@ -1253,7 +1270,7 @@ Please remove phone numbers and addresses from the image.`,
           </View>
 
           {/* Description Input */}
-          <View style={styles.fieldContainer}>
+          <View ref={descriptionFieldRef} collapsable={false} style={styles.fieldContainer}>
             <Text style={[styles.label, isDarkMode && { color: '#F8FAFC' }]}>
               Description <Text style={styles.required}>*</Text>
             </Text>
@@ -1269,7 +1286,10 @@ Please remove phone numbers and addresses from the image.`,
                 placeholder="Give a detailed description of your task..."
                 value={description}
                 onChangeText={handleDescriptionChange}
-                onFocus={() => setIsDescriptionFocused(true)}
+                onFocus={() => {
+                  setIsDescriptionFocused(true);
+                  scrollFieldIntoView(descriptionFieldRef);
+                }}
                 onBlur={() => {
                   setIsDescriptionFocused(false);
                   handleDescriptionBlur();

@@ -148,7 +148,7 @@ const HelpSupportScreen: React.FC<HelpSupportProps> = ({ visible, onClose, onCon
           )}
         </View>
 
-        <ScrollView style={styles.content}>
+        <ScrollView keyboardShouldPersistTaps="handled" style={styles.content}>
           {/* Loading State */}
           {loading && (
             <View style={styles.loadingContainer}>

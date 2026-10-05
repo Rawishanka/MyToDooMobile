@@ -431,7 +431,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
         <BlueBackdrop />
         <LightHeader title="Profile Photo" onBack={() => setShowPhotoSelectionScreen(false)} />
 
-        <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+        <ScrollView keyboardShouldPersistTaps="handled" style={styles.modalContent} showsVerticalScrollIndicator={false}>
           <View style={styles.profileImageContainer}>
             <Image source={{ uri: profileImage }} style={styles.largeProfileImage} />
           </View>
@@ -480,7 +480,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
       <BlueBackdrop />
       <LightHeader title="Edit Profile" onBack={onBack} />
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
         {/* Info Banner */}
         <View style={[styles.infoBanner, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
           <IconChip name="bulb-outline" tone="amber" />
@@ -862,7 +862,7 @@ const EditProfileScreen = ({ onBack, onSave, userData, onNavigateToIDVerificatio
             }
           />
 
-          <ScrollView style={styles.skillsModalContent}>
+          <ScrollView keyboardShouldPersistTaps="handled" style={styles.skillsModalContent}>
             <Text style={[styles.skillsModalSubtitle, isDarkMode && { color: '#94A3B8' }]}>
               Add skills that are relevant to the services you provide
             </Text>

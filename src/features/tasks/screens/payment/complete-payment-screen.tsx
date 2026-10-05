@@ -88,7 +88,8 @@ export default function CompletePaymentScreen() {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView
+      <ScrollView keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
         style={styles.content}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}

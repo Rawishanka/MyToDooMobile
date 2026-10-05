@@ -48,7 +48,7 @@ export default function TaskAlerts({ onBack }) {
     <View style={[styles.container, isDarkMode && { backgroundColor: '#0B1120' }]}>
       <BlueBackdrop />
       <LightHeader title="Task Alerts" onBack={onBack} />
-      <ScrollView
+      <ScrollView keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: insets.bottom + 32 }}
         showsVerticalScrollIndicator={false}
       >

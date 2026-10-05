@@ -180,7 +180,7 @@ const PayoutHistoryScreen: React.FC<PayoutHistoryScreenProps> = ({ onNavigate })
       <BlueBackdrop />
       <LightHeader title="Payout History" onBack={() => onNavigate('paymentOptions')} right={refreshBtn} />
 
-      <FlatList
+      <FlatList keyboardShouldPersistTaps="handled"
         data={payoutData.payouts}
         renderItem={renderPayoutItem}
         keyExtractor={(item) => item.payoutId}

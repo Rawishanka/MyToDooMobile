@@ -94,7 +94,7 @@ export const RatingSystemDemo: React.FC<RatingSystemDemoProps> = ({
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Rating & Review System Demo</Text>
         
         {/* Overall Rating Section */}

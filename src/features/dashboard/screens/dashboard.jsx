@@ -26,7 +26,7 @@ export default function TaskerDashboard({ onBack }) {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView keyboardShouldPersistTaps="handled" style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#003399" />
       <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? insets.top + 10 : 50 }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>

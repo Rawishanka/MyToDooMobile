@@ -974,7 +974,7 @@ export default function AccountScreen() {
         pointerEvents="none"
       />
     )}
-    <ScrollView 
+    <ScrollView keyboardShouldPersistTaps="handled" 
       ref={scrollViewRef}
       style={styles.container}
       contentContainerStyle={{ paddingBottom: TAB_BAR_CLEARANCE }}
@@ -1908,7 +1908,7 @@ export default function AccountScreen() {
             </View>
 
             {/* Account Details — Scrollable */}
-            <ScrollView
+            <ScrollView keyboardShouldPersistTaps="handled"
               style={{ flexShrink: 1 }}
               contentContainerStyle={{ paddingBottom: 8 }}
               showsVerticalScrollIndicator={false}

@@ -2,7 +2,7 @@ import { useTheme } from '@/src/shared/theme';
 import { appAlert } from '@/src/shared/components/AppAlert';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { BRAND_ORANGE } from '@/src/shared/theme/brandColors';
 import { RFValue } from '@/src/shared/utils/responsive';
 
@@ -38,7 +38,7 @@ export default function MarkCompleteModal({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={[styles.content, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155', borderWidth: 1 }]}>
           <View style={[styles.header, !isDarkMode && styles.headerBand]}>
             <Text style={[styles.title, !isDarkMode && { color: '#FFFFFF' }, isDarkMode && { color: '#F8FAFC' }]}>Mark Task Complete</Text>
@@ -58,6 +58,7 @@ export default function MarkCompleteModal({
             value={completionNotes}
             onChangeText={setCompletionNotes}
             multiline={true}
+            maxFontSizeMultiplier={1.3}
             textAlignVertical="top"
             maxLength={500}
           />
@@ -72,7 +73,7 @@ export default function MarkCompleteModal({
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

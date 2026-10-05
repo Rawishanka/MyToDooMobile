@@ -120,7 +120,7 @@ export default function TaskOffersScreen() {
       {offers.length === 0 ? (
         <EmptyOffersState onRefresh={refetch} />
       ) : (
-        <FlatList
+        <FlatList keyboardShouldPersistTaps="handled"
           data={offers}
           keyExtractor={(item) => item._id}
           renderItem={renderOffer}

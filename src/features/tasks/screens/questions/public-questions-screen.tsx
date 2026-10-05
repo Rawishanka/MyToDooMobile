@@ -200,7 +200,7 @@ export default function PublicQuestionsScreen() {
           )}
         </View>
         
-        <FlatList
+        <FlatList keyboardShouldPersistTaps="handled"
           horizontal
           showsHorizontalScrollIndicator={false}
           data={categories}
@@ -242,7 +242,7 @@ export default function PublicQuestionsScreen() {
           </Text>
         </View>
       ) : (
-        <FlatList
+        <FlatList keyboardShouldPersistTaps="handled"
           data={filteredQuestions}
           keyExtractor={(item) => item._id}
           renderItem={renderQuestionCard}

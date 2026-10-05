@@ -80,7 +80,7 @@ export default function UserProfileScreen() {
 
       <UserProfileHeader />
 
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <UserInfoCard 
           user={userData.user} 
           formatDate={formatDate} 

@@ -416,7 +416,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
           <Text style={[styles.emptyStateSubtext, isDarkMode && { color: "#94A3B8" }]}>Be the first to ask a question!</Text>
         </View>
       ) : (
-        <FlatList
+        <FlatList keyboardShouldPersistTaps="handled"
           data={questions}
           scrollEnabled={false}
           keyExtractor={(item: any) => item._id}
@@ -715,7 +715,7 @@ export const QuestionsList: React.FC<QuestionsListProps> = ({
               </TouchableOpacity>
               
               {selectedImageUrl && (
-                <ScrollView
+                <ScrollView keyboardShouldPersistTaps="handled"
                   maximumZoomScale={3}
                   minimumZoomScale={1}
                   showsHorizontalScrollIndicator={false}

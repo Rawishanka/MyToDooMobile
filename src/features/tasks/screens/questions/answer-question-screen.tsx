@@ -172,7 +172,7 @@ export default function AnswerQuestionScreen() {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Task Summary */}
         <View style={styles.taskSummary}>
           <Text style={styles.taskTitle} numberOfLines={2}>{task.title}</Text>
@@ -208,6 +208,7 @@ export default function AnswerQuestionScreen() {
               onChangeText={setAnswer}
               placeholder="Type your answer here... Be helpful and specific."
               multiline
+              maxFontSizeMultiplier={1.3}
               numberOfLines={6}
               textAlignVertical="top"
               placeholderTextColor="#94A3B8"

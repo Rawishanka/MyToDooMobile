@@ -190,7 +190,7 @@ export default function FilterModal({
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.filterContent} contentContainerStyle={styles.filterContentInner} showsVerticalScrollIndicator={false}>
+        <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets style={styles.filterContent} contentContainerStyle={styles.filterContentInner} showsVerticalScrollIndicator={false}>
           {/* Category Filter */}
           <View style={[styles.filterSection, { zIndex: categoryDropdownVisible ? 1000 : 1 }, isDarkMode && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
             <Text style={[styles.sectionTitle, isDarkMode && { color: '#F8FAFC' }]}>Categories</Text>
@@ -238,7 +238,7 @@ export default function FilterModal({
                 </View>
 
                 {/* Category List */}
-                <ScrollView style={styles.categoryList} nestedScrollEnabled>
+                <ScrollView keyboardShouldPersistTaps="handled" style={styles.categoryList} nestedScrollEnabled>
                   {/* Debug info - visible in UI */}
                   {__DEV__ && categorySearchText.trim() && (
                     <View style={{ padding: 8, backgroundColor: '#f0f0f0', marginBottom: 4 }}>

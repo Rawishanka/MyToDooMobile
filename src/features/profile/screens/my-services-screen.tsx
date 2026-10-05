@@ -100,7 +100,7 @@ export default function MyServicesScreen({ onBack, onCreate, onEdit }: MyService
           <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         </View>
       ) : (
-        <FlatList
+        <FlatList keyboardShouldPersistTaps="handled"
           data={data}
           keyExtractor={(item) => item._id}
           renderItem={renderItem}

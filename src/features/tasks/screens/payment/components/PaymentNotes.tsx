@@ -25,6 +25,7 @@ export default function PaymentNotes({
           onChangeText={onChangeNotes}
           placeholder="Add any notes about the payment method, transaction ID, or special instructions..."
           multiline
+          maxFontSizeMultiplier={1.3}
           numberOfLines={4}
           textAlignVertical="top"
           placeholderTextColor="#94A3B8"

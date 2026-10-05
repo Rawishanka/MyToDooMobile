@@ -477,7 +477,7 @@ export default function WelcomeScreen() {
                 ))}
               </View>
             ) : (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carouselContent}>
+              <ScrollView keyboardShouldPersistTaps="handled" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carouselContent}>
                 {[1, 2, 3].map((i) => (
                   <CarouselSkeletonCard key={i} />
                 ))}

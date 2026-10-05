@@ -116,7 +116,7 @@ const ServiceFeeConfigScreen: React.FC<ServiceFeeConfigScreenProps> = ({ onBackT
       <BlueBackdrop />
       <LightHeader title="Service Fee Configuration" onBack={onBackToAccount} />
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.content} contentContainerStyle={styles.contentInner} showsVerticalScrollIndicator={false}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <AppLoader size={32} color="#FFFFFF" />

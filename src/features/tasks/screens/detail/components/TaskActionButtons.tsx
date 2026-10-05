@@ -547,7 +547,7 @@ export const TaskActionButtons: React.FC<TaskActionButtonsProps> = ({
               Please select a reason for cancelling this task. The tasker will need to approve your request.
             </Text>
 
-            <ScrollView style={styles.reasonsList} showsVerticalScrollIndicator={false}>
+            <ScrollView keyboardShouldPersistTaps="handled" style={styles.reasonsList} showsVerticalScrollIndicator={false}>
               {loadingReasons ? (
                 <AppLoader size={32} color="#003399" style={{ marginTop: 20 }} />
               ) : (

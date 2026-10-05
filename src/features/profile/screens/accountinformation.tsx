@@ -717,7 +717,7 @@ export default function AccountInformation({ onBack }: AccountInformationProps) 
         <BlueBackdrop />
       <LightHeader title="Account information" onBack={onBack} />
       
-      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.content} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <MenuItem 
           icon="person-outline"
           text="Update personal details" 

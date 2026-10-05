@@ -2346,7 +2346,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 <Text style={styles.emptyReasonsText}>No cancellation reasons available.</Text>
               </View>
             ) : (
-              <ScrollView 
+              <ScrollView keyboardShouldPersistTaps="handled" 
                 style={styles.reasonsScrollView}
                 contentContainerStyle={styles.reasonsScrollContent}
                 showsVerticalScrollIndicator={true}
@@ -2444,7 +2444,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
                 <Text style={styles.emptyReasonsText}>No cancellation reasons available.</Text>
               </View>
             ) : (
-              <ScrollView 
+              <ScrollView keyboardShouldPersistTaps="handled" 
                 style={styles.reasonsScrollView}
                 contentContainerStyle={styles.reasonsScrollContent}
                 showsVerticalScrollIndicator={true}
@@ -2698,7 +2698,7 @@ export default function TaskCard({ task, onPress, status, userRole, onTaskCancel
               </TouchableOpacity>
             </View>
 
-            <FlatList
+            <FlatList keyboardShouldPersistTaps="handled"
               data={(task.offers || []).filter((offer: any) => offer.status !== 'rejected')}
               keyExtractor={(offer) => offer._id}
               renderItem={({ item: offer }) => {
@@ -3638,13 +3638,13 @@ const styles = StyleSheet.create({
   deleteModalTitle: {
     fontSize: RFValue(22),
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF',
     marginBottom: 12,
     textAlign: 'center',
   },
   deleteModalMessage: {
     fontSize: RFValue(15),
-    color: '#666',
+    color: 'rgba(255,255,255,0.72)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -3658,7 +3658,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
     alignItems: 'center',
   },
   deleteCancelButtonText: {

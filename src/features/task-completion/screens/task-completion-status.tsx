@@ -88,7 +88,7 @@ export default function TaskCompletionStatusScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28 }}>
+      <ScrollView keyboardShouldPersistTaps="handled" style={styles.scrollView} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 28 }}>
         {!completion ? (
           <CompletionEmptyState />
         ) : (

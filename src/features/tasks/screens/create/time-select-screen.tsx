@@ -163,7 +163,7 @@ const TimeSelectScreen = () => {
         <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
       </TouchableOpacity>
       
-      <ScrollView 
+      <ScrollView keyboardShouldPersistTaps="handled" 
         style={styles.scrollContainer}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}

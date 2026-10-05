@@ -111,7 +111,7 @@ const TabScreen: React.FC<TabScreenProps & { status?: string; userRole?: string 
 
   return (
     <View style={[styles.tabContent, isDarkMode && { backgroundColor: '#0B1120' }]}>
-      <FlatList
+      <FlatList keyboardShouldPersistTaps="handled"
         data={tasks}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
@@ -306,7 +306,7 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
     <>
       {/* Tab Bar */}
       <View style={[topTabStyles.tabBarContainer, isDarkMode && { backgroundColor: '#0B1120' }]}>
-        <ScrollView
+        <ScrollView keyboardShouldPersistTaps="handled"
           ref={scrollRef}
           horizontal
           showsHorizontalScrollIndicator={false}

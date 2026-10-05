@@ -101,7 +101,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = ({ visible,
           </View>
 
           {/* Notifications List */}
-          <FlatList
+          <FlatList keyboardShouldPersistTaps="handled"
             data={notificationsData}
             renderItem={({ item }) => <NotificationItem item={item} />}
             keyExtractor={(item) => item.id}

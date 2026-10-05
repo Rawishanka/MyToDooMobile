@@ -352,7 +352,7 @@ const MessageScreen: React.FC = () => {
           <Text style={[styles.loadingText, isDarkMode && { color: '#94A3B8' }]}>Loading chats...</Text>
         </View>
       ) : (
-        <FlatList
+        <FlatList keyboardShouldPersistTaps="handled"
           data={filteredMessages}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (

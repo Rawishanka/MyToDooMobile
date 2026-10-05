@@ -61,7 +61,7 @@ export default function InviteFriendsScreen({ onBack }: InviteFriendsScreenProps
           </TouchableOpacity>
         </View>
       ) : (
-        <ScrollView
+        <ScrollView keyboardShouldPersistTaps="handled"
           style={styles.scroll}
           contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}
           showsVerticalScrollIndicator={false}

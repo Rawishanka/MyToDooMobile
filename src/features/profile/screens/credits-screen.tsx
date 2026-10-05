@@ -130,7 +130,7 @@ export default function CreditsScreen({ onBack, onNavigateToInvite }: CreditsScr
           <AppLoader size={32} color={isDarkMode ? '#38BDF8' : '#FFFFFF'} />
         </View>
       ) : (
-        <FlatList
+        <FlatList keyboardShouldPersistTaps="handled"
           data={ledger}
           keyExtractor={(item) => item._id}
           renderItem={renderItem}
