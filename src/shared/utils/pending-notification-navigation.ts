@@ -20,7 +20,10 @@ export function consumePendingNotificationTarget(): NotificationNavigationTarget
 }
 
 export function canNavigateToTarget(target: NotificationNavigationTarget): boolean {
-  const targetKey = target.pathname + ":" + JSON.stringify(target.params || {});
+  // ts is a per-tap stamp, so leave it out: both the FCM and Expo listeners can report the
+  // same tap with different stamps and it still has to count as one navigation
+  const { ts: _ts, ...stableParams } = (target.params || {}) as Record<string, string>;
+  const targetKey = target.pathname + ":" + JSON.stringify(stableParams);
   const now = Date.now();
   // Prevent duplicate navigation within 1.5 seconds
   if (targetKey === lastNavigatedTargetKey && now - lastNavigatedTime < 1500) {
@@ -29,4 +32,17 @@ export function canNavigateToTarget(target: NotificationNavigationTarget): boole
   lastNavigatedTargetKey = targetKey;
   lastNavigatedTime = now;
   return true;
+}
+
+// While the app's start-up redirect (app/index.tsx) is still deciding where to send the user,
+// a notification tap must wait: that redirect used to run after the tap had navigated and
+// replaced it with Home, which is why cold-start taps landed on the Home screen.
+let launchRedirectPending = false;
+
+export function setLaunchRedirectPending(pending: boolean): void {
+  launchRedirectPending = pending;
+}
+
+export function isLaunchRedirectPending(): boolean {
+  return launchRedirectPending;
 }

@@ -1,6 +1,7 @@
 import {
   setPendingNotificationTarget,
   canNavigateToTarget,
+  isLaunchRedirectPending,
 } from "./pending-notification-navigation";
 import type { Router } from 'expo-router';
 import type { StoredNotification } from '@/src/services/notification-storage';
@@ -119,7 +120,24 @@ function taskDetailTarget(
 function myTasksTarget(extraParams?: Record<string, string>): NotificationNavigationTarget {
   return {
     pathname: '/(tabs)/my-tasks',
-    params: extraParams,
+    // ts makes every tap a fresh navigation, so the screen re-applies role/tab even when
+    // the params are otherwise the same as the last tap
+    params: { ...extraParams, ts: String(Date.now()) },
+  };
+}
+
+/** Backend sends role as "poster" / "creator" / "tasker"; My Tasks wants "Poster" / "Tasker". */
+function myTasksRole(notification: StoredNotification): 'Poster' | 'Tasker' | undefined {
+  const role = getUserRole(notification)?.toLowerCase();
+  if (role === 'poster' || role === 'creator') return 'Poster';
+  if (role === 'tasker') return 'Tasker';
+  return undefined;
+}
+
+function browseTarget(mode: 'tasks' | 'services'): NotificationNavigationTarget {
+  return {
+    pathname: '/(tabs)/browse',
+    params: { mode, ts: String(Date.now()) },
   };
 }
 
@@ -371,25 +389,19 @@ function questionTaskDetailTarget(taskId: string): NotificationNavigationTarget 
 
 function completedTaskTarget(
   notification: StoredNotification,
-  taskId?: string
+  _taskId?: string
 ): NotificationNavigationTarget {
-  const role = getUserRole(notification);
-  const isPoster = role?.toLowerCase() === 'poster';
+  const role = myTasksRole(notification);
   const eventType = getEventType(notification);
   const isPendingCompletion =
     eventType === 'TASK_PENDING_COMPLETION' ||
     textIncludes(notification, 'pending completion', 'release payment');
 
-  if (taskId) {
-    return taskDetailTarget(taskId, {
-      fromUserRole: isPoster ? 'Poster' : 'Tasker',
-      fromStatus: isPendingCompletion ? 'pending_completion' : 'completed',
-    });
-  }
-
+  // Land on the My Tasks tab that now holds the job (not on the task page), falling back to
+  // the next tab because empty tabs are hidden
   return myTasksTarget({
-    role: isPoster ? 'Poster' : 'Tasker',
-    tab: isPendingCompletion ? 'pending_completion' : 'completed',
+    ...(role ? { role } : {}),
+    tab: isPendingCompletion ? 'pending_payment' : 'review_required,completed',
   });
 }
 
@@ -409,13 +421,15 @@ export function getNotificationNavigationTarget(
 
   if (isReviewNotification(notification)) {
     const reviewEvent = getEventType(notification);
+    const reviewRole = myTasksRole(notification);
     if (
       reviewEvent === 'REVIEW_REQUIRED' ||
       textIncludes(notification, 'please leave a review', 'review required', 'leave a review so')
     ) {
-      return myTasksTarget({ tab: 'review_required' });
+      return myTasksTarget({ ...(reviewRole ? { role: reviewRole } : {}), tab: 'review_required' });
     }
-    return profileRatingsTarget(notification);
+    // Someone rated you: the job sits in Review Required until you review too, then Completed
+    return myTasksTarget({ ...(reviewRole ? { role: reviewRole } : {}), tab: 'review_required,completed' });
   }
 
   const eventType = getEventType(notification);
@@ -433,18 +447,13 @@ export function getNotificationNavigationTarget(
   }
 
   if (isOfferAcceptedNotification(notification)) {
-    if (taskId) {
-      return taskDetailTarget(taskId, {
-        fromUserRole: 'Tasker',
-        fromStatus: 'assigned',
-      });
-    }
-    return myTasksTarget({ role: 'Tasker', tab: 'assigned' });
+    // Assigned job = the tasker's "Todoo Tasks" tab
+    return myTasksTarget({ role: 'Tasker', tab: 'todoo,pending_payment' });
   }
 
   if (isOfferRejectedNotification(notification)) {
     if (taskId) return taskDetailTarget(taskId, { fromUserRole: 'Tasker', fromStatus: 'offers' });
-    return myTasksTarget({ role: 'Tasker', tab: 'offers' });
+    return myTasksTarget({ role: 'Tasker', tab: 'open' });
   }
 
   if (isOfferMadeNotification(notification)) {
@@ -473,15 +482,17 @@ export function getNotificationNavigationTarget(
   }
 
   // Payout notifications
+  // (a payment on a job - PAYMENT_RECEIVED etc. - is handled below and opens My Tasks)
   if (
-    [
+    !['PAYMENT_RECEIVED', 'PAYMENT_SENT', 'PAYMENT_RELEASED'].includes(eventType) &&
+    ([
       'PAYOUT_PROFILE_REQUIRED',
       'PAYOUT_BANK_LANDED',
       'PAYOUT_STILL_PENDING',
       'PAYOUT_FAILED',
       'PAYOUT_REQUIRED',
     ].includes(eventType) ||
-    textIncludes(notification, 'payout', 'bank account')
+    textIncludes(notification, 'payout', 'bank account'))
   ) {
     return profilePaymentTarget('payout');
   }
@@ -505,10 +516,18 @@ export function getNotificationNavigationTarget(
     case 'NEW_TASK':
     case 'TASK_CREATED':
     case 'NEW_TASK_AVAILABLE':
-      if (taskId) return taskDetailTarget(taskId);
-      return { pathname: '/(tabs)/browse' };
+      return browseTarget('tasks');
+
+    case 'NEW_SERVICE':
+    case 'NEW_SERVICE_LISTING':
+    case 'SERVICE_LISTING_CREATED':
+      return browseTarget('services');
 
     case 'TASK_STATUS_CHANGED':
+      // "Task No Longer Available" is sent to people who did not get the job
+      if (textIncludes(notification, 'no longer available', 'already been assigned')) {
+        return browseTarget('tasks');
+      }
       if (taskId) return taskDetailTarget(taskId);
       return myTasksTarget();
 
@@ -534,19 +553,25 @@ export function getNotificationNavigationTarget(
       if (taskId) return questionTaskDetailTarget(taskId);
       return myTasksTarget();
 
-    case 'REVIEW_REQUIRED':
-      return myTasksTarget({ tab: 'review_required' });
+    case 'REVIEW_REQUIRED': {
+      const role = myTasksRole(notification);
+      return myTasksTarget({ ...(role ? { role } : {}), tab: 'review_required' });
+    }
 
     case 'REVIEW_RECEIVED':
     case 'NEW_REVIEW':
-    case 'REVIEW_REQUEST':
-      return profileRatingsTarget(notification);
+    case 'REVIEW_REQUEST': {
+      const role = myTasksRole(notification);
+      return myTasksTarget({ ...(role ? { role } : {}), tab: 'review_required,completed' });
+    }
 
     case 'PAYMENT_RECEIVED':
     case 'PAYMENT_SENT':
-    case 'PAYMENT_RELEASED':
-      if (taskId) return taskDetailTarget(taskId, { fromStatus: 'completed' });
-      return profilePaymentTarget();
+    case 'PAYMENT_RELEASED': {
+      // Payment done: the job is now waiting for reviews / sits in Completed
+      const role = myTasksRole(notification);
+      return myTasksTarget({ ...(role ? { role } : {}), tab: 'review_required,completed' });
+    }
 
     case 'RECEIPT_READY': {
       const role = getUserRole(notification);
@@ -596,8 +621,10 @@ export function getNotificationNavigationTarget(
     case 'ABN':
     case 'USER':
       return profilePaymentTarget('abn');
-    case 'REVIEW':
-      return profileRatingsTarget(notification);
+    case 'REVIEW': {
+      const role = myTasksRole(notification);
+      return myTasksTarget({ ...(role ? { role } : {}), tab: 'review_required,completed' });
+    }
     case 'AUTH':
       return null;
     default:
@@ -634,6 +661,12 @@ export function navigateFromNotification(
   }
 
   setPendingNotificationTarget(target);
+
+  if (isLaunchRedirectPending()) {
+    // The start-up redirect will open this target right after it lands on the tabs
+    console.log('⏳ [NotificationNavigation] Start-up redirect in progress, target queued:', target);
+    return true;
+  }
 
   if (!canNavigateToTarget(target)) {
     console.log('⏳ [NotificationNavigation] Debounced duplicate navigation for:', target);

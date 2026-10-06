@@ -66,7 +66,7 @@ export default function BrowseTasksScreen() {
   const [sortVisible, setSortVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
-  const searchParams = useLocalSearchParams<{ mode?: string; view?: string }>();
+  const searchParams = useLocalSearchParams<{ mode?: string; view?: string; ts?: string }>();
   const [viewMode, setViewMode] = useState<'list' | 'map'>(
     searchParams.view === 'map' ? 'map' : 'list'
   );
@@ -81,7 +81,7 @@ export default function BrowseTasksScreen() {
     if (searchParams.view === 'map' || searchParams.view === 'list') {
       setViewMode(searchParams.view);
     }
-  }, [searchParams.mode, searchParams.view]);
+  }, [searchParams.mode, searchParams.view, searchParams.ts]);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [selectedServiceListing, setSelectedServiceListing] = useState<ServiceListing | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);

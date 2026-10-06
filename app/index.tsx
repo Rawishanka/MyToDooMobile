@@ -20,6 +20,10 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppLoader from '@/src/shared/components/AppLoader';
+import {
+  consumePendingNotificationTarget,
+  setLaunchRedirectPending,
+} from '@/src/shared/utils/pending-notification-navigation';
 
 const IndexHeroVideo = require('@/assets/index_screen/mian_index.mp4');
 
@@ -51,6 +55,9 @@ export default function WelcomeScreen() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
+    // Hold notification taps until this redirect is done (see pending-notification-navigation)
+    setLaunchRedirectPending(true);
+
     const checkAuth = async () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -60,12 +67,30 @@ export default function WelcomeScreen() {
       if (currentAuthState.isAuthenticated && currentAuthState.token) {
         if (currentAuthState.user?.isPhoneVerified === false || !currentAuthState.user?.phone) {
           console.log('⚠️ User logged in but phone is not verified - redirecting to login for 2FA');
+          setLaunchRedirectPending(false);
+          consumePendingNotificationTarget();
           router.replace('/(auth)/login' as any);
           return;
         }
         router.replace('/(tabs)' as any);
+        setLaunchRedirectPending(false);
+        // A notification was tapped while the app was starting: open its screen now that the
+        // tabs are in place (otherwise the tap ended up on Home)
+        const pendingTarget = consumePendingNotificationTarget();
+        if (pendingTarget) {
+          setTimeout(() => {
+            try {
+              router.push({ pathname: pendingTarget.pathname as any, params: pendingTarget.params });
+            } catch (err) {
+              console.error('❌ Failed to open the notification screen after start-up:', err);
+            }
+          }, 400);
+        }
         return;
       }
+
+      setLaunchRedirectPending(false);
+      consumePendingNotificationTarget(); // not signed in: drop it, the user logs in first
 
       if (hasLoggedInBefore === 'true') {
         router.replace('/(auth)/login' as any);
@@ -76,6 +101,7 @@ export default function WelcomeScreen() {
     };
 
     checkAuth();
+    return () => setLaunchRedirectPending(false);
   }, []);
 
   const player = useVideoPlayer(IndexHeroVideo, p => {

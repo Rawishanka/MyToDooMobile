@@ -204,7 +204,7 @@ interface TopTabDef {
   offersMap?: Map<string, any>;
 }
 
-function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffersMap, promptReviewTaskId, initialTabKey, onTaskMarkedComplete, onSwitchRole }: {
+function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffersMap, promptReviewTaskId, initialTabKey, navStamp, initialRole, onTaskMarkedComplete, onSwitchRole }: {
   userRole: string;
   categorizedData: any;
   isLoading: boolean;
@@ -212,6 +212,8 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
   myOffersMap?: Map<string, any>;
   promptReviewTaskId?: string;
   initialTabKey?: string;
+  navStamp?: string;
+  initialRole?: string;
   onTaskMarkedComplete?: (taskId: string) => void;
   onSwitchRole?: () => void;
 }) {
@@ -290,17 +292,34 @@ function CustomTopTabs({ userRole, categorizedData, isLoading, onRefresh, myOffe
     }
   }, [promptReviewTaskId, tabs]);
 
+  // Open the tab a notification asked for, once per tap. This used to re-run on every data
+  // refresh, which dragged people back to that tab after they had moved to another one.
+  // `tab` may list fallbacks ("review_required,completed") because empty tabs are hidden.
+  const appliedNavKeyRef = useRef<string | undefined>(undefined);
   useEffect(() => {
     if (!initialTabKey) return;
-    const cleanKey = initialTabKey.toLowerCase().replace(/[s-]/g, '_');
-    const tabIndex = tabs.findIndex((tab) => tab.key === initialTabKey || tab.key === cleanKey);
-    if (tabIndex >= 0) {
-      setActiveIndex(tabIndex);
-      setTimeout(() => {
-        scrollRef.current?.scrollTo({ x: Math.max(0, tabIndex * 110 - 40), animated: true });
-      }, 100);
+    // Wait until the role the notification asked for is the one on screen, so the tab index
+    // is looked up in the right role's tab list
+    if (initialRole && initialRole !== userRole) return;
+    const navKey = `${initialTabKey}|${navStamp || ''}`;
+    if (appliedNavKeyRef.current === navKey) return;
+    const candidates = initialTabKey
+      .split(',')
+      .map((key) => key.trim())
+      .filter(Boolean);
+    for (const candidate of candidates) {
+      const cleanKey = candidate.toLowerCase().replace(/[s-]/g, '_');
+      const tabIndex = tabs.findIndex((tab) => tab.key === candidate || tab.key === cleanKey);
+      if (tabIndex >= 0) {
+        appliedNavKeyRef.current = navKey;
+        setActiveIndex(tabIndex);
+        setTimeout(() => {
+          scrollRef.current?.scrollTo({ x: Math.max(0, tabIndex * 110 - 40), animated: true });
+        }, 100);
+        return;
+      }
     }
-  }, [initialTabKey, tabs]);
+  }, [initialTabKey, navStamp, initialRole, userRole, tabs]);
 
   return (
     <>
@@ -422,7 +441,7 @@ export default function MyTasksScreen() {
   const currentUserId = currentUser?.id || currentUser?._id;
   
   // Get navigation params
-  const params = useLocalSearchParams<{ role?: string; tab?: string; promptReviewTaskId?: string; focusTaskId?: string }>();
+  const params = useLocalSearchParams<{ role?: string; tab?: string; ts?: string; promptReviewTaskId?: string; focusTaskId?: string }>();
   const promptReviewTaskId = typeof params.promptReviewTaskId === 'string'
     ? params.promptReviewTaskId
     : typeof params.focusTaskId === 'string'
@@ -432,11 +451,15 @@ export default function MyTasksScreen() {
 
   // Default role from profile isTasker / notifyNewTask once; route params override
   const roleInitializedRef = useRef(false);
+  const appliedRoleKeyRef = useRef<string | undefined>(undefined);
   useEffect(() => {
     if (params.role === 'Poster' || params.role === 'Tasker') {
+      const roleKey = `${params.role}|${params.ts || ''}`;
+      roleInitializedRef.current = true;
+      if (appliedRoleKeyRef.current === roleKey) return;
+      appliedRoleKeyRef.current = roleKey;
       console.log('🎯 Setting userRole from navigation params:', params.role);
       setUserRole(params.role);
-      roleInitializedRef.current = true;
       return;
     }
     if (roleInitializedRef.current || !currentUser) return;
@@ -449,7 +472,7 @@ export default function MyTasksScreen() {
     console.log('🎯 Default My Tasks role from profile:', defaultRole, { profileIsTasker });
     setUserRole(defaultRole);
     roleInitializedRef.current = true;
-  }, [params.role, currentUser]);
+  }, [params.role, params.ts, currentUser]);
 
   // FIX: Log when screen mounts to verify layout is ready
   useEffect(() => {
@@ -1303,6 +1326,8 @@ export default function MyTasksScreen() {
           myOffersMap={myOffersMap}
           promptReviewTaskId={promptReviewTaskId}
           initialTabKey={initialTabKey}
+          navStamp={typeof params.ts === 'string' ? params.ts : undefined}
+          initialRole={params.role === 'Poster' || params.role === 'Tasker' ? params.role : undefined}
           onTaskMarkedComplete={handleTaskMarkedComplete}
           onSwitchRole={() => {
             setIsRoleSwitching(true);

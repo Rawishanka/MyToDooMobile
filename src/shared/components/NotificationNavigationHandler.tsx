@@ -8,6 +8,7 @@ import {
 import {
   consumePendingNotificationTarget,
   canNavigateToTarget,
+  isLaunchRedirectPending,
 } from "@/src/shared/utils/pending-notification-navigation";
 
 let messaging: any = null;
@@ -33,6 +34,8 @@ export function NotificationNavigationHandler() {
     let isMounted = true;
 
     const processPendingNavigation = () => {
+      // app/index.tsx opens the queued target itself once its start-up redirect is done
+      if (isLaunchRedirectPending()) return;
       const pending = consumePendingNotificationTarget();
       if (pending && isMounted) {
         console.log("🚀 [NotificationNavigationHandler] Executing pending notification navigation:", pending);
