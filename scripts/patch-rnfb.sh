@@ -141,6 +141,56 @@ for header in $(find "$RNFB_DIR/app/ios" -name "*.h"); do
   fi
 done
 
+# ============================================================
+# STEP 4: RNFBMessaging calls FIRAuth by type, but with Firebase iOS 11+ (FirebaseAuth is Swift)
+# this target only sees `@class FIRAuth;`, so the archive fails with
+# "receiver 'FIRAuth' for class message is a forward declaration".
+# Call it through the Objective-C runtime instead (same behaviour when FirebaseAuth is linked).
+# ============================================================
+
+echo "--- Step 4: RNFBMessaging FIRAuth runtime call ---"
+
+python3 - "$RNFB_DIR/messaging/ios/RNFBMessaging/RNFBMessaging+AppDelegate.m" <<'PYEOF'
+import sys
+path = sys.argv[1]
+s = open(path, encoding="utf8").read()
+marker = "RNFB_FIRAUTH_RUNTIME_CALL"
+old = "    if ([[FIRAuth authWithApp:app] canHandleNotification:userInfo]) {"
+if marker in s or old not in s:
+    print("  already patched (or nothing to patch)")
+    sys.exit(0)
+new = """    // RNFB_FIRAUTH_RUNTIME_CALL: FIRAuth is a Swift class (forward-declared only here), so call
+    // it through the runtime instead of by type
+    Class authClass = NSClassFromString(@"FIRAuth");
+    id auth = [authClass respondsToSelector:@selector(authWithApp:)]
+                  ? [authClass performSelector:@selector(authWithApp:) withObject:app]
+                  : nil;
+    SEL canHandleSelector = NSSelectorFromString(@"canHandleNotification:");
+    if (auth != nil && [auth respondsToSelector:canHandleSelector] &&
+        ((BOOL(*)(id, SEL, id))objc_msgSend)(auth, canHandleSelector, userInfo)) {"""
+s = s.replace(old, new, 1)
+if "#import <objc/message.h>" not in s:
+    s = s.replace("#import <objc/runtime.h>\n", "#import <objc/message.h>\n#import <objc/runtime.h>\n", 1)
+open(path, "w", encoding="utf8").write(s)
+print("  patched")
+PYEOF
+
+# ============================================================
+# STEP 5: RNFBAuthModule.h defines AuthErrorCode_toJSErrorCode with FIRAuthErrorCode* constants,
+# which with Firebase iOS 11+ only exist in the Swift-generated header. The Podfile already adds
+# its folder to RNFBAuth's header search path; the header just has to import it.
+# ============================================================
+
+echo "--- Step 5: RNFBAuthModule.h imports FirebaseAuth-Swift.h ---"
+AUTH_HEADER="$RNFB_DIR/auth/ios/RNFBAuth/RNFBAuthModule.h"
+if [ -f "$AUTH_HEADER" ] && ! grep -q 'FirebaseAuth-Swift.h' "$AUTH_HEADER"; then
+  sed -i '' 's|^@import React; // patched for use_frameworks static$|&\
+#import "FirebaseAuth-Swift.h" // FIRAuthErrorCode* live in the Swift-generated header|' "$AUTH_HEADER"
+  echo "  patched $AUTH_HEADER"
+else
+  echo "  already patched (or nothing to patch)"
+fi
+
 echo ""
 echo "=== Patch complete! ==="
 echo "All RNFB files patched for RN 0.85 + use_frameworks! :static + Xcode 26"
